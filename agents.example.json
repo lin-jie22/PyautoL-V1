@@ -1,0 +1,17 @@
+{
+  "_说明": "外部能力登记表。V1 内核不实现具体功能 —— 写代码、查资料、调度别的 agent 一律从这里接入。把本文件改名为 agents.json 即生效；不存在时内核照常运行（外部能力数为 0）。",
+  "agents": {
+    "coder": {
+      "type": "shell",
+      "description": "把任务文本从 stdin 传入一个本地代码生成 agent，返回其输出",
+      "command": ["python3", "/Users/linshaojie/V1/external/example_agent.py"],
+      "timeout_s": 120
+    },
+    "researcher": {
+      "type": "http",
+      "description": "POST {task} 到一个 HTTP agent 端点，返回其响应体",
+      "url": "http://127.0.0.1:8001/invoke",
+      "timeout_s": 120
+    }
+  }
+}

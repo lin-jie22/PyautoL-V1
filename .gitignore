@@ -1,0 +1,12 @@
+# 运行时状态：不是源码，不该进版本库
+state/
+logs/
+workspace/
+bench_out/
+
+# 常见噪声
+__pycache__/
+*.py[cod]
+.DS_Store
+*.egg-info/
+.venv/

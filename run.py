@@ -20,6 +20,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -173,6 +174,138 @@ def cmd_measure(args) -> int:
     return 0
 
 
+def cmd_bench(args) -> int:
+    """外部锚层模式 —— V1 与 V5 的分界线就在这个函数里。
+
+    V5 有 215K 行代码和 136 轮迭代，但它没有任何地方能回答
+    "这次改动让系统变好了吗" —— 因为它的尺子是自己写的、自己读的，
+    54/54 条记录 gain 恒等于 0，而每轮都交付"全绿"。
+
+    这个模式强制三件事按顺序发生：
+        1. **先校准**：尺子必须自证有分辨力（参考解 > 部分解 > 空答案），
+           否则 fail-closed 拒用，一个分数都不许出；
+        2. **再跑**：打分器在独立子进程里真跑，内核只能拿到一个 float；
+        3. **后闸**：写基线前校验口径签名，口径变了就拒绝，旧值另存。
+    """
+    from mw.bench import (BaselineStore, Caliber, ExternalScorer, Suite,
+                          append_jsonl, calibrate, measurement_to_dict,
+                          run_suite, verdict_against_baseline)
+
+    root = Path(__file__).resolve().parent
+    suite_path = (Path(args.suite).expanduser() if args.suite
+                  else root / "bench" / "tasks" / "coding_small.jsonl")
+    scorer_path = (Path(args.scorer).expanduser() if args.scorer
+                   else root / "bench" / "scorers" / "code_exec.py")
+    for p in (suite_path, scorer_path):
+        if not p.exists():
+            print(f"❌ 找不到 {p}")
+            return 2
+
+    suite = Suite.load(suite_path)
+    scorer = ExternalScorer([sys.executable, str(scorer_path)], source=scorer_path)
+    s = cfg.settings()
+
+    print("=" * 74)
+    print("V1 外部锚层 —— 先证明尺子能分辨，再用它量")
+    print("=" * 74)
+    print(f"  任务集  {suite.name}  n={len(suite)}  suite_sha={suite.sha()}")
+    print(f"  打分器  {scorer.name}  scorer_sha={scorer.sha()[:32]}")
+
+    # ── 第 1 步：校准。fail-closed，不通过就不许出任何结论 ----------------
+    print()
+    print("--- 第 1 步  校准：尺子自证有分辨力（V5 缺的就是这道闸）---")
+    cal = calibrate(scorer, suite)
+    print(cal.as_lines())
+    if not cal.ok:
+        print()
+        print("❌ 尺子不合格 ⇒ **拒绝出分**。")
+        print("   这正是 V5 里没有的那一步：它那把尺子从不自证，所以恒等于 0 也没人发现。")
+        return 2
+    if cal.evidence is not None:
+        print()
+        print(cal.evidence.as_text())
+
+    # ── 第 2 步：选 solver -----------------------------------------------
+    repeat_n = max(1, int(args.repeat or 1))
+    tag = f"{args.budget:g}x"
+    use_llm = (not args.offline) and s.llm.usable() and args.solver in ("auto", "llm")
+
+    if args.solver == "null":
+        solver: Callable[[object], str] = lambda t: ""            # noqa: E731
+        label = "null（下界参照）"
+    elif args.solver == "oracle":
+        solver = lambda t: t.oracle                                # noqa: E731
+        label = "oracle（上界参照）"
+    elif use_llm:
+        label = f"真模型 {s.llm.model}"
+        if args.fresh:
+            def solver(t):                                         # type: ignore[misc]
+                return _build("", args, allow_shell=args.allow_shell).run(
+                    t.prompt, budget_factor=args.budget).answer
+            label += "（每题新建，记忆不跨题）"
+        else:
+            _core = _build("", args, allow_shell=args.allow_shell)
+            solver = lambda t: _core.run(t.prompt, budget_factor=args.budget).answer  # noqa: E731
+            label += "（复用同一内核，记忆跨题累积）"
+    else:
+        solver = lambda t: t.oracle                                # noqa: E731
+        label = "oracle（上界参照）"
+        print()
+        print("  ℹ️ 未配置真模型（V1_LLM_API_KEY）⇒ 本轮跑的是**参照点**，不是模型成绩。")
+
+    print()
+    print(f"--- 第 2 步  跑任务集  solver={label}  预算档={tag}  repeat={repeat_n} ---")
+    m, rep = run_suite(solver, scorer, suite, repeat_n=repeat_n,
+                       budget_tag=tag, candidate=label)
+    print(f"  {m.as_line()}")
+    print(f"  {rep.summary_line()}")
+    if not rep.trustworthy():
+        print("  ⚠️ 本轮存在早退（没量到的条目）⇒ 这个读数**不得**用于判定。")
+        for e in rep.errors[:5]:
+            print(f"     · {e}")
+
+    # ── 第 3 步：口径闸 ------------------------------------------------
+    caliber = Caliber(scorer_sha=scorer.sha(), suite_sha=suite.sha(),
+                      repeat=repeat_n, budget_tag=tag, fresh=bool(args.fresh))
+    bl_path = (Path(args.baseline).expanduser() if args.baseline
+               else s.paths.bench / "bench_baseline.json")
+    store = BaselineStore(bl_path)
+
+    print()
+    print("--- 第 3 步  口径闸（尺子不能随退化下移）---")
+    print(f"  本次口径  {caliber.as_line()}")
+
+    old = store.load_caliber()
+    if args.compare and old is None:
+        print("  无基线可比（这是第一次）。")
+    elif args.compare:
+        base = store.load_measurement()
+        if base is None:
+            print("  基线文件存在但读数不可解析 ⇒ 拒绝比较。")
+        elif not old.same_as(caliber):
+            print(f"  ⛔ 口径不一致（差异字段 {old.diff(caliber)}）⇒ **拒绝比较**。")
+            print("     跨口径的两个数字放在一张表里，结论就是作废的。")
+        else:
+            ok, why = verdict_against_baseline(base, m)
+            print(f"  基线 {base.as_line()}")
+            print(f"  判定 {'改进成立' if ok else '不成立'} — {why}")
+
+    if args.save_baseline:
+        ok, why = store.save(m, caliber, allow_supersede=args.allow_supersede)
+        print(f"  {'✅' if ok else '⛔'} {why}")
+
+    append_jsonl(s.paths.bench / "runs.jsonl", {
+        "solver": label, "budget_tag": tag, "repeat": repeat_n,
+        "caliber_sig": caliber.signature(), "caliber": caliber.as_dict(),
+        "measurement": measurement_to_dict(m), "report": rep.as_dict(),
+        "calibration": {"ok": cal.ok, "margin": cal.margin, "middle_n": cal.middle_n,
+                        "evidence_id": (cal.evidence.evidence_id()
+                                        if cal.evidence is not None else None)},
+    })
+    print(f"  读数已落盘 {s.paths.bench / 'runs.jsonl'}")
+    return 0 if rep.trustworthy() else 1
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="V1 —— 一个可测量的 agent 内核")
     p.add_argument("--goal", default="", help="任务目标")
@@ -182,8 +315,25 @@ def main() -> int:
     p.add_argument("--budget", type=float, default=1.0, help="预算倍数")
     p.add_argument("--offline", action="store_true", help="强制离线（用确定性桩）")
     p.add_argument("--allow-shell", action="store_true", help="开启 shell 工具（谨慎）")
+
+    # ── 外部锚层（V1 存在的第一理由：让"变好了"这句话有外部依据）──
+    p.add_argument("--bench", action="store_true",
+                   help="外部锚层模式：校准尺子 → 跑任务集 → 过口径闸")
+    p.add_argument("--suite", default="", help="任务集 JSONL（默认 bench/tasks/coding_small.jsonl）")
+    p.add_argument("--scorer", default="", help="外部打分器可执行文件（stdin/stdout 走 JSON）")
+    p.add_argument("--solver", default="auto", choices=["auto", "llm", "oracle", "null"],
+                   help="谁来答题：auto=有真模型则用真模型，否则用 oracle 参照")
+    p.add_argument("--baseline", default="", help="基线文件（默认 $V1_BENCH_DIR/bench_baseline.json）")
+    p.add_argument("--save-baseline", action="store_true", help="把本次读数写入基线（过口径闸）")
+    p.add_argument("--compare", action="store_true", help="与基线比较并给出判定")
+    p.add_argument("--allow-supersede", action="store_true",
+                   help="口径变更时允许替换基线（旧值会另存 superseded）")
+    p.add_argument("--fresh", action="store_true",
+                   help="每题新建内核（记忆不跨题）；同时进入口径签名")
     args = p.parse_args()
 
+    if args.bench:
+        return cmd_bench(args)
     if args.repeat:
         if not args.goal:
             args.goal = DemoLLM.GOAL

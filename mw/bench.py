@@ -1,0 +1,711 @@
+"""外部锚层 —— 让"这个候选是不是真的更好"有一个**内核改不了**的依据。
+
+为什么必须有这个文件
+--------------------
+V5 跑了 136 轮、215K 行生产代码，对抗性审查的判决是：
+**系统不具备声称"我变好了"的分辨力。**
+
+    适应度函数 54/54 条记录 gain ≡ 0.0
+    主测量通道 pairs=95 evaluated=0 —— 从未测到过任何东西
+    同一配置重复 3 次极差 0.0862 > 任何可能的"改进"
+    唯一的数字 0.7184 五天没动过一格，而每轮都在交付"全绿"
+
+结论不是"某个 bug 没修"，是**反馈不可信**。经验数据也支持这个判断：
+这类系统 99 轮故障全部集中在"反馈能不能被相信"，没有一条出自引擎本身。
+
+所以 V1 在引擎之外单独建这一层，并立下唯一不变量：
+
+    **尺子可以被内核读取，但不可以被内核改写。**
+
+内核只能拿到一个 float。它拿不到尺子、也改不了尺子 —— 打分器在**独立子进程**里，
+任务集是**只读文件**，两者内容哈希一起构成"口径签名"。换尺子 = 换口径 = 拒绝比较。
+
+本模块实现 eval-standard-anchoring 的六条契约
+---------------------------------------------
+① 口径闸        caliber 签名 + 原子写 + 口径不同则拒绝覆盖 + 旧值另存 superseded
+② 来源三层分级  权威（人工写的断言）/ 前沿（参考解 oracle）/ 实证（真跑通过率）
+③ fail 边界     判定从严（口径不符 ⇒ 拒写）；缺失不得被读作否定（打分器失败 ≠ 0 分）
+④ 消费计数      打在「跑完了」上；两个早退分支分开计；计数形态可对账
+⑤ 证据可追溯    evidence_id + 观察/推断/未知 三分 + 失败也留下已确立的部分
+⑥ 反证组        先证明尺子有分辨力（参考解必须赢过空答案），否则 fail-closed 拒用
+
+⛔ 故意**不**做的事
+------------------
+· 不把供给侧运行时状态（如"本轮 LLM 有没有熔断"）写进口径 —— 那会让"供给侧崩了"
+  的那一轮自动获得一把新尺子，正是要防的事。
+· 不提供任何"内核可以写任务集 / 写打分器"的通道。写入权由**通道**定，不由声明定。
+· 不在内核侧做任何近似判分。判分只在外部进程里发生。
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import subprocess
+import time
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Callable, Iterable, Sequence
+
+from .measure import Measurement, summarize
+
+
+# ===========================================================================
+# 0. 哨兵与规范化
+# ===========================================================================
+class _Missing:
+    """缺失哨兵。
+
+    契约① 纪律 2：**缺失键用哨兵，不要用默认值**。
+    用默认值会让「没记」和「记了假值」在比较时不可区分 ——
+    那正是尺子被悄悄换掉的入口。
+    """
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:  # pragma: no cover - 仅调试可见
+        return "<MISSING>"
+
+    def __bool__(self) -> bool:
+        return False
+
+
+_MISSING = _Missing()
+
+
+def _val(x: Any) -> Any:
+    """把哨兵转成可哈希/可序列化的稳定表示。"""
+    return "<MISSING>" if isinstance(x, _Missing) else x
+
+
+def _canon(obj: Any) -> str:
+    """规范化 JSON：键排序、无多余空白 ⇒ 同样的内容永远得到同样的哈希。"""
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+
+
+def _sha_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _sha_file(p: Path) -> str:
+    try:
+        return _sha_text(p.read_text(encoding="utf-8"))
+    except OSError:
+        return "<UNREADABLE>"
+
+
+# ===========================================================================
+# 1. 口径签名（契约①）—— 尺子的身份
+# ===========================================================================
+#: 决定"是不是同一把尺子"的字段。改任何一个 ⇒ 两个数字不可比。
+#: ⚠️ 刻意**不含**任何供给侧运行时状态（熔断 / 重试 / 上游健康），见模块头注释。
+CALIBER_KEYS: tuple[str, ...] = ("scorer_sha", "suite_sha", "repeat", "budget_tag", "fresh")
+
+
+@dataclass(frozen=True)
+class Caliber:
+    """口径签名。缺失键一律是哨兵，不是默认值。"""
+
+    scorer_sha: Any = _MISSING
+    suite_sha: Any = _MISSING
+    repeat: Any = _MISSING
+    budget_tag: Any = _MISSING
+    fresh: Any = _MISSING
+
+    def as_dict(self) -> dict:
+        return {k: _val(getattr(self, k)) for k in CALIBER_KEYS}
+
+    def signature(self) -> str:
+        return _sha_text(_canon(self.as_dict()))[:16]
+
+    def diff(self, other: "Caliber") -> list[str]:
+        """点名差异字段 —— 拒绝时必须说清**哪一项**变了（不许只说"不一致"）。"""
+        return [k for k in CALIBER_KEYS if _val(getattr(self, k)) != _val(getattr(other, k))]
+
+    def same_as(self, other: "Caliber") -> bool:
+        return not self.diff(other)
+
+    def as_line(self) -> str:
+        d = self.as_dict()
+        return (f"sig={self.signature()} scorer={str(d['scorer_sha'])[:12]} "
+                f"suite={str(d['suite_sha'])[:12]} repeat={d['repeat']} "
+                f"budget={d['budget_tag']} fresh={d['fresh']}")
+
+
+# ===========================================================================
+# 2. 外部打分器（契约③）—— 物理隔离，内核只能拿到一个 float
+# ===========================================================================
+class ScoreError(RuntimeError):
+    """打分器**自身**失败（超时 / 崩溃 / 输出不可解析）。
+
+    ⛔ 绝不把它降级成 score=0.0。契约③：**缺失不得被读作否定** ——
+    "这题得 0 分"和"这题没量到"必须在上层可区分（因为修法完全不同：
+    前者改候选，后者改尺子或环境）。
+    """
+
+
+@dataclass
+class Scored:
+    score: float
+    why: str = ""
+
+
+class ExternalScorer:
+    """一个跑在**独立子进程**里的打分器适配器。
+
+    协议（一行进、一行出，零依赖）：
+        stdin  : {"task": {...}, "answer": "..."}
+        stdout : {"score": 0.0..1.0, "why": "..."}
+        退出码 : 0 = 正常判分；非 0 = 打分器自身失败（⇒ ScoreError）
+
+    为什么必须走子进程而不是 import 进来：
+        1. **物理隔离** —— 内核拿不到除 score 外的任何东西，改不了尺子；
+        2. answer 是不可信输入，子进程天然是安全边界；
+        3. 打分器可以是任何语言写的，内核不需要理解它。
+    """
+
+    def __init__(self, cmd: Sequence[str], *, source: Path | None = None,
+                 timeout_s: float = 60.0, name: str | None = None) -> None:
+        if not cmd:
+            raise ValueError("打分器命令为空")
+        self.cmd = [str(c) for c in cmd]
+        self.source = Path(source) if source else None
+        self.timeout_s = float(timeout_s)
+        # 尺子的名字取**打分器脚本**名，不是解释器名。
+        # 取 cmd[0] 会让所有打分器都叫 "python3" —— 日志里两把不同的尺子无法区分，
+        # 而这正是"同一事实多份声明"的入口（拿名字对账时对不上）。
+        self.name = name or (self.source.stem if self.source
+                             else (Path(self.cmd[0]).name if self.cmd else "scorer"))
+        self.calls = 0
+
+    # ---- 尺子的身份 = 打分器**文件内容**的哈希，不是路径 --------------------
+    # 路径可以指向同一个文件的不同版本 —— 那是两把不同的尺子。
+    def sha(self) -> str:
+        if self.source is None:
+            return "<NO_SOURCE>"
+        return _sha_file(self.source)
+
+    def score(self, task: dict, answer: str) -> Scored:
+        self.calls += 1
+        payload = json.dumps({"task": task, "answer": answer}, ensure_ascii=False)
+        try:
+            proc = subprocess.run(
+                self.cmd, input=payload, capture_output=True, text=True,
+                timeout=self.timeout_s,
+            )
+        except subprocess.TimeoutExpired as e:
+            raise ScoreError(f"{self.name} 超时 {self.timeout_s:g}s") from e
+        except OSError as e:
+            raise ScoreError(f"{self.name} 无法启动: {e}") from e
+
+        if proc.returncode != 0:
+            raise ScoreError(
+                f"{self.name} 退出码 {proc.returncode}: "
+                f"{(proc.stderr or '').strip()[:200] or '(无 stderr)'}"
+            )
+
+        lines = [ln for ln in (proc.stdout or "").strip().splitlines() if ln.strip()]
+        if not lines:
+            raise ScoreError(f"{self.name} 无输出")
+        try:
+            data = json.loads(lines[-1])
+        except json.JSONDecodeError as e:
+            raise ScoreError(f"{self.name} 输出不是合法 JSON: {lines[-1][:200]}") from e
+        if not isinstance(data, dict):
+            raise ScoreError(f"{self.name} 输出不是对象: {lines[-1][:200]}")
+
+        raw = data.get("score", _MISSING)
+        if isinstance(raw, _Missing):
+            raise ScoreError(f"{self.name} 输出缺 score 字段")
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+            raise ScoreError(f"{self.name} score 非数值: {raw!r}")
+        s = float(raw)
+        if not (0.0 <= s <= 1.0):
+            raise ScoreError(f"{self.name} score 越界 [0,1]: {s}")
+        return Scored(s, str(data.get("why", "")))
+
+
+# ===========================================================================
+# 3. 任务集（契约②）—— 权威层：人工写的断言 + 前沿层：参考解
+# ===========================================================================
+@dataclass(frozen=True)
+class Task:
+    """一条可判分的任务。
+
+    三层来源在这里同时被钉住（契约②）：
+        权威 —— `tests`：人工写的断言，是这条任务的 ground truth
+        前沿 —— `oracle`：参考解，用来在 calibrate() 里自证尺子有分辨力
+        实证 —— 真跑出来的通过率（由外部打分器给出，不在本结构里）
+
+    `partial`（可选）是一份**部分正确**的参考解，用来证明尺子不是二值的：
+    只证明"满分 vs 零分可分"太弱 —— 那与 V5 那把"五天不动"的尺子没有本质区别，
+    真正的分辨力必须证明**中段也可分**（0 < score < 1 可达且有序）。
+    """
+
+    id: str
+    prompt: str
+    tests: tuple[str, ...] = ()
+    oracle: str = ""
+    partial: str = ""
+    null: str = ""
+    meta: tuple[tuple[str, Any], ...] = ()
+
+    def as_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "prompt": self.prompt,
+            "tests": list(self.tests),
+            "meta": {k: _val(v) for k, v in self.meta},
+        }
+
+    def calibration_material(self) -> tuple[str, str, str]:
+        """(好, 中, 坏) 三个已知质量的答案 —— 校准材料本身不进 task 载荷。"""
+        return (self.oracle, self.partial, self.null)
+
+    def fingerprint(self) -> dict:
+        """进尺子身份哈希的内容。**必须**含校准材料：
+        改掉一条任务的部分解，校准结论就变了 ⇒ 那是换了尺子，不是同一把。"""
+        return {
+            "id": self.id, "prompt": self.prompt, "tests": list(self.tests),
+            "oracle": self.oracle, "partial": self.partial, "null": self.null,
+            "meta": {k: _val(v) for k, v in self.meta},
+        }
+
+
+@dataclass(frozen=True)
+class Suite:
+    """任务集。**只读** —— 内核没有任何写入通道（契约②写入权由通道定）。"""
+
+    name: str
+    tasks: tuple[Task, ...]
+
+    def sha(self) -> str:
+        """内容哈希。按 id 稳定排序 ⇒ 重排版不算换尺子，改一个字就算。"""
+        blob = _canon([t.fingerprint() for t in sorted(self.tasks, key=lambda t: t.id)])
+        return _sha_text(blob)[:32]
+
+    def __len__(self) -> int:
+        return len(self.tasks)
+
+    def ids(self) -> list[str]:
+        return [t.id for t in self.tasks]
+
+    @staticmethod
+    def load(path: Path | str) -> "Suite":
+        """从 JSONL 装载。每行一条任务。坏行**显式报错**，不静默跳过。"""
+        p = Path(path)
+        tasks: list[Task] = []
+        seen: set[str] = set()
+        for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            try:
+                d = json.loads(line)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"{p.name}:{i} 不是合法 JSON: {e}") from e
+            tid = str(d.get("id", "")).strip()
+            if not tid:
+                raise ValueError(f"{p.name}:{i} 缺 id")
+            if tid in seen:
+                raise ValueError(f"{p.name}:{i} 任务 id 重复: {tid}（唯一事实源原则）")
+            seen.add(tid)
+            tasks.append(Task(
+                id=tid,
+                prompt=str(d.get("prompt", "")),
+                tests=tuple(str(x) for x in d.get("tests", [])),
+                oracle=str(d.get("oracle", "")),
+                partial=str(d.get("partial", "")),
+                null=str(d.get("null", "")),
+                meta=tuple(sorted((d.get("meta") or {}).items())),
+            ))
+        if not tasks:
+            raise ValueError(f"{p.name} 没有任何任务")
+        return Suite(name=p.stem, tasks=tuple(tasks))
+
+
+# ===========================================================================
+# 4. 证据（契约⑤）—— 从哪来 / 有多确定 / 什么没查到
+# ===========================================================================
+@dataclass
+class Evidence:
+    """每条结论都要能回答三件事，三者混在一句里 = 无法证伪。"""
+
+    observations: list[str] = field(default_factory=list)   # 实测看到的事实
+    inferences: list[str] = field(default_factory=list)     # 由事实推出的判断
+    unknowns: list[str] = field(default_factory=list)       # 明确没查到的
+    limitations: list[str] = field(default_factory=list)    # 这套证据的适用范围
+
+    def evidence_id(self) -> str:
+        """证据 ID = **内容**哈希 ⇒ 证据不可被悄悄改写（改了 ID 就变）。"""
+        return _sha_text(_canon({
+            "o": self.observations, "i": self.inferences,
+            "u": self.unknowns, "l": self.limitations,
+        }))[:16]
+
+    def as_text(self) -> str:
+        out = [f"evidence_id={self.evidence_id()}"]
+        for label, xs in (("观察", self.observations), ("推断", self.inferences),
+                          ("未知", self.unknowns), ("局限", self.limitations)):
+            if xs:
+                out.append(f"  [{label}]")
+                out.extend(f"    - {x}" for x in xs)
+        return "\n".join(out)
+
+
+# ===========================================================================
+# 5. 判别力自证（契约⑥）—— 先证明尺子能分辨，再拿它量东西
+# ===========================================================================
+class CalibrationError(RuntimeError):
+    """尺子**没有分辨力**。fail-closed：拒绝用它做任何判定。"""
+
+
+@dataclass
+class Calibration:
+    ok: bool
+    margin: float
+    per_task: list[dict] = field(default_factory=list)
+    reason: str = ""
+    evidence: Evidence | None = None
+    middle_n: int = 0   # 做了三档检查的条数（0 ⇒ 中段分辨力是空判据）
+
+    def as_lines(self) -> str:
+        head = (f"校准{'通过' if self.ok else '失败'} margin={self.margin:+.4f} "
+                f"中段检查={self.middle_n}/{len(self.per_task)}")
+        rows = []
+        for r in self.per_task:
+            mid = "—" if r["partial"] is None else f"partial={r['partial']:.4f}"
+            rows.append(f"  {r['id']}: oracle={r['oracle']:.4f} {mid} "
+                        f"null={r['null']:.4f} {'✅' if r['ok'] else '❌ 无分辨力'}")
+        return "\n".join([head, *rows, f"  理由: {self.reason}"])
+
+
+def calibrate(scorer: ExternalScorer, suite: Suite, *, min_margin: float = 0.0,
+              min_middle: int = 1) -> Calibration:
+    """**先**证明这把尺子能分辨好坏，**再**允许它参与任何判定。
+
+    对每条任务，用已知质量的答案去打同一把尺子：
+        参考解 oracle（应当高分） ／ 部分解 partial（应当居中） ／ 空答案 null（应当低分）
+    要求**逐条**：
+        · `score(oracle) > score(null)`                 —— 两极可分
+        · 若有 partial：`null < partial < oracle` 严格  —— **中段也有序**（不是二值尺子）
+    并且整体 margin > min_margin、中段检查条数 ≥ min_middle。
+
+    为什么不满足于两极：
+        V5 的适应度函数 54/54 恒等于 0 —— 那是一把**没有分辨力**的尺子。
+        但只证明"满分可分于零分"同样弱：一把"要么 0 要么 1"的二值尺子，
+        照样会让所有"改进"看起来纹丝不动。**中段有序**才是真正的分辨力。
+
+    `min_middle` 默认 1：一条中段检查都没做 ⇒ 该判据从未被触发
+    ⇒ 拿它当"证明"是零判别力的（"触发 0 次就不要拿分数说话"）。
+
+    失败 ⇒ fail-closed（契约③"判定从严"）：不返回一个可以糊弄过去的 0，抛 CalibrationError。
+    """
+    per_task: list[dict] = []
+    obs: list[str] = []
+    inf: list[str] = []
+    unk: list[str] = []
+    o_scores: list[float] = []
+    n_scores: list[float] = []
+    bad: list[str] = []
+    bad_mid: list[str] = []
+    middle_n = 0
+
+    for t in suite.tasks:
+        so = scorer.score(t.as_dict(), t.oracle)
+        sn = scorer.score(t.as_dict(), t.null)
+        sp = scorer.score(t.as_dict(), t.partial) if t.partial.strip() else None
+
+        good = so.score > sn.score
+        if sp is not None:
+            middle_n += 1
+            mono = sn.score < sp.score < so.score
+            if not mono:
+                bad_mid.append(t.id)
+        else:
+            mono = True
+
+        per_task.append({"id": t.id, "oracle": so.score,
+                         "partial": (sp.score if sp is not None else None),
+                         "null": sn.score, "ok": bool(good and mono)})
+        o_scores.append(so.score)
+        n_scores.append(sn.score)
+        if not good:
+            bad.append(t.id)
+        obs.append(f"{t.id}: oracle={so.score:.4f} "
+                   f"partial={'—' if sp is None else f'{sp.score:.4f}'} "
+                   f"null={sn.score:.4f}")
+
+    margin = (sum(o_scores) / len(o_scores)) - (sum(n_scores) / len(n_scores))
+
+    if bad:
+        inf.append(f"尺子 {scorer.name} 在 {len(bad)} 条任务上分不出好坏: {bad}")
+    else:
+        inf.append(f"尺子 {scorer.name} 在 {len(suite)} 条任务上两极可分")
+    if middle_n:
+        inf.append(f"中段有序检查 {middle_n} 条，全部通过" if not bad_mid
+                   else f"中段有序检查 {middle_n} 条，其中无序: {bad_mid}")
+
+    inf.append(f"分辨力 margin={margin:+.4f}（门槛 {min_margin:+.4f}）")
+    unk.append("未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— "
+               "校准用的是间距很大的档位")
+    unk.append("未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）")
+
+    ev = Evidence(
+        observations=obs,
+        inferences=inf,
+        unknowns=unk,
+        limitations=[
+            "校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，"
+            "但不保证任意两个相近分数可分",
+            f"尺子身份 scorer_sha={scorer.sha()[:12]}、suite_sha={suite.sha()[:12]}；"
+            "换任一者本校准即失效，必须重做",
+        ],
+    )
+
+    if bad:
+        reason = f"{len(bad)}/{len(suite)} 条任务上 参考解 未胜过 空答案 ⇒ 尺子无分辨力"
+    elif bad_mid:
+        reason = f"{len(bad_mid)} 条任务上 中段无序（partial 不在 null 与 oracle 之间）: {bad_mid}"
+    elif middle_n < min_middle:
+        reason = f"中段检查条数 {middle_n} < 要求 {min_middle} ⇒ 中段分辨力未被证明"
+    elif margin <= min_margin:
+        reason = f"整体 margin {margin:+.4f} 未超过门槛 {min_margin:+.4f}"
+    else:
+        reason = (f"全部 {len(suite)} 条两极可分，其中 {middle_n} 条中段有序；"
+                  f"margin {margin:+.4f} > {min_margin:+.4f}")
+
+    ok = (not bad) and (not bad_mid) and (middle_n >= min_middle) and (margin > min_margin)
+    return Calibration(ok=ok, margin=margin, per_task=per_task, reason=reason,
+                       evidence=ev, middle_n=middle_n)
+
+
+def calibrate_or_raise(scorer: ExternalScorer, suite: Suite, **kw: Any) -> Calibration:
+    """校准 + fail-closed。**不做校准就不许用它出任何结论。**"""
+    cal = calibrate(scorer, suite, **kw)
+    if not cal.ok:
+        raise CalibrationError(f"尺子不可用：{cal.reason}\n{cal.as_lines()}")
+    return cal
+
+
+# ===========================================================================
+# 6. 跑任务集（契约④）—— 计数打在「跑完了」上
+# ===========================================================================
+@dataclass
+class BenchReport:
+    """消费/尝试计数。契约④：**两本账分开记、分开报，绝不合并成单一布尔。**
+
+    最小可对账形态：
+        attempted == recorded + skipped_no_answer + failed_scorer
+
+    ⛔ 两个早退分支必须分开计：`skipped_no_answer`（上游没产出答案，改 solver）
+       与 `failed_scorer`（尺子/环境出问题，改 scorer）**修法完全不同**，
+       合并成一个 `skipped` 就再也分不清。
+    """
+
+    candidate: str
+    budget_tag: str
+    attempted: int = 0
+    recorded: int = 0
+    skipped_no_answer: int = 0
+    failed_scorer: int = 0
+    errors: list[str] = field(default_factory=list)
+    per_task: list[dict] = field(default_factory=list)
+    elapsed_s: float = 0.0
+
+    def balanced(self) -> bool:
+        """账本是否平。不平 ⇒ 有分数没被计入 ⇒ 所有读数作废。"""
+        return self.attempted == self.recorded + self.skipped_no_answer + self.failed_scorer
+
+    def trustworthy(self) -> bool:
+        """**可信**的读数要求账平 **且** 没有任何一种早退。
+
+        用"早退 = 0"而不是"≥ 某阈值"：任何一次没量到，都可能正好落在
+        判定边界上，而判定边界正是我们唯一关心的地方。
+        """
+        return self.balanced() and self.skipped_no_answer == 0 and self.failed_scorer == 0
+
+    def summary_line(self) -> str:
+        return (f"attempted={self.attempted} recorded={self.recorded} "
+                f"skipped_no_answer={self.skipped_no_answer} "
+                f"failed_scorer={self.failed_scorer} "
+                f"对账={'✅' if self.balanced() else '❌'} "
+                f"可信={'✅' if self.trustworthy() else '❌'}")
+
+    def as_dict(self) -> dict:
+        return {
+            "candidate": self.candidate, "budget_tag": self.budget_tag,
+            "attempted": self.attempted, "recorded": self.recorded,
+            "skipped_no_answer": self.skipped_no_answer,
+            "failed_scorer": self.failed_scorer,
+            "errors": self.errors[:20], "elapsed_s": round(self.elapsed_s, 3),
+        }
+
+
+def run_suite(
+    solver: Callable[[Task], str],
+    scorer: ExternalScorer,
+    suite: Suite,
+    *,
+    repeat_n: int = 1,
+    budget_tag: str = "?",
+    candidate: str = "candidate",
+) -> tuple[Measurement, BenchReport]:
+    """把一个 solver 在同一预算档上跑 repeat_n 次，每轮对每条任务判分。
+
+    分数口径**故意保守**：每条任务等权，量到的算实分，没量到的记 0
+    （而不是把没量到的从分母里剔除）。理由：剔除会系统性高估 ——
+    恰好是"缺失被读成否定"的反面错误，"缺失被读成不存在"。
+    代价是读数会被压低，所以 `BenchReport.trustworthy()` 必须同时为真，
+    否则这个 Measurement **不得**用于任何判定。
+    """
+    rep = BenchReport(candidate=candidate, budget_tag=budget_tag)
+    t0 = time.time()
+    scores: list[float] = []
+    n_tasks = len(suite.tasks)
+    if n_tasks == 0:
+        raise ValueError("空任务集")
+
+    for r in range(repeat_n):
+        total = 0.0
+        for t in suite.tasks:
+            rep.attempted += 1
+            try:
+                ans = solver(t)
+            except Exception as e:  # noqa: BLE001 —— solver 崩了不该带走整轮
+                rep.skipped_no_answer += 1
+                rep.errors.append(f"[r{r+1}] {t.id}: solver 异常 {type(e).__name__}: {e}")
+                continue
+            if not str(ans or "").strip():
+                rep.skipped_no_answer += 1
+                rep.errors.append(f"[r{r+1}] {t.id}: solver 未产出答案")
+                continue
+            try:
+                sc = scorer.score(t.as_dict(), str(ans))
+            except ScoreError as e:
+                rep.failed_scorer += 1
+                rep.errors.append(f"[r{r+1}] {t.id}: {e}")
+                continue
+            rep.recorded += 1
+            total += sc.score
+            rep.per_task.append({"rep": r + 1, "id": t.id, "score": sc.score,
+                                 "why": sc.why[:200]})
+        scores.append(total / n_tasks)
+
+    rep.elapsed_s = time.time() - t0
+    m = summarize(scores, candidate=candidate, budget_tag=budget_tag)
+    return m, rep
+
+
+# ===========================================================================
+# 7. 口径闸 + 基线读写（契约①）
+# ===========================================================================
+def measurement_to_dict(m: Measurement) -> dict:
+    return {"candidate": m.candidate, "budget_tag": m.budget_tag, "n": m.n,
+            "mean": m.mean, "std": m.std, "lo": m.lo, "hi": m.hi}
+
+
+def measurement_from_dict(d: dict) -> Measurement:
+    return Measurement(candidate=str(d["candidate"]), budget_tag=str(d["budget_tag"]),
+                       n=int(d["n"]), mean=float(d["mean"]), std=float(d["std"]),
+                       lo=float(d["lo"]), hi=float(d["hi"]))
+
+
+def _atomic_write(path: Path, text: str) -> None:
+    """原子写（契约① 纪律 4）：半截文件会变成一把谁也说不清的尺子。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
+@dataclass
+class BaselineStore:
+    """基线的**唯一**读写通道。内核侧没有任何其他写入口。
+
+    存的是 {"caliber": {...}, "measurement": {...}, "saved_at": ...}。
+    """
+
+    path: Path
+
+    def load(self) -> dict | None:
+        if not self.path.exists():
+            return None
+        try:
+            return json.loads(self.path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return None
+
+    def load_measurement(self) -> Measurement | None:
+        d = self.load()
+        if not d or "measurement" not in d:
+            return None
+        try:
+            return measurement_from_dict(d["measurement"])
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    def load_caliber(self) -> Caliber | None:
+        d = self.load()
+        if not d or "caliber" not in d:
+            return None
+        raw = d["caliber"]
+        return Caliber(**{k: raw.get(k, _MISSING) for k in CALIBER_KEYS})
+
+    def save(self, m: Measurement, caliber: Caliber, *,
+             allow_supersede: bool = False) -> tuple[bool, str]:
+        """写入基线。**口径不一致时拒绝并保持盘面不动**（契约①）。
+
+        返回 (是否写入, 说明)。被拒绝时文件**一个字节都不变** ——
+        这是"标准不可被被测者改写"的物理实现。
+        """
+        old = self.load()
+        if old is not None:
+            old_cal = self.load_caliber()
+            if old_cal is not None and not old_cal.same_as(caliber):
+                fields = old_cal.diff(caliber)
+                if not allow_supersede:
+                    return False, (
+                        f"口径不一致，拒绝覆盖（差异字段 {fields}）。"
+                        f"旧 {old_cal.as_line()} / 新 {caliber.as_line()}。"
+                        f"跨口径的两个数字不可比；确需替换请显式传 allow_supersede。"
+                    )
+                # 显式允许 ⇒ 旧值**另存**，不销毁
+                stamp = time.strftime("%Y%m%d%H%M%S")
+                sup = self.path.with_name(f"{self.path.stem}_superseded_{stamp}.json")
+                payload = dict(old)
+                payload["superseded"] = True
+                payload["superseded_reason"] = f"口径变更: {fields}"
+                _atomic_write(sup, _canon(payload))
+
+        body = _canon({
+            "caliber": caliber.as_dict(),
+            "caliber_sig": caliber.signature(),
+            "measurement": measurement_to_dict(m),
+            "saved_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        })
+        _atomic_write(self.path, body)
+        return True, f"已写入 {self.path.name}（{caliber.signature()}）"
+
+
+def verdict_against_baseline(base: Measurement, cand: Measurement, *,
+                             min_gain: float = 0.0) -> tuple[bool, str]:
+    """拿新读数对基线做判定。同源工具在 measure.paired_compare —— 不另写一份判据。
+
+    ⛔ 判据必须与被测对象同源：另写一份判分逻辑，实测能把结论带反。
+    """
+    from .measure import paired_compare
+    return paired_compare(base, cand, min_gain=min_gain)
+
+
+# ===========================================================================
+# 8. 落盘出口（契约④ 最后一步）—— 内存态计数必须能被别的进程读到
+# ===========================================================================
+def append_jsonl(path: Path, record: dict) -> None:
+    """把读数追加落盘。没有落盘出口的计数只是**进程内内存态**：
+    重启清零、跨进程不可见，拿它做诊断只能看个热闹。
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(_canon(record) + "\n")

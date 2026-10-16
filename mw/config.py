@@ -50,6 +50,11 @@ class Paths:
     state: Path = field(default_factory=lambda: _env_path("V1_STATE_DIR", ROOT / "state"))
     logs: Path = field(default_factory=lambda: _env_path("V1_LOG_DIR", ROOT / "logs"))
     workspace: Path = field(default_factory=lambda: _env_path("V1_WORKSPACE", ROOT / "workspace"))
+    # 外部锚层（基线 / 读数落盘）的目录。
+    # ⚠️ 刻意**不进** ensure()：不写基线就不该创建这个目录 ——
+    #    否则任何构造 Core 的代码（包括测试）都会顺手创建它，违反"测试不碰生产目录"。
+    #    真正的创建点在 bench._atomic_write / bench.append_jsonl。
+    bench: Path = field(default_factory=lambda: _env_path("V1_BENCH_DIR", ROOT / "bench_out"))
 
     @property
     def db(self) -> Path:
@@ -119,6 +124,7 @@ ENV_KEYS = (
     "V1_STATE_DIR",
     "V1_LOG_DIR",
     "V1_WORKSPACE",
+    "V1_BENCH_DIR",
     "V1_LLM_BASE_URL",
     "V1_LLM_API_KEY",
     "V1_LLM_MODEL",

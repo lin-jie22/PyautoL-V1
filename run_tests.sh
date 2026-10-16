@@ -13,7 +13,7 @@ cd "$(dirname "$0")"
 FAIL=0
 
 echo "=============================================================="
-echo "步骤 1/3  依赖审计（必须零第三方依赖）"
+echo "步骤 1/4  依赖审计（必须零第三方依赖）"
 echo "=============================================================="
 if "$PY" - <<'EOF'
 import ast, sys, pathlib
@@ -40,7 +40,7 @@ then echo "  ✅ 零第三方依赖"; else echo "  ❌ 发现外部依赖"; FAIL
 
 echo
 echo "=============================================================="
-echo "步骤 2/3  契约测试（离线，97 条断言）"
+echo "步骤 2/4  契约测试（离线，97 条断言）"
 echo "=============================================================="
 if "$PY" tests/contract_test.py > /tmp/v1_contract.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1)"
@@ -52,7 +52,20 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 3/3  离线端到端自检（零网络 / 零密钥）"
+echo "步骤 3/4  外部锚层契约测试（含反证组：假尺子必须被判红）"
+echo "=============================================================="
+if V1_BENCH_DIR=/tmp/v1_bench_ci "$PY" tests/bench_test.py > /tmp/v1_bench.out 2>&1; then
+  echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_bench.out | tail -1)"
+  grep -E "^  (校准|.*margin=)" /tmp/v1_bench.out | head -2 | sed 's/^/  /'
+else
+  echo "  ❌ 外部锚层契约测试失败："
+  grep "❌" /tmp/v1_bench.out | head -20
+  FAIL=1
+fi
+
+echo
+echo "=============================================================="
+echo "步骤 4/4  离线端到端自检（零网络 / 零密钥）"
 echo "=============================================================="
 if "$PY" run.py --selftest > /tmp/v1_selftest.out 2>&1 \
    && grep -q "自检结论: ✅ 通过" /tmp/v1_selftest.out; then

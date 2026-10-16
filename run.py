@@ -279,6 +279,9 @@ def cmd_bench(args) -> int:
     tag = f"{args.budget:g}x"
     use_llm = (not args.offline) and s.llm.usable() and args.solver in ("auto", "llm")
 
+    #: 血缘回调（无参 → dict）。**绝不用自由文本标签代替它** —— 见下面预检的注释。
+    prov: Callable[[], dict] | None = None
+
     if args.solver == "null":
         solver: Callable[[object], str] = lambda t: ""            # noqa: E731
         label = "null（下界参照）"
@@ -307,17 +310,41 @@ def cmd_bench(args) -> int:
             )
 
         label = f"真模型直连 {s.llm.model} T={args.temperature:g}"
+        prov = lambda: {"llm_kind": "http-direct", "external_agents": [],
+                        "model": s.llm.model, "temperature": float(args.temperature)}
     elif use_llm:
-        label = f"真模型 {s.llm.model}"
+        # ── 预检：内核**实际**会用哪条通道？这是事实，不是声明。 ──────────────
+        # 血泪教训（2026-10-17 实测）：这里曾把标签写成"真模型 qwen2.5:7b"，
+        # 而 core.py 里的 `llm or StubLLM()` 让内核**全程用离线桩** ——
+        # 1 秒"跑完" 6 题、每轮报 done、mean=0.0000 却标 `可信=✅`，
+        # 真模型一次都没被调用，且标签与事实矛盾而**无任何机制发现**。
+        # 所以出分之前先问内核一次；拿不到真通道就 fail-closed，一个分都不出。
+        _probe = _build("", args, allow_shell=args.allow_shell)
+        _kind = str(getattr(_probe, "llm_kind", "unknown"))
+        if _kind != "http":
+            print(f"❌ 内核实际通道 = {_kind}，不是真模型 ⇒ **拒绝出分**。")
+            print("   静默降级是缺陷：那样的读数看起来像模型成绩，实际什么也没测。")
+            return 2
+        label = f"内核/{_kind} {s.llm.model}"
         if args.fresh:
+            _seen: dict = {}
+
             def solver(t):                                         # type: ignore[misc]
-                return _build("", args, allow_shell=args.allow_shell).run(
-                    t.prompt, budget_factor=args.budget).answer
+                c = _build("", args, allow_shell=args.allow_shell)
+                out = c.run(t.prompt, budget_factor=args.budget)
+                _seen["llm_kind"] = c.llm_kind
+                _seen["external_agents"] = list(c.external_agents)
+                return out.answer
+
             label += "（每题新建，记忆不跨题）"
+            prov = lambda: dict(_seen)                             # noqa: E731
         else:
             _core = _build("", args, allow_shell=args.allow_shell)
             solver = lambda t: _core.run(t.prompt, budget_factor=args.budget).answer  # noqa: E731
             label += "（复用同一内核，记忆跨题累积）"
+            prov = lambda: {"llm_kind": _core.llm_kind,            # noqa: E731
+                            "external_agents": list(_core.external_agents),
+                            "model": s.llm.model}
     else:
         solver = lambda t: t.oracle                                # noqa: E731
         label = "oracle（上界参照）"
@@ -327,9 +354,23 @@ def cmd_bench(args) -> int:
     print()
     print(f"--- 第 2 步  跑任务集  solver={label}  预算档={tag}  repeat={repeat_n} ---")
     m, rep = run_suite(solver, scorer, suite, repeat_n=repeat_n,
-                       budget_tag=tag, candidate=label)
+                       budget_tag=tag, candidate=label, provenance=prov)
     print(f"  {m.as_line()}")
     print(f"  {rep.summary_line()}")
+    if prov is not None:
+        print(f"  血缘      llm_of_record={rep.llm_of_record()}"
+              f" 外部能力={len(rep.provenance.get('external_agents') or [])} 个")
+
+    # ── 血缘闸：标签可以撒谎，血缘不能。 ────────────────────────────────
+    # `candidate` 是一串自由文本；只有血缘是**从内核读出来的事实**。
+    # 要求真模型却拿到桩 ⇒ 拒绝出分、拒绝判定、拒绝写基线（fail-closed）。
+    _wants_model = args.solver in ("llm", "llm-direct", "auto")
+    if _wants_model and rep.llm_of_record() not in ("http", "http-direct"):
+        print()
+        print(f"  ⛔ 血缘显示本轮**不是**真模型（llm_of_record={rep.llm_of_record()}）"
+              " ⇒ 拒绝出分／判定／写基线。")
+        return 2
+
     if not rep.trustworthy():
         print("  ⚠️ 本轮存在早退（没量到的条目）⇒ 这个读数**不得**用于判定。")
         for e in rep.errors[:5]:

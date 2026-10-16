@@ -635,6 +635,30 @@ _fake_scorers = sorted(p.name for p in SCORER_DIR.glob("*.py"))
 check(RS, "I6 反证组已实例化：事故版打分器文件真实存在且 ≥5 个",
       len(_fake_scorers) >= 5, str(_fake_scorers))
 
+# ── 血缘：让 candidate 那串自由文本不能撒谎 ────────────────────────────
+# 实测事故：标签写着"真模型 qwen2.5:7b"，内核日志写着 `llm=stub(离线)`，
+# 读数 mean=0.0000 还标着"可信=✅"，而**没有任何机制**发现这个矛盾。
+# 修法就是把"实际用了什么"变成读数的一部分，并且**取不到就是 unknown，不是默认成 http**。
+_rep_np = B.BenchReport(candidate="自称是真模型的候选", budget_tag="1x")
+check(RS, "I7 无血缘时 llm_of_record() = 'unknown'（缺证据**不许**默认成 http）",
+      _rep_np.llm_of_record() == "unknown", _rep_np.llm_of_record())
+_m7, _r7 = B.run_suite(lambda t: t.oracle, _REAL, SUITE, repeat_n=1, budget_tag="1x",
+                       candidate="c", provenance=lambda: {"llm_kind": "stub"})
+check(RS, "I8 provenance 落进读数，且 as_dict 里同时留下 llm_of_record（可跨进程核验）",
+      _r7.llm_of_record() == "stub" and _r7.as_dict()["llm_of_record"] == "stub",
+      str(_r7.as_dict().get("llm_of_record")))
+
+
+def _boom_prov():
+    raise RuntimeError("血缘取不到")
+
+
+_m8, _r8 = B.run_suite(lambda t: t.oracle, _REAL, SUITE, repeat_n=1, budget_tag="1x",
+                       candidate="c", provenance=_boom_prov)
+check(RS, "I9 血缘回调抛异常 ⇒ 不带走整轮，但必须留痕（否则静默变成无血缘）",
+      _r8.llm_of_record() == "unknown" and any("provenance" in e for e in _r8.errors),
+      str(_r8.errors[:1]))
+
 
 # ===========================================================================
 print()

@@ -29,7 +29,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 # 规范化：去空白折叠 + 大小写无关 —— 否则 "Python 截断" 与 "python  截断" 会被当成两条
 _WS = re.compile(r"\s+")

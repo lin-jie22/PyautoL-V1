@@ -19,7 +19,7 @@ import json
 import shlex
 import subprocess
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
@@ -90,13 +90,34 @@ class ToolRegistry:
 # ---------------------------------------------------------------------------
 def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
                         workspace: Path | None = None) -> None:
-    """注册内核自带的极简工具。刻意极少 —— 其余全部走外部。"""
+    """注册内核自带的极简工具。刻意极少 —— 其余全部走外部。
+
+    语义是「**保证**核心工具在册」，不是「新增」：
+        · 已在册且定义一致 ⇒ 跳过
+        · 已在册但定义不同 ⇒ 交给 register 抛错（那是真冲突，必须炸）
+    为什么：`Core(tools=<调用方预置的注册表>)` 是公开的注入点，而 Core 一定会
+    再调一次本函数。若这里无脑 register，注入就必然因 `finish` 重名而崩 ——
+    实测就是这么撞的（契约 L6）。但"唯一事实源"的重名检查**不能**因此放松：
+    它正是用来抓"同一个工具被两处定义"的。
+    """
+
+    def _put(spec: ToolSpec) -> None:
+        cur = reg.get(spec.name)
+        if cur is None:
+            reg.register(spec)
+            return
+        same = (cur.description == spec.description and cur.params == spec.params
+                and cur.external == spec.external and cur.mutating == spec.mutating)
+        if not same:
+            reg.register(spec)          # 定义不一致 ⇒ 触发重名检查并抛错
 
     def _finish(args: dict) -> str:
         return str(args.get("answer", ""))
 
-    reg.register(ToolSpec(
-        "finish", "给出最终答复并结束本次任务", {"answer": "最终答复文本"}, _finish,
+    _put(ToolSpec(
+        "finish", "**把完整答案原文放进 answer** 并结束本次任务"
+                  "（目标只是要一段代码/一个结论时，就用它，不要为用工具而用工具）",
+        {"answer": "最终答复文本"}, _finish,
     ))
 
     if memory is not None:
@@ -114,10 +135,10 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
             )
             return f"{'新增' if is_new else '已存在(仅累加引用)'} key={key}"
 
-        reg.register(ToolSpec(
+        _put(ToolSpec(
             "recall", "检索语义记忆", {"query": "查询词"}, _recall,
         ))
-        reg.register(ToolSpec(
+        _put(ToolSpec(
             "note", "写入一条语义记忆（自动去重）",
             {"text": "事实文本", "source": "来源", "confidence": "0~1 可信度"},
             _note, mutating=True,
@@ -135,7 +156,7 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
         tail = (proc.stdout or "") + (("\n[stderr] " + proc.stderr) if proc.stderr else "")
         return f"rc={proc.returncode}\n{tail[:4000]}"
 
-    reg.register(ToolSpec(
+    _put(ToolSpec(
         "run_shell", "在工作目录执行 shell 命令（受 guard 白名单约束）",
         {"cmd": "命令", "timeout_s": "超时秒数(可选)"}, _run_shell,
         external=True, mutating=True,
@@ -149,7 +170,7 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
         with urllib.request.urlopen(req, timeout=float(args.get("timeout_s", 20))) as r:
             return r.read().decode("utf-8", "replace")[:8000]
 
-    reg.register(ToolSpec(
+    _put(ToolSpec(
         "http_get", "取一个 URL 的文本内容", {"url": "URL"}, _http_get, external=True,
     ))
 
@@ -171,6 +192,10 @@ def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
     except (json.JSONDecodeError, OSError):
         return []
     agents = data.get("agents", {}) if isinstance(data, dict) else {}
+    # 相对路径的锚点 = agents.json 所在目录（通常就是项目根）。
+    # ⚠️ 不这样做的话，`command: ["python3", "external/x.py"]` 会**继承调用方的 cwd**：
+    #    从别的目录调用 run.py 时外部能力就静默失效了 —— 静默失效比报错更糟。
+    anchor = Path(path).parent
     added: list[str] = []
     for name, spec in agents.items():
         if not isinstance(spec, dict):
@@ -178,17 +203,22 @@ def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
         tool_name = f"agent:{name}"
         kind = spec.get("type", "shell")
         desc = str(spec.get("description", "外部 agent"))
+        cwd = str(spec.get("cwd") or anchor)
 
         if kind == "shell":
             argv = spec.get("command") or []
             if not isinstance(argv, list) or not argv:
                 continue
 
-            def _handler(args: dict, _argv=list(argv)) -> str:
-                # 任务文本通过 stdin 传，避免 shell 注入与引号地狱
+            def _handler(args: dict, _argv=list(argv), _cwd=cwd,
+                         _to=float(spec.get("timeout_s", 120))) -> str:
+                # 任务文本通过 stdin 传，避免 shell 注入与引号地狱。
+                # ⚠️ argv/cwd/timeout 一律用默认参数**绑定到本轮的 spec**：
+                #    直接读循环变量 `spec` 是 late binding —— 所有 agent 会共用
+                #    最后一个 spec 的超时值。这类闭包踩坑在实测里很难看出来。
                 proc = subprocess.run(
                     _argv, input=str(args.get("task", "")), capture_output=True,
-                    text=True, timeout=float(spec.get("timeout_s", 120)),
+                    text=True, timeout=_to, cwd=_cwd,
                 )
                 return (proc.stdout or "")[:8000] or f"(rc={proc.returncode})"
 
@@ -198,12 +228,13 @@ def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
         elif kind == "http":
             url = str(spec.get("url", ""))
 
-            def _handler(args: dict, _url=url) -> str:
+            def _handler(args: dict, _url=url,
+                         _to=float(spec.get("timeout_s", 120))) -> str:
                 body = json.dumps({"task": args.get("task", "")}).encode()
                 req = urllib.request.Request(
                     _url, data=body, headers={"Content-Type": "application/json"}
                 )
-                with urllib.request.urlopen(req, timeout=float(spec.get("timeout_s", 120))) as r:
+                with urllib.request.urlopen(req, timeout=_to) as r:
                     return r.read().decode("utf-8", "replace")[:8000]
 
             reg.register(ToolSpec(tool_name, desc, {"task": "交给该 agent 的任务"},

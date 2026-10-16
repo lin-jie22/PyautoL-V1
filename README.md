@@ -122,7 +122,7 @@ python3 run.py --bench --save-baseline
 | 五把假尺子 | 恒定 / 反相关 / **二值** / 单条失分辨 / 崩溃 —— **全部被判红** |
 | R13 撤回态 | 撤四处实现：RC=1、**Traceback=0**、汇总行在、变红清单与预期**一一对应**、md5 三态一致 |
 | 真模型噪声下限（见 5.2） | T=0 **极差 0.0000**（逐题逐次完全一致）／ T=0.8 **极差 0.1111**（6 题中 2 题抖） |
-| 契约断言 | `tests/bench_test.py` **83 条，全绿** |
+| 契约断言 | `tests/bench_test.py` **86 条，全绿** |
 
 ⚠️ 校准不是"跑个分"。它要求**逐条** `空答案 < 部分解 < 参考解` 严格成立，否则
 fail-closed 拒用 —— 一把"要么 0 要么 1"的二值尺子照样会让所有"改进"纹丝不动，
@@ -182,7 +182,7 @@ cd /Users/linshaojie/V1
 # 1) 离线端到端自检（无需网络、无需密钥，几秒跑完）
 python3 run.py --selftest
 
-# 2) 契约测试（97 条断言，零依赖，可独立运行）
+# 2) 契约测试（148 条断言，零依赖，可独立运行）
 python3 tests/contract_test.py
 
 # 3) 真跑一个任务
@@ -274,8 +274,8 @@ V1/
 │   ├── scorers/code_exec.py  实证层打分器：真跑候选代码，得分=通过率
 │   └── tasks/coding_small.jsonl  6 道纯函数题（含参考解 / 部分解）
 ├── tests/
-│   ├── contract_test.py   97 条内核契约断言（含结构反证组 J）
-│   └── bench_test.py      83 条外部锚层断言（含 5 把假尺子的反证组 D）
+│   ├── contract_test.py  148 条内核契约断言（含 J 结构 / K 构造路径 / L 外部能力 / M–N 协议 / O 停滞 / P 补救 / Q 收尾余量）
+│   └── bench_test.py      86 条外部锚层断言（含假尺子反证组 D + 血缘 I）
 ├── external/              外部能力范例
 ├── agents.example.json    外部 agent 登记表范例
 ├── run.py                 入口（自检 / 真跑 / 测量 / 外部锚层 四种模式）

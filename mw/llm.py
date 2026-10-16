@@ -139,6 +139,47 @@ def build_llm(cfg: LLMConfig, ledger: Ledger | None = None,
 # ---------------------------------------------------------------------------
 _FENCE = re.compile(r"```(?:json)?\s*(.*?)```", re.S)
 
+#: 「结构」与「载荷」的分隔符 —— 双通道协议的锚点。
+#:
+#: 为什么要分成两个通道（2026-10-17 一个下午实测撞出来的三种坏法）：
+#:   ① 代码里的**裸换行**落进 JSON 字符串 ⇒ 非法 JSON（RFC 8259 不许字符串内有控制字符）
+#:   ② 响应被 `max_tokens` **截断** ⇒ 半截 JSON，括号不闭合
+#:   ③ 模型顺手把**单引号也转义**成 `\'` ⇒ 非法转义序列
+#: 三者不是三个 bug，是**同一个设计错误**的症状：内容不该走 JSON。
+#:
+#: ⛔ 而且 ③ **不能**靠"放宽解析器/修转义"来兜：模型写 `"\d+"`（正则漏了一次
+#:    转义）时，把它"修"成 `"d+"` 就是**静默改坏候选** —— 比解析失败恶劣得多。
+#:    判据是**意图是否有歧义**：
+#:      · 裸换行：意图无歧义（模型就是想换行）⇒ 宽松放行（strict=False）可以
+#:      · 漏转义的反斜杠：意图有歧义（想写 `\d` 还是 `d`？）⇒ 一律不许猜
+#:    ⇒ 结论：只能**改协议**，不能把解析器越改越宽。
+ANSWER_MARK = "---ANSWER---"
+
+
+def split_answer(text: str) -> tuple[str, str]:
+    """把模型输出拆成 (结构部分, 载荷原文)。
+
+    没有分隔符 ⇒ 载荷为空串（**不是**报错：老格式仍然按老办法处理）。
+    载荷**一个字符都不动** —— 不转义、不解码、不剥代码块。这是整个修复的要点：
+    代码原文从模型直接走到打分器，中途不经过任何有损变换。
+    """
+    if ANSWER_MARK not in text:
+        return text, ""
+    head, _, tail = text.partition(ANSWER_MARK)
+    return head, tail.strip("\n").rstrip()
+
+#: 解析模式计数 —— **宽松放行必须留痕**（不许静默兜底）。
+#: `lenient` 增长说明模型/提示词的输出格式在退化：即便最终解析成功，
+#: 那也是一个"正在变坏"的先行信号，不该被当成没事。
+PARSE_MODES: dict[str, int] = {"exact": 0, "lenient": 0, "failed": 0}
+
+
+def _loads(text: str, *, strict: bool) -> tuple[bool, Any]:
+    try:
+        return True, json.loads(text, strict=strict)
+    except (json.JSONDecodeError, ValueError):
+        return False, None
+
 
 def parse_json(text: str, fallback: Any = None) -> Any:
     """从模型输出里取 JSON。
@@ -150,18 +191,33 @@ def parse_json(text: str, fallback: Any = None) -> Any:
     实现上刻意**不写 `except: pass`** —— 静默兜底在本项目里等同缺陷
     （契约测试 J10 会结构性地钉死这一点）。这里用 `continue` 表达
     "试下一个形态"，用显式 `return fallback` 表达"确实解析不出来"。
+
+    ⚠️ 为什么要试 `strict=False`（2026-10-17 实测逼出来的真实修复）：
+        模型被要求把**代码**放进 `args.answer`，于是代码里的**裸换行**直接
+        落进了 JSON 字符串 —— 按 RFC 8259 那是非法 JSON，`json.loads` 直接拒。
+        实测抓到的原文（就是这么坏的）：
+
+            {"candidates": [{"..." : "tool": "finish",
+             "args": {"answer": "def parse_duration(s):
+                 if not s:
+                     return None"}}]}
+
+        这不是模型"不听话"，是**用 JSON 传代码**这件事本身的毛病。
+        `strict=False` 允许字符串内出现控制字符（含裸换行），正好对上。
+        注意尝试顺序：**先 strict 后宽松** —— 干净 JSON 必须优先，
+        否则我们会悄悄接受所有脏输出，那就变成另一种静默兜底了。
     """
     if not text:
         return fallback
-    for candidate in (text, *(_FENCE.findall(text) or [])):
-        try:
-            return json.loads(candidate.strip())
-        except (json.JSONDecodeError, ValueError):
-            continue
+    candidates = [text, *(_FENCE.findall(text) or [])]
     start, end = text.find("{"), text.rfind("}")
     if 0 <= start < end:
-        try:
-            return json.loads(text[start:end + 1])
-        except (json.JSONDecodeError, ValueError):
-            return fallback
+        candidates.append(text[start:end + 1])
+    for cand in candidates:
+        for strict in (True, False):
+            ok, val = _loads(cand.strip(), strict=strict)
+            if ok:
+                PARSE_MODES["exact" if strict else "lenient"] += 1
+                return val
+    PARSE_MODES["failed"] += 1
     return fallback

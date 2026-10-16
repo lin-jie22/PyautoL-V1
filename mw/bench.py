@@ -46,7 +46,7 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any, Callable, Sequence
 
 from .measure import Measurement, summarize
 
@@ -531,6 +531,18 @@ class BenchReport:
     errors: list[str] = field(default_factory=list)
     per_task: list[dict] = field(default_factory=list)
     elapsed_s: float = 0.0
+    #: solver **自称之外**的事实：它实际用了什么通道（llm_kind / 外部能力数 / 模型名…）。
+    #:
+    #: 为什么必须有这个字段：`candidate` 是一串**自由文本**，它可以声称"真模型 qwen2.5:7b"
+    #: 而实际跑的是离线桩 —— 2026-10-17 的真实事故就是这样：标签写"真模型"，
+    #: 内核日志写 `llm=stub(离线)`，两者矛盾而**没有任何机制发现它**，读数还标着"可信=✅"。
+    #: 所以判定不能只看"有没有早退"，必须能读到**血缘**。
+    provenance: dict = field(default_factory=dict)
+
+    def llm_of_record(self) -> str:
+        """实际使用的模型通道；取不到就是 'unknown'（**不是**默认成 http）。"""
+        v = self.provenance.get("llm_kind")
+        return str(v) if v else "unknown"
 
     def balanced(self) -> bool:
         """账本是否平。不平 ⇒ 有分数没被计入 ⇒ 所有读数作废。"""
@@ -558,6 +570,8 @@ class BenchReport:
             "skipped_no_answer": self.skipped_no_answer,
             "failed_scorer": self.failed_scorer,
             "errors": self.errors[:20], "elapsed_s": round(self.elapsed_s, 3),
+            "llm_of_record": self.llm_of_record(),
+            "provenance": self.provenance,
             # 逐题逐次明细 —— **不截断**（不像 errors 那样只留前 20 条）。
             # 理由：它是噪声归因的唯一依据。若只落一个总分极差，你就无法回答
             # "抖动出在哪些题上"，也无法区分"整卷漂移"与"两题涨两题跌相互抵消"。
@@ -574,6 +588,7 @@ def run_suite(
     repeat_n: int = 1,
     budget_tag: str = "?",
     candidate: str = "candidate",
+    provenance: Callable[[], dict] | None = None,
 ) -> tuple[Measurement, BenchReport]:
     """把一个 solver 在同一预算档上跑 repeat_n 次，每轮对每条任务判分。
 
@@ -582,6 +597,10 @@ def run_suite(
     恰好是"缺失被读成否定"的反面错误，"缺失被读成不存在"。
     代价是读数会被压低，所以 `BenchReport.trustworthy()` 必须同时为真，
     否则这个 Measurement **不得**用于任何判定。
+
+    `provenance` 是一个**无参回调**，在跑完之后调用一次，用来把"实际用了什么"
+    写进读数（而不是让 candidate 那串自由文本自说自话）。取不到就留空字典，
+    由调用方决定空血缘是否可接受 —— 库不做假设。
     """
     rep = BenchReport(candidate=candidate, budget_tag=budget_tag)
     t0 = time.time()
@@ -617,6 +636,12 @@ def run_suite(
         scores.append(total / n_tasks)
 
     rep.elapsed_s = time.time() - t0
+    if provenance is not None:
+        try:
+            rep.provenance = dict(provenance() or {})
+        except Exception as e:  # noqa: BLE001
+            # 血缘取不到**不能**让整轮崩，但必须留痕：空血缘 = 无法证伪标签
+            rep.errors.append(f"provenance 取用失败: {type(e).__name__}: {e}")
     m = summarize(scores, candidate=candidate, budget_tag=budget_tag)
     return m, rep
 

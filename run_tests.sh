@@ -40,7 +40,7 @@ then echo "  ✅ 零第三方依赖"; else echo "  ❌ 发现外部依赖"; FAIL
 
 echo
 echo "=============================================================="
-echo "步骤 2/4  契约测试（离线，97 条断言）"
+echo "步骤 2/4  契约测试（离线；含 K 组：静默降级 / 死导入）"
 echo "=============================================================="
 if "$PY" tests/contract_test.py > /tmp/v1_contract.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1)"
@@ -67,7 +67,12 @@ echo
 echo "=============================================================="
 echo "步骤 4/4  离线端到端自检（零网络 / 零密钥）"
 echo "=============================================================="
-if "$PY" run.py --selftest > /tmp/v1_selftest.out 2>&1 \
+# ⚠️ 状态目录必须隔离到临时目录：本步骤也是"测试"，不许写生产 state/
+#    （V1 自己的第一条纪律就是"测试绝不碰生产目录"）。
+_SELFTEST_TMP="$(mktemp -d)"
+if V1_STATE_DIR="$_SELFTEST_TMP/state" V1_LOG_DIR="$_SELFTEST_TMP/logs" \
+   V1_WORKSPACE="$_SELFTEST_TMP/ws" V1_LLM_OFFLINE=1 \
+   "$PY" run.py --selftest > /tmp/v1_selftest.out 2>&1 \
    && grep -q "自检结论: ✅ 通过" /tmp/v1_selftest.out; then
   echo "  ✅ 主循环端到端通过"
   grep -E "^  (状态|预算|守卫拦截|世界模型|记忆|重复行)" /tmp/v1_selftest.out | sed 's/^/  /'

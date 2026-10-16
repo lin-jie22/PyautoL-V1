@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import os
 import re
 import sys
@@ -33,13 +34,15 @@ sys.path.insert(0, str(V1))
 
 from mw import config as cfg                                    # noqa: E402
 from mw.budget import Budget, BudgetExhausted, Ledger            # noqa: E402
-from mw.core import Core                                          # noqa: E402
+from mw.core import Core, _Log                                # noqa: E402
 from mw.guard import CHECKPOINTS, Guard                           # noqa: E402
-from mw.llm import Message, StubLLM, parse_json                   # noqa: E402
+from mw.llm import (ANSWER_MARK, PARSE_MODES, Message, StubLLM,        # noqa: E402
+                    parse_json, split_answer)
 from mw.measure import (Report, check, ci95, noise_floor,         # noqa: E402
                         paired_compare, repeat, summarize)
 from mw.memory import MemoryStore, fingerprint, fts_query         # noqa: E402
-from mw.planner import Planner, Step, looks_complex               # noqa: E402
+from mw.planner import (Planner, Step, action_signature,              # noqa: E402
+                        looks_complex)
 from mw.tools import (ToolRegistry, ToolSpec, external_agent_names,  # noqa: E402
                       register_core_tools, register_external_agents)
 from mw.worldmodel import Prediction, WorldModel, similarity      # noqa: E402
@@ -287,9 +290,49 @@ check(RS, "G4 候选去重（同工具同参数只留一个）",
 check(RS, "G5 ACT：长目标判为复杂", looks_complex("x" * 130, 0) is True)
 check(RS, "G6 ACT：有失败历史判为复杂", looks_complex("短目标", 1) is True)
 check(RS, "G7 ACT：简单目标走快通道", looks_complex("读一下这个文件", 0) is False)
-check(RS, "G8 replan 把失败原因写进历史（不原地打转）",
-      "失败" in pl3.replan(goal="x", failed=Step("i", "finish", {"answer": "1"}),
-                           error="E", history=[]).note or True)
+_rp = pl3.replan(goal="x", failed=Step("i", "finish", {"answer": "1"}),
+                 error="E", history=[])
+# ⚠️ 这里原本写的是 `... .note or True` —— 那是**恒真断言**，零判别力（同 bench_test 里
+#    修过的反模式）。去掉 `or True` 后它才真的在检查 replan 是否带上了失败归因。
+check(RS, "G8 replan 把失败原因写进 note（不原地打转）",
+      "失败" in str(getattr(_rp, "note", "")) and "finish" in str(getattr(_rp, "note", "")),
+      str(getattr(_rp, "note", "")))
+
+# ── 降级原因必须分项：修法不同的分支合并，就再也分不清该修哪里 ─────────────
+_pl_j = Planner(StubLLM(default='完全不是 JSON'), tr3)
+_pl_j.propose(goal="x", state="s", history=[], n=1)
+check(RS, "G9 「模型不会写 JSON」计入 json_fail，且**不计入** no_tool_fit（两种病分开）",
+      _pl_j.json_fail == 1 and _pl_j.no_tool_fit == 0 and _pl_j.empty_plan == 0,
+      f"json_fail={_pl_j.json_fail} no_tool_fit={_pl_j.no_tool_fit} empty={_pl_j.empty_plan}")
+check(RS, "G10 「工具目录缺能力」被单独计数，且坏工具名被留下（失败可归因）",
+      pl.no_tool_fit == 1 and pl.last_bad_tools == ["不存在的工具"],
+      f"no_tool_fit={pl.no_tool_fit} bad={pl.last_bad_tools}")
+check(RS, "G11 分项之和 == degraded（否则说明有降级走了旁路、漏记）",
+      pl.stats()["cause_balances"] is True and _pl_j.stats()["cause_balances"] is True,
+      str(pl.stats()))
+check(RS, "G12 finish 的工具描述必须说清「答案放进 answer」"
+          "（模型只看得到这段文字 —— 实测就因为它太含糊而填了 tool=None）",
+      "answer" in tr3.get("finish").description
+      and "结束" in tr3.get("finish").description,
+      tr3.get("finish").description[:80])
+
+# ★ 第三种降级原因，也是实测抓出来的：「响应被截断」。
+#   规划器当时写死 700 token，却要求模型把**整段代码**放进 JSON 字符串 ⇒
+#   响应断在半截 token 上，而日志只说"不可解析" —— 看起来像模型不会写 JSON，
+#   实际是预算给少了。两种病修法完全相反，必须分开计。
+_TRUNC = '{"candidates": [{"intent": "写代码", "tool": "finish", "args": {"answer": "def f():'
+_tr = Planner(StubLLM(default=_TRUNC), tr3)
+_tr.propose(goal="x", state="s", history=[], n=1)
+check(RS, "G13 「响应被截断」单独计入 truncated（不与「不会写 JSON」混同，"
+          "两者一个调 max_tokens 一个改提示词）",
+      _tr.truncated == 1 and _tr.json_fail == 0 and _tr.empty_plan == 0
+      and _tr.stats()["cause_balances"] is True,
+      f"truncated={_tr.truncated} json_fail={_tr.json_fail} "
+      f"balances={_tr.stats()['cause_balances']}")
+check(RS, "G14 规划器的 max_tokens 从 config 注入（不许在调用点写死）",
+      Planner(StubLLM(default="{}"), tr3, max_tokens=1234).max_tokens == 1234
+      and cfg.Limits().llm_max_tokens > 0,
+      str(cfg.Limits().llm_max_tokens))
 
 
 # ===========================================================================
@@ -367,14 +410,35 @@ check(RS, "I8 确定性：同一输入两次跑读数一致（无 flaky）",
 check(RS, "I9 内核不依赖网络与密钥（离线跑通）",
       o1["stats"]["llm"] == "http" or o1["status"] == "done")
 
-# 预算收紧必须导致"如实报告没做完"，而不是假装完成
+# 预算收紧必须导致"如实报告没做完"，而不是假装完成。
+#
+# 2026-10-17 语义更新：新增「收尾余量」后，预算将尽时会**先转向交付**（status=closed）
+# 而不是一路探索到抛 BudgetExhausted。诚实性这条**不变量没变**（都不是 done、
+# 都要说清是预算切断），变的是"预算将尽时该做什么"：手段不能吃掉目的
+# （实测有一题 120s 全花在 recall 上、最后交付了零）。
+# ⇒ 这里断言**不变量**，而不是某一个状态字面量 —— 否则会把"行为改进"误判成"回归"。
 core_tight = Core(cfg.settings(), llm=DemoLLM())
 tight = core_tight.run(DemoLLM.GOAL, budget_factor=0.01, tag="tight")
-check(RS, "I10 预算耗尽 ⇒ 状态如实为 budget_exhausted，不假装 done",
-      tight.status in ("budget_exhausted", "done"),
-      tight.status)
+check(RS, "I10 预算将尽 ⇒ 状态如实（非 done）且说明是预算切断，不假装完成",
+      tight.status != "done"
+      and tight.status in ("budget_exhausted", "closed")
+      and ("预算" in tight.reason or "closing_reserve" in tight.reason),
+      f"{tight.status} / {tight.reason[:50]}")
 check(RS, "I11 预算耗尽带有可读原因",
       tight.status != "budget_exhausted" or "预算" in tight.reason, tight.reason[:60])
+
+# I10b：把收尾余量**关掉**（阈值取 0 = 关闭），纯耗尽路径必须仍然可达且如实。
+# 这条是给 I10 兜底的：证明 `closed` 没有把 `budget_exhausted` 藏起来 ——
+# 两条路都在，读数各说各的，任何一条被吞掉都会在这里判红。
+# 用 max_steps=1 造耗尽（**不用墙钟**：Budget.scaled 会把 wall_s 抬到下限 1.0s，
+# 拿它当触发器既不可靠又会把测试写脆）。
+_no_reserve = cfg.Settings(limits=cfg.Limits(
+    max_steps=1, close_reserve_s=0.0, close_reserve_steps=0))
+tight2 = Core(_no_reserve, llm=DemoLLM(),
+              memory=MemoryStore(_TMP / "i10b_mem.db")).run(DemoLLM.GOAL, tag="noreserve")
+check(RS, "I10b 关掉收尾余量 ⇒ 纯预算耗尽路径仍可达（budget_exhausted 未被藏起来）",
+      tight2.status == "budget_exhausted",
+      f"status={tight2.status}")
 
 
 # ===========================================================================
@@ -440,6 +504,469 @@ check(RS, "J10 没有任何 except 处理体是单独的 pass（静默兜底 = �
       not _silent, str(_silent))
 check(RS, "J11 内核异常处理数量 > 0（否则 J9/J10 是空判据、零判别力）",
       len(_handlers) >= 6, f"handlers={len(_handlers)}")
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("K. LLM 构造路径（★实测事故：静默降级为桩 + 假绿）")
+print("=" * 74)
+# 2026-10-17 实测抓到的真实缺陷：`Core.__init__` 里写的是 `llm or StubLLM()`，
+# 于是**任何**配置下内核都走离线桩 —— `--solver llm` 1 秒"跑完" 6 题、每轮报 done、
+# mean=0.0000 却标 `可信=✅`，真模型一次都没被调用。build_llm 只 import 不调用。
+# 下面这组断言就是那次的防线：K1 钉住行为、K2 钉住"唯一构造入口"、K3 证明 K1 不恒真、
+# K4 钉住"必须显式喊出来"、K5 从结构上禁止死导入。
+import mw.core as _cm                                          # noqa: E402
+
+_ENV_LLM = ("V1_LLM_API_KEY", "V1_LLM_BASE_URL", "V1_LLM_MODEL", "V1_LLM_OFFLINE")
+_env_backup = {k: os.environ.get(k) for k in _ENV_LLM}
+os.environ["V1_LLM_API_KEY"] = "contract-test-key-never-sent"
+os.environ["V1_LLM_BASE_URL"] = "http://127.0.0.1:9/v1"   # 只构造，不发请求
+os.environ["V1_LLM_MODEL"] = "contract-test-model"
+os.environ.pop("V1_LLM_OFFLINE", None)
+
+_orig_build = _cm.build_llm
+_spy = {"n": 0}
+
+
+def _spy_build(c, ledger=None, stub=None):                     # noqa: ANN001
+    _spy["n"] += 1
+    return _orig_build(c, ledger, stub)
+
+
+_cm.build_llm = _spy_build
+try:
+    _c_real = Core()
+    _k1_kind = _c_real.llm_kind
+    _k2_calls = _spy["n"]
+finally:
+    _cm.build_llm = _orig_build
+
+check(RS, "K1 配置了真模型 ⇒ 内核实际通道必须是 http（不许静默降级为桩）",
+      _k1_kind == "http", f"llm_kind={_k1_kind!r}（撤回 llm or StubLLM() 的修复即判红）")
+check(RS, "K2 Core 确实走了 build_llm 这个唯一构造入口（spy 被调用 ≥1 次）",
+      _k2_calls >= 1, f"build_llm 调用次数={_k2_calls}")
+# 反证：显式传桩时必须诚实报 stub —— 否则 K1 可能只是"恒真"（探针本身不会说假话）
+_c_stub = Core(llm=StubLLM())
+check(RS, "K3 反证：显式传桩 ⇒ llm_kind=stub（证明 K1 的探针不是恒真）",
+      _c_stub.llm_kind == "stub", f"llm_kind={_c_stub.llm_kind!r}")
+
+
+class _ScriptedNotStub:
+    """既不是 StubLLM 也不是 HTTPLLM 的脚本化模型（离线自检用的 DemoLLM 就是这类）。"""
+
+    def complete(self, messages, **kw):                        # noqa: ANN001, ANN003
+        return "{}"
+
+
+check(RS, "K6 认不出的模型对象 ⇒ llm_kind='local'（二值化会把它谎报成 http）",
+      Core(llm=_ScriptedNotStub()).llm_kind == "local",
+      Core(llm=_ScriptedNotStub()).llm_kind)
+_c_stub.run("一个很短的离线目标")
+_warn = [ln for ln in _c_stub.log.lines if "不得" in ln]
+check(RS, "K4 「配置了真模型却用桩」必须在运行日志里**显式**喊出来（静默降级=缺陷）",
+      len(_warn) >= 1, f"告警行数={len(_warn)}")
+
+for _k, _v in _env_backup.items():
+    if _v is None:
+        os.environ.pop(_k, None)
+    else:
+        os.environ[_k] = _v
+
+
+def _dead_imports(paths) -> list[str]:
+    """找出「只 import、从不使用」的符号。
+
+    AST 而不是文本匹配（R60：全文件搜索会命中注释/文档字符串）。
+    排除 `__future__`（它的名字本来就不当符号用）。
+    """
+    out = []
+    for p in paths:
+        tree = ast.parse(p.read_text(encoding="utf-8"))
+        imported: dict[str, int] = {}
+        for n in ast.walk(tree):
+            if isinstance(n, ast.ImportFrom):
+                if n.module == "__future__":
+                    continue
+                for a in n.names:
+                    imported[a.asname or a.name] = n.lineno
+            elif isinstance(n, ast.Import):
+                for a in n.names:
+                    imported[(a.asname or a.name).split(".")[0]] = n.lineno
+        used = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
+        for name, ln in sorted(imported.items()):
+            if name != "*" and name not in used:
+                out.append(f"{p.name}:{ln} {name}")
+    return out
+
+
+_dead = _dead_imports(sorted(MW_DIR.glob("*.py")))
+check(RS, "K5 内核没有「只 import 不使用」的死导入"
+          "（★实测：build_llm 曾被导入却从不调用，直接导致内核全程走桩）",
+      not _dead, str(_dead))
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("L. 外部能力通道（用户要求的核心形态：能力一律外部接入）")
+print("=" * 74)
+# V1 的立场是"内核不实现功能"。但这条通道**从未被跑通过** ——
+# 没有 agents.json、实测日志里 `外部能力 0 个`。所以下面把它钉死：
+# 契约成立 ≠ 通道可用。这里跑的是**真的**子进程（stdin 进 / stdout 出）。
+_ext = Path(tempfile.mkdtemp(prefix="v1_ext_"))
+_agent_py = _ext / "echo_agent.py"
+_agent_py.write_text(
+    "import json, sys\n"
+    "task = sys.stdin.read().strip()\n"
+    "print(json.dumps({'agent': 'echo', 'seen': len(task)}))\n",
+    encoding="utf-8",
+)
+_agents_json = _ext / "agents.json"
+_agents_json.write_text(json.dumps({"agents": {"echo": {
+    "type": "shell", "description": "回显 agent（演示用）",
+    "command": [sys.executable, str(_agent_py)]}}}), encoding="utf-8")
+
+_reg_l = ToolRegistry()
+register_core_tools(_reg_l, memory=None)
+_added = register_external_agents(_reg_l, _agents_json)
+check(RS, "L1 agents.json 里的外部能力被注册为 agent:<name>",
+      _added == ["agent:echo"], str(_added))
+_l2 = _reg_l.dispatch("agent:echo", {"task": "hello"})
+check(RS, "L2 外部 agent **端到端**可调用（stdin 进 / stdout 出），结果可读",
+      _l2.ok and '"seen": 5' in _l2.output, (_l2.output or _l2.error)[:80])
+check(RS, "L3 external_agent_names 与注册表一致（外部能力只有一个查询口径）",
+      external_agent_names(_reg_l) == ["agent:echo"], str(external_agent_names(_reg_l)))
+check(RS, "L4 agents.json 不存在 ⇒ 空列表而非报错（内核零外部能力也能跑通）",
+      register_external_agents(ToolRegistry(), _ext / "nope.json") == [])
+
+_reg_bad = ToolRegistry()
+_bad_json = _ext / "bad.json"
+_bad_json.write_text(json.dumps({"agents": {"ghost": {
+    "type": "shell", "description": "命令不存在",
+    "command": ["/nonexistent/binary-v1-must-not-exist"]}}}), encoding="utf-8")
+register_external_agents(_reg_bad, _bad_json)
+_l5 = _reg_bad.dispatch("agent:ghost", {"task": "x"})
+check(RS, "L5 外部 agent 起不来 ⇒ 被 dispatch 吸收成 ToolResult（永不抛异常）",
+      _l5.ok is False and "agent:ghost" in _l5.error, (_l5.error or "")[:80])
+_c_ext = Core(tools=_reg_l, llm=StubLLM())
+# 断言的**不变量**是"计数 == 注册表的实际内容"，而不是一个写死的清单 ——
+# 写死清单的后果实测过：仓库里新增 agents.json 之后这条就假红了（它其实在证明
+# 「内核以注册表为准」这个性质，而性质没有被破坏）。
+check(RS, "L6 内核的 external_agents 与**注册表**一致（以注册表为准，不是声明）",
+      _c_ext.external_agents == external_agent_names(_c_ext.tools)
+      and "agent:echo" in _c_ext.external_agents,
+      f"{_c_ext.external_agents} vs {external_agent_names(_c_ext.tools)}")
+
+# 核心工具的注册语义是「保证在册」，不是「新增」—— 否则 Core(tools=<预置注册表>)
+# 这个公开注入点必然因 finish 重名而崩（实测就是这么撞的）。
+try:
+    register_core_tools(_reg_l, memory=None)          # 对同一个注册表再来一次
+    _l7 = True
+except Exception:                                     # noqa: BLE001
+    _l7 = False
+check(RS, "L7 核心工具重复注册不崩（「保证在册」语义 ⇒ Core(tools=…) 这个注入点可用）",
+      _l7)
+_conf_reg = ToolRegistry()
+_conf_reg.register(ToolSpec("finish", "被篡改的描述", {"answer": "x"}, lambda a: "!"))
+_conflict = False
+try:
+    register_core_tools(_conf_reg, memory=None)
+except ValueError:
+    _conflict = True
+check(RS, "L8 同名**不同定义**仍然必须炸（放松「保证在册」没有削弱唯一事实源）",
+      _conflict)
+
+# 相对路径的锚点必须是 agents.json 所在目录，而不是**调用方的 cwd**
+_rel_dir = Path(tempfile.mkdtemp(prefix="v1_rel_"))
+(_rel_dir / "sub").mkdir()
+(_rel_dir / "sub" / "rel_agent.py").write_text(
+    "import sys\nprint('REL_OK:' + sys.stdin.read().strip())\n", encoding="utf-8")
+_rel_json = _rel_dir / "agents.json"
+_rel_json.write_text(json.dumps({"agents": {"rel": {
+    "type": "shell", "description": "相对路径 agent",
+    "command": [sys.executable, "sub/rel_agent.py"]}}}), encoding="utf-8")
+_cwd_save = os.getcwd()
+os.chdir(tempfile.mkdtemp(prefix="v1_elsewhere_"))       # 模拟"从别的目录调用"
+try:
+    _reg_rel = ToolRegistry()
+    register_external_agents(_reg_rel, _rel_json)
+    _l9 = _reg_rel.dispatch("agent:rel", {"task": "hi"})
+finally:
+    os.chdir(_cwd_save)
+check(RS, "L9 外部 agent 的相对路径以 agents.json 为锚（不随调用方 cwd 漂移、不静默失效）",
+      _l9.ok and "REL_OK:hi" in _l9.output, (_l9.output or _l9.error or "")[:80])
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("M. 线上协议（模型输出 → 解析）：用 JSON 传代码的固有毛病")
+print("=" * 74)
+# ★ 下面这段是 2026-10-17 从本地 qwen2.5:7b **逐字**抓回来的真实输出（不是编的）。
+#   模型**正确地**选了 finish 并把代码放进 answer —— 提示词修复是有效的；
+#   唯一的毛病是代码里的**裸换行**直接落进了 JSON 字符串，而 RFC 8259 不允许。
+#   这不是模型不听话，是"用 JSON 传代码"这件事本身的毛病。夹具就用真样本。
+_RAW_MODEL = (
+    '{"candidates": [{"intent": "直接编写代码实现解析逻辑", "tool": "finish", '
+    '"args": {"answer": "def parse_duration(s):\n'
+    '    if not s:\n'
+    '        return None\n'
+    '    units = {\'s\': 1, \'m\': 60, \'h\': 3600}\n'
+    '    return None"}}]}'
+)
+_before_m = dict(PARSE_MODES)
+_got_m = parse_json(_RAW_MODEL, None)
+check(RS, "M1 ★真实事故样本：代码里的裸换行塞进 JSON 字符串 ⇒ 仍必须解析出来",
+      isinstance(_got_m, dict)
+      and _got_m.get("candidates", [{}])[0].get("tool") == "finish",
+      str(_got_m)[:90])
+check(RS, "M2 解析出的代码**原文完整**（换行没被吃掉 —— 那会静默改坏候选）",
+      isinstance(_got_m, dict)
+      and "\n" in str(_got_m["candidates"][0]["args"]["answer"]),
+      repr(str(_got_m)[:60]))
+check(RS, "M3 放宽解析必须留痕：本次计入 lenient（不许静默兜底）",
+      PARSE_MODES["lenient"] == _before_m["lenient"] + 1, str(PARSE_MODES))
+_fail_before = PARSE_MODES["failed"]
+check(RS, "M4 真的坏输入仍然判 failed（宽松 ≠ 什么都收）",
+      parse_json("完全不是 JSON", None) is None
+      and PARSE_MODES["failed"] == _fail_before + 1, str(PARSE_MODES))
+_exact_before = PARSE_MODES["exact"]
+parse_json('{"a": 1}', None)
+check(RS, "M5 干净 JSON 必须走 exact 路径（先严后宽，顺序不能反）",
+      PARSE_MODES["exact"] == _exact_before + 1, str(PARSE_MODES))
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("N. 双通道协议（内容不进 JSON）—— 一个下午三种坏法的根治")
+print("=" * 74)
+# 实测一天之内撞到的三种坏法，全是**同一个设计错误**的症状：把代码当 JSON 字符串传。
+#   ① 代码里的裸换行 ⇒ 非法 JSON          （M1 夹具）
+#   ② max_tokens 截断 ⇒ 括号不闭合        （G13 夹具）
+#   ③ 模型顺手转义单引号 ⇒ \' 非法转义     （下面 N3 夹具，原文来自实测日志）
+# ⛔ 修法不是把解析器越改越宽 —— 那会踩上"静默改坏候选"：
+#    模型写 `"\d+"`（正则漏转义）被"修"成 `"d+"`，你的正则就悄悄变了。
+#    ⇒ 只能改协议：结构走 JSON，载荷原样走分隔符之后。
+_n_payload = (
+    "def parse_duration(s):\n"
+    "    units = {'s': 1, 'm': 60, 'h': 3600}\n"
+    "    m = re.match(r'\\d+([hms])', s)\n"      # 裸反斜杠正则：JSON 里必须写成 \\d
+    "    return None"
+)
+_n_raw = ('{"candidates": [{"intent": "直接给出实现", "tool": "finish", '
+          '"args": {}, "rationale": "无需工具"}]}' + "\n" + ANSWER_MARK + "\n" + _n_payload)
+_h, _b = split_answer(_n_raw)
+check(RS, "N1 无分隔符 ⇒ 载荷为空串（老格式不报错，向后兼容）",
+      split_answer('{"a":1}') == ('{"a":1}', ""))
+check(RS, "N2 载荷**逐字**保留：裸换行 / 单引号 / 反斜杠正则一律不动",
+      _b == _n_payload, repr(_b[:40]))
+check(RS, "N3 结构部分单独可解析（内容不进 JSON ⇒ 解析不再被代码弄坏）",
+      isinstance(parse_json(_h, None), dict))
+_n_pl = Planner(StubLLM(default=_n_raw), tr3)
+_n_plan = _n_pl.propose(goal="x", state="s", history=[], n=1)
+check(RS, "N4 载荷原样注入 finish.answer（代码从模型直达 dispatch，中途无有损变换）",
+      bool(_n_plan.steps) and _n_plan.steps[0].tool == "finish"
+      and _n_plan.steps[0].args.get("answer") == _n_payload,
+      repr(str(_n_plan.steps[0].args.get("answer") if _n_plan.steps else "")[:50]))
+check(RS, "N5 双通道下规划器**不再降级**（这正是它相对老格式的全部意义）",
+      _n_plan.degraded is False and _n_pl.degraded == 0, str(_n_pl.stats()))
+_n_legacy = Planner(StubLLM(default=_RAW_MODEL), tr3)
+_n_legacy_plan = _n_legacy.propose(goal="x", state="s", history=[], n=1)
+check(RS, "N6 向后兼容：老格式（答案塞在 JSON 字符串里）在双通道下仍然可用（strict=False 兜）",
+      bool(_n_legacy_plan.steps) and _n_legacy_plan.steps[0].tool == "finish"
+      and "def parse_duration" in str(_n_legacy_plan.steps[0].args.get("answer", "")),
+      str(_n_legacy_plan.steps[0].args.get("answer", "") if _n_legacy_plan.steps else "")[:40])
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("O. 停滞闸（重复的「成功」不是进展）—— V5「同一假设无限重派」的同构体")
+print("=" * 74)
+# 实测（2026-10-17）：内核把同一个 recall(同一个 query) 重派了 5 次，
+# 每次 **ok=True**，于是 `consecutive_failures` 一次都没涨 ——
+# 最后烧光 120s 墙钟才以 budget_exhausted 收场。
+# 教训不是"加个超时"，而是**重复与进展必须分开表达**。
+_SAME = ('{"candidates": [{"intent": "再查一次", "tool": "recall", '
+         '"args": {"query": "goal"}, "rationale": "查记忆"}]}')
+_loop_llm = StubLLM(default=_SAME)
+# ⚠️ 必须用**独立**的记忆库：O 组的账要在自己的盘上算。
+#    第一版用了默认库（与其他组共享同一个 _TMP/state/memory.db），
+#    于是 outcome 条数里混进了别的组的记录，断言假红。
+_loop_mem = MemoryStore(_TMP / "loop_mem.db")
+_loop_core = Core(llm=_loop_llm, memory=_loop_mem)
+_loop_out = _loop_core.run("读一下这个文件")          # 短目标 ⇒ 走快通道，n=1
+_loop_stats = _loop_out.stats.get("loop", {})
+check(RS, "O1 重复动作被**跳过**而非重新执行（不产生新信息的动作不许再跑）",
+      _loop_stats.get("repeats_skipped", 0) >= 1, str(_loop_stats))
+check(RS, "O2 真的只执行了一次（用情景记忆对账，不是看日志）",
+      len(_loop_core.memory.episodes(kind="outcome")) == 1,
+      f"outcome 条数={len(_loop_core.memory.episodes(kind='outcome'))}")
+check(RS, "O3 停滞达阈值 ⇒ 状态是 stalled，**不是 done**（如实报告没有进展）",
+      _loop_out.status == "stalled", f"status={_loop_out.status} reason={_loop_out.reason[:60]}")
+check(RS, "O4 停滞计数达标（真的走到阈值，不是第一轮就草草收场）",
+      _loop_stats.get("stalled", 0) >= cfg.Limits().max_stall, str(_loop_stats))
+check(RS, "O5 停滞出口也带全套读数（loop 计数任何状态都带得走）",
+      "loop" in _loop_out.stats and "planner" in _loop_out.stats,
+      str(sorted(_loop_out.stats)))
+class _CaptureLLM(StubLLM):
+    """记下每次调用看到的完整提示词 —— 用来断言"提示词里到底写了什么"。"""
+
+    def __init__(self, **kw):                                      # noqa: ANN003
+        super().__init__(**kw)
+        self.prompts: list[str] = []
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        self.prompts.append("\n".join(m.content for m in messages))
+        return super().complete(messages, **kw)
+
+
+_sig_probe = action_signature("recall", {"query": "goal"})
+_cap = _CaptureLLM(default='{"candidates": [{"intent": "i", "tool": "finish", '
+                            '"args": {"answer": "x"}}]}')
+Planner(_cap, tr3).propose(goal="g", state="s", history=[], n=1, blocked=[_sig_probe])
+check(RS, "O6 已尝试的动作签名被**精确**写进提示词（机器生成，不靠自然语言提醒）",
+      any(_sig_probe in p for p in _cap.prompts), _sig_probe)
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("P. 定向补救（选了 finish 却没给答案）—— 重试要换路径，不是重发")
+print("=" * 74)
+class _TwoShot(StubLLM):
+    """按调用序返回预设输出（第 N 次以后一直是最后一个）。"""
+
+    def __init__(self, outs):                                      # noqa: ANN001
+        super().__init__()
+        self.outs = list(outs)
+        self.n = 0
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        i = min(self.n, len(self.outs) - 1)
+        self.n += 1
+        return self.outs[i]
+
+
+_PLAN_NO_ANS = '{"candidates": [{"intent": "给出答案", "tool": "finish", "args": {}}]}'
+_ts = _TwoShot([_PLAN_NO_ANS, "def f():\n    return 1"])
+_p_pl = Planner(_ts, tr3)
+_p_plan = _p_pl.propose(goal="写个函数", state="s", history=[], n=1)
+check(RS, "P1 选了 finish 却没给答案 ⇒ 补救拿到了答案（换提问形态，不是重发同一请求）",
+      bool(_p_plan.steps) and _p_plan.steps[0].args.get("answer") == "def f():\n    return 1",
+      repr(str(_p_plan.steps[0].args.get("answer") if _p_plan.steps else "")[:40]))
+check(RS, "P2 补救**有界**：至多一次额外调用（不是无限重试）",
+      _ts.n == 2, f"调用次数={_ts.n}")
+check(RS, "P3 补救成功被计数（补了多少次、成了多少次，都要能读出来）",
+      _p_pl.answer_retry_ok == 1 and _p_pl.answer_retry_fail == 0,
+      f"ok={_p_pl.answer_retry_ok} fail={_p_pl.answer_retry_fail}")
+_ts2 = _TwoShot([_PLAN_NO_ANS, "   "])
+_p_pl2 = Planner(_ts2, tr3)
+_p2 = _p_pl2.propose(goal="写个函数", state="s", history=[], n=1)
+check(RS, "P4 补救失败也计数（不许静默：失败要说出来，别假装计划是完整的）",
+      _p_pl2.answer_retry_fail == 1 and _p_pl2.answer_retry_ok == 0,
+      f"ok={_p_pl2.answer_retry_ok} fail={_p_pl2.answer_retry_fail}")
+_ts3 = _TwoShot([_n_raw])
+_p_pl3 = Planner(_ts3, tr3)
+_p_pl3.propose(goal="写个函数", state="s", history=[], n=1)
+check(RS, "P5 已有载荷时**不**触发补救（不浪费一次调用）",
+      _ts3.n == 1 and _p_pl3.answer_retry_ok == 0, f"调用次数={_ts3.n}")
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("Q. 收尾余量（探索不许吃掉交付的配额）")
+print("=" * 74)
+# 实测（2026-10-17 内核 6 题真模型）：有一题把 120s 预算全花在 recall 上，
+# 以 budget_exhausted 收场 —— **交付了零东西**。如实报告"没做完"是对的，
+# 但"探索把交付的配额也吃了"是设计缺陷：手段吃掉了目的。
+_Q_PLAN = '{"candidates": [{"intent": "查一下", "tool": "recall", "args": {"query": "x"}}]}'
+
+
+class _QLLM(StubLLM):
+    """既会出计划、也会在被专门索要答案时给答案。"""
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        blob = "\n".join(m.content for m in messages)
+        if "只输出最终答案本身" in blob:
+            return "最终答案：42"
+        return _Q_PLAN
+
+
+_q_settings = cfg.Settings(limits=cfg.Limits(max_steps=1, close_reserve_steps=1))
+_q_mem = MemoryStore(_TMP / "q_mem.db")
+_q_log = _Log(None)
+_q_out = Core(settings=_q_settings, llm=_QLLM(), memory=_q_mem,
+              log=_q_log).run("读一下这个文件")
+check(RS, "Q1 进入收尾余量 ⇒ 转向交付（把答案交出去，而不是继续探索）",
+      _q_out.status == "closed" and _q_out.answer == "最终答案：42",
+      f"status={_q_out.status} answer={_q_out.answer[:30]!r}")
+check(RS, "Q2 没有等到预算烧光才停（没把 12 步全花在探索上）",
+      _q_out.iterations <= 1, f"iterations={_q_out.iterations}")
+check(RS, "Q3 收尾也是「如实报告」：状态是 closed 而非 done（不假装完成）",
+      _q_out.status != "done" and "closing_reserve" in _q_out.reason,
+      _q_out.reason[:60])
+# Q2.5 收尾必须是**第一步就转向**，不是"探索了几步才想起收尾"。
+#      证据取自日志本身：第一行预算播报之后紧接着就该是收尾信号。
+check(RS, "Q4 收尾是第一步就触发（日志里收尾信号排在第一条动作之前）",
+      any("触发收尾余量" in ln for ln in _q_log.lines),
+      f"日志行数={len(_q_log.lines)}")
+
+
+class _QBadLLM(StubLLM):
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        blob = "\n".join(m.content for m in messages)
+        if "只输出最终答案本身" in blob:
+            raise RuntimeError("收尾调用炸了")
+        return _Q_PLAN
+
+
+_q_log2 = _Log(None)
+_q_out2 = Core(settings=_q_settings, llm=_QBadLLM(),
+               memory=MemoryStore(_TMP / "q_mem2.db"),
+               log=_q_log2).run("读一下这个文件")
+check(RS, "Q5 收尾调用自己炸了也不许带走整轮（内核韧性）",
+      _q_out2.status == "closed", f"status={_q_out2.status}")
+check(RS, "Q6 收尾拿不到答案 ⇒ 交付已收集的材料，并留痕（不静默报空）",
+      any("收尾" in ln for ln in _q_log2.lines)
+      and any("收尾调用失败" in ln for ln in _q_log2.lines),
+      f"status={_q_out2.status} 日志行数={len(_q_log2.lines)}")
+
+
+class _QHistLLM(StubLLM):
+    """规划阶段点名一个**会被守卫拦下**的动作（默认不开 shell），答案阶段直接炸。
+
+    为什么用被拦的动作而不是"不存在的工具"：实测发现规划器会把未注册的工具名
+    **替换**成一个可用的核心工具（于是动作成功、写了 outcome 情景），
+    那样就永远逼不出 history 这一环。被拦下的动作既进 history 又不写 outcome 情景，
+    正好把兜底链推到最后一环。
+    """
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        blob = "\n".join(m.content for m in messages)
+        if "只输出最终答案本身" in blob:
+            raise RuntimeError("答案调用炸了")
+        return ('{"candidates": [{"intent": "跑一条命令", "tool": "run_shell",'
+                ' "args": {"cmd": "echo hi"}}]}')
+
+
+# Q7 兜底链的**最后一环**：答案调用炸了、也没有 outcome 情景记忆时，
+#    必须退到轨迹（history）而不是返回空 —— 否则"绝不返回空"这句话就是声明。
+#    （构造要点：动作必须**不成功**，这样只进 history、不写 outcome 情景，
+#      逼出 history 这一环；同时 max_steps=3 + 余量 1 让第一步探索后第 2 步收尾。）
+_q7_log = _Log(None)
+_q7_settings = cfg.Settings(limits=cfg.Limits(max_steps=3, close_reserve_steps=1))
+_q7_out = Core(settings=_q7_settings, llm=_QHistLLM(),
+               memory=MemoryStore(_TMP / "q_mem3.db"), log=_q7_log).run("随便一个目标")
+check(RS, "Q7 兜底链最后一环：退到轨迹也**不返回空**（history 有真实消费者）",
+      _q7_out.status == "closed" and _q7_out.answer != ""
+      and any("来源=history" in ln for ln in _q7_log.lines),
+      f"status={_q7_out.status} answer={_q7_out.answer[:40]!r} "
+      f"来源行={[l for l in _q7_log.lines if '来源=' in l]}")
+
 
 
 # ===========================================================================

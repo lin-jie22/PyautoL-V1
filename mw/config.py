@@ -77,13 +77,25 @@ class LLMConfig:
 
     `offline=True` 时内核不碰网络，改用 llm.StubLLM —— 这让整个循环
     **可以在无 API key、无网络的情况下被完整跑通和验证**。
+
+    ⚠️ 这五个字段必须用 `default_factory`，**不能**写成类级默认值。
+    类级默认值（`api_key: str = os.environ.get(...)`）在**模块被 import 时**
+    求值一次就定型了 —— 于是 `settings()` 文档里那句"每次调用都重新读 env"
+    对 LLM 字段是假的：import 之后再设 `V1_LLM_API_KEY` 一律无效。
+    `Paths` 一直用的是 default_factory，两边口径必须一致（否则又是一个
+    "同一事实两种读法"的漂移源）。
     """
 
-    base_url: str = os.environ.get("V1_LLM_BASE_URL", "https://api.openai.com/v1")
-    api_key: str = os.environ.get("V1_LLM_API_KEY", "")
-    model: str = os.environ.get("V1_LLM_MODEL", "gpt-4o-mini")
-    timeout_s: float = _env_float("V1_LLM_TIMEOUT_S", 120.0)
-    offline: bool = os.environ.get("V1_LLM_OFFLINE", "") not in ("", "0", "false")
+    base_url: str = field(
+        default_factory=lambda: os.environ.get("V1_LLM_BASE_URL", "https://api.openai.com/v1"))
+    api_key: str = field(
+        default_factory=lambda: os.environ.get("V1_LLM_API_KEY", ""))
+    model: str = field(
+        default_factory=lambda: os.environ.get("V1_LLM_MODEL", "gpt-4o-mini"))
+    timeout_s: float = field(
+        default_factory=lambda: _env_float("V1_LLM_TIMEOUT_S", 120.0))
+    offline: bool = field(
+        default_factory=lambda: os.environ.get("V1_LLM_OFFLINE", "") not in ("", "0", "false"))
 
     def usable(self) -> bool:
         return bool(self.api_key) and not self.offline
@@ -102,8 +114,26 @@ class Limits:
     max_candidates: int = _env_int("V1_MAX_CANDIDATES", 3)
     max_wall_s: float = _env_float("V1_MAX_WALL_S", 120.0)
     max_consecutive_failures: int = _env_int("V1_MAX_CONSECUTIVE_FAILURES", 3)
+    #: 连续多少轮"没有任何新动作"就判定停滞并收尾。
+    #: 为什么需要它：`max_consecutive_failures` 只数**失败**，而实测里
+    #: 一次任务把同一个 `recall` 重派了 5 次 —— 那 5 次**全都成功**，
+    #: 于是没有任何机制拦它，最后烧光 120s 预算才停。
+    #: **重复的"成功"不是进展**，必须单独表达。
+    max_stall: int = _env_int("V1_MAX_STALL", 2)
+    #: 收尾余量：预算剩这么少时**必须**转向交付，不许继续探索。
+    #: 实测背景：有一题把 120s 全花在 recall 上，最后 `budget_exhausted`
+    #: —— 交付了**零**东西。探索是手段，交付才是目的；
+    #: 一次模型调用约 20s，所以留的余量至少够一次"专门索要答案"的调用。
+    close_reserve_s: float = _env_float("V1_CLOSE_RESERVE_S", 45.0)
+    close_reserve_steps: int = _env_int("V1_CLOSE_RESERVE_STEPS", 1)
     working_memory_items: int = _env_int("V1_WORKING_MEMORY_ITEMS", 24)
     recall_k: int = _env_int("V1_RECALL_K", 6)
+    #: 单次 LLM 调用的 token 上限。**必须可配**，不能散落在各调用点写死。
+    #: 实测教训（2026-10-17）：规划器内部写死 700，而它要求模型把**整段代码**
+    #: 放进 JSON 字符串 —— 响应被截断在半截 token 上，于是看起来像"模型不会写 JSON"，
+    #: 实际是**预算给少了**。这两种病修法完全不同（一个调 token，一个改提示词），
+    #: 而当时的日志把它们合并成同一个"不可解析"。
+    llm_max_tokens: int = _env_int("V1_LLM_MAX_TOKENS", 2048)
 
 
 @dataclass(frozen=True)
@@ -137,4 +167,8 @@ ENV_KEYS = (
     "V1_MAX_CONSECUTIVE_FAILURES",
     "V1_WORKING_MEMORY_ITEMS",
     "V1_RECALL_K",
+    "V1_LLM_MAX_TOKENS",
+    "V1_MAX_STALL",
+    "V1_CLOSE_RESERVE_S",
+    "V1_CLOSE_RESERVE_STEPS",
 )

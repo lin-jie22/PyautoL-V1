@@ -110,9 +110,20 @@ def _sha_file(p: Path) -> str:
 #:     —— 那正是 V5 "尺子随退化下移"的同一类错误。
 #:     注意它**不是**运行时状态：温度是测量前就固定下来的条件，
 #:     而熔断/重试是测量过程中自发产生的事件，两者性质不同。
+#:
+#: `limits` / `llm_cond` / `max_tokens` 为什么必须在里面（2026-10-17 补）：
+#:     这是一类**同类漏洞的三个入口**。`budget_tag` 只是"倍数"（`4x`），
+#:     而倍数乘在**绝对值**上 —— 两次运行可以都写 `4x` 却因为
+#:     `V1_MAX_STEPS` 不同而跑出完全不同的预算。
+#:     同理 `--max-tokens`（截断阈值）、`close_reserve_*`（在哪一步转向交付）、
+#:     `candidates`（规划宽度）、`recall_k`（提示词里的记忆条数）、
+#:     以及 `model` / `base_url` —— 每一个都能单独改变读数，
+#:     而**只要有一个不在签名里，"同口径"这三个字就是假的**。
+#:     这次的教训与 temperature 那次同源：**不是尺子坏了，是尺子量错了对象。**
 CALIBER_KEYS: tuple[str, ...] = ("scorer_sha", "suite_sha", "repeat",
                                  "budget_tag", "temperature", "fresh",
-                                 "memory_scope", "memory_seed")
+                                 "memory_scope", "memory_seed",
+                                 "limits", "llm_cond", "max_tokens")
 
 
 @dataclass(frozen=True)
@@ -138,6 +149,14 @@ class Caliber:
     #: 起跑时的记忆基线 (facts, episodes)。两个 `shared_db` 运行只有在
     #: **基线也相同**时才是同口径 —— 否则它们比的是"记忆多少"而不是"候选好坏"。
     memory_seed: Any = _MISSING
+    #: 内核硬上限的完整快照（`Limits` 的全部字段）。`budget_tag` 只是倍数，
+    #: 乘在绝对值上；不含绝对值 ⇒ "4x" 可以是两个不同的实验。
+    limits: Any = _MISSING
+    #: 模型条件：model / 端点主机 / 超时 / 重试 / 退避。**不含 api_key**
+    #: （敏感且不该落盘）。换个模型换个端点，就是换了一把尺子。
+    llm_cond: Any = _MISSING
+    #: 生成上限（`--max-tokens`）。它决定截断阈，而截断会直接改变分数。
+    max_tokens: Any = _MISSING
 
     def as_dict(self) -> dict:
         return {k: _val(getattr(self, k)) for k in CALIBER_KEYS}
@@ -160,8 +179,16 @@ class Caliber:
         abbr = {"scorer_sha": "scorer", "suite_sha": "suite", "budget_tag": "budget"}
         cells = []
         for k in CALIBER_KEYS:
-            v = str(d[k])
-            cells.append(f"{abbr.get(k, k)}={v[:12] if k.endswith('_sha') else v}")
+            raw = d[k]
+            if isinstance(raw, (dict, list)):
+                # 结构化值（limits / llm_cond）打短哈希：一行日志塞不下一个 dict，
+                # 而**全量**在落盘的 caliber 里 —— 摘要与全量各归其位，都不缺。
+                val = _sha_text(_canon(raw))[:10]
+            elif k.endswith("_sha"):
+                val = str(raw)[:12]
+            else:
+                val = str(raw)
+            cells.append(f"{abbr.get(k, k)}={val}")
         return f"sig={self.signature()} " + " ".join(cells)
 
 

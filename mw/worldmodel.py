@@ -97,10 +97,23 @@ class WorldModel:
             return self._predict_by_retrieval(state, action)
 
         self.predictions += 1
+        # ⚠️ 必须带上「自己上次错在哪」—— 否则本模块的核心声明是空的。
+        #
+        # 本模块 docstring 写着："缺少一个能预演动作后果、并因为预演错了而
+        # **改变下一次预测**的机制。本模块就是那个机制。"
+        # 而实测（2026-10-17，契约 V6）证明**后半句没被实现**：
+        # 失配只喂给了 planner（那是改变下一次**规划**），predict **自己的输入
+        # 一个字都没变** ⇒ 同一个动作下次照样以同样的方式预测错。
+        # "改变下一次规划" ≠ "改变下一次预测"，它们是这条因果链上不同的两环。
+        # ⚠️ 离线路径（`use_llm=False`）刻意**不**吃这个：那条路是检索式复用，
+        #    它找的是"相似先例会发生什么"，而 mismatch 记的是"错在哪" ——
+        #    把警示当成预期喂给决策链是误导。这是**已知边界**，不是遗漏。
+        known = self.guidance(action=action, k=3)
         prompt = (
             "你在为一个 agent 做动作前的预演。只输出 JSON。\n"
             f"当前状态：{state[:600]}\n"
             f"准备执行的动作：{action[:300]}\n"
+            f"{known}\n"
             '输出格式：{"expected": "你预期会发生什么（一句话）", "confidence": 0.0~1.0}\n'
             "confidence 是你对这个预期的把握，不要虚高。"
         )

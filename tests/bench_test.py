@@ -74,10 +74,11 @@ _empty = B.Caliber()
 check(RS, "A1 缺省 Caliber 的每个字段都是哨兵，不是默认值",
       all(_empty.as_dict()[k] == "<MISSING>" for k in B.CALIBER_KEYS),
       str(_empty.as_dict()))
-check(RS, "A2 口径键就是这八个（供给侧运行时状态刻意不入闸）",
+check(RS, "A2 口径键就是这十一个（供给侧运行时状态刻意不入闸）",
       tuple(B.CALIBER_KEYS) == ("scorer_sha", "suite_sha", "repeat",
                                 "budget_tag", "temperature", "fresh",
-                                "memory_scope", "memory_seed"),
+                                "memory_scope", "memory_seed",
+                                "limits", "llm_cond", "max_tokens"),
       str(tuple(B.CALIBER_KEYS)))
 # ⛔ 这一条是"口径混淆"的入口：把熔断/重试之类的运行时状态写进口径，
 #    会让"供给侧崩了"的那一轮自动获得一把新尺子 —— 正是要防的事。
@@ -138,6 +139,46 @@ check(RS, "A10 记忆字段是哨兵而非空值（'没记'不许被读成'空�
 check(RS, "A11 as_line 里两个记忆字段都出现（日志里看得见才算进了闸）",
       all(k in B.Caliber().as_line() for k in ("memory_scope", "memory_seed")),
       B.Caliber().as_line())
+
+# ---- 绝对值进闸（2026-10-17 补：`budget_tag` 只是倍数，乘在绝对值上）--------
+# ⛔ 这是一类**同类漏洞的三个入口**。两次运行可以都写 `4x`，却因为
+#    `V1_MAX_STEPS` 不同而跑出完全不同的预算；`--max-tokens` 改了截断阈；
+#    `model`/`base_url` 换了就是换了尺子。**只要有一个不在签名里，
+#    "同口径"这三个字就是假的** —— 这与温度那次同源：不是尺子坏了，
+#    是尺子量错了对象。
+_base = dict(scorer_sha="a", suite_sha="b", repeat=5, budget_tag="1x",
+             temperature=0.0, fresh=True, memory_scope="per_task_fresh",
+             memory_seed=(0, 0), limits={"max_steps": 12},
+             llm_cond={"model": "m1"}, max_tokens=1024)
+_c_lim = B.Caliber(**{**_base, "limits": {"max_steps": 32}})
+check(RS, "A12 只有 limits 不同 ⇒ 口径不同，diff 点名 limits",
+      B.Caliber(**_base).diff(_c_lim) == ["limits"], str(B.Caliber(**_base).diff(_c_lim)))
+_c_model = B.Caliber(**{**_base, "llm_cond": {"model": "m2"}})
+check(RS, "A13 只有模型条件不同 ⇒ 口径不同，diff 点名 llm_cond",
+      B.Caliber(**_base).diff(_c_model) == ["llm_cond"],
+      str(B.Caliber(**_base).diff(_c_model)))
+_c_tok = B.Caliber(**{**_base, "max_tokens": 4096})
+check(RS, "A14 只有 max_tokens 不同 ⇒ 口径不同（截断阈会直接改变分数）",
+      B.Caliber(**_base).diff(_c_tok) == ["max_tokens"],
+      str(B.Caliber(**_base).diff(_c_tok)))
+check(RS, "A15 limits/llm_cond/max_tokens 缺省是哨兵（'没记'不许被读成'空配置'）",
+      B.Caliber().as_dict()["limits"] == "<MISSING>"
+      and B.Caliber().as_dict()["llm_cond"] == "<MISSING>"
+      and B.Caliber().as_dict()["max_tokens"] == "<MISSING>",
+      str({k: B.Caliber().as_dict()[k] for k in ("limits", "llm_cond", "max_tokens")}))
+_line_wide = B.Caliber(**{**_base, "limits": {"max_steps": 12, "max_llm_calls": 24,
+                                              "recall_k": 6, "max_candidates": 3}}).as_line()
+check(RS, "A16 as_line 里三个新字段都出现，且结构化值打短哈希（一行放得下）",
+      all(k in _line_wide for k in ("limits", "llm_cond", "max_tokens"))
+      and len(_line_wide) < 400, f"len={len(_line_wide)} {_line_wide}")
+
+from mw import config as cfg                                          # noqa: E402
+_secret = cfg.LLMConfig(api_key="SECRET_XYZ", base_url="https://host.example/v1")
+check(RS, "A17 llm_cond 里**没有** api_key（敏感字段绝不进口径、绝不落盘）",
+      "api_key" not in _secret.cond() and "SECRET_XYZ" not in str(_secret.cond()),
+      str(_secret.cond()))
+check(RS, "A18 llm_cond 里**没有** temperature（同一事实只声明一处：它是独立字段）",
+      "temperature" not in _secret.cond(), str(_secret.cond()))
 
 
 # ===========================================================================

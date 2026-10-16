@@ -17,10 +17,12 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Callable
 
@@ -126,6 +128,42 @@ def _memory_seed(s) -> tuple[int, int]:
         return (int(st.get("facts", 0)), int(st.get("episodes", 0)))
     finally:
         ms.close()
+
+
+def _prov(*, llm_kind: str, external_agents, model, temperature) -> dict:
+    """血缘 dict 的**唯一构造入口** —— 字段集合只声明在这一处。
+
+    ⛔ 为什么做成函数而不是"各分支各拼一个 dict"：本轮实测抓到第 9 个缺陷 ——
+    内核路径的三个分支各自拼血缘，`--fresh` 那一支**漏了 `model`**，于是
+    跨领域跑和泛化对照（考A）两条读数**事后无法核对自己跑的是哪个模型**。
+    而**没有任何断言会发现**这件事：血缘这套防线自己的第一条纪律
+    （"读数必须带实际用了什么"）身上没有防线。
+
+    收敛成一个 dict 字面量之后，"漏字段"从"需要测试发现"变成"写不出来"。
+    契约 X 组同时钉住：① 返回的键集合恒等于 `PROV_KEYS`；
+    ② run.py 里**只有这里**出现带 `llm_kind` 键的 dict 字面量。
+    """
+    return {"llm_kind": llm_kind, "external_agents": list(external_agents),
+            "model": model, "temperature": float(temperature)}
+
+
+#: 血缘必须带的字段（**唯一声明处**）。加/删字段只改这里。
+PROV_KEYS: tuple[str, ...] = ("external_agents", "llm_kind", "model", "temperature")
+
+
+def _kernel_prov(core) -> dict:
+    """从**实际构造出来的内核**读血缘。事实，不是声明。
+
+    ⚠️ 三个值全部取自内核自己（`core.llm_kind` / `core.external_agents` /
+       `core.s.llm`），不是外面传进来的字符串 —— 与 K5/L6 同一条纪律：
+       标签可以撒谎，血缘不能。
+    ⚠️ `temperature` 同源：§13⑨ 的事故（口径写 0.0、实际跑 0.2）只有把内核
+       **自己**的温度记进血缘，才可能被事后审计出来。
+    """
+    return _prov(llm_kind=core.llm_kind,
+                 external_agents=core.external_agents,
+                 model=core.s.llm.model,
+                 temperature=core.s.llm.temperature)
 
 
 def cmd_selftest(args) -> int:
@@ -244,6 +282,166 @@ def _noise_report(rep, suite, m, repeat_n: int) -> list[str]:
     return out
 
 
+# ===========================================================================
+# 跨领域跑法 —— 「通用」的可判定形式
+# ===========================================================================
+def _count_lines(path: Path) -> int:
+    try:
+        return len([ln for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()])
+    except OSError:
+        return 0
+
+
+def _read_run_after(path: Path, before: int) -> dict | None:
+    """读「本轮新追加的那一行」读数。
+
+    为什么要按行号而不是「读最后一行」：cmd_bench 有可能在写盘**之前**就 return
+    （血缘闸拒绝出分、尺子不合格……）。那时最后一行是**上一轮**的，
+    读它会得到一个"看起来正常"的读数 —— 正是本项目最忌讳的假绿。
+    """
+    try:
+        lines = [ln for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    except OSError:
+        return None
+    if len(lines) <= before:
+        return None
+    try:
+        return json.loads(lines[before])
+    except json.JSONDecodeError:
+        return None
+
+
+def _domain_row(name: str, rc: int, rec: dict | None) -> dict:
+    if rec is None:
+        return {"domain": name, "n": 0, "mean": 0.0, "trust": False,
+                "llm": "-", "note": f"无读数（rc={rc}）"}
+    rep = rec.get("report") or {}
+    a = int(rep.get("attempted", 0))
+    r = int(rep.get("recorded", 0))
+    sk = int(rep.get("skipped_no_answer", 0))
+    fs = int(rep.get("failed_scorer", 0))
+    trust = (a == r + sk + fs) and sk == 0 and fs == 0
+    return {
+        "domain": name,
+        "n": len(rep.get("per_task") or []),
+        "mean": float((rec.get("measurement") or {}).get("mean", 0.0)),
+        "trust": trust,
+        "llm": str(rep.get("llm_of_record", "-")),
+        "note": "" if trust else f"skipped_no_answer={sk} failed_scorer={fs}",
+    }
+
+
+def _option_conflict(args) -> str:
+    """互斥/危险选项组合检查。返回说明（空串 = 无冲突）。
+
+    ⚠️ 为什么这些必须**显式禁止**而不是"随便取一个赢"：
+    它们各自都改变了"这次读数**测量的是什么**"，而组合起来的语义是**自相矛盾**的。
+    静默让某一个赢，产出的就是一个**标签与事实不符**的读数 —— 那正是本项目
+    从 V5 学到的第一条教训的原始形态（标签写"真模型"，实际跑桩）。
+
+    另外这条检查本身是**纯函数**：这样它可以被契约测试直接钉住，
+    而不是埋在 cmd_bench 的分支里等到某天真的有人这么用时才炸。
+    """
+    sd = getattr(args, "suite_dir", "")
+    md = getattr(args, "memory_dir", "")
+    if sd and md:
+        return ("--suite-dir 与 --memory-dir 互斥：跨领域要求每个领域**独立**记忆"
+                "（否则后一个领域继承前一个的经验，测到的就不是独立领域），"
+                "而显式记忆目录意味着**共享**。两者语义冲突。")
+    if sd and getattr(args, "save_baseline", False):
+        return ("--suite-dir 与 --save-baseline 互斥：跨领域有 N 把尺子"
+                "（N 个 suite_sha），单一基线文件装不下 —— 每个领域都会写同一个"
+                " bench_baseline.json 并互相覆盖，最后只剩最后一个领域。"
+                " 请去掉 --save-baseline，或逐领域单独跑（--suite 一个一个来）。")
+    return ""
+
+
+def _universality(rows: list[dict]) -> dict:
+    """『通用』的判据 —— **不是一个平均分，是一个三元计数**。
+
+    n_domains : 一共几个领域
+    n_trust   : 其中有几个是**可信**读数（没量到的不算零、也不算非零）
+    n_nonzero : 可信读数里，有几个严格大于 0
+    ok        : 三者相等 ⇒ 每个领域都非零
+
+    ⛔ 为什么不返回一个平均数：平均会把「某领域 = 0」抹成一个好看的 0.75。
+    而"某个领域完全做不了"正是『通用』要暴露的第一件事。
+    ⛔ 也不把"没量到"读成 0 分：那违反契约③（缺失 ≠ 否定）。
+    所以不可信的领域**两头都不算**，只算"没量到"。
+    """
+    trust = [r for r in rows if r.get("trust")]
+    nonzero = [r for r in trust if float(r.get("mean", 0.0)) > 0]
+    return {"n_domains": len(rows), "n_trust": len(trust),
+            "n_nonzero": len(nonzero),
+            "ok": len(rows) == len(trust) == len(nonzero)}
+
+
+def _cross_domain(args, suite_dir: Path) -> int:
+    """在多个**领域**上跑同一个内核 + 同一把打分器，并列汇总。
+
+    ⛔ 刻意**不**把各领域分数平均成一个数。平均会把「某个领域 = 0」这件事
+    抹掉 —— 而「每个领域都非零」恰恰是『通用』的**最小判据**。
+    这里给的是分布 + 可信计数 + 非零计数，不是一个漂亮的总分。
+
+    每个领域是一把**独立的尺子**（suite_sha 不同），所以各自完整走一遍
+    （校准 → 跑 → 口径闸），最后并列；绝不跨领域平均，也绝不跨领域判定。
+    """
+    files = sorted(p for p in suite_dir.glob("*.jsonl"))
+    if not files:
+        print(f"❌ {suite_dir} 下没有任何 .jsonl")
+        return 2
+
+    if not args.fresh:
+        # 不隔离的话，第 2 个领域会带着第 1 个领域的记忆起跑 ——
+        # 那测的就不是"独立领域"，而是"跨领域迁移"。本轮要的是前者。
+        print("  ℹ️ 跨领域模式强制 --fresh（每题独立记忆目录）：")
+        print("     否则后一个领域会继承前一个领域的记忆，测到的就不是独立领域。")
+        args = copy.copy(args)
+        args.fresh = True
+
+    runs_path = cfg.settings().paths.bench / "runs.jsonl"
+    rows: list[dict] = []
+    for f in files:
+        sub = copy.copy(args)
+        sub.suite = str(f)
+        sub.suite_dir = ""            # 防止递归
+        print()
+        print("█" * 74)
+        print(f"█ 领域  {f.stem}   （{f.name}）")
+        print("█" * 74)
+        before = _count_lines(runs_path)
+        rc = cmd_bench(sub)
+        rows.append(_domain_row(f.stem, rc, _read_run_after(runs_path, before)))
+
+    print()
+    print("=" * 74)
+    print("跨领域汇总 —— 同一个内核 + 同一把打分器，逐个领域独立跑")
+    print("=" * 74)
+    print(f"  {'领域':<18}{'题数':>4}{'mean':>10}   {'可信':<6}{'血缘':<10}备注")
+    for r in rows:
+        print(f"  {r['domain']:<18}{r['n']:>4}{r['mean']:>10.4f}   "
+              f"{'✅' if r['trust'] else '❌':<6}{r['llm']:<10}{r['note']}")
+    trust = [r for r in rows if r["trust"]]
+    uni = _universality(rows)
+    print("  " + "-" * 72)
+    print(f"  可信领域 {uni['n_trust']}/{uni['n_domains']}   "
+          f"其中**非零** {uni['n_nonzero']}/{uni['n_trust']}"
+          f"   ← 『通用』的最小判据：每个领域都非零")
+    if len(trust) != len(rows):
+        print("  ⚠️ 有领域的读数不可信 ⇒ 它既不算非零也不算零，只能算「没量到」。"
+              " 把没量到的领域读成 0 分，就是契约③ 被违反。")
+
+    out = cfg.settings().paths.bench / "cross_domain.json"
+    try:
+        from mw.bench import append_jsonl
+        append_jsonl(out, {"ts": time.time(), "n_domains": len(rows), "rows": rows})
+        print(f"  汇总已落盘 {out}")
+    except Exception as e:  # noqa: BLE001 — 落盘失败不该吞掉结论，但必须留痕
+        print(f"  ⚠️ 汇总落盘失败 {type(e).__name__}: {e}")
+
+    return 0 if uni["ok"] else 1
+
+
 def cmd_bench(args) -> int:
     """外部锚层模式 —— V1 与 V5 的分界线就在这个函数里。
 
@@ -271,7 +469,35 @@ def cmd_bench(args) -> int:
     # 这样"读数里写的温度"与"实际发给模型的温度"是同一个事实。
     os.environ["V1_LLM_TEMPERATURE"] = repr(float(args.temperature))
 
+    # ── 互斥/危险组合：先挡住，再谈测量 ──────────────────────────────────
+    _conflict = _option_conflict(args)
+    if _conflict:
+        print(f"❌ {_conflict}")
+        return 2
+
+    # ── 记忆目录：让「记忆」成为一个**可持有的实验变量** ──────────────────
+    # 为什么需要它：`--fresh`（每题隔离）与默认（共享 state/memory.db）都不足以
+    # 表达「先在一个套件上学、再到另一个套件上考」—— 而那正是『泛化』的测法。
+    # 给了它就不再每题隔离：显式目录本身就意味着"这些任务共用同一份记忆"。
+    _mem_dir = getattr(args, "memory_dir", "")
+    if _mem_dir:
+        _d = Path(_mem_dir).expanduser()
+        _d.mkdir(parents=True, exist_ok=True)
+        os.environ["V1_STATE_DIR"] = str(_d)
+        args = copy.copy(args)
+        args.fresh = False
+
     root = Path(__file__).resolve().parent
+    _suite_dir = getattr(args, "suite_dir", "")
+    if _suite_dir and args.suite:
+        print("❌ --suite 与 --suite-dir 互斥：前者指定一个套件，后者跑一整目录。")
+        return 2
+    if _suite_dir:
+        d = Path(_suite_dir).expanduser()
+        if not d.is_dir():
+            print(f"❌ {d} 不是目录（--suite-dir 需要一个目录）")
+            return 2
+        return _cross_domain(args, d)
     suite_path = (Path(args.suite).expanduser() if args.suite
                   else root / "bench" / "tasks" / "coding_small.jsonl")
     scorer_path = (Path(args.scorer).expanduser() if args.scorer
@@ -341,8 +567,9 @@ def cmd_bench(args) -> int:
             )
 
         label = f"真模型直连 {s.llm.model} T={args.temperature:g}"
-        prov = lambda: {"llm_kind": "http-direct", "external_agents": [],
-                        "model": s.llm.model, "temperature": float(args.temperature)}
+        # 直连**没有内核**，所以走的是同一构造入口的显式取值版（字段集合依旧唯一）。
+        prov = lambda: _prov(llm_kind="http-direct", external_agents=[],  # noqa: E731
+                             model=s.llm.model, temperature=args.temperature)
     elif use_llm:
         # ── 预检：内核**实际**会用哪条通道？这是事实，不是声明。 ──────────────
         # 血泪教训（2026-10-17 实测）：这里曾把标签写成"真模型 qwen2.5:7b"，
@@ -375,8 +602,9 @@ def cmd_bench(args) -> int:
                     try:
                         c = _build("", args, allow_shell=args.allow_shell)
                         out = c.run(t.prompt, budget_factor=args.budget)
-                        _seen["llm_kind"] = c.llm_kind
-                        _seen["external_agents"] = list(c.external_agents)
+                        # 血缘**从内核读**（llm_kind / external_agents / model / temperature
+                        # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
+                        _seen.update(_kernel_prov(c))
                         return out.answer
                     finally:
                         if prev is None:
@@ -390,9 +618,7 @@ def cmd_bench(args) -> int:
             _core = _build("", args, allow_shell=args.allow_shell)
             solver = lambda t: _core.run(t.prompt, budget_factor=args.budget).answer  # noqa: E731
             label += "（复用同一内核，记忆跨题累积）"
-            prov = lambda: {"llm_kind": _core.llm_kind,            # noqa: E731
-                            "external_agents": list(_core.external_agents),
-                            "model": s.llm.model}
+            prov = lambda: _kernel_prov(_core)                     # noqa: E731
     else:
         solver = lambda t: t.oracle                                # noqa: E731
         label = "oracle（上界参照）"
@@ -400,7 +626,11 @@ def cmd_bench(args) -> int:
         print("  ℹ️ 未配置真模型（V1_LLM_API_KEY）⇒ 本轮跑的是**参照点**，不是模型成绩。")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
-    _scope = "per_task_fresh" if args.fresh else "shared_db"
+    # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
+    # 第三种是泛化实验的条件变量 —— 它必须可复现，所以目录由调用方持有，
+    # 不由 run.py 随便生成（生成的话下次就找不到同一份记忆了）。
+    _scope = ("explicit_dir" if _mem_dir
+              else ("per_task_fresh" if args.fresh else "shared_db"))
     _seed = (0, 0) if args.fresh else _memory_seed(s)
 
     print()
@@ -434,7 +664,12 @@ def cmd_bench(args) -> int:
     caliber = Caliber(scorer_sha=scorer.sha(), suite_sha=suite.sha(),
                       repeat=repeat_n, budget_tag=tag,
                       temperature=float(args.temperature), fresh=bool(args.fresh),
-                      memory_scope=_scope, memory_seed=_seed)
+                      memory_scope=_scope, memory_seed=_seed,
+                      # 这三项补进来的理由见 bench.CALIBER_KEYS 的注释：
+                      # budget_tag 只是倍数，乘在绝对值上 —— 不含绝对值的"同口径"是假的。
+                      limits=s.limits.as_dict(),
+                      llm_cond=s.llm.cond(),
+                      max_tokens=int(args.max_tokens))
     bl_path = (Path(args.baseline).expanduser() if args.baseline
                else s.paths.bench / "bench_baseline.json")
     store = BaselineStore(bl_path)
@@ -488,6 +723,9 @@ def main() -> int:
     p.add_argument("--bench", action="store_true",
                    help="外部锚层模式：校准尺子 → 跑任务集 → 过口径闸")
     p.add_argument("--suite", default="", help="任务集 JSONL（默认 bench/tasks/coding_small.jsonl）")
+    p.add_argument("--suite-dir", default="",
+                   help="**跨领域模式**：跑一个目录下的每个 .jsonl 各一遍，并列汇总"
+                        "（『通用』的可判定形式）。与 --suite 互斥。")
     p.add_argument("--scorer", default="", help="外部打分器可执行文件（stdin/stdout 走 JSON）")
     p.add_argument("--solver", default="auto",
                    choices=["auto", "llm", "llm-direct", "oracle", "partial", "null"],
@@ -506,6 +744,10 @@ def main() -> int:
                    help="口径变更时允许替换基线（旧值会另存 superseded）")
     p.add_argument("--fresh", action="store_true",
                    help="每题新建内核（记忆不跨题）；同时进入口径签名")
+    p.add_argument("--memory-dir", default="",
+                   help="显式指定记忆目录（**记忆 = 可持有的实验变量**）："
+                        "用于『先在一个套件上学、再到另一个套件上考』的泛化实验。"
+                        "给了它就不再每题隔离（口径 scope=explicit_dir）。")
     args = p.parse_args()
 
     if args.bench:

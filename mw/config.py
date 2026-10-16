@@ -10,8 +10,9 @@ V5 教训：同一事实声明在 4~5 处，每加一个东西就要同步改 N 
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 def _env_path(key: str, default: Path) -> Path:
@@ -128,6 +129,20 @@ class LLMConfig:
     def usable(self) -> bool:
         return bool(self.api_key) and not self.offline
 
+    def cond(self) -> dict:
+        """模型条件快照 —— 口径签名的输入之一（见 `mw.bench.CALIBER_KEYS`）。
+
+        ⛔ **绝不含 `api_key`**：它敏感，且改了它不该改变"这把尺子量的是什么"。
+        `temperature` 也不在这里 —— 它是 `Caliber` 的独立字段（实测事故最多的一项），
+        同一事实只声明一处，不放第二遍。
+        """
+        try:
+            host = urlsplit(self.base_url).netloc or self.base_url
+        except ValueError:
+            host = self.base_url
+        return {"model": self.model, "endpoint": host,
+                "timeout_s": self.timeout_s, "offline": self.offline}
+
 
 @dataclass(frozen=True)
 class Limits:
@@ -191,6 +206,16 @@ class Limits:
     #: 传输层重试之间的等待秒数（线性增长：0.5s、1.0s、1.5s…）。
     llm_retry_backoff_s: float = field(
         default_factory=lambda: _env_float("V1_LLM_RETRY_BACKOFF_S", 0.5, allow_zero=True))
+
+    def as_dict(self) -> dict:
+        """硬上限的**完整**快照 —— 口径签名的输入之一。
+
+        为什么要有它、而不是让调用方自己拼：`budget_tag` 只是**倍数**，
+        乘在**绝对值**上。两次运行可以都写 `4x`，却因为 `V1_MAX_STEPS`
+        不同而跑出完全不同的预算 —— 那种"同口径"是假的。
+        所以全部绝对值一起进闸，而"有哪些字段"只该在这一处声明。
+        """
+        return {f.name: getattr(self, f.name) for f in fields(self)}
 
 
 @dataclass(frozen=True)

@@ -1250,6 +1250,425 @@ check(RS, "T6 「允许 0」的键全部登记在 ENV_KEYS 里（两处清单不
       str([k for k in cfg.ZERO_OK_KEYS if k not in cfg.ENV_KEYS]))
 
 
+# ===========================================================================
+print()
+print("=" * 74)
+print("U. 通用性（跨领域）—— 『通用』是一个三元计数，不是一个平均分")
+print("=" * 74)
+
+import run as V1RUN                                                # noqa: E402
+
+_run_src = (V1 / "run.py").read_text(encoding="utf-8")
+
+
+def _caliber_kwargs(src: str) -> set[str]:
+    """从 AST 取 `Caliber(...)` 实参里的关键字名。
+
+    ⚠️ 走 AST 而不是 `"limits=" in src`：后者会命中注释/docstring ——
+    R60 那个坑，本项目已经在它上面栽过两次（J3 的 `spend_llm()` 计数）。
+    """
+    for n in ast.walk(ast.parse(src)):
+        if isinstance(n, ast.Call) and getattr(n.func, "id", None) == "Caliber":
+            return {k.arg for k in n.keywords if k.arg}
+    return set()
+
+
+_cal_kw = _caliber_kwargs(_run_src)
+check(RS, "U1 run.py 真的把 limits / llm_cond / max_tokens 传进了 Caliber"
+          "（A12–A14 只证明 Caliber 认这三个字段，这条证明**调用点**没漏）",
+      {"limits", "llm_cond", "max_tokens"} <= _cal_kw, str(sorted(_cal_kw)))
+
+# ── _read_run_after：绝不把"上一轮的读数"当成"这一轮的结果" ────────────────
+# 这条防的是一次具体事故：cmd_bench 会在**写盘之前** return（血缘闸拒绝出分、
+# 尺子不合格）。那时若"读最后一行"，拿到的就是上一轮的正常读数 —— 假绿。
+_u_file = _TMP / "u_runs.jsonl"
+_u_file.write_text('{"n": 1}\n{"n": 2}\n', encoding="utf-8")
+check(RS, "U2 _read_run_after 读的是**新增的那一行**（不是永远读最后一行）",
+      (V1RUN._read_run_after(_u_file, 0) or {}).get("n") == 1
+      and (V1RUN._read_run_after(_u_file, 1) or {}).get("n") == 2,
+      f"{V1RUN._read_run_after(_u_file, 0)} / {V1RUN._read_run_after(_u_file, 1)}")
+check(RS, "U3 本轮没写盘（cmd_bench 早退）⇒ 返回 None，**不**返回上一轮的读数",
+      V1RUN._read_run_after(_u_file, 2) is None,
+      str(V1RUN._read_run_after(_u_file, 2)))
+
+# ── _domain_row：不可信的读数**不进** trust ───────────────────────────────
+_u_ok = {"report": {"attempted": 5, "recorded": 5, "skipped_no_answer": 0,
+                    "failed_scorer": 0, "llm_of_record": "http",
+                    "per_task": [{}] * 5},
+         "measurement": {"mean": 0.6}}
+_u_skip = {"report": {"attempted": 5, "recorded": 4, "skipped_no_answer": 1,
+                      "failed_scorer": 0, "per_task": [{}] * 4},
+           "measurement": {"mean": 0.75}}
+check(RS, "U4 账平且无早退 ⇒ trust=True，mean 如实读出来",
+      V1RUN._domain_row("d", 0, _u_ok)["trust"] is True
+      and V1RUN._domain_row("d", 0, _u_ok)["mean"] == 0.6,
+      str(V1RUN._domain_row("d", 0, _u_ok)))
+check(RS, "U5 有早退（skipped>0）⇒ trust=False（该读数不得用于判定）",
+      V1RUN._domain_row("d", 0, _u_skip)["trust"] is False,
+      str(V1RUN._domain_row("d", 0, _u_skip)))
+check(RS, "U6 本轮无读数 ⇒ trust=False；**不**把它变成 mean=0（'没量到' ≠ '零分'）",
+      V1RUN._domain_row("d", 2, None)["trust"] is False,
+      str(V1RUN._domain_row("d", 2, None)))
+
+# ── _universality：判据本身是"三元计数"，不是一个平均分 ──────────────────
+_rows_ok = [{"domain": "a", "mean": 0.5, "trust": True},
+            {"domain": "b", "mean": 0.9, "trust": True}]
+_rows_zero = [{"domain": "a", "mean": 0.5, "trust": True},
+              {"domain": "b", "mean": 0.0, "trust": True}]
+_rows_skip = [{"domain": "a", "mean": 0.5, "trust": True},
+              {"domain": "b", "mean": 0.0, "trust": False}]
+check(RS, "U7 每个领域都可信且非零 ⇒ ok=True，三个计数一致",
+      V1RUN._universality(_rows_ok) == {"n_domains": 2, "n_trust": 2,
+                                        "n_nonzero": 2, "ok": True},
+      str(V1RUN._universality(_rows_ok)))
+check(RS, "U8 有一个领域 0 分 ⇒ ok=False（平均分会把这件事藏起来，所以不平均）",
+      V1RUN._universality(_rows_zero)["ok"] is False
+      and V1RUN._universality(_rows_zero)["n_nonzero"] == 1,
+      str(V1RUN._universality(_rows_zero)))
+check(RS, "U9 「没量到」的领域两头都不算：既不算非零，也**不**算 0",
+      (V1RUN._universality(_rows_skip)["n_trust"] == 1
+       and V1RUN._universality(_rows_skip)["n_nonzero"] == 1
+       and V1RUN._universality(_rows_skip)["ok"] is False),
+      str(V1RUN._universality(_rows_skip)))
+check(RS, "U10 跨领域模式强制 --fresh（否则后一个领域带着前一个的记忆起跑，"
+          "测到的就不是独立领域）",
+      "跨领域模式强制 --fresh" in _run_src, "")
+
+
+def _u_ns(**kw):                                                   # noqa: ANN003
+    return type("NS", (), kw)()
+
+
+check(RS, "U11 --suite-dir 与 --memory-dir 互斥（跨领域要**独立**、显式目录要**共享**，"
+          "两者语义冲突；静默让谁赢都会产出标签与事实不符的读数）",
+      bool(V1RUN._option_conflict(_u_ns(suite_dir="d", memory_dir="m"))),
+      V1RUN._option_conflict(_u_ns(suite_dir="d", memory_dir="m")))
+check(RS, "U12 --suite-dir 与 --save-baseline 互斥（N 把尺子写不进一个基线文件 —— "
+          "会互相覆盖、最后只剩最后一个领域）",
+      bool(V1RUN._option_conflict(_u_ns(suite_dir="d", save_baseline=True))),
+      V1RUN._option_conflict(_u_ns(suite_dir="d", save_baseline=True)))
+check(RS, "U13 单独用 --suite-dir / --memory-dir 都不算冲突（别把正常用法也挡住）",
+      V1RUN._option_conflict(_u_ns(suite_dir="d")) == ""
+      and V1RUN._option_conflict(_u_ns(memory_dir="m")) == ""
+      and V1RUN._option_conflict(_u_ns()) == "")
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("V. 因果闭环（世界模型）—— 失配必须能改变**下一次**的决策输入")
+print("=" * 74)
+
+from mw.worldmodel import Prediction, WorldModel                     # noqa: E402
+
+# 「真正理解因果」在 V1 里的最小落地形式：**预测 → 观测 → 失配 → 沉淀 → 改变下次输入**。
+# 这条链子在代码里是通的（core.py 的 guidance=self.wm.guidance(action=goal)），
+# 但"通了"≠"有效" —— 所以这里逐步钉：沉淀了吗？检索得到吗？**真的进了提示词吗**？
+# 最后一条最重要：DB 里有 ≠ 决策链看得见。一个只写进 DB 却没人读的记忆，
+# 正是 V5 "字段无消费者" 的同构体。
+_v_mem = MemoryStore(_TMP / "v_causal.db")
+_v_wm = WorldModel(_v_mem, StubLLM())
+_v_mm = _v_wm.observe(
+    Prediction(action="parse_duration", expected="返回一个整数秒数", confidence=0.9),
+    "直接把整段文本原样返回了，没有解析")
+check(RS, "V1 预演与实测显著不一致 ⇒ 记为失配，并沉淀成语义记忆"
+          "（不是只记一笔日志就完事）",
+      _v_mm is not None
+      and _v_mem.stats()["by_source"].get("worldmodel", 0) >= 1,
+      f"mismatch={_v_mm is not None} by_source={_v_mem.stats()['by_source']}")
+check(RS, "V2 一致时不沉淀（否则每次预测都写一条，记忆会被自己淹掉）",
+      _v_wm.observe(Prediction(action="a", expected="同一个结果", confidence=0.9),
+                    "同一个结果") is None,
+      str(_v_wm.stats()))
+_v_g = _v_wm.guidance(action="parse_duration")
+check(RS, "V3 失配能按动作被检索回来（沉淀了却检索不到 = 装饰）",
+      bool(_v_g) and "已知易错点" in _v_g, _v_g[:120])
+
+# ⚠️ max_steps 必须是 3：`max_steps=1` 时 steps_left=1 ≤ close_reserve_steps=1
+#    ⇒ 第 1 步就触发收尾余量，planner.propose **从未被调用**，
+#    于是 V4 必然拿不到 propose 的提示词（首跑就是这么红的 —— 那是构造问题，
+#    不是内核缺陷）。这条边界本身值得记：**若 max_steps ≤ close_reserve_steps，
+#    内核完全不做任何探索。**
+_v_cap = _CaptureLLM(default='{"candidates": [{"intent": "i", "tool": "finish", '
+                             '"args": {"answer": "x"}}]}')
+Core(settings=cfg.Settings(limits=cfg.Limits(max_steps=3)),
+     llm=_v_cap, memory=_v_mem).run("parse_duration 这个函数怎么写")
+_v_prompt = "\n".join(_v_cap.prompts)
+check(RS, "V4 失配沉淀的启发式**真的进了规划器提示词**"
+          "（DB 里有 ≠ 决策链看得见）",
+      "已知易错点" in _v_prompt, _v_prompt[:220])
+
+# ⛔ 反证：注册表里没有这段记忆时，提示词里**不该**出现它 ——
+#    否则 V4 可能只是"模板恒含该字串"而恒真（本项目在恒真断言上栽过）。
+_v_cap2 = _CaptureLLM(default='{"candidates": [{"intent": "i", "tool": "finish", '
+                              '"args": {"answer": "x"}}]}')
+Core(settings=cfg.Settings(limits=cfg.Limits(max_steps=3)),
+     llm=_v_cap2, memory=MemoryStore(_TMP / "v_causal2.db")).run(
+         "parse_duration 这个函数怎么写")
+_v_prompt2 = "\n".join(_v_cap2.prompts)
+check(RS, "V5 反证：空记忆时提示词里**没有**这段（证明 V4 不是恒真）",
+      "已知易错点" not in _v_prompt2, _v_prompt2[:220])
+
+
+class _PredictLLM(StubLLM):
+    """只用来抓 `WorldModel.predict` 的提示词。"""
+
+    def __init__(self, **kw):                                      # noqa: ANN003
+        super().__init__(**kw)
+        self.prompts: list[str] = []
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        self.prompts.append("\n".join(m.content for m in messages))
+        return '{"expected": "会返回一个整数秒数", "confidence": 0.8}'
+
+
+# ⛔ V6/V7 是本轮**最重要的一组**：它检验 worldmodel.py **自己声明的主张**——
+#    "缺少一个能预演动作后果、并因为预演错了而**改变下一次预测**的机制。
+#     本模块就是那个机制。"
+#    前半句（预演 → 观测 → 失配 → 沉淀）已经由 V1–V5 钉住了。
+#    后半句「**改变下一次预测**」是另一件事：失配必须回到 predict **自己**的输入里。
+#    ⚠️ 只有 planner 吃到 guidance 是不够的 —— 那是"改变下一次**规划**"，
+#       不是"改变下一次**预演**"。两者是这条因果链上不同的两环。
+_v_pred_llm = _PredictLLM()
+_v_wm2 = WorldModel(_v_mem, _v_pred_llm)      # 复用 V1 已经沉淀过失配的那份记忆
+_v_wm2.predict(state="正在实现 parse_duration", action="parse_duration")
+check(RS, "V6 ★失配沉淀后，**下一次预演**的提示词里必须带上它"
+          "（worldmodel 自己的声明：因为预演错了而改变下一次预测）",
+      bool(_v_pred_llm.prompts) and "已知易错点" in _v_pred_llm.prompts[-1],
+      (_v_pred_llm.prompts[-1][:260] if _v_pred_llm.prompts else "(predict 没调 LLM)"))
+
+_v_pred_llm2 = _PredictLLM()
+WorldModel(MemoryStore(_TMP / "v_causal3.db"), _v_pred_llm2).predict(
+    state="正在实现 parse_duration", action="parse_duration")
+check(RS, "V7 反证：没有失配记忆时，预演提示词里**没有**这段（V6 不是恒真）",
+      bool(_v_pred_llm2.prompts) and "已知易错点" not in _v_pred_llm2.prompts[-1],
+      (_v_pred_llm2.prompts[-1][:260] if _v_pred_llm2.prompts else "(predict 没调 LLM)"))
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("W. 抽象 —— 把「抽象思考」变成一个可读的数（当前是 0，如实登记）")
+print("=" * 74)
+
+from mw.measure import abstraction_collapse                        # noqa: E402
+from mw.memory import fingerprint as _fingerprint                  # noqa: E402
+
+_W_PAIRS = [
+    ("parse_duration 需要处理空串", "空字符串时应当返回 None"),
+    ("dedupe 必须保持首次出现的顺序", "去重后的顺序按第一次出现来定"),
+    ("罗马数字 IV 表示 4", "IV 等于四"),
+]
+
+check(RS, "W1 读数函数本身算得对：给一个**真会抽象**的 key_of ⇒ 1.0",
+      abstraction_collapse(_W_PAIRS, key_of=lambda _s: "同一个概念") == 1.0)
+check(RS, "W2 空输入 ⇒ 1.0（没有反例就不诬告：'没测到' ≠ '做不到'）",
+      abstraction_collapse([], key_of=lambda s: s) == 1.0)
+check(RS, "W3 非空但全不等价 ⇒ 0.0（证明 W1 不是恒真）",
+      abstraction_collapse(_W_PAIRS, key_of=lambda s: s) == 0.0)
+
+# ⚠️ 下面这条**不是不变量**，是一枚「读数锚」。
+#    `memory.fingerprint()` 是**规范化后字面文本**的 sha256 ⇒ 三条语义等价、
+#    字面不同的表述被算成三条**不同的记忆**。也就是说：**当前没有概念层，
+#    只有字面。** 如实登记在 DESIGN §14.4，不粉饰。
+#    它存在的用途是**防文档与实现漂移**：哪天真的加了抽象层，
+#    这条会转红，逼着把文档里的读数一起改掉（那是明确的、有意的变更，
+#    不是"变红就放宽断言"）。
+_w_now = abstraction_collapse(_W_PAIRS, key_of=_fingerprint)
+check(RS, "W4 ★读数锚：当前记忆层的抽象率 = 0.0（fingerprint 是字面 sha256，"
+          "没有概念层）—— 改抽象层时请同步更新此断言与 DESIGN §14.4",
+      _w_now == 0.0, f"abstraction_collapse={_w_now}")
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("X. 血缘完整性 —— 读数必须带「实际用了什么」（★实测事故：一个分支漏了 model）")
+print("=" * 74)
+
+# 为什么要有这一组：本轮实测抓到第 9 个缺陷 —— 内核路径的三个分支各拼一个血缘
+# dict，`--fresh` 那一支**漏了 `model`**。于是跨领域跑与泛化对照（考A）两条读数
+# **事后无法核对自己跑的是哪个模型**；而跨领域那一轮的口径闸、血缘闸、
+# 契约测试——全都判绿。原因是：血缘这套防线自己的第一条纪律身上**没有防线**。
+#
+# 现在修法不是"把 model 补回去"（那只是修了一个实例），而是让它**写不出来**：
+# 字段集合收敛到 `run._prov()` 一个 dict 字面量，并在此处钉死。
+import run as _run                                             # noqa: E402
+
+check(RS, "X1 血缘字段集合只声明在一处（`run.PROV_KEYS`），且构造函数精确匹配它",
+      set(_run._prov(llm_kind="k", external_agents=[], model="m",
+                     temperature=0.0)) == set(_run.PROV_KEYS),
+      f"{sorted(_run.PROV_KEYS)}")
+
+check(RS, "X2 必带字段含 `model` 与 `temperature`"
+          "（★本轮缺陷：`--fresh` 分支漏的正是 `model`）",
+      {"model", "temperature"} <= set(_run.PROV_KEYS), f"{sorted(_run.PROV_KEYS)}")
+
+_c_prov = Core(llm=StubLLM())
+_p_now = _run._kernel_prov(_c_prov)
+
+check(RS, "X3 `_kernel_prov` 的键集合与 `PROV_KEYS` 一致（三条路径共用同一集合）",
+      set(_p_now) == set(_run.PROV_KEYS), f"{sorted(_p_now)}")
+
+check(RS, "X4 血缘**从内核读**，不是外面抄一个字符串："
+          "model/temperature/llm_kind 三项都等于内核自己的值",
+      (_p_now["model"] == _c_prov.s.llm.model
+       and _p_now["temperature"] == float(_c_prov.s.llm.temperature)
+       and _p_now["llm_kind"] == _c_prov.llm_kind),
+      f"{_p_now} vs core.s.llm.model={_c_prov.s.llm.model!r}")
+
+check(RS, "X5 血缘**不含密钥**（`api_key` 绝不外泄到读数里）",
+      "api_key" not in _p_now
+      and "contract-test-key" not in json.dumps(_p_now, ensure_ascii=False),
+      json.dumps(_p_now, ensure_ascii=False))
+
+# ★结构锚：run.py 里**只准有一处**带 `"llm_kind"` 键的 dict 字面量（就是 `_prov`）。
+#   谁再手拼一个血缘 dict，这里立刻转红 —— 这正是"让缺陷写不出来"的那一步。
+#   ⚠️ 走 AST，不走字符串搜索（V5 的 R60：全文 `index()` 会命中注释里的同名文字）。
+def _prov_dict_lines(src: str) -> list[int]:
+    """数出源码里含 `llm_kind` 键的 dict 字面量行号。"""
+    return [n.lineno for n in ast.walk(ast.parse(src))
+            if isinstance(n, ast.Dict)
+            and any(isinstance(k, ast.Constant) and k.value == "llm_kind" for k in n.keys)]
+
+
+_prov_dicts = _prov_dict_lines((V1 / "run.py").read_text(encoding="utf-8"))
+check(RS, "X6 ★结构锚：`run.py` 里含 `llm_kind` 键的 dict 字面量**有且只有一处**"
+          "（手拼血缘 dict ⇒ 立刻判红）",
+      len(_prov_dicts) == 1, f"出现行号={_prov_dicts}")
+
+# 反证：证明 X6 的探针**不是恒真** —— 手拼一个血缘 dict 进去，它必须数得出来。
+check(RS, "X7 反证：把一段手拼血缘塞给同一探针 ⇒ 数出 2 处"
+          "（证明 X6 不是恒等于 1 的死断言）",
+      _prov_dict_lines('x = 1\ny = {"llm_kind": "http", "model": "m"}\n') == [2],
+      str(_prov_dict_lines('x = 1\ny = {"llm_kind": "http", "model": "m"}\n')))
+
+# ⚠️ X6 只拦得住「dict 字面量」这一种拼法。本轮缺陷的**真实形态**是另一种：
+#    `_seen["llm_kind"] = ... ; _seen["external_agents"] = ...` —— 两个下标赋值，
+#    一个 dict 字面量都没有。若只留 X6，原缺陷可以原样复活且全绿。
+#    （这就是"断言要按缺陷的真实形状写"：形状不对的断言是假防线。）
+def _prov_key_stores(src: str) -> list[int]:
+    """找出「把血缘字段名当键做下标赋值」的行号 —— 即逐键拼血缘。"""
+    return [n.lineno for n in ast.walk(ast.parse(src))
+            if isinstance(n, ast.Assign)
+            for t in n.targets
+            if (isinstance(t, ast.Subscript) and isinstance(t.slice, ast.Constant)
+                and t.slice.value in _run.PROV_KEYS)]
+
+
+_stores = _prov_key_stores((V1 / "run.py").read_text(encoding="utf-8"))
+check(RS, "X8 ★结构锚：`run.py` 里**没有**逐键拼血缘的下标赋值"
+          "（★本轮缺陷的真实形态：`_seen[\"llm_kind\"]=…` 逐键写，漏了 model）",
+      _stores == [], f"出现行号={_stores}")
+
+check(RS, "X9 反证：把本轮那个缺陷原样喂给同一探针 ⇒ 必须数得出来"
+          "（证明 X8 不是恒真的死断言）",
+      _prov_key_stores('d = {}\nd["llm_kind"] = "http"\nd["external_agents"] = []\n') == [2, 3],
+      str(_prov_key_stores('d = {}\nd["llm_kind"] = "http"\nd["external_agents"] = []\n')))
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("Y. 世界模型的失配信号有没有分辨力（★读数锚：当前 = 每次必判失配）")
+print("=" * 74)
+
+# 为什么要有这一组（2026-10-17 泛化实验实测逼出来的）：
+#   记忆在 numeric_logic 上"学"了 7 facts / 17 episodes，再考 3 道 held-out 新题，
+#   与**空记忆**逐题配对 ⇒ **Δ 全为 0**。机制不是"记忆没生效"，是：
+#       `predict` 预演的是**一句话**（"你预期会发生什么"），
+#       `observe` 比对的是**整段答案**（候选代码）。
+#   Jaccard 门槛 0.34 ⇒ 这两者**结构上不可能**相似 ⇒ **每次必判失配**。
+#   实测三轮共 9 次失配，一致度全部 ≤ 0.09：`0.00 0.00 0.05 0.09 0.00 0.02 0.00 0.05 0.07`。
+#   ⚠️ 这与 V5 的死因**同构**：一个**永远不可能"好"**的信号。
+#      把 `失配=3` 读成"因果闭环在工作"，就是 V5 把 `gain≡0` 读成"每轮全绿"。
+#   下面这几条是**读数锚**（不是不变量）：它们把当前这个"缺陷边界"钉在绿测试里，
+#   而不是让它藏在假绿后面。**哪天世界模型真能分辨，这几条会转红 —— 那是有意的信号，
+#   不是"变红就放宽"。**（同 W4 的做法。）
+from mw.worldmodel import _MISMATCH_THRESHOLD                     # noqa: E402
+
+_y_mem = MemoryStore(_TMP / "y_worldmodel.db")
+
+
+class _Y_LLM:
+    """脚本化预测器：固定输出**一句话**预期 —— 线上 qwen 干的就是这件事。"""
+
+    def __init__(self, expected: str) -> None:
+        self.expected = expected
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        return json.dumps({"expected": self.expected, "confidence": 0.9},
+                          ensure_ascii=False)
+
+
+_Y_PRED = "将输出一段实现了 int_to_roman 的代码"
+_Y_GOOD = ("```python\ndef int_to_roman(n):\n    vals = [(1000,'M'),(900,'CM')]\n"
+           "    out = ''\n    for v, s in vals:\n        while n >= v:\n"
+           "            out += s\n            n -= v\n    return out\n```")
+_Y_BAD = "```python\ndef int_to_roman(n):\n    return str(n)\n```"
+
+# Y1 反证：这个信号**能**判"一致" ⇒ 它不是恒假的度量（否则 Y2 只是"度量坏了"）
+_ym = WorldModel(_y_mem, _Y_LLM(_Y_PRED))
+check(RS, "Y1 一致度信号**能**判「一致」（预演 ≈ 实测 ⇒ 返回 None，不沉淀）："
+          "证明它不是恒假的度量",
+      _ym.observe(Prediction("a", _Y_PRED, 0.9), _Y_PRED) is None
+      and similarity(_Y_PRED, _Y_PRED) >= _MISMATCH_THRESHOLD)
+
+# Y2 ★读数锚：生成式任务的真实形态（一句话预演 vs 整段答案）⇒ 必判失配
+_ym2 = WorldModel(_y_mem, _Y_LLM(_Y_PRED))
+_p2 = _ym2.predict(state="目标：写 int_to_roman", action="finish({'answer': '<代码>'})",
+                   use_llm=True)
+_m2 = _ym2.observe(_p2, _Y_GOOD)
+check(RS, "Y2 ★读数锚：**一句话预演 vs 整段答案** ⇒ 一致度远低于门槛 0.34 ⇒ 每次必判失配"
+          "（实测三轮 9/9 次一致度 ≤ 0.09）",
+      _m2 is not None and _m2.agreement < _MISMATCH_THRESHOLD,
+      f"agreement={None if _m2 is None else round(_m2.agreement, 4)}")
+
+# Y3 ★读数锚：一致度**分辨不出对错** —— 同一个预演，对"完全正确"和"完全错误"的答案
+#    给出**同一种**判定（都判失配）。所以"失配"记的是**措辞差异**，不是**做错了**。
+_a_good, _a_bad = similarity(_Y_PRED, _Y_GOOD), similarity(_Y_PRED, _Y_BAD)
+check(RS, "Y3 ★读数锚：一致度**分辨不出对错** —— 正确解与错误解被同样判为失配",
+      _a_good < _MISMATCH_THRESHOLD and _a_bad < _MISMATCH_THRESHOLD,
+      f"正确={_a_good:.4f} 错误={_a_bad:.4f}（门槛 {_MISMATCH_THRESHOLD}）")
+
+# Y4 ★结构根因：`core.py` 调 `observe` 时**没有**把这一步的成败 `result.ok` 传进去
+#    ⇒ 世界模型在结构上**无从知道**自己预演的那一步到底做对了没有。
+#    这条把"失配与成败解耦"从现象钉到**代码形状**上。
+_CORE_SRC = (MW_DIR / "core.py").read_text(encoding="utf-8")
+
+
+def _observe_arg_names(src: str) -> list[str]:
+    """`observe(...)` 调用的**全部**实参名（`a.b` 取 `b`）。
+
+    ⚠️ 必须同时收 `n.args`（位置）与 `n.keywords`（关键字）。
+    第一版只收了位置实参，于是 `observe(pred, obs, ok=result.ok)` 这种
+    **关键字**写法它看不见 —— R13 撤回态里"注入修复"后该断言**没有转红**，
+    是这条纪律抓出了**断言自己**的缺陷。（形状不对的断言 = 假防线。）
+    """
+    out: list[str] = []
+    for n in ast.walk(ast.parse(src)):
+        if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "observe":
+            for a in n.args:
+                out.append(a.attr if isinstance(a, ast.Attribute)
+                           else getattr(a, "id", "?"))
+            for kw in n.keywords:
+                out.append(kw.arg or "**")
+    return out
+
+
+_obs_args = _observe_arg_names(_CORE_SRC)
+check(RS, "Y4 ★结构根因：`core.py` 调 `wm.observe` 时**没有**传入成败（`result.ok`）"
+          "⇒ 世界模型在结构上无法知道那一步做对了没有",
+      len(_obs_args) >= 2 and "ok" not in _obs_args, f"observe 实参={_obs_args}")
+
+# 反证：**两种写法都要能发现**（位置 + 关键字）—— 第一版只认位置，漏掉了
+# 线上最可能出现的 `ok=result.ok`，于是"修复"注入后断言不转红。
+check(RS, "Y5 反证：同一探针对**位置**与**关键字**两种写法都能发现 `ok`"
+          "（证明 Y4 不是恒真的死断言）",
+      "ok" in _observe_arg_names("self.wm.observe(pred, result.ok, obs)")
+      and "ok" in _observe_arg_names("self.wm.observe(pred, obs, ok=result.ok)"),
+      str(_observe_arg_names("self.wm.observe(pred, obs, ok=result.ok)")))
+
 
 # ===========================================================================
 print()

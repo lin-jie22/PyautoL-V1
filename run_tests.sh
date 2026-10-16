@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# V1 一键验证。三步都会跑，任一步失败即整体失败。
+# V1 一键验证。五步都会跑，任一步失败即整体失败。
 #
 #   ./run_tests.sh
 #
@@ -13,12 +13,12 @@ cd "$(dirname "$0")"
 FAIL=0
 
 echo "=============================================================="
-echo "步骤 1/4  依赖审计（必须零第三方依赖）"
+echo "步骤 1/5  依赖审计（必须零第三方依赖）"
 echo "=============================================================="
 if "$PY" - <<'EOF'
 import ast, sys, pathlib
 ALLOWED = {
-    "argparse","ast","collections","dataclasses","hashlib","json","math","os","re",
+    "argparse","ast","collections","copy","dataclasses","hashlib","json","math","os","re",
     "shlex","sqlite3","statistics","subprocess","sys","tempfile","time","tokenize",
     "typing","urllib","pathlib","__future__","run","mw",
 }
@@ -40,7 +40,9 @@ then echo "  ✅ 零第三方依赖"; else echo "  ❌ 发现外部依赖"; FAIL
 
 echo
 echo "=============================================================="
-echo "步骤 2/4  契约测试（离线；含 K 组：静默降级 / 死导入）"
+echo "步骤 2/5  契约测试（离线；K 静默降级 / L 外部能力 / O 停滞 / Q 收尾"
+echo "                    U 跨领域 / V 因果闭环 / W 抽象读数 / X 血缘完整性 /"
+echo "                    Y 世界模型失配信号的分辨力）"
 echo "=============================================================="
 if "$PY" tests/contract_test.py > /tmp/v1_contract.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1)"
@@ -52,7 +54,7 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 3/4  外部锚层契约测试（含反证组：假尺子必须被判红）"
+echo "步骤 3/5  外部锚层契约测试（含反证组：假尺子必须被判红）"
 echo "=============================================================="
 if V1_BENCH_DIR=/tmp/v1_bench_ci "$PY" tests/bench_test.py > /tmp/v1_bench.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_bench.out | tail -1)"
@@ -65,7 +67,7 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 4/4  离线端到端自检（零网络 / 零密钥）"
+echo "步骤 4/5  离线端到端自检（零网络 / 零密钥）"
 echo "=============================================================="
 # ⚠️ 状态目录必须隔离到临时目录：本步骤也是"测试"，不许写生产 state/
 #    （V1 自己的第一条纪律就是"测试绝不碰生产目录"）。
@@ -79,6 +81,25 @@ if V1_STATE_DIR="$_SELFTEST_TMP/state" V1_LOG_DIR="$_SELFTEST_TMP/logs" \
 else
   echo "  ❌ 自检失败："
   tail -20 /tmp/v1_selftest.out
+  FAIL=1
+fi
+
+echo
+echo "=============================================================="
+echo "步骤 5/5  跨领域冒烟（同一把打分器 × 每个领域，oracle 参照）"
+echo "=============================================================="
+# 为什么要有这一步：`--suite-dir` 的价值是"**每个领域**都非零"。
+# 这条冒烟只用 oracle 参照（不需要模型、几秒钟），但能保证：
+#   ① 每个领域的数据仍能被 calibrate 判为"有分辨力"；
+#   ② 每个领域的 oracle 仍拿满分（= 任务集与打分器没漂移）。
+# 它同时替「跨领域」这件事把"数据坏了"变成**回归期就能发现**的事，
+# 而不是等到某天真跑模型时才发现某个领域全是 0。
+if V1_BENCH_DIR=/tmp/v1_cross_ci "$PY" run.py --bench --offline --solver oracle \
+     --suite-dir bench/tasks > /tmp/v1_cross.out 2>&1; then
+  echo "  ✅ $(grep -oE '可信领域 [0-9]+/[0-9]+.*' /tmp/v1_cross.out | tail -1)"
+else
+  echo "  ❌ 跨领域冒烟失败（某领域的校准或 oracle 不满分）："
+  tail -12 /tmp/v1_cross.out | sed 's/^/  /'
   FAIL=1
 fi
 

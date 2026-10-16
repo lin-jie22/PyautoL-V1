@@ -74,8 +74,9 @@ _empty = B.Caliber()
 check(RS, "A1 缺省 Caliber 的每个字段都是哨兵，不是默认值",
       all(_empty.as_dict()[k] == "<MISSING>" for k in B.CALIBER_KEYS),
       str(_empty.as_dict()))
-check(RS, "A2 口径键只有这五个（供给侧运行时状态刻意不入闸）",
-      tuple(B.CALIBER_KEYS) == ("scorer_sha", "suite_sha", "repeat", "budget_tag", "fresh"),
+check(RS, "A2 口径键只有这六个（供给侧运行时状态刻意不入闸）",
+      tuple(B.CALIBER_KEYS) == ("scorer_sha", "suite_sha", "repeat",
+                                "budget_tag", "temperature", "fresh"),
       str(tuple(B.CALIBER_KEYS)))
 # ⛔ 这一条是"口径混淆"的入口：把熔断/重试之类的运行时状态写进口径，
 #    会让"供给侧崩了"的那一轮自动获得一把新尺子 —— 正是要防的事。
@@ -92,6 +93,22 @@ check(RS, "A4 相同口径 same_as 为真、签名相同",
       _c1.same_as(_c2) and _c1.signature() == _c2.signature())
 check(RS, "A5 一个字段不同 ⇒ same_as 为假，且 diff **点名**该字段",
       (not _c1.same_as(_c3)) and _c1.diff(_c3) == ["budget_tag"], str(_c1.diff(_c3)))
+
+# ---- 温度进闸（2026-10-17 由真模型实测逼出来的）--------------------------
+# 实测事实：同尺子同模型同任务集，仅改温度
+#     T=0.0 ⇒ 各次总分极差 0.0000（逐题逐次完全一致）
+#     T=0.8 ⇒ 各次总分极差 0.1111（6 题中 2 题剧烈抖动）
+# 0.1111 > V5 的死亡数字 0.0862。温度不进闸 ⇒ 采样抖动会被读成"改进"。
+_c_t0 = B.Caliber(scorer_sha="aaa", suite_sha="bbb", repeat=5,
+                  budget_tag="1x", temperature=0.0, fresh=True)
+_c_t8 = B.Caliber(scorer_sha="aaa", suite_sha="bbb", repeat=5,
+                  budget_tag="1x", temperature=0.8, fresh=True)
+check(RS, "A6 仅温度不同 ⇒ 口径不同、签名不同，且 diff 点名 temperature",
+      (not _c_t0.same_as(_c_t8)) and _c_t0.signature() != _c_t8.signature()
+      and _c_t0.diff(_c_t8) == ["temperature"], str(_c_t0.diff(_c_t8)))
+check(RS, "A7 缺省温度是哨兵而非 0.0（否则'没记温度'会被读成'T=0'）",
+      B.Caliber().as_dict().get("temperature", "<闸里没有这个键>") == "<MISSING>",
+      str(B.Caliber().as_dict().get("temperature", "<闸里没有这个键>")))
 
 
 # ===========================================================================
@@ -392,6 +409,38 @@ check(RS, "E12 repeat_n=N ⇒ n 条读数（分布而非单点）",
       getattr(_mr, "n", 0) == 3 and _repr.attempted == 3 * len(SUITE),
       f"n={getattr(_mr, 'n', 0)} attempted={_repr.attempted}")
 
+# ---- 噪声的**性质**：必须能区分"稳定地错"与"随机地抖" ---------------------
+# 两者可以给出**相同**的总分，但修法完全相反：
+#     稳定地错 ⇒ 改候选（它每次都错在同一处，是可修的缺陷）
+#     随机地抖 ⇒ 固定测量条件（改候选没有意义，噪声会淹没任何改动）
+# 实测依据（真模型 T=0.8）：t04 稳定地 0.6667（系统误差），
+# 而 t01 在 0.1667 ~ 0.8333 之间跳（随机误差）。
+# 只报一个总分极差，这两种情况会被压成同一个数字。
+_WRONG_CODE = "def __nothing_useful():\n    return None"
+_flaky_seq = {"n": 0}
+
+
+def _flaky_solver(t):
+    _flaky_seq["n"] += 1
+    # ⚠️ 周期必须与"每轮题目数"**不整除**，坏位置才会跨轮移动。
+    #    第一版用 `n % 3`，而每轮 6 题 ⇒ 坏位置每轮固定落在第 3、6 题
+    #    ⇒ 每轮总分完全相同 ⇒ 极差 0，与"稳定地错"再也分不开（E13 当场判红）。
+    #    这不是测试写错那么简单：它说明"抖动"的判据里必须包含
+    #    **"坏的位置跨轮变化"**，否则一个固定重复的坏模式会被误读成噪声。
+    return _WRONG_CODE if _flaky_seq["n"] % 4 == 0 else t.oracle
+
+
+_m_fl, _rep_fl = B.run_suite(_flaky_solver, _REAL, SUITE, repeat_n=3,
+                             budget_tag="1x", candidate="flaky")
+check(RS, "E13 随机抖动被识别：极差 > 0（抖动是噪声，不是能力）",
+      (_m_fl.hi - _m_fl.lo) > 1e-9, f"极差={_m_fl.hi - _m_fl.lo:.4f}")
+
+_m_st, _rep_st = B.run_suite(lambda t: _WRONG_CODE, _REAL, SUITE, repeat_n=3,
+                             budget_tag="1x", candidate="stable_wrong")
+check(RS, "E14 稳定地错 ≠ 随机抖动：极差 = 0 但水平 < 1（两个维度各承载信息）",
+      (_m_st.hi - _m_st.lo) < 1e-9 and _m_st.mean < 1.0,
+      f"极差={_m_st.hi - _m_st.lo:.4f} mean={_m_st.mean:.4f}")
+
 
 # ===========================================================================
 print()
@@ -571,12 +620,19 @@ check(RS, "I2 BenchReport.as_dict 含对账所需的四个计数",
       str(sorted(_lines[1])))
 check(RS, "I3 落盘文件在指定目录（非生产目录）",
       str(_jsonl).startswith(str(_TMP)))
+check(RS, "I4 as_dict 含逐题明细，且条数 == recorded（噪声归因的唯一依据不许丢）",
+      isinstance(_lines[1].get("per_task"), list)
+      and len(_lines[1]["per_task"]) == _lines[1]["recorded"],
+      f"per_task={len(_lines[1].get('per_task') or [])} recorded={_lines[1]['recorded']}")
+check(RS, "I5 逐题明细**不截断**（区别于 errors 只留前 20 条）",
+      len(_lines[1]["per_task"]) == _rep.recorded,
+      f"{len(_lines[1]['per_task'])} vs {_rep.recorded}")
 
 # 判据自身的判别力自检：反证组不能是空的。
 # ⛔ 不写成 `if "D1" in globals() or True` —— 那是恒真断言，零判别力。
 #    这里断言的是**可证伪的事实**：事故版打分器文件确实被创建出来了。
 _fake_scorers = sorted(p.name for p in SCORER_DIR.glob("*.py"))
-check(RS, "I4 反证组已实例化：事故版打分器文件真实存在且 ≥5 个",
+check(RS, "I6 反证组已实例化：事故版打分器文件真实存在且 ≥5 个",
       len(_fake_scorers) >= 5, str(_fake_scorers))
 
 

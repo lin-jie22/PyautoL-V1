@@ -100,7 +100,18 @@ def _sha_file(p: Path) -> str:
 # ===========================================================================
 #: 决定"是不是同一把尺子"的字段。改任何一个 ⇒ 两个数字不可比。
 #: ⚠️ 刻意**不含**任何供给侧运行时状态（熔断 / 重试 / 上游健康），见模块头注释。
-CALIBER_KEYS: tuple[str, ...] = ("scorer_sha", "suite_sha", "repeat", "budget_tag", "fresh")
+#:
+#: `temperature` 为什么必须在里面（2026-10-17 实测加进来的）：
+#:     同一把尺子、同一个模型、同一份任务集，仅改采样温度：
+#:         T=0.0  → 各次总分极差 0.0000（逐题逐次完全一致）
+#:         T=0.8  → 各次总分极差 0.1111（6 题中 2 题剧烈抖动）
+#:     0.1111 这个数比 V5 的死亡数字 0.0862 还大。若温度不进闸，
+#:     拿 T=0 的读数去和 T=0.8 的基线比较，就会把**采样抖动**读成"改进"
+#:     —— 那正是 V5 "尺子随退化下移"的同一类错误。
+#:     注意它**不是**运行时状态：温度是测量前就固定下来的条件，
+#:     而熔断/重试是测量过程中自发产生的事件，两者性质不同。
+CALIBER_KEYS: tuple[str, ...] = ("scorer_sha", "suite_sha", "repeat",
+                                 "budget_tag", "temperature", "fresh")
 
 
 @dataclass(frozen=True)
@@ -111,6 +122,7 @@ class Caliber:
     suite_sha: Any = _MISSING
     repeat: Any = _MISSING
     budget_tag: Any = _MISSING
+    temperature: Any = _MISSING
     fresh: Any = _MISSING
 
     def as_dict(self) -> dict:
@@ -127,10 +139,16 @@ class Caliber:
         return not self.diff(other)
 
     def as_line(self) -> str:
+        """一行摘要。字段**从 CALIBER_KEYS 派生**，不硬编码键名 ——
+        硬编码的话，"闸里少了某个字段"这件事在日志里也看不出来
+        （那正是"同一事实多份声明"的又一个入口）。"""
         d = self.as_dict()
-        return (f"sig={self.signature()} scorer={str(d['scorer_sha'])[:12]} "
-                f"suite={str(d['suite_sha'])[:12]} repeat={d['repeat']} "
-                f"budget={d['budget_tag']} fresh={d['fresh']}")
+        abbr = {"scorer_sha": "scorer", "suite_sha": "suite", "budget_tag": "budget"}
+        cells = []
+        for k in CALIBER_KEYS:
+            v = str(d[k])
+            cells.append(f"{abbr.get(k, k)}={v[:12] if k.endswith('_sha') else v}")
+        return f"sig={self.signature()} " + " ".join(cells)
 
 
 # ===========================================================================
@@ -540,6 +558,11 @@ class BenchReport:
             "skipped_no_answer": self.skipped_no_answer,
             "failed_scorer": self.failed_scorer,
             "errors": self.errors[:20], "elapsed_s": round(self.elapsed_s, 3),
+            # 逐题逐次明细 —— **不截断**（不像 errors 那样只留前 20 条）。
+            # 理由：它是噪声归因的唯一依据。若只落一个总分极差，你就无法回答
+            # "抖动出在哪些题上"，也无法区分"整卷漂移"与"两题涨两题跌相互抵消"。
+            # V5 的 0.0862 正是这样变成一个孤立数字的：没人知道它从哪来。
+            "per_task": self.per_task,
         }
 
 

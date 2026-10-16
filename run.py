@@ -86,6 +86,14 @@ class DemoLLM:
         ]}, ensure_ascii=False)
 
 
+#: 直连答题的系统提示词。刻意**只约束输出形态**，不教解题 ——
+#: 一旦开始教解题，量到的就不是模型能力，而是提示词工程的水平。
+DIRECT_SYSTEM = (
+    "你是代码助手。只输出一个 python 代码块，不要任何解释、不要示例调用。"
+    "函数名与签名必须与题目要求完全一致。"
+)
+
+
 def _build(goal: str, args, *, allow_shell: bool = False) -> Core:
     s = cfg.settings()
     if args.offline or not s.llm.usable():
@@ -174,6 +182,47 @@ def cmd_measure(args) -> int:
     return 0
 
 
+def _noise_report(rep, suite, m, repeat_n: int) -> list[str]:
+    """逐题 × 逐次 的分数矩阵 —— 噪声下限实验的核心输出。
+
+    为什么必须**逐题**看，不能只看总分：
+        两次总分相同，可能是一题从 0 涨到 1、另一题从 1 跌到 0 相互抵消。
+        只盯总分，这种抖动会被误读成"稳定"。V5 的 0.0862 就是用总分极差量的，
+        但没人看过它是**哪些题**在抖 —— 于是既不知道噪声从哪来，也无法判断
+        「某个改进」是否大过了噪声。
+    """
+    if repeat_n < 2:
+        return []
+    cell: dict[tuple[str, int], float] = {}
+    for row in rep.per_task:
+        cell[(row["id"], row["rep"])] = row["score"]
+
+    ids = [t.id for t in suite.tasks]
+    out = ["", "--- 噪声明细（逐题 × 逐次）---"]
+    out.append("  " + "任务".ljust(20) + "".join(f"r{r+1}".rjust(8) for r in range(repeat_n)) + "   极差")
+    unstable: list[str] = []
+    for tid in ids:
+        vals = [cell.get((tid, r + 1)) for r in range(repeat_n)]
+        shown = "".join(("—" if v is None else f"{v:.4f}").rjust(8) for v in vals)
+        known = [v for v in vals if v is not None]
+        spread = (max(known) - min(known)) if len(known) >= 2 else 0.0
+        if spread > 1e-9:
+            unstable.append(tid)
+        out.append(f"  {tid.ljust(20)}{shown}   {spread:.4f}" + ("  ⚠️" if spread > 1e-9 else ""))
+
+    spread_all = m.hi - m.lo
+    out.append("")
+    out.append(f"  各次总分极差（噪声下限）= {spread_all:.4f}")
+    out.append(f"  逐题不稳定的任务 = {len(unstable)}/{len(ids)}"
+               + (f"  {unstable}" if unstable else ""))
+    if spread_all <= 1e-9 and not unstable:
+        out.append("  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0")
+    else:
+        out.append(f"  ⚠️ 抖动存在 ⇒ **任何 ≤ {spread_all:.4f} 的『改进』都不可判定**")
+        out.append("     （V5 正是死在这里：极差 0.0862 > 它声称的一切改进）")
+    return out
+
+
 def cmd_bench(args) -> int:
     """外部锚层模式 —— V1 与 V5 的分界线就在这个函数里。
 
@@ -241,6 +290,23 @@ def cmd_bench(args) -> int:
         # 而不只是会拒绝。V5 从未做过一次这样的实验。
         solver = lambda t: t.partial                               # noqa: E731
         label = "partial（中段参照）"
+    elif args.solver == "llm-direct":
+        # 模型**直连**答题：不经内核、不重规划、不检索记忆。
+        # 存在的理由：噪声下限必须在**最短的链路**上先测出来。
+        # 若连"一次调用"都不确定，那内核再稳也没意义 —— 噪声是底噪，不是内核产生的。
+        if args.offline or not s.llm.usable():
+            print("❌ llm-direct 需要真模型：请设 V1_LLM_BASE_URL / V1_LLM_API_KEY / V1_LLM_MODEL")
+            return 2
+        from mw.llm import HTTPLLM, Message
+        _llm = HTTPLLM(s.llm)
+
+        def solver(t):                                             # type: ignore[misc]
+            return _llm.complete(
+                [Message("system", DIRECT_SYSTEM), Message("user", t.prompt)],
+                max_tokens=int(args.max_tokens), temperature=float(args.temperature),
+            )
+
+        label = f"真模型直连 {s.llm.model} T={args.temperature:g}"
     elif use_llm:
         label = f"真模型 {s.llm.model}"
         if args.fresh:
@@ -268,10 +334,13 @@ def cmd_bench(args) -> int:
         print("  ⚠️ 本轮存在早退（没量到的条目）⇒ 这个读数**不得**用于判定。")
         for e in rep.errors[:5]:
             print(f"     · {e}")
+    for line in _noise_report(rep, suite, m, repeat_n):
+        print(line)
 
     # ── 第 3 步：口径闸 ------------------------------------------------
     caliber = Caliber(scorer_sha=scorer.sha(), suite_sha=suite.sha(),
-                      repeat=repeat_n, budget_tag=tag, fresh=bool(args.fresh))
+                      repeat=repeat_n, budget_tag=tag,
+                      temperature=float(args.temperature), fresh=bool(args.fresh))
     bl_path = (Path(args.baseline).expanduser() if args.baseline
                else s.paths.bench / "bench_baseline.json")
     store = BaselineStore(bl_path)
@@ -327,8 +396,15 @@ def main() -> int:
     p.add_argument("--suite", default="", help="任务集 JSONL（默认 bench/tasks/coding_small.jsonl）")
     p.add_argument("--scorer", default="", help="外部打分器可执行文件（stdin/stdout 走 JSON）")
     p.add_argument("--solver", default="auto",
-                   choices=["auto", "llm", "oracle", "partial", "null"],
-                   help="谁来答题：auto=有真模型则用真模型，否则用 oracle 参照")
+                   choices=["auto", "llm", "llm-direct", "oracle", "partial", "null"],
+                   help="谁来答题：auto/llm=走完整内核（多段调用）；"
+                        "llm-direct=模型直连答题（不经内核，测最细链路）；"
+                        "oracle/partial/null=参照点")
+    p.add_argument("--temperature", type=float, default=0.0,
+                   help="真模型采样温度。**噪声实验的核心旋钮**：0=贪心（应当确定）")
+    p.add_argument("--max-tokens", type=int, default=1024,
+                   help="单次调用 token 上限。思考型模型会先花 token 在 reasoning 上，"
+                        "给太小会得到空 content（这是实测踩过的坑）")
     p.add_argument("--baseline", default="", help="基线文件（默认 $V1_BENCH_DIR/bench_baseline.json）")
     p.add_argument("--save-baseline", action="store_true", help="把本次读数写入基线（过口径闸）")
     p.add_argument("--compare", action="store_true", help="与基线比较并给出判定")

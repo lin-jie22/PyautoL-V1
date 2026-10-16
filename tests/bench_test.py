@@ -207,6 +207,18 @@ _cal_hi = B.calibrate(_REAL, SUITE, min_middle=999)
 check(RS, "C9 min_middle 达不到时校准**不通过**（门槛真的在起作用）",
       (not _cal_hi.ok) and "中段" in _cal_hi.reason, _cal_hi.reason)
 
+# 中段覆盖面：每条任务都应带一份参考性部分解。没有 partial 的任务 ⇒
+# 那条上"中段分辨力"没被验证，只能靠 evidence.unknowns 登记，属于覆盖缺口。
+# ⛔ 新增任务若忘了写 partial，这里会红 —— 那是提醒你补一个，不是让你放宽这条。
+_missing_partial = [t.id for t in SUITE.tasks if not t.partial.strip()]
+check(RS, "C10 每条任务都带参考性部分解（中段覆盖面 100%，不是抽查）",
+      not _missing_partial, str(_missing_partial))
+check(RS, "C11 中段分数**各不相同**（尺子能区分不同质量的部分解，非单点）",
+      len({round(r["partial"], 6) for r in _CAL.per_task
+           if r["partial"] is not None}) >= 2,
+      str(sorted({round(r["partial"], 6) for r in _CAL.per_task
+                  if r["partial"] is not None})))
+
 
 # ===========================================================================
 print()
@@ -275,9 +287,21 @@ check(RS, "D4 calibrate_or_raise 在尺子不合格时 fail-closed 抛异常",
 #    它们是被 `margin > 0` 拦下的，逐条判据当时**一次都没被触发**。
 #    ⇒ 造一个"仅某一条任务上两极不可分、但整体 margin 仍显著为正"的假尺子，
 #      让逐条判据单独承担判别责任。撤掉它，D5b 必红。
-#    ⚠️ 必须挑一条**没有 partial** 的任务：有 partial 时 `null < partial < oracle`
-#       在逻辑上蕴含 `oracle > null`，两条判据会重合，D5 就又失去判别力了
-#       （第一版挑了 t01，正是踩了这个坑）。
+#    ⚠️ 必须让该条任务**没有 partial**：有 partial 时 `null < partial < oracle`
+#       在逻辑上蕴含 `oracle > null`，两条判据会重合，D5 就又失去判别力了。
+#       而主任务集现在**每条都有 partial**（C10 钉的），所以这里必须**就地构造**
+#       一个探针任务集，把 t02 的 partial 摘掉。
+#       ⇒ 顺带如实登记一件事：`good` 判据在主任务集上是**冗余**的，
+#         它的价值在"任务集没有参考性部分解"的通用场景（Suite 是公开 API）。
+_pb_tasks = tuple(
+    B.Task(id=t.id, prompt=t.prompt, tests=t.tests, oracle=t.oracle,
+           partial=("" if t.id == "t02_dedupe" else t.partial),
+           null=t.null, meta=t.meta)
+    for t in SUITE.tasks)
+_pb_suite = B.Suite(name="probe_no_partial_on_t02", tasks=_pb_tasks)
+check(RS, "D5 前置：探针任务集里恰好一条没有 partial",
+      sum(1 for t in _pb_suite.tasks if not t.partial.strip()) == 1,
+      str([t.id for t in _pb_suite.tasks if not t.partial.strip()]))
 _partial_broken = _write_scorer(
     "partial_broken.py",
     "import sys, json\n"
@@ -294,7 +318,7 @@ _partial_broken = _write_scorer(
     "passed = sum(1 for t in tests if code_exec.run_one(code, str(t))[0])\n"
     "print(json.dumps({'score': round(passed/len(tests), 4)}))\n")
 _cal_pb = B.calibrate(B.ExternalScorer([sys.executable, str(_partial_broken)],
-                                       source=_partial_broken), SUITE)
+                                       source=_partial_broken), _pb_suite)
 check(RS, "D5a 单条失分辨的假尺子：整体 margin **仍为正**（排除被 margin 拦下的可能）",
       _cal_pb.margin > 0, f"margin={_cal_pb.margin:+.4f}")
 check(RS, "D5b 逐条两极判据**单独**拦下了它（撤掉该判据则本条必红）",

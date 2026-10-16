@@ -236,6 +236,11 @@ def cmd_bench(args) -> int:
     elif args.solver == "oracle":
         solver = lambda t: t.oracle                                # noqa: E731
         label = "oracle（上界参照）"
+    elif args.solver == "partial":
+        # 任务集自带的部分解 —— 用来演示"锚层也能**确认**一个改进"，
+        # 而不只是会拒绝。V5 从未做过一次这样的实验。
+        solver = lambda t: t.partial                               # noqa: E731
+        label = "partial（中段参照）"
     elif use_llm:
         label = f"真模型 {s.llm.model}"
         if args.fresh:
@@ -321,7 +326,8 @@ def main() -> int:
                    help="外部锚层模式：校准尺子 → 跑任务集 → 过口径闸")
     p.add_argument("--suite", default="", help="任务集 JSONL（默认 bench/tasks/coding_small.jsonl）")
     p.add_argument("--scorer", default="", help="外部打分器可执行文件（stdin/stdout 走 JSON）")
-    p.add_argument("--solver", default="auto", choices=["auto", "llm", "oracle", "null"],
+    p.add_argument("--solver", default="auto",
+                   choices=["auto", "llm", "oracle", "partial", "null"],
                    help="谁来答题：auto=有真模型则用真模型，否则用 oracle 参照")
     p.add_argument("--baseline", default="", help="基线文件（默认 $V1_BENCH_DIR/bench_baseline.json）")
     p.add_argument("--save-baseline", action="store_true", help="把本次读数写入基线（过口径闸）")

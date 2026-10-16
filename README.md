@@ -9,7 +9,7 @@
 > 七段认知循环全部可跑、预算可对账、守卫可数、记忆去重由数据库保证、
 > 测量带噪声下限、**"变好了"这句话有外部依据**。
 > 这件事我能做到，而且已经做到了（`tests/contract_test.py` 97/0、
-> `tests/bench_test.py` 74/0，含五把假尺子的反证组）。
+> `tests/bench_test.py` 77/0，含五把假尺子的反证组）。
 
 ---
 
@@ -116,11 +116,12 @@ python3 run.py --bench --save-baseline
 
 | 实测读数 | 值 |
 |---|---|
-| 尺子校准 | 6/6 条逐条可分辨，其中 **3 条中段有序**（0.8333 / 0.6 / 0.6），margin **+1.0000** |
+| 尺子校准 | 6/6 条逐条可分辨，**6 条中段有序**（0.25 / 0.6 / 0.8333 三档），margin **+1.0000** |
+| **确认改进** | 旧版（部分解）`mean=0.6194` → 新版（参考解）`mean=1.0000`，**判定"改进成立"，增益 +0.3806**；两次口径签名一致 |
 | 拒绝跨口径 | 改预算档后比较被拒；基线 md5 **一个字节没变** |
 | 五把假尺子 | 恒定 / 反相关 / **二值** / 单条失分辨 / 崩溃 —— **全部被判红** |
 | R13 撤回态 | 撤三处实现：RC=1、**Traceback=0**、汇总行在、变红清单与预期**一一对应** |
-| 契约断言 | `tests/bench_test.py` **74 条，全绿** |
+| 契约断言 | `tests/bench_test.py` **77 条，全绿** |
 
 ⚠️ 校准不是"跑个分"。它要求**逐条** `空答案 < 部分解 < 参考解` 严格成立，否则
 fail-closed 拒用 —— 一把"要么 0 要么 1"的二值尺子照样会让所有"改进"纹丝不动，
@@ -149,6 +150,10 @@ python3 run.py --selftest --repeat 5 --sweep 1,2,4
 
 # 5) 外部锚层（第五节的命令，先校准尺子再跑任务集）
 python3 run.py --bench --compare
+
+# 6) 走一次完整判定：旧版本存基线 → 新版本比较
+python3 run.py --bench --solver partial --repeat 5 --save-baseline
+python3 run.py --bench --solver oracle  --repeat 5 --compare
 ```
 
 `--selftest` 会**故意让规划器提一个破坏性动作**（`rm -rf ~`），
@@ -223,7 +228,7 @@ V1/
 │   └── tasks/coding_small.jsonl  6 道纯函数题（含参考解 / 部分解）
 ├── tests/
 │   ├── contract_test.py   97 条内核契约断言（含结构反证组 J）
-│   └── bench_test.py      74 条外部锚层断言（含 5 把假尺子的反证组 D）
+│   └── bench_test.py      77 条外部锚层断言（含 5 把假尺子的反证组 D）
 ├── external/              外部能力范例
 ├── agents.example.json    外部 agent 登记表范例
 ├── run.py                 入口（自检 / 真跑 / 测量 / 外部锚层 四种模式）

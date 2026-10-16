@@ -33,7 +33,7 @@ from typing import Any, Callable, Sequence
 from . import config as cfg
 from .budget import Budget, BudgetExhausted, Ledger
 from .guard import Guard
-from .llm import HTTPLLM, LLM, Message, StubLLM, build_llm
+from .llm import HTTPLLM, LLM, LLMError, Message, StubLLM, build_llm
 from .memory import MemoryStore
 from .planner import Planner, Step, action_signature, looks_complex
 from .tools import (ToolRegistry, external_agent_names, register_core_tools,
@@ -58,18 +58,49 @@ class _Log:
 
 
 class _LedgeredLLM:
-    """把 LLM 调用计数收敛到唯一账本。
+    """把 LLM 调用计数收敛到唯一账本，并在这里做**传输层**的有界重试。
 
     不把 ledger 传给 HTTPLLM 是**刻意的**：两处计数 = 两处真相 = 迟早对不上。
+    所以重试也放在这一层 —— 每次尝试都 `spend_llm()`，账本记得住"实际发了几次请求"，
+    而不是"成功了几次"。这两者的差就是抖动率，是高价值读数。
+
+    ⚠️ 只重试 `transient=True` 的错误（超时 / 连接断 / 5xx / 429）。
+    模型侧失败（4xx 参数错、响应结构不符）**一律不重试** —— 重发同样的请求
+    只会得到同样的错；那种情况正确的动作是**换路径**（改提示词 / 改协议），
+    而不是原地重发。把两者混在一起重试，就是 V5 的"同一假设无限重派"。
     """
 
-    def __init__(self, inner: LLM, ledger: Ledger) -> None:
+    def __init__(self, inner: LLM, ledger: Ledger, *,
+                 retries: int = 0, backoff_s: float = 0.5) -> None:
         self.inner = inner
         self.ledger = ledger
+        self.retries = max(0, int(retries))
+        self.backoff_s = max(0.0, float(backoff_s))
+        #: 读数字段：抖动重试了几次、最终仍失败几次。**有消费者**（进 stats）。
+        self.transient_retries = 0
+        self.transient_exhausted = 0
 
     def complete(self, messages: Sequence[Message], **kw: Any) -> str:
-        self.ledger.spend_llm()
-        return self.inner.complete(messages, **kw)
+        # ⚠️ 这里刻意用 `for` 而**不是** `while`：内核「只准有一个 while」
+        #    是一条被 AST 钉死的不变量（契约 J6）。重试本来就是有界的，
+        #    写成 for 既表达"最多 N+1 次"，又不让那条不变量被悄悄破掉。
+        #    （把 J6 放宽去容纳一个 while = 尺子下移，那不是修法。）
+        for attempt in range(self.retries + 1):
+            self.ledger.spend_llm()
+            try:
+                return self.inner.complete(messages, **kw)
+            except LLMError as e:
+                transient = bool(getattr(e, "transient", False))
+                if not transient:
+                    # 模型侧失败：重发同样的请求只会得到同样的错 ⇒ 立刻抛，换路径。
+                    raise
+                if attempt >= self.retries:
+                    self.transient_exhausted += 1
+                    raise
+                self.transient_retries += 1
+                # 退避用线性增长：本地/低价端点抖动通常是瞬时的，指数退避过于激进。
+                time.sleep(self.backoff_s * (attempt + 1))
+        raise AssertionError("不可达：retries ≥ 0 保证循环至少执行一次并 return 或 raise")
 
 
 @dataclass
@@ -145,6 +176,7 @@ class Core:
         self.external_agents: list[str] = external_agent_names(self.tools)
 
         self.ledger: Ledger | None = None   # run() 里构造（预算属于单次任务）
+        self._counted: _LedgeredLLM | None = None  # run() 里构造（抖动重试的读数出口）
         self.planner = Planner(self.llm, self.tools,
                                max_tokens=self.s.limits.llm_max_tokens)
         self.wm = WorldModel(self.memory, self.llm)
@@ -161,7 +193,10 @@ class Core:
         self.ledger = Ledger(budget)
 
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
-        counted = _LedgeredLLM(self.llm, self.ledger)
+        counted = _LedgeredLLM(self.llm, self.ledger,
+                               retries=self.s.limits.llm_retries,
+                               backoff_s=self.s.limits.llm_retry_backoff_s)
+        self._counted = counted
         self.planner.llm = counted
         self.wm.llm = counted
 
@@ -451,9 +486,20 @@ class Core:
             "external_agents": self.external_agents,
             # 停滞/重复 —— "重复的成功不是进展"这条的读数出口
             "loop": dict(extra or {}),
+            # 传输层抖动 —— "基础设施的锅 ≠ 模型的锅"这条的读数出口。
+            # 有消费者：`■` 汇总行会把它打印出来（零值不显示，避免噪声）。
+            "transport": ({
+                "retries": self._counted.transient_retries,
+                "exhausted": self._counted.transient_exhausted,
+            } if self._counted is not None else {"retries": 0, "exhausted": 0}),
         }
         self.memory.record("finish", f"{status}: {answer or reason}"[:1000],
                            status=status, stats=stats)
+        tx = stats["transport"]
+        tx_line = ""
+        if tx["retries"] or tx["exhausted"]:
+            tx_line = f" | 抖动重试={tx['retries']} 重试后仍失败={tx['exhausted']}"
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
-                 f" | 失配={stats['worldmodel']['mismatches']} | 语义记忆={stats['memory']['facts']}")
+                 f" | 失配={stats['worldmodel']['mismatches']} | 语义记忆={stats['memory']['facts']}"
+                 f"{tx_line}")
         return Outcome(status, answer, reason, len(history), stats)

@@ -18,7 +18,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Callable
 
@@ -105,6 +107,25 @@ def _build(goal: str, args, *, allow_shell: bool = False) -> Core:
     else:
         core = Core(s)
     return core
+
+
+def _memory_seed(s) -> tuple[int, int]:
+    """读**起跑前**的记忆基线 (facts, episodes)。
+
+    为什么必须有它：`shared_db` 模式下记忆跨题、**跨运行**累积，两轮读数只有在
+    起跑基线相同时才是同口径。不读它，比的就是"记忆多少"而不是"候选好坏"。
+    ⚠️ 必须在跑之前读 —— 跑完再读拿到的是**结果**，不是条件。
+    """
+    from mw.memory import MemoryStore
+    try:
+        ms = MemoryStore(s.paths.db)
+    except Exception:                                          # noqa: BLE001
+        return (0, 0)
+    try:
+        st = ms.stats()
+        return (int(st.get("facts", 0)), int(st.get("episodes", 0)))
+    finally:
+        ms.close()
 
 
 def cmd_selftest(args) -> int:
@@ -240,6 +261,16 @@ def cmd_bench(args) -> int:
                           append_jsonl, calibrate, measurement_to_dict,
                           run_suite, verdict_against_baseline)
 
+    # ⚠️ 把 CLI 的温度**写进环境**，让内核（planner / worldmodel）也遵守它。
+    #
+    # 实测事故（2026-10-17）：内核的三个调用点没有一个传 temperature，
+    # 全部落到写死的默认 0.2 ⇒ `--temperature 0` 对内核路径**无效**，
+    # 而口径签名却写着 `temperature=0.0`。症状是"同口径、记忆已隔离、
+    # 签名逐位相同，同一题两轮仍给 0.5000 / 0.6667"。
+    # 现在：CLI 是唯一入口，写进 env ⇒ HTTPLLM 统一从 LLMConfig 取。
+    # 这样"读数里写的温度"与"实际发给模型的温度"是同一个事实。
+    os.environ["V1_LLM_TEMPERATURE"] = repr(float(args.temperature))
+
     root = Path(__file__).resolve().parent
     suite_path = (Path(args.suite).expanduser() if args.suite
                   else root / "bench" / "tasks" / "coding_small.jsonl")
@@ -330,13 +361,30 @@ def cmd_bench(args) -> int:
             _seen: dict = {}
 
             def solver(t):                                         # type: ignore[misc]
-                c = _build("", args, allow_shell=args.allow_shell)
-                out = c.run(t.prompt, budget_factor=args.budget)
-                _seen["llm_kind"] = c.llm_kind
-                _seen["external_agents"] = list(c.external_agents)
-                return out.answer
+                # ⚠️ 每题必须换**记忆目录**，不只是换一个 Core。
+                #
+                # 实测事故（2026-10-17）：原先这里只 `_build` 一个新 Core，
+                # 而 DB 路径仍是共享的 `state/memory.db` ⇒ 记忆跨题、**跨运行**累积。
+                # 后果：两轮"同口径"（1x / T=0 / --fresh）读数一次 `0.8611`、
+                # 一次 `0.7222`；差额全部来自起跑时已存在的语义记忆（第二轮已有 27 条）。
+                # 而标签当时写着"记忆不跨题" —— 标签在撒谎，口径闸也判"可比"。
+                # 现在：每题一个临时 state 目录，跑完即删；口径里如实记 `per_task_fresh`。
+                with tempfile.TemporaryDirectory(prefix="v1_fresh_") as td:
+                    prev = os.environ.get("V1_STATE_DIR")
+                    os.environ["V1_STATE_DIR"] = str(Path(td) / "state")
+                    try:
+                        c = _build("", args, allow_shell=args.allow_shell)
+                        out = c.run(t.prompt, budget_factor=args.budget)
+                        _seen["llm_kind"] = c.llm_kind
+                        _seen["external_agents"] = list(c.external_agents)
+                        return out.answer
+                    finally:
+                        if prev is None:
+                            os.environ.pop("V1_STATE_DIR", None)
+                        else:
+                            os.environ["V1_STATE_DIR"] = prev
 
-            label += "（每题新建，记忆不跨题）"
+            label += "（每题新建内核 + 记忆隔离）"
             prov = lambda: dict(_seen)                             # noqa: E731
         else:
             _core = _build("", args, allow_shell=args.allow_shell)
@@ -350,6 +398,10 @@ def cmd_bench(args) -> int:
         label = "oracle（上界参照）"
         print()
         print("  ℹ️ 未配置真模型（V1_LLM_API_KEY）⇒ 本轮跑的是**参照点**，不是模型成绩。")
+
+    # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
+    _scope = "per_task_fresh" if args.fresh else "shared_db"
+    _seed = (0, 0) if args.fresh else _memory_seed(s)
 
     print()
     print(f"--- 第 2 步  跑任务集  solver={label}  预算档={tag}  repeat={repeat_n} ---")
@@ -381,7 +433,8 @@ def cmd_bench(args) -> int:
     # ── 第 3 步：口径闸 ------------------------------------------------
     caliber = Caliber(scorer_sha=scorer.sha(), suite_sha=suite.sha(),
                       repeat=repeat_n, budget_tag=tag,
-                      temperature=float(args.temperature), fresh=bool(args.fresh))
+                      temperature=float(args.temperature), fresh=bool(args.fresh),
+                      memory_scope=_scope, memory_seed=_seed)
     bl_path = (Path(args.baseline).expanduser() if args.baseline
                else s.paths.bench / "bench_baseline.json")
     store = BaselineStore(bl_path)

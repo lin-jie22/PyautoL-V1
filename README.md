@@ -182,7 +182,7 @@ cd /Users/linshaojie/V1
 # 1) 离线端到端自检（无需网络、无需密钥，几秒跑完）
 python3 run.py --selftest
 
-# 2) 契约测试（148 条断言，零依赖，可独立运行）
+# 2) 契约测试（164 条断言，零依赖，可独立运行）
 python3 tests/contract_test.py
 
 # 3) 真跑一个任务
@@ -274,7 +274,7 @@ V1/
 │   ├── scorers/code_exec.py  实证层打分器：真跑候选代码，得分=通过率
 │   └── tasks/coding_small.jsonl  6 道纯函数题（含参考解 / 部分解）
 ├── tests/
-│   ├── contract_test.py  148 条内核契约断言（含 J 结构 / K 构造路径 / L 外部能力 / M–N 协议 / O 停滞 / P 补救 / Q 收尾余量）
+│   ├── contract_test.py  164 条内核契约断言（含 J 结构 / K 构造路径 / L 外部能力 / M–N 协议 / O 停滞 / P 补救 / Q 收尾余量 / R 重试边界 / T 温度线上值）
 │   └── bench_test.py      86 条外部锚层断言（含假尺子反证组 D + 血缘 I）
 ├── external/              外部能力范例
 ├── agents.example.json    外部 agent 登记表范例

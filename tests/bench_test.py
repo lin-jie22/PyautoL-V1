@@ -74,9 +74,10 @@ _empty = B.Caliber()
 check(RS, "A1 缺省 Caliber 的每个字段都是哨兵，不是默认值",
       all(_empty.as_dict()[k] == "<MISSING>" for k in B.CALIBER_KEYS),
       str(_empty.as_dict()))
-check(RS, "A2 口径键只有这六个（供给侧运行时状态刻意不入闸）",
+check(RS, "A2 口径键就是这八个（供给侧运行时状态刻意不入闸）",
       tuple(B.CALIBER_KEYS) == ("scorer_sha", "suite_sha", "repeat",
-                                "budget_tag", "temperature", "fresh"),
+                                "budget_tag", "temperature", "fresh",
+                                "memory_scope", "memory_seed"),
       str(tuple(B.CALIBER_KEYS)))
 # ⛔ 这一条是"口径混淆"的入口：把熔断/重试之类的运行时状态写进口径，
 #    会让"供给侧崩了"的那一轮自动获得一把新尺子 —— 正是要防的事。
@@ -109,6 +110,34 @@ check(RS, "A6 仅温度不同 ⇒ 口径不同、签名不同，且 diff 点名 
 check(RS, "A7 缺省温度是哨兵而非 0.0（否则'没记温度'会被读成'T=0'）",
       B.Caliber().as_dict().get("temperature", "<闸里没有这个键>") == "<MISSING>",
       str(B.Caliber().as_dict().get("temperature", "<闸里没有这个键>")))
+
+# ---- 记忆口径进闸（2026-10-17 由内核路径实测逼出来的）----------------------
+# 实测事实：两轮"同口径"（1x / T=0 / --fresh）读数一次 0.8611、一次 0.7222。
+# 原因：`--fresh` 只换 Core、不换 DB ⇒ 记忆跨运行累积，第二轮起跑时已有 27 条
+# 语义记忆 ⇒ 召回不同 ⇒ 提示词不同 ⇒ **即使 T=0 输出也不同**。
+# 记忆基线不进闸 ⇒ 会把"记忆多少"读成"候选好坏"。这是 V5「尺子下移」的同类。
+_c_mem_a = B.Caliber(scorer_sha="a", suite_sha="b", repeat=5, budget_tag="1x",
+                     temperature=0.0, fresh=False,
+                     memory_scope="shared_db", memory_seed=(0, 0))
+_c_mem_b = B.Caliber(scorer_sha="a", suite_sha="b", repeat=5, budget_tag="1x",
+                     temperature=0.0, fresh=False,
+                     memory_scope="shared_db", memory_seed=(27, 51))
+check(RS, "A8 只有记忆基线不同 ⇒ 口径不同、签名不同，且 diff 点名 memory_seed",
+      (not _c_mem_a.same_as(_c_mem_b))
+      and _c_mem_a.signature() != _c_mem_b.signature()
+      and _c_mem_a.diff(_c_mem_b) == ["memory_seed"], str(_c_mem_a.diff(_c_mem_b)))
+_c_scope = B.Caliber(scorer_sha="a", suite_sha="b", repeat=5, budget_tag="1x",
+                     temperature=0.0, fresh=True,
+                     memory_scope="per_task_fresh", memory_seed=(0, 0))
+check(RS, "A9 记忆作用域不同（fresh vs shared）⇒ 口径不同、diff 点名 memory_scope",
+      _c_scope.diff(_c_mem_a) == ["fresh", "memory_scope"],
+      str(_c_scope.diff(_c_mem_a)))
+check(RS, "A10 记忆字段是哨兵而非空值（'没记'不许被读成'空记忆'）",
+      B.Caliber().as_dict()["memory_scope"] == "<MISSING>"
+      and B.Caliber().as_dict()["memory_seed"] == "<MISSING>")
+check(RS, "A11 as_line 里两个记忆字段都出现（日志里看得见才算进了闸）",
+      all(k in B.Caliber().as_line() for k in ("memory_scope", "memory_seed")),
+      B.Caliber().as_line())
 
 
 # ===========================================================================

@@ -20,6 +20,7 @@ import os
 import re
 import sys
 import tempfile
+import urllib.request
 from pathlib import Path
 
 # ① 先隔离环境，再 import 任何 mw 模块
@@ -36,7 +37,7 @@ from mw import config as cfg                                    # noqa: E402
 from mw.budget import Budget, BudgetExhausted, Ledger            # noqa: E402
 from mw.core import Core, _Log                                # noqa: E402
 from mw.guard import CHECKPOINTS, Guard                           # noqa: E402
-from mw.llm import (ANSWER_MARK, PARSE_MODES, Message, StubLLM,        # noqa: E402
+from mw.llm import (ANSWER_MARK, PARSE_MODES, HTTPLLM, Message, StubLLM,  # noqa: E402
                     parse_json, split_answer)
 from mw.measure import (Report, check, ci95, noise_floor,         # noqa: E402
                         paired_compare, repeat, summarize)
@@ -451,10 +452,6 @@ check(RS, "J1 去重由 SQL 约束保证（ON CONFLICT 存在）", "ON CONFLICT"
 check(RS, "J2 去重键来自规范化指纹（fingerprint 被真正使用）",
       "fingerprint(text)" in mem_src)
 core_src = _src("core.py")
-check(RS, "J3 LLM 计数只有一处（_LedgeredLLM）",
-      core_src.count("spend_llm()") == 1, str(core_src.count("spend_llm()")))
-check(RS, "J4 每个被拦候选都 continue（不会带着被拒动作继续执行）",
-      core_src.count("continue") >= 3)
 
 
 def _call_lines(src: str, attr: str) -> list[int]:
@@ -463,11 +460,22 @@ def _call_lines(src: str, attr: str) -> list[int]:
     ⚠️ 必须走 AST：直接 `src.index(name)` 会命中模块 docstring 里的同名文字
     —— V5 的 R60 就是这么骗过我的（静态锚必须注释/文档感知）。
     本文件 J5 第一次跑就是这个错，此处是修复。
+
+    又：J3 第一次写的是 `core_src.count("spend_llm()")`，本轮**同样被骗了一次** ——
+    我只是在 `_LedgeredLLM` 的 docstring 里写了一行 ``每次尝试都 `spend_llm()` ``，
+    计数就从 1 变成 2、断言判红，而实现一行没多。所以 J3 也改成走 AST。
     """
     tree = ast.parse(src)
     return sorted(n.lineno for n in ast.walk(tree)
                   if isinstance(n, ast.Call)
                   and (getattr(n.func, "attr", None) or getattr(n.func, "id", None)) == attr)
+
+
+check(RS, "J3 LLM 计数只有一处（_LedgeredLLM；AST 计真实调用，不被 docstring 骗）",
+      len(_call_lines(core_src, "spend_llm")) == 1,
+      str(_call_lines(core_src, "spend_llm")))
+check(RS, "J4 每个被拦候选都 continue（不会带着被拒动作继续执行）",
+      core_src.count("continue") >= 3)
 
 
 _cascade_lines = _call_lines(core_src, "check_cascade")
@@ -479,6 +487,25 @@ check(RS, "J5 熔断在循环顶部检查（AST 行号先于任何 dispatch）",
 check(RS, "J6 主循环只有一个 while（不叠多套循环）",
       len([n for n in ast.walk(ast.parse(core_src)) if isinstance(n, ast.While)]) == 1,
       str([n.lineno for n in ast.walk(ast.parse(core_src)) if isinstance(n, ast.While)]))
+
+
+def _while_inside(src: str, func: str) -> bool:
+    """确认那个唯一的 while **落在指定函数内**。
+
+    为什么要有这一条：只数"全文件 while == 1"可以被绕过 —— 把 while 挪到
+    某个辅助函数里，计数照样是 1，但"主循环只有一个"这句话已经不成立了。
+    本轮实测就是这个场景：给传输层加重试时顺手写了个 `while True:`（契约 J6
+    当场判红），改用 `for` 之后，还要再加一道锚确认它落在 run() 而不是别处。
+    """
+    tree = ast.parse(src)
+    for n in ast.walk(tree):
+        if isinstance(n, ast.FunctionDef) and n.name == func:
+            return any(isinstance(x, ast.While) for x in ast.walk(n))
+    return False
+
+
+check(RS, "J6b 那唯一的 while 确实在 run() 里（不是挪到别处凑数）",
+      _while_inside(core_src, "run"))
 check(RS, "J7 guard 的四道检查点在内核里全部被调用",
       all(k in core_src for k in ("check_goal", "check_shell",
                                   "check_memory_write", "check_cascade")))
@@ -966,6 +993,261 @@ check(RS, "Q7 兜底链最后一环：退到轨迹也**不返回空**（history 
       and any("来源=history" in ln for ln in _q7_log.lines),
       f"status={_q7_out.status} answer={_q7_out.answer[:40]!r} "
       f"来源行={[l for l in _q7_log.lines if '来源=' in l]}")
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("R. 传输层抖动 vs 模型侧失败（重试的边界）")
+print("=" * 74)
+# 实测背景（2026-10-17 4x 预算跑内核）：6 题里 **3 题**死于 `TimeoutError`，
+# 被记成 `solver 未产出答案` —— 那一刻的读数里混着**基础设施**的锅，
+# 而报错文本读起来像模型的锅。这正是 V5 的老毛病：不可归因的失败一起进读数。
+# 判据（与 llm.py 的 LLMError 同源）：
+#   · 传输层失败（超时/连接断/5xx/429）⇒ 重试（幂等的只读调用，重试不改变语义）
+#   · 模型侧失败（4xx / 响应结构不符）⇒ **不许重试**，换路径
+from mw.core import _LedgeredLLM                                  # noqa: E402
+from mw.llm import LLMError                                       # noqa: E402
+
+
+class _FlakyLLM:
+    """前 k 次抛错，之后成功。"""
+
+    def __init__(self, k: int, *, transient: bool = True) -> None:
+        self.k = k
+        self.transient = transient
+        self.attempts = 0
+
+    def complete(self, messages, **kw):                           # noqa: ANN001, ANN003
+        self.attempts += 1
+        if self.attempts <= self.k:
+            raise LLMError(f"第 {self.attempts} 次抖动", transient=self.transient)
+        return "ok"
+
+
+def _tiny_ledger(n: int = 10) -> Ledger:
+    return Ledger(Budget(steps=n, llm_calls=n, wall_s=60.0, candidates=1))
+
+
+def _try_complete(wrapper, tag: str = "") -> tuple[bool, str, object]:
+    """调用 `wrapper.complete(...)`，把**任何**异常收成返回值。
+
+    ⚠️ 这个包装器本身就是一条纪律（R13 逼出来的实测教训）：
+    R 组第一版直接裸调 `complete()` —— 撤掉实现后 `LLMError` 一路冒到顶层，
+    **整个文件在汇总行之前就崩了**（Traceback=1、汇总行没打印）。
+    那样撤回态读不出"哪几条精确转红"，R13 就白做了。
+    契约测试自己必须韧性化：任何一条断言失败，都只能表现为一条红，不能打断汇总。
+    """
+    try:
+        return True, wrapper.complete([Message("user", "hi")]), None
+    except Exception as e:                                   # noqa: BLE001
+        return False, "", e
+
+
+def _transient_flags() -> bool:
+    """直接验证 HTTPLLM 对「传输层」与「模型侧」失败的分类，而不是靠读源码。
+
+    做法：把 `urllib.request.urlopen` 换成抛指定异常的桩，然后看抛出的
+    `LLMError.transient` 是否符合预期 —— 期望 [超时=True, 400=False, 503=True]。
+    """
+    import io
+    import urllib.error as _ue
+    import urllib.request as _u
+    _cfg = cfg.LLMConfig(base_url="http://example.invalid/v1", api_key="k",
+                         model="m", timeout_s=0.01)
+    _real = _u.urlopen
+    _seen: list[bool] = []
+    _exc_list = [
+        TimeoutError("模拟超时"),
+        _ue.HTTPError("http://x", 400, "bad request", {}, io.BytesIO(b"nope")),
+        _ue.HTTPError("http://x", 503, "service unavailable", {}, io.BytesIO(b"boom")),
+    ]
+    try:
+        for _exc in _exc_list:
+            def _boom(*_a, _e=_exc, **_kw):                        # noqa: ANN002, ANN003
+                raise _e
+            _u.urlopen = _boom
+            try:
+                HTTPLLM(_cfg).complete([Message("user", "hi")])
+                _seen.append(False)          # 没抛 = 判据不成立
+            except LLMError as _e:
+                _seen.append(bool(getattr(_e, "transient", False)))
+            except Exception:                # noqa: BLE001
+                _seen.append(False)          # 抛了别的类型也算判据不成立，且不许崩
+    finally:
+        _u.urlopen = _real
+    return _seen == [True, False, True]
+
+
+_r1_inner = _FlakyLLM(2)
+_r1_led = _tiny_ledger()
+_r1 = _LedgeredLLM(_r1_inner, _r1_led, retries=2, backoff_s=0.0)
+_r1_ok, _r1_out, _r1_err = _try_complete(_r1, "R1")
+check(RS, "R1 传输层抖动被重试并最终成功（不把抖动记成「模型答不出来」）",
+      _r1_ok and _r1_out == "ok" and _r1.transient_retries == 2,
+      f"ok={_r1_ok} out={_r1_out!r} err={_r1_err} retries={_r1.transient_retries}")
+check(RS, "R2 每次**尝试**都花账本（账本记「实际发了几次」，不是「成功几次」）",
+      _r1_led.llm_calls_used == 3, f"llm_calls_used={_r1_led.llm_calls_used}")
+
+_r2_inner = _FlakyLLM(1, transient=False)
+_r2_led = _tiny_ledger()
+_r2 = _LedgeredLLM(_r2_inner, _r2_led, retries=3, backoff_s=0.0)
+_r2_ok, _r2_out, _r2_err = _try_complete(_r2, "R3")
+check(RS, "R3 模型侧失败**不重试**（重发同样的请求只会得到同样的错 ⇒ 该换路径）",
+      (not _r2_ok) and isinstance(_r2_err, LLMError)
+      and _r2_inner.attempts == 1 and _r2.transient_retries == 0,
+      f"ok={_r2_ok} attempts={_r2_inner.attempts} retries={_r2.transient_retries}")
+
+_r3_inner = _FlakyLLM(99)          # 一直抖
+_r3_led = _tiny_ledger()
+_r3 = _LedgeredLLM(_r3_inner, _r3_led, retries=2, backoff_s=0.0)
+_r3_ok, _r3_out, _r3_err = _try_complete(_r3, "R4")
+check(RS, "R4 重试耗尽后**仍然抛出**（不静默兜底），并记下「重试后仍失败」",
+      (not _r3_ok) and isinstance(_r3_err, LLMError)
+      and _r3_inner.attempts == 3 and _r3.transient_exhausted == 1,
+      f"ok={_r3_ok} attempts={_r3_inner.attempts} exhausted={_r3.transient_exhausted}")
+
+_r4_inner = _FlakyLLM(1)
+_r4 = _LedgeredLLM(_r4_inner, _tiny_ledger(), retries=0, backoff_s=0.0)
+_r4_ok, _r4_out, _r4_err = _try_complete(_r4, "R5")
+check(RS, "R5 重试取 0 = 完全关闭（离线 / 严控场景可关掉它）",
+      (not _r4_ok) and isinstance(_r4_err, LLMError) and _r4_inner.attempts == 1,
+      f"ok={_r4_ok} attempts={_r4_inner.attempts}")
+
+# 传输入口必须真的把「抖动」标出来 —— 否则 R1–R5 的判据建立在沙上。
+check(RS, "R6 HTTPLLM 把超时/5xx/429 标为 transient，把 4xx 标为不可重试",
+      _transient_flags(),
+      str(_transient_flags.__doc__))
+
+# 分隔符的空白容忍：实测模型打过 `---\n ANSWER---`（插了换行+空格），
+# 精确串匹配失败 ⇒ 整个响应（结构+代码）被丢进 JSON 解析 ⇒ 报「不是合法 JSON」，
+# 看起来像模型不会写 JSON。容忍的边界只在**分隔符本身**，载荷仍然逐字不动。
+_messy = '{"candidates": []}\n---\n ANSWER---\n```python\ndef f():\n    return 1\n```'
+_head, _payload = split_answer(_messy)
+check(RS, "R7 分隔符容忍空白（`---\\n ANSWER---` 也认；意图零歧义）",
+      _payload.startswith("```python\ndef f():") and "ANSWER" not in _head,
+      f"payload={_payload[:30]!r}")
+check(RS, "R8 容忍的边界只在分隔符：载荷仍**逐字**不动（一个字符都没改）",
+      _payload == "```python\ndef f():\n    return 1\n```",
+      repr(_payload))
+check(RS, "R9 老规范 `---ANSWER---` 照旧工作（容忍不是替换）",
+      split_answer("X\n---ANSWER---\nY")[1] == "Y")
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("T. 温度必须真的到达线上（★实测事故：口径写 0.0，实际跑 0.2）")
+print("=" * 74)
+# 实测事实（2026-10-17）：记忆已完全隔离、口径签名逐位相同，同一题同一档
+# 两轮仍给出 `0.5000` / `0.6667`。根因是内核三个调用点（planner×2、worldmodel×1）
+# **没有一个传 temperature**，全部落到 HTTPLLM.complete 写死的默认 `0.2`。
+# 后果：① `--temperature 0` 对内核路径完全无效；② 口径签名写着 0.0
+# ⇒ 拿"假 T=0 的内核读数"去比"真 T=0 的直连读数"。这是标签撒谎，必须 fail-closed。
+# 判据：**从线上抓请求体**，而不是读源码猜 —— 读源码正是当年被骗的方式。
+
+
+class _CapturingURL:
+    """假 urlopen：把每次请求体记下来（含 temperature），并回一个合法响应。"""
+
+    def __init__(self) -> None:
+        self.bodies: list[dict] = []
+
+    def __call__(self, req, timeout=None):                    # noqa: ANN001, ANN002
+        self.bodies.append(json.loads(req.data.decode("utf-8")))
+
+        class _Resp:
+            def read(self) -> bytes:
+                return json.dumps(
+                    {"choices": [{"message": {"content": "{}"}}]}).encode("utf-8")
+
+            def __enter__(self) -> "_Resp":
+                return self
+
+            def __exit__(self, *a: object) -> bool:            # noqa: ANN002
+                return False
+
+        return _Resp()
+
+
+_cap = _CapturingURL()
+_real_urlopen = urllib.request.urlopen
+_prev_temp_env = os.environ.get("V1_LLM_TEMPERATURE")
+_prev_key_env = os.environ.get("V1_LLM_API_KEY")
+try:
+    urllib.request.urlopen = _cap                           # type: ignore[assignment]
+    os.environ["V1_LLM_TEMPERATURE"] = "0.0"
+    # 只为了让 HTTPLLM 的构造通过（它只校验 api_key 存在）。
+    # 这里是**唯一**用 env 造 LLMConfig 的地方 —— 也正是要测的那条链：
+    # env → LLMConfig.temperature → HTTPLLM 请求体。
+    os.environ["V1_LLM_API_KEY"] = "contract-test-key"
+    _t_cfg = cfg.settings().llm
+    HTTPLLM(_t_cfg).complete([Message("user", "hi")])
+    _t_noarg = _cap.bodies[-1].get("temperature")
+    HTTPLLM(_t_cfg).complete([Message("user", "hi")], temperature=0.9)
+    _t_explicit = _cap.bodies[-1].get("temperature")
+
+    # 内核路径（planner → _LedgeredLLM → HTTPLLM）也必须遵守同一个温度
+    _t_inner = HTTPLLM(cfg.settings().llm)
+    _t_wrapped = _LedgeredLLM(_t_inner, _tiny_ledger())
+    Planner(_t_wrapped, ToolRegistry(), max_tokens=64).propose(
+        goal="g", state="", history=[], n=1)
+    _t_kernel = _cap.bodies[-1].get("temperature")
+finally:
+    urllib.request.urlopen = _real_urlopen                  # type: ignore[assignment]
+    for _k, _v in (("V1_LLM_TEMPERATURE", _prev_temp_env),
+                   ("V1_LLM_API_KEY", _prev_key_env)):
+        if _v is None:
+            os.environ.pop(_k, None)
+        else:
+            os.environ[_k] = _v
+
+check(RS, "T1 不传 temperature ⇒ 取配置值，而不是写死的默认值",
+      _t_noarg == 0.0, f"线上 temperature={_t_noarg!r}")
+check(RS, "T2 显式传 temperature ⇒ 用显式值（配置不覆盖调用方）",
+      _t_explicit == 0.9, f"线上 temperature={_t_explicit!r}")
+check(RS, "T3 内核路径（planner）也遵守配置温度 —— 这正是事故点",
+      _t_kernel == 0.0, f"线上 temperature={_t_kernel!r}")
+check(RS, "T4 温度只在 LLMConfig 声明一次（内核其它模块不许写死默认值）",
+      all("temperature: float = 0." not in _src(m)
+          for m in ("planner.py", "worldmodel.py", "core.py")),
+      str([m for m in ("planner.py", "worldmodel.py", "core.py")
+           if "temperature: float = 0." in _src(m)]))
+
+
+def _env_zero_takes_effect(key: str) -> bool:
+    """把 `key` 设为 "0" 后重新构造 Settings，看它是不是真的变成 0。
+
+    为什么必须**实测**而不是读代码：这场事故的核心就是"读代码看不出来" ——
+    `_env_float` 里那行 `return v if v > 0 else default` 谁看都以为是防御性代码，
+    实际它把配置里最重要的一个取值（0）静默换掉了。
+    """
+    _keys = {
+        "V1_LLM_TEMPERATURE": ("llm", "temperature"),
+        "V1_CLOSE_RESERVE_S": ("limits", "close_reserve_s"),
+        "V1_CLOSE_RESERVE_STEPS": ("limits", "close_reserve_steps"),
+        "V1_LLM_RETRIES": ("limits", "llm_retries"),
+        "V1_LLM_RETRY_BACKOFF_S": ("limits", "llm_retry_backoff_s"),
+    }
+    grp, attr = _keys[key]
+    _old = os.environ.get(key)
+    os.environ[key] = "0"
+    try:
+        got = getattr(getattr(cfg.settings(), grp), attr)
+    finally:
+        if _old is None:
+            os.environ.pop(key, None)
+        else:
+            os.environ[key] = _old
+    return got == 0
+
+
+check(RS, "T5 声明的「允许 0」键**实测**都真的取到 0（配置的 0 不许被静默改写）",
+      bool(cfg.ZERO_OK_KEYS) and all(_env_zero_takes_effect(k) for k in cfg.ZERO_OK_KEYS),
+      str({k: _env_zero_takes_effect(k) for k in cfg.ZERO_OK_KEYS}))
+check(RS, "T6 「允许 0」的键全部登记在 ENV_KEYS 里（两处清单不许漂移）",
+      all(k in cfg.ENV_KEYS for k in cfg.ZERO_OK_KEYS),
+      str([k for k in cfg.ZERO_OK_KEYS if k not in cfg.ENV_KEYS]))
 
 
 

@@ -24,7 +24,22 @@ from .config import LLMConfig
 
 
 class LLMError(RuntimeError):
-    pass
+    """模型通道错误。**必须区分"基础设施抖动"与"模型不会"** —— 这两者的修法相反：
+
+      · 传输层失败（超时 / 连接断 / 5xx / 429）：**重试**是对的（一次幂等的只读调用，
+        重试不改变语义）；不重试等于把抖动记成"模型答不出来"。
+      · 模型侧失败（4xx 参数错、响应结构不符）：**不许重试**（重发同样的请求只会
+        得到同样的错），只能改路径。
+
+    `transient=True` 表示前者。这个判据不是修辞：2026-10-17 的 4x 预算实测里
+    有 3/6 题死于 `TimeoutError`，被记成 `solver 未产出答案` —— 那一刻读数里
+    混着**基础设施**的锅，而报错文本让人以为是模型的锅。这正是 V5 的老毛病：
+    把不可归因的失败一起算进"能力读数"。
+    """
+
+    def __init__(self, msg: str, *, transient: bool = False) -> None:
+        self.transient = transient
+        super().__init__(msg)
 
 
 @dataclass
@@ -38,7 +53,7 @@ class Message:
 
 class LLM(Protocol):
     def complete(self, messages: Sequence[Message], *, max_tokens: int = 512,
-                 temperature: float = 0.2) -> str: ...
+                 temperature: float | None = None) -> str: ...
 
 
 # ---------------------------------------------------------------------------
@@ -52,9 +67,14 @@ class HTTPLLM:
         self.ledger = ledger
 
     def complete(self, messages: Sequence[Message], *, max_tokens: int = 512,
-                 temperature: float = 0.2) -> str:
+                 temperature: float | None = None) -> str:
         if self.ledger is not None:
             self.ledger.spend_llm()
+        # ⚠️ `None` ⇒ 取配置里的温度，**不是**取一个写死的默认值。
+        #    实测事故：内核三个调用点都没传 temperature，于是全部悄悄落到写死的 0.2，
+        #    而口径签名写着 0.0 —— 那次"T=0 不可复现"就是这么来的。
+        if temperature is None:
+            temperature = self.cfg.temperature
         body = json.dumps({
             "model": self.cfg.model,
             "messages": [m.as_dict() for m in messages],
@@ -75,12 +95,17 @@ class HTTPLLM:
                 payload = json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:  # 4xx/5xx 带 body，不能只看状态码
             detail = e.read().decode("utf-8", "replace")[:400]
-            raise LLMError(f"HTTP {e.code}: {detail}") from e
+            # 5xx / 429 = 服务端或限流 ⇒ 抖动，可重试；4xx = 请求本身有问题 ⇒ 不许重试
+            raise LLMError(f"HTTP {e.code}: {detail}",
+                           transient=e.code >= 500 or e.code == 429) from e
         except Exception as e:  # noqa: BLE001
-            raise LLMError(f"请求失败: {type(e).__name__}: {e}") from e
+            # 超时 / 连接断 / DNS —— 全是传输层抖动
+            raise LLMError(f"请求失败: {type(e).__name__}: {e}",
+                           transient=True) from e
         try:
             return payload["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as e:
+            # 响应结构不符 = 通道/版本问题，重试无用
             raise LLMError(f"响应结构异常: {json.dumps(payload)[:300]}") from e
 
 
@@ -104,7 +129,7 @@ class StubLLM:
         self.calls: list[list[Message]] = []
 
     def complete(self, messages: Sequence[Message], *, max_tokens: int = 512,
-                 temperature: float = 0.2) -> str:
+                 temperature: float | None = None) -> str:
         self.calls.append(list(messages))
         blob = "\n".join(m.content for m in messages)
         for key, resp in self.scripts:
@@ -155,6 +180,18 @@ _FENCE = re.compile(r"```(?:json)?\s*(.*?)```", re.S)
 #:    ⇒ 结论：只能**改协议**，不能把解析器越改越宽。
 ANSWER_MARK = "---ANSWER---"
 
+#: 分隔符的**空白容忍**形态。
+#:
+#: ⚠️ 实测（2026-10-17 4x 预算跑内核，报文原文）：
+#:     模型写的是 `---\n ANSWER---` —— 打成了 `---` 换行空格 `ANSWER---`，
+#:     于是精确串匹配 `ANSWER_MARK not in text` 失败 ⇒ 整个响应（结构 + 代码）
+#:     一起被丢进 JSON 解析 ⇒ 报"不是合法 JSON"，看起来像模型不会写 JSON。
+#:
+#: 判据仍然是**意图是否有歧义**（与上面第 152 行同一条判据，不是新开一套）：
+#:     分隔符里多几个空白，意图**零歧义**（它就是想打这个分隔符）⇒ 允许。
+#:     而载荷内容照旧**一个字符都不动** —— 容忍的边界只在分隔符本身。
+_MARK_RE = re.compile(r"-{2,}[ \t\r\n]*ANSWER[ \t\r\n]*-{2,}")
+
 
 def split_answer(text: str) -> tuple[str, str]:
     """把模型输出拆成 (结构部分, 载荷原文)。
@@ -162,10 +199,14 @@ def split_answer(text: str) -> tuple[str, str]:
     没有分隔符 ⇒ 载荷为空串（**不是**报错：老格式仍然按老办法处理）。
     载荷**一个字符都不动** —— 不转义、不解码、不剥代码块。这是整个修复的要点：
     代码原文从模型直接走到打分器，中途不经过任何有损变换。
+
+    分隔符本身容忍空白（见 `_MARK_RE`）；`head` / `tail` 的切分位置由
+    `re.split(..., maxsplit=1)` 决定，所以两侧都还是原文。
     """
-    if ANSWER_MARK not in text:
+    parts = _MARK_RE.split(text, maxsplit=1)
+    if len(parts) == 1:
         return text, ""
-    head, _, tail = text.partition(ANSWER_MARK)
+    head, tail = parts
     return head, tail.strip("\n").rstrip()
 
 #: 解析模式计数 —— **宽松放行必须留痕**（不许静默兜底）。

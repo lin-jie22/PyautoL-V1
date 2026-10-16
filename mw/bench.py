@@ -111,7 +111,8 @@ def _sha_file(p: Path) -> str:
 #:     注意它**不是**运行时状态：温度是测量前就固定下来的条件，
 #:     而熔断/重试是测量过程中自发产生的事件，两者性质不同。
 CALIBER_KEYS: tuple[str, ...] = ("scorer_sha", "suite_sha", "repeat",
-                                 "budget_tag", "temperature", "fresh")
+                                 "budget_tag", "temperature", "fresh",
+                                 "memory_scope", "memory_seed")
 
 
 @dataclass(frozen=True)
@@ -124,6 +125,19 @@ class Caliber:
     budget_tag: Any = _MISSING
     temperature: Any = _MISSING
     fresh: Any = _MISSING
+    #: 记忆作用域：`per_task_fresh` = 每题独立记忆目录（种子恒空）；
+    #: `shared_db` = 所有任务共用同一个 SQLite（记忆跨题、**跨运行**累积）。
+    #:
+    #: ⚠️ 这两个字段是 2026-10-17 实测逼出来的：两轮"同口径"（1x / T=0 / --fresh）
+    #:    读数一次 `0.8611`、一次 `0.7222`。查下来 `--fresh` 只换了 Core，
+    #:    DB 路径还是共享的 `state/memory.db` ⇒ 第二轮起跑时已带着 27 条语义记忆，
+    #:    **召回结果不同 ⇒ 提示词不同 ⇒ 即使 T=0 输出也不同**。
+    #:    而当时的标签写着"记忆不跨题"，口径闸也判"可比"。
+    #:    这同时踩了 V5 的两条老病：**标签撒谎** + **口径没固定就宣称可比**。
+    memory_scope: Any = _MISSING
+    #: 起跑时的记忆基线 (facts, episodes)。两个 `shared_db` 运行只有在
+    #: **基线也相同**时才是同口径 —— 否则它们比的是"记忆多少"而不是"候选好坏"。
+    memory_seed: Any = _MISSING
 
     def as_dict(self) -> dict:
         return {k: _val(getattr(self, k)) for k in CALIBER_KEYS}

@@ -35,6 +35,7 @@ V1 = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(V1))
 
 from mw import config as cfg                                    # noqa: E402
+from mw import features as F                                    # noqa: E402
 from mw.budget import Budget, BudgetExhausted, Ledger            # noqa: E402
 from mw.core import Core, _Log                                # noqa: E402
 from mw.guard import CHECKPOINTS, Guard                           # noqa: E402
@@ -3006,6 +3007,167 @@ check(RS, "AJ26 ★『开得多稳』必须进读数：snr = Δ/阈值 不许缺
       _AJ_8_pw.snr is not None and "snr" in _AJ_8_pw.as_dict()
       and "snr=" in _AJ_8_pw.as_line(),
       f"snr={_AJ_8_pw.snr}（Δ={_AJ_8_pw.delta} 阈值={_AJ_8_pw.margin}）")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AK 组 —— 「族」到底是概念，还是「它在哪个文件里」？（2026-10-17 第十四轮）
+#
+# 背景：自我模型的核心断言是「知道族 ⇒ 更好地预测我会不会做对」，
+#       而 `family = suite.name`（`mw/bench.py:769`）。题目是我按抽屉分装的，
+#       于是"这些抽屉通过率不同且可预测"这句话里**没有一点关于题目的信息**。
+#
+#       `mw/features.py` 给了一套**只用题面**的结构特征 + 确定性聚类，
+#       `bench/probe_family_def.py` 在**已存在的**真实账本上（零新模型调用）
+#       用同一把尺子对照两种族定义。
+#
+# ⛔ 本组最关键的是 AK6 —— 它把一个**负面发现**钉成不变量：
+#    若有人（包括未来的我）回头调特征关键词把结构族刷绿 ⇒ AK6 **判红**
+#    ⇒ 强制显式承认"我动了尺子"。这是防「尺子购物」的物理机制。
+# ═══════════════════════════════════════════════════════════════════════════
+
+def _strip_docstrings(src: str) -> str:
+    """去掉 docstring 与注释后的代码文本。
+
+    ⚠️ V5 的 R7 硬坑：全文件 `index()`/`find()` 会命中**注释和 docstring 里
+    的同名文字** ⇒ 静态锚变成恒真断言。本模块的 docstring 里必须能自由地
+    讨论 `oracle`（那是纪律本身），所以这里用 AST 剥掉字符串字面量。
+    """
+    tree = ast.parse(src)
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.FunctionDef,
+                             ast.AsyncFunctionDef, ast.ClassDef)):
+            body = node.body
+            if (body and isinstance(body[0], ast.Expr)
+                    and isinstance(body[0].value, ast.Constant)
+                    and isinstance(body[0].value.value, str)):
+                node.body = body[1:] or [ast.Pass()]
+    return ast.unparse(tree)
+
+
+_FEAT_CODE = _strip_docstrings(_src("features.py"))
+
+check(RS, "AK1 ★★特征抽取**不许看答案**：代码里不得出现 `oracle`\n"
+          "         —— 用标准答案定义族 = 用答案定义难度 ⇒ 族变成难度的同义词，\n"
+          "            断言「知道族能预测成败」退化成「知道难度能预测难度」",
+      "oracle" not in _FEAT_CODE,
+      f"命中={'oracle' in _FEAT_CODE}")
+
+check(RS, "AK2 ★★特征抽取**不许看得失**：代码里不得出现 `passed` / `score`\n"
+          "         —— 那是**被预测的量**。用它定义族就是彻底的循环论证",
+      ("passed" not in _FEAT_CODE) and ("score" not in _FEAT_CODE),
+      f"passed={'passed' in _FEAT_CODE} score={'score' in _FEAT_CODE}")
+
+_AK_task = {"id": "ak_probe", "prompt": "写一个函数 f(s)，把字符串 s 转成整数。",
+            "tests": ["assert f('1') == 1", "assert f('') == None"],
+            "oracle": "def f(s): return 1", "meta": {"level": "medium"}}
+_AK_t_copy = json.loads(json.dumps(_AK_task))
+_AK_f1 = F.task_features(_AK_task)
+check(RS, "AK3 特征抽取是**纯函数**：同输入两次结果逐位相同，且不修改入参",
+      _AK_f1 == F.task_features(_AK_task) and _AK_task == _AK_t_copy,
+      f"特征数={len(_AK_f1)}")
+
+_AK_orig = F._OP_RULES["op_parse"]
+try:
+    F._OP_RULES["op_parse"] = ("解析", "绝对不该出现的词")
+    _AK_h2 = F.feature_version_hash()
+finally:
+    F._OP_RULES["op_parse"] = _AK_orig
+check(RS, "AK4 ★特征定义必须**版本化**：改一条规则 ⇒ 指纹必须变\n"
+          "         —— 否则旧账本上的族标签会静默漂移；也挡住「悄悄改规则」",
+      _AK_h2 != F.feature_version_hash(),
+      f"原={F.feature_version_hash()} 改后={_AK_h2}")
+
+# 任务集索引刻意住在 `bench/` 侧（见 features.py 末尾），这里按需取用，
+# **不复制一份实现**（同一事实只声明一处）。
+_AK_probe_mod = _ilu2.module_from_spec(
+    _ilu2.spec_from_file_location(
+        "_v1_probe_family_def", V1 / "bench" / "probe_family_def.py"))
+_AK_probe_mod.__file__ = str(V1 / "bench" / "probe_family_def.py")
+import sys as _sys                                                  # noqa: E402
+_sys.modules.setdefault("_v1_probe_family_def", _AK_probe_mod)
+_AK_probe_mod.__spec__.loader.exec_module(_AK_probe_mod)
+_AK_load = _AK_probe_mod.load_task_index
+
+_AK_idx = _AK_load(str(V1 / "bench" / "tasks" / "*.jsonl"),
+                   str(V1 / "bench" / "heldout" / "*.jsonl"))
+_AK_tasks = [d for _, d in _AK_idx.values()]
+_AK_c1 = F.cluster(_AK_tasks)
+_AK_shuffled = list(reversed(_AK_tasks))
+check(RS, "AK5 聚类必须**确定性**：打乱输入顺序 ⇒ 族标签映射逐位相同",
+      F.cluster(_AK_shuffled) == _AK_c1,
+      f"族={sorted(set(_AK_c1.values()))}")
+
+_AK_cross: dict[str, set[str]] = {}
+for _tid, (_suite, _d) in _AK_idx.items():
+    if _tid in _AK_c1:
+        _AK_cross.setdefault(_suite.split("_heldout")[0], set()).add(_AK_c1[_tid])
+check(RS, "AK6 ★★结构族必须真的**切断文件名边界**（否则只是换了个名字）\n"
+          "         —— 至少一个套件的题被分到 ≥2 个结构族",
+      any(len(v) >= 2 for v in _AK_cross.values()),
+      " ｜ ".join(f"{k}:{sorted(v)}" for k, v in sorted(_AK_cross.items())))
+
+# ── 核心：同一批真实行、同一把尺子，只换族标签 ──────────────────────────
+_AK_L = ScoreLedger(V1 / "bench" / "evidence"
+                    / "score_ledger_real_qwen25_7b_T0_8sess.jsonl")
+_AK_rows_all = _AK_L.load()
+_AK_L.caliber_sig = collections.Counter(
+    r.get("caliber_sig") for r in _AK_rows_all).most_common(1)[0][0]
+_AK_rows = _AK_L.admissible()
+# ⚠️ 必须按**去重后的题**聚类：把 114 行（含重复题）直接喂进去，
+#    聚类会按行数加权 ⇒ 与探针（14 道唯一题）算出不同的族。
+_AK_struct = F.cluster([_AK_idx[t][1]
+                        for t in sorted({r["task_id"] for r in _AK_rows})])
+_AK_suite_pw = measure_family_power(_AK_rows)
+_AK_struct_pw = measure_family_power(
+    [dict(r, family=_AK_struct.get(r["task_id"], "?")) for r in _AK_rows])
+
+check(RS, "AK7 ★★★【本轮核心负面发现】结构族的预测力必须**弱于**文件名族\n"
+          "         实测（qwen2.5:7b / T=0 / 8 会话 / 114 行，同一批行）：\n"
+          "             文件名族 Δ=+0.0447 阈值=0.0421 snr=1.062 → PRESENT\n"
+          "             结构族   Δ=+0.0051 阈值=0.0200 snr=0.255 → ABSENT\n"
+          "         ⇒ 现有族预测力里**有相当一部分来自「套件里挑了哪些题」**，\n"
+          "           不是题面结构规律。8 会话「闸转绿」必须**降级解读**。\n"
+          "         ⛔ 这条断言同时是防「尺子购物」的闸：\n"
+          "            谁回头调特征把结构族刷绿，这条就判红 ⇒ 必须显式承认动了尺子。",
+      (_AK_struct_pw.snr or 0.0) < (_AK_suite_pw.snr or 0.0)
+      and _AK_struct_pw.state == "ABSENT"
+      and _AK_suite_pw.state == "PRESENT",
+      f"文件名 snr={_AK_suite_pw.snr} / 结构 snr={_AK_struct_pw.snr}")
+
+# ⛔ AK7 是**负面**结论，但它否定的是"按族预测通过率"，不是"按特征检索相似题"。
+#    这两件事必须分开测，否则一个真发现会被读成一场全面否定（项目反复防的错）。
+_AK_in: list[float] = []
+_AK_out: list[float] = []
+_AK_fs = {t.get("id"): F.feature_set(t) for t in _AK_tasks}
+for _a in _AK_tasks:
+    for _b in _AK_tasks:
+        if _a is _b:
+            continue
+        _sa, _sb = _AK_fs[_a["id"]], _AK_fs[_b["id"]]
+        _sim = len(_sa & _sb) / len(_sa | _sb) if (_sa | _sb) else 0.0
+        (_AK_in if _AK_c1[_a["id"]] == _AK_c1[_b["id"]] else _AK_out).append(_sim)
+# ⚠️ V5 的 R13 硬坑：契约**不许对可能不存在的东西做算术**。
+#    撤回态（聚类退化成单一族）下跨族对数为 0 ⇒ 这里除零会让汇总行整条消失，
+#    于是"AK8 崩了"看起来像"AK8 没跑"，撤回态验证直接失效。
+_AK_ok = bool(_AK_in) and bool(_AK_out)
+_AK_m_in = (sum(_AK_in) / len(_AK_in)) if _AK_in else 0.0
+_AK_m_out = (sum(_AK_out) / len(_AK_out)) if _AK_out else 0.0
+check(RS, "AK8 ★负面结论不许被读成全面否定：结构特征对**检索**仍然有效\n"
+          "         —— AK7 否定的只是「按族预测通过率」。而「按特征检索相似题」\n"
+          "            是另一个任务（外部奖励检索要用的正是后者），必须单独测：\n"
+          "            同结构族内的题面相似度必须**显著高于**跨族的。",
+      _AK_ok and _AK_m_in > _AK_m_out + 0.05,
+      f"族内均值={_AK_m_in:.3f}(n={len(_AK_in)}) 跨族均值={_AK_m_out:.3f}(n={len(_AK_out)}) "
+      f"差={_AK_m_in - _AK_m_out:.3f}" if _AK_ok else
+      "撤回态：聚类退化（族内对=0 或跨族对=0）⇒ 无法比较，判红")
+
+_AK_probe = V1 / "bench" / "probe_family_def.py"
+check(RS, "AK9 对照探针必须存在、且**声明了事前冻结**（不许回头调特征）\n"
+          "         —— 一个没有『写定在读数之前』声明的对照实验，\n"
+          "            等于允许自己试十种定义挑最好看的那个",
+      _AK_probe.exists()
+      and "事前声明" in _AK_probe.read_text(encoding="utf-8")
+      and "FEATURES_VERSION" in _src("features.py"),
+      f"探针={_AK_probe.exists()}")
 
 print()
 print("=" * 74)

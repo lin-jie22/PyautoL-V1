@@ -76,6 +76,20 @@ class Paths:
         return self.state / "memory.db"
 
     @property
+    def score_ledger(self) -> Path:
+        """跨会话分数账本（自我模型的唯一证据来源）。
+
+        ⚠️ 默认落在 `state/` 下，但**不进 `ensure()`** —— 与 `bench` 同理：
+        不写分数就不该创建这个文件（测试绝不碰生产目录）。
+        真正的创建点在 `ScoreLedger.append`。
+
+        ⚠️ 刻意**不新增**一个 `V1_SCORE_LEDGER` env：它派生自 `state`，
+        于是设了 `V1_STATE_DIR` 的测试自动就隔离了。多一个 env 就多一处
+        "忘了设 ⇒ 写到生产目录"的入口（V5 的老病）。
+        """
+        return self.state / "score_ledger.jsonl"
+
+    @property
     def log_file(self) -> Path:
         return self.logs / "core.log"
 

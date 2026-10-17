@@ -105,6 +105,37 @@ class SelfModel:
         return out
 
     # ------------------------------------------------------------------
+    def global_rate(self) -> float | None:
+        """**不区分能力族**的通过率。
+
+        它有两个用处，缺一不可：
+          ① 样本不足时 `predict()` 退回这里（"不知道就说不知道"的具体形态：
+             说"平均而言"而不是说"这个族是 xx"）；
+          ② 它是判据里的**对照基线预测器** —— 一个不区分族的常数预测器。
+             自我模型的预测误差必须显著低于它，否则"分族"这件事
+             只是在给噪声起名字（`bench/probe_selfmodel.py` 在测这个）。
+        """
+        if not self.evidence:
+            return None
+        hits = sum(1 for e in self.evidence if e.get("passed"))
+        return round(hits / len(self.evidence), 3)
+
+    def predict(self, family: str | None) -> float | None:
+        """预测 `family` **下一次**的通过率。这是自我模型唯一的可证伪断言。
+
+        `advise()` 说的是"该怎么分配资源"（一个决策，事后可以自圆其说），
+        `predict()` 说的是"我下次会拿多少分"（一个数字，可以被外部分数打脸）。
+        判据要的是后者：**只有能被打脸的断言才是断言。**
+        """
+        base = self.global_rate()
+        if not family:
+            return base
+        p = self.profile().get(family)
+        if not p or p["n"] < MIN_SAMPLES or p["pass_rate"] is None:
+            return base          # 样本不足 ⇒ 退回全局率，不装懂
+        return p["pass_rate"]
+
+    # ------------------------------------------------------------------
     def advise(self, *, family: str | None, max_candidates: int = 3) -> Advice:
         """给出资源建议。**认不出族就不装懂**（`family=None` 返回默认值）。
 
@@ -146,6 +177,7 @@ class SelfModel:
         return {
             "families": len(prof),
             "samples": len(self.evidence),
+            "global_rate": self.global_rate(),
             # 有多少族**够格**给出建议 —— 这是"我到底知不知道自己"的分母
             "confident_families": [f for f, d in prof.items()
                                    if d["n"] >= MIN_SAMPLES and d["pass_rate"] is not None],

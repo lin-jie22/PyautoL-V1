@@ -13,7 +13,7 @@ cd "$(dirname "$0")"
 FAIL=0
 
 echo "=============================================================="
-echo "步骤 1/5  依赖审计（必须零第三方依赖）"
+echo "步骤 1/6  依赖审计（必须零第三方依赖）"
 echo "=============================================================="
 if "$PY" - <<'EOF'
 import ast, sys, pathlib
@@ -40,13 +40,14 @@ then echo "  ✅ 零第三方依赖"; else echo "  ❌ 发现外部依赖"; FAIL
 
 echo
 echo "=============================================================="
-echo "步骤 2/5  契约测试（离线；K 静默降级 / L 外部能力 / O 停滞 / Q 收尾"
+echo "步骤 2/6  契约测试（离线；K 静默降级 / L 外部能力 / O 停滞 / Q 收尾"
 echo "                    U 跨领域 / V 因果闭环 / W 抽象读数 / X 血缘完整性 /"
 echo "                    Y 失配信号的分辨力 / Z 内核读数落盘 / AA 模块接线 /"
 echo "                    AB 闭环通量 / AC 价值层 / AD 自我模型 / AE 消融安全 /"
 echo "                    AF 失败签名（第二层判据：缺了会看到什么现象）/"
 echo "                    AG 外部评审（只读 / 防自评 / 防跨口径）/"
-echo "                    AH 可复核性（语言与沟通的真判据））"
+echo "                    AH 可复核性（语言与沟通的真判据）/"
+echo "                    AI 自我模型（跨会话账本 / 预测校准 / 口径闸承重））"
 echo "=============================================================="
 if "$PY" tests/contract_test.py > /tmp/v1_contract.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1)"
@@ -58,7 +59,7 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 3/5  外部锚层契约测试（含反证组：假尺子必须被判红）"
+echo "步骤 3/6  外部锚层契约测试（含反证组：假尺子必须被判红）"
 echo "=============================================================="
 if V1_BENCH_DIR=/tmp/v1_bench_ci "$PY" tests/bench_test.py > /tmp/v1_bench.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_bench.out | tail -1)"
@@ -71,7 +72,7 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 4/5  离线端到端自检（零网络 / 零密钥）"
+echo "步骤 4/6  离线端到端自检（零网络 / 零密钥）"
 echo "=============================================================="
 # ⚠️ 状态目录必须隔离到临时目录：本步骤也是"测试"，不许写生产 state/
 #    （V1 自己的第一条纪律就是"测试绝不碰生产目录"）。
@@ -90,7 +91,7 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 5/5  跨领域冒烟（同一把打分器 × 每个领域，oracle 参照）"
+echo "步骤 5/6  跨领域冒烟（同一把打分器 × 每个领域，oracle 参照）"
 echo "=============================================================="
 # 为什么要有这一步：`--suite-dir` 的价值是"**每个领域**都非零"。
 # 这条冒烟只用 oracle 参照（不需要模型、几秒钟），但能保证：
@@ -98,7 +99,10 @@ echo "=============================================================="
 #   ② 每个领域的 oracle 仍拿满分（= 任务集与打分器没漂移）。
 # 它同时替「跨领域」这件事把"数据坏了"变成**回归期就能发现**的事，
 # 而不是等到某天真跑模型时才发现某个领域全是 0。
-if V1_BENCH_DIR=/tmp/v1_cross_ci "$PY" run.py --bench --offline --solver oracle \
+# ⚠️ V1_STATE_DIR 也隔离：本步骤会**读**跨会话分数账本（自我模型起跑用），
+#    不隔离的话它会读到生产 state/score_ledger.jsonl —— 生产目录被测试读也是污染。
+if V1_STATE_DIR=/tmp/v1_cross_state V1_BENCH_DIR=/tmp/v1_cross_ci \
+   "$PY" run.py --bench --offline --solver oracle \
      --suite-dir bench/tasks > /tmp/v1_cross.out 2>&1; then
   echo "  ✅ $(grep -oE '可信领域 [0-9]+/[0-9]+.*' /tmp/v1_cross.out | tail -1)"
 else
@@ -115,13 +119,30 @@ fi
 #    而判据该由被测对象声明，不由调用方推断。
 echo "步骤 5b  语言领域冒烟（assertion 打分器 × 可复核性）"
 echo "=============================================================="
-if V1_BENCH_DIR=/tmp/v1_lang_ci "$PY" run.py --bench --offline --solver oracle \
+if V1_STATE_DIR=/tmp/v1_lang_state V1_BENCH_DIR=/tmp/v1_lang_ci \
+   "$PY" run.py --bench --offline --solver oracle \
      --scorer bench/scorers/assertion.py \
      --suite-dir bench/tasks_lang > /tmp/v1_lang.out 2>&1; then
   echo "  ✅ $(grep -oE '可信领域 [0-9]+/[0-9]+.*' /tmp/v1_lang.out | tail -1)"
 else
   echo "  ❌ 语言领域冒烟失败（校准或 oracle 不满分）："
   tail -12 /tmp/v1_lang.out | sed 's/^/  /'
+  FAIL=1
+fi
+
+# ── 步骤 6：自我模型的判据（跨会话预测校准）────────────────────────────
+# 为什么单独一步：它测的不是"内核跑不跑得通"，而是"自我模型说的话算不算数"。
+# 判据 = 用历史会话预测未来会话，误差必须**优于**不区分能力族的对照基线；
+# 且自带两个反证组（打乱族标签 / 混入异口径），缺一个就是恒真断言。
+echo "步骤 6/6  自我模型判据（跨会话预测校准 + 两个反证组）"
+echo "=============================================================="
+if "$PY" bench/probe_selfmodel.py > /tmp/v1_self.out 2>&1; then
+  grep -E "^  (自我模型预测|对照基线预测|优势|⇒|只收同口径|混入异口径)" \
+    /tmp/v1_self.out | sed 's/^/  /'
+  echo "  ✅ $(grep -oE '结论：.*' /tmp/v1_self.out | tail -1)"
+else
+  echo "  ❌ 自我模型判据不成立（判据不能分辨，或反证组没转红）："
+  tail -20 /tmp/v1_self.out | sed 's/^/  /'
   FAIL=1
 fi
 

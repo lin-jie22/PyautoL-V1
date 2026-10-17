@@ -35,9 +35,10 @@ from .budget import Budget, BudgetExhausted, Ledger
 from .critique import Critique, CritiqueLedger
 from .flow import FlowMeter
 from .guard import Guard
+from .ledger import ScoreLedger
 from .llm import HTTPLLM, LLM, LLMError, Message, StubLLM, build_llm
 from .memory import MemoryStore
-from .metacog import SelfModel
+from .metacog import SelfModel, load_evidence
 from .planner import Planner, Step, action_signature, looks_complex
 from .tools import (ToolRegistry, external_agent_names, register_core_tools,
                     register_external_agents)
@@ -145,6 +146,8 @@ class Core:
         log: _Log | None = None,
         wire_external: bool = True,
         critique_ledger: CritiqueLedger | None = None,
+        score_ledger: ScoreLedger | None = None,
+        caliber_sig: str = "",
     ) -> None:
         self.s = settings or cfg.settings()
         self.s.paths.ensure()
@@ -207,8 +210,26 @@ class Core:
         self.values = Values()
         #: 通量计：环上每条边真的过去了多少。它是**尺子**，不参与决策。
         self.flow = FlowMeter()
-        #: 自我模型：只读**已完成**任务的外部读数。物理上拿不到当前 goal。
-        self.selfmodel = SelfModel()
+        # ── 自我模型：**起跑时**从跨会话账本冻结一次历史证据 ──────────
+        #
+        # 之前这里写的是 `SelfModel()` —— 空着起跑，于是自我模型的判据
+        # 只能退到代理量（被咨询过几次）。§16.7 第三条判它"判据不成立"。
+        #
+        # ⚠️ 为什么是**起跑冻结**而不是"每次用的时候现读"：
+        #    若当前轮里能读到本轮新写入的分数，第 6 题就拿到了第 1 题的成绩，
+        #    `repeat` 立刻从"同一条件重复 N 次"变成"顺次影响 N 次"，
+        #    量到的是顺序效应而不是能力 —— 这正是 §16.7 说的
+        #    "轮内使用会破坏测量一致性"。
+        #    ⇒ 快照在**构造时**取一次，之后本轮无论账本怎么变都不再更新。
+        #
+        # ⚠️ 为什么 `Core` 里**没有**写账本的调用点：见 `mw/ledger.py` 模块头。
+        #    内核给自己记分的那一天，就是这套测量体系失效的那一天。
+        #: 当前口径签名（由外部锚层传入；空串 ⇒ 一条历史都不采纳）
+        self.caliber_sig: str = str(caliber_sig or "")
+        self.score_ledger = score_ledger
+        self._ledger_snapshot: tuple[dict, ...] = (
+            score_ledger.snapshot(self.caliber_sig) if score_ledger is not None else ())
+        self.selfmodel = SelfModel(load_evidence(list(self._ledger_snapshot)))
         #: 外部评审账本：他者的过程性反馈，**只读输入**。
         #: None = 本次运行不启用（默认）—— 见 `run(task_id=...)` 的说明。
         self.critique_ledger = critique_ledger
@@ -649,6 +670,17 @@ class Core:
             "values": self.values.report(),
             "flow": self.flow.report(),
             "selfmodel": self.selfmodel.report(),
+            # 跨会话账本：**采纳数与被拒数一起**给。
+            # 只报"采纳了多少"，你永远看不出它有没有在挡东西 ——
+            # 而"从没挡过东西的闸"和没有闸是同一件事。
+            "score_ledger": (self.score_ledger.report()
+                             if self.score_ledger is not None
+                             else {"admitted": 0, "total": 0,
+                                   "rejected": {"missing_fields": 0,
+                                                "no_caliber_sig": 0,
+                                                "diff_caliber_sig": 0},
+                                   "bad_lines": 0, "path": "",
+                                   "caliber_sig": self.caliber_sig}),
             "critique": (self.critique_ledger.stats()
                          if self.critique_ledger else {}),
             "worldmodel": self.wm.stats(),
@@ -690,7 +722,17 @@ class Core:
         v_line = (f" | 价值判定={vs['judged']} 否决={vs['denied']}"
                   f"({','.join(f'{k}:{v}' for k, v in vs['by_kind'].items()) or '-'})")
         f_line = f" | {self.flow.as_line()}"
+        # 账本读数：**零值不显示**（避免每行噪声），但一旦有内容就必须带全四项
+        _sl = stats["score_ledger"]
+        _sl_r = _sl.get("rejected") or {}
+        _sl_n = int(_sl.get("admitted") or 0)
+        _sl_line = ""
+        if _sl_n or any(int(_sl_r.get(k) or 0) for k in
+                        ("missing_fields", "no_caliber_sig", "diff_caliber_sig")):
+            _sl_line = (f" | 账本采纳={_sl_n} 拒(缺字段={_sl_r.get('missing_fields', 0)}"
+                        f"/无签名={_sl_r.get('no_caliber_sig', 0)}"
+                        f"/异口径={_sl_r.get('diff_caliber_sig', 0)})")
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
-                 f"{tx_line}")
+                 f"{tx_line}{_sl_line}")
         return Outcome(status, answer, reason, len(history), stats)

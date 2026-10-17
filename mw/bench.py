@@ -51,6 +51,7 @@ from typing import Any, Callable, Sequence
 # 方向是单向的：**bench 可以读内核，内核不许读 bench**（契约钉死）。
 # bench 是环外的裁判 —— 它 import 内核模块没问题，反过来就是"尺子被内核碰到"。
 from .critique import CritiqueLedger, from_scored
+from .ledger import canonical as _canon, signature_of
 from .measure import Measurement, summarize
 
 
@@ -82,11 +83,14 @@ def _val(x: Any) -> Any:
     return "<MISSING>" if isinstance(x, _Missing) else x
 
 
-def _canon(obj: Any) -> str:
-    """规范化 JSON：键排序、无多余空白 ⇒ 同样的内容永远得到同样的哈希。"""
-    return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
-
-
+# ⚠️ `_canon` **不在本文件里实现** —— 它现在是 `mw.ledger.canonical` 的别名。
+#
+# 为什么必须搬走（2026-10-17）：跨会话分数账本（`mw/ledger.py`）要用**同一个**
+# 规范化函数算口径签名。若两边各写一份 `json.dumps(...)`，
+# 那就是"同一事实两处声明" —— 哪天一边的 `separators` 变了，
+# 同一个 caliber 会算出两个签名，"同口径"这个判断当场变假，
+# 而**没有任何测试会红**（两边各自内部自洽）。V5 的静默漂移全是这个形状。
+# 现在实现只有一份，且 `Caliber.signature()` 也走它（见下）。
 def _sha_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -165,7 +169,9 @@ class Caliber:
         return {k: _val(getattr(self, k)) for k in CALIBER_KEYS}
 
     def signature(self) -> str:
-        return _sha_text(_canon(self.as_dict()))[:16]
+        # 走 `mw.ledger.signature_of`：**唯一**的签名实现。
+        # 账本侧用同一函数算出的签名，才可能与这里的"当前口径"对上。
+        return signature_of(self.as_dict())
 
     def diff(self, other: "Caliber") -> list[str]:
         """点名差异字段 —— 拒绝时必须说清**哪一项**变了（不许只说"不一致"）。"""

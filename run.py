@@ -31,6 +31,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mw import config as cfg                      # noqa: E402
 from mw.core import Core                          # noqa: E402
 from mw.critique import CritiqueLedger            # noqa: E402
+from mw.ledger import (ScoreLedger, is_passed, ledger_sig_of,  # noqa: E402
+                       next_session)
 from mw.llm import Message                        # noqa: E402
 from mw.measure import (Measurement, budget_curve, noise_floor,  # noqa: E402
                         paired_compare, repeat, summarize)
@@ -114,16 +116,20 @@ DIRECT_SYSTEM = (
 
 
 def _build(goal: str, args, *, allow_shell: bool = False,
-           critique_ledger: "CritiqueLedger | None" = None) -> Core:
+           critique_ledger: "CritiqueLedger | None" = None,
+           score_ledger: "ScoreLedger | None" = None,
+           caliber_sig: str = "") -> Core:
     s = cfg.settings()
     if args.offline or not s.llm.usable():
         from mw.guard import Guard
         from mw.llm import StubLLM
-        core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger)
+        core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger,
+                    score_ledger=score_ledger, caliber_sig=caliber_sig)
         core.guard = Guard(allow_shell=allow_shell, workspace=s.paths.workspace,
                            max_consecutive_failures=s.limits.max_consecutive_failures)
     else:
-        core = Core(s, critique_ledger=critique_ledger)
+        core = Core(s, critique_ledger=critique_ledger,
+                    score_ledger=score_ledger, caliber_sig=caliber_sig)
     return core
 
 
@@ -449,12 +455,26 @@ def _cross_domain(args, suite_dir: Path) -> int:
         args = copy.copy(args)
         args.fresh = True
 
+    # ── 会话号：**一次 `--suite-dir` 调用 = 一个会话** ────────────────────
+    #
+    # ⚠️ 不能让每个领域各自取 `next_session()`：那样一轮 2 个领域就变成
+    #    会话 0 与会话 1，而它们其实是**同一次测量**的两个部分。
+    #    后果是自我模型做时序切分时，每个族只剩 1 个历史样本
+    #    （< MIN_SAMPLES ⇒ 一律退回全局率 ⇒ 永远读不出族信号）。
+    #    会话号的语义必须落在"**一次完整评测**"上，而不是"一次追加写入"上。
+    _sess_id: "int | None" = None
+    if not getattr(args, "no_ledger", False):
+        _lp = (Path(args.ledger).expanduser() if getattr(args, "ledger", "")
+               else cfg.settings().paths.score_ledger)
+        _sess_id = next_session(ScoreLedger(_lp).load())
+
     runs_path = cfg.settings().paths.bench / "runs.jsonl"
     rows: list[dict] = []
     for f in files:
         sub = copy.copy(args)
         sub.suite = str(f)
         sub.suite_dir = ""            # 防止递归
+        sub.session = _sess_id
         print()
         print("█" * 74)
         print(f"█ 领域  {f.stem}   （{f.name}）")
@@ -615,6 +635,47 @@ def cmd_bench(args) -> int:
         print(f"  评审账本  {_crit_path.name}  载入 {_crit_loaded} 条"
               f"  投喂={'开' if args.use_critique else '关（默认：保住测量一致性）'}")
 
+    # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
+    # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
+    # 第三种是泛化实验的条件变量 —— 它必须可复现，所以目录由调用方持有，
+    # 不由 run.py 随便生成（生成的话下次就找不到同一份记忆了）。
+    _scope = ("explicit_dir" if _mem_dir
+              else ("per_task_fresh" if args.fresh else "shared_db"))
+    _seed = (0, 0) if args.fresh else _memory_seed(s)
+
+    # ── 口径签名必须在**跑之前**算出来 ──────────────────────────────────
+    # 自我模型要在起跑时拿"当前口径"去账本里筛历史，所以签名不能等到第 3 步
+    # （口径闸）才构造 —— 那时任务已经跑完了，自我模型早就是空的了。
+    # 这也顺带消灭了一处"同一事实两处构造"：以前只有第 3 步有 Caliber，
+    # 若自我模型另算一份，两边字段漂移一次就会静默筛错历史。
+    caliber = Caliber(scorer_sha=scorer.sha(), suite_sha=suite.sha(),
+                      repeat=repeat_n, budget_tag=tag,
+                      temperature=float(args.temperature), fresh=bool(args.fresh),
+                      memory_scope=_scope, memory_seed=_seed,
+                      # 这三项补进来的理由见 bench.CALIBER_KEYS 的注释：
+                      # budget_tag 只是倍数，乘在绝对值上 —— 不含绝对值的"同口径"是假的。
+                      limits=s.limits.as_dict(),
+                      llm_cond=s.llm.cond(),
+                      max_tokens=int(args.max_tokens))
+    # 账本签名与基线签名**不是同一把**（见 mw.ledger.LEDGER_SIG_EXCLUDE）：
+    # 基线要钉死题目集（"同一个候选有没有变好"）；
+    # 自我模型要跨题目集（"我在哪些族上弱"）—— 钉死了就没这个问题可问。
+    _cal_sig = ledger_sig_of(caliber.as_dict())
+
+    # ── 跨会话分数账本：自我模型的证据来源 ──────────────────────────────
+    # ⚠️ 内核**只读**它（起跑冻结，见 mw/ledger.py 模块头）；写入发生在
+    #    本轮拿到外部打分器的分数**之后**（本函数末尾），由外部执行。
+    _ledger: "ScoreLedger | None" = None
+    if not args.no_ledger:
+        _led_path = (Path(args.ledger).expanduser() if args.ledger
+                     else s.paths.score_ledger)
+        _ledger = ScoreLedger(_led_path, caliber_sig=_cal_sig)
+        _led_hist = _ledger.load()
+        _led_adm = _ledger.admissible(_cal_sig)
+        if _led_hist:
+            print(f"  分数账本  {_led_path.name}  载入 {len(_led_hist)} 行"
+                  f"  同口径采纳 {len(_led_adm)} 行  （自我模型据此起跑）")
+
     if args.solver == "null":
         solver: Callable[[object], str] = lambda t: ""            # noqa: E731
         label = "null（下界参照）"
@@ -653,7 +714,8 @@ def cmd_bench(args) -> int:
         # 1 秒"跑完" 6 题、每轮报 done、mean=0.0000 却标 `可信=✅`，
         # 真模型一次都没被调用，且标签与事实矛盾而**无任何机制发现**。
         # 所以出分之前先问内核一次；拿不到真通道就 fail-closed，一个分都不出。
-        _probe = _build("", args, allow_shell=args.allow_shell)
+        _probe = _build("", args, allow_shell=args.allow_shell,
+                        score_ledger=_ledger, caliber_sig=_cal_sig)
         _kind = str(getattr(_probe, "llm_kind", "unknown"))
         if _kind != "http":
             print(f"❌ 内核实际通道 = {_kind}，不是真模型 ⇒ **拒绝出分**。")
@@ -677,7 +739,8 @@ def cmd_bench(args) -> int:
                     os.environ["V1_STATE_DIR"] = str(Path(td) / "state")
                     try:
                         c = _build("", args, allow_shell=args.allow_shell,
-                                   critique_ledger=_crit_for_kernel)
+                                   critique_ledger=_crit_for_kernel,
+                                   score_ledger=_ledger, caliber_sig=_cal_sig)
                         out = c.run(t.prompt, budget_factor=args.budget,
                                     task_id=t.id, family=suite.name,
                                     scorer_sha=scorer.sha(), suite_sha=suite.sha())
@@ -696,7 +759,8 @@ def cmd_bench(args) -> int:
             prov = lambda: dict(_seen)                             # noqa: E731
         else:
             _core = _build("", args, allow_shell=args.allow_shell,
-                           critique_ledger=_crit_for_kernel)
+                           critique_ledger=_crit_for_kernel,
+                           score_ledger=_ledger, caliber_sig=_cal_sig)
 
             def solver(t):                                         # type: ignore[misc]
                 out = _core.run(t.prompt, budget_factor=args.budget,
@@ -713,20 +777,38 @@ def cmd_bench(args) -> int:
         print()
         print("  ℹ️ 未配置真模型（V1_LLM_API_KEY）⇒ 本轮跑的是**参照点**，不是模型成绩。")
 
-    # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
-    # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
-    # 第三种是泛化实验的条件变量 —— 它必须可复现，所以目录由调用方持有，
-    # 不由 run.py 随便生成（生成的话下次就找不到同一份记忆了）。
-    _scope = ("explicit_dir" if _mem_dir
-              else ("per_task_fresh" if args.fresh else "shared_db"))
-    _seed = (0, 0) if args.fresh else _memory_seed(s)
-
     print()
     print(f"--- 第 2 步  跑任务集  solver={label}  预算档={tag}  repeat={repeat_n} ---")
     m, rep = run_suite(solver, scorer, suite, repeat_n=repeat_n,
                        budget_tag=tag, candidate=label, provenance=prov,
                        critique_ledger=_crit)
     _crit_saved = _crit.save()
+
+    # ── 跨会话账本：**只在跑完之后**追加（外部侧写入）─────────────────
+    #
+    # ⚠️ 为什么这里**排除参照点**（oracle / null / partial）：
+    #    账本是自我模型的"我在哪些族上做对过"的记忆。把 oracle 的满分写进去，
+    #    自我模型会"记得"自己每个族都是 1.0 —— 那不是记忆，是**伪造履历**。
+    #    参照点是尺子的校准材料，不是系统的能力读数；两者的混用
+    #    正是 V5 "把校准材料当结论"的同一类错误。
+    #
+    # ⚠️ 为什么写在**跑完之后**：轮内写入会让第 N 题读到第 N-1 题的分数
+    #    （`mw/ledger.py` 模块头纪律①）。这里已经是外部，且本轮已结束。
+    if _ledger is not None and args.solver not in ("oracle", "null", "partial"):
+        # 跨领域模式下会话号由 `_cross_domain` 统一分配（一次评测 = 一个会话）；
+        # 单套件模式下一轮就是一次追加，自己取下一个号即可 —— 两种情形
+        # 都落在"一次完整评测 = 一个会话"这个语义上。
+        _sess = getattr(args, "session", None)
+        _sess = next_session(_ledger.load()) if _sess is None else int(_sess)
+        _rows = [{"session": _sess, "family": suite.name, "task_id": r["id"],
+                  "score": r["score"], "passed": is_passed(r["score"]),
+                  "caliber_sig": _cal_sig, "candidate": label}
+                 for r in rep.per_task]
+        _w = _ledger.append(_rows)
+        if _w["added"]:
+            print(f"  分数账本  会话#{_sess} 追加 {_w['added']} 行"
+                  f"（拒绝 {_w['rejected']} 行）⇒ 下一次起跑时自我模型可读")
+
     print(f"  {m.as_line()}")
     print(f"  {rep.summary_line()}")
     if _crit_saved:
@@ -767,15 +849,8 @@ def cmd_bench(args) -> int:
         print(line)
 
     # ── 第 3 步：口径闸 ------------------------------------------------
-    caliber = Caliber(scorer_sha=scorer.sha(), suite_sha=suite.sha(),
-                      repeat=repeat_n, budget_tag=tag,
-                      temperature=float(args.temperature), fresh=bool(args.fresh),
-                      memory_scope=_scope, memory_seed=_seed,
-                      # 这三项补进来的理由见 bench.CALIBER_KEYS 的注释：
-                      # budget_tag 只是倍数，乘在绝对值上 —— 不含绝对值的"同口径"是假的。
-                      limits=s.limits.as_dict(),
-                      llm_cond=s.llm.cond(),
-                      max_tokens=int(args.max_tokens))
+    # `caliber` 已在第 2 步之前构造（自我模型起跑时就要用它筛历史），
+    # 这里**不再重算** —— 同一轮里两处构造同一个签名，是漂移的入口。
     bl_path = (Path(args.baseline).expanduser() if args.baseline
                else s.paths.bench / "bench_baseline.json")
     store = BaselineStore(bl_path)
@@ -835,6 +910,10 @@ def main() -> int:
                    help="**跨领域模式**：跑一个目录下的每个 .jsonl 各一遍，并列汇总"
                         "（『通用』的可判定形式）。与 --suite 互斥。")
     p.add_argument("--scorer", default="", help="外部打分器可执行文件（stdin/stdout 走 JSON）")
+    p.add_argument("--ledger", default="",
+                   help="跨会话分数账本路径（默认 $V1_STATE_DIR/score_ledger.jsonl）")
+    p.add_argument("--no-ledger", action="store_true",
+                   help="本轮不读写分数账本（自我模型空着起跑，用于对照）")
     p.add_argument("--critique-file", default="",
                    help="评审账本路径（默认 state/critique.jsonl）。"
                         "打分器给的理由会落盘到这里，供**下一轮**读取")

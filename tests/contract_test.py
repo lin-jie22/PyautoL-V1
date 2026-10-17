@@ -2534,6 +2534,168 @@ check(RS, "AH11 ★三档有序（分辨力）：oracle > partial > null，且**
 
 
 # ===========================================================================
+
+# ===========================================================================
+# AI 组 —— 「自我模型」的真判据：跨会话、带口径签名的分数账本（§16.7 第 3 条）
+#
+# 旧判据是**代理量**（`consulted × influenced`）—— 自我模型**总会**被咨询，
+# 所以那条永远绿，它只能证明"它说过话"，证明不了"它说得对"。
+# 新判据是**行为锚**：用历史会话的分数预测未来会话，
+# 误差必须显著低于一个不区分能力族的对照基线；
+# 且撤掉族标签 / 撤掉口径闸，读数必须转红。
+# ===========================================================================
+import importlib.util as _ilu2                                     # noqa: E402
+
+from mw import CORE_MODULES                                        # noqa: E402
+from mw.ledger import (REJECT_KINDS, ScoreLedger, is_passed,       # noqa: E402
+                       next_session, signature_of)
+
+_spec_smp = _ilu2.spec_from_file_location("v1_probe_selfmodel",
+                                          V1 / "bench" / "probe_selfmodel.py")
+_smp = _ilu2.module_from_spec(_spec_smp)
+sys.modules["v1_probe_selfmodel"] = _smp
+_spec_smp.loader.exec_module(_smp)
+
+_AI_bench_src = _src("bench.py")
+_AI_sig_src = ""
+for _n in ast.walk(ast.parse(_AI_bench_src)):
+    if isinstance(_n, ast.ClassDef) and _n.name == "Caliber":
+        for _m in _n.body:
+            if isinstance(_m, ast.FunctionDef) and _m.name == "signature":
+                _AI_sig_src = ast.get_source_segment(_AI_bench_src, _m) or ""
+check(RS, "AI1 ★静态锚：口径签名的实现**只有一处** —— `bench.Caliber.signature`\n"
+          "         必须委托 `mw.ledger.signature_of`\n"
+          "         （两边各写一份 `dumps` ⇒ 哪天 `separators` 差一点，同一个 caliber\n"
+          "         算出两个签名，'同口径'当场变假，而**没有任何测试会红**）",
+      "signature_of" in _AI_sig_src and "hexdigest()[:16]" not in _AI_bench_src,
+      f"signature 源码={_AI_sig_src.strip()[:80]!r}")
+
+# ── 账本：读侧拒绝（模拟一个"老写入方"留下的无签名行）─────────────────
+_AI_led = _TMP / "ai_ledger.jsonl"
+_AI_sig = signature_of({"scorer_sha": "S", "suite_sha": "U"})
+_AI_other = signature_of({"scorer_sha": "S2", "suite_sha": "U2"})
+_AI_led.write_text("\n".join([
+    '{"session":0,"family":"f1","passed":true,"score":1.0,"caliber_sig":"%s"}' % _AI_sig,
+    '{"session":0,"family":"f1","passed":false,"score":0.0,"caliber_sig":"%s"}' % _AI_other,
+    '{"session":0,"family":"f1","passed":true,"score":1.0}',          # 无签名
+    "{bad json",                                                       # 坏行
+]) + "\n", encoding="utf-8")
+_AI_L = ScoreLedger(_AI_led, caliber_sig=_AI_sig)
+_AI_adm = _AI_L.admissible()
+check(RS, "AI2 ★缺 `caliber_sig` 的行**必须被拒**，不并入、不默认同口径\n"
+          "         （缺签名 ≠ 同口径。默认放行 = 把两种东西当一种 = V5 的跨口径比较）",
+      len(_AI_adm) == 1 and _AI_L.stats.rejected_no_sig == 1,
+      f"采纳={len(_AI_adm)} 无签名拒={_AI_L.stats.rejected_no_sig}")
+
+check(RS, "AI3 ★异口径被拒且**分项计数** —— 只报一个总数无法归因：\n"
+          "         你分不清挡下来的是'没签名'还是'口径不对'（与 critique 同构）",
+      _AI_L.stats.rejected_diff_sig == 1 and _AI_L.stats.rejected_no_sig == 1
+      and _AI_L.stats.bad_lines == 1
+      and set(REJECT_KINDS) >= {"missing_fields", "no_caliber_sig", "diff_caliber_sig"},
+      f"{_AI_L.stats.as_dict()}")
+
+# ── 写侧：缺字段的行**根本不进文件** ────────────────────────────────────
+_AI_led2 = _TMP / "ai_ledger2.jsonl"
+_AI_L2 = ScoreLedger(_AI_led2, caliber_sig=_AI_sig)
+_AI_w = _AI_L2.append([
+    {"session": 0, "family": "demo", "passed": True, "score": 1.0,
+     "caliber_sig": _AI_sig},
+    {"session": 0, "passed": True, "score": 1.0, "caliber_sig": _AI_sig},  # 缺 family
+])
+check(RS, "AI4 写入侧也要挡：缺必需字段的行**不进文件**\n"
+          "         （先全记下来、读时再筛 ⇒ 文件里堆积无从归属的行，\n"
+          "          那就是下一次跨口径比较的入口）",
+      _AI_w["added"] == 1 and _AI_w["rejected"] == 1
+      and len(_AI_led2.read_text(encoding="utf-8").strip().splitlines()) == 1,
+      f"append={_AI_w} 行数={len(_AI_led2.read_text(encoding='utf-8').strip().splitlines())}")
+
+# ── 通电：Core 起跑冻结历史，且**轮内不写** ────────────────────────────
+_AI_L2.append([{"session": s, "family": "demo", "passed": True, "score": 1.0,
+                "caliber_sig": _AI_sig} for s in (1, 2)])
+_AI_core = Core(llm=DemoLLM(), score_ledger=_AI_L2, caliber_sig=_AI_sig)
+_AI_n_before = len(_AI_led2.read_text(encoding="utf-8").strip().splitlines())
+_AI_ev_before = len(_AI_core.selfmodel.evidence)
+# ⚠️ 起跑后**外部**再追加两行 —— 快照语义的判据：本轮不许看见它们
+_AI_L2.append([{"session": 3, "family": "demo", "passed": False, "score": 0.0,
+                "caliber_sig": _AI_sig}])
+_AI_out = _AI_core.run(DemoLLM.GOAL, family="demo")
+_AI_n_after = len(_AI_led2.read_text(encoding="utf-8").strip().splitlines())
+
+check(RS, "AI5 ★行为锚：Core 起跑时**真的**读到了历史证据（不是空着起跑）\n"
+          "         —— 之前 `Core()` 里写的是 `SelfModel()`，于是自我模型的\n"
+          "         判据只能退到代理量（被咨询过几次）",
+      _AI_ev_before == 3 and _AI_core.selfmodel.global_rate() is not None,
+      f"证据={_AI_ev_before} 条 全局率={_AI_core.selfmodel.global_rate()}")
+
+check(RS, "AI6 ★跨会话纪律：`Core.run()` **不写**账本（行数前后不变）\n"
+          "         —— 轮内写入会让第 N 题读到第 N-1 题的分数，`repeat` 的意义当场消失",
+      _AI_n_after == _AI_n_before + 1,          # +1 = 测试自己刚追加的那行
+      f"前={_AI_n_before} 后={_AI_n_after}（测试追加 1 行）")
+
+check(RS, "AI7 ★起跑快照：跑完之后，本轮看到的证据**仍是起跑那 3 条**\n"
+          "         （外部在 run 期间追加的行不许被本轮看见 —— 否则又是轮内污染）",
+      len(_AI_core.selfmodel.evidence) == 3,
+      f"证据={len(_AI_core.selfmodel.evidence)} 条（期望 3）")
+
+check(RS, "AI8 账本读数必须进 `Outcome.stats` —— 没出口的计数是进程内内存态\n"
+          "         （重启清零、跨进程不可见，拿它做诊断只能看个热闹）",
+      int((_AI_out.stats.get("score_ledger") or {}).get("admitted") or 0) == 3,
+      f"stats.score_ledger={_AI_out.stats.get('score_ledger')}")
+
+# ── 判据本体：跨会话预测校准 ────────────────────────────────────────────
+_AI_rows = _smp.build_synthetic_rows()
+_AI_cal = _smp.probe_calibration(_AI_rows)
+check(RS, "AI9 ★判据本体：用历史预测未来，误差必须**优于**不区分族的对照基线\n"
+          "         —— 这才回答'自我模型有没有用'，而不是'它有没有被咨询过'",
+      _AI_cal["state"] == "PRESENT"
+      and _AI_cal["main"]["mae_model"] < _AI_cal["main"]["mae_base"]
+      and _AI_cal["main"]["delta"] > _AI_cal["margin"],
+      f"模型 MAE={_AI_cal['main']['mae_model']} 基线 MAE={_AI_cal['main']['mae_base']} "
+      f"Δ={_AI_cal['main']['delta']} 阈值={_AI_cal['margin']}")
+
+check(RS, "AI10 ★反证组（把族标签轮转一位，只破坏『标签↔通过率』的对应关系）：\n"
+          "          优势必须**消失**，否则 AI9 是一条恒真断言\n"
+          "          （一个怎么都能赢的判据，和 V5 那个恒为 0 的适应度是同一种东西）",
+      abs(_AI_cal["control"]["delta"] or 0.0) < _AI_cal["margin"],
+      f"对照 Δ={_AI_cal['control']['delta']} 阈值={_AI_cal['margin']}")
+
+_AI_gate = _smp.probe_caliber_gate()
+check(RS, "AI11 ★口径闸是不是**承重的**：混入异口径 ⇒ 预测必须变差\n"
+          "          （撤了闸误差也不变 ⇒ 那道闸是装饰；装饰的闸就是 V5 的死法）",
+      _AI_gate["state"] == "PRESENT" and _AI_gate["loss"] > 0,
+      f"同口径 MAE={_AI_gate['gated']['mae_model']} "
+      f"混入后 MAE={_AI_gate['mixed']['mae_model']} 劣化={_AI_gate['loss']}")
+
+# ── 不装懂 / 空账本 ─────────────────────────────────────────────────────
+_AI_sm9 = SelfModel(load_evidence(
+    [{"family": "a", "passed": True, "score": 1.0}] * (MIN_SAMPLES - 1)
+    + [{"family": "b", "passed": False, "score": 0.0}] * (MIN_SAMPLES - 1)))
+check(RS, "AI12 样本不足 ⇒ `predict` 退回**全局率**且 `advise().confident` 为假\n"
+          "         —— 看过 2 道题就给建议的自我模型，与桩的区别只在于它更有说服力",
+      _AI_sm9.predict("a") == _AI_sm9.global_rate()
+      and _AI_sm9.advise(family="a").confident is False,
+      f"predict={_AI_sm9.predict('a')} 全局率={_AI_sm9.global_rate()}")
+
+check(RS, "AI13 空账本 ⇒ 不崩、不装懂（predict=None / confident=False），"
+          "且账本读数全零",
+      SelfModel().predict("x") is None
+      and SelfModel().advise(family="x").confident is False
+      and Core(llm=DemoLLM()).selfmodel.evidence == [],
+      "空账本路径已跑通")
+
+# ── 内核边界登记完整性 ──────────────────────────────────────────────────
+_AI_core_imports = set()
+for _n in ast.walk(ast.parse(_src("core.py"))):
+    if isinstance(_n, ast.ImportFrom) and _n.level == 1 and _n.module:
+        _AI_core_imports.add(_n.module)
+check(RS, "AI14 ★内核边界清单必须**完整**：`core.py` 直接 import 的每个内核模块\n"
+          "         都必须在 `mw.CORE_MODULES` 里\n"
+          "         （漏登记的模块不受 H1「不许 import bench」检查 ⇒ 那条最硬\n"
+          "         的边界纪律只覆盖了 10/15 个模块，而'验证了'三个字是假的）",
+      _AI_core_imports <= set(CORE_MODULES),
+      f"core.py 引入={sorted(_AI_core_imports)} "
+      f"漏登记={sorted(_AI_core_imports - set(CORE_MODULES))}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

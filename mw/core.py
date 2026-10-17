@@ -44,6 +44,18 @@ from .values import Values
 from .worldmodel import WorldModel
 
 
+#: 单条观测写进工作记忆时保留的字符上限。
+#:
+#: ⚠️ 这是一个**硬瓶颈**，不是随手写的数字：`perceive>memory` 的覆盖率由它
+#: 直接决定（5000 字的工具输出 ⇒ 0.06），而下一步关于上一步的一切都只来自
+#: 这 300 字。提成常量有两个理由：
+#:   ① 让 `bench/capability.py` 的探针与实现读**同一个事实源** ——
+#:      探针里再抄一个 300，就会漂移成两套真相（V5 的老毛病）；
+#:   ② 修法一旦改成"存索引 + 按需取回全文"，这个常量的语义要跟着变，
+#:      那时只有一个地方要改。
+WORKING_CHAR_CAP = 300
+
+
 class _Log:
     """极简日志：同时进文件与内存（供测试断言）。"""
     def __init__(self, path: Path | None) -> None:
@@ -435,7 +447,7 @@ class Core:
                     #    两者的比就是"写入截断率"。这个比不是形式主义的指标：
                     #    它直接回答"工具返回的 5000 字里，下一步还看得见多少"。
                     full = f"{cand.tool} ⇒ {'✔' if result.ok else '✘'} {result.as_observation()}"
-                    stored = full[:300]
+                    stored = full[:WORKING_CHAR_CAP]
                     self.flow.emit(it, "perceive>memory", 1, len(full))
                     self.flow.take("perceive>memory", 1, len(stored))
                     self.memory.think(stored)

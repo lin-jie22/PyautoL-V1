@@ -72,6 +72,7 @@ REJECT_KINDS: tuple[str, ...] = (
     "missing_fields",   # 缺必需字段（没记全 ⇒ 不是证据）
     "no_caliber_sig",   # 完全没有口径签名 ⇒ 拒绝，不默认同口径
     "diff_caliber_sig",  # 有签名但不是当前口径
+    "duplicate",        # 同一会话里的同一题写了两次（详见 `append` 的注释）
 )
 
 
@@ -171,6 +172,7 @@ class LedgerStats:
     rejected_missing_fields: int = 0
     rejected_no_sig: int = 0
     rejected_diff_sig: int = 0
+    rejected_duplicate: int = 0
     bad_lines: int = 0
 
     def as_dict(self) -> dict:
@@ -181,6 +183,7 @@ class LedgerStats:
                 "missing_fields": self.rejected_missing_fields,
                 "no_caliber_sig": self.rejected_no_sig,
                 "diff_caliber_sig": self.rejected_diff_sig,
+                "duplicate": self.rejected_duplicate,
             },
             "bad_lines": self.bad_lines,
         }
@@ -189,7 +192,8 @@ class LedgerStats:
         r = self.as_dict()["rejected"]
         return (f"账本 总={self.total} 采纳={self.admitted} "
                 f"拒(缺字段={r['missing_fields']}/无签名={r['no_caliber_sig']}"
-                f"/异口径={r['diff_caliber_sig']}) 坏行={self.bad_lines}")
+                f"/异口径={r['diff_caliber_sig']}/重复={r['duplicate']})"
+                f" 坏行={self.bad_lines}")
 
 
 class ScoreLedger:
@@ -224,18 +228,44 @@ class ScoreLedger:
         为什么不"先全记下来、读的时候再筛"：那样文件里会堆积无从归属的
         行，而"账本里有一行不知道哪来的分数"正是下一次跨口径比较的入口。
         挡在写入侧，文件里的每一行都自带可归属信息。
+
+        ── 幂等：同一会话里的同一题**只许写一次** ──────────────────────
+        起因（本轮自踩，实测）：后台跑 8 个会话的实验被我中途 kill，
+        重启后 `next_session()` 算出**同一个会话号** ⇒ 那一轮的成绩被写了
+        两次（同一 `task_id` 在该会话下出现 2 次，14 行变成 27 行）。
+        账本当时**静默接受**了，于是通过率被两份数据加权 —— 而日志上
+        看不出来（只显示"追加 N 行"）。
+
+        ⇒ 这不是理论风险：长跑服务被 kill 后重启是常态，而"同一题被计两次"
+        会让自我模型对自己能力的估计**静默失真**。所以挡在写侧，
+        并把它记成一个**可归因**的拒绝原因（不是混进总拒绝数）。
+
+        ⚠️ 只按 `(session, task_id)` 判重：同一个 task_id 在**不同**会话里
+        出现是正常的（同一套题每个会话都要跑一遍）。
         """
-        added, rejected = 0, 0
+        added, rejected, dup = 0, 0, 0
+        seen: set[tuple] = set()
+        for r in self.load():
+            k = (r.get("session"), r.get("task_id"))
+            if k[0] is not None and k[1] is not None:
+                seen.add((str(k[0]), str(k[1])))
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.path, "a", encoding="utf-8") as f:
             for r in rows:
                 if not isinstance(r, dict) or any(k not in r for k in REQUIRED_FIELDS):
                     rejected += 1
                     continue
+                key = (str(r.get("session")) if r.get("session") is not None else None,
+                       str(r.get("task_id")) if r.get("task_id") is not None else None)
+                if key[0] is not None and key[1] is not None:
+                    if key in seen:
+                        dup += 1
+                        continue
+                    seen.add(key)
                 f.write(canonical(r) + "\n")
                 added += 1
         self._rows = None   # 缓存失效
-        return {"added": added, "rejected": rejected}
+        return {"added": added, "rejected": rejected, "duplicate": dup}
 
     # ------------------------------------------------------------------
     # 读

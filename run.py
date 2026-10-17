@@ -805,9 +805,13 @@ def cmd_bench(args) -> int:
                   "caliber_sig": _cal_sig, "candidate": label}
                  for r in rep.per_task]
         _w = _ledger.append(_rows)
-        if _w["added"]:
+        # 重复数**单独念**：它意味着"这一轮的成绩账本里已经有了"
+        # （典型成因：上次跑到一半被 kill，重启后算到同一个会话号）。
+        # 混进"拒绝"里就再也分不清是字段没记全还是重跑了一遍。
+        if _w["added"] or _w["duplicate"]:
+            _dup = f"  ⚠️重复={_w['duplicate']}" if _w["duplicate"] else ""
             print(f"  分数账本  会话#{_sess} 追加 {_w['added']} 行"
-                  f"（拒绝 {_w['rejected']} 行）⇒ 下一次起跑时自我模型可读")
+                  f"（拒绝 {_w['rejected']} 行{_dup}）⇒ 下一次起跑时自我模型可读")
 
     print(f"  {m.as_line()}")
     print(f"  {rep.summary_line()}")

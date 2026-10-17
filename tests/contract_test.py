@@ -2875,6 +2875,33 @@ check(RS, "AJ15 ★反证：撤掉闸（`usable` 恒为 True）⇒ AJ2 必须转
       _AJ_mc.count("def usable") == 1 and "return self.state == \"PRESENT\"" in _AJ_mc,
       f"usable 定义数={_AJ_mc.count('def usable')}")
 
+# ── 账本幂等：中断重跑不许静默污染（本轮自踩）──────────────────────────
+_AJ_dup = ScoreLedger(Path(tempfile.mkdtemp()) / "led.jsonl")
+_AJ_dup.append([{"session": 0, "family": "a", "passed": True, "score": 1.0,
+                 "task_id": "t1", "caliber_sig": "s"}])
+_w2 = _AJ_dup.append([{"session": 0, "family": "a", "passed": False, "score": 0.0,
+                       "task_id": "t1", "caliber_sig": "s"}])
+check(RS, "AJ16 ★账本**幂等**：同一会话的同一题写两次 ⇒ 第二次被拒\n"
+          "         —— 本轮自踩：后台实验被 kill 后重启，`next_session` 算出同一个\n"
+          "            会话号 ⇒ 那一轮成绩被写两遍（14 行变 27 行）。账本当时**静默\n"
+          "            接受**，于是通过率被两份数据加权，而日志上看不出来。\n"
+          "            长跑服务被 kill 后重启是常态，这不是理论风险",
+      _w2["added"] == 0 and _w2["duplicate"] == 1
+      and len(_AJ_dup.load()) == 1 and _AJ_dup.load()[0]["passed"] is True,
+      f"第二次写入 {_w2}  文件行数={len(_AJ_dup.load())}")
+
+_w3 = _AJ_dup.append([{"session": 1, "family": "a", "passed": False, "score": 0.0,
+                       "task_id": "t1", "caliber_sig": "s"}])
+check(RS, "AJ17 判重**只按 (会话, 题)**：同一 task_id 在**不同**会话里必须照收\n"
+          "         （同一套题每个会话都要跑一遍，把它当重复 ⇒ 第二次起账本全空）",
+      _w3["added"] == 1 and _w3["duplicate"] == 0
+      and len(_AJ_dup.load()) == 2,
+      f"新会话写入 {_w3}  文件行数={len(_AJ_dup.load())}")
+
+check(RS, "AJ18 `duplicate` 必须进受控词表与被拒读数（可归因，不许混进总拒绝数）",
+      "duplicate" in REJECT_KINDS and "duplicate" in _AJ_dup.stats.as_dict()["rejected"],
+      f"REJECT_KINDS={REJECT_KINDS}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

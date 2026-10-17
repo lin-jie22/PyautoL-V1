@@ -3449,6 +3449,161 @@ _oc = _option_conflict(_OCH(fresh=True, memory_dir="/tmp/x"))
 check(RS, "AM12 这条规则必须**真的会挡人**（可观测行为，不是文档里的一句话）",
       "互斥" in _oc and "--fresh" in _oc, f"冲突说明={_oc[:60]!r}")
 
+# ===========================================================================
+# AN 组 —— 抽象层：「经验」必须能与「答案」被分开读取
+#
+# 起因（第十六轮，一次**负面**实测的全部价值）：
+#   第十五轮跑出第一个正的跨任务增益 Δ=+0.2000，但排序对照证明它属于
+#   "位置"不属于能力 —— 累积记忆里的 finish 带着**上一题的完整正确答案**，
+#   检索到它等于开卷抄范文。
+#
+#   ⇒ 于是必须有办法把"记忆里那段答案"和"从那段答案里提炼出的经验"
+#     **作为两个可分别读的层**读出来。否则永远分不清：
+#       · 它学会了什么
+#       · 它记住了什么
+#   这一组钉的是这个分离本身（不是它的效果好坏，那是外部锚层的事）。
+# ===========================================================================
+from mw.abstractor import (ABSTRACT_MODE, ABSTRACT_SOURCE,     # noqa: E402
+                           DistillStats, abstract_only, distill,
+                           looks_like_code, strip_code)
+
+check(RS, "AN1 读写两侧必须**同源**：`ABSTRACT_SOURCE`（写）与 `ABSTRACT_MODE`（读）\n"
+          "         必须同时存在且取同一个值。两边分开声明 ⇒ 某次改动只改一边后，\n"
+          "         抽象臂会**静默地读到一个空层**，而实验会被读成『抽象没用』。",
+      ABSTRACT_SOURCE == ABSTRACT_MODE == "abstract",
+      f"source={ABSTRACT_SOURCE!r} mode={ABSTRACT_MODE!r}")
+
+check(RS, "AN2 抽象器属于内核 ⇒ 不许依赖外部锚层（`mw.abstractor` 不 import bench）\n"
+          "         —— 依赖方向反向的那一天，内核就能拿打分结果去挑自己要记的经验。",
+      "bench" not in _strip_docstrings(_src("abstractor.py")),
+      "abstractor 引了 bench")
+
+check(RS, "AN3 `looks_like_code` 必须挡住**所有**可执行形态\n"
+          "         —— 一条漏网的代码就让整场对照作废（'抽象臂'抄的是答案）",
+      looks_like_code("```python\nprint(1)\n```")
+      and looks_like_code("def f():\n    return 1")
+      and looks_like_code("for i in range(3):")
+      and looks_like_code("用 `dict.get(k)` 取值")
+      and not looks_like_code("做 X 之前先检查它的边界条件"),
+      "形态判定不全")
+
+_AN_stripped = strip_code("先做 A\n```python\nx = 1\n```\n然后 B")
+check(RS, "AN4 `strip_code` 必须是**删除**而不是'标注为代码'\n"
+          "         —— 留下『[代码已省略]』等于告诉读者'这里原本有一段有用的东西'，\n"
+          "           那也会被当成信号 ⇒ 抽象层里仍然藏着答案的影子。",
+      "x = 1" not in _AN_stripped and "A" in _AN_stripped
+      and "B" in _AN_stripped and "省略" not in _AN_stripped,
+      f"结果={_AN_stripped!r}")
+
+_AN_memdir = Path(tempfile.mkdtemp()) / "an_mem"
+_AN_mem = MemoryStore(_AN_memdir)
+_AN_mem.think("这条工具输出里带着 finish 的完整答案 code=42")
+_AN_mem.record("finish", "答案原文：\n```python\nreturn 42\n```")
+_AN_mem.commit_fact("不是抽象层的旧事实", source="worldmodel", confidence=0.5)
+_AN_mem.commit_fact("做 X 之前先检查 Y", source=ABSTRACT_SOURCE, confidence=0.5)
+_AN_raw = Core(llm=DemoLLM(), memory=_AN_mem, memory_mode="raw")
+_AN_abs = Core(llm=DemoLLM(), memory=_AN_mem, memory_mode=ABSTRACT_MODE)
+_AN_s_raw = _AN_raw._state("目标", [], 1)
+_AN_s_abs = _AN_abs._state("目标", [], 1)
+
+check(RS, "AN5 abstract 模式下**工作记忆整块不进上下文**\n"
+          "         —— 工作记忆存的是工具输出原文，而 finish 的输出就是答案原文。\n"
+          "           留着它，'抽象臂'就不成为对照：同一段答案换了条路走进来。",
+      "工作记忆" in _AN_s_raw and "工作记忆" not in _AN_s_abs,
+      f"raw含={'工作记忆' in _AN_s_raw} abstract含={'工作记忆' in _AN_s_abs}")
+
+check(RS, "AN6 abstract 模式下只有 `source==abstract` 的事实留得下\n"
+          "         —— 且过滤必须**只看 source**：'长得像经验'是由运气决定的判据，\n"
+          "           source 才是写侧承诺的事实。",
+      "做 X 之前先检查 Y" in _AN_s_abs
+      and "不是抽象层的旧事实" not in _AN_s_abs,
+      f"abstract臂上下文={_AN_s_abs[:160]!r}")
+
+check(RS, "AN7 层读数必须有消费者：`memory_layer_view` 要被 `_kwm_absorb` **主动取走**\n"
+          "         —— 第三次踩'新建字段没人搬运'的根因就是要求每个调用点**记着传**。\n"
+          "           现在由 absorb 自己去 core 上取，调用点传不传都有。",
+      "memory_layer_view" in _strip_docstrings(inspect.getsource(_kwm_absorb))
+      and _AN_abs.memory_layer_view["abstract"] >= 1
+      and _AN_abs.memory_layer_view["recalled"] >= _AN_abs.memory_layer_view["abstract"],
+      f"view={_AN_abs.memory_layer_view}")
+
+
+class _StrReply:
+    """最小 LLM 回复对象（只要 `.content`，与 `mw.llm` 的返回同形）。"""
+
+    def __init__(self, content: str) -> None:
+        self.content = content
+
+
+class _CodeLLM:
+    """永远返回代码的 LLM —— 用来验证蒸馏会把它拒掉。"""
+
+    n_called = 0
+
+    def complete(self, messages, *, max_tokens=512, temperature=0.0, **kw):
+        _CodeLLM.n_called += 1
+        return _StrReply("```python\nprint(1)\n```")
+
+
+_AN_st = distill(_AN_mem, _CodeLLM())
+check(RS, "AN8 ★模型给回代码 ⇒ 蒸馏**必须拒收并且计数**，不许悄悄写进记忆\n"
+          "         —— 一个看得见的可归因拒收（dropped_code），远胜一次静默的成功。\n"
+          "           而且样例本身必须留痕：没有样例，'到底漏掉了什么'永远查不出来。",
+      _AN_st.kept == 0 and _AN_st.dropped_code >= 1
+      and len(_AN_st.examples_dropped_code) >= 1,
+      _AN_st.as_line())
+
+check(RS, "AN9 `DistillStats` 的**每种**拒收都要有名字且能进读数\n"
+          "         —— 只有一个 kept 数字的蒸馏器 = '我把不重要的东西删掉了'的资格证。",
+      {"considered", "kept", "dropped_code", "dropped_empty",
+       "dropped_invalid", "failed_llm"} <= set(DistillStats().as_dict())
+      and all(k in DistillStats().as_line()
+              for k in ("含代码", "空", "LLM失败")),
+      DistillStats().as_line())
+
+_AN_SRC = (V1 / "run.py").read_text(encoding="utf-8")
+check(RS, "AN10 run.py 必须把「读了几条 / 其中几条是抽象层」念出来\n"
+          "         —— 否则 abstract 臂读到一个空层时会**看起来跟满分处置一样**，\n"
+          "           而那其实是一个退化的对照（第十五轮同型：对照组被折叠成同一格）。",
+      "layer_abstract" in _AN_SRC and "layer_recalled" in _AN_SRC,
+      "run.py 未打印层读数")
+
+_GT_SRC = (V1 / "bench" / "gen_tasks.py").read_text(encoding="utf-8")
+check(RS, "AN11 ★任务集生成器必须有自检，且 **SyntaxError 不许被当成'没答对'**\n"
+          "         —— 本轮实测：一道题的 assert 里写了真换行符 ⇒ 5 条全是\n"
+          "           SyntaxError，若被 `except Exception` 吞掉就会读成\n"
+          "           'oracle 只过 1/5'，把**工具的失败**记成了被测对象的失败。",
+      "_self_check" in _GT_SRC and "except SyntaxError" in _GT_SRC
+      and "题面坏了" in _GT_SRC,
+      "gen_tasks 自检不完整")
+
+_AN_id_memdir = Path(tempfile.mkdtemp()) / "an_id_mem"
+_AN_id_mem = MemoryStore(_AN_id_memdir)
+_AN_id_mem.record("finish", "答案是\\n```python\\nreturn deep_get(d, path)\\n```")
+
+
+class _IdLLM:
+    """返回一个**点名了某道题**的抽象 —— 用来验证它被拒掉。"""
+
+    def complete(self, messages, *, max_tokens=512, temperature=0.0, **kw):
+        return _StrReply("调用 deep_get 时，先确认路径字符串格式正确。")
+
+
+class _AN_id:                                   # 只是给 st 一个命名空间
+    st = distill(_AN_id_mem, _IdLLM())
+
+
+check(RS, "AN12 ★抽象里不许**点名某道题**（本轮实测抓到的泄漏）\\n"
+          "         —— 蒸馏出的第一条是「调用 deep_get 时，先确认路径字符串格式正确」，\\n"
+          "           而 `deep_get` 就是训练题 z04 的函数名。那不是经验，那是记题：\\n"
+          "           换一批函数名就叫不动它了。⇒ 含下划线标识符的句子一律拒收，\\n"
+          "           逼它写成「按路径逐段下探时，先确认路径字符串的格式」。",
+      "dropped_identifier" in DistillStats().as_dict()
+      and "点名" in DistillStats().as_line()
+      and _AN_id.st.dropped_identifier >= 1
+      and _AN_id.st.kept == 0,
+      _AN_id.st.as_line())
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

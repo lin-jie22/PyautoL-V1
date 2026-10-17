@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from . import config as cfg
+from .abstractor import ABSTRACT_MODE, abstract_only
 from .budget import Budget, BudgetExhausted, Ledger
 from .critique import Critique, CritiqueLedger
 from .flow import FlowMeter
@@ -148,7 +149,23 @@ class Core:
         critique_ledger: CritiqueLedger | None = None,
         score_ledger: ScoreLedger | None = None,
         caliber_sig: str = "",
+        memory_mode: str = "raw",
     ) -> None:
+        #: 本次运行**允许读到记忆的哪一层**：
+        #:
+        #:   "raw"      （默认）episodic 原文与全部语义记忆都进决策链 ——
+        #:              第十五轮那个 Δ=+0.2000 就处在这个模式。
+        #:   "abstract" 只读由 `mw.abstractor` 蒸馏出的**自然语言经验**，
+        #:              episodic 原文与其余 facts 一律不进决策链。
+        #:
+        #: 为什么必须是内核参数、而不是脚本换一个空目录：
+        #:   换目录会把**记忆状态**也换掉，于是"隔离"与"有用 muisti" 同时消失，
+        #:   测得的是 2 个变量的和。同一个记忆状态 + 只换读哪一层
+        #:   ⇒ **唯一变量**的真对照（第十五轮排序对照的正面推论）。
+        self.memory_mode: str = str(memory_mode)
+        #: 读层读数：语义记忆被检索到几条 / 其中属于抽象层几条。
+        #: ⛔ 它**必须有消费者**（run.py 会念），否则又是一个"只声明不读"的装饰字段。
+        self.memory_layer_view: dict[str, int] = {"recalled": 0, "abstract": 0}
         self.s = settings or cfg.settings()
         self.s.paths.ensure()
 
@@ -571,7 +588,9 @@ class Core:
         # 不在上游估一个数 —— 估出来的数会让"覆盖率"变成自我安慰。
         mem_items = 0
         mem_chars = 0
-        wm = self.memory.working_view()
+        # ① 工作记忆。⚠️ abstract 模式下**整块不读** —— 它存的是工具输出原文，
+        #   而 finish 的输出就是上一题的完整答案。留着它，abstract 臂就不成为对照。
+        wm = [] if self.memory_mode == ABSTRACT_MODE else self.memory.working_view()
         if wm:
             # ⚠️ **必须逐条截断**：工作记忆存的是工具输出的原文，不截断的话
             #    一个大文件/一段长代码就能把整个上下文窗口吃掉
@@ -582,9 +601,16 @@ class Core:
             mem_items += len(recent)
             mem_chars += len(block)
         recalled = self.memory.recall(goal, k=self.s.limits.recall_k)
+        if self.memory_mode == ABSTRACT_MODE:
+            # 只留抽象层。⛔ 过滤**只看 source**，不看文本长相 ——
+            #   "长得像经验"是个由运气决定的判据，source 才是写侧承诺的事实。
+            self.memory_layer_view["recalled"] += len(recalled)
+            recalled = abstract_only(recalled)
+            self.memory_layer_view["abstract"] += len(recalled)
         if recalled:
             block = " ｜ ".join(f.text[:120] for f in recalled)
-            parts.append("[语义记忆] " + block)
+            head = "[经验]" if self.memory_mode == ABSTRACT_MODE else "[语义记忆]"
+            parts.append(head + " " + block)
             mem_items += len(recalled)
             mem_chars += len(block)
         crit = self._admissible_critiques(task_id=task_id, scorer_sha=scorer_sha,

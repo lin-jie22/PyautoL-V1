@@ -630,8 +630,246 @@ TASKS["heldout/numeric_logic_heldout"] = [
 ]
 
 
+# ===========================================================================
+# held-out（跨期考试集）：结构化数据变换 —— 与 tasks/struct_convert **同结构、
+# 不同表面**
+# ===========================================================================
+#
+# ⛔ **事前冻结**（2026-10-17 第十六轮，写在**跑实验之前**）：
+#
+#   上一轮实测出第一个正的跨任务增益 Δ=+0.2000，但排序对照证明它属于
+#   「位置」（同套件内先跑完几题，后面那题检索到前面的**完整答案**）。
+#   ⇒ 那是答案复用，不是泛化。要分辨二者，必须换一个**跨期**的考试集：
+#
+#   P1 同结构：每题递归遍历/序列化/反解析，与训练题同属「结构化数据变换」，
+#              以便题面特征有重合（否则连"检索到什么"都无从谈起）。
+#   P2 异表面：**函数名、数据格式、领域词汇都不与 struct_convert 重合** ——
+#              否则 few-shot 可以照抄，实验答的就是"能不能抄"而不是"会不会迁移"。
+#   P3 同源同粒度：每道题同样 5 条 assert、同样有 oracle/partial/null 三档，
+#              与训练题完全同一把尺子（不引入新的评分口径）。
+#   P4 定稿即冻结：题目一旦跑过一次，之后**只许**为修 bug 而改 oracle/tests，
+#              不许为了让某一臂变好看而改题、改 assert、改顺序。
+TASKS["heldout/struct_convert_heldout"] = [
+    {
+        "id": "k01_diff_tree",
+        "prompt": ("写一个函数 diff_tree(a, b)：递归比较两个 dict 的**叶子**（标量）值，"
+                   "差异路径用 '.' 连接嵌套键，返回 {路径: [a 里的值, b 里的值]}；"
+                   "某一边缺这个键时那一边写 None；两边完全相同时返回空 dict。"
+                   "只输出代码，函数名必须是 diff_tree。"),
+        "tests": [
+            "assert diff_tree({'a': 1}, {'a': 1}) == {}",
+            "assert diff_tree({'a': 1}, {'a': 2}) == {'a': [1, 2]}",
+            "assert diff_tree({'a': {'b': 1}}, {'a': {'b': 2}}) == {'a.b': [1, 2]}",
+            "assert diff_tree({'a': 1}, {}) == {'a': [1, None]}",
+            "assert diff_tree({}, {'a': 1}) == {'a': [None, 1]}",
+        ],
+        "oracle": r'''_MISS = object()
+
+
+def diff_tree(a, b, prefix=""):
+    out = {}
+    for k in set(a) | set(b):
+        key = prefix + "." + str(k) if prefix else str(k)
+        va = a.get(k, _MISS)
+        vb = b.get(k, _MISS)
+        if isinstance(va, dict) and isinstance(vb, dict):
+            out.update(diff_tree(va, vb, key))
+        else:
+            va = None if va is _MISS else va
+            vb = None if vb is _MISS else vb
+            if va != vb:
+                out[key] = [va, vb]
+    return out''',
+        "partial": r'''def diff_tree(a, b, prefix=""):
+    out = {}
+    for k in set(a) | set(b):
+        key = prefix + "." + str(k) if prefix else str(k)
+        va = a.get(k)
+        vb = b.get(k)
+        if va != vb:
+            out[key] = [va, vb]
+    return out''',
+        "null": "",
+        "meta": {"tags": "struct,diff,recursion", "level": "hard"},
+    },
+    {
+        "id": "k02_encode_cookie",
+        "prompt": ("写一个函数 encode_cookie(d)：把 dict 编码成 Cookie 请求头字符串。"
+                   "规则：键按字典序排序；值为 None 的键跳过；其余写成 'k=v'，"
+                   "值必须 percent-encode —— 空格→%20，分号→%3B，逗号→%2C，"
+                   "等号→%3D，百分号→%25；多个项用 '; ' 连接。只输出代码，"
+                   "函数名必须是 encode_cookie。"),
+        "tests": [
+            "assert encode_cookie({'a': 1}) == 'a=1'",
+            "assert encode_cookie({'a': None}) == ''",
+            "assert encode_cookie({'b': 2, 'a': 1}) == 'a=1; b=2'",
+            "assert encode_cookie({'a': 'x y'}) == 'a=x%20y'",
+            "assert encode_cookie({'a': 'p%q'}) == 'a=p%25q'",
+        ],
+        "oracle": r'''def encode_cookie(d):
+    # ⚠️ 必须是**单次**查表，不能链式 replace：
+    #    chaining 会把第一步生成的 '%20' 再当成待转义的 '%' ⇒ 二次编码。
+    #    （本轮被 gen_tasks 的自检当场捉住：oracle 只过 4/5）
+    esc = {" ": "%20", ";": "%3B", ",": "%2C", "=": "%3D", "%": "%25"}
+    parts = []
+    for k, v in sorted(d.items()):
+        if v is None:
+            continue
+        parts.append(str(k) + "=" + "".join(esc.get(c, c) for c in str(v)))
+    return "; ".join(parts)''',
+        "partial": r'''def encode_cookie(d):
+    return "; ".join(f"{k}={v}" for k, v in sorted(d.items()) if v is not None)''',
+        "null": "",
+        "meta": {"tags": "struct,serialize,escape", "level": "medium"},
+    },
+    {
+        "id": "k03_unflatten",
+        "prompt": ("写一个函数 unflatten(flat)：把展平 dict 还原成嵌套结构。"
+                   "键里的 '.' 表示嵌套 dict，'k[i]' 表示 k 是一个 list、第 i 个元素；"
+                   "列表长度取该层出现过的最大下标 +1，未填的位置写 None。"
+                   "返回还原后的顶层 dict。只输出代码，函数名必须是 unflatten。"),
+        "tests": [
+            "assert unflatten({'a': 1}) == {'a': 1}",
+            "assert unflatten({'a.b': 1}) == {'a': {'b': 1}}",
+            "assert unflatten({'a[0]': 1, 'a[1]': 2}) == {'a': [1, 2]}",
+            "assert unflatten({'a.b[0]': 1}) == {'a': {'b': [1]}}",
+            "assert unflatten({'a[2]': 3}) == {'a': [None, None, 3]}",
+        ],
+        "oracle": r'''import re
+
+
+def unflatten(flat):
+    def parts_of(key):
+        out = []
+        for m in re.finditer(r"\[(\d+)\]|([^.\[\]]+)", key):
+            out.append(("i", int(m.group(1))) if m.group(1) is not None
+                       else ("k", m.group(2)))
+        return out
+
+    def put(node, parts, value):
+        kind, tok = parts[0]
+        rest = parts[1:]
+        if kind == "i":
+            while len(node) <= tok:
+                node.append(None)
+            if rest:
+                if not isinstance(node[tok], (dict, list)):
+                    node[tok] = [] if rest[0][0] == "i" else {}
+                put(node[tok], rest, value)
+            else:
+                node[tok] = value
+        elif rest:
+            if not isinstance(node.get(tok), (dict, list)):
+                node[tok] = [] if rest[0][0] == "i" else {}
+            put(node[tok], rest, value)
+        else:
+            node[tok] = value
+
+    root = {}
+    for flat_key, value in flat.items():
+        put(root, parts_of(flat_key), value)
+    return root''',
+        "partial": r'''def unflatten(flat):
+    root = {}
+    for key, value in flat.items():
+        parts = key.split(".")
+        node = root
+        for p in parts[:-1]:
+            node = node.setdefault(p, {})
+        node[parts[-1]] = value
+    return root''',
+        "null": "",
+        "meta": {"tags": "struct,parse,index", "level": "hard"},
+    },
+    {
+        "id": "k04_to_ini",
+        "prompt": ("写一个函数 to_ini(d)：把嵌套 dict 转成 INI 文本。顶层键是 section，"
+                   "值是一个 dict；每个 section 输出 '[section]' 一行，"
+                   "接着每行 'key=value'（按 dict 的**出现顺序**）；"
+                   "值为 None 输出空串，bool 输出小写的 'true'/'false'，其它用 str()；"
+                   "最后一行的末尾也要有换行符；空 dict 返回空串。"
+                   "只输出代码，函数名必须是 to_ini。"),
+        "tests": [
+            "assert to_ini({}) == ''",
+            "assert to_ini({'s': {'a': 1}}) == '[s]\\na=1\\n'",
+            "assert to_ini({'s': {'a': None}}) == '[s]\\na=\\n'",
+            "assert to_ini({'s': {'a': True}}) == '[s]\\na=true\\n'",
+            "assert to_ini({'s': {}, 't': {'b': 2}}) == '[s]\\n[t]\\nb=2\\n'",
+        ],
+        "oracle": r'''def to_ini(d):
+    out = []
+    for sec, body in d.items():
+        out.append("[" + str(sec) + "]")
+        for k, v in body.items():
+            if v is None:
+                s = ""
+            elif isinstance(v, bool):
+                s = "true" if v else "false"
+            else:
+                s = str(v)
+            out.append(str(k) + "=" + s)
+    return ("\n".join(out) + "\n") if out else ""''',
+        "partial": r'''def to_ini(d):
+    out = []
+    for sec, body in d.items():
+        out.append("[" + str(sec) + "]")
+        for k, v in body.items():
+            s = "" if v is None else str(v)
+            out.append(str(k) + "=" + s)
+    return ("\n".join(out) + "\n") if out else ""''',
+        "null": "",
+        "meta": {"tags": "struct,serialize,text", "level": "medium"},
+    },
+]
+
+
+def _self_check() -> None:
+    """每一行都必须自己跑一遍：oracle=1.0 / partial 严格居中 / null=0.0。
+
+    ⛔ 这不是锦上添花。上一轮的三个自踩都是"代码写完了但没人验"——
+    其中 `--memory-dir 静默废掉 --fresh` 让我对一个假对照读了半天。
+    任务集是尺子本身，**尺子必须先验自己**。
+    """
+    for name, tasks in TASKS.items():
+        for t in tasks:
+            ns: dict = {}
+            exec(compile(t["oracle"], "<oracle>", "exec"), ns)      # noqa: S102
+            n = len(t["tests"])
+            hits = sum(1 for a in t["tests"] if _truthy(ns, a, t["oracle"]))
+            assert hits == n, f"{t['id']} oracle 只过 {hits}/{n}"
+
+            ns = {}
+            exec(compile(t["partial"], "<partial>", "exec"), ns)    # noqa: S102
+            hits = sum(1 for a in t["tests"] if _truthy(ns, a, t["partial"]))
+            assert 0 < hits < n, f"{t['id']} partial={hits}/{n} 没严格居中"
+
+            ns = {}
+            exec(compile(t["null"], "<null>", "exec"), ns)          # noqa: S102
+            hits = sum(1 for a in t["tests"] if _truthy(ns, a, t["null"]))
+            assert hits == 0, f"{t['id']} null 竟然过了 {hits} 条"
+    print(f"自检 OK：{sum(len(v) for v in TASKS.values())} 题，"
+          f"oracle 全满分 / partial 严格居中 / null 全零")
+
+
+def _truthy(ns: dict, assertion: str, src: str) -> bool:
+    """跑一条 assert，返回有没有过。**异常一律算没过**，不静默。"""
+    full = src + "\n" + assertion + "\n"
+    try:
+        exec(compile(full, "<check>", "exec"), dict(ns))            # noqa: S102
+        return True
+    except SyntaxError:
+        # ⛔ **不许**把 SyntaxError 当成"没答对"。它说的是**题面坏了**，
+        #    不是当事人答错了。混为一谈 = 用工具的失败冒充被测对象的失败。
+        #    本轮实测：k04 的 assert 里写了真换行符 ⇒ 5 条全是 SyntaxError，
+        #    若吞掉就会读成"oracle 只过 1/5"而不是"题面不是合法源码"。
+        raise SyntaxError(f"断言本身不是合法源码（题面坏了）：{assertion!r}")
+    except Exception:
+        return False
+
+
 def main() -> int:
     root = Path(__file__).resolve().parent      # = .../V1/bench
+    _self_check()
     for name, tasks in TASKS.items():
         path = root / f"{name}.jsonl"
         path.parent.mkdir(parents=True, exist_ok=True)

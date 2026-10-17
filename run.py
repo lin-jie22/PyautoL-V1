@@ -121,16 +121,19 @@ def _build(goal: str, args, *, allow_shell: bool = False,
            score_ledger: "ScoreLedger | None" = None,
            caliber_sig: str = "") -> Core:
     s = cfg.settings()
+    mem_mode = str(getattr(args, "memory_mode", "raw") or "raw")
     if args.offline or not s.llm.usable():
         from mw.guard import Guard
         from mw.llm import StubLLM
         core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger,
-                    score_ledger=score_ledger, caliber_sig=caliber_sig)
+                    score_ledger=score_ledger, caliber_sig=caliber_sig,
+                    memory_mode=mem_mode)
         core.guard = Guard(allow_shell=allow_shell, workspace=s.paths.workspace,
                            max_consecutive_failures=s.limits.max_consecutive_failures)
     else:
         core = Core(s, critique_ledger=critique_ledger,
-                    score_ledger=score_ledger, caliber_sig=caliber_sig)
+                    score_ledger=score_ledger, caliber_sig=caliber_sig,
+                    memory_mode=mem_mode)
     return core
 
 
@@ -199,6 +202,8 @@ def _kwm_zero() -> dict:
             #    一个你永远看不出它有没有被用过的通道 = 装饰。
             "rewards_recorded": 0, "rewards_seen": 0, "rewards_skipped_self": 0,
             "rewards_rejected_source": 0, "rewards_rejected_missing": 0,
+            # —— 读层：语义记忆检索到几条 / 其中几条属于抽象层（memory-mode=abstract 时）——
+            "layer_recalled": 0, "layer_abstract": 0,
             "confusion": {"ok_ok": 0, "ok_fail": 0, "fail_ok": 0, "fail_fail": 0}}
 
 
@@ -208,7 +213,7 @@ def _kwm_zero() -> dict:
 _KWM_NUM_KEYS: tuple[str, ...] = tuple(k for k in _kwm_zero() if k != "confusion")
 
 
-def _kwm_absorb(acc: dict, stats: dict) -> dict:
+def _kwm_absorb(acc: dict, stats: dict, core: object = None) -> dict:
     """把一次内核运行的读数并进累加器（就地修改并返回）。
 
     ⚠️ `hit_rate` **不并** —— 它是比值，逐次平均会给出错的答案
@@ -219,6 +224,14 @@ def _kwm_absorb(acc: dict, stats: dict) -> dict:
     """
     for k in _KWM_NUM_KEYS:
         acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
+    # 层读数住在 `Core.memory_layer_view` 里，**不在** worldmodel stats 里。
+    # ⛔ 这里由 absorb **主动去 core 上取**，而不是要求每个调用点记着传：
+    #    "记着传"这种约定在本项目已经失败过两次（详见 §15.2 的记录）。
+    if core is not None:
+        view = getattr(core, "memory_layer_view", None) or {}
+        for kk in ("layer_recalled", "layer_abstract"):
+            key = {"layer_recalled": "recalled", "layer_abstract": "abstract"}[kk]
+            acc[kk] = int(acc.get(kk, 0)) + int(view.get(key, 0) or 0)
     cm = acc.setdefault("confusion", {})
     for k in ("ok_ok", "ok_fail", "fail_ok", "fail_fail"):
         cm[k] = int(cm.get(k, 0)) + int((stats.get("confusion") or {}).get(k, 0) or 0)
@@ -771,7 +784,7 @@ def cmd_bench(args) -> int:
                                     task_id=t.id, family=suite.name,
                                     scorer_sha=scorer.sha(), suite_sha=suite.sha(),
                                     features=_feat_of.get(t.id))
-                        _kwm_absorb(_kwm, out.stats["worldmodel"])
+                        _kwm_absorb(_kwm, out.stats["worldmodel"], c)
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
                         _seen.update(_kernel_prov(c))
@@ -794,7 +807,7 @@ def cmd_bench(args) -> int:
                                 task_id=t.id, family=suite.name,
                                 scorer_sha=scorer.sha(), suite_sha=suite.sha(),
                                 features=_feat_of.get(t.id))
-                _kwm_absorb(_kwm, out.stats["worldmodel"])
+                _kwm_absorb(_kwm, out.stats["worldmodel"], _core)
                 return out.answer
 
             label += "（复用同一内核，记忆跨题累积）"
@@ -915,6 +928,13 @@ def cmd_bench(args) -> int:
                  f"+{_kw.get('rewards_rejected_missing', 0)}]"
                  if (_kw.get('rewards_recorded') or _kw.get('rewards_seen')
                      or _kw.get('rewards_skipped_self')) else "")
+              # ⛔ 抽象臂必须把"检索到几条 / 其中几条是抽象层"念出来。
+              #    只念 mode 的人分不清" abstract 层有用"和"abstract 层是空的"——
+              #    后者会让整个实验变成一场没有变量的空转（第十五轮自踩过一次）。
+              + (f" 记忆层[mode={getattr(args, 'memory_mode', 'raw')}"
+                 f" 检索={_kw['layer_recalled']}"
+                 f" 抽象={_kw['layer_abstract']}]"
+                 if _kw["layer_recalled"] or _kw["layer_abstract"] else "")
               + (f" ⚠️未检验={_kw['unscored']}" if _kw["unscored"] else ""))
 
     # ── 血缘闸：标签可以撒谎，血缘不能。 ────────────────────────────────
@@ -1005,6 +1025,10 @@ def main() -> int:
                         "打分器给的理由会落盘到这里，供**下一轮**读取")
     p.add_argument("--use-reward", action="store_true",
                    help="把外部打分器的分数作为**只读**奖励写进记忆（DESIGN §17-5）")
+    p.add_argument("--memory-mode", default="raw", choices=("raw", "abstract"),
+                   help="本次允许读到记忆的哪一层（DESIGN §15.2e）："
+                        "raw=原样读（含 episodic 原文）；"
+                        "abstract=只读由 mw.abstractor 蒸馏出的自然语言经验")
     p.add_argument("--use-critique", action="store_true",
                    help="把账本里的评审投喂给内核（**接线验证用，不是能力测量**）。"
                         "轮内投喂会让后面的题不再是同一条件下的测量 —— repeat 的意义当场消失")

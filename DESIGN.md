@@ -1654,8 +1654,16 @@ V5 的形态，136 轮、215K 行，每个都在跑，闭环从没断过，死�
     会话#1  载入 10 行  同口径采纳 10 行（自我模型据此起跑）→ 追加 5+5 行
     会话#2  载入 20 行  同口径采纳 20 行                    → 追加 5+5 行
     会话#3  载入 30 行  同口径采纳 30 行                    → 追加 5+5 行
-    ⇒ 40 行 / 4 会话 / 2 族 / 1 个口径（原始行留在
-      `bench_out/score_ledger_real_qwen25_7b_4sess.jsonl`）
+    ⇒ 40 行 / 4 会话 / 2 族 / 1 个口径
+
+原始 40 行落在 `bench/evidence/score_ledger_real_qwen25_7b_4sess.jsonl`
+—— 刻意**放 `bench/` 而不是 `bench_out/`**：后者在 `.gitignore` 里
+（"运行时状态，不该进版本库"），而这一份是**结论的证据**，
+与 `bench/tasks/` 同类（测量材料，不是运行时产物）。
+任何人都可以自己复现/推翻它：
+
+    python3 bench/probe_selfmodel.py --real \
+        bench/evidence/score_ledger_real_qwen25_7b_4sess.jsonl
 
 ⇒ "跨会话"这回事现在是**可观测**的，不是设计文档里的一句话。
 

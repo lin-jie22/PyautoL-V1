@@ -551,6 +551,7 @@ V1/
 │   ├── coherence.py          闭环消融（第一层判据）：拆掉一个部件，看哪条边归零
 │   ├── capability.py         失败签名（第二层判据）：缺了这个能力，会看到什么现象
 │   ├── probe_selfmodel.py    自我模型判据台：跨会话预测校准 + 两个反证组
+│   └── evidence/          真实账本证据（可被 --real 复现/推翻）
 │   ├── tasks/            代码领域：code_exec 量「能不能跑通」
 │   │   └── coding_small.jsonl  6 道纯函数题（含参考解 / 部分解）
 │   └── tasks_lang/      语言领域：assertion 量「说不说得清」（4 题 × 6 条断言）

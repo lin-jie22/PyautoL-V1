@@ -3864,6 +3864,284 @@ check(RS, "AO16 ★探针读不到证据时必须是**带理由的失败**，不
       _AO_rc_noev != 0 and "不存在" in _AO_last,
       f"rc={_AO_rc_noev} 末行={_AO_last!r}")
 
+# ===========================================================================
+# AP 组（第十四组，第十四轮之后的第十八轮）—— 假记忆臂（§17-14）
+#
+#   §16.14 那个 "+0.2000 跨任务增益" 只有「隔离 vs 累积」一个对照，
+#   没有安慰剂 ⇒ 我无法区分"它真的学到东西"与"上下文里多了一堆字"。
+#   第十七轮已经证明后者的量级可以大到 0.15 —— 比待认领的数还大。
+#
+#   AP 组钉住这套装置本身不许骗我：
+#     · patch **不许进内核**（否则"这个进程有没有被改过"无法从外部证明）
+#     · 替换必须**严格等长**、有内容必须**相异**、mapper 必须**确定且无碰撞**
+#     · 工作记忆这条泄漏通道必须精确到"上一题的残留"，不许伤到本题草稿纸
+#     · 基线与正对照那两臂必须跑**未被 patch** 的进程
+#     · 事前规则必须**在跑之前**打印（判据不许事后改）
+# ===========================================================================
+_AP_PATH = V1 / "bench" / "fake_mem.py"
+_AP_SRC = _AP_PATH.read_text(encoding="utf-8")
+_AP_SH = (V1 / "bench" / "run_fakemem_control.sh").read_text(encoding="utf-8")
+_FM_SPEC = _ilu.spec_from_file_location("v1_fake_mem", _AP_PATH)
+_FM = _ilu.module_from_spec(_FM_SPEC)
+_FM_SPEC.loader.exec_module(_FM)
+
+#: ⚠️ patch 是**类级别**的。不还原的话，后面所有用到 MemoryStore 的组
+#:    都会带着一个被替换过 mapper 的世界跑 —— 那是静默污染。
+_AP_ORIG = {n: getattr(MemoryStore, n)
+            for n in ("record", "commit_fact", "think", "working_view")}
+
+
+def _ap_restore() -> None:
+    for _n, _f in _AP_ORIG.items():
+        setattr(MemoryStore, _n, _f)
+
+
+def _ap_with(arm: str, **kw):
+    """先还原、再清统计、再装 —— 免得 wrapper 一层层叠上去。"""
+    _ap_restore()
+    _FM._STATS.update({"records": 0, "facts": 0, "chars": 0, "by_kind": {},
+                       "examples": [], "violations": [], "identity_ok": 0,
+                       "blank_identity": 0, "working_prev_mapped": 0,
+                       "task_boundary": []})
+    return _FM.install(arm, **kw)
+
+
+def _fm_raises(fn) -> bool:
+    """`fn` 必须抛 AssertionError。返回 bool（R13：不许对可能不存在的属性做算术）。"""
+    try:
+        fn()
+    except AssertionError:
+        return True
+    except Exception:                                           # noqa: BLE001
+        return False
+    return False
+
+
+def _fm_injective() -> bool:
+    """抽样字符集上 cipher 是否无碰撞。
+
+    ⛔ 刻意吞异常：撤回态验证时 mapper 可能坏到直接抛，而那一轮的要求是
+       「精确转红 + 0 Traceback + 汇总行在」 ⇒ helper 必须返回 False，不许炸。
+    """
+    try:
+        chars = sorted(set("".join(_AP_SAMPLES)))
+        mapped = [_FM.cipher(c) for c in chars]
+        return len(set(mapped)) == len(mapped)
+    except Exception:                                           # noqa: BLE001
+        return False
+
+
+def _fm_rejects(arm: str) -> bool:
+    """`install(arm)` 必须**带理由地**退出。（SystemExit 而非静默 return）"""
+    import contextlib
+    import io as _io
+    buf = _io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            _FM.install(arm)
+    except SystemExit as e:
+        # ⚠️ `raise SystemExit(msg)` 的 msg 是**异常载荷**，不会进 stdout/stderr ——
+        #    早先这里在重定向的缓冲区里找它，永远找不到 ⇒ 断言恒假。
+        #    而它又是 SystemExit 带串 ⇒ `e.code` 是 str，不能当返回码用。
+        rc = e.code if isinstance(e.code, int) else 1
+        return rc != 0 and arm in str(e.code)
+    return False
+
+
+def _fm_trace_identity_ok() -> bool:
+    """T 臂：写进去的东西必须能原样读回来。"""
+    _ap_with("T")
+    try:
+        m = MemoryStore(Path(tempfile.mkdtemp()) / "memory.db")
+        m.record("goal", _AP_SAMPLES[0])
+        rows = m.episodes("goal", limit=1)
+        return bool(rows) and rows[0].content == _AP_SAMPLES[0]
+    except Exception:                                           # noqa: BLE001
+        return False          # 撤回态要求 0 Traceback，故这里必须吞
+    finally:
+        _ap_restore()
+
+
+def _fm_working_modes() -> bool:
+    """三档语义两两不同，且 prev 档必须保住**本题自己的草稿纸**。
+
+    模拟相邻两题：先把「上一题留下的」写进 deque，再跨过一道题边界，
+    于是不属于本题的那些条目就应当被当作泄漏处理。
+    """
+    res = {}
+    for mode in ("prev", "all", "none"):
+        _ap_with("E1", fake_working=mode)
+        try:
+            m = MemoryStore(Path(tempfile.mkdtemp()) / "memory.db")
+            m.record("goal", "第 1 题")        # 边界 ①：_own 清空
+            m.think("第1题自己的草稿 zzz")      # ⟶ 本题自己的
+            m.record("goal", "第 2 题")        # 边界 ②：上一行瞬间变成"上一题的"
+            m.think("第2题自己的草稿 zzz")      # ⟶ 本题自己的
+            view = m.working_view()
+            res[mode] = (view[0], view[1])   # 顺序：[上一题残留, 本题的]
+        except Exception:                                       # noqa: BLE001
+            res[mode] = ("<异常>", "<异常>")
+        finally:
+            _ap_restore()
+    # ⛔ 刻意把期望值**写死**而不是"看起来变了就算通过"：
+    #    那样的话 mapper 退化成恒等也能混过去，而那正是最危险的失败形态。
+    _P = "第1题自己的草稿 zzz"          # 上一题留下来的 ⇒ 三档里两档要处理它
+    _O = "第2题自己的草稿 zzz"          # 本题自己的草稿纸 ⇒ prev 档必须原样
+    return (res["none"] == (_P, _O)
+            and res["prev"] == (_FM.cipher(_P), _O)
+            and res["all"] == (_FM.cipher(_P), _FM.cipher(_O)))
+
+
+_AP_DIRTY = sorted(
+    fn for fn in os.listdir(MW_DIR)
+    if fn.endswith(".py")
+    and re.search(r"MemoryStore\.(record|think|commit_fact|working_view)\s*=",
+                  (MW_DIR / fn).read_text(encoding="utf-8")))
+_AP_PATCH_N = len(re.findall(r"MemoryStore\.\w+ = ", _AP_SRC))
+
+check(RS, "AP1 ★假记忆的 patch **不许出现在内核里**\n"
+          "         —— 一旦 `mw/` 下有人把方法挂上去，'这个数是被改过的还是没改过的'\n"
+          "           就再也没法从外部证明，E3 正对照当场失去意义。\n"
+          "           同时 bench/fake_mem.py 必须真的在做 patch，否则这把锁是空的。",
+      not _AP_DIRTY and _AP_PATCH_N >= 4,
+      f"被污染的内核模块={_AP_DIRTY} patch 处数={_AP_PATCH_N}")
+
+_AP_SAMPLES = [
+    "写一个函数 flatten(d)，把嵌套 dict 展平成单层：嵌套键用 '.' 连接",
+    "def f(d):\n    return {k: v for k, v in d.items()}\n",
+    "done: def g(qs):\n    return dict(p.split('=', 1) for p in qs.split('&'))\n",
+    "a=1&b=2&c=3",
+    "0123456789 ABCDEFGHIJ zxcvbnm,.!",
+]
+
+check(RS, "AP2 ★假文本必须**严格等长**，而且**逐行**长度都不能变\n"
+          "         —— 被替换的是前面几道题的**答案代码**，缩进与换行是它的结构。\n"
+          "           连只差一个字符，'多出来的那一个字'就成了第二个自变量。",
+      all(len(_FM.cipher(s)) == len(s) for s in _AP_SAMPLES)
+      and all([len(x) for x in _FM.cipher(s).split("\n")]
+              == [len(x) for x in s.split("\n")] for s in _AP_SAMPLES),
+      f"逐行长度一致数={sum(1 for s in _AP_SAMPLES if [len(x) for x in _FM.cipher(s).split(chr(10))] == [len(x) for x in s.split(chr(10))])}/{len(_AP_SAMPLES)}")
+
+check(RS, "AP3 ★**有内容**的字符串替换后必须与原不同（等原文就不是安慰剂）\n"
+          "         —— 这条只在 `strip()` 为空时放行：空串本身没有内容可替换，\n"
+          "           拿它去卡'必须相异'只会让整个臂因为一条空记录崩掉。\n"
+          "           ⛔ 这个口子必须**看得见**（AP4 盯着它的计数）。",
+      all(_FM.cipher(s) != s for s in _AP_SAMPLES)
+      and _fm_raises(lambda: _FM._check(_AP_SAMPLES[0], _AP_SAMPLES[0], "w")),
+      "有内容者全不相同=True 相同内容已拒=True")
+
+check(RS, "AP4 ★放行恒等必须**计数**，不许静默\n"
+          "         —— 看不见的例外会长大：今天只放过空串，明天就有人往里塞条件，\n"
+          "           而 AP3 只抽样，看不出来覆盖面缩了多少。",
+      "blank_identity" in _AP_SRC and _AP_SRC.count("_STATS[\"blank_identity\"] += 1") == 1,
+      f"计数出现次数={_AP_SRC.count('_STATS[\\\"blank_identity\\\"] += 1')}")
+
+check(RS, "AP5 ★mapper 必须是**双射**：不同字符不得映射到同一个字符\n"
+          "         —— 一旦碰撞，假文本的信息量就不再与原文本可比：\n"
+          "           长度虽然一样，'删掉了多少信息'却随原文内容浮动 ⇒ 第二个自变量。",
+      _fm_injective(),
+      f"测试字符数={len(set(''.join(_AP_SAMPLES)))}")
+
+check(RS, "AP6 ★mapper 必须**确定性**：同一段原文两次映射结果逐位相同\n"
+          "         —— mapper 里只要掺一点时间/随机数，两道题看到的就不是同一个\n"
+          "           '假记忆'，而那正是本实验要排除的那个变量。",
+      all(_FM.cipher(s) == _FM.cipher(s) for s in _AP_SAMPLES)
+      and "random.Random" not in _AP_SRC.split("def cipher")[1][:600],
+      "两次一致=True")
+
+check(RS, "AP7 ★T 只读探针必须真的**一个字都不改**，并且逐条记账\n"
+          "         —— T 是'装上测量会不会改变被测对象'的答案：\n"
+          "           它一旦偷偷变换，' |E3−T| ≤ 0.05 '这条闸门就成了自我安慰。",
+      _fm_trace_identity_ok() and _FM._STATS["identity_ok"] >= 1,
+      f"identity_ok={_FM._STATS['identity_ok']}")
+
+check(RS, "AP8 ★E0（空）与 E3（真原文）必须被 runner **明确拒绝**\n"
+          "         —— 它们只能跑**未被 patch** 的进程。让它们也从这里出去，\n"
+          "           就等于承认我分不清这个进程有没有被改过。",
+      "E3" not in _FM.ARMS and "E0" not in _FM.ARMS
+      and _fm_rejects("E3") and _fm_rejects("E0"),
+      f"ARMS={_FM.ARMS}")
+
+check(RS, "AP9 ★工作记忆的处理必须**精确到条**：\n"
+          "         prev 档只替换上一题残留，**本题自己的草稿纸一个字都不许动**\n"
+          "         —— 把本题草稿纸也改掉，就不是安慰剂而是把这个系统弄瞎，\n"
+          "           Δ 里会混进'看不见自己刚写的东西'，再也拆不开。\n"
+          "         三档语义必须两两不同，否则'这条通道有多大'就没法问。",
+      _fm_working_modes(),
+      "prev 保住了本题草稿纸、all 全改、none 全不改")
+
+check(RS, "AP10 ★等长被违反时必须是**带理由的失败**，不许返回原文悄悄继续\n"
+          "          —— 静默兜底（except: pass / return old）等于把有效数据\n"
+          "            和污染数据混在一起，事后没有任何办法把它们分开。",
+      _fm_raises(lambda: _FM._check("abcdef", "abcde", "w"))
+      and _FM._STATS["violations"]
+      and "raise AssertionError" in _AP_SRC,
+      f"违反已记录数={len(_FM._STATS['violations'])}")
+
+#: ⚠️ 一律用 `find()` 取下标，**不许用 `index()`**：撤回实验里把那行删掉之后，
+#:   `index()` 会抛 ValueError ⇒ "断言"还没判，文件先崩了，汇总行跟着没了
+#:   （违反 R13 的 0 Traceback）。更阴的是 `-1 < 首次出现位置` 恒为真：
+#:   删掉字符串反而让断言更"绿"。所以每个 `find()` 都必须**先判 >= 0 再比大小**。
+_AP_RULE_AT = _AP_SH.find("事前登记（不可事后修改）")
+_AP_FIRST_RUN = _AP_SH.find("run_arm E0")
+_AP_HAS_KEYS = all(k in _AP_SH for k in ("0.05", "0.15", "存在性效应", "UNKNOWN"))
+_AP_RULE_BEFORE_RUN = (_AP_RULE_AT >= 0 and _AP_FIRST_RUN >= 0
+                       and _AP_RULE_AT < _AP_FIRST_RUN)
+
+check(RS, "AP11 ★事前规则必须在**开跑之前**打印出来，事后再看结果才许判读\n"
+          "         —— 判据要是能改，'Δ ≥ 0.15 才算数'这种话就没有约束力：\n"
+          "           拿到 0.14 时把它放宽到 0.10 只需要动一个字符。",
+      _AP_RULE_BEFORE_RUN and _AP_HAS_KEYS,
+      f"规则块在跑之前={_AP_RULE_BEFORE_RUN}"
+      f"（规则@{_AP_RULE_AT} 首跑@{_AP_FIRST_RUN} 关键词={_AP_HAS_KEYS}）")
+
+check(RS, "AP12 ★基线 E0 与正对照 E3 必须跑**未被 patch** 的进程，T 探针臂必须在\n"
+          "         —— E3 是唯一能证明'假记忆这套装置没有把被测对象改坏'的参照；\n"
+          "           T 是唯一能量出'装测量这个动作本身有多大影响'的臂。\n"
+          "           两条缺一条，整套对照都可以被一句话质疑掉。",
+      "run_arm E0  run" in _AP_SH and "run_arm E3  run" in _AP_SH
+      and "run_arm T   fake" in _AP_SH
+      and 'if [ "${entry}" = "fake" ]' in _AP_SH,
+      f"E0/E3/T 齐备={all(x in _AP_SH for x in ('run_arm E0  run', 'run_arm E3  run', 'run_arm T   fake'))}")
+
+check(RS, "AP13 ★每一臂必须有**自己的一份**记忆目录，不许共用\n"
+          "         —— 第十七轮就是因为 B/C 共用同一个 `--memory-dir`：\n"
+          "           C 的起跑库里躺着 B 跑出来的 episode，同一个 C 从 0.8500\n"
+          "           变成 0.7500，一个 +0.40 的单题涨幅整个消失。",
+      _AP_SH.count('--memory-dir "${dir}/mem"') == 1
+      and 'dir="${ROOT}/${arm}"' in _AP_SH,
+      f"memory-dir 出现次数={_AP_SH.count('--memory-dir \"${dir}/mem\"')}")
+
+_AP_EV = V1 / "bench" / "evidence" / "fakemem_s18"
+check(RS, "AP14 ★五臂的原始读数必须**冻结成文件**，结论不许只躺在散文里\n"
+          "         —— 写在文档里的数字改一个字词就可能不易察觉；\n"
+          "           冻成一堆 jsonl 之后，改数字探针会自己转红。",
+      _AP_EV.is_dir() and len(sorted(_AP_EV.glob("*.runs.jsonl"))) >= 5
+      and (V1 / "bench" / "probe_fakemem.py").exists(),
+      f"证据份数={len(sorted(_AP_EV.glob('*.runs.jsonl'))) if _AP_EV.is_dir() else 0}")
+
+# ── AP15：判读实现**只有一处**（第十八轮自踩，必须钉住）───────────────────
+# 第十八轮收尾时发现：判读逻辑在 `run_fakemem_control.sh` 里嵌了一份，
+# 在 `probe_fakemem.py` 里又写了一份。两份"内容相同"的字符串并不同 ——
+# 脚本那份没有 markdown 粗体标记，探针那份有 ⇒ verdict.json 与探针重算
+# 当场不等 ⇒ P5 转红。
+# 这不是"抄错了"，这是**同一样东西有两处声明**的必然结果（V5 规则第 2 条）。
+# ⇒ 修法不是把两处改一致，而是**删掉一处**：脚本收尾直接调探针的 --write。
+_AP_PROBE = (V1 / "bench" / "probe_fakemem.py").read_text(encoding="utf-8")
+check(RS, "AP15 ★判读规则**只许存在一份实现**：脚本必须委托给探针，不许自己再算一遍\n"
+          "         —— 第十八轮的真实教训：两份实现各写一遍，其中一份多了 `**`，\n"
+          "           落盘的判定与探针重算立刻不等。抄一遍就会漂，与抄得对不对无关。\n"
+          "           ⇒ 修法是把脚本里那份**删掉**，而不是把它改对。",
+      'bench/probe_fakemem.py --evidence "${EVID}" --write' in _AP_SH
+      and not re.search(r"^\s*verdict\s*=", _AP_SH, re.M)
+      and not re.search(r"content_gap\s*=", _AP_SH)
+      and "def verdict_of(" in _AP_PROBE
+      and _AP_PROBE.count("verdict_of(") >= 2,          # 定义 1 处 + 调用 ≥1 处
+      f"脚本自带判读={bool(re.search(r'^\\s*verdict\\s*=', _AP_SH, re.M)) or 'content_gap' in _AP_SH} "
+      f"探针定义={('def verdict_of(' in _AP_PROBE)}")
+
+_ap_restore()   # ⛔ 最后必须卸干净：patch 是类级别的，不还原会污染后面的组
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

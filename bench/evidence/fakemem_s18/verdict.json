@@ -1,0 +1,51 @@
+{
+  "arms": {
+    "E0": 0.5599999999999999,
+    "E3": 0.76,
+    "T": 0.76,
+    "E1": 0.76,
+    "E2": 0.32
+  },
+  "per_task": {
+    "E0": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 0.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "E3": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "T": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "E1": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "E2": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 0.8,
+      "z04_deep_get": 0.0,
+      "z05_group_by": 0.0
+    }
+  },
+  "gain_reproduced": 0.2,
+  "content_gap": 0.0,
+  "instrument_gap": 0.0,
+  "tag": "R2",
+  "verdict": "R2：+0.2000 降级为「存在性效应」⇒ 不得认领（也不许反向读成有害）"
+}

@@ -97,11 +97,11 @@ echo
 echo "=============================================================="
 echo "第 3 步  造安慰剂（各自一份全新目录；--src 只读，不碰 base）"
 echo "=============================================================="
-"$PY" bench/placebo.py --src "${BASE}" --out "${ROOT}/mem_D1" \
+"$PY" -m bench.placebo --src "${BASE}" --out "${ROOT}/mem_D1" \
       --variant scramble --seed 17 || exit 1
-"$PY" bench/placebo.py --src "${BASE}" --out "${ROOT}/mem_D2" \
+"$PY" -m bench.placebo --src "${BASE}" --out "${ROOT}/mem_D2" \
       --variant text --text '编译报错时先读最底层栈信息' || exit 1
-"$PY" bench/placebo.py --src "${BASE}" --out "${ROOT}/mem_D3" \
+"$PY" -m bench.placebo --src "${BASE}" --out "${ROOT}/mem_D3" \
       --variant text --text '解析查询字符串时可忽略空项' || exit 1
 
 # B / C 也必须有自己的一份 —— 与 D1/D2/D3 **同源**（同一字节的 base）

@@ -1,0 +1,63 @@
+{
+  "arms": {
+    "E0": 0.5599999999999999,
+    "E3": 0.76,
+    "T": 0.76,
+    "E1": 0.76,
+    "E2": 0.32,
+    "F": 0.76
+  },
+  "per_task": {
+    "E0": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 0.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "E3": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "T": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "E1": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "E2": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 0.8,
+      "z04_deep_get": 0.0,
+      "z05_group_by": 0.0
+    },
+    "F": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    }
+  },
+  "gain_reproduced": 0.2,
+  "shape_gap": 0.0,
+  "semantic_gap": 0.0,
+  "both_gap": 0.44,
+  "instrument_gap": 0.0,
+  "s18_bitwise_same": true,
+  "s18_diffs": [],
+  "tag": "S4",
+  "verdict": "S4：形状无贡献 ⇒ 收益退到「纯存在性」（有一堆字在场就够）"
+}

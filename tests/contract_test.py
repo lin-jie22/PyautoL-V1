@@ -3619,13 +3619,17 @@ check(RS, "AN12 ★抽象里不许**点名某道题**（本轮实测抓到的泄
 #     任何一条失守，安慰剂臂都会**安静地**退化成 C 臂或 A 臂，
 #     而这两种退化都不报错 —— 它们只会产出一个看起来很干净的 Δ。
 # ===========================================================================
+import importlib                                              # noqa: E402
 import importlib.util as _ilu                                   # noqa: E402
 
-_PL_PATH = V1 / "bench" / "placebo.py"
-_PL_SRC = _PL_PATH.read_text(encoding="utf-8")
-_PL_SPEC = _ilu.spec_from_file_location("v1_placebo", _PL_PATH)
-_PL = _ilu.module_from_spec(_PL_SPEC)
-_PL_SPEC.loader.exec_module(_PL)
+# ⛔ 第十九轮把 `bench/placebo.py` 并成了 `bench/placebo/` 包（§17-16）。
+#   这里**只许**用 `bench.placebo.*` 这一种导入写法：若某处把 `bench/` 自己
+#   放进 sys.path 再 `import placebo`，同一个模块会被加载成**两个对象**
+#   —— 两份 STATS、两份 install，而**不会报任何错**（AQ5 钉住）。
+_PL_DIR = V1 / "bench" / "placebo"
+_PL_SRC = (_PL_DIR / "__main__.py").read_text(encoding="utf-8")
+_PL = importlib.import_module("bench.placebo")
+_PL_MAIN = importlib.import_module("bench.placebo.__main__").main
 _PL_SH = (V1 / "bench" / "run_placebo_control.sh").read_text(encoding="utf-8")
 
 check(RS, "AO1 bench 层的 `ABSTRACT_SOURCE` 必须与内核**同源**\n"
@@ -3657,9 +3661,10 @@ def _ao_mk(dirname: str, abstracts, *, others=()) -> Path:
 
 
 def _ao_run(argv) -> int:
-    """调用 `placebo.main`，**绝不让它把异常抛出来**（R13：异常会打断汇总行）。"""
+    """调用 `bench.placebo.__main__.main`，**绝不让它把异常抛出来**
+    （R13：异常会打断汇总行）。"""
     try:
-        return int(_PL.main(argv))
+        return int(_PL_MAIN(argv))
     except SystemExit as e:
         return int(e.code) if isinstance(e.code, int) else 1
     except Exception:                                           # noqa: BLE001
@@ -3878,12 +3883,16 @@ check(RS, "AO16 ★探针读不到证据时必须是**带理由的失败**，不
 #     · 基线与正对照那两臂必须跑**未被 patch** 的进程
 #     · 事前规则必须**在跑之前**打印（判据不许事后改）
 # ===========================================================================
-_AP_PATH = V1 / "bench" / "fake_mem.py"
-_AP_SRC = _AP_PATH.read_text(encoding="utf-8")
+# 第十九轮：机制搬进 `bench/placebo/patch.py`，`bench/fake_mem.py` 只剩一层薄壳
+#   （解析臂名 → install → run.main → dump_stats）。断言跟着机制走：
+#   AP 组现在钉 `patch.py` / `mappers.py` 的源码，而**不再**钉那个壳。
+_AP_RUNNER = V1 / "bench" / "fake_mem.py"
+_AP_RUNNER_SRC = _AP_RUNNER.read_text(encoding="utf-8")
 _AP_SH = (V1 / "bench" / "run_fakemem_control.sh").read_text(encoding="utf-8")
-_FM_SPEC = _ilu.spec_from_file_location("v1_fake_mem", _AP_PATH)
-_FM = _ilu.module_from_spec(_FM_SPEC)
-_FM_SPEC.loader.exec_module(_FM)
+_FM = importlib.import_module("bench.placebo.patch")
+_MP = importlib.import_module("bench.placebo.mappers")
+_AP_SRC = (_PL_DIR / "patch.py").read_text(encoding="utf-8")
+_MP_SRC = (_PL_DIR / "mappers.py").read_text(encoding="utf-8")
 
 #: ⚠️ patch 是**类级别**的。不还原的话，后面所有用到 MemoryStore 的组
 #:    都会带着一个被替换过 mapper 的世界跑 —— 那是静默污染。
@@ -3899,10 +3908,7 @@ def _ap_restore() -> None:
 def _ap_with(arm: str, **kw):
     """先还原、再清统计、再装 —— 免得 wrapper 一层层叠上去。"""
     _ap_restore()
-    _FM._STATS.update({"records": 0, "facts": 0, "chars": 0, "by_kind": {},
-                       "examples": [], "violations": [], "identity_ok": 0,
-                       "blank_identity": 0, "working_prev_mapped": 0,
-                       "task_boundary": []})
+    _FM.reset_stats()
     return _FM.install(arm, **kw)
 
 
@@ -3925,7 +3931,7 @@ def _fm_injective() -> bool:
     """
     try:
         chars = sorted(set("".join(_AP_SAMPLES)))
-        mapped = [_FM.cipher(c) for c in chars]
+        mapped = [_MP.cipher(c) for c in chars]
         return len(set(mapped)) == len(mapped)
     except Exception:                                           # noqa: BLE001
         return False
@@ -3988,8 +3994,8 @@ def _fm_working_modes() -> bool:
     _P = "第1题自己的草稿 zzz"          # 上一题留下来的 ⇒ 三档里两档要处理它
     _O = "第2题自己的草稿 zzz"          # 本题自己的草稿纸 ⇒ prev 档必须原样
     return (res["none"] == (_P, _O)
-            and res["prev"] == (_FM.cipher(_P), _O)
-            and res["all"] == (_FM.cipher(_P), _FM.cipher(_O)))
+            and res["prev"] == (_MP.cipher(_P), _O)
+            and res["all"] == (_MP.cipher(_P), _MP.cipher(_O)))
 
 
 _AP_DIRTY = sorted(
@@ -3998,13 +4004,16 @@ _AP_DIRTY = sorted(
     and re.search(r"MemoryStore\.(record|think|commit_fact|working_view)\s*=",
                   (MW_DIR / fn).read_text(encoding="utf-8")))
 _AP_PATCH_N = len(re.findall(r"MemoryStore\.\w+ = ", _AP_SRC))
+#: 壳里**不许**再出现 patch 语句（那会意味着有两处安装器）
+_AP_RUNNER_PATCH_N = len(re.findall(r"MemoryStore\.\w+ = ", _AP_RUNNER_SRC))
 
 check(RS, "AP1 ★假记忆的 patch **不许出现在内核里**\n"
           "         —— 一旦 `mw/` 下有人把方法挂上去，'这个数是被改过的还是没改过的'\n"
           "           就再也没法从外部证明，E3 正对照当场失去意义。\n"
           "           同时 bench/fake_mem.py 必须真的在做 patch，否则这把锁是空的。",
-      not _AP_DIRTY and _AP_PATCH_N >= 4,
-      f"被污染的内核模块={_AP_DIRTY} patch 处数={_AP_PATCH_N}")
+      not _AP_DIRTY and _AP_PATCH_N >= 4 and _AP_RUNNER_PATCH_N == 0,
+      f"被污染的内核模块={_AP_DIRTY} patch 处数={_AP_PATCH_N} "
+      f"壳里 patch 处数={_AP_RUNNER_PATCH_N}")
 
 _AP_SAMPLES = [
     "写一个函数 flatten(d)，把嵌套 dict 展平成单层：嵌套键用 '.' 连接",
@@ -4017,24 +4026,27 @@ _AP_SAMPLES = [
 check(RS, "AP2 ★假文本必须**严格等长**，而且**逐行**长度都不能变\n"
           "         —— 被替换的是前面几道题的**答案代码**，缩进与换行是它的结构。\n"
           "           连只差一个字符，'多出来的那一个字'就成了第二个自变量。",
-      all(len(_FM.cipher(s)) == len(s) for s in _AP_SAMPLES)
-      and all([len(x) for x in _FM.cipher(s).split("\n")]
+      all(len(_MP.cipher(s)) == len(s) for s in _AP_SAMPLES)
+      and all([len(x) for x in _MP.cipher(s).split("\n")]
               == [len(x) for x in s.split("\n")] for s in _AP_SAMPLES),
-      f"逐行长度一致数={sum(1 for s in _AP_SAMPLES if [len(x) for x in _FM.cipher(s).split(chr(10))] == [len(x) for x in s.split(chr(10))])}/{len(_AP_SAMPLES)}")
+      f"逐行长度一致数={sum(1 for s in _AP_SAMPLES if [len(x) for x in _MP.cipher(s).split(chr(10))] == [len(x) for x in s.split(chr(10))])}/{len(_AP_SAMPLES)}")
 
 check(RS, "AP3 ★**有内容**的字符串替换后必须与原不同（等原文就不是安慰剂）\n"
           "         —— 这条只在 `strip()` 为空时放行：空串本身没有内容可替换，\n"
           "           拿它去卡'必须相异'只会让整个臂因为一条空记录崩掉。\n"
           "           ⛔ 这个口子必须**看得见**（AP4 盯着它的计数）。",
-      all(_FM.cipher(s) != s for s in _AP_SAMPLES)
+      all(_MP.cipher(s) != s for s in _AP_SAMPLES)
       and _fm_raises(lambda: _FM._check(_AP_SAMPLES[0], _AP_SAMPLES[0], "w")),
       "有内容者全不相同=True 相同内容已拒=True")
+
+#: 计数语句在源码里出现的次数（写成变量而不是塞进 f-string，免得转义引号劝退读者）
+_AP_BLANK_N = _AP_SRC.count('STATS["blank_identity"] += 1')
 
 check(RS, "AP4 ★放行恒等必须**计数**，不许静默\n"
           "         —— 看不见的例外会长大：今天只放过空串，明天就有人往里塞条件，\n"
           "           而 AP3 只抽样，看不出来覆盖面缩了多少。",
-      "blank_identity" in _AP_SRC and _AP_SRC.count("_STATS[\"blank_identity\"] += 1") == 1,
-      f"计数出现次数={_AP_SRC.count('_STATS[\\\"blank_identity\\\"] += 1')}")
+      "blank_identity" in _AP_SRC and _AP_SRC.count('STATS["blank_identity"] += 1') == 1,
+      f"计数出现次数={_AP_BLANK_N}")
 
 check(RS, "AP5 ★mapper 必须是**双射**：不同字符不得映射到同一个字符\n"
           "         —— 一旦碰撞，假文本的信息量就不再与原文本可比：\n"
@@ -4045,15 +4057,15 @@ check(RS, "AP5 ★mapper 必须是**双射**：不同字符不得映射到同一
 check(RS, "AP6 ★mapper 必须**确定性**：同一段原文两次映射结果逐位相同\n"
           "         —— mapper 里只要掺一点时间/随机数，两道题看到的就不是同一个\n"
           "           '假记忆'，而那正是本实验要排除的那个变量。",
-      all(_FM.cipher(s) == _FM.cipher(s) for s in _AP_SAMPLES)
-      and "random.Random" not in _AP_SRC.split("def cipher")[1][:600],
+      all(_MP.cipher(s) == _MP.cipher(s) for s in _AP_SAMPLES)
+      and "random.Random" not in _MP_SRC.split("def cipher")[1][:900],
       "两次一致=True")
 
 check(RS, "AP7 ★T 只读探针必须真的**一个字都不改**，并且逐条记账\n"
           "         —— T 是'装上测量会不会改变被测对象'的答案：\n"
           "           它一旦偷偷变换，' |E3−T| ≤ 0.05 '这条闸门就成了自我安慰。",
-      _fm_trace_identity_ok() and _FM._STATS["identity_ok"] >= 1,
-      f"identity_ok={_FM._STATS['identity_ok']}")
+      _fm_trace_identity_ok() and _FM.STATS["identity_ok"] >= 1,
+      f"identity_ok={_FM.STATS['identity_ok']}")
 
 check(RS, "AP8 ★E0（空）与 E3（真原文）必须被 runner **明确拒绝**\n"
           "         —— 它们只能跑**未被 patch** 的进程。让它们也从这里出去，\n"
@@ -4074,9 +4086,9 @@ check(RS, "AP10 ★等长被违反时必须是**带理由的失败**，不许返
           "          —— 静默兜底（except: pass / return old）等于把有效数据\n"
           "            和污染数据混在一起，事后没有任何办法把它们分开。",
       _fm_raises(lambda: _FM._check("abcdef", "abcde", "w"))
-      and _FM._STATS["violations"]
+      and _FM.STATS["violations"]
       and "raise AssertionError" in _AP_SRC,
-      f"违反已记录数={len(_FM._STATS['violations'])}")
+      f"违反已记录数={len(_FM.STATS['violations'])}")
 
 #: ⚠️ 一律用 `find()` 取下标，**不许用 `index()`**：撤回实验里把那行删掉之后，
 #:   `index()` 会抛 ValueError ⇒ "断言"还没判，文件先崩了，汇总行跟着没了
@@ -4139,6 +4151,217 @@ check(RS, "AP15 ★判读规则**只许存在一份实现**：脚本必须委托
       and _AP_PROBE.count("verdict_of(") >= 2,          # 定义 1 处 + 调用 ≥1 处
       f"脚本自带判读={bool(re.search(r'^\\s*verdict\\s*=', _AP_SH, re.M)) or 'content_gap' in _AP_SH} "
       f"探针定义={('def verdict_of(' in _AP_PROBE)}")
+
+
+# ===========================================================================
+# AQ 组（第十九轮）—— ① 把「等长安慰剂」做成一等公民（§17-16）
+#                    ② 把「存在性」与「形状」拆开（§17-15）
+#
+#   §17-16：第十七轮写 `bench/placebo.py`、第十八轮写 `bench/fake_mem.py`，
+#   两次都在手搓同一套东西（等长闸门 + FTS 同步 + 撤回校验 + 统计落盘）。
+#   同一个约束被声明两遍，就一定会有一遍先烂 —— 所以本轮把它们并成
+#   `bench/placebo/` 一个包：**合并机制，不合并判据**。
+#
+#   §17-15：第十八轮的 E1（cipher）证明了语义贡献为 0，但它**保留了全部几何**
+#   （字符数、逐行长度、缩进、标点分布、字符类别）⇒ 它证不了"形状"。
+#   本轮加 F 臂（reshape）：**保字符序列、破行几何**。
+#
+#   AQ 组钉两件事：
+#     · 并包**不许**改动任何已被冻结的读数（逐字节回归锁）
+#     · F 的操纵必须是**单因子**的（只动几何，不动字符序列），
+#       且它的盲区（无可挪结构的行）必须**被计数**，不许静默放过
+# ===========================================================================
+_AQ_DIR = V1 / "bench" / "placebo"
+_AQ_SH = (V1 / "bench" / "run_shape_control.sh").read_text(encoding="utf-8")
+_AQ_EV = V1 / "bench" / "evidence" / "shape_s19"
+_AQ_RT = (V1 / "run_tests.sh").read_text(encoding="utf-8")
+
+_AQ_FILES = ["__init__.py", "mappers.py", "store.py", "patch.py", "__main__.py"]
+check(RS, "AQ1 ★安慰剂必须是**一个包**、且旧脚本必须已经消失\n"
+          "         —— 两套实现并存的后果不是报错，是『我改的那一套没被跑到』：\n"
+          "           改 `placebo.py` 而实验走 `fake_mem.py`，两边都自洽，读数是假的。",
+      not (V1 / "bench" / "placebo.py").exists()
+      and all((_AQ_DIR / f).exists() for f in _AQ_FILES),
+      f"旧脚本还在={(V1 / 'bench' / 'placebo.py').exists()} "
+      f"缺文件={[f for f in _AQ_FILES if not (_AQ_DIR / f).exists()]}")
+
+# ── AQ2：并包**不许**改动读数 —— 用冻结证据逐字节回归 ────────────────────
+# 第十八轮 E1 臂的 stats 里存着原文→密文（前 3 条、截断到 300 字），
+# 第十七轮 D1 臂的打乱结果写在 DESIGN/脚本注释里。两者都是**唯一的参照**。
+_AQ_S18 = V1 / "bench" / "evidence" / "fakemem_s18" / "E1.stats.json"
+_AQ_S17_TXT = "解析查询字符串前先处理空项"
+_AQ_S17_SCR = "空处先字符理项查解析询前串"
+_AQ_byte_ok = False
+_AQ_byte_bad = "evidence 缺失"
+if _AQ_S18.exists():
+    try:
+        _aq_ex = json.loads(_AQ_S18.read_text(encoding="utf-8")).get("examples") or []
+        _AQ_byte_ok = bool(_aq_ex) and all(
+            _MP.cipher(e["old"]) == e["new"] for e in _aq_ex)
+        _AQ_byte_bad = f"不符条数={sum(1 for e in _aq_ex if _MP.cipher(e['old']) != e['new'])}"
+    except Exception as e:                                     # noqa: BLE001
+        _AQ_byte_bad = f"读证据抛异常：{type(e).__name__}"
+
+check(RS, "AQ2 ★并包之后 mapper 必须**逐字节**复现冻结证据\n"
+          "         —— 重构时我一度把 scramble 的种子派生多拼了一段 `:len`，\n"
+          "           于是同一个输入的排列变了：**不报错**，只是"
+          "\"重跑一次\"和\"当年那次\"悄悄不是同一个臂。\n"
+          "           这类事故只能靠逐字节比对冻结证据发现。",
+      _AQ_byte_ok and _MP.scramble(_AQ_S17_TXT, 17) == _AQ_S17_SCR
+      and "seed}:{attempt}" in _MP_SRC,
+      f"E1 密文回归={_AQ_byte_ok}（{_AQ_byte_bad}） "
+      f"D1 打乱回归={_MP.scramble(_AQ_S17_TXT, 17) == _AQ_S17_SCR}")
+
+# ── AQ3：F 臂的操纵必须是**单因子**的 ───────────────────────────────────
+_AQ_MULTI = "done: \ndef f(d):\n    return {k: v for k, v in d.items()}\n"
+_AQ_ONE = "解析查询字符串前先处理空项"
+_aq_f = _MP.reshape(_AQ_MULTI, 17)
+_aq_f_seq = [c for c in _aq_f if c != "\n"] == [c for c in _AQ_MULTI if c != "\n"]
+_aq_f_len = len(_aq_f) == len(_AQ_MULTI)
+_aq_f_lines = len(_aq_f.split("\n")) == len(_AQ_MULTI.split("\n"))
+_aq_f_geom = [len(x) for x in _aq_f.split("\n")] != [len(x) for x in _AQ_MULTI.split("\n")]
+_aq_f_diff = _aq_f != _AQ_MULTI
+check(RS, "AQ3 ★F 臂（reshape）必须**只动几何**：等长、等行数、字符序列不变，行宽必变\n"
+          "         —— 若它顺手把字符也换了，它就和 E1 混成一个变量；\n"
+          "           若行宽没变，那它什么都没做，却会产出一个人畜无害的 Δ=0，\n"
+          "           然后被读成『形状无贡献』（那正是本项目最贵的一种假阴性）。",
+      _aq_f_seq and _aq_f_len and _aq_f_lines and _aq_f_geom and _aq_f_diff,
+      f"序列不变={_aq_f_seq} 等长={_aq_f_len} 等行数={_aq_f_lines} "
+      f"行宽变={_aq_f_geom} 与原文不同={_aq_f_diff}")
+
+# ── AQ4：F 的盲区必须**计数**，且恒等只在自述时放行 ──────────────────────
+_AQ_blind_src_ok = ("shape_identity" in _AP_SRC
+                    and 'STATS["shape_identity_ok"] += 1' in _AP_SRC
+                    and "no_freedom" in _AP_SRC)
+# ⛔ 撤回态实测捉到的**断言自身缺陷**：早先这里直接调 `_FM._check(..., allow_identity=True)`，
+#   而一旦实现撤掉这个窄口，它会抛 AssertionError ⇒ **异常逃出契约测试** ⇒
+#   汇总行一起没了（违反 R13 的"0 Traceback + 汇总行必须在"）。
+#   ⇒ 断言里**绝不允许**让被测实现的异常逃出来：一律先用 `_fm_raises` 兜住再判。
+_FM.reset_stats()
+_AQ_opened = (not _fm_raises(lambda: _FM._check(_AQ_ONE, _AQ_ONE, "w",
+                                               allow_identity=True))
+              and _FM.STATS["shape_identity_ok"] == 1)
+_FM.reset_stats()
+_AQ_closed = _fm_raises(lambda: _FM._check(_AQ_ONE, _AQ_ONE, "w"))
+check(RS, "AQ4 ★F 的盲区（既无换行又无空白的行）必须**开一个可核对的窄口**，\n"
+          "         而不是让整臂崩掉、也不是静默放过\n"
+          "         —— 中文短句整句没有可挪的结构，`reshape` 对它**无定义**。\n"
+          "           静默返回原文 = 假装这一条也被操纵了；抛异常终止 = 整臂数据作废。\n"
+          "           ⇒ 唯一诚实的做法：mapper 自己声明『没有自由度』，\n"
+          "             调用方据此放行**并计数**，读数里明示有多少条没被操纵。",
+      _AQ_blind_src_ok and _AQ_opened and _AQ_closed
+      and _MP.reshape(_AQ_ONE, 17) == _AQ_ONE,
+      f"有口子={_AQ_opened} 无理由时仍拒绝={_AQ_closed} "
+      f"单行中文原样={_MP.reshape(_AQ_ONE, 17) == _AQ_ONE}")
+
+# ── AQ5：只许一种导入写法（否则同一个模块被加载成两个对象）───────────────
+_AQ_BAD_IMPORT = re.compile(r"^\s*(from\s+placebo\b|import\s+placebo\b)", re.M)
+_AQ_IMP_HITS = []
+for _p in sorted(V1.glob("bench/**/*.py")) + sorted(V1.glob("tests/*.py")) \
+        + sorted(V1.glob("*.py")):
+    try:
+        if _AQ_BAD_IMPORT.search(_p.read_text(encoding="utf-8")):
+            _AQ_IMP_HITS.append(_p.name)
+    except Exception:                                          # noqa: BLE001
+        pass
+check(RS, "AQ5 ★全仓只许 `bench.placebo.*` 这一种导入写法\n"
+          "         —— 若有地方把 `bench/` 自己塞进 sys.path 再 `import placebo`，\n"
+          "           同一个模块会被加载成**两个对象**：两份 STATS、两份 install，\n"
+          "           而**不会报任何错**。计数器记在 A 上、读数读的是 B。",
+      not _AQ_IMP_HITS, f"用了裸导入的文件={_AQ_IMP_HITS}")
+
+# ── AQ6：判据没有跟着机制一起合并 ───────────────────────────────────────
+_AQ_PROBES = ["probe_placebo.py", "probe_fakemem.py", "probe_shape.py"]
+_AQ_PROBE_SRC = {n: (V1 / "bench" / n).read_text(encoding="utf-8") for n in _AQ_PROBES}
+#: 每个探针必须带着**它自己那个问题**的判据记号。
+#: ⛔ 刻意不要求三者同名：第十七轮的探针把 R1/R2/R3 判在读里（没有 verdict_of），
+#:   那是它自己的写法。要求"形同名"会把断言变成打字比赛，而不是判据检查。
+_AQ_RULE_TAGS = {
+    "probe_placebo.py": ("P4", "P5", "R2"),
+    "probe_fakemem.py": ("verdict_of", "R2", "R3"),
+    "probe_shape.py": ("verdict_of", "S3", "S4"),
+}
+_AQ_HAS_VERDICT = all(all(t in src for t in _AQ_RULE_TAGS[n])
+                      for n, src in _AQ_PROBE_SRC.items())
+#: ⚠️ 撤回态实测：早先这里按**文件名**匹配，于是"加一行 `from probe_fakemem import …`"
+#:   并不会转红（导入语句里没有 `.py`），而注释里提到文件名倒会误报。
+#:   ⇒ 判据必须是**导入语句**，不是字符串出现：
+#:     真正会出事的是"这个探针复用了另一个探针的判读"，那只能发生在 import 上。
+_AQ_CROSS_RE = re.compile(
+    r"^\s*(?:from\s+(probe_placebo|probe_fakemem|probe_shape)\b"
+    r"|import\s+(?:probe_placebo|probe_fakemem|probe_shape)\b)", re.M)
+_AQ_CROSS = [n for n, t in _AQ_PROBE_SRC.items()
+             if any(m != n.replace(".py", "") for m in _AQ_CROSS_RE.findall(t))]
+check(RS, "AQ6 ★合并的只能是**机制**：三个探针必须各有一份自己的判读，且互不引用\n"
+          "         —— 第十八轮的真实教训是『判读实现有两份 ⇒ 立刻漂』，\n"
+          "           但修法不是把三份并成一份：它们回答的是**三个不同的问题**\n"
+          "           （抽象层有没有用 / 存在性有没有贡献 / 形状有没有贡献）。\n"
+          "           并成一份 = 把三个问题的答案硬塞进一个阈值。",
+      _AQ_HAS_VERDICT and not _AQ_CROSS,
+      f"各有 verdict_of={_AQ_HAS_VERDICT} 互相 import={_AQ_CROSS}")
+
+# ── AQ7：形状对照的事前规则必须在开跑前打印 ────────────────────────────
+# ★ 第十九轮中途发现这里原本有**两份**规则文本：脚本里 `cat <<RULES` 一份、
+#   探针的阈值常量一份。那就是第十八轮"判读写两份必然漂"的复发。
+#   ⇒ 修法与 AP15 同款：**删掉脚本那份**，脚本改成调 `probe_shape.py --rules`。
+#   于是本断言要钉的不再是"脚本里有没有那些字"，而是：
+#     ① 脚本在**首跑之前**调了 `--rules`；
+#     ② 脚本里**没有**自己的阈值副本；
+#     ③ 探针里确实有 `RULES` 与 `--rules`（否则 ① 是空调用）。
+#: ⚠️ 撤回态实测：`find("--rules")` 会先命中文件头注释里那次提及（"由 `--rules` 现场念"），
+#:   于是把调用挪到首跑之后**也不转红**。⇒ 必须锚在**那条命令**上。
+_AQ_RULE_CMD = '"$PY" bench/probe_shape.py --rules'
+_AQ_RULE_AT = _AQ_SH.find(_AQ_RULE_CMD)
+_AQ_FIRST_RUN = _AQ_SH.find("run_arm E0")
+_AQ_PROBE_SRC = (V1 / "bench" / "probe_shape.py").read_text(encoding="utf-8")
+_AQ_RULE_ONE = ("RULES" in _AQ_PROBE_SRC and "def print_rules(" in _AQ_PROBE_SRC
+                and '"--rules"' in _AQ_PROBE_SRC)
+_AQ_NO_COPY = ("cat <<'RULES'" not in _AQ_SH
+               and _AQ_SH.count("0.15") == 0)
+check(RS, "AQ7 ★事前规则必须**只声明一处**，且必须在**开跑之前**念出来\n"
+          "         —— 判据要是能改，拿到 0.14 时把它放宽到 0.10 只需动一个字符；\n"
+          "           而『两处声明同一个阈值』的结果不是报错，是**打印的那份和判读的那份\n"
+          "           悄悄不一样**（第十八轮真实复发过一次）。",
+      _AQ_RULE_AT >= 0 and _AQ_FIRST_RUN >= 0 and _AQ_RULE_AT < _AQ_FIRST_RUN
+      and _AQ_RULE_ONE and _AQ_NO_COPY,
+      f"调用@{_AQ_RULE_AT} 首跑@{_AQ_FIRST_RUN} 探针有规则={_AQ_RULE_ONE} "
+      f"脚本无副本={_AQ_NO_COPY}")
+
+# ── AQ8：六臂齐备，且 E0/E3 必须走未 patch 的进程 ───────────────────────
+_AQ_ARMS_OK = all(x in _AQ_SH for x in
+                  ("run_arm E0  run", "run_arm E3  run", "run_arm T   fake",
+                   "run_arm E1  fake", "run_arm E2  fake", "run_arm F   fake"))
+check(RS, "AQ8 ★六臂必须齐备：E0 / E3 / T / E1 / E2 / **F**\n"
+          "         —— 少 E0 就没有基线；少 E3 就没有正对照；少 T 就不知道装测量\n"
+          "           本身有多大影响；少 E1 就不知道语义贡献；少 E2 就不知道\n"
+          "           '一起毁掉'有多大；少 F 就问不出**形状**。",
+      _AQ_ARMS_OK and 'if [ "${entry}" = "fake" ]' in _AQ_SH,
+      f"六臂齐备={_AQ_ARMS_OK}")
+
+# ── AQ9：证据必须冻结 + CI 必须每次重算 ────────────────────────────────
+check(RS, "AQ9 ★形状对照的六份原始读数与判定必须**冻结成文件**，且 CI 每次重算\n"
+          "         —— 写在文档里的数字改一个字词就可能不易察觉；\n"
+          "           冻成 jsonl 之后，改数字探针会自己转红。",
+      _AQ_EV.is_dir() and len(sorted(_AQ_EV.glob("*.runs.jsonl"))) >= 6
+      and (_AQ_EV / "verdict.json").exists()
+      and "probe_shape.py" in _AQ_RT,
+      f"证据份数={len(sorted(_AQ_EV.glob('*.runs.jsonl'))) if _AQ_EV.is_dir() else 0}")
+
+# ── AQ10：三条 mapper 的**分工**必须与设计表一致 ───────────────────────
+_AQ_e1 = _MP.cipher(_AQ_MULTI)
+_AQ_e2 = _MP.scramble(_AQ_MULTI, 17)
+_AQ_role = {
+    "E1_保行几何": [len(x) for x in _AQ_e1.split("\n")] == [len(x) for x in _AQ_MULTI.split("\n")],
+    "E1_换字符": [c for c in _AQ_e1 if c != "\n"] != [c for c in _AQ_MULTI if c != "\n"],
+    "E2_毁语序": sorted(_AQ_e2) == sorted(_AQ_MULTI) and _AQ_e2 != _AQ_MULTI,
+    "F_保字符序列": [c for c in _aq_f if c != "\n"] == [c for c in _AQ_MULTI if c != "\n"],
+    "F_毁行几何": [len(x) for x in _aq_f.split("\n")] != [len(x) for x in _AQ_MULTI.split("\n")],
+}
+check(RS, "AQ10 ★三条 mapper 的分工必须与设计表一致（这是整轮实验的**自变量定义**）\n"
+          "          —— E1 保几何/换字符（语义）；F 保字符/毁几何（形状）；\n"
+          "             E2 两个都毁（所以它的 Δ 无法单独归因）。\n"
+          "          分工一旦漂，`E3 − F` 就不再是「形状」的读数，而是一个混合物。",
+      all(_AQ_role.values()), f"{_AQ_role}")
 
 _ap_restore()   # ⛔ 最后必须卸干净：patch 是类级别的，不还原会污染后面的组
 

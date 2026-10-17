@@ -1,0 +1,89 @@
+{
+  "records": 11,
+  "facts": 0,
+  "chars": 6234,
+  "by_kind": {
+    "goal": 5,
+    "finish": 5,
+    "outcome": 1
+  },
+  "examples": [
+    {
+      "where": "episode/goal",
+      "old": "写一个函数 flatten(d)，把嵌套 dict 展平成单层：嵌套键用 '.' 连接，列表元素用 'key[i]' 表示（列表里的 dict 继续向下展平）。只输出代码，函数名必须是 flatten。",
+      "new": "写一个函数flatten(d)，把嵌 套dict  展平成单 层：嵌套键 用'.'连接，列表元素用 'key[i]'表示（列表里的dict继续向下展 平 ）。只输 出代码，函数名必须是fla tten。",
+      "len": 101,
+      "identity": false
+    },
+    {
+      "where": "episode/finish",
+      "old": "done: ```python\ndef flatten(d):\n    def _flatten(x, prefix=\"\"):\n        if isinstance(x, dict):\n            for k, v in x.items():\n                yield from _flatten(v, f\"{prefix}{k}.\")\n        elif isinstance(x, list):\n            for i, v in enumerate(x):\n                yield from _flatten(v, f\"",
+      "new": "done: ```pythondef flatten(d): \n   def _flatten(x, prefix=\"\"):        if isinstance(x, dict):   \n \n        for k, v in x.items():                yield from\n _flatten(v, f\"{prefix\n}{k}.\")        elif isinstance(x, list):            for \ni, v \nin enumerate(x):                yield from _flatten(v, f\"{",
+      "len": 413,
+      "identity": false
+    },
+    {
+      "where": "episode/goal",
+      "old": "写一个函数 to_csv(rows, cols)：rows 是 dict 列表，cols 是列名列表。输出 CSV 文本：第一行是表头，按 cols 顺序取值；缺失的键输出空串；None 输出空串；单元格含逗号/双引号/换行时用双引号包裹，内部的 '\"' 双写。行之间用 '\\n' 连接。只输出代码，函数名必须是 to_csv。",
+      "new": "写一个函数to_ csv(rows,c  ols)：rows是dict 列表，cols是列名列表。 输出CSV文本： 第一行是表 头，按 cols顺序取值；缺失的键输出空串；No ne输出空串；单元格含  逗号/双引号/换行时用双引 号包裹，内部的'\"'双写。行之间用'\\ n'连接。只输出代码 ，函数 名必 须是to_csv。",
+      "len": 164,
+      "identity": false
+    }
+  ],
+  "violations": [],
+  "identity_ok": 0,
+  "working_prev_mapped": 14,
+  "blank_identity": 0,
+  "task_boundary": [
+    {
+      "goal": "写一个函数 flatten(d)，把嵌套 dict 展平成单层：嵌套键用 '.' 连接，列表元素用 'key[i]' 表",
+      "working_residue": 0,
+      "sample": []
+    },
+    {
+      "goal": "写一个函数 to_csv(rows, cols)：rows 是 dict 列表，cols 是列名列表。输出 CSV 文本",
+      "working_residue": 1,
+      "sample": [
+        "finish ⇒ ✔ ```python\ndef flatten(d):\n   "
+      ]
+    },
+    {
+      "goal": "写一个函数 parse_query(qs)，解析 URL 查询串（形如 'a=1&b=2'）成 dict：按 '&' 切",
+      "working_residue": 2,
+      "sample": [
+        "finish ⇒ ✔ ```python\ndef flatten(d):\n   ",
+        "finish ⇒ ✔ ```python\ndef to_csv(rows, co"
+      ]
+    },
+    {
+      "goal": "写一个函数 deep_get(d, path, default=None)：path 形如 'a.b.0.c'，按 '.",
+      "working_residue": 3,
+      "sample": [
+        "finish ⇒ ✔ ```python\ndef to_csv(rows, co",
+        "finish ⇒ ✔ ```python\nfrom urllib.parse i"
+      ]
+    },
+    {
+      "goal": "写一个函数 group_by(seq, key)，按 key(x) 的**原值**（不转字符串）把元素分组，返回 dic",
+      "working_residue": 5,
+      "sample": [
+        "recall ⇒ ✔ (语义记忆中无相关条目)",
+        "finish ⇒ ✔ ```python\ndef deep_get(d, pat"
+      ]
+    }
+  ],
+  "shape_lines_moved": 18,
+  "shape_spaces_moved": 6,
+  "shape_unsafe_cuts": 0,
+  "shape_identity": 1,
+  "shape_identity_ok": 1,
+  "fake_working": "prev",
+  "arm": "F",
+  "rc": 0,
+  "mappers": [
+    "E1",
+    "E2",
+    "F",
+    "T"
+  ]
+}

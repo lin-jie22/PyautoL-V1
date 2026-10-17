@@ -28,7 +28,10 @@ import sys
 from pathlib import Path
 
 V1 = Path(__file__).resolve().parent.parent
-PL = V1 / "bench" / "placebo.py"
+# ⚠️ 这里曾经有一行 `PL = V1 / "bench" / "placebo.py"`，**从来没有被用过**。
+#    第十九轮并包后它指向一个已不存在的文件，而探针照样全绿 ——
+#    因为一个**没有消费者的字段不会报错**，只会误导下一个读它的人（V5 规则第 3 条）。
+#    已删除。要读机制源码请走 `bench/placebo/` 包（契约 AQ1 钉住它存在）。
 SH = V1 / "bench" / "run_placebo_control.sh"
 
 #: 事前登记的第五臂对照：这三个文本必须**逐字**出现在实验脚本里

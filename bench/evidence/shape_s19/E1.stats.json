@@ -1,0 +1,90 @@
+{
+  "records": 16,
+  "facts": 3,
+  "chars": 11812,
+  "by_kind": {
+    "goal": 5,
+    "finish": 5,
+    "mismatch": 3,
+    "outcome": 3
+  },
+  "examples": [
+    {
+      "where": "episode/goal",
+      "old": "写一个函数 flatten(d)，把嵌套 dict 展平成单层：嵌套键用 '.' 连接，列表元素用 'key[i]' 表示（列表里的 dict 继续向下展平）。只输出代码，函数名必须是 flatten。",
+      "new": "嵤始姵巈焻 ysqzztf(r)，湕椗攢 roez 栠樾淛张栍：椗攢仹胳 '.' 鮩潰，巢鐳崎裫胳 'atn[o]' 鐳蔅（巢鐳鶗艏 roez 課誸応姖栠樾）。徵魞巅媮菌，巈焻忘殐剆燺 ysqzztf。",
+      "len": 101,
+      "identity": false
+    },
+    {
+      "where": "episode/finish",
+      "old": "done: ```python\ndef flatten(d):\n    def _flatten(x, prefix=\"\"):\n        if isinstance(x, dict):\n            for k, v in x.items():\n                yield from _flatten(v, f\"{prefix}{k}.\")\n        elif isinstance(x, list):\n            for i, v in enumerate(x):\n                yield from _flatten(v, f\"",
+      "new": "rgft: ```hnzigf\nrty ysqzztf(r):\n    rty _ysqzztf(b, hktyob=\"\"):\n        oy oloflzqfet(b, roez):\n            ygk a, c of b.oztdl():\n                notsr ykgd _ysqzztf(c, y\"{hktyob}{a}.\")\n        tsoy oloflzqfet(b, solz):\n            ygk o, c of tfxdtkqzt(b):\n                notsr ykgd _ysqzztf(c, y\"",
+      "len": 413,
+      "identity": false
+    },
+    {
+      "where": "episode/goal",
+      "old": "写一个函数 to_csv(rows, cols)：rows 是 dict 列表，cols 是列名列表。输出 CSV 文本：第一行是表头，按 cols 顺序取值；缺失的键输出空串；None 输出空串；单元格含逗号/双引号/换行时用双引号包裹，内部的 '\"' 双写。行之间用 '\\n' 连接。只输出代码，函数名必须是 to_csv。",
+      "new": "嵤始姵巈焻 zg_elc(kgvl, egsl)：kgvl 燺 roez 巢鐳，egsl 燺巢忘巢鐳。魞巅 ELC 煒狷：蛷始鐗燺鐳擿，滔 egsl 剅橚御將；謅擼艏仹魞巅虅姽；Fgft 魞巅虅姽；张崎琇忶鯢忂/得櫠忂/漭鐗燁胳得櫠忂廐铄，嵐鲳艏 '\"' 得嵤。鐗娖便胳 '\\f' 鮩潰。徵魞巅媮菌，巈焻忘殐剆燺 zg_elc。",
+      "len": 164,
+      "identity": false
+    }
+  ],
+  "violations": [],
+  "identity_ok": 0,
+  "working_prev_mapped": 25,
+  "blank_identity": 0,
+  "task_boundary": [
+    {
+      "goal": "写一个函数 flatten(d)，把嵌套 dict 展平成单层：嵌套键用 '.' 连接，列表元素用 'key[i]' 表",
+      "working_residue": 0,
+      "sample": []
+    },
+    {
+      "goal": "写一个函数 to_csv(rows, cols)：rows 是 dict 列表，cols 是列名列表。输出 CSV 文本",
+      "working_residue": 1,
+      "sample": [
+        "finish ⇒ ✔ ```python\ndef flatten(d):\n   "
+      ]
+    },
+    {
+      "goal": "写一个函数 parse_query(qs)，解析 URL 查询串（形如 'a=1&b=2'）成 dict：按 '&' 切",
+      "working_residue": 2,
+      "sample": [
+        "finish ⇒ ✔ ```python\ndef flatten(d):\n   ",
+        "finish ⇒ ✔ ```python\ndef to_csv(rows, co"
+      ]
+    },
+    {
+      "goal": "写一个函数 deep_get(d, path, default=None)：path 形如 'a.b.0.c'，按 '.",
+      "working_residue": 4,
+      "sample": [
+        "recall ⇒ ✔ [worldmodel c=0.70 x1] 平嬧 [qf",
+        "finish ⇒ ✔ ```python\nfrom urllib.parse i"
+      ]
+    },
+    {
+      "goal": "写一个函数 group_by(seq, key)，按 key(x) 的**原值**（不转字符串）把元素分组，返回 dic",
+      "working_residue": 6,
+      "sample": [
+        "recall ⇒ ✔ [worldmodel c=0.70 x1] 平嬧 [ug",
+        "finish ⇒ ✔ ```python\ndef deep_get(d, pat"
+      ]
+    }
+  ],
+  "shape_lines_moved": 0,
+  "shape_spaces_moved": 0,
+  "shape_unsafe_cuts": 0,
+  "shape_identity": 0,
+  "shape_identity_ok": 0,
+  "fake_working": "prev",
+  "arm": "E1",
+  "rc": 0,
+  "mappers": [
+    "E1",
+    "E2",
+    "F",
+    "T"
+  ]
+}

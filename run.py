@@ -31,7 +31,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mw import config as cfg                      # noqa: E402
 from mw.core import Core                          # noqa: E402
 from mw.critique import CritiqueLedger            # noqa: E402
-from mw.ledger import (ScoreLedger, is_passed, ledger_sig_of,  # noqa: E402
+from mw.ledger import (CALIBER_FIELD, ScoreLedger, is_passed,  # noqa: E402
+                       ledger_caliber_of, ledger_sig_of,
                        next_session)
 from mw.llm import Message                        # noqa: E402
 from mw.measure import (Measurement, budget_curve, noise_floor,  # noqa: E402
@@ -414,6 +415,16 @@ def _option_conflict(args) -> str:
         return ("--suite-dir 与 --memory-dir 互斥：跨领域要求每个领域**独立**记忆"
                 "（否则后一个领域继承前一个的经验，测到的就不是独立领域），"
                 "而显式记忆目录意味着**共享**。两者语义冲突。")
+    # ── ★ 本轮自踩（2026-10-17 第十五轮）──────────────────────────────
+    # 旧代码在 `--memory-dir` 分支里写了一句 `args.fresh = False`：
+    # 于是 `--fresh --memory-dir DIR` 会**静默**退化成"累积"模式。
+    # 结果我跑了一整组『隔离 vs 累积』2×2 对照，四格全同（mean=0.7600
+    # 一字不差），还以为结论稳 —— 其实是**对照组被折叠成了同一格**。
+    # 长得像对照却一次没对照，比没有对照更糟，因为它会让你安心。
+    if md and getattr(args, "fresh", False):
+        return ("--fresh 与 --memory-dir 互斥：--fresh 要求每题**记忆隔离**"
+                "（一把尺子量孤立的一次），而 --memory-dir 恰恰指定的是"
+                "**共用**记忆目录（学/考范式）。两者只能取其一。")
     if sd and getattr(args, "save_baseline", False):
         return ("--suite-dir 与 --save-baseline 互斥：跨领域有 N 把尺子"
                 "（N 个 suite_sha），单一基线文件装不下 —— 每个领域都会写同一个"
@@ -561,10 +572,15 @@ def cmd_bench(args) -> int:
     # 给了它就不再每题隔离：显式目录本身就意味着"这些任务共用同一份记忆"。
     _mem_dir = getattr(args, "memory_dir", "")
     if _mem_dir:
+        # ⛔ 不再在这里折叠 `--fresh`：静默把 fresh 改成 False 会让『隔离』
+        #    对照悄悄变成『累积』（详见 `_option_conflict` 里那条规则的注释）。
+        #    语义冲突一律**说出来**，走 `_option_conflict` 统一出口。
         _d = Path(_mem_dir).expanduser()
         _d.mkdir(parents=True, exist_ok=True)
         os.environ["V1_STATE_DIR"] = str(_d)
         args = copy.copy(args)
+        # `--fresh` 到达这里**必然是 False**：真冲突时 `_option_conflict` 已经返回 2。
+        # 这句赋值只处理"用户根本没给 --fresh"的情形，不再是静默覆盖。
         args.fresh = False
 
     root = Path(__file__).resolve().parent
@@ -818,18 +834,27 @@ def cmd_bench(args) -> int:
         # 都落在"一次完整评测 = 一个会话"这个语义上。
         _sess = getattr(args, "session", None)
         _sess = next_session(_ledger.load()) if _sess is None else int(_sess)
+        # ⚠️ `caliber` 是**可读的口径字典**（预算/温度/helper…），不是只有哈希。
+        #    第十五轮实测逼出：没有它，六个月后的我看得到分数却看不到这组
+        #    分数是在什么预算下跑的 —— 而同一套 struct_convert 在 1024 与
+        #    1536 tokens 下能差出近一倍（0.400 vs 0.7600）。证据必须自描述。
+        _cal_fields = ledger_caliber_of(caliber.as_dict())
         _rows = [{"session": _sess, "family": suite.name, "task_id": r["id"],
                   "score": r["score"], "passed": is_passed(r["score"]),
-                  "caliber_sig": _cal_sig, "candidate": label}
+                  "caliber_sig": _cal_sig, "caliber": _cal_fields,
+                  "candidate": label}
                  for r in rep.per_task]
         _w = _ledger.append(_rows)
         # 重复数**单独念**：它意味着"这一轮的成绩账本里已经有了"
         # （典型成因：上次跑到一半被 kill，重启后算到同一个会话号）。
         # 混进"拒绝"里就再也分不清是字段没记全还是重跑了一遍。
-        if _w["added"] or _w["duplicate"]:
+        if _w["added"] or _w["duplicate"] or _w["no_caliber"]:
             _dup = f"  ⚠️重复={_w['duplicate']}" if _w["duplicate"] else ""
+            _nc = (f"  ⚠️不可复核={_w['no_caliber']}（无 {CALIBER_FIELD}）"
+                   if _w["no_caliber"] else "")
             print(f"  分数账本  会话#{_sess} 追加 {_w['added']} 行"
-                  f"（拒绝 {_w['rejected']} 行{_dup}）⇒ 下一次起跑时自我模型可读")
+                  f"（拒绝 {_w['rejected']} 行{_dup}{_nc}）"
+                  f" ⇒ 下一次起跑时自我模型可读")
 
     # ── 外部奖励：把**外部打分器**给的分数写进记忆（只读通道，§17-5）────
     #

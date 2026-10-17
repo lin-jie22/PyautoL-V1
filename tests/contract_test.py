@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import ast
 import collections
+import inspect
 import json
 import os
 import re
@@ -2576,7 +2577,8 @@ check(RS, "AH11 ★三档有序（分辨力）：oracle > partial > null，且**
 import importlib.util as _ilu2                                     # noqa: E402
 
 from mw import CORE_MODULES                                        # noqa: E402
-from mw.ledger import (REJECT_KINDS, ScoreLedger, is_passed,       # noqa: E402
+from mw.ledger import (CALIBER_FIELD, LedgerStats, REJECT_KINDS,  # noqa: E402
+                       ScoreLedger, is_passed, ledger_sig_of,
                        next_session, signature_of)
 
 _spec_smp = _ilu2.spec_from_file_location("v1_probe_selfmodel",
@@ -2601,7 +2603,8 @@ check(RS, "AI1 ★静态锚：口径签名的实现**只有一处** —— `benc
 
 # ── 账本：读侧拒绝（模拟一个"老写入方"留下的无签名行）─────────────────
 _AI_led = _TMP / "ai_ledger.jsonl"
-_AI_sig = signature_of({"scorer_sha": "S", "suite_sha": "U"})
+_AI_cal = {"scorer_sha": "S", "suite_sha": "U", "temperature": 0, "max_tokens": 512}
+_AI_sig = signature_of(_AI_cal)
 _AI_other = signature_of({"scorer_sha": "S2", "suite_sha": "U2"})
 _AI_led.write_text("\n".join([
     '{"session":0,"family":"f1","passed":true,"score":1.0,"caliber_sig":"%s"}' % _AI_sig,
@@ -2628,8 +2631,9 @@ _AI_led2 = _TMP / "ai_ledger2.jsonl"
 _AI_L2 = ScoreLedger(_AI_led2, caliber_sig=_AI_sig)
 _AI_w = _AI_L2.append([
     {"session": 0, "family": "demo", "passed": True, "score": 1.0,
-     "caliber_sig": _AI_sig},
-    {"session": 0, "passed": True, "score": 1.0, "caliber_sig": _AI_sig},  # 缺 family
+     "caliber_sig": _AI_sig, "caliber": _AI_cal},
+    {"session": 0, "passed": True, "score": 1.0, "caliber_sig": _AI_sig,
+     "caliber": _AI_cal},  # 缺 family
 ])
 check(RS, "AI4 写入侧也要挡：缺必需字段的行**不进文件**\n"
           "         （先全记下来、读时再筛 ⇒ 文件里堆积无从归属的行，\n"
@@ -2640,13 +2644,13 @@ check(RS, "AI4 写入侧也要挡：缺必需字段的行**不进文件**\n"
 
 # ── 通电：Core 起跑冻结历史，且**轮内不写** ────────────────────────────
 _AI_L2.append([{"session": s, "family": "demo", "passed": True, "score": 1.0,
-                "caliber_sig": _AI_sig} for s in (1, 2)])
+                "caliber_sig": _AI_sig, "caliber": _AI_cal} for s in (1, 2)])
 _AI_core = Core(llm=DemoLLM(), score_ledger=_AI_L2, caliber_sig=_AI_sig)
 _AI_n_before = len(_AI_led2.read_text(encoding="utf-8").strip().splitlines())
 _AI_ev_before = len(_AI_core.selfmodel.evidence)
 # ⚠️ 起跑后**外部**再追加两行 —— 快照语义的判据：本轮不许看见它们
 _AI_L2.append([{"session": 3, "family": "demo", "passed": False, "score": 0.0,
-                "caliber_sig": _AI_sig}])
+                "caliber_sig": _AI_sig, "caliber": _AI_cal}])
 _AI_out = _AI_core.run(DemoLLM.GOAL, family="demo")
 _AI_n_after = len(_AI_led2.read_text(encoding="utf-8").strip().splitlines())
 
@@ -2881,10 +2885,12 @@ check(RS, "AJ15 ★反证：撤掉闸（`usable` 恒为 True）⇒ AJ2 必须转
 
 # ── 账本幂等：中断重跑不许静默污染（本轮自踩）──────────────────────────
 _AJ_dup = ScoreLedger(Path(tempfile.mkdtemp()) / "led.jsonl")
+_AJ_cal = {"scorer_sha": "S", "temperature": 0, "max_tokens": 512}
+_AJ_sig = signature_of(_AJ_cal)
 _AJ_dup.append([{"session": 0, "family": "a", "passed": True, "score": 1.0,
-                 "task_id": "t1", "caliber_sig": "s"}])
+                 "task_id": "t1", "caliber_sig": _AJ_sig, "caliber": _AJ_cal}])
 _w2 = _AJ_dup.append([{"session": 0, "family": "a", "passed": False, "score": 0.0,
-                       "task_id": "t1", "caliber_sig": "s"}])
+                       "task_id": "t1", "caliber_sig": _AJ_sig, "caliber": _AJ_cal}])
 check(RS, "AJ16 ★账本**幂等**：同一会话的同一题写两次 ⇒ 第二次被拒\n"
           "         —— 本轮自踩：后台实验被 kill 后重启，`next_session` 算出同一个\n"
           "            会话号 ⇒ 那一轮成绩被写两遍（14 行变 27 行）。账本当时**静默\n"
@@ -2895,7 +2901,7 @@ check(RS, "AJ16 ★账本**幂等**：同一会话的同一题写两次 ⇒ 第�
       f"第二次写入 {_w2}  文件行数={len(_AJ_dup.load())}")
 
 _w3 = _AJ_dup.append([{"session": 1, "family": "a", "passed": False, "score": 0.0,
-                       "task_id": "t1", "caliber_sig": "s"}])
+                       "task_id": "t1", "caliber_sig": _AJ_sig, "caliber": _AJ_cal}])
 check(RS, "AJ17 判重**只按 (会话, 题)**：同一 task_id 在**不同**会话里必须照收\n"
           "         （同一套题每个会话都要跑一遍，把它当重复 ⇒ 第二次起账本全空）",
       _w3["added"] == 1 and _w3["duplicate"] == 0
@@ -3299,6 +3305,149 @@ check(RS, "AL9 奖励必须写在**整轮跑完之后**：`record_reward` 的调
       _AL_RUN.find("record_reward") > _AL_RUN.find("run_suite(solver"),
       f"record_reward@{_AL_RUN.find('record_reward')} > "
       f"run_suite@{_AL_RUN.find('run_suite(solver')}")
+
+print()
+print("─" * 74)
+print("AM 组：★证据必须自描述（2026-10-17 第十五轮实测逼出）")
+print()
+print("      起因：同一套 struct_convert 在 --max-tokens 1024 与 1536 下给出")
+print("      0.400 与 0.7600 两个相差近一倍的读数。想追查哪一行是哪个预算，")
+print("      却发现**四份真实账本里一行都不带可读的口径字段** —— 只有 16 位")
+print("      哈希，且生成它们的实验脚本也没入库。那是六个月后打不开的证据。")
+
+# ⚠️ R13 硬坑：这里一次性定义所有后续断言要用的静态源码文本。
+#    本轮自踩：AM11 用了当时尚未定义的 `_RUN_SRC` ⇒ NameError 打断汇总行，
+#    整份契约测试失去最后一行 —— 与自己宣称已内建的纪律（不对可能不存在的
+#    名字做算术/取值）直接冲突。集中定义 + 全用同一变量名，一处不再出错。
+_RUN_SRC = (V1 / "run.py").read_text(encoding="utf-8")
+_RUN_TESTS_SRC = (V1 / "run_tests.sh").read_text(encoding="utf-8")
+
+
+class _OCH:
+    """给 `_option_conflict` 用的最小参数对象：只给被检查的字段，缺的一律为空/假。
+
+    为什么不用 `argparse.Namespace`： `_option_conflict` 内部用 `getattr` 取值，
+    传一个普通对象就够了 —— 而显式列出字段能让"哪些字段参与判定"看得见。
+    """
+
+    def __init__(self, **kw):
+        for k in ("suite_dir", "memory_dir", "fresh", "save_baseline", "suite"):
+            setattr(self, k, kw.get(k, "" if k != "fresh" else False))
+
+
+from run import _option_conflict            # noqa: E402
+
+_AM_tmp = Path(tempfile.mkdtemp()) / "am.jsonl"
+_AM_cal = {"scorer_sha": "S", "temperature": 0, "max_tokens": 1536}
+_AM_sig = signature_of(_AM_cal)
+_AM_L = ScoreLedger(_AM_tmp, caliber_sig=_AM_sig)
+
+# 旧行为：有签名、没有可读口径 ⇒ 落盘，然后永久无法复核
+_AM_w_old = _AM_L.append([{"session": 0, "family": "a", "passed": True,
+                           "score": 1.0, "task_id": "t0",
+                           "caliber_sig": _AM_sig}])
+check(RS, "AM1 ★写侧必须挡下「只有哈希、没有可读口径」的行（`no_caliber`）\n"
+          "         —— 看得到分数、看不到预算/温度/记忆口径 ⇒ 无法复核、无法\n"
+          "            复用、无法判断两个读数能不能比。第十六轮之前这四份真实\n"
+          "            账本就是这样的（全部 114 行），现在它们必须被标红。",
+      _AM_w_old["added"] == 0 and _AM_w_old["no_caliber"] == 1
+      and len(_AM_L.load()) == 0,
+      f"append={_AM_w_old}")
+
+_AM_w_bad = _AM_L.append([{"session": 0, "family": "a", "passed": True,
+                           "score": 1.0, "task_id": "t1", "caliber_sig": _AM_sig,
+                           "caliber": {"temperature": 1, "max_tokens": 8}}])
+check(RS, "AM2 ★`caliber` 与 `caliber_sig` 不自洽 ⇒ 拒（`caliber_mismatch`）\n"
+          "         —— 不自洽比缺失**更糟**：缺失你会知道自己不知道，\n"
+          "            不自洽会让你以为自己能复核，然后复错。",
+      _AM_w_bad["added"] == 0 and _AM_w_bad["caliber_mismatch"] == 1,
+      f"append={_AM_w_bad}")
+
+_AM_w_ok = _AM_L.append([{"session": 0, "family": "a", "passed": True,
+                          "score": 1.0, "task_id": "t1", "caliber_sig": _AM_sig,
+                          "caliber": _AM_cal}])
+check(RS, "AM3 自洽的行照收 —— 闸只挡缺证据的，不挡正常使用",
+      _AM_w_ok["added"] == 1 and len(_AM_L.load()) == 1, f"append={_AM_w_ok}")
+
+check(RS, "AM4 两种新拒绝进**受控词表**：又一个总拒绝数 ⇒ 分不清是没写口径\n"
+          "         还是口径自相矛盾（与 critique / ledger 已有两组同构）",
+      {"no_caliber", "caliber_mismatch"} <= set(REJECT_KINDS)
+      and set(_AM_w_old) >= {"no_caliber", "caliber_mismatch"},
+      f"REJECT_KINDS={REJECT_KINDS}")
+
+# ── 读侧：历史**照收但必须标红**（不许把⑭的四份真账本静默作废）────────
+_AM_hist = Path("bench/evidence/score_ledger_real_qwen25_7b_T0_8sess.jsonl")
+_AM_hl = ScoreLedger(_AM_hist)
+_AM_hsig = collections.Counter(
+    r.get("caliber_sig") for r in _AM_hl.load()).most_common(1)[0][0]
+_AM_rows_hist = _AM_hl.admissible(_AM_hsig)
+check(RS, "AM5 ★历史行**照样受理**（那是真证据），但必须记账\n"
+          f"         `legacy_no_caliber` —— 八会话真账本 {len(_AM_rows_hist)} 行\n"
+          "         全部没有可读口径。删掉它们会让之前三轮的结论当场失去证据，\n"
+          "         假装它们可复核则是把不能复核的东西当能复核 ⇒ 只能标红。",
+      len(_AM_rows_hist) > 0
+      and _AM_hl.stats.legacy_no_caliber == len(_AM_rows_hist),
+      f"受理={len(_AM_rows_hist)} 不可复核={_AM_hl.stats.legacy_no_caliber}")
+
+_AM_hl2 = ScoreLedger(_AM_hist)
+_AM_hl2.admissible(_AM_hsig)
+check(RS, "AM6 `legacy_no_caliber` 必须有**消费者**：必须出现在 `as_line()` 里\n"
+          "         —— 一个只在内部计、永远没人念的数，等于没有（V5 装饰字段的同型）",
+      "legacy_no_caliber" in LedgerStats().as_dict()
+      and "不可复核" in _AM_hl2.stats.as_line(),
+      _AM_hl2.stats.as_line()[:96])
+
+#: ⚠️ 静态锚必须**剥 docstring**：`inspect.getsource` 会把文档里的 `LEDGER_SIG_EXCLUDE`
+#: 也算进来 —— 而那条注释恰恰是唯一**允许**提到它的地方。老坑重犯一次，此处钉住。
+_AM_lso = _strip_docstrings(inspect.getsource(ledger_sig_of))
+check(RS, "AM7 去掉哪些字段只剩**一处**说了算：`ledger_sig_of` 必须委托\n"
+          "         `ledger_caliber_of` —— 两边各删一份，迟早有一天 caliber 变了\n"
+          "         而落下的一边没变 ⇒ 行内 caliber 与签名不再自洽（AM2 的成因）",
+      "ledger_caliber_of" in _AM_lso and "LEDGER_SIG_EXCLUDE" not in _AM_lso,
+      f"剥注释后={_AM_lso.strip()[-60:]!r}")
+
+check(RS, "AM8 run.py 写账本时必须同时写 `caliber`（静态锚，剥 docstring 后查）\n"
+          "         —— 只写 `caliber_sig` 不写 `caliber`，等于把\"证据要自描述\"\n"
+          "            这条要求托付给记性；第十五轮就是这么丢掉的。",
+      '"caliber_sig": _cal_sig' in _RUN_SRC and '"caliber": _cal_fields' in _RUN_SRC,
+      "run.py 未同时写 caliber")
+
+_AM_app = inspect.getsource(ScoreLedger.append)
+check(RS, "AM9 撤回点必须**唯一**：`no_caliber` 与 `caliber_mismatch` 各一处\n"
+          "         （R13：分散的撤回点 ⇒ 撤回时断一处另一处还在，读数不转红）",
+      _AM_app.count("no_caliber += 1") == 1
+      and _AM_app.count("caliber_mismatch += 1") == 1,
+      f"no_caliber={_AM_app.count('no_caliber += 1')} "
+      f"mismatch={_AM_app.count('caliber_mismatch += 1')}")
+
+_AM_ctrl = V1 / "bench" / "run_budget_control.sh"
+check(RS, "AM10 产生证据的**脚本必须有可被锁定的指纹**：CI 每跑一次都要念出\n"
+          "         bench 脚本的 sha256 与账本\"不可复核\"行数 —— 四份旧账本之所以\n"
+          "         哑掉，一半是因为连产生它们的脚本都没进仓库，改没改过无从得知。\n"
+          "         ⛔ 这里不断言脚本内容，只断言\"它被审计了\"：\n"
+          "            锁内容会逼得人为了过闸而冻结脚本，那是假的可复现。",
+      _AM_ctrl.exists() and "hashlib.sha256" in _RUN_TESTS_SRC
+      and "legacy_no_caliber" in _RUN_TESTS_SRC,
+      f"脚本存在={_AM_ctrl.exists()} 指纹步已接={('hashlib.sha256' in _RUN_TESTS_SRC)}")
+
+_AM_oc = _strip_docstrings(inspect.getsource(_option_conflict))
+_AM_body = _strip_docstrings(_RUN_SRC)
+#: 同一事实只声明一处：冲突规则要么在 `_option_conflict` 里，要么散在主流程里。
+#: 两处在 ⇒ 改一处另一处仍在，AM12 测得通过而实际行为没变（V5 的老病）。
+_AM_decl = _AM_body.count("--fresh 与 --memory-dir")
+check(RS, "AM11 ★语义冲突必须**报错**，不许静默兜底（本轮自踩）\n"
+          "         —— `--fresh`（记忆隔离）与 `--memory-dir`（记忆跨题累积）同时给，\n"
+          "            旧代码把 fresh 悄悄改成 False ⇒ 我跑的『隔离 vs 累积』2×2\n"
+          "            四格全同（mean=0.7600 一字不差），还以为是结论太稳。\n"
+          "            **对照组被静默折叠成同一格**，是比没有对照组更糟的事 ——\n"
+          "            它长得像对照，实际一次都没对照。",
+      _AM_decl == 1 and "--fresh 与 --memory-dir" in _AM_oc,
+      f"声明处数={_AM_decl} 在 _option_conflict 内="
+      f"{'--fresh 与 --memory-dir' in _AM_oc}")
+
+_oc = _option_conflict(_OCH(fresh=True, memory_dir="/tmp/x"))
+check(RS, "AM12 这条规则必须**真的会挡人**（可观测行为，不是文档里的一句话）",
+      "互斥" in _oc and "--fresh" in _oc, f"冲突说明={_oc[:60]!r}")
 
 print()
 print("=" * 74)

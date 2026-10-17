@@ -73,7 +73,27 @@ REJECT_KINDS: tuple[str, ...] = (
     "no_caliber_sig",   # 完全没有口径签名 ⇒ 拒绝，不默认同口径
     "diff_caliber_sig",  # 有签名但不是当前口径
     "duplicate",        # 同一会话里的同一题写了两次（详见 `append` 的注释）
+    "no_caliber",       # 写侧：只有签名哈希、没有可读口径字段（见 `CALIBER_FIELD`）
+    "caliber_mismatch",  # 写侧：`caliber` 字段算出的签名 ≠ `caliber_sig`
 )
+
+#: ── ★ 证据必须自描述（2026-10-17 第十五轮实测逼出）──────────────────────
+#: 起因：拿 struct_convert 做"学习面"时，同一个套件在两个不同 `--max-tokens`
+#: 下给出 0.400 与 0.7600 两个相差近一倍的通过率。想追查到底哪个预算，
+#: 却发现**已有的四份账本里一行都不带可读的口径字段** —— 只有一个 16 位
+#: `caliber_sig` 哈希。而生成它们的实验脚本也没有入库。
+#:
+#: ⇒ 这意味着：一份六个月后的我打不开的证据。看得到分数、看得到族，
+#:   但**看不到这行是在什么预算/温度/口径下跑出来的**，于是无法复核、
+#:   无法复用、无法判断两个读数能不能比。这正是 V5 的病：**证据不能自证**。
+#:
+#: ⇒ 修复：写的新行必须带 `caliber`（可读字典），且必须与 `caliber_sig`
+#:   自洽；读侧对没有的历史行**不拒**（那是真证据），但必须标红计数
+#:   `legacy_no_caliber` —— 又一个"写侧保护未来、读侧给历史记账"的结构。
+CALIBER_FIELD: str = "caliber"
+
+#: 写侧要求：比 `REQUIRED_FIELDS` 多一条自描述要求。**只约束未来**。
+WRITE_REQUIRED_FIELDS: tuple[str, ...] = REQUIRED_FIELDS + (CALIBER_FIELD,)
 
 
 #: 「通过」的判定线。**刻意取满分**，且刻意**不提供**调节入口。
@@ -154,14 +174,25 @@ def canonical(obj: Any) -> str:
 LEDGER_SIG_EXCLUDE: tuple[str, ...] = ("suite_sha", "repeat")
 
 
+def ledger_caliber_of(caliber: dict) -> dict:
+    """账本口径字段 = caliber 去掉 `LEDGER_SIG_EXCLUDE` 后的**可读字典**。
+
+    它是 `ledger_sig_of` 的**输入**，也是写入账本那一行的 `caliber` 字段
+    （`CALIBER_FIELD`）。刻意让两边共用这一个函数：若各自维护一份"该删哪些"，
+    迟早有一天 caliber 变了而落下的一边没变 ⇒ 账本行与签名不自洽，
+    而那正是本文件 `CALIBER_FIELD` 注释里写的"六个月后打不开的证据"。
+    """
+    return {k: v for k, v in dict(caliber).items() if k not in LEDGER_SIG_EXCLUDE}
+
+
 def ledger_sig_of(caliber: dict) -> str:
     """账本签名 = caliber 去掉 `LEDGER_SIG_EXCLUDE` 后的哈希。
 
     与 `signature_of`（完整口径签名）共用同一个哈希实现 ——
-    **两把签名，两个问题**，但实现只有一份。
+    **两把签名，两个问题**，但实现只有一份；被去掉哪些字段也只有
+    `ledger_caliber_of` 一份说了算。
     """
-    return signature_of({k: v for k, v in dict(caliber).items()
-                         if k not in LEDGER_SIG_EXCLUDE})
+    return signature_of(ledger_caliber_of(caliber))
 
 
 def signature_of(caliber: dict) -> str:
@@ -189,6 +220,9 @@ class LedgerStats:
     rejected_duplicate: int = 0      # 写侧挡下的（只可能发生在未来）
     deduped_on_read: int = 0         # 读侧挡下的（**已经躺在文件里**的历史）
     bad_lines: int = 0
+    #: 历史行里**缺可读口径**的条数（见 `CALIBER_FIELD`）。不拒绝它们，
+    #: 但必须看得见 —— 否则"这份证据能不能复核"这个问题回答不了。
+    legacy_no_caliber: int = 0
 
     def as_dict(self) -> dict:
         return {
@@ -201,16 +235,20 @@ class LedgerStats:
                 "duplicate": self.rejected_duplicate,
             },
             "deduped_on_read": self.deduped_on_read,
+            "legacy_no_caliber": self.legacy_no_caliber,
             "bad_lines": self.bad_lines,
         }
 
     def as_line(self) -> str:
         r = self.as_dict()["rejected"]
-        return (f"账本 总={self.total} 采纳={self.admitted} "
+        line = (f"账本 总={self.total} 采纳={self.admitted} "
                 f"拒(缺字段={r['missing_fields']}/无签名={r['no_caliber_sig']}"
                 f"/异口径={r['diff_caliber_sig']}/重复={r['duplicate']})"
                 f" 读侧去重={self.deduped_on_read}"
                 f" 坏行={self.bad_lines}")
+        if self.legacy_no_caliber:
+            line += f" ⚠️不可复核(无可读口径)={self.legacy_no_caliber}"
+        return line
 
 
 class ScoreLedger:
@@ -261,6 +299,10 @@ class ScoreLedger:
         出现是正常的（同一套题每个会话都要跑一遍）。
         """
         added, rejected, dup = 0, 0, 0
+        #: - `no_caliber`：只有 16 位哈希、没有可读口径字典 ⇒ 六个月后打不开
+        #: - `caliber_mismatch`：`caliber` 算出的签名 ≠ `caliber_sig`
+        #:   ⇒ 这一行在自相矛盾，比没有更糟（它会让你以为自己能复核）
+        no_caliber, caliber_mismatch = 0, 0
         seen: set[tuple] = set()
         for r in self.load():
             k = (_key(r.get("session")), _key(r.get("task_id")))
@@ -272,6 +314,14 @@ class ScoreLedger:
                 if not isinstance(r, dict) or any(k not in r for k in REQUIRED_FIELDS):
                     rejected += 1
                     continue
+                # ── 自描述闸（只管未来；历史由读侧的 `legacy_no_caliber` 记账）──
+                cal = r.get(CALIBER_FIELD)
+                if not isinstance(cal, dict) or not cal:
+                    no_caliber += 1
+                    continue
+                if signature_of(cal) != str(r.get("caliber_sig")):
+                    caliber_mismatch += 1
+                    continue
                 key = (_key(r.get("session")), _key(r.get("task_id")))
                 if key[0] is not None and key[1] is not None:
                     if key in seen:
@@ -281,7 +331,8 @@ class ScoreLedger:
                 f.write(canonical(r) + "\n")
                 added += 1
         self._rows = None   # 缓存失效
-        return {"added": added, "rejected": rejected, "duplicate": dup}
+        return {"added": added, "rejected": rejected, "duplicate": dup,
+                "no_caliber": no_caliber, "caliber_mismatch": caliber_mismatch}
 
     # ------------------------------------------------------------------
     # 读
@@ -360,6 +411,11 @@ class ScoreLedger:
                     st.deduped_on_read += 1
                     continue
                 seen.add(key)
+            if not isinstance(r.get(CALIBER_FIELD), dict):
+                # 历史证据**照样受理**（它是真的），但记一笔"不可复核"：
+                # 看得到分数、看不到预算/温度 ⇒ 六个月后的我无法判断
+                # 这两个读数能不能比。这是它能回答的最诚实的答案。
+                st.legacy_no_caliber += 1
             out.append(r)
         st.admitted = len(out)
         st.bad_lines = self.stats.bad_lines

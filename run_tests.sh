@@ -13,7 +13,7 @@ cd "$(dirname "$0")"
 FAIL=0
 
 echo "=============================================================="
-echo "步骤 1/6  依赖审计（必须零第三方依赖）"
+echo "步骤 1/7  依赖审计（必须零第三方依赖）"
 echo "=============================================================="
 if "$PY" - <<'EOF'
 import ast, sys, pathlib
@@ -40,7 +40,7 @@ then echo "  ✅ 零第三方依赖"; else echo "  ❌ 发现外部依赖"; FAIL
 
 echo
 echo "=============================================================="
-echo "步骤 2/6  契约测试（离线；K 静默降级 / L 外部能力 / O 停滞 / Q 收尾"
+echo "步骤 2/7  契约测试（离线；K 静默降级 / L 外部能力 / O 停滞 / Q 收尾"
 echo "                    U 跨领域 / V 因果闭环 / W 抽象读数 / X 血缘完整性 /"
 echo "                    Y 失配信号的分辨力 / Z 内核读数落盘 / AA 模块接线 /"
 echo "                    AB 闭环通量 / AC 价值层 / AD 自我模型 / AE 消融安全 /"
@@ -60,7 +60,7 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 3/6  外部锚层契约测试（含反证组：假尺子必须被判红）"
+echo "步骤 3/7  外部锚层契约测试（含反证组：假尺子必须被判红）"
 echo "=============================================================="
 if V1_BENCH_DIR=/tmp/v1_bench_ci "$PY" tests/bench_test.py > /tmp/v1_bench.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_bench.out | tail -1)"
@@ -73,7 +73,7 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 4/6  离线端到端自检（零网络 / 零密钥）"
+echo "步骤 4/7  离线端到端自检（零网络 / 零密钥）"
 echo "=============================================================="
 # ⚠️ 状态目录必须隔离到临时目录：本步骤也是"测试"，不许写生产 state/
 #    （V1 自己的第一条纪律就是"测试绝不碰生产目录"）。
@@ -92,7 +92,7 @@ fi
 
 echo
 echo "=============================================================="
-echo "步骤 5/6  跨领域冒烟（同一把打分器 × 每个领域，oracle 参照）"
+echo "步骤 5/7  跨领域冒烟（同一把打分器 × 每个领域，oracle 参照）"
 echo "=============================================================="
 # 为什么要有这一步：`--suite-dir` 的价值是"**每个领域**都非零"。
 # 这条冒烟只用 oracle 参照（不需要模型、几秒钟），但能保证：
@@ -136,7 +136,7 @@ fi
 # 判据 = 用历史会话预测未来会话，误差必须**优于**不区分能力族的对照基线；
 # 且自带三个反证组（族间无差异 / 混入异口径 / 闸该关时必须关），
 # 缺一个就是恒真断言。
-echo "步骤 6/6  自我模型判据（跨会话预测校准 + 三个反证组 + 族预测力闸）"
+echo "步骤 6/7  自我模型判据（跨会话预测校准 + 三个反证组 + 族预测力闸）"
 echo "=============================================================="
 if "$PY" bench/probe_selfmodel.py \
      --real bench/evidence/score_ledger_real_qwen25_7b_T0_8sess.jsonl \
@@ -169,6 +169,46 @@ else
   FAIL=1
 fi
 
+# ── 步骤 7：证据来源指纹（第十五轮实测逼出）──────────────────────────────
+# 起因：同一套 struct_convert 在 --max-tokens 1024 / 1536 下给出 0.400 / 0.7600
+#   两个相差近一倍的读数。回头查那是哪个预算，却发现四份真实账本里**一行都不带
+#   可读的口径字典**（只有 16 位哈希），而生成它们的实验脚本也没进仓库。
+#   ⇒ 那是一份六个月后打开就哑了的证据。这一步不跑模型，只做两件事：
+#     ① 把"产生证据的脚本"的 sha256 念出来 ⇒ 谁改过脚本，指纹就变；
+#     ② 把"账本里有多少行不可复核"念出来 ⇒ 历史欠账不沉默。
+echo "步骤 7/7  证据来源指纹（脚本 sha256 + 账本可复核性）"
+echo "=============================================================="
+if "$PY" - <<'EOF'
+import hashlib, pathlib, sys
+sys.path.insert(0, ".")
+from mw.ledger import ScoreLedger, CALIBER_FIELD
+
+targets = sorted(pathlib.Path("bench").glob("*.sh")) + \
+          sorted(pathlib.Path("bench").glob("*.py"))
+for p in targets:
+    h = hashlib.sha256(p.read_bytes()).hexdigest()[:12]
+    print(f"  {h}  {p.as_posix()}")
+print("  ── 账本可复核性 ──")
+worst = 0
+for p in sorted(pathlib.Path("bench/evidence").glob("*.jsonl")):
+    L = ScoreLedger(p)
+    rows = L.load()
+    if not rows:
+        continue
+    sig = max(set(r.get("caliber_sig", "") for r in rows),
+              key=lambda s: sum(1 for r in rows if r.get("caliber_sig") == s))
+    L.admissible(sig)
+    n = len(rows)
+    legacy = L.stats.legacy_no_caliber
+    worst = max(worst, 0 if n == 0 else legacy / n)
+    flag = "⚠️" if legacy else "  "
+    print(f"  {flag} {p.name:52s} {n:4d} 行 不可复核={legacy}")
+print(f"  ⇒ 历史账本不可复核占比最高 {worst:.0%}（这些行有分数、没有可读口径）")
+sys.exit(0)
+EOF
+then echo "  ✅ 指纹已列出"; else echo "  ❌ 指纹步骤失败"; FAIL=1; fi
+
+echo
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "全部通过。"

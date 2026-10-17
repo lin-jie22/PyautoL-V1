@@ -45,7 +45,8 @@ echo "                    U 跨领域 / V 因果闭环 / W 抽象读数 / X 血�
 echo "                    Y 失配信号的分辨力 / Z 内核读数落盘 / AA 模块接线 /"
 echo "                    AB 闭环通量 / AC 价值层 / AD 自我模型 / AE 消融安全 /"
 echo "                    AF 失败签名（第二层判据：缺了会看到什么现象）/"
-echo "                    AG 外部评审（只读 / 防自评 / 防跨口径））"
+echo "                    AG 外部评审（只读 / 防自评 / 防跨口径）/"
+echo "                    AH 可复核性（语言与沟通的真判据））"
 echo "=============================================================="
 if "$PY" tests/contract_test.py > /tmp/v1_contract.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1)"
@@ -103,6 +104,24 @@ if V1_BENCH_DIR=/tmp/v1_cross_ci "$PY" run.py --bench --offline --solver oracle 
 else
   echo "  ❌ 跨领域冒烟失败（某领域的校准或 oracle 不满分）："
   tail -12 /tmp/v1_cross.out | sed 's/^/  /'
+  FAIL=1
+fi
+
+# ── 5b 语言领域（**另一把尺子**）────────────────────────────────────────
+# ⚠️ 为什么不和上一步合并：`--suite-dir` 一次只用**一把**打分器，而
+#    `bench/tasks_lang/` 量的是语言（答案里的断言可不可核对），
+#    `bench/tasks/` 量的是代码（能不能跑通）。**一把尺子量一种东西。**
+#    把它们塞进同一个目录，就是让调用方去猜"这题该用哪把尺子" ——
+#    而判据该由被测对象声明，不由调用方推断。
+echo "步骤 5b  语言领域冒烟（assertion 打分器 × 可复核性）"
+echo "=============================================================="
+if V1_BENCH_DIR=/tmp/v1_lang_ci "$PY" run.py --bench --offline --solver oracle \
+     --scorer bench/scorers/assertion.py \
+     --suite-dir bench/tasks_lang > /tmp/v1_lang.out 2>&1; then
+  echo "  ✅ $(grep -oE '可信领域 [0-9]+/[0-9]+.*' /tmp/v1_lang.out | tail -1)"
+else
+  echo "  ❌ 语言领域冒烟失败（校准或 oracle 不满分）："
+  tail -12 /tmp/v1_lang.out | sed 's/^/  /'
   FAIL=1
 fi
 

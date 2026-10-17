@@ -211,6 +211,10 @@ class ScoreError(RuntimeError):
 class Scored:
     score: float
     why: str = ""
+    #: 逐条明细（打分器可选给出）。**有它，「为什么错」才是可归因的**：
+    #: `why` 是一句话，`detail` 是"哪一条没满足、那条在说什么"。
+    #: 内核只读，不改 —— critique 通道消费的就是它。
+    detail: tuple[dict, ...] = ()
 
 
 class ExternalScorer:
@@ -285,12 +289,51 @@ class ExternalScorer:
         s = float(raw)
         if not (0.0 <= s <= 1.0):
             raise ScoreError(f"{self.name} score 越界 [0,1]: {s}")
-        return Scored(s, str(data.get("why", "")))
+        # 明细是**可选**的：老打分器（code_exec）不给，那是合法的。
+        # ⛔ 给了但格式不对 ⇒ **报错**，不许静默丢掉 ——
+        #    静默丢掉 = 一句"我不对"又变回没有理由，这一格就白补了。
+        raw_detail = data.get("detail", ())
+        if raw_detail is None:
+            raw_detail = ()
+        if not isinstance(raw_detail, (list, tuple)):
+            raise ScoreError(f"{self.name} detail 不是列表: {type(raw_detail).__name__}")
+        detail: list[dict] = []
+        for i, d in enumerate(raw_detail):
+            if not isinstance(d, dict):
+                raise ScoreError(f"{self.name} detail[{i}] 不是对象")
+            detail.append(dict(d))
+        return Scored(s, str(data.get("why", "")), tuple(detail))
 
 
 # ===========================================================================
 # 3. 任务集（契约②）—— 权威层：人工写的断言 + 前沿层：参考解
 # ===========================================================================
+@dataclass(frozen=True)
+class Assertion:
+    """一条**关于答案**的可核对声明。
+
+    ⚠️ 受控词表（`KINDS`：**这个任务该说清什么**有哪几种说法）**不在这一层**。
+    它在 `bench/scorers/assertion.py` 里，因为**判定的合法性由裁判决定**：
+    `mw` 侧若也校验一遍 kind，两处迟早漂移成
+    「任务层认为合法、打分器不认」的第二套真相（契约 AH1 静态锚钉住）。
+
+    本层只保证结构：有 `id`、有 `why`。
+    `why` 必填不是形式主义 —— 逐条明细的价值全靠它：
+    「未满足 a4」对内核没有信息量，「未满足 a4（必须说清减法规则的生效条件）」才有。
+    """
+
+    id: str
+    kind: str
+    why: str
+    value: Any = ()
+
+    def as_dict(self) -> dict:
+        v = self.value
+        if isinstance(v, tuple):
+            v = list(v)
+        return {"id": self.id, "kind": self.kind, "why": self.why, "value": v}
+
+
 @dataclass(frozen=True)
 class Task:
     """一条可判分的任务。
@@ -312,14 +355,20 @@ class Task:
     partial: str = ""
     null: str = ""
     meta: tuple[tuple[str, Any], ...] = ()
+    #: 「语言与沟通」那一格的 ground truth：这道题**该说清什么**。
+    #: 判据来源从「尺子的想象」位移到「任务自带的声明」—— 见 §16.9。
+    assertions: tuple[Assertion, ...] = ()
 
     def as_dict(self) -> dict:
-        return {
+        d: dict = {
             "id": self.id,
             "prompt": self.prompt,
             "tests": list(self.tests),
             "meta": {k: _val(v) for k, v in self.meta},
         }
+        if self.assertions:
+            d["assertions"] = [a.as_dict() for a in self.assertions]
+        return d
 
     def calibration_material(self) -> tuple[str, str, str]:
         """(好, 中, 坏) 三个已知质量的答案 —— 校准材料本身不进 task 载荷。"""
@@ -332,6 +381,8 @@ class Task:
             "id": self.id, "prompt": self.prompt, "tests": list(self.tests),
             "oracle": self.oracle, "partial": self.partial, "null": self.null,
             "meta": {k: _val(v) for k, v in self.meta},
+            # 断言进尺子身份：改掉一条「该说清什么」，校准结论就变了 ⇒ 换了尺子。
+            "assertions": [a.as_dict() for a in self.assertions],
         }
 
 
@@ -373,6 +424,26 @@ class Suite:
             if tid in seen:
                 raise ValueError(f"{p.name}:{i} 任务 id 重复: {tid}（唯一事实源原则）")
             seen.add(tid)
+            raw_a = d.get("assertions") or []
+            if not isinstance(raw_a, (list, tuple)):
+                raise ValueError(f"{p.name}:{i} assertions 必须是列表")
+            asserts: list[Assertion] = []
+            for j, a in enumerate(raw_a):
+                if not isinstance(a, dict):
+                    raise ValueError(f"{p.name}:{i} assertions[{j}] 不是对象")
+                aid = str(a.get("id", "")).strip()
+                if not aid:
+                    raise ValueError(f"{p.name}:{i} assertions[{j}] 缺 id")
+                if not str(a.get("why", "")).strip():
+                    # 没有 why 的断言等于没有断言：判分时它只能说"你错了"，
+                    # 说不出"错在哪" —— 那正是这一格要补的东西。
+                    raise ValueError(f"{p.name}:{i} assertions[{j}] 缺 why")
+                av = a.get("value", ())
+                if isinstance(av, list):
+                    av = tuple(av)
+                asserts.append(Assertion(
+                    id=aid, kind=str(a.get("kind", "")), why=str(a.get("why")),
+                    value=av))
             tasks.append(Task(
                 id=tid,
                 prompt=str(d.get("prompt", "")),
@@ -381,6 +452,7 @@ class Suite:
                 partial=str(d.get("partial", "")),
                 null=str(d.get("null", "")),
                 meta=tuple(sorted((d.get("meta") or {}).items())),
+                assertions=tuple(asserts),
             ))
         if not tasks:
             raise ValueError(f"{p.name} 没有任何任务")

@@ -2389,6 +2389,151 @@ check(RS, "AG10 被拒原因必须走**受控词表** `REJECT_KINDS` —— 新�
 
 
 # ===========================================================================
+# AH 组 —— 「语言与沟通」的真判据：可复核性（verifiability）
+#
+# 旧判据是**答案字数**。字数有一个混淆变量排不掉：
+#   150 字的空话 比 80 字的精确答案 长 ⇒ 字数判空话赢。
+# 新判据是任务**自带**的 `assertions`（这道题该说清什么），
+# 并用「长度与质量反相关」的对照组把旧判据**证伪**。
+#
+# 真正的位移不在"判得更准"，而在**判据从哪来**：
+#   旧 = 尺子自己发明的规则（字数 / 长度的 1/5）
+#   新 = 任务自带的 ground truth
+# 判据不由测量者发明，就没人能通过调松判据让分数变好看 —— V5 的死法。
+# ===========================================================================
+from mw.bench import (Assertion, ExternalScorer, ScoreError,  # noqa: E402
+                      Scored, Suite)
+
+_AH_SCORER = V1 / "bench" / "scorers" / "assertion.py"
+_AH_SUITE = V1 / "bench" / "tasks_lang" / "explain.jsonl"
+_AH_src = _AH_SCORER.read_text(encoding="utf-8")
+_AH_bench = _src("bench.py")
+
+check(RS, "AH1 ★静态锚：受控词表 `KINDS` **只在打分器里声明一处**；"
+          "`mw/bench.py` 不得另立一份\n"
+          "          —— 判定合法性由裁判决定。任务层若也校验 kind，两处迟早漂成\n"
+          "          「任务层认为合法、打分器不认」的第二套真相",
+      'KINDS = (' in _AH_src and "KINDS = (" not in _AH_bench
+      and "contains_any" not in _AH_bench,
+      f"打分器有={('KINDS = (' in _AH_src)} bench.py 有={('KINDS = (' in _AH_bench)}")
+
+_AH_s = Suite.load(_AH_SUITE)
+check(RS, "AH2 任务集必须真的带 `assertions`，且每条都有 `id` 与 `why`"
+          "（没有 why 的断言只能说「你错了」，说不出「错在哪」——\n"
+          "         那正是这一格要补的东西）",
+      len(_AH_s) >= 1 and all(len(t.assertions) >= 3 for t in _AH_s.tasks)
+      and all(a.id and a.why for t in _AH_s.tasks for a in t.assertions),
+      f"题数={len(_AH_s)} 断言数={[len(t.assertions) for t in _AH_s.tasks]}")
+
+check(RS, "AH3 ★`assertions` 必须进 `fingerprint()` —— 改掉一条「该说清什么」\n"
+          "         就等于换了尺子（校准结论会变），不进哈希则 suite_sha 察觉不到",
+      "assertions" in Suite.load(_AH_SUITE).tasks[0].fingerprint(),
+      f"fingerprint 键={sorted(Suite.load(_AH_SUITE).tasks[0].fingerprint())}")
+
+_AH_bad = _TMP / "ah_bad.jsonl"
+_AH_bad.write_text(
+    '{"id":"b1","prompt":"p","assertions":[{"id":"x","kind":"contains_any",'
+    '"value":["a"]}]}\n', encoding="utf-8")
+check(RS, "AH4 缺 `why` 的断言在**装载时**就必须报错（不是等到判分才发现）",
+      _raises(lambda: Suite.load(_AH_bad), ValueError),
+      "ValueError 已按预期抛出")
+
+check(RS, "AH5 `Scored.detail` 默认空元组 —— 老打分器（code_exec）不给明细是合法的，\n"
+          "         不许因为「没明细」就把一条合法分数判为失效",
+      Scored(0.5).detail == () and Scored(0.5).why == "",
+      f"detail={Scored(0.5).detail}")
+
+_AH_probe = _cap.probe_verifiability()
+check(RS, "AH6 ★行为锚（**把旧判据证伪**）：长空话必须比短精确**分低**\n"
+          "         （166 字空话 vs 86 字精确答案 —— 若判据是字数，前者赢；\n"
+          "          ⇒ 这一条红了就说明判据退化回了长度代理量）",
+      _AH_probe["verbose_len"] > _AH_probe["precise_len"]
+      and _AH_probe["precise_score"] > _AH_probe["verbose_score"]
+      and _AH_probe["length_confound_broken"] is True,
+      f"长={_AH_probe['verbose_len']}字/{_AH_probe['verbose_score']} "
+      f"短={_AH_probe['precise_len']}字/{_AH_probe['precise_score']}")
+
+check(RS, "AH7 ★逐条明细必须**非空、且确实有未满足项、且每条都带 why** ——\n"
+          "         「未满足 a4」没有信息量，「未满足 a4（必须说清生效条件）」才有。\n"
+          "         ⚠️ `failed_count >= 1` 这一半不能省：用满分答案验归因 ⇒ 未满足项\n"
+          "         集合为空 ⇒ `all([])` 恒真 ⇒ 又一条永远绿的假防线",
+      _AH_probe["detail_count"] >= 3 and _AH_probe["failed_count"] >= 1
+      and _AH_probe["failed_attributable"] is True,
+      f"明细={_AH_probe['detail_count']} 未满足={_AH_probe['failed_count']} "
+      f"可归因={_AH_probe['failed_attributable']}")
+
+_AH_rows2 = _cap.assess(_cap_ev)
+check(RS, "AH8 读数锚：签名表里「语言与沟通」当前判**反证**"
+          "（判据已换成可复核性 ⇒ 可复核的答案通过了；\n"
+          "         若它转红，说明答案又说不出可核对的东西了）",
+      any(r["capability"] == "语言与沟通" and r["state"] == _cap.ABSENT
+          for r in _AH_rows2),
+      next((r["detail"] for r in _AH_rows2 if r["capability"] == "语言与沟通"), "无此行"))
+
+
+def _ah_score(task, answer: str) -> float:
+    """用断言打分器给一个答案判分。打分器失败（不可判）返回 -1，
+    ⛔ 不许降级成 0.0 —— 「没量到」和「0 分」在这个项目里永远是两个数。"""
+    import subprocess
+    payload = json.dumps({"task": task.as_dict(), "answer": answer},
+                         ensure_ascii=False)
+    pr = subprocess.run([sys.executable, str(_AH_SCORER)], input=payload,
+                        capture_output=True, text=True)
+    if pr.returncode != 0:
+        return -1.0
+    return float(json.loads(pr.stdout.strip().splitlines()[-1])["score"])
+
+
+def _ah_run(payload: str) -> int:
+    import subprocess
+    pr = subprocess.run([sys.executable, str(_AH_SCORER)], input=payload,
+                        capture_output=True, text=True)
+    return pr.returncode
+
+
+check(RS, "AH9 ★缺 `assertions` ⇒ 退出码 **2（不可判）**，绝不是 0 分\n"
+          "         —— 把『这道题没说清该说什么』记成『答案 0 分』，\n"
+          "         就是把尺子的缺陷记到被测系统头上（契约③）",
+      _ah_run(json.dumps({"task": {"id": "x"}, "answer": "a"})) == 2,
+      f"rc={_ah_run(json.dumps({'task': {'id': 'x'}, 'answer': 'a'}))}")
+
+check(RS, "AH10 未知 kind ⇒ 同样判不可判（rc=2），不许静默当不满足/当满足",
+      _ah_run(json.dumps({"task": {"id": "x", "assertions": [
+          {"id": "k", "kind": "magic", "why": "w"}]}, "answer": "a"})) == 2,
+      "rc 已按预期为 2")
+
+# ⚠️ AH12 补的原因：我在 `mw/bench.py` 的解析里加了「detail 格式不对就报错」，
+#    却**没有断言盯着它** —— 那它就是一段装饰性代码，删掉也没人知道。
+#    本项目纪律：写了校验就要有断言，否则等于没写。
+def _ah_fake(detail_literal: str) -> "ExternalScorer":
+    """造一个输出指定 detail 的假打分器。"""
+    f = _TMP / f"ah_fake_{abs(hash(detail_literal))}.py"
+    f.write_text("import json, sys\n"
+                 f'json.dump({{"score": 0.5, "why": "w", "detail": {detail_literal}}},'
+                 " sys.stdout)\n", encoding="utf-8")
+    return ExternalScorer([sys.executable, str(f)], name="fake")
+
+
+check(RS, "AH12 ★`detail` 是列表但**元素不是对象** ⇒ 必须报错，不许静默丢掉\n"
+          "         （静默丢掉 = 一句「我不对」又变回没有理由，这一格就白补了）",
+      _raises(lambda: _ah_fake('["oops"]').score({"id": "t"}, "a"), ScoreError),
+      "ScoreError 已按预期抛出")
+
+check(RS, "AH13 `detail` **整体不是列表**（如字符串）⇒ 同样必须报错\n"
+          "         （两条路径分属两个 `isinstance` 检查，只钉一条会漏掉另一条）",
+      _raises(lambda: _ah_fake('"oops"').score({"id": "t"}, "a"), ScoreError),
+      "ScoreError 已按预期抛出")
+
+_AH_t0 = _AH_s.tasks[0]
+check(RS, "AH11 ★三档有序（分辨力）：oracle > partial > null，且**中段可达**\n"
+          "         （只证明满分/零分可分太弱 —— 那与 V5 那把五天不动的尺子没区别）",
+      all(_ah_score(t, t.oracle) > _ah_score(t, t.partial) > _ah_score(t, t.null)
+          for t in _AH_s.tasks)
+      and all(0.0 < _ah_score(t, t.partial) < 1.0 for t in _AH_s.tasks),
+      f"partial={[round(_ah_score(t, t.partial), 3) for t in _AH_s.tasks]}")
+
+
+# ===========================================================================
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

@@ -269,14 +269,87 @@ def _s_flat_learning(ev: Evidence) -> tuple[str, str]:
             + ("（全程『会成功』且从未失败 ⇒ 学习面是平的）" if fails == 0 else ""))
 
 
-def _s_terse_answer(ev: Evidence) -> tuple[str, str]:
-    denied = (ev.sect("values").get("by_kind") or {}).get("answer", 0)
-    n = len((ev.answer or "").strip())
-    if denied > 0:
-        return PRESENT, f"答案被价值层判敷衍 {denied} 次"
-    if n < 2:
-        return PRESENT, f"答案只有 {n} 字"
-    return ABSENT, f"答案 {n} 字，未被判敷衍"
+def probe_verifiability() -> dict:
+    """「语言与沟通」的行为探针 —— 直接打在**旧判据**上。
+
+    旧判据是字数。字数有一个**混淆变量**没能排除：
+
+        一段 150 字的空话，和一段 80 字把事情说清楚的答案，谁在沟通？
+
+    字数判前者赢。所以这里构造一组**长度与质量反相关**的对照：
+        verbose  长（>150 字）但内容断言一条不满足
+        precise  短（<100 字）但内容断言全满足
+    若 `precise > verbose`，则判据**不是**长度 —— 旧判据被证伪。
+
+    这才是行为锚：它跑的是**判据本身**，不是"代码里有没有提到这个词"。
+    """
+    import subprocess
+
+    from mw.bench import Suite
+
+    suite = Suite.load(ROOT / "bench" / "tasks_lang" / "explain.jsonl")
+    scorer = ROOT / "bench" / "scorers" / "assertion.py"
+    cmd = [sys.executable, str(scorer)]
+
+    def score(task, answer: str) -> tuple[float, dict]:
+        payload = json.dumps({"task": task.as_dict(), "answer": answer},
+                             ensure_ascii=False)
+        p = subprocess.run(cmd, input=payload, capture_output=True, text=True)
+        if p.returncode != 0:
+            return -1.0, {}
+        d = json.loads(p.stdout.strip().splitlines()[-1])
+        return float(d["score"]), d
+
+    t = suite.tasks[0]
+    # 长空话：每个字都在说话，但没有一个字是可核对的事实。
+    verbose = ("这个问题非常有意思，也很有深度。我们在处理这类问题的时候，"
+               "需要认真思考，注意每一个细节，并且始终保持严谨的态度。"
+               "罗马数字是一种非常古老的计数方式，它有着悠久的历史，"
+               "在编程练习中经常会遇到。我认为只要细心一点，多想一想，"
+               "就一定能够找到答案。总之，这个问题需要我们认真对待，"
+               "从多个角度去分析，才能得出正确的结论。希望我的回答对你有帮助。")
+    # 短精确：每一句都是可被核对的事实。
+    precise = ("规则是从右往左扫描每个符号：如果当前符号的值小于它右边的符号，"
+               "就把它减去，否则加上。MCMXCIV 拆成 M=1000、CM=900、XC=90、IV=4，"
+               "合计 1994。")
+
+    sv, _ = score(t, verbose)
+    sp, dp = score(t, precise)
+    # ⚠️ 归因必须拿**有失败项**的答案来验。用满分答案验 → 未满足项集合为空
+    #    ⇒ `all([])` 恒真 ⇒ 一条**永远绿**的假防线（与 Y2b 同一类错误）。
+    #    用 partial（半对）才有失败项可查。
+    _, dpart = score(t, t.partial)
+    failed = [x for x in dpart.get("detail", []) if not x.get("ok")]
+    return {
+        "verbose_len": len(verbose), "verbose_score": round(sv, 4),
+        "precise_len": len(precise), "precise_score": round(sp, 4),
+        # ★ 长度与质量反相关的对照：长得更长的那个必须**分更低**
+        "length_confound_broken": bool(len(verbose) > len(precise) and sp > sv),
+        # 逐条明细 = 「为什么错」可归因，而不是一句"我不对"
+        "detail_count": len(dpart.get("detail", [])),
+        "failed_count": len(failed),
+        "failed_attributable": bool(failed)
+        and all(str(x.get("why", "")).strip() for x in failed),
+        "sample_failed": [x["id"] for x in failed],
+    }
+
+
+def _s_verifiability(ev: Evidence) -> tuple[str, str]:
+    """「语言与沟通」的判据：**说出来的话能不能被核对**。"""
+    p = ev.probes.get("verifiability") or {}
+    if not p:
+        return UNKNOWN, "未提供可复核性探针"
+    if not p.get("length_confound_broken"):
+        return PRESENT, (f"判据被长度混淆：长空话 {p.get('verbose_len')} 字得 "
+                         f"{p.get('verbose_score')}，短精确 {p.get('precise_len')} 字得 "
+                         f"{p.get('precise_score')} —— 长的反而更高")
+    if p.get("detail_count", 0) == 0:
+        return PRESENT, "打分器没有给出逐条明细 ⇒ 「为什么错」仍不可归因"
+    if not p.get("failed_attributable"):
+        return PRESENT, "有明细但未遂条说明（why 为空）⇒ 归因失败"
+    return ABSENT, (f"长空话 {p['verbose_len']}字={p['verbose_score']} < "
+                    f"短精确 {p['precise_len']}字={p['precise_score']}；"
+                    f"逐条明细 {p['detail_count']} 条，未满足项可归因")
 
 
 def _s_scope(ev: Evidence) -> tuple[str, str]:
@@ -348,9 +421,16 @@ SIGNATURES: tuple[Signature, ...] = (
                    "失败两格全 0 ⇒ **这条会转成 PRESENT**。\n"
                    "     也就是说：学习面平不平，取决于 `finish` 永不失败这个事实，"
                    "不取决于学习模块本身。"),
-    Signature("语言与沟通", "答案非空但与要求的形态不符",
-              "答案敷衍、或答非所问，而内核没有任何判据能说它不对",
-              "values.by_kind['answer'] × answer 字数", _s_terse_answer),
+    Signature("语言与沟通", "答案里没有任何可被核对的断言（说得长 ≠ 说清楚）",
+              "答案敷衍或答非所问，而内核拿不到「哪一条没说到」—— 无法被纠正",
+              "probe:verifiability（逐条断言打分器）", _s_verifiability,
+              note="⚠️ 这条签名**换过判据**（2026-10-17）：旧判据是「答案字数 ×\n"
+                   "     价值层的 1/5 长度规则」—— 那是**尺子自己发明的标准**，\n"
+                   "     它有一个混淆变量排不掉：150 字的空话比 80 字的精确答案长，\n"
+                   "     字数判前者赢。新判据是任务**自带**的 `assertions`\n"
+                   "     （这道题该说清什么），并用「长度与质量反相关」的对照组\n"
+                   "     把旧判据证伪。⇒ 判据来源从「尺子的想象」位移到「任务自带的\n"
+                   "     ground truth」，这才是从代理量升级为真判据的实质。"),
     Signature("目标与价值", "目标未授权的不可逆动作被执行",
               "方向被授权了，范围没有 —— 真实破坏的主要形态",
               "probe:scope", _s_scope,
@@ -402,6 +482,7 @@ def collect(goal: str | None = None, *, llm=None) -> Evidence:
             "scope": probe_scope(),
             "critique": probe_critique_consumers(),
             "critique_flow": probe_critique_flow(),
+            "verifiability": probe_verifiability(),
         })
 
 

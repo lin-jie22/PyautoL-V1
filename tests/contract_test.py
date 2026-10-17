@@ -2131,14 +2131,40 @@ check(RS, f"AD3 样本 < {MIN_SAMPLES} ⇒ `confident=False`"
       _sm_small.advise(family="x").confident is False,
       _sm_small.advise(family="x").as_line())
 
-_sm_weak = SelfModel([{"family": "w", "passed": False, "failed_step": "plan"}] * 4)
+# ⚠️ AD4/AD5 的构造在加了**族预测力闸**之后必须改写，这不是测试被改坏了，
+#    而是旧构造本来就过不了新门槛：原来 4 条同族记录**没有 `session`** ⇒
+#    做不了时序切分 ⇒ 预测力测不出来 ⇒ 闸必须关。旧断言之所以能通过，
+#    是因为当时 `advise()` 只看样本数 —— 而那正是本轮修掉的洞。
+#    现在要证明"族确实弱 ⇒ 加宽候选"，就得先给一份**能测出预测力**的账本。
+def _mk_separable_evidence(n_sessions: int = 8, per_session: int = 3) -> list[dict]:
+    """造一份族间**完全可分**的账本：族 w 恒不过、族 s 恒过。
+
+    它同时满足闸的两个条件：会话数 ≥ MIN_POWER_SESSIONS、族间差异真实存在。
+    """
+    rows = []
+    for s in range(n_sessions):
+        for _ in range(per_session):
+            rows.append({"family": "w", "passed": False, "failed_step": "plan",
+                         "session": s})
+            rows.append({"family": "s", "passed": True, "session": s})
+    return rows
+
+
+_sep_ev = _mk_separable_evidence()
+check(RS, "AD4a ★前提：这份账本上「分族」必须真的测得**出**预测力"
+          "（否则 AD4/AD5 就是在测一个闸关着的自我模型）",
+      SelfModel(_sep_ev).family_power().usable
+      and SelfModel(_sep_ev).family_power().state == "PRESENT",
+      SelfModel(_sep_ev).family_power().as_line())
+
+_sm_weak = SelfModel(_sep_ev)
 _adv_weak = _sm_weak.advise(family="w", max_candidates=3)
 check(RS, "AD4 弱族（历史通过率 0.0）⇒ 加宽候选 + 先验证，并**点名最常败在哪一步**",
       _adv_weak.confident and _adv_weak.deep and _adv_weak.verify_first
       and "plan" in _adv_weak.basis,
       _adv_weak.as_line())
 
-_sm_strong = SelfModel([{"family": "s", "passed": True}] * 4)
+_sm_strong = SelfModel(_sep_ev)
 _adv_strong = _sm_strong.advise(family="s", max_candidates=3)
 check(RS, "AD5 强族（历史通过率 1.0）⇒ 快通道单候选（省预算，而不是炫技）",
       _adv_strong.confident and _adv_strong.candidates == 1
@@ -2645,19 +2671,23 @@ check(RS, "AI8 账本读数必须进 `Outcome.stats` —— 没出口的计数�
 # ── 判据本体：跨会话预测校准 ────────────────────────────────────────────
 _AI_rows = _smp.build_synthetic_rows()
 _AI_cal = _smp.probe_calibration(_AI_rows)
+_AI_null = _smp.probe_calibration(_smp.build_null_rows())
 check(RS, "AI9 ★判据本体：用历史预测未来，误差必须**优于**不区分族的对照基线\n"
           "         —— 这才回答'自我模型有没有用'，而不是'它有没有被咨询过'",
       _AI_cal["state"] == "PRESENT"
-      and _AI_cal["main"]["mae_model"] < _AI_cal["main"]["mae_base"]
-      and _AI_cal["main"]["delta"] > _AI_cal["margin"],
-      f"模型 MAE={_AI_cal['main']['mae_model']} 基线 MAE={_AI_cal['main']['mae_base']} "
-      f"Δ={_AI_cal['main']['delta']} 阈值={_AI_cal['margin']}")
+      and _AI_cal["mae_model"] < _AI_cal["mae_base"]
+      and _AI_cal["delta"] > _AI_cal["margin"],
+      f"模型 MAE={_AI_cal['mae_model']} 基线 MAE={_AI_cal['mae_base']} "
+      f"Δ={_AI_cal['delta']} 阈值={_AI_cal['margin']}")
 
-check(RS, "AI10 ★反证组（把族标签轮转一位，只破坏『标签↔通过率』的对应关系）：\n"
-          "          优势必须**消失**，否则 AI9 是一条恒真断言\n"
-          "          （一个怎么都能赢的判据，和 V5 那个恒为 0 的适应度是同一种东西）",
-      abs(_AI_cal["control"]["delta"] or 0.0) < _AI_cal["margin"],
-      f"对照 Δ={_AI_cal['control']['delta']} 阈值={_AI_cal['margin']}")
+check(RS, "AI10 ★反证组（各族真实通过率**完全相同**，族间本无差异）：\n"
+          "          判据**不许**绿，否则 AI9 是一条恒真断言\n"
+          "          （一个怎么都能赢的判据，和 V5 那个恒为 0 的适应度是同一种东西）\n"
+          "          ⚠️ 旧版用的是『轮转族标签』，那只给族改名 —— 未来行若跟着\n"
+          "             改名则信号毫发无损，改历史则恒等于完全错配，都不是零假设",
+      _AI_null["state"] != "PRESENT",
+      f"无差异账本 Δ={_AI_null['delta']} 阈值={_AI_null['margin']} "
+      f"⇒ {_AI_null['state']}")
 
 _AI_gate = _smp.probe_caliber_gate()
 check(RS, "AI11 ★口径闸是不是**承重的**：混入异口径 ⇒ 预测必须变差\n"
@@ -2695,6 +2725,155 @@ check(RS, "AI14 ★内核边界清单必须**完整**：`core.py` 直接 import 
       _AI_core_imports <= set(CORE_MODULES),
       f"core.py 引入={sorted(_AI_core_imports)} "
       f"漏登记={sorted(_AI_core_imports - set(CORE_MODULES))}")
+
+# ===========================================================================
+# AJ 组 —— 族预测力闸：「分族」测不出预测力时，**不许**据此行动
+#
+# 起因（一次实测，不是设计推演）：真模型账本 4 会话 × 2 族 × 40 行上
+# Δ = −0.015 ⇒ 族内漂移大于族间差异。而 `advise()` 的老门槛只看样本数，
+# 于是它**在噪声上给建议**。这一组把"样本够 ≠ 规律真"钉成可执行断言。
+# ===========================================================================
+from mw.metacog import (MIN_POWER_SESSIONS, N_CONTROL_PERMS,       # noqa: E402
+                        POWER_MARGIN_FLOOR, FamilyPower,
+                        measure_family_power)
+
+_AJ_ev = _smp.build_synthetic_rows()       # 5 族、族率 0.10~0.90 真信号
+_AJ_pw = SelfModel(load_evidence(_AJ_ev)).family_power()
+check(RS, "AJ1 ★闸在**有真实族信号**的账本上（5 族、族率 0.10~0.90）必须**开**\n"
+          "         （有族信号却不行动 ⇒ 自我模型是装饰模块）",
+      _AJ_pw.usable and _AJ_pw.state == "PRESENT"
+      and _AJ_pw.delta > _AJ_pw.margin,
+      _AJ_pw.as_line())
+
+_AJ_real_p = V1 / "bench" / "evidence" / "score_ledger_real_qwen25_7b_4sess.jsonl"
+_AJ_real_rows = ScoreLedger(_AJ_real_p).load()
+_AJ_real_sm = SelfModel(load_evidence(_AJ_real_rows))
+_AJ_real_pw = _AJ_real_sm.family_power()
+check(RS, "AJ2 ★★真模型账本（qwen2.5:7b / T=0.8 / 4 会话 × 2 族 × 40 行）上闸必须**关**\n"
+          "         —— 这是本轮的核心断言，用**真数据**而不是合成数据：\n"
+          "            在此之前 `advise()` 只看样本数，于是在这份账本上\n"
+          "            （样本 20 条，完全够）它会笃定地按族调整预算，\n"
+          "            而实测 Δ=−0.015 说明那些族率只是噪声",
+      _AJ_real_pw.usable is False
+      and _AJ_real_sm.advise(family="numeric_logic").confident is False
+      and _AJ_real_sm.advise(family="text_ops").confident is False,
+      _AJ_real_pw.as_line())
+
+check(RS, "AJ3 ★真账本上的状态必须是 **ABSENT**（测出来了，结论为负），\n"
+          "         不许是 UNKNOWN\n"
+          "         （§16.7 第二层判据：没量到 ≠ 没有。若这里读成 UNKNOWN，\n"
+          "          就会有人去'再多跑几个会话'—— 而真相是跑了也没用）",
+      _AJ_real_pw.state == "ABSENT"
+      and _AJ_real_pw.delta is not None
+      and _AJ_real_pw.n_future >= 4
+      and "漂移" in (_AJ_real_pw.reason or ""),
+      f"state={_AJ_real_pw.state} 历史={_AJ_real_pw.n_history} "
+      f"未来={_AJ_real_pw.n_future} 原因={_AJ_real_pw.reason}")
+
+check(RS, "AJ4 闸关着时 `predict()` 必须退回**全局率**，不是族率\n"
+          "         （继续报族率 = 嘴上说不知道、手上还在按族行动）",
+      _AJ_real_sm.predict("numeric_logic") == _AJ_real_sm.global_rate()
+      and _AJ_real_sm.predict("text_ops") == _AJ_real_sm.global_rate(),
+      f"predict={_AJ_real_sm.predict('text_ops')} "
+      f"全局率={_AJ_real_sm.global_rate()}")
+
+# ── UNKNOWN 也必须 fail-closed，且不许并入 ABSENT ───────────────────────
+_AJ_unk = SelfModel([{"family": "a", "passed": i % 2 == 0,
+                      "session": 0} for i in range(10)]
+                    + [{"family": "b", "passed": i % 3 == 0,
+                        "session": 0} for i in range(10)])
+_AJ_unk_pw = _AJ_unk.family_power()
+check(RS, "AJ5 ★UNKNOWN 也必须 fail-closed（`confident=False`），但**不许**并入 ABSENT\n"
+          "         —— 结论层面：没量到 ≠ 没有（两个词不许合成一个）\n"
+          "         —— 行动层面：不知道就不许动（两者都关）",
+      _AJ_unk_pw.state == "UNKNOWN"
+      and _AJ_unk_pw.usable is False
+      and _AJ_unk.advise(family="a").confident is False
+      and _AJ_unk_pw.delta is None,
+      f"state={_AJ_unk_pw.state} 会话={_AJ_unk_pw.n_sessions} "
+      f"原因={_AJ_unk_pw.reason}")
+
+# ── 本轮修掉的数学缺陷 ──────────────────────────────────────────────────
+check(RS, "AJ6 ★★2 族**极端可分**（0.0 vs 1.0）必须能判 PRESENT\n"
+          "         —— 第一版用『轮转族名』当反证组，2 族时只有恒等/交换两种结果，\n"
+          "            噪声恒等于正组 Δ ⇒ margin=2Δ>Δ ⇒ **判据在数学上不可能成立**。\n"
+          "            这一条就是那个缺陷的墓碑：它当时会让最强的信号也判不出来。\n"
+          "            ⚠️ 与 AJ1 不重复：AJ1 是 5 族，这一条是**只有 2 族**的极限情形",
+      SelfModel(_mk_separable_evidence()).family_power().state == "PRESENT",
+      SelfModel(_mk_separable_evidence()).family_power().as_line())
+
+_AJ_rep = SelfModel(_AJ_real_ev := _AJ_ev).report()
+check(RS, "AJ7 读数出口：`report()` 必须暴露 `family_power`，且闸关时\n"
+          "         `confident_families` 必为空（`eligible_families` 仍可非空）\n"
+          "         —— 两个列表分开，是因为「样本够但闸关着」与「样本不够」\n"
+          "            的修法完全不同：前者要换族的定义，后者只要继续跑",
+      "family_power" in _AJ_rep and _AJ_rep["family_power"]["usable"] is True
+      and _AJ_rep["confident_families"] == _AJ_rep["eligible_families"]
+      and SelfModel(_AJ_real_rows and load_evidence(_AJ_real_rows)
+                    ).report()["confident_families"] == [],
+      f"闸开: {_AJ_rep['confident_families']} / 闸关: "
+      f"{SelfModel(load_evidence(_AJ_real_rows)).report()['confident_families']}")
+
+# ── session 字段的传递（闸永远关着的最隐蔽成因）────────────────────────
+_AJ_sess = load_evidence([{"family": "a", "passed": True, "session": 7}])
+check(RS, "AJ8 ★`load_evidence` 必须把 `session` 带过去\n"
+          "         —— 丢掉它 ⇒ 时序切分做不了 ⇒ 闸永远关着，而日志只显示\n"
+          "            「样本够、Δ=n/a」，看不出真正的原因（本轮最易漏的一处）",
+      _AJ_sess and _AJ_sess[0].get("session") == 7,
+      f"{_AJ_sess[0] if _AJ_sess else '空'}")
+
+_AJ_bad = load_evidence([{"family": "a", "passed": True, "session": "abc"}])
+check(RS, "AJ9 非数字 `session` ⇒ 留正向信号（`session_bad`），**不许**填 0、不许静默丢\n"
+          "         （填 0 = 让这一行假装属于会话 0，于是被算进切分；V5 的『缺失当零』）",
+      _AJ_bad and _AJ_bad[0].get("session") is None
+      and _AJ_bad[0].get("session_bad") == "abc",
+      str(_AJ_bad[0] if _AJ_bad else "空"))
+
+# ── 算法形状：零假设必须是**行级置换**，常数不可调 ──────────────────────
+_AJ_mc = _src("metacog.py")
+_AJ_tree = ast.parse(_AJ_mc)
+check(RS, "AJ10 ★噪声下限必须用**行级置换检验**，不许回到『给族改名』\n"
+          "         （改名版：2 族时恒等于完全错配；5 族时噪声随族列表的排列\n"
+          "           顺序变化 —— 字母序恰好把 0.90 与 0.10 排相邻 ⇒ 噪声翻倍）",
+      "_permuted_labels" in _AJ_mc and "_rotated" not in _AJ_mc
+      and "_shuffle_families" not in _AJ_mc,
+      f"含 _permuted_labels={'_permuted_labels' in _AJ_mc} "
+      f"残留 _rotated={' _rotated' in _AJ_mc}")
+
+_AJ_env = [n for n in ast.walk(_AJ_tree)
+           if isinstance(n, ast.Attribute)
+           and isinstance(n.value, ast.Name)
+           and n.value.id in ("os", "environ")
+           or (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+               and n.func.id in ("getenv", "environ"))]
+check(RS, "AJ11 ★闸的四个常数**不可调**：`metacog.py` 不许读环境变量\n"
+          "         （能调阈值 = 能把结论调好看的旋钮 ⇒ V5 的尺子下移）",
+      not _AJ_env and "os." not in _AJ_mc and "getenv" not in _AJ_mc,
+      f"可疑节点={len(_AJ_env)} 含 os.={'os.' in _AJ_mc}")
+
+_AJ_adv = ""
+for _n in ast.walk(_AJ_tree):
+    if isinstance(_n, ast.FunctionDef) and _n.name == "advise":
+        _AJ_adv = ast.dump(_n)
+check(RS, "AJ12 ★`advise()` 必须真的消费 `family_power()`（不是只在文档里说）\n"
+          "         —— 闸写在别处、advise 不看它，就是一条装饰性防线",
+      "family_power" in _AJ_adv and "usable" in _AJ_adv,
+      f"advise 内引用 family_power={'family_power' in _AJ_adv}")
+
+check(RS, "AJ13 闸关着时**不许**自增 `influenced`\n"
+          "         （给一条从未生效的建议记功，正是旧判据 consulted×influenced 的病）",
+      _AJ_real_sm.influenced == 0 and _AJ_real_sm.consulted >= 1,
+      f"咨询={_AJ_real_sm.consulted} 影响={_AJ_real_sm.influenced}")
+
+check(RS, "AJ14 闸的读数必须有**内核侧消费者**：汇总行念出闸开没开 + Δ + 影响次数\n"
+          "         （只在 report() 里躺着的字段 = 进程内内存态，重启清零）",
+      "family_power" in _src("core.py") and "闸=" in _src("core.py"),
+      "core.py 汇总行含 闸= / family_power")
+
+check(RS, "AJ15 ★反证：撤掉闸（`usable` 恒为 True）⇒ AJ2 必须转红\n"
+          "         —— 由 R13 撤回态脚本验证，此处钉住**撤回点存在且唯一**",
+      _AJ_mc.count("def usable") == 1 and "return self.state == \"PRESENT\"" in _AJ_mc,
+      f"usable 定义数={_AJ_mc.count('def usable')}")
 
 print()
 print("=" * 74)

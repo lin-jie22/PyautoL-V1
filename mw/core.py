@@ -732,7 +732,19 @@ class Core:
             _sl_line = (f" | 账本采纳={_sl_n} 拒(缺字段={_sl_r.get('missing_fields', 0)}"
                         f"/无签名={_sl_r.get('no_caliber_sig', 0)}"
                         f"/异口径={_sl_r.get('diff_caliber_sig', 0)})")
+        # 自我模型：**同时**念两个数 —— 闸开没开（`usable`）与尺子读数（Δ）。
+        # 只印"闸关着"看不出它是没量到还是量到了但没有；只印 Δ 看不出
+        # 内核到底有没有听它的。两者一起才是"自我模型这一轮说了什么"。
+        _sm = stats["selfmodel"]
+        _pw = _sm.get("family_power") or {}
+        _sm_line = ""
+        if _sm.get("samples"):
+            _d = _pw.get("delta")
+            _sm_line = (f" | 自我[闸={'开' if _pw.get('usable') else '关'}"
+                        f" Δ={'n/a' if _d is None else f'{_d:+.3f}'}"
+                        f" 阈值={_pw.get('margin')} {_pw.get('state')}"
+                        f" 影响={_sm.get('influenced')}/{_sm.get('consulted')}]")
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
-                 f"{tx_line}{_sl_line}")
+                 f"{tx_line}{_sl_line}{_sm_line}")
         return Outcome(status, answer, reason, len(history), stats)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""自我模型的判据台 —— **跨会话预测校准**。
+"""自我模型的判据台 —— **跨会话预测校准** + **族预测力闸**。
 
 ## 它在替换什么
 
@@ -17,11 +17,16 @@
   · 族标签与通过率无关（打乱标签）⇒ 优势必须消失；
   · 口径闸被撤掉（混入异口径行）⇒ 预测必须变差。
 
-## 为什么判据是「预测」而不是「描述」
+## 本轮新增：闸这一格
 
-`advise()` 说"这个族弱，多给候选" —— 那是决策，事后永远可以自圆其说。
-`predict()` 说"这个族下次大概拿 0.2" —— 那是一个数字，会被下一次外部分数打脸。
-**只有能被打脸的断言才是断言。**
+判据测的是"尺子能不能分辨"，闸管的是"测不出来时**不许行动**"。
+上一轮的真实读数 Δ=−0.015（ABSENT）暴露了 `advise()` 的老门槛有洞：
+它只看样本数够不够，于是**在噪声上给建议**。所以这里多打一行读数 ——
+同一个账本上，`advise()` 到底给不给建议。
+
+⚠️ 算法**唯一实现在 `mw/metacog.py`**（`measure_family_power`），本文件
+只是"选数据 + 构造反证 + 念读数"。理由写在 metacog 那边的分隔注释里：
+闸用 A 算法、报告用 B 算法，两边漂一次就变成"闸关着但报告说成立"。
 
 ## 用法
 
@@ -43,8 +48,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from mw.ledger import ScoreLedger, signature_of          # noqa: E402
-from mw.metacog import MIN_SAMPLES, SelfModel, load_evidence  # noqa: E402
+from mw.ledger import ScoreLedger, signature_of                    # noqa: E402
+from mw.metacog import (MIN_POWER_SESSIONS, SelfModel,             # noqa: E402
+                        load_evidence, measure_family_power)
 
 #: 合成账本的能力族（与 bench/tasks 下的真实领域同名，避免"随便编的族"）
 FAMILIES = ("numeric_logic", "text_ops", "struct_convert", "coding_small", "explain")
@@ -60,7 +66,6 @@ TRUE_RATES = {
 }
 
 N_SESSIONS = 20          # 每个族 20 个历史会话
-HISTORY_SESSIONS = 12    # 前 12 个作历史，后 8 个作未来
 
 
 def _u01(seed: str) -> float:
@@ -89,89 +94,41 @@ def build_synthetic_rows(sig: str = "synth", *, rates: dict | None = None,
     return rows
 
 
-def split(rows: list[dict], history_sessions: int = HISTORY_SESSIONS) -> tuple[list[dict], list[dict]]:
-    """按**会话序号**切分（不是随机切）—— 跨会话预测必须是时序外推。
+def build_null_rows(sig: str = "null", *, n_sessions: int = N_SESSIONS,
+                    rate: float = 0.5) -> list[dict]:
+    """**反证组**：一份"通过率与族**无关**"的账本（各族真实率完全相同）。
 
-    随机切分会让"预测未来"退化成"插值"，那是在给判据放水。
+    ⚠️ 它替换的是旧的"轮转族标签"做法 —— 后者只给族改名，若未来行也跟着
+    改名，信号**一点没动**；只改历史则恒等于"完全错配"。两种都不是
+    "族标签与通过率无关"的正确表达。真正的零假设是：**族之间本无差异**。
+
+    `rate=0.5` 是刻意的：二值变量在 0.5 处方差最大，最容易把噪声读成规律。
+    若判据在这份数据上还能绿，它就是在给随机起伏起名字。
     """
-    hist = [r for r in rows if int(r.get("session", 0)) < history_sessions]
-    fut = [r for r in rows if int(r.get("session", 0)) >= history_sessions]
-    return hist, fut
+    rows = []
+    for fam in FAMILIES:
+        for s in range(n_sessions):
+            passed = _u01(f"{fam}|{sig}|{s}") < rate
+            rows.append({"session": s, "family": fam, "passed": passed,
+                         "score": 1.0 if passed else 0.0, "caliber_sig": sig,
+                         "task_id": f"{fam}-{s}"})
+    return rows
 
 
-def _shuffle_families(rows: list[dict]) -> list[dict]:
-    """**反证组**：把历史里的族标签整体轮转一位。
+def probe_calibration(rows: list[dict], *,
+                      history_ratio: float | None = None) -> dict:
+    """一次完整的判据读数。**委托** `measure_family_power`（唯一实现）。
 
-    轮转（而不是随机置换）的理由：它保持每个族的样本数不变，
-    只改变"标签 ↔ 通过率"的对应关系。于是如果优势消失，
-    只可能是**对应关系**被破坏了 —— 归因干净，没有第二个变量。
+    返回值带上 `families_in_data` 与 `sessions_in_data`：
+    判据的三态离开这两个数无法解释（ABSENT 与 UNKNOWN 的分界就在它们身上）。
     """
-    out = []
-    n = len(FAMILIES)
-    for r in rows:
-        fam = r.get("family")
-        i = FAMILIES.index(fam) if fam in FAMILIES else -1
-        new = FAMILIES[(i + 1) % n] if i >= 0 else fam
-        d = dict(r)
-        d["family"] = new
-        out.append(d)
-    return out
-
-
-def evaluate(history: list[dict], future: list[dict]) -> dict:
-    """拿历史建自我模型，预测未来，与**对照基线**比误差。"""
-    sm = SelfModel(load_evidence(history))
-    base = sm.global_rate()
-    if not future:
-        return {"n_future": 0, "mae_model": None, "mae_base": None,
-                "delta": None, "global_rate": base, "families": len(sm.profile())}
-    err_m, err_b = [], []
-    for r in future:
-        y = 1.0 if r.get("passed") else 0.0
-        pm = sm.predict(str(r.get("family") or ""))
-        if pm is None or base is None:
-            continue
-        err_m.append(abs(pm - y))
-        err_b.append(abs(base - y))
-    if not err_m:
-        return {"n_future": len(future), "mae_model": None, "mae_base": None,
-                "delta": None, "global_rate": base, "families": len(sm.profile())}
-    mae_m = sum(err_m) / len(err_m)
-    mae_b = sum(err_b) / len(err_b)
-    return {"n_future": len(err_m), "mae_model": round(mae_m, 4),
-            "mae_base": round(mae_b, 4), "delta": round(mae_b - mae_m, 4),
-            "global_rate": base, "families": len(sm.profile()),
-            "samples": len(sm.evidence)}
-
-
-def probe_calibration(rows: list[dict],
-                      history_sessions: int = HISTORY_SESSIONS) -> dict:
-    """一次完整的判据读数：正组 + 反证组（打乱族标签）。
-
-    `history_sessions` 可给，是为了**真实账本**：合成账本固定 20 个会话，
-    真实账本可能有 4 个 —— 若沿用 12 这个切点，所有行都落进历史、
-    未来为空 ⇒ 读不到任何东西却报告"判据成立"，那就是假绿。
-    """
-    hist, fut = split(rows, history_sessions)
-    main = evaluate(hist, fut)
-    ctrl = evaluate(_shuffle_families(hist), fut)
-    # 对照组的 |delta| 就是**这个指标在这份数据上的噪声下限**：
-    # 与 measure.noise_floor 同一条纪律 —— 不许拿一个绝对阈值去判"显著"。
-    noise = abs(ctrl["delta"] or 0.0)
-    margin = max(0.02, 2.0 * noise)
-    n_fam = len({str(r.get("family")) for r in rows})
-    d = main["delta"]
-    if d is None or (main["n_future"] or 0) < 4:
-        state = "UNKNOWN"
-    elif d > margin:
-        state = "PRESENT"
-    else:
-        # ⚠️ 不是一律 ABSENT：样本不够时"没测到" ≠ "没有"。
-        #    （§16.7 第二层判据：UNKNOWN 不许并入 ABSENT）
-        state = "UNKNOWN" if (main["samples"] or 0) < MIN_SAMPLES * max(n_fam, 1) \
-            else "ABSENT"
-    return {"main": main, "control": ctrl, "noise_floor": round(noise, 4),
-            "margin": round(margin, 4), "state": state, "families_in_data": n_fam}
+    kw = {} if history_ratio is None else {"history_ratio": history_ratio}
+    pw = measure_family_power(rows, **kw)
+    d = pw.as_dict()
+    d["families_in_data"] = len({str(r.get("family")) for r in rows})
+    d["sessions_in_data"] = len({r.get("session") for r in rows
+                                 if r.get("session") is not None})
+    return d
 
 
 def probe_caliber_gate() -> dict:
@@ -187,44 +144,76 @@ def probe_caliber_gate() -> dict:
     rows_a = build_synthetic_rows(sig_a)
     rows_b = build_synthetic_rows(sig_b, rates={f: 1.0 - TRUE_RATES[f] for f in FAMILIES})
 
-    hist_a, fut_a = split(rows_a)
-    hist_b, _ = split(rows_b)
+    gated = measure_family_power(rows_a)
+    mixed = measure_family_power(rows_a + rows_b)
+    loss = round((mixed.mae_model or 0.0) - (gated.mae_model or 0.0), 4)
+    return {"gated": gated.as_dict(), "mixed": mixed.as_dict(), "loss": loss,
+            "state": "PRESENT" if loss > 0 else "ABSENT"}
 
-    gated = evaluate(hist_a, fut_a)
-    mixed = evaluate(hist_a + hist_b, fut_a)
-    return {"gated": gated, "mixed": mixed,
-            "loss": round((mixed["mae_model"] or 0) - (gated["mae_model"] or 0), 4),
-            "state": "PRESENT" if (mixed["mae_model"] or 0) > (gated["mae_model"] or 0)
-                     else "ABSENT"}
+
+def probe_gate(rows: list[dict], *, label: str) -> dict:
+    """**闸这一格**：同一份账本上，`advise()` 到底给不给建议。
+
+    念两个数：`family_power`（尺子读数）与 `advice.confident`（行动开关）。
+    两者不是一回事，必须**同时**念 —— 只看前者会以为"测到了就会行动"，
+    只看后者看不出它是因为没测到还是因为测到了但没优势。
+    """
+    sm = SelfModel(load_evidence(rows))
+    pw = sm.family_power()
+    fams = sorted(sm.profile())
+    advs = {f: sm.advise(family=f) for f in fams} if fams else {}
+    return {
+        "label": label,
+        "power": pw.as_dict(),
+        "advice": {f: {"confident": a.confident, "basis": a.basis}
+                   for f, a in advs.items()},
+        "any_confident": any(a.confident for a in advs.values()),
+        "influenced": sm.influenced,
+        "consulted": sm.consulted,
+        "global_rate": sm.global_rate(),
+    }
 
 
 def probe_real(path: Path) -> dict:
     """真实账本的读数。**样本不够就明说 UNKNOWN**，不许用合成数据凑。"""
     led = ScoreLedger(path)
     rows = led.load()
-    sessions = {int(r.get("session", -1)) for r in rows}
+    sessions = {int(r["session"]) for r in rows if r.get("session") is not None}
     families = {str(r.get("family")) for r in rows}
-    if len(rows) < 8 or len(sessions) < 4 or len(families) < 2:
+    if len(rows) < 8 or len(sessions) < MIN_POWER_SESSIONS or len(families) < 2:
         return {"state": "UNKNOWN", "rows": len(rows),
                 "sessions": len(sessions), "families": len(families),
                 "why": (f"账本不足（行={len(rows)} 会话={len(sessions)} "
-                        f"族={len(families)}）；需要 行≥8 会话≥4 族≥2")}
+                        f"族={len(families)}）；需要 行≥8 "
+                        f"会话≥{MIN_POWER_SESSIONS} 族≥2")}
     sigs: dict[str, int] = {}
     for r in rows:
-        sigs[str(r.get("caliber_sig"))] = sigs.get(str(r.get("caliber_sig")), 0) + 1
+        k = str(r.get("caliber_sig"))
+        sigs[k] = sigs.get(k, 0) + 1
     top = max(sigs, key=sigs.get) if sigs else ""
     sub = [r for r in rows if str(r.get("caliber_sig")) == top]
-    # ⚠️ 切点必须**从数据来**：合成账本的 12 是拍出来的，真实账本会话数不定。
-    #    沿用固定切点会让"未来集为空"静默发生 ⇒ 读数为 None 却报 PRESENT。
-    sesses = sorted({int(r.get("session", 0)) for r in sub})
-    cut = sesses[max(0, len(sesses) * 3 // 5 - 1)] if sesses else 0
-    res = probe_calibration(sub, cut + 1)
+    res = probe_calibration(sub)
     res["rows"] = len(rows)
     res["sessions"] = len(sessions)
     res["families"] = len(families)
     res["calibers"] = sigs
     res["used_sig"] = top
+    res["gate"] = probe_gate(sub, label=str(path.name))
     return res
+
+
+def _gate_line(gd: dict, indent: str = "  ") -> None:
+    pw = gd["power"]
+    print(f"{indent}{gd['label']}：Δ={pw['delta']} 阈值={pw['margin']} ⇒ {pw['state']}")
+    print(f"{indent}  闸={'开' if gd['any_confident'] else '关'}"
+          f"  咨询 {gd['consulted']} 次 / 实际影响 {gd['influenced']} 次")
+    for f, a in sorted(gd["advice"].items()):
+        if a["confident"]:
+            print(f"{indent}    ✅ {f}：{a['basis']}")
+    if not gd["any_confident"]:
+        some = next(iter(gd["advice"].values()), None)
+        if some:
+            print(f"{indent}    ⛔ {some['basis']}")
 
 
 def main() -> int:
@@ -246,31 +235,40 @@ def main() -> int:
     out["caliber_gate"] = r_gate
     ok &= r_gate["state"] == "PRESENT"
 
+    # ── 反证组：族间本无差异 ⇒ 判据不许绿 ────────────────────────────
+    r_null = probe_calibration(build_null_rows())
+    out["null"] = r_null
+    ok &= r_null["state"] != "PRESENT"
+
+    # ── 闸这一格 ──────────────────────────────────────────────────────
+    # 合成账本上闸必须**开**（有族信号却不行动 = 自我模型是装饰）；
+    # 真实账本上闸开不开由数据决定，**都算通过**（真实读数为负不是缺陷）。
+    out["gate_synthetic"] = probe_gate(syn, label="合成（族信号真实存在）")
+    ok &= out["gate_synthetic"]["any_confident"] is True
+
     if args.real or Path(ROOT / "state" / "score_ledger.jsonl").exists():
         p = Path(args.real) if args.real else ROOT / "state" / "score_ledger.jsonl"
         r_real = probe_real(p)
         out["real"] = r_real
-        # ⚠️ 真实账本判 UNKNOWN **不算失败** —— 那是诚实结论，不是缺陷。
-        #    把"没量到"记成"失败"，会逼着下一轮去凑数据（V5 的病）。
+        # ⚠️ 真实账本判 UNKNOWN / ABSENT **都不算失败** —— 那是诚实结论。
+        #    把"没量到"或"测出来没有"记成"失败"，会逼着下一轮去凑数据（V5 的病）。
 
     if args.json:
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0 if ok else 1
 
-    m, c = r_syn["main"], r_syn["control"]
+    m = r_syn
     print("=" * 74)
     print("自我模型判据 —— 跨会话预测校准（合成账本：证明判据有分辨力）")
     print("=" * 74)
-    print(f"  历史 {m['samples']} 条 / {m['families']} 族   未来 {m['n_future']} 条")
+    print(f"  历史 {m['n_history']} 条 / {m['families_in_data']} 族   "
+          f"未来 {m['n_future']} 条 / 会话 {m['sessions_in_data']}")
     print(f"  自我模型预测  MAE = {m['mae_model']}")
-    print(f"  对照基线预测  MAE = {m['mae_base']}   （常数 {m['global_rate']}，不区分族）")
-    print(f"  优势 Δ = {m['delta']}   噪声下限(打乱族标签) = {r_syn['noise_floor']}"
-          f"   判定阈值 = {r_syn['margin']}")
-    print(f"  ⇒ 判据{'成立' if r_syn['state'] == 'PRESENT' else '不成立'}（{r_syn['state']}）")
-    print()
-    print("  反证组（把族标签轮转一位，只破坏『标签↔通过率』的对应关系）：")
-    print(f"    自我模型 MAE = {c['mae_model']}   Δ = {c['delta']}"
-          f"   ⇒ 优势{'消失' if abs(c['delta'] or 0) < r_syn['margin'] else '仍在（可疑）'}")
+    print(f"  对照基线预测  MAE = {m['mae_base']}   （常数，不区分族）")
+    print(f"  优势 Δ = {m['delta']}   噪声下限(std={m['noise_floor']}"
+          f" / mean|Δ|={m['noise_mean']}，{m['n_controls']} 次置换检验)")
+    print(f"  判定阈值 = max(下限, 2×std, mean|Δ|) = {m['margin']}")
+    print(f"  ⇒ 判据{'成立' if m['state'] == 'PRESENT' else '不成立'}（{m['state']}）")
     print()
     g, mx = r_gate["gated"], r_gate["mixed"]
     print("口径闸是不是承重的（两个口径下族通过率**相反**）：")
@@ -278,22 +276,33 @@ def main() -> int:
     print(f"  混入异口径  MAE = {mx['mae_model']}   劣化 = {r_gate['loss']}")
     print(f"  ⇒ {'闸是承重的' if r_gate['state'] == 'PRESENT' else '撤了闸也没差（闸是装饰）'}")
     print()
+    print("反证组（各族真实通过率**完全相同**，0.5 处方差最大）：")
+    print(f"  自我模型 MAE = {r_null['mae_model']}   Δ = {r_null['delta']}"
+          f"   阈值 = {r_null['margin']}   ⇒ {r_null['state']}")
+    print(f"  ⇒ {'✅ 无差异时不给假阳性' if r_null['state'] != 'PRESENT' else '❌ 把随机起伏读成了规律'}")
+    print()
+    print("族预测力闸（判据测的是尺子，闸管的是「测不出来不许行动」）：")
+    _gate_line(out["gate_synthetic"])
+    print()
     if "real" in out:
         rr = out["real"]
         print("真实账本：")
         if rr.get("state") == "UNKNOWN" and "why" in rr:
             print(f"  ⚠️ {rr['why']} —— 这是**诚实结论**，不是失败")
         else:
-            rm = rr["main"]
             print(f"  行={rr['rows']} 会话={rr['sessions']} 族={rr['families']}"
                   f" 口径数={len(rr['calibers'])}（取最大口径 {rr['used_sig']}）")
-            print(f"  自我模型 MAE={rm['mae_model']} 基线 MAE={rm['mae_base']}"
-                  f" Δ={rm['delta']} ⇒ {rr['state']}")
+            print(f"  自我模型 MAE={rr['mae_model']} 基线 MAE={rr['mae_base']}"
+                  f" Δ={rr['delta']} ⇒ {rr['state']}")
+            if rr.get("reason"):
+                print(f"  {rr['reason']}")
+            if "gate" in rr:
+                _gate_line(rr["gate"])
     else:
         print("真实账本：不存在（`state/score_ledger.jsonl` 还没被写入过）")
     print()
     print("=" * 74)
-    print("结论：", "✅ 判据成立（自我模型的预测优于不区分族的基线，"
+    print("结论：", "✅ 判据成立（自我模型的预测优于不区分族的基线，" \
                     "且撤掉族/撤掉口径闸都会转红）" if ok else "❌ 判据不成立")
     return 0 if ok else 1
 

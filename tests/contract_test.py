@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import ast
+import collections
 import json
 import os
 import re
@@ -2735,6 +2736,7 @@ check(RS, "AI14 ★内核边界清单必须**完整**：`core.py` 直接 import 
 # ===========================================================================
 from mw.metacog import (MIN_POWER_SESSIONS, N_CONTROL_PERMS,       # noqa: E402
                         POWER_MARGIN_FLOOR, FamilyPower,
+                        _noise_floor, _split_sessions,
                         measure_family_power)
 
 _AJ_ev = _smp.build_synthetic_rows()       # 5 族、族率 0.10~0.90 真信号
@@ -2901,6 +2903,109 @@ check(RS, "AJ17 判重**只按 (会话, 题)**：同一 task_id 在**不同**会
 check(RS, "AJ18 `duplicate` 必须进受控词表与被拒读数（可归因，不许混进总拒绝数）",
       "duplicate" in REJECT_KINDS and "duplicate" in _AJ_dup.stats.as_dict()["rejected"],
       f"REJECT_KINDS={REJECT_KINDS}")
+
+# ── 读侧去重：写侧判重只保护未来，保护不了历史 ──────────────────────────
+# 证据是**真实的脏账本**（本轮自踩产生的，已留档），不是构造的玩具数据。
+_AJ_DIRTY = Path("bench/evidence/score_ledger_DIRTY_duprows_T0.jsonl")
+_AJ_dirty = ScoreLedger(_AJ_DIRTY)
+_AJ_dirty_rows = _AJ_dirty.load()
+_AJ_dirty_sig = collections.Counter(
+    r.get("caliber_sig") for r in _AJ_dirty_rows).most_common(1)[0][0]
+_AJ_dirty.caliber_sig = _AJ_dirty_sig
+_AJ_adm = _AJ_dirty.admissible()
+
+check(RS, "AJ19 ★★读侧去重：已经躺在文件里的重复行，读出来不许被加权\n"
+          "         —— 写侧判重（AJ16）只保护**未来**，保护不了**历史**。\n"
+          "            本轮实测抓到一个我自己的错误结论：从这份脏账本读出\n"
+          "            『T=0 下 struct_convert 0.56→0.36，说明 T=0 也有漂移』；\n"
+          "            去重后真相是 2/5=0.400，与前四会话**逐题完全一致**。\n"
+          "            ⇒ 写侧判重会让未来干净；读侧不去重，历史永远在说谎",
+      _AJ_dirty.stats.deduped_on_read > 0
+      and len(_AJ_adm) < len(_AJ_dirty_rows)
+      and len({(r.get("session"), r.get("task_id")) for r in _AJ_adm}) == len(_AJ_adm),
+      f"原始={len(_AJ_dirty_rows)} 采纳={len(_AJ_adm)} "
+      f"读侧去重={_AJ_dirty.stats.deduped_on_read}")
+
+
+def _rate(sub, fam, sess):
+    n = [r for r in sub if r.get("family") == fam and r.get("session") == sess]
+    return (sum(1 for r in n if r["passed"]) / len(n)) if n else None
+
+
+_AJ_dirty_fams = sorted({r["family"] for r in _AJ_adm})
+_AJ_dirty_sess = sorted({r["session"] for r in _AJ_adm if r.get("session") != 6})
+_AJ_flat = {_rate(_AJ_adm, f, s) for f in _AJ_dirty_fams for s in _AJ_dirty_sess}
+check(RS, "AJ20 ★去重后 T=0 的**族内漂移必须为零**（六个会话逐题一致）\n"
+          "         —— 这条同时是 AJ19 的因果检验：若去重是对的，被污染的\n"
+          "            『漂移』就应当随之消失。它没消失 ⇒ 去重去错了东西",
+      len(_AJ_flat) == len(_AJ_dirty_fams),
+      f"{len(_AJ_dirty_fams)} 个族 × {len(_AJ_dirty_sess)} 个会话 "
+      f"⇒ {len(_AJ_flat)} 个不同的通过率（应等于族数 {len(_AJ_dirty_fams)}）"
+      f"  实测={sorted(_AJ_flat)}")
+
+_AJ_clean = ScoreLedger(Path("bench/evidence/score_ledger_real_qwen25_7b_T0_4sess.jsonl"))
+_AJ_clean.caliber_sig = _AJ_clean.load()[0]["caliber_sig"]
+_AJ_clean_adm = _AJ_clean.admissible()
+check(RS, "AJ21 去重**不许误伤**干净账本：无重复 ⇒ deduped=0 且一行不少\n"
+          "         （去重是手术刀，不是筛子；误伤会让账本悄悄变小）",
+      _AJ_clean.stats.deduped_on_read == 0
+      and len(_AJ_clean_adm) == len(_AJ_clean.load()) == 56,
+      f"总={len(_AJ_clean.load())} 采纳={len(_AJ_clean_adm)} "
+      f"去重={_AJ_clean.stats.deduped_on_read}")
+
+check(RS, "AJ22 判重键的构造**只有一处**（`_key`），写侧与读侧共用\n"
+          "         —— 两处各写一遍 = 同一事实两处声明 ⇒ 一边改了另一边没改，\n"
+          "            账本会**静默**地一半去重一半不去重，两份读数都长得合理",
+      _src("ledger.py").count("def _key") == 1
+      and _src("ledger.py").count("_key(r.get(") >= 4,
+      f"_key 定义数={_src('ledger.py').count('def _key')}")
+
+# ── 置换次数：σ 自身的抽样误差不许与被估的量同量级 ──────────────────────
+check(RS, "AJ23 ★★置换检验次数必须让 σ 收敛（≥256）\n"
+          "         —— 上一版是 8，注释还写着『超过 8 次收益递减』。实测推翻：\n"
+          "            4 会话 n=8 σ=0.0217 / n=512 σ=0.0257 / n=2048 σ=0.0264\n"
+          "            6 会话 n=8 σ=0.0279 / n=512 σ=0.0223 / n=2048 σ=0.0215\n"
+          "            ⇒ 8 次时两行**大小关系是反的**（判据在掷骰子）",
+      N_CONTROL_PERMS >= 256,
+      f"N_CONTROL_PERMS={N_CONTROL_PERMS}")
+
+_AJ_ev_real = load_evidence(_AJ_clean_adm)
+_AJ_h, _AJ_f, _AJ_ss = _split_sessions(_AJ_ev_real)
+_AJ_sd = {}
+for _n in (N_CONTROL_PERMS, N_CONTROL_PERMS * 4):
+    _AJ_sd[_n] = _noise_floor(_AJ_h, _AJ_f, _n)[0]
+check(RS, "AJ24 真实账本上 σ 必须**已经在收敛区**：σ(4N) 与 σ(N) 相差 < 0.002\n"
+          "         （这是 AJ23 取 512 而非 2048 的实证依据，不是拍脑袋）",
+      abs(_AJ_sd[N_CONTROL_PERMS * 4] - _AJ_sd[N_CONTROL_PERMS]) < 0.002,
+      f"σ({N_CONTROL_PERMS})={_AJ_sd[N_CONTROL_PERMS]:.4f} "
+      f"σ({N_CONTROL_PERMS * 4})={_AJ_sd[N_CONTROL_PERMS * 4]:.4f} "
+      f"差={abs(_AJ_sd[N_CONTROL_PERMS * 4] - _AJ_sd[N_CONTROL_PERMS]):.4f}")
+
+# ── 里程碑：真模型真实账本上，闸第一次转绿 ──────────────────────────────
+_AJ_8 = ScoreLedger(V1 / "bench" / "evidence"
+                    / "score_ledger_real_qwen25_7b_T0_8sess.jsonl")
+_AJ_8_rows = _AJ_8.load()
+_AJ_8.caliber_sig = collections.Counter(
+    r.get("caliber_sig") for r in _AJ_8_rows).most_common(1)[0][0]
+_AJ_8_adm = _AJ_8.admissible()
+_AJ_8_sm = SelfModel(load_evidence(_AJ_8_adm))
+_AJ_8_pw = _AJ_8_sm.family_power()
+check(RS, "AJ25 ★★真实 8 会话账本上，族预测力闸必须**开**\n"
+          "         （qwen2.5:7b / T=0 / 8 会话 × 3 族 × 114 行）\n"
+          "         —— 这是「自我模型在**真实数据**上说得算」的第一个证据。\n"
+          "            4 会话 ABSENT / 6 会话 ABSENT / 8 会话 PRESENT：\n"
+          "            不是结论在漂，是**统计功效**随会话数增长（σ ∝ 1/√N）",
+      _AJ_8_pw.usable and _AJ_8_pw.state == "PRESENT"
+      and _AJ_8_pw.delta > _AJ_8_pw.margin
+      and _AJ_8.stats.deduped_on_read == 0,
+      _AJ_8_pw.as_line())
+
+check(RS, "AJ26 ★『开得多稳』必须进读数：snr = Δ/阈值 不许缺席\n"
+          "         —— 只念『闸=开』会把 1.05（刚过线）和 3.0（稳固）说成同一件事。\n"
+          "            实测这份账本 snr≈1.06：**临界**，换一批数据就可能翻回去",
+      _AJ_8_pw.snr is not None and "snr" in _AJ_8_pw.as_dict()
+      and "snr=" in _AJ_8_pw.as_line(),
+      f"snr={_AJ_8_pw.snr}（Δ={_AJ_8_pw.delta} 阈值={_AJ_8_pw.margin}）")
 
 print()
 print("=" * 74)

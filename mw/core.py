@@ -726,12 +726,17 @@ class Core:
         _sl = stats["score_ledger"]
         _sl_r = _sl.get("rejected") or {}
         _sl_n = int(_sl.get("admitted") or 0)
+        _sl_dedup = int(_sl.get("deduped_on_read") or 0)
         _sl_line = ""
         if _sl_n or any(int(_sl_r.get(k) or 0) for k in
                         ("missing_fields", "no_caliber_sig", "diff_caliber_sig")):
             _sl_line = (f" | 账本采纳={_sl_n} 拒(缺字段={_sl_r.get('missing_fields', 0)}"
                         f"/无签名={_sl_r.get('no_caliber_sig', 0)}"
                         f"/异口径={_sl_r.get('diff_caliber_sig', 0)})")
+        # 读侧去重**单独念**：它意味着文件里躺着重复行，而未经去重的读数不可信。
+        # 混进"拒"里就看不出这是"历史脏"还是"挡下来的" —— 两者修法完全不同。
+        if _sl_dedup:
+            _sl_line += f" ⚠️读侧去重={_sl_dedup}"
         # 自我模型：**同时**念两个数 —— 闸开没开（`usable`）与尺子读数（Δ）。
         # 只印"闸关着"看不出它是没量到还是量到了但没有；只印 Δ 看不出
         # 内核到底有没有听它的。两者一起才是"自我模型这一轮说了什么"。

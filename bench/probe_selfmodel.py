@@ -40,8 +40,10 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import hashlib
 import json
+import statistics
 import sys
 from pathlib import Path
 
@@ -174,6 +176,77 @@ def probe_gate(rows: list[dict], *, label: str) -> dict:
     }
 
 
+def _mae_row(hist: list[dict], fut: list[dict]) -> tuple[float, float]:
+    """行级误差：拿族率去预测每一行（0/1）。**内核用的就是这一把尺子**。"""
+    d: dict[str, list[int]] = {}
+    for r in hist:
+        d.setdefault(str(r.get("family")), [0, 0])[0] += 1
+        d[str(r.get("family"))][1] += 1 if r["passed"] else 0
+    pr = {k: v[1] / v[0] for k, v in d.items()}
+    g = sum(1 for r in hist if r["passed"]) / len(hist) if hist else 0.0
+    m = sum(abs((1 if r["passed"] else 0) - pr.get(str(r.get("family")), g))
+            for r in fut) / len(fut)
+    b = sum(abs((1 if r["passed"] else 0) - g) for r in fut) / len(fut)
+    return m, b
+
+
+def _mae_rate(hist: list[dict], fut: list[dict]) -> tuple[float, float]:
+    """会话×族 级误差：拿族率去预测**未来会话的族率**。
+
+    自我模型的输出本来就是一个"率"（`predict()` 返回族率），
+    所以这一把尺子问的是它真正被问的那件事：**率预测得准不准**。
+    行级尺子问的则是"每一道题对不对" —— 那一问里 90% 的误差是
+    个体 0/1 噪声，任何族级预测器都消不掉。
+    """
+    d: dict[str, list[int]] = {}
+    for r in hist:
+        d.setdefault(str(r.get("family")), [0, 0])[0] += 1
+        d[str(r.get("family"))][1] += 1 if r["passed"] else 0
+    pr = {k: v[1] / v[0] for k, v in d.items()}
+    g = sum(1 for r in hist if r["passed"]) / len(hist) if hist else 0.0
+    obs: dict[tuple, list[int]] = {}
+    for r in fut:
+        obs.setdefault((r.get("session"), str(r.get("family"))), [0, 0])[0] += 1
+        obs[(r.get("session"), str(r.get("family")))][1] += 1 if r["passed"] else 0
+    m = sum(abs(v[1] / v[0] - pr.get(k[1], g)) for k, v in obs.items()) / len(obs)
+    b = sum(abs(v[1] / v[0] - g) for k, v in obs.items()) / len(obs)
+    return m, b
+
+
+def probe_units(rows: list[dict], n_perms: int = 512) -> dict:
+    """**两把尺子量同一个东西**，用来区分两种失败：
+
+        · 两把都不过 ⇒ 不是量纲的锅，是**样本（会话数）不够**
+        · 只有一把不过 ⇒ 量纲选错了（那一把问的不是自我模型被问的问题）
+
+    ⚠️ 本函数**不进内核**：它只做诊断。闸只认行级那一把（`measure_family_power`），
+    这里多量一次是为了能回答"换个量纲会不会变绿" —— 而这个问法本身就有
+    "为了变绿而动尺子"的嫌疑，所以它必须**留在测量侧**，且两把都要念出来。
+    """
+    from mw.metacog import _permuted_labels, _split_sessions
+    hist, fut, sessions = _split_sessions(load_evidence(rows))
+    if not hist or not fut:
+        return {}
+    out: dict[str, dict] = {}
+    for unit, fn in (("row", _mae_row), ("rate", _mae_rate)):
+        m, b = fn(hist, fut)
+        d = b - m
+        ds: list[float] = []
+        for k in range(n_perms):
+            hh = _permuted_labels(hist, k)
+            mm, bb = fn(hh, fut)
+            ds.append(bb - mm)
+        sd = statistics.pstdev(ds) if len(ds) >= 2 else 0.0
+        ma = sum(abs(x) for x in ds) / len(ds) if ds else 0.0
+        marg = max(0.02, 2.0 * sd, ma)
+        out[unit] = {"delta": round(d, 4), "mae_model": round(m, 4),
+                     "mae_base": round(b, 4), "std": round(sd, 4),
+                     "mean_abs": round(ma, 4), "margin": round(marg, 4),
+                     "snr": round(d / marg, 3) if marg else None,
+                     "state": "PRESENT" if d > marg else "ABSENT"}
+    return out
+
+
 def probe_real(path: Path) -> dict:
     """真实账本的读数。**样本不够就明说 UNKNOWN**，不许用合成数据凑。"""
     led = ScoreLedger(path)
@@ -191,7 +264,10 @@ def probe_real(path: Path) -> dict:
         k = str(r.get("caliber_sig"))
         sigs[k] = sigs.get(k, 0) + 1
     top = max(sigs, key=sigs.get) if sigs else ""
-    sub = [r for r in rows if str(r.get("caliber_sig")) == top]
+    # ⚠️ 用**内核的** `admissible()` 筛，不在探针里另写一遍筛选。
+    # 两处各筛一次 ⇒ 一边改了另一边没改，"同口径"就变成两个意思。
+    led.caliber_sig = top
+    sub = led.admissible()
     res = probe_calibration(sub)
     res["rows"] = len(rows)
     res["sessions"] = len(sessions)
@@ -199,7 +275,37 @@ def probe_real(path: Path) -> dict:
     res["calibers"] = sigs
     res["used_sig"] = top
     res["gate"] = probe_gate(sub, label=str(path.name))
+    res["units"] = probe_units(sub)
+    res["deduped_on_read"] = led.stats.deduped_on_read
+    res["partial_sessions"] = _partial_sessions(sub)
     return res
+
+
+def _partial_sessions(rows: list[dict]) -> dict:
+    """找出**残缺会话**：覆盖的族数少于其他会话的。
+
+    ⚠️ 它凭什么算残缺（不猜"应该有几个族"）：取本账本里会话覆盖族数的
+    **众数**作为参照。数据驱动，不引入外部假设。
+
+    为什么必须报出来：真实账本里已经出现过一次（服务被 kill 留下的半轮，
+    只有 1 个族 5 行）。它混在完整会话里会让 Δ 与阈值**同时**移动 ——
+    实测同一份数据：含残缺会话 Δ=0.0427/阈值=0.0399 ⇒ PRESENT，
+    剔除后 Δ=0.0399/阈值=0.0446 ⇒ ABSENT。**判定会翻转**。
+    一个能让结论翻身的脏样本，必须在读数里看得见。
+    """
+    per: dict[Any, set[str]] = {}
+    for r in rows:
+        s = r.get("session")
+        if s is None:
+            continue
+        per.setdefault(s, set()).add(str(r.get("family") or ""))
+    if not per:
+        return {}
+    counts = collections.Counter(len(v) for v in per.values())
+    mode = counts.most_common(1)[0][0]
+    bad = sorted(str(s) for s, v in per.items() if len(v) < mode)
+    return {"reference_families": mode, "sessions": bad,
+            "total_sessions": len(per)}
 
 
 def _gate_line(gd: dict, indent: str = "  ") -> None:
@@ -292,12 +398,32 @@ def main() -> int:
         else:
             print(f"  行={rr['rows']} 会话={rr['sessions']} 族={rr['families']}"
                   f" 口径数={len(rr['calibers'])}（取最大口径 {rr['used_sig']}）")
+            if rr.get("deduped_on_read"):
+                print(f"  ⚠️ 读侧去重 {rr['deduped_on_read']} 行"
+                      f"（文件里有重复 ⇒ 未去重时的读数不可信）")
+            ps = rr.get("partial_sessions") or {}
+            if ps.get("sessions"):
+                print(f"  ⚠️ 残缺会话 {ps['sessions']}（覆盖族数 < "
+                      f"{ps['reference_families']}）⇒ **判定对它敏感**，"
+                      f"此读数不可作为结论")
             print(f"  自我模型 MAE={rr['mae_model']} 基线 MAE={rr['mae_base']}"
                   f" Δ={rr['delta']} ⇒ {rr['state']}")
             if rr.get("reason"):
                 print(f"  {rr['reason']}")
             if "gate" in rr:
                 _gate_line(rr["gate"])
+            if "units" in rr and rr["units"]:
+                print("  两把尺子量同一件事（区分『量纲选错』与『样本不够』）：")
+                for u, d in rr["units"].items():
+                    name = "行级（内核闸用的这把）" if u == "row" else "会话×族级"
+                    print(f"    {name:<22} Δ={d['delta']:+.4f} 阈值={d['margin']:.4f} "
+                          f"信噪比={d['snr']} ⇒ {d['state']}")
+                both = [d["state"] for d in rr["units"].values()]
+                if all(s != "PRESENT" for s in both):
+                    print("    ⇒ 两把都不过：**不是量纲的锅，是会话数不够**")
+                    print("      （换量纲能把 Δ 放大 3 倍，但噪声同样放大 3 倍 ⇒ 信噪比几乎不变）")
+                elif len(set(both)) > 1:
+                    print("    ⇒ ⚠️ 两把结论**不一致** ⇒ 是量纲问题，不是信号问题")
     else:
         print("真实账本：不存在（`state/score_ledger.jsonl` 还没被写入过）")
     print()

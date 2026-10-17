@@ -77,9 +77,22 @@ POWER_MARGIN_FLOOR = 0.02
 #: 里的兜底），同时历史要占多数 —— 用少数预测多数是外推，反过来是插值。
 POWER_HISTORY_RATIO = 0.6
 
-#: 置换检验的次数。8 的依据：σ 本身要够稳，2~3 次置换估出来的 σ 抖动比
-#: 被估的量还大；超过 8 次收益递减（历史行数通常只有几十条）。
-N_CONTROL_PERMS = 8
+#: 置换检验的次数。**512，由实测定，不是拍的。**
+#:
+#: ⚠️ 上一版写的是 8，注释还写着"超过 8 次收益递减"—— 那句话被同一份
+#: 真实账本**直接推翻**（本轮实测，见 DESIGN §16.12）：
+#:
+#:     4 会话   n=8 σ=0.0217 │ n=512 σ=0.0257 │ n=2048 σ=0.0264
+#:     6 会话   n=8 σ=0.0279 │ n=512 σ=0.0223 │ n=2048 σ=0.0215
+#:
+#: 8 次时两行的大小关系是**反的**（4 会话的 σ 被估得比 6 会话还小），
+#: 512 次才回到正确的方向（样本越多噪声越小）。⇒ 8 个样本估出来的 σ，
+#: 它自己的抽样误差与被它拿来当阈值的信号同量级 —— 判据在掷骰子。
+#:
+#: 512 的代价是 0.2~0.5 秒（历史行数几十条的量级），对一个跨会话读数来说
+#: 完全无所谓。取 512 而不是 2048：512 与 2048 的差已 <0.001，
+#: 再往上只会让每次判定多花几秒，没有信息增量。
+N_CONTROL_PERMS = 512
 
 
 @dataclass(frozen=True)
@@ -139,12 +152,25 @@ class FamilyPower:
         """**只有 PRESENT 才允许据此行动** —— 这是 `advise()` 的闸。"""
         return self.state == "PRESENT"
 
+    @property
+    def snr(self) -> float | None:
+        """信噪比 = Δ / 阈值。**> 1 才判 PRESENT**，但 1.0 与 3.0 不是一回事。
+
+        为什么必须进读数：只念"闸开了"会丢掉最关键的信息 —— **开得多稳**。
+        实测里这个数是 1.058（8 会话真模型）：刚过线，换一批数据就可能翻回去。
+        一个把 1.05 和 3.0 都显示成"闸=开"的读数，等于把临界结论说成稳固结论。
+        """
+        if self.delta is None or not self.margin:
+            return None
+        return round(self.delta / self.margin, 3)
+
     def as_line(self) -> str:
         if self.delta is None:
             return f"[power] {self.state} — {self.reason or '无法测量'}"
         return (f"[power] Δ={self.delta:+.4f}（模型 {self.mae_model} vs 基线 "
                 f"{self.mae_base}）阈值={self.margin} 噪声(std={self.noise_floor}"
-                f"/mean={self.noise_mean}，{self.n_controls} 个反证组）⇒ {self.state}")
+                f"/mean={self.noise_mean}，{self.n_controls} 个反证组）"
+                f" snr={self.snr} ⇒ {self.state}")
 
     def as_dict(self) -> dict:
         return {"state": self.state, "delta": self.delta,
@@ -153,7 +179,7 @@ class FamilyPower:
                 "margin": self.margin,
                 "n_history": self.n_history, "n_future": self.n_future,
                 "n_sessions": self.n_sessions, "n_controls": self.n_controls,
-                "usable": self.usable, "reason": self.reason}
+                "usable": self.usable, "snr": self.snr, "reason": self.reason}
 
 
 class SelfModel:
@@ -480,16 +506,17 @@ def _noise_floor(history: Sequence[dict], future: Sequence[dict],
     return sd, mean_abs, len(deltas)
 
 
-def measure_family_power(rows: Sequence[dict], *,
-                         history_ratio: float = POWER_HISTORY_RATIO) -> FamilyPower:
-    """测「分族」在 `rows` 上有没有预测力。三态，且 UNKNOWN 不并进 ABSENT。
+def _split_sessions(rows: Sequence[dict], *,
+                    history_ratio: float = POWER_HISTORY_RATIO
+                    ) -> tuple[list[dict], list[dict], list[int]]:
+    """时序切分。**唯一实现**（闸与判据台共用，契约 AJ25 用 AST 钉死只有一处）。
 
-    判据：时序切分 ⇒ 历史建模型 ⇒ 预测未来 ⇒ 与**不区分族的常数基线**比
-    误差。优势必须超过 `max(下限, 2 × 噪声)`，噪声由**反证组**实测给出
-    （不是拍一个绝对阈值 —— 与 `measure.noise_floor` 同一条纪律）。
+    ⚠️ 为什么要抽出来：切分是"哪段是历史、哪段是未来"的唯一事实源。
+    闸用一种切法、判据台用另一种切法 ⇒ 两边各测各的，报告说 PRESENT
+    而闸关着 —— 又一处"同一事实两处声明"（V5 静默漂移最经典的入口）。
 
-    输入行需要 `session`（切分）、`family`（分组）、`passed`（目标）。
-    缺 `session` 的行**整批**不可用 ⇒ 返回 UNKNOWN 并写明原因。
+    返回 `(history, future, sessions)`。缺 `session` 或不是数字的行**整批**
+    不参与：把它填成 0 会让所有无会话的行挤进"最老的一批"。
     """
     with_sess: list[dict] = []
     for r in rows:
@@ -503,19 +530,35 @@ def measure_family_power(rows: Sequence[dict], *,
         with_sess.append(r)
 
     sessions = sorted({int(r["session"]) for r in with_sess})
-    n_sessions = len(sessions)
-    if n_sessions < MIN_POWER_SESSIONS:
-        return FamilyPower("UNKNOWN", None, None, None, 0.0, 0.0, POWER_MARGIN_FLOOR,
-                           len(with_sess), 0, n_sessions,
-                           f"会话数 {n_sessions} < {MIN_POWER_SESSIONS}（且需带 session 字段）"
-                           f" ⇒ 做不了时序切分")
-
-    n_hist = max(1, int(n_sessions * history_ratio))
-    if n_hist >= n_sessions:                 # 保证未来集不为空
-        n_hist = n_sessions - 1
+    if not sessions:
+        return [], [], []
+    n_hist = max(1, int(len(sessions) * history_ratio))
+    if n_hist >= len(sessions):              # 保证未来集不为空
+        n_hist = len(sessions) - 1
     hist_s = set(sessions[:n_hist])
     hist = [r for r in with_sess if int(r["session"]) in hist_s]
     fut = [r for r in with_sess if int(r["session"]) not in hist_s]
+    return hist, fut, sessions
+
+
+def measure_family_power(rows: Sequence[dict], *,
+                         history_ratio: float = POWER_HISTORY_RATIO) -> FamilyPower:
+    """测「分族」在 `rows` 上有没有预测力。三态，且 UNKNOWN 不并进 ABSENT。
+
+    判据：时序切分 ⇒ 历史建模型 ⇒ 预测未来 ⇒ 与**不区分族的常数基线**比
+    误差。优势必须超过 `max(下限, 2 × 噪声)`，噪声由**反证组**实测给出
+    （不是拍一个绝对阈值 —— 与 `measure.noise_floor` 同一条纪律）。
+
+    输入行需要 `session`（切分）、`family`（分组）、`passed`（目标）。
+    缺 `session` 的行**整批**不可用 ⇒ 返回 UNKNOWN 并写明原因。
+    """
+    hist, fut, sessions = _split_sessions(rows, history_ratio=history_ratio)
+    n_sessions = len(sessions)
+    if n_sessions < MIN_POWER_SESSIONS:
+        return FamilyPower("UNKNOWN", None, None, None, 0.0, 0.0, POWER_MARGIN_FLOOR,
+                           len(hist) + len(fut), 0, n_sessions,
+                           f"会话数 {n_sessions} < {MIN_POWER_SESSIONS}（且需带 session 字段）"
+                           f" ⇒ 做不了时序切分")
 
     if len(hist) < MIN_SAMPLES:
         return FamilyPower("UNKNOWN", None, None, None, 0.0, 0.0, POWER_MARGIN_FLOOR,

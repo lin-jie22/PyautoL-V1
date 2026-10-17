@@ -139,7 +139,7 @@ fi
 echo "步骤 6/6  自我模型判据（跨会话预测校准 + 三个反证组 + 族预测力闸）"
 echo "=============================================================="
 if "$PY" bench/probe_selfmodel.py \
-     --real bench/evidence/score_ledger_real_qwen25_7b_4sess.jsonl \
+     --real bench/evidence/score_ledger_real_qwen25_7b_T0_8sess.jsonl \
      > /tmp/v1_self.out 2>&1; then
   grep -E "^  (自我模型预测|对照基线预测|优势|判定阈值|⇒|只收同口径|混入异口径)" \
     /tmp/v1_self.out | sed 's/^/  /'

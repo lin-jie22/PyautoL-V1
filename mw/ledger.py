@@ -109,6 +109,20 @@ def next_session(rows: Sequence[dict]) -> int:
     return top + 1
 
 
+def _key(value: Any) -> str | None:
+    """判重键的一元构造。**写侧与读侧共用同一份**（AJ21 用 AST 钉死）。
+
+    ⚠️ 为什么连这么小的东西都要抽出来：判重键在两处各写一遍，
+    就是"同一事实两处声明" —— 一边改了另一边没改，账本会**静默**地
+    一半去重一半不去重，而日志上两份读数都长得合理。
+    `None` 表示"这一维缺失" ⇒ 该行**不参与**判重（不能把缺失当 0，
+    否则所有缺 session 的行会被当成同一题，账本当场空掉）。
+    """
+    if value is None:
+        return None
+    return str(value)
+
+
 def canonical(obj: Any) -> str:
     """规范化 JSON。与 `mw.bench._canon` **逐字节相同** —— 口径签名必须
     在两处算出同一个值，否则"同口径"这个判断就是假的。
@@ -172,7 +186,8 @@ class LedgerStats:
     rejected_missing_fields: int = 0
     rejected_no_sig: int = 0
     rejected_diff_sig: int = 0
-    rejected_duplicate: int = 0
+    rejected_duplicate: int = 0      # 写侧挡下的（只可能发生在未来）
+    deduped_on_read: int = 0         # 读侧挡下的（**已经躺在文件里**的历史）
     bad_lines: int = 0
 
     def as_dict(self) -> dict:
@@ -185,6 +200,7 @@ class LedgerStats:
                 "diff_caliber_sig": self.rejected_diff_sig,
                 "duplicate": self.rejected_duplicate,
             },
+            "deduped_on_read": self.deduped_on_read,
             "bad_lines": self.bad_lines,
         }
 
@@ -193,6 +209,7 @@ class LedgerStats:
         return (f"账本 总={self.total} 采纳={self.admitted} "
                 f"拒(缺字段={r['missing_fields']}/无签名={r['no_caliber_sig']}"
                 f"/异口径={r['diff_caliber_sig']}/重复={r['duplicate']})"
+                f" 读侧去重={self.deduped_on_read}"
                 f" 坏行={self.bad_lines}")
 
 
@@ -246,17 +263,16 @@ class ScoreLedger:
         added, rejected, dup = 0, 0, 0
         seen: set[tuple] = set()
         for r in self.load():
-            k = (r.get("session"), r.get("task_id"))
+            k = (_key(r.get("session")), _key(r.get("task_id")))
             if k[0] is not None and k[1] is not None:
-                seen.add((str(k[0]), str(k[1])))
+                seen.add(k)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.path, "a", encoding="utf-8") as f:
             for r in rows:
                 if not isinstance(r, dict) or any(k not in r for k in REQUIRED_FIELDS):
                     rejected += 1
                     continue
-                key = (str(r.get("session")) if r.get("session") is not None else None,
-                       str(r.get("task_id")) if r.get("task_id") is not None else None)
+                key = (_key(r.get("session")), _key(r.get("task_id")))
                 if key[0] is not None and key[1] is not None:
                     if key in seen:
                         dup += 1
@@ -306,10 +322,26 @@ class ScoreLedger:
 
         `caliber_sig=None` ⇒ 一条都不收。这不是苛刻：
         没有口径就没有"可比"这件事，返回任何东西都是猜。
+
+        ── 读侧去重（写侧判重只保护未来，保护不了历史）──────────────────
+        `append` 的判重是**上一轮**才加的。在那之前写进去的账本里已经有
+        重复行（就是我自己的那份），它们躺在那里，谁读谁得到一份被加权的
+        通过率 —— 而日志上看不出来。
+
+        ⚠️ 这不是理论风险，是**本轮实测抓到的一个我自己的错误结论**：
+        我从那份脏账本里读出"T=0 下 struct_convert 从 0.56 掉到 0.36，
+        说明 T=0 也有漂移"。去重后真相是 2/5 = 0.400，与前四个会话
+        **逐题完全一致** —— 漂移是重复计数造出来的假象。
+        ⇒ 写侧判重会让未来干净，但**读侧不去重，历史永远在说谎**。
+
+        去重键与写侧一致：`(session, task_id)`。保留**先写入**的那条。
+        判重放在口径检查**之后**：异口径行必须先被记成 `diff_sig`，
+        否则"它重复了"和"它口径不对"会混成一个数（归因不准 = 白挡）。
         """
         sig = self.caliber_sig if caliber_sig is None else caliber_sig
         st = LedgerStats()
         out: list[dict] = []
+        seen: set[tuple[str, str]] = set()
         for r in self.load():
             st.total += 1
             if any(k not in r for k in EVIDENCE_FIELDS):
@@ -322,6 +354,12 @@ class ScoreLedger:
             if str(got) != str(sig):
                 st.rejected_diff_sig += 1
                 continue
+            key = (_key(r.get("session")), _key(r.get("task_id")))
+            if key[0] is not None and key[1] is not None:
+                if key in seen:
+                    st.deduped_on_read += 1
+                    continue
+                seen.add(key)
             out.append(r)
         st.admitted = len(out)
         st.bad_lines = self.stats.bad_lines

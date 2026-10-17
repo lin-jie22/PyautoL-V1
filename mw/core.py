@@ -32,12 +32,15 @@ from typing import Any, Callable, Sequence
 
 from . import config as cfg
 from .budget import Budget, BudgetExhausted, Ledger
+from .flow import FlowMeter
 from .guard import Guard
 from .llm import HTTPLLM, LLM, LLMError, Message, StubLLM, build_llm
 from .memory import MemoryStore
+from .metacog import SelfModel
 from .planner import Planner, Step, action_signature, looks_complex
 from .tools import (ToolRegistry, external_agent_names, register_core_tools,
                     register_external_agents)
+from .values import Values
 from .worldmodel import WorldModel
 
 
@@ -181,8 +184,28 @@ class Core:
                                max_tokens=self.s.limits.llm_max_tokens)
         self.wm = WorldModel(self.memory, self.llm)
 
+        # ── 三个"调制层"（不是相位）────────────────────────────────────
+        # 相位是环上的必经点，缺了就断流；调制层只改变**怎么走**。
+        # 这个区分是本轮对"模块是否必要"的答案，写在这里是因为代码结构
+        # 必须与那个答案一致 —— 否则文档说一套、依赖图是另一套（V5 的老毛病）。
+        #
+        #: 价值层：方向的否决与偏序。**不做评分**（`values.py` 首屏写死）。
+        self.values = Values()
+        #: 通量计：环上每条边真的过去了多少。它是**尺子**，不参与决策。
+        self.flow = FlowMeter()
+        #: 自我模型：只读**已完成**任务的外部读数。物理上拿不到当前 goal。
+        self.selfmodel = SelfModel()
+
     # ------------------------------------------------------------------
-    def run(self, goal: str, *, budget_factor: float = 1.0, tag: str | None = None) -> Outcome:
+    def run(self, goal: str, *, budget_factor: float = 1.0, tag: str | None = None,
+            family: str | None = None) -> Outcome:
+        """跑一个任务。
+
+        `family` 是**能力族标签**（如 `numeric_logic`），只给自我模型做资源建议用。
+        ⚠️ 刻意**不**从 goal 里猜族：一旦自我模型读得到题目内容，
+        它就会在"看题之后"给自己分配资源，那就退化成自评分的入口了。
+        调用方不给 ⇒ 传 None ⇒ 自我模型返回默认值并明说"样本不足"。
+        """
         base = Budget(
             steps=self.s.limits.max_steps,
             llm_calls=self.s.limits.max_llm_calls,
@@ -191,6 +214,11 @@ class Core:
         )
         budget = base.scaled(budget_factor, tag or ("1x" if budget_factor == 1 else f"{budget_factor:g}x"))
         self.ledger = Ledger(budget)
+        # 通量与价值层的计数是**单轮**读数（预算也是单轮的）；
+        # 自我模型是**跨轮资产**，所以它不在这里重置。
+        # 混在一起会出现"这一轮 0 次否决"而那个 0 是上一轮留下的 —— V5 的老毛病。
+        self.flow = FlowMeter()
+        self.values = Values()
 
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
         counted = _LedgeredLLM(self.llm, self.ledger,
@@ -258,6 +286,18 @@ class Core:
                 cand_left = max(1, budget.candidates - self.ledger.candidates_used)
                 n = min(budget.candidates, cand_left) if complex_task else 1
 
+                # ⑧ 元认知：**只在有证据时**才让它覆盖上面的判断。
+                #    `adv.confident` 是显式开关，不是靠比较 `basis` 字符串 ——
+                #    一个"样本不足但语气笃定"的建议会把 ACT 的判定整体抹掉，
+                #    而日志上写着"样本不足"，决策已经悄悄变了。
+                adv = self.selfmodel.advise(family=family,
+                                            max_candidates=budget.candidates)
+                if adv.confident:
+                    complex_task = adv.deep
+                    n = (min(budget.candidates, cand_left, adv.candidates)
+                         if complex_task else 1)
+                    self.log(f"  {adv.as_line()}")
+
                 # ③ 规划（失败过就带错误原文重规划，不原地重试）
                 #    同时把"已尝试过的动作签名"精确交给规划器 —— 不是靠自由文本
                 #    提醒（实测里模型会无视"已试过：…"的自然语言）。
@@ -287,6 +327,8 @@ class Core:
                 cands = plan.steps[:n]
                 self.ledger.spend_candidate(len(cands))
                 self.log(f"  [{it}] 通道={'深' if complex_task else '快'} 候选={len(cands)}")
+                # 通量：推理交了 N 个想法出去（下游是否真的做，看 `reason>act` 的消费）
+                self.flow.emit(it, "reason>act", len(cands), sum(len(c.as_line()) for c in cands))
 
                 # ④⑤⑥ 逐候选过闸 → 预演 → 执行
                 executed = False
@@ -334,6 +376,19 @@ class Core:
                             self.log(f"      ✋ {mv.as_line()}")
                             continue
 
+                    # ── 价值层：方向 → 授权 ────────────────────────────────
+                    # 放在 guard **之后**是刻意的：安全是绝对底线，先过；
+                    # 过了才问"值不值得做、是不是在回应目标"。
+                    # 顺序反过来会让一个偏题的删除动作先被"偏题"拦下，
+                    # 于是它看起来像个方向问题而不是安全问题 —— 而它本来就
+                    # 该因为"危险"被绝对拒绝。**两种否决不能互相顶替。**
+                    vj = self.values.judge(tool=cand.tool, args=cand.args, goal=goal,
+                                           is_finish=(cand.tool == "finish"))
+                    if not vj.allow:
+                        self.log(f"      ⊘ {vj.as_line()}")
+                        history.append(f"[step {it}] 价值层否决[{vj.kind}]：{cand.intent[:40]}")
+                        continue
+
                     # 预演（只有深通道才付这个成本 —— 这就是 ACT 的实际意义）
                     pred = None
                     if complex_task:
@@ -344,6 +399,13 @@ class Core:
 
                     result = self.tools.dispatch(cand.tool, cand.args)
                     self.log(f"      ↳ {cand.tool} ok={result.ok} {cand.intent[:60]}")
+
+                    # 通量：N 个想法里，这一个真的被执行了（`reason>act` 的消费端）
+                    self.flow.take("reason>act", 1, len(cand.as_line()))
+                    # 回边的原料：本步的观测原文。它是否真的活到下一回合，
+                    # 由下一次 `_state()` 按 token 覆盖率计量（见 `sample_reuse`）。
+                    obs_text = result.as_observation()
+                    self.flow.note_result(obs_text)
 
                     # 观测 + 失配沉淀
                     #
@@ -369,9 +431,14 @@ class Core:
                     #   于是"三层记忆"里 working 这层**只读不写**、episodes **只写不读** ——
                     #   多步任务的上下文连续性实际上靠的是 `history` 里那行"成功/失败"。
                     # 修法不是再加一条通道，而是让本来为此设计的那层**通电**。
-                    self.memory.think(
-                        f"{cand.tool} ⇒ {'✔' if result.ok else '✘'} "
-                        f"{result.as_observation()[:300]}")
+                    # 通量：感知写进记忆。**产出按观测原文长度、消费按实际存下的长度**，
+                    #    两者的比就是"写入截断率"。这个比不是形式主义的指标：
+                    #    它直接回答"工具返回的 5000 字里，下一步还看得见多少"。
+                    full = f"{cand.tool} ⇒ {'✔' if result.ok else '✘'} {result.as_observation()}"
+                    stored = full[:300]
+                    self.flow.emit(it, "perceive>memory", 1, len(full))
+                    self.flow.take("perceive>memory", 1, len(stored))
+                    self.memory.think(stored)
 
                     if not result.ok:
                         consecutive_failures += 1
@@ -423,19 +490,39 @@ class Core:
     # ------------------------------------------------------------------
     def _state(self, goal: str, history: Sequence[str], it: int) -> str:
         parts = [f"[目标] {goal}"]
+        # 从记忆进到推理的**实际条数**：只在真正拼进上下文的地方累加，
+        # 不在上游估一个数 —— 估出来的数会让"覆盖率"变成自我安慰。
+        mem_items = 0
+        mem_chars = 0
         wm = self.memory.working_view()
         if wm:
             # ⚠️ **必须逐条截断**：工作记忆存的是工具输出的原文，不截断的话
             #    一个大文件/一段长代码就能把整个上下文窗口吃掉
             #    —— 那时"多步任务的上下文"反而变成"一步就把预算烧完"。
-            parts.append("[工作记忆] " + " ｜ ".join(w[-200:] for w in wm[-6:]))
+            recent = wm[-6:]
+            block = " ｜ ".join(w[-200:] for w in recent)
+            parts.append("[工作记忆] " + block)
+            mem_items += len(recent)
+            mem_chars += len(block)
         recalled = self.memory.recall(goal, k=self.s.limits.recall_k)
         if recalled:
-            parts.append("[语义记忆] " + " ｜ ".join(f.text[:120] for f in recalled))
+            block = " ｜ ".join(f.text[:120] for f in recalled)
+            parts.append("[语义记忆] " + block)
+            mem_items += len(recalled)
+            mem_chars += len(block)
         if history:
             parts.append("[轨迹] " + " ｜ ".join(history[-6:]))
         parts.append(f"[第 {it}/{self.ledger.budget.steps if self.ledger else '?'} 步]")
-        return "\n".join(parts)
+        state = "\n".join(parts)
+        # 通量：记忆 → 推理。分子 = 真的拼进上下文的条数，分母 = 池子里可用的条数。
+        # ⚠️ 这个比值**不是健康度**（库越大比例越小），只回答"这条线通没通"。
+        self.flow.emit(it, "memory>reason", self.memory.pool_size(), 0)
+        if mem_items:
+            self.flow.take("memory>reason", mem_items, mem_chars)
+        # 通量回边：上一回合的**行动结果**，在本回合上下文里还剩多少 token。
+        # 这是「流畅」唯一的量化判据 —— 若它恒为 0，闭环实际上是开链。
+        self.flow.sample_reuse(state)
+        return state
 
     # ------------------------------------------------------------------
     def _closing_reserve_hit(self) -> bool:
@@ -504,6 +591,9 @@ class Core:
         stats = {
             "budget": self.ledger.snapshot() if self.ledger else {},
             "guard": self.guard.report(),
+            "values": self.values.report(),
+            "flow": self.flow.report(),
+            "selfmodel": self.selfmodel.report(),
             "worldmodel": self.wm.stats(),
             "planner": self.planner.stats(),
             "memory": self.memory.stats(),
@@ -536,7 +626,14 @@ class Core:
                    f"/文本{wms['mismatches_text']})")
         if wms["unscored"]:
             wm_line += f" ⚠️未检验={wms['unscored']}"
+        # 价值层与通量：**两者都必须带分母**。
+        # `denied=1` 在 3 次判定里和在 300 次判定里是两件完全不同的事；
+        # 通量同理 —— 覆盖率离开产出量就没有意义。
+        vs = stats["values"]
+        v_line = (f" | 价值判定={vs['judged']} 否决={vs['denied']}"
+                  f"({','.join(f'{k}:{v}' for k, v in vs['by_kind'].items()) or '-'})")
+        f_line = f" | {self.flow.as_line()}"
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
-                 f"{wm_line} | 语义记忆={stats['memory']['facts']}"
+                 f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}")
         return Outcome(status, answer, reason, len(history), stats)

@@ -242,6 +242,17 @@ class MemoryStore:
             "SELECT COUNT(*) c FROM (SELECT key FROM facts GROUP BY key HAVING COUNT(*)>1)"
         ).fetchone()["c"]
 
+    def pool_size(self) -> int:
+        """记忆里**可用**的条数（语义事实 + 工作记忆）。
+
+        消费者是 `FlowMeter` 的 `memory>reason` 边：它要知道分母，
+        才能回答"这一回合的上下文用的是池子里的多少"。
+        ⚠️ 这是唯一为通量计暴露的方法 —— 不要用它做别的判断，
+        "库多大"不是任何决策的输入（那是把量当成质）。
+        """
+        facts = self.conn.execute("SELECT COUNT(*) c FROM facts").fetchone()["c"]
+        return int(facts) + len(self.working)
+
     def close(self) -> None:
         self.conn.close()
 

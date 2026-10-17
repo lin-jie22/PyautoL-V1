@@ -1932,6 +1932,262 @@ check(RS, "AA8 ★墓碑：`foresight_filter()` 不得复活"
 
 
 # ===========================================================================
+# AB 组 —— 闭环通量：感知>记忆>推理>行动 每条边**真的过去了多少**
+#
+# 「模块齐了」≠「闭环通了」。AB 组钉的是**管子**，不是零件：
+#   · 每条边都必须是「产出 / 消费」两笔账（产出≠消费）
+#   · 每条边的量纲必须显式声明（截断看字符、宽度看条数）
+#   · None（从没产出）与 0.0（产出了没人读）必须分开 —— 两种「断」，修法不同
+#   · 回流率必须用 token 覆盖率，不能用字符比（后者会被长 token 骗）
+# ===========================================================================
+from mw.flow import EDGES, EDGE_UNIT, FlowMeter                 # noqa: E402
+
+_fm = FlowMeter()
+_fm.emit(1, "perceive>memory", 1, 5000)
+_fm.take("perceive>memory", 1, 300)
+_fm.emit(1, "reason>act", 4, 200)
+_fm.take("reason>act", 1, 50)
+_rep = _fm.report()
+check(RS, "AB1 通量计的产出与消费**分开记账**（4 个候选只做了 1 个 ⇒ 0.25，"
+          "不是「我规划了 4 个」就记 4）",
+      _rep["produced"]["reason>act"] == 4 and _rep["consumed"]["reason>act"] == 1
+      and _rep["coverage"]["reason>act"] == 0.25,
+      f"coverage={_rep['coverage']}")
+
+check(RS, "AB2 ★量纲单一事实源：`perceive>memory` 按**字符**算（5000 字只存 300 ⇒ 0.06），"
+          "`reason>act` 按**条数**算 —— 两条边若都用条数，截断就会被算成 1.0（恒满分）",
+      EDGE_UNIT.get("perceive>memory") == "chars"
+      and EDGE_UNIT.get("reason>act") == "items"
+      and _rep["coverage"]["perceive>memory"] == 0.06,
+      f"unit={EDGE_UNIT} cov={_rep['coverage']['perceive>memory']}")
+
+_fm2 = FlowMeter()
+_fm2.take("reason>act", 3)          # 只消费、从没产出
+_r2 = _fm2.report()
+check(RS, "AB3 ★`None` ≠ `0.0`：从没产出的边说「没量到」，"
+          "产出了没人读的边说「量到 0」—— 两种断法修法不同（前者是没接线，后者是没人读）",
+      _r2["coverage"]["reason>act"] is None
+      and "reason>act" in _r2["dead_edges"]
+      and _r2["starved_edges"] == [],
+      f"cov={_r2['coverage']['reason>act']} dead={_r2['dead_edges']}")
+
+_fm3 = FlowMeter()
+_fm3.emit(1, "reason>act", 3, 90)
+_r3 = _fm3.report()
+check(RS, "AB3b 反证：**产出了但没人读**必须落进 `starved_edges`，"
+          "不能和「从未产出」混成一格",
+      _r3["coverage"]["reason>act"] == 0.0 and "reason>act" in _r3["starved_edges"]
+      and "reason>act" not in _r3["dead_edges"],
+      f"cov={_r3['coverage']} starved={_r3['starved_edges']} dead={_r3['dead_edges']}")
+
+# ★ 回流率必须用 token 覆盖率：长 token 会让字符比显著偏高。
+_fm4 = FlowMeter()
+_fm4.note_result("alphaverylongtoken beta")
+_r4 = _fm4.sample_reuse("alphaverylongtoken")
+check(RS, "AB4 ★回流率用 **token 覆盖率**（1/2=0.5），不是字符比（18/21≈0.857）"
+          "—— 后者会被长 token 稀释，把「只活下来一个词」读成「几乎全在」",
+      _r4 is not None and abs(_r4 - 0.5) < 1e-9,
+      f"reuse={_r4}")
+
+check(RS, "AB5 未知边名必须**报错**，不许静默忽略"
+          "（静默忽略 = 少了一条边永远不被发现）",
+      _raises(lambda: FlowMeter().emit(1, "感知>记忆", 1, 1), ValueError),
+      "ValueError 已按预期抛出")
+
+
+def _run_flow(dbname: str, *, no_think: bool = False):
+    _m = MemoryStore(_TMP / dbname)
+    _c = Core(settings=cfg.Settings(limits=cfg.Limits(max_steps=8)),
+              llm=DemoLLM(), memory=_m)
+    _c.log = lambda m: None
+    if no_think:
+        _m.think = lambda t: None       # type: ignore[method-assign]
+    _o = _c.run(DemoLLM.GOAL)
+    return _o, _c
+
+
+_o_flow, _c_flow = _run_flow("ab_flow.db")
+_frep = (_o_flow.stats or {}).get("flow", {})
+check(RS, "AB6 ★行为锚：跑完一次内核后，三条边的**产出与消费都 > 0**"
+          "（只查产出会漏掉「装了产出、忘了消费」—— 那种边 coverage 恒为 None，"
+          "而一个恒为 None 的读数看起来像「这条线断了」，实际是我忘了装表）",
+      all((_frep.get("produced") or {}).get(e, 0) > 0 for e in EDGES)
+      and all((_frep.get("consumed") or {}).get(e, 0) > 0 for e in EDGES)
+      and all(v is not None for v in (_frep.get("coverage") or {}).values()),
+      f"produced={_frep.get('produced')} consumed={_frep.get('consumed')} "
+      f"coverage={_frep.get('coverage')}")
+
+check(RS, "AB8 ★结构锚：`core.py` 里**有** `values.judge(` 的生产调用点"
+          "（价值层若只在测试里被调用，它就是个装饰模块 —— 这是 AA1 同一把尺子）",
+      "self.values.judge(" in _src("core.py"),
+      f"出现={_src('core.py').count('self.values.judge(')} 次")
+
+_o_nothink, _c_nothink = _run_flow("ab_nothink.db", no_think=True)
+_reuse_off = ((_o_nothink.stats or {}).get("flow") or {}).get("reuse_mean")
+_reuse_on = _frep.get("reuse_mean")
+check(RS, "AB7 ★读数锚（可被实现推翻）：**关掉工作记忆写入 ⇒ 回流率归零**"
+          "—— 回边（行动结果回到下一回合感知）唯一的物理载体就是 working；"
+          "它断了，环就成了「感知→记忆→推理→行动」的一条直链",
+      _reuse_on is not None and _reuse_on > 0.5
+      and _reuse_off is not None and _reuse_off < 0.1,
+      f"正常={_reuse_on} 关掉think={_reuse_off}")
+
+
+# ===========================================================================
+# AC 组 —— 价值层：让内核**想做对的事**（否决与偏序，**不是评分**）
+# ===========================================================================
+from mw.values import Values                                   # noqa: E402
+
+_GOAL_CLEAN = "分析并清理 python 截断问题的临时文件，然后总结根因与修复方案"
+
+_v_neg = Values().judge(tool="run_shell", args={"cmd": "rm -rf /tmp/x"},
+                        goal="不要删除任何文件，只看一下目录")
+check(RS, "AC1 否定式**不构成授权**：目标说「不要删除」时，删除动作必须被拒",
+      not _v_neg.allow and _v_neg.kind == "irreversible",
+      _v_neg.as_line())
+
+# ★ 这条是 2026-10-17 消融实测逼出来的真缺陷：
+#   目标「分析并清理…临时文件」里的「清理」让 `rm -rf ~` 通过了**方向**审查。
+#   方向对、范围错 —— 这是真实系统里最常见的破坏方式。
+_v_scope = Values().judge(tool="run_shell", args={"cmd": "rm -rf ~"},
+                          goal=_GOAL_CLEAN)
+check(RS, "AC2 ★范围授权：目标授权了「清理」，但 `rm -rf ~` 的作用对象 `~` "
+          "不在目标里 ⇒ 必须拒（方向对、范围错是真实破坏的主要形态）",
+      not _v_scope.allow and "范围越界" in _v_scope.reason,
+      _v_scope.as_line())
+
+_v_scope_ok = Values().judge(tool="run_shell", args={"cmd": "rm -rf /tmp/v1_tmp"},
+                             goal="清理 /tmp/v1_tmp 下的临时文件")
+check(RS, "AC3 反证：目标**点名**了作用对象 ⇒ 同一个动作必须放行"
+          "（证明 AC2 不是「一律拒绝删除」的恒真断言）",
+      _v_scope_ok.allow and _v_scope_ok.rank == 1,
+      _v_scope_ok.as_line())
+
+check(RS, "AC4 只读动作不做不可逆审查（recall/note/finish 不改变外部世界）"
+          "—— 误杀合法动作比漏检更糟，因为它让内核什么都不敢做",
+      all(Values().reversibility(t, {}) == 0 for t in ("recall", "note", "finish")),
+      f"可撤销性={ {t: Values().reversibility(t, {}) for t in ('recall','note','finish')} }")
+
+_v_ans = Values().judge(tool="finish", args={"answer": "好"},
+                        goal="写一段 python 快排，要求原地排序并解释思路",
+                        is_finish=True)
+check(RS, "AC5 收尾敷衍：目标要求展开（含「写」）而答案只有 1 字 ⇒ 拒",
+      not _v_ans.allow and _v_ans.kind == "answer",
+      _v_ans.as_line())
+
+# ★ 反证：第一版用「目标实体必须出现在答案里」，把 `1+1 → 2` 判成答非所问。
+#   正确答案与目标的字面重合可以是零（算题就是如此）。这条断言是为了
+#   防止那个判据被「想让它更严」重新加回来。
+_v_calc = Values().judge(tool="finish", args={"answer": "2"}, goal="1+1",
+                         is_finish=True)
+check(RS, "AC6 ★反证：`1+1 → 2` 必须放行"
+          "（第一版判据把「答案未含目标实体」当错，正确答案 `2` 被误杀 —— "
+          "字面重合判语义相关，与缺陷 #12 同构）",
+      _v_calc.allow,
+      _v_calc.as_line())
+
+check(RS, "AC7 空答案必拒（这是唯一不需要解释的判据）",
+      not Values().judge(tool="finish", args={"answer": ""}, goal="随便",
+                         is_finish=True).allow,
+      "空答案已被拒绝")
+
+check(RS, "AC8 价值层不产生分数：`Judgement` 只有 allow/kind/reason/rank，"
+          "没有 `score` 字段 —— 自评分是 V5 的死因，这条是接口级防线",
+      set(getattr(type(_v_ans), "__dataclass_fields__", {})) ==
+      {"allow", "kind", "reason", "rank"},
+      f"字段={sorted(getattr(type(_v_ans), '__dataclass_fields__', {}))}")
+
+
+# ===========================================================================
+# AD 组 —— 自我模型：我知道自己**在哪类事上**做对过（只读外部读数）
+# ===========================================================================
+from mw.metacog import MIN_SAMPLES, SelfModel, load_evidence   # noqa: E402
+
+
+def _params(cls_src: str, cls: str, fn: str) -> list[str]:
+    for n in ast.walk(ast.parse(cls_src)):
+        if isinstance(n, ast.ClassDef) and n.name == cls:
+            for m in n.body:
+                if isinstance(m, ast.FunctionDef) and m.name == fn:
+                    return [a.arg for a in (m.args.args + m.args.kwonlyargs)]
+    return []
+
+
+_mc_src = _src("metacog.py")
+check(RS, "AD1 ★接口级防线：`SelfModel.advise` 的形参里**没有 goal**"
+          "—— 只要它读得到当前题目，就一定有人会去读，然后就变成自评分",
+      "goal" not in _params(_mc_src, "SelfModel", "advise"),
+      f"形参={_params(_mc_src, 'SelfModel', 'advise')}")
+
+check(RS, "AD2 无证据 ⇒ `confident=False`（不装懂：认不出族就给默认值，"
+          "且这个默认值**不允许**覆盖内核判断）",
+      SelfModel().advise(family=None).confident is False
+      and SelfModel().advise(family="never_seen").confident is False,
+      SelfModel().advise(family="never_seen").as_line())
+
+_sm_small = SelfModel([{"family": "x", "passed": True}] * (MIN_SAMPLES - 1))
+check(RS, f"AD3 样本 < {MIN_SAMPLES} ⇒ `confident=False`"
+          "（两个样本的通过率只是噪声，拿它调资源就是在放大抖动）",
+      _sm_small.advise(family="x").confident is False,
+      _sm_small.advise(family="x").as_line())
+
+_sm_weak = SelfModel([{"family": "w", "passed": False, "failed_step": "plan"}] * 4)
+_adv_weak = _sm_weak.advise(family="w", max_candidates=3)
+check(RS, "AD4 弱族（历史通过率 0.0）⇒ 加宽候选 + 先验证，并**点名最常败在哪一步**",
+      _adv_weak.confident and _adv_weak.deep and _adv_weak.verify_first
+      and "plan" in _adv_weak.basis,
+      _adv_weak.as_line())
+
+_sm_strong = SelfModel([{"family": "s", "passed": True}] * 4)
+_adv_strong = _sm_strong.advise(family="s", max_candidates=3)
+check(RS, "AD5 强族（历史通过率 1.0）⇒ 快通道单候选（省预算，而不是炫技）",
+      _adv_strong.confident and _adv_strong.candidates == 1
+      and _adv_strong.deep is False,
+      _adv_strong.as_line())
+
+check(RS, "AD6 ★反证：同一族、同样 4 个样本，只翻 `passed` 就会翻转建议"
+          "—— 证明 n（样本量）真的是判据，不是装饰字段",
+      (_adv_weak.candidates, _adv_weak.deep) != (_adv_strong.candidates, _adv_strong.deep),
+      f"弱={_adv_weak.candidates}/{_adv_weak.deep} 强={_adv_strong.candidates}/{_adv_strong.deep}")
+
+_rows = [
+    {"family": "a", "passed": True},
+    {"family": "a"},                       # 缺 passed ⇒ 丢掉，不许当 0 分
+    {"passed": False},                     # 缺 family ⇒ 丢掉
+    {"family": "b", "passed": False, "failed_step": "act"},
+]
+check(RS, "AD7 ★「没记」≠「失败」：`load_evidence` 必须丢掉缺 `passed` 的行"
+          "（把缺失当零会让自我模型凭空觉得「我很差」，进而做错误的资源调整）",
+      len(load_evidence(_rows)) == 2
+      and all("passed" in r for r in load_evidence(_rows)),
+      f"保留={len(load_evidence(_rows))} 条")
+
+
+# ===========================================================================
+# AE 组 —— 消融实验自身的安全与口径
+# ===========================================================================
+_coh = (V1 / "bench" / "coherence.py").read_text(encoding="utf-8")
+_i_dry = _coh.find("_dry_shell(core)")
+_i_patch = _coh.find("patch(core)")
+check(RS, "AE1 ★实验工具的危险性不许超过被测系统：`coherence.py` 必须在"
+          "**施加变体之前**装 `run_shell` 干跑保险"
+          "（关掉守卫后 `rm -rf ~` 会真的执行 —— 第一次跑靠宿主沙箱兜住，"
+          "那不是我的代码在工作）",
+      0 <= _i_dry < _i_patch,
+      f"dry@{_i_dry} patch@{_i_patch}")
+
+check(RS, "AE2 消融必须为每个变体隔离记忆目录（`facts` 跨轮累积，"
+          "共用目录量到的是「记忆多少」而不是「这个部件有没有用」）",
+      "TemporaryDirectory" in _coh and "V1_STATE_DIR" in _coh,
+      f"TemporaryDirectory={'TemporaryDirectory' in _coh} V1_STATE_DIR={'V1_STATE_DIR' in _coh}")
+
+check(RS, "AE3 消融报告必须同时给「声明」与「实测」分类，且不一致时以实测为准"
+          "（先验与实测分歧本身就是最有信息量的一行）",
+      "declared" in _coh and "actual" in _coh and "classify" in _coh,
+      f"declared={'declared' in _coh} actual={'actual' in _coh} classify={'classify' in _coh}")
+
+
+# ===========================================================================
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

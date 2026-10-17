@@ -127,7 +127,7 @@ def probe_critique_consumers() -> dict:
     """
     core_mods = ("config", "budget", "llm", "memory", "worldmodel",
                  "planner", "guard", "tools", "measure", "core",
-                 "flow", "values", "metacog")
+                 "flow", "values", "metacog", "critique")
     sites: list[str] = []
     for mod in core_mods:
         p = ROOT / "mw" / f"{mod}.py"
@@ -142,6 +142,69 @@ def probe_critique_consumers() -> dict:
             if (isinstance(node, ast.Attribute) and node.attr == "why"):
                 sites.append(f"mw/{mod}.py:{node.lineno}")
     return {"kernel_consumers": len(sites), "sites": sites}
+
+
+def probe_critique_flow() -> dict:
+    """**行为探针**：外部评审的理由有没有真的进内核的上下文。
+
+    ⚠️ 为什么必须改成行为探针（2026-10-17）：
+    上一版用 AST 数"内核模块里 `.why` 的访问点"，那是个**代理量** ——
+    它只能证明"代码里提到了 why"，不能证明"它真的流进了决策输入"。
+    真正的判据是跑一遍内核，看 `[外部评审]` 那段**出不出来**。
+
+    两个方向都要测，缺一个是恒真断言：
+      · served：已完成题的理由 ⇒ **必须出现**（通道通了）
+      · leaked：当前题自己的理由 ⇒ **必须不出现**（防自评）
+    """
+    from mw.critique import Critique, CritiqueLedger
+    from mw.core import Core
+    from run import DemoLLM
+
+    SHA_S, SHA_U, SHA_OTHER = "sha_scorer_demo", "sha_suite_demo", "sha_scorer_other"
+
+    def _run(ledger: CritiqueLedger, task_id: str, scorer_sha: str) -> dict:
+        states: list[str] = []
+        with tempfile.TemporaryDirectory(prefix="v1_crit_") as td:
+            with isolated_state(Path(td)):
+                core = Core(settings=cfg.Settings(limits=cfg.Limits(max_steps=6)),
+                            llm=DemoLLM(), critique_ledger=ledger)
+                core.log = lambda _m: None
+                orig = core._state
+
+                def spy(*a, **kw):
+                    s = orig(*a, **kw)
+                    states.append(s)
+                    return s
+
+                core._state = spy                 # type: ignore[method-assign]
+                core.run(DemoLLM.GOAL, task_id=task_id,
+                         scorer_sha=scorer_sha, suite_sha=SHA_U)
+        return {"n_states": len(states),
+                "hits": sum(1 for s in states if "[外部评审]" in s)}
+
+    # ① 已完成题（task_id 不同、口径相同）⇒ 理由必须进上下文
+    led_ok = CritiqueLedger()
+    led_ok.add(Critique(scorer_sha=SHA_S, suite_sha=SHA_U, task_id="done_01",
+                        family="text_ops", score=0.0,
+                        why="截断处理：应当保留末尾而不是头部"))
+    ok = _run(led_ok, task_id="current_02", scorer_sha=SHA_S)
+
+    # ② 反证：当前题**自己的**理由 ⇒ 必须被挡住（用了就是自评分）
+    led_self = CritiqueLedger()
+    led_self.add(Critique(scorer_sha=SHA_S, suite_sha=SHA_U, task_id="current_02",
+                          family="text_ops", score=0.0,
+                          why="这一条是本道题自己的评审，不许进"))
+    leak = _run(led_self, task_id="current_02", scorer_sha=SHA_S)
+
+    # ③ 反证：口径不同的理由 ⇒ 必须被挡住（两把尺子的理由不能混用）
+    led_cross = CritiqueLedger()
+    led_cross.add(Critique(scorer_sha=SHA_OTHER, suite_sha=SHA_U, task_id="done_01",
+                           family="text_ops", score=0.0, why="另一把尺子的理由"))
+    cross = _run(led_cross, task_id="current_02", scorer_sha=SHA_S)
+
+    return {"served": ok["hits"] > 0, "served_detail": ok,
+            "leaked": leak["hits"] > 0, "leak_detail": leak,
+            "cross_leaked": cross["hits"] > 0, "cross_detail": cross}
 
 
 def probe_scope() -> dict:
@@ -238,13 +301,23 @@ def _s_selfmodel_dark(ev: Evidence) -> tuple[str, str]:
 
 
 def _s_no_critique(ev: Evidence) -> tuple[str, str]:
-    p = ev.probes.get("critique") or {}
-    if "kernel_consumers" not in p:
+    p = ev.probes.get("critique_flow") or {}
+    if "served" not in p:
         return UNKNOWN, "未提供评审通道探针"
-    n = p["kernel_consumers"]
-    return ((PRESENT if n == 0 else ABSENT),
-            f"内核消费外部评审理由的点={n}（{p['sites'] or '无'}）"
-            + (" ⇒ 只有标量分数，没有『你为什么错』" if n == 0 else ""))
+    # ⚠️ 自评泄漏**优先于**通道是否接通：一个会泄漏当前题理由的通道
+    #    比没有通道更糟 —— 它是自评分的入口，而自评分是 V5 的死因。
+    if p.get("leaked"):
+        return PRESENT, ("当前题自己的理由进了上下文 ⇒ **自评通道**"
+                         f"（{p['leak_detail']}）")
+    if p.get("cross_leaked"):
+        return PRESENT, ("异口径的理由进了上下文 ⇒ 两把尺子的教训被混用"
+                         f"（{p['cross_detail']}）")
+    if not p["served"]:
+        return PRESENT, (f"通道未接通：已完成题的理由没有进上下文（{p['served_detail']}）"
+                         " ⇒ 外部反馈只有标量，内核学不到『你为什么错』")
+    return ABSENT, (f"已完成题的理由进了上下文（{p['served_detail']['hits']}/"
+                    f"{p['served_detail']['n_states']} 次状态），"
+                    "且当前题与异口径的评审都被挡住")
 
 
 def _s_land(ev: Evidence) -> tuple[str, str]:
@@ -291,7 +364,12 @@ SIGNATURES: tuple[Signature, ...] = (
               "selfmodel.consulted × influenced", _s_selfmodel_dark),
     Signature("社会与情感", "外部反馈只有标量，没有过程性理由进入内核",
               "内核能知道自己几分，但学不到『你为什么错』—— 无法被他者纠正",
-              "probe:critique.kernel_consumers", _s_no_critique),
+              "probe:critique_flow（行为探针：真跑内核看 [外部评审] 段）",
+              _s_no_critique,
+              note="2026-10-17 把这条从**代理量**（AST 数 `.why` 的访问点）"
+                   "改成了**行为锚**。\n"
+                   "     前者只能证明\"代码里提到了 why\"，后者才证明\"它真的流进了决策输入\"。\n"
+                   "     三个方向都测：已完成题必须进、当前题必须挡、异口径必须挡。"),
     Signature("行动与执行", "候选永不落地",
               "规划出了想法，但没有任何一个变成真实动作",
               "flow.coverage['reason>act']", _s_land),
@@ -323,6 +401,7 @@ def collect(goal: str | None = None, *, llm=None) -> Evidence:
             "complex": bool(looks_complex(g, 0)),
             "scope": probe_scope(),
             "critique": probe_critique_consumers(),
+            "critique_flow": probe_critique_flow(),
         })
 
 

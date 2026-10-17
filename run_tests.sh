@@ -44,7 +44,8 @@ echo "步骤 2/5  契约测试（离线；K 静默降级 / L 外部能力 / O �
 echo "                    U 跨领域 / V 因果闭环 / W 抽象读数 / X 血缘完整性 /"
 echo "                    Y 失配信号的分辨力 / Z 内核读数落盘 / AA 模块接线 /"
 echo "                    AB 闭环通量 / AC 价值层 / AD 自我模型 / AE 消融安全 /"
-echo "                    AF 失败签名（第二层判据：缺了会看到什么现象））"
+echo "                    AF 失败签名（第二层判据：缺了会看到什么现象）/"
+echo "                    AG 外部评审（只读 / 防自评 / 防跨口径））"
 echo "=============================================================="
 if "$PY" tests/contract_test.py > /tmp/v1_contract.out 2>&1; then
   echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1)"

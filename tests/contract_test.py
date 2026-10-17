@@ -101,106 +101,6 @@ check(RS, "A4 三个状态目录均来自 env 覆盖",
 
 
 # ===========================================================================
-# AF 组 —— 失败签名：把「未实现」与「不必要」分开（第二层判据）
-#
-# 第一层（AE / bench/coherence.py）问"拆了环还转吗"。它**没有"缺席"这一格**：
-# 拆一个不存在的模块，读数当然不变 ⇒ Δ=0 被读成"不必要"，而真相是"未实现"。
-# 那是把**没做的事**判成**不需要做的事** —— 与 V5 的病同构，只是方向相反。
-#
-# AF 组钉的是第二层：每条能力绑一个**失败现象**，三态判定，
-# 且 `UNKNOWN` 不许并进 `ABSENT`（那一格就是"没量到 ≠ 不需要"的物理位置）。
-# ===========================================================================
-import importlib.util as _ilu
-
-_spec = _ilu.spec_from_file_location("v1_capability",
-                                     V1 / "bench" / "capability.py")
-_cap = _ilu.module_from_spec(_spec)
-# ⚠️ 必须先注册进 `sys.modules` 再 exec：`dataclasses` 解析注解时要查宿主模块
-#    的 `__dict__`，模块不在 sys.modules 里就是 None ⇒ AttributeError。
-sys.modules["v1_capability"] = _cap
-_spec.loader.exec_module(_cap)
-
-check(RS, "AF1 判定必须**三态**：成立 / 反证 / 不可判。"
-          "两态会把「没量到」直接读成「不需要」—— 那是这张表唯一要防的事",
-      len({_cap.PRESENT, _cap.ABSENT, _cap.UNKNOWN}) == 3,
-      f"{{{[ _cap.PRESENT, _cap.ABSENT, _cap.UNKNOWN]}}}")
-
-check(RS, "AF2 每条签名必须有 `source`（读数出口）—— 没有出口的签名是"
-          "自我描述，和「人脑有所以要有」是同一种不可证伪",
-      all(s.source for s in _cap.SIGNATURES),
-      f"签数={len(_cap.SIGNATURES)} 有出口={sum(1 for s in _cap.SIGNATURES if s.source)}")
-
-_cap_ev = _cap.collect()
-_cap_rows = _cap.assess(_cap_ev)
-_cap_v = _cap.verdicts(_cap_rows)
-
-check(RS, "AF3 ★反证组必须非空：全表恒真 = 一份自我实现的清单，"
-          "与「人脑有所以要有」同类，什么都没证明",
-      _cap_v["absent"] >= 1 and not _cap_v["falsification_empty"],
-      f"成立={_cap_v['present']} 反证={_cap_v['absent']} 不可判={_cap_v['unknown']}")
-
-check(RS, "AF4 至少一条成立 —— 全表反证同样没有信息量"
-          "（那等于宣称自己什么都做好了，这是另一种不可证伪）",
-      _cap_v["present"] >= 1,
-      f"成立={_cap_v['present']} 明细={_cap_v['missing']}")
-
-_cap_unk = [{"capability": "X", "name": "n", "symptom": "s", "source": "s",
-             "state": _cap.UNKNOWN, "detail": "d", "note": ""}]
-_cap_vf = _cap.verdicts(_cap_unk)
-check(RS, "AF5 ★`UNKNOWN` 必须单列进 `undecidable`，**不许**落进 `contradicted`"
-          "—— 并进去的那一刻，「我没量」就变成了「不需要」",
-      "X" in _cap_vf["undecidable"] and "X" not in _cap_vf["contradicted"],
-      f"undecidable={_cap_vf['undecidable']} contradicted={_cap_vf['contradicted']}")
-
-_cap_scope = _cap.probe_scope()
-check(RS, "AF6 ★转态锚：`rm -rf ~` 在「清理临时文件」目标下必须被拒，"
-          "而目标点名 `/tmp/v1_tmp` 时必须放行"
-          "（这条**曾经相反** —— 消融现场 `rm -rf ~` 通过了方向审查，"
-          "是本表唯一一次抓到真实缺陷）",
-      _cap_scope["out_of_scope_allowed"] is False
-      and _cap_scope["in_scope_allowed"] is True,
-      f"越界放行={_cap_scope['out_of_scope_allowed']} "
-      f"点名放行={_cap_scope['in_scope_allowed']}")
-
-_cap_crit = _cap.probe_critique_consumers()
-check(RS, "AF7 ★读数锚（**故意会被实现推翻**）：内核消费外部评审理由的点 = 0 ⇒\n"
-          "          外部反馈只有标量分数，内核学不到「你为什么错」。"
-          "一旦给内核接上 critique 通道，这条必须转红",
-      _cap_crit["kernel_consumers"] == 0
-      and any(r["capability"] == "社会与情感" and r["state"] == _cap.PRESENT
-              for r in _cap_rows),
-      f"内核消费点={_cap_crit['kernel_consumers']} 站点={_cap_crit['sites']}")
-
-check(RS, "AF8 读数锚：自我模型**被咨询过但从未影响决策**（未通电）⇒ 判成立",
-      any(r["capability"] == "自我模型" and r["state"] == _cap.PRESENT
-          for r in _cap_rows),
-      next((r["detail"] for r in _cap_rows if r["capability"] == "自我模型"), "无此行"))
-
-_core_src = _src("core.py")
-check(RS, "AF9 ★单一事实源：`core.py` 的写入截断必须引用 `WORKING_CHAR_CAP`，"
-          "不许再出现 `full[:300]`（探针与实现各抄一份 300 就会漂成两套真相）",
-      "WORKING_CHAR_CAP = 300" in _core_src
-      and "full[:WORKING_CHAR_CAP]" in _core_src
-      and "full[:300]" not in _core_src,
-      f"常量声明={'WORKING_CHAR_CAP = 300' in _core_src} "
-      f"引用={'full[:WORKING_CHAR_CAP]' in _core_src} "
-      f"残留字面量={'full[:300]' in _core_src}")
-
-check(RS, "AF10 感知→记忆的硬瓶颈必须判成立：长观测 5000 字只存 300 字（6%）"
-          "—— 而下一步关于上一步的一切都只来自这 300 字",
-      any(r["capability"] == "记忆" and "截断" in r["name"]
-          and r["state"] == _cap.PRESENT for r in _cap_rows),
-      next((r["detail"] for r in _cap_rows
-            if r["capability"] == "记忆" and "截断" in r["name"]), "无此行"))
-
-check(RS, "AF11 判定必须带**翻转条件**（`note`）：没有它，一个「反证」会被"
-          "当成永久结论（本表就有两条会翻转：真模型下学习面转成立、"
-          "范围授权那条修复前是成立）",
-      any(s.note for s in _cap.SIGNATURES),
-      f"带 note 的签名={sum(1 for s in _cap.SIGNATURES if s.note)} 条")
-
-
-# ===========================================================================
 print()
 print("=" * 74)
 print("B. 预算与账本（2026: 能力 = 预算的函数；算完就停，如实报告）")
@@ -2285,6 +2185,207 @@ check(RS, "AE3 消融报告必须同时给「声明」与「实测」分类，�
           "（先验与实测分歧本身就是最有信息量的一行）",
       "declared" in _coh and "actual" in _coh and "classify" in _coh,
       f"declared={'declared' in _coh} actual={'actual' in _coh} classify={'classify' in _coh}")
+
+
+# ===========================================================================
+# AF 组 —— 失败签名：把「未实现」与「不必要」分开（第二层判据）
+#
+# 第一层（AE / bench/coherence.py）问"拆了环还转吗"。它**没有"缺席"这一格**：
+# 拆一个不存在的模块，读数当然不变 ⇒ Δ=0 被读成"不必要"，而真相是"未实现"。
+# 那是把**没做的事**判成**不需要做的事** —— 与 V5 的病同构，只是方向相反。
+#
+# AF 组钉的是第二层：每条能力绑一个**失败现象**，三态判定，
+# 且 `UNKNOWN` 不许并进 `ABSENT`（那一格就是"没量到 ≠ 不需要"的物理位置）。
+# ===========================================================================
+import importlib.util as _ilu
+
+_spec = _ilu.spec_from_file_location("v1_capability",
+                                     V1 / "bench" / "capability.py")
+_cap = _ilu.module_from_spec(_spec)
+# ⚠️ 必须先注册进 `sys.modules` 再 exec：`dataclasses` 解析注解时要查宿主模块
+#    的 `__dict__`，模块不在 sys.modules 里就是 None ⇒ AttributeError。
+sys.modules["v1_capability"] = _cap
+_spec.loader.exec_module(_cap)
+
+check(RS, "AF1 判定必须**三态**：成立 / 反证 / 不可判。"
+          "两态会把「没量到」直接读成「不需要」—— 那是这张表唯一要防的事",
+      len({_cap.PRESENT, _cap.ABSENT, _cap.UNKNOWN}) == 3,
+      f"{{{[ _cap.PRESENT, _cap.ABSENT, _cap.UNKNOWN]}}}")
+
+check(RS, "AF2 每条签名必须有 `source`（读数出口）—— 没有出口的签名是"
+          "自我描述，和「人脑有所以要有」是同一种不可证伪",
+      all(s.source for s in _cap.SIGNATURES),
+      f"签数={len(_cap.SIGNATURES)} 有出口={sum(1 for s in _cap.SIGNATURES if s.source)}")
+
+_cap_ev = _cap.collect()
+_cap_rows = _cap.assess(_cap_ev)
+_cap_v = _cap.verdicts(_cap_rows)
+
+check(RS, "AF3 ★反证组必须非空：全表恒真 = 一份自我实现的清单，"
+          "与「人脑有所以要有」同类，什么都没证明",
+      _cap_v["absent"] >= 1 and not _cap_v["falsification_empty"],
+      f"成立={_cap_v['present']} 反证={_cap_v['absent']} 不可判={_cap_v['unknown']}")
+
+check(RS, "AF4 至少一条成立 —— 全表反证同样没有信息量"
+          "（那等于宣称自己什么都做好了，这是另一种不可证伪）",
+      _cap_v["present"] >= 1,
+      f"成立={_cap_v['present']} 明细={_cap_v['missing']}")
+
+_cap_unk = [{"capability": "X", "name": "n", "symptom": "s", "source": "s",
+             "state": _cap.UNKNOWN, "detail": "d", "note": ""}]
+_cap_vf = _cap.verdicts(_cap_unk)
+check(RS, "AF5 ★`UNKNOWN` 必须单列进 `undecidable`，**不许**落进 `contradicted`"
+          "—— 并进去的那一刻，「我没量」就变成了「不需要」",
+      "X" in _cap_vf["undecidable"] and "X" not in _cap_vf["contradicted"],
+      f"undecidable={_cap_vf['undecidable']} contradicted={_cap_vf['contradicted']}")
+
+_cap_scope = _cap.probe_scope()
+check(RS, "AF6 ★转态锚：`rm -rf ~` 在「清理临时文件」目标下必须被拒，"
+          "而目标点名 `/tmp/v1_tmp` 时必须放行"
+          "（这条**曾经相反** —— 消融现场 `rm -rf ~` 通过了方向审查，"
+          "是本表唯一一次抓到真实缺陷）",
+      _cap_scope["out_of_scope_allowed"] is False
+      and _cap_scope["in_scope_allowed"] is True,
+      f"越界放行={_cap_scope['out_of_scope_allowed']} "
+      f"点名放行={_cap_scope['in_scope_allowed']}")
+
+# ⚠️ AF7 **已经转态过一次**（2026-10-17）：接上 critique 通道后它从绿变红。
+#    这正是读数锚该有的样子 —— 它不是永恒真理，它盯着实现。
+#    改写后的形态更强：从"AST 数访问点"（代理量）升级为**行为锚**。
+_cap_crit = _cap.probe_critique_flow()
+check(RS, "AF7 ★行为锚（已随实现转态一次）：外部评审必须真的进内核上下文，\n"
+          "          且**当前题与异口径的评审必须被挡住**"
+          "（只数 AST 访问点只能证明「代码提到了 why」，证明不了它流进了决策输入）",
+      _cap_crit["served"] is True and _cap_crit["leaked"] is False
+      and _cap_crit["cross_leaked"] is False,
+      f"进上下文={_cap_crit['served_detail']} 自评泄漏={_cap_crit['leaked']} "
+      f"异口径泄漏={_cap_crit['cross_leaked']}")
+
+check(RS, "AF8 读数锚：自我模型**被咨询过但从未影响决策**（未通电）⇒ 判成立",
+      any(r["capability"] == "自我模型" and r["state"] == _cap.PRESENT
+          for r in _cap_rows),
+      next((r["detail"] for r in _cap_rows if r["capability"] == "自我模型"), "无此行"))
+
+_core_src = _src("core.py")
+check(RS, "AF9 ★单一事实源：`core.py` 的写入截断必须引用 `WORKING_CHAR_CAP`，"
+          "不许再出现 `full[:300]`（探针与实现各抄一份 300 就会漂成两套真相）",
+      "WORKING_CHAR_CAP = 300" in _core_src
+      and "full[:WORKING_CHAR_CAP]" in _core_src
+      and "full[:300]" not in _core_src,
+      f"常量声明={'WORKING_CHAR_CAP = 300' in _core_src} "
+      f"引用={'full[:WORKING_CHAR_CAP]' in _core_src} "
+      f"残留字面量={'full[:300]' in _core_src}")
+
+check(RS, "AF10 感知→记忆的硬瓶颈必须判成立：长观测 5000 字只存 300 字（6%）"
+          "—— 而下一步关于上一步的一切都只来自这 300 字",
+      any(r["capability"] == "记忆" and "截断" in r["name"]
+          and r["state"] == _cap.PRESENT for r in _cap_rows),
+      next((r["detail"] for r in _cap_rows
+            if r["capability"] == "记忆" and "截断" in r["name"]), "无此行"))
+
+check(RS, "AF11 判定必须带**翻转条件**（`note`）：没有它，一个「反证」会被"
+          "当成永久结论（本表就有两条会翻转：真模型下学习面转成立、"
+          "范围授权那条修复前是成立）",
+      any(s.note for s in _cap.SIGNATURES),
+      f"带 note 的签名={sum(1 for s in _cap.SIGNATURES if s.note)} 条")
+
+
+# ===========================================================================
+# AG 组 —— 外部评审（critique）：他者的过程性反馈，**只读输入**
+#
+# 它补的是「社会与情感」那一格的判据（DESIGN §16.7 的第 1 条下一步）。
+# 三条硬纪律，每条都能被撤掉实现后转红：
+#   ① 只读：内核能读，不能写、不能改、不能自己造
+#   ② 不许用当前题：用了就是照着自己的答案改答案（自评分 = V5 死因）
+#   ③ 必须与分数同源：两把尺子的理由混用 ⇒ 教训变成噪声
+# ===========================================================================
+from mw.critique import REJECT_KINDS, Critique, CritiqueLedger, from_scored  # noqa: E402
+
+_ag_c = Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="w1")
+check(RS, "AG1 ★接口级防线：`Critique` 必须 **frozen** —— 内核能读评审，不能改评审。"
+          "（改得了的评审就是可以被内核美化的尺子）",
+      _raises(lambda: setattr(_ag_c, "why", "改过了"), AttributeError),
+      f"why 仍为 {_ag_c.why!r}")
+
+check(RS, "AG2 缺口径签名 ⇒ `add` 必须**抛错**，不许静默接受一条无法归因的评审"
+          "（静默接受 = 又一处「缺失被读作别的」）",
+      _raises(lambda: CritiqueLedger().add(
+          Critique(scorer_sha="", suite_sha="U", task_id="t")), ValueError),
+      "ValueError 已按预期抛出")
+
+_ag_led = CritiqueLedger()
+_ag_led.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="w1"))
+_ag_led.add(Critique(scorer_sha="S", suite_sha="U", task_id="t2", why="w2"))
+_ag_got = [c.task_id for c in _ag_led.admissible(
+    scorer_sha="S", suite_sha="U", exclude_task_id="t1")]
+check(RS, "AG3 ★防自评：当前题（t1）**自己的**评审必须被挡住 —— "
+          "放行它，内核就是在照着自己的答案改答案（自评分，V5 的死因）",
+      _ag_got == ["t2"] and _ag_led.rejected["self"] >= 1,
+      f"放行={_ag_got} rejected={_ag_led.rejected}")
+
+_ag_led2 = CritiqueLedger()
+_ag_led2.add(Critique(scorer_sha="OTHER", suite_sha="U", task_id="t1", why="w"))
+_ag_led2.add(Critique(scorer_sha="S", suite_sha="OTHER_U", task_id="t2", why="w"))
+_ag_got2 = _ag_led2.admissible(scorer_sha="S", suite_sha="U", exclude_task_id="zzz")
+check(RS, "AG4 ★防跨口径：scorer / suite 任一不同都不得放行，且**分项计数**"
+          "（一个总拒绝数无法归因 —— 分不清是防自评在起作用，还是口径对不上）",
+      _ag_got2 == [] and _ag_led2.rejected["cross_scorer"] >= 1
+      and _ag_led2.rejected["cross_suite"] >= 1,
+      f"放行={len(_ag_got2)} rejected={_ag_led2.rejected}")
+
+check(RS, "AG5 空理由 ⇒ `from_scored` 返回 **None**，不许造一条空 critique 凑数"
+          "（没有理由的 critique 只是又一个标量，那正是它要补的缺口的形状）",
+      from_scored(scorer_sha="S", suite_sha="U", task_id="t", family="f",
+                  score=0.0, why="   ") is None
+      and from_scored(scorer_sha="S", suite_sha="U", task_id="t", family="f",
+                      score=0.0, why="真理由") is not None,
+      "None 与实例各一，符合预期")
+
+_ag_led3 = CritiqueLedger()
+_ag_led3.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="v1"))
+_ag_led3.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="v2"))
+check(RS, "AG6 去重必须靠**键覆盖**，不能靠事后清理"
+          "（V5 的 39× 重复就是后者的下场：写入时没人管，清理时两套逻辑对不上）",
+      len(_ag_led3.admissible(scorer_sha="S", suite_sha="U", exclude_task_id="x")) == 1
+      and _ag_led3.superseded == 1 and _ag_led3.stats()["stored"] == 1,
+      f"stored={_ag_led3.stats()['stored']} superseded={_ag_led3.superseded}")
+
+check(RS, "AG7 ★静态锚：`core.py` 里**不得**出现 `Critique(` 的构造 —— "
+          "内核一旦能自己造评审，这条通道就退化成自评分",
+      "Critique(" not in _src("core.py"),
+      f"出现={_src('core.py').count('Critique(')} 次")
+
+_ag_led4 = CritiqueLedger()
+_ag_led4.add(Critique(scorer_sha="SA", suite_sha="UA", task_id="prev",
+                      family="text_ops", score=0.0, why="上次错在边界"))
+_ag_core = Core(cfg.Settings(limits=cfg.Limits(max_steps=6)), llm=DemoLLM(),
+                critique_ledger=_ag_led4)
+_ag_core.log = lambda _m: None
+_ag_out = _ag_core.run(DemoLLM.GOAL, task_id="cur", scorer_sha="SA", suite_sha="UA")
+_ag_cs = (_ag_out.stats or {}).get("critique") or {}
+check(RS, "AG8 行为锚：跑完一次内核后 `stats['critique']` 的 `served > 0`"
+          "（不是「代码里接了线」，是「评审真的被送进去过」）",
+      (_ag_cs.get("served") or 0) > 0 and (_ag_cs.get("stored") or 0) >= 1,
+      f"critique={_ag_cs}")
+
+_ag_path = _TMP / "ag_crit.jsonl"
+_ag_led5 = CritiqueLedger(_ag_path)
+_ag_led5.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="w"))
+_ag_led5.save()
+with open(_ag_path, "a", encoding="utf-8") as _f:
+    _f.write("这不是 JSON\n")
+_ag_led6 = CritiqueLedger(_ag_path)
+_ag_n = _ag_led6.load()
+check(RS, "AG9 落盘 / 读回无损耗，且坏行**跳过并计数**"
+          "（静默吞掉 = 数据悄悄少了一半，没人知道）",
+      _ag_n == 1 and getattr(_ag_led6, "bad_lines", 0) >= 1,
+      f"读回={_ag_n} 坏行={getattr(_ag_led6, 'bad_lines', 0)}")
+
+check(RS, "AG10 被拒原因必须走**受控词表** `REJECT_KINDS` —— 新增一种拒绝方式"
+          "要先登记，否则 `rejected` 里会冒出一个没有归属的键"
+          "（同一事实多处声明的入口）",
+      set(CritiqueLedger().rejected) == set(REJECT_KINDS),
+      f"rejected 键={sorted(CritiqueLedger().rejected)}")
 
 
 # ===========================================================================

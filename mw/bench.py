@@ -48,6 +48,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
+# 方向是单向的：**bench 可以读内核，内核不许读 bench**（契约钉死）。
+# bench 是环外的裁判 —— 它 import 内核模块没问题，反过来就是"尺子被内核碰到"。
+from .critique import CritiqueLedger, from_scored
 from .measure import Measurement, summarize
 
 
@@ -630,6 +633,7 @@ def run_suite(
     budget_tag: str = "?",
     candidate: str = "candidate",
     provenance: Callable[[], dict] | None = None,
+    critique_ledger: CritiqueLedger | None = None,
 ) -> tuple[Measurement, BenchReport]:
     """把一个 solver 在同一预算档上跑 repeat_n 次，每轮对每条任务判分。
 
@@ -674,6 +678,20 @@ def run_suite(
             total += sc.score
             rep.per_task.append({"rep": r + 1, "id": t.id, "score": sc.score,
                                  "why": sc.why[:200]})
+            # ── 外部评审落盘 ──────────────────────────────────────────
+            # 打分器给的**理由**（`why`）此前只有一个去处：写进日志给人看。
+            # 现在它进账本，成为下一轮可以被内核读取的只读输入。
+            #
+            # ⚠️ 这里**只落盘、不投喂**：在同一轮 suite 里把第 1 题的理由喂给
+            #    第 6 题，第 6 题就不再是同一条件下的测量了 —— `repeat` 的意义
+            #    当场消失。投喂由调用方显式决定（`run.py --use-critique`），
+            #    那是接线验证，不是能力测量。
+            if critique_ledger is not None:
+                c = from_scored(scorer_sha=scorer.sha(), suite_sha=suite.sha(),
+                                task_id=t.id, family=suite.name,
+                                score=sc.score, why=sc.why, answer=str(ans))
+                if c is not None:
+                    critique_ledger.add(c)
         scores.append(total / n_tasks)
 
     rep.elapsed_s = time.time() - t0

@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from mw import config as cfg                      # noqa: E402
 from mw.core import Core                          # noqa: E402
+from mw.critique import CritiqueLedger            # noqa: E402
 from mw.llm import Message                        # noqa: E402
 from mw.measure import (Measurement, budget_curve, noise_floor,  # noqa: E402
                         paired_compare, repeat, summarize)
@@ -112,16 +113,17 @@ DIRECT_SYSTEM = (
 )
 
 
-def _build(goal: str, args, *, allow_shell: bool = False) -> Core:
+def _build(goal: str, args, *, allow_shell: bool = False,
+           critique_ledger: "CritiqueLedger | None" = None) -> Core:
     s = cfg.settings()
     if args.offline or not s.llm.usable():
         from mw.guard import Guard
         from mw.llm import StubLLM
-        core = Core(s, llm=StubLLM())
+        core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger)
         core.guard = Guard(allow_shell=allow_shell, workspace=s.paths.workspace,
                            max_consecutive_failures=s.limits.max_consecutive_failures)
     else:
-        core = Core(s)
+        core = Core(s, critique_ledger=critique_ledger)
     return core
 
 
@@ -596,6 +598,23 @@ def cmd_bench(args) -> int:
     #: 累加/派生逻辑在模块级（`_kwm_zero/_kwm_absorb/_kwm_line`），**不在这里重写一遍**。
     _kwm = _kwm_zero()
 
+    # ── 外部评审账本 ────────────────────────────────────────────────
+    # 打分器给的**理由**（`Scored.why`）此前只有一个去处：写进日志给人看。
+    # 现在它进账本，成为下一轮可以被内核读取的**只读输入** ——
+    # 这是「社会与情感」那一格的判据从代理量升级为行为锚之后的通电动作。
+    #
+    # ⚠️ 默认**只落盘、不投喂**：同一轮里把第 1 题的理由喂给第 6 题，
+    #    第 6 题就不再是同一条件下的测量了 —— `repeat` 的意义当场消失。
+    #    `--use-critique` 打开的是**接线验证**，不是能力测量。
+    _crit_path = (Path(args.critique_file).expanduser() if args.critique_file
+                  else (root / "state" / "critique.jsonl"))
+    _crit = CritiqueLedger(_crit_path)
+    _crit_loaded = _crit.load()
+    _crit_for_kernel = _crit if args.use_critique else None
+    if _crit_loaded or args.use_critique:
+        print(f"  评审账本  {_crit_path.name}  载入 {_crit_loaded} 条"
+              f"  投喂={'开' if args.use_critique else '关（默认：保住测量一致性）'}")
+
     if args.solver == "null":
         solver: Callable[[object], str] = lambda t: ""            # noqa: E731
         label = "null（下界参照）"
@@ -657,8 +676,11 @@ def cmd_bench(args) -> int:
                     prev = os.environ.get("V1_STATE_DIR")
                     os.environ["V1_STATE_DIR"] = str(Path(td) / "state")
                     try:
-                        c = _build("", args, allow_shell=args.allow_shell)
-                        out = c.run(t.prompt, budget_factor=args.budget)
+                        c = _build("", args, allow_shell=args.allow_shell,
+                                   critique_ledger=_crit_for_kernel)
+                        out = c.run(t.prompt, budget_factor=args.budget,
+                                    task_id=t.id, family=suite.name,
+                                    scorer_sha=scorer.sha(), suite_sha=suite.sha())
                         _kwm_absorb(_kwm, out.stats["worldmodel"])
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
@@ -673,10 +695,13 @@ def cmd_bench(args) -> int:
             label += "（每题新建内核 + 记忆隔离）"
             prov = lambda: dict(_seen)                             # noqa: E731
         else:
-            _core = _build("", args, allow_shell=args.allow_shell)
+            _core = _build("", args, allow_shell=args.allow_shell,
+                           critique_ledger=_crit_for_kernel)
 
             def solver(t):                                         # type: ignore[misc]
-                out = _core.run(t.prompt, budget_factor=args.budget)
+                out = _core.run(t.prompt, budget_factor=args.budget,
+                                task_id=t.id, family=suite.name,
+                                scorer_sha=scorer.sha(), suite_sha=suite.sha())
                 _kwm_absorb(_kwm, out.stats["worldmodel"])
                 return out.answer
 
@@ -699,9 +724,16 @@ def cmd_bench(args) -> int:
     print()
     print(f"--- 第 2 步  跑任务集  solver={label}  预算档={tag}  repeat={repeat_n} ---")
     m, rep = run_suite(solver, scorer, suite, repeat_n=repeat_n,
-                       budget_tag=tag, candidate=label, provenance=prov)
+                       budget_tag=tag, candidate=label, provenance=prov,
+                       critique_ledger=_crit)
+    _crit_saved = _crit.save()
     print(f"  {m.as_line()}")
     print(f"  {rep.summary_line()}")
+    if _crit_saved:
+        _cs = _crit.stats()
+        # 分母同时给：`rejected` 是累计的，离开 `calls` 无法解释。
+        print(f"  评审     落盘={_crit_saved} 条  投喂={_cs['served']}"
+              f"（{_cs['calls']} 次筛选）  拒绝={_cs['rejected']}")
     if prov is not None:
         print(f"  血缘      llm_of_record={rep.llm_of_record()}"
               f" 外部能力={len(rep.provenance.get('external_agents') or [])} 个")
@@ -803,6 +835,12 @@ def main() -> int:
                    help="**跨领域模式**：跑一个目录下的每个 .jsonl 各一遍，并列汇总"
                         "（『通用』的可判定形式）。与 --suite 互斥。")
     p.add_argument("--scorer", default="", help="外部打分器可执行文件（stdin/stdout 走 JSON）")
+    p.add_argument("--critique-file", default="",
+                   help="评审账本路径（默认 state/critique.jsonl）。"
+                        "打分器给的理由会落盘到这里，供**下一轮**读取")
+    p.add_argument("--use-critique", action="store_true",
+                   help="把账本里的评审投喂给内核（**接线验证用，不是能力测量**）。"
+                        "轮内投喂会让后面的题不再是同一条件下的测量 —— repeat 的意义当场消失")
     p.add_argument("--solver", default="auto",
                    choices=["auto", "llm", "llm-direct", "oracle", "partial", "null"],
                    help="谁来答题：auto/llm=走完整内核（多段调用）；"

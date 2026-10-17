@@ -32,6 +32,7 @@ from typing import Any, Callable, Sequence
 
 from . import config as cfg
 from .budget import Budget, BudgetExhausted, Ledger
+from .critique import Critique, CritiqueLedger
 from .flow import FlowMeter
 from .guard import Guard
 from .llm import HTTPLLM, LLM, LLMError, Message, StubLLM, build_llm
@@ -143,6 +144,7 @@ class Core:
         guard: Guard | None = None,
         log: _Log | None = None,
         wire_external: bool = True,
+        critique_ledger: CritiqueLedger | None = None,
     ) -> None:
         self.s = settings or cfg.settings()
         self.s.paths.ensure()
@@ -207,16 +209,25 @@ class Core:
         self.flow = FlowMeter()
         #: 自我模型：只读**已完成**任务的外部读数。物理上拿不到当前 goal。
         self.selfmodel = SelfModel()
+        #: 外部评审账本：他者的过程性反馈，**只读输入**。
+        #: None = 本次运行不启用（默认）—— 见 `run(task_id=...)` 的说明。
+        self.critique_ledger = critique_ledger
 
     # ------------------------------------------------------------------
     def run(self, goal: str, *, budget_factor: float = 1.0, tag: str | None = None,
-            family: str | None = None) -> Outcome:
+            family: str | None = None, task_id: str | None = None,
+            scorer_sha: str = "", suite_sha: str = "") -> Outcome:
         """跑一个任务。
 
         `family` 是**能力族标签**（如 `numeric_logic`），只给自我模型做资源建议用。
         ⚠️ 刻意**不**从 goal 里猜族：一旦自我模型读得到题目内容，
         它就会在"看题之后"给自己分配资源，那就退化成自评分的入口了。
         调用方不给 ⇒ 传 None ⇒ 自我模型返回默认值并明说"样本不足"。
+
+        `task_id` / `scorer_sha` / `suite_sha` 是外部评审的**口径签名三件套**：
+        · `task_id` 用于挡掉"当前题自己的评审"（防自评，第一道闸）；
+        · 两个 sha 用于挡掉"别的尺子给的评审"（防跨口径）。
+        三者任一缺失 ⇒ 评审一律不进上下文，**而不是放宽条件放行**。
         """
         base = Budget(
             steps=self.s.limits.max_steps,
@@ -289,7 +300,9 @@ class Core:
                     return _done("cascade", "", v.reason)
 
                 # ① 组装状态
-                state = self._state(goal, history, it)
+                state = self._state(goal, history, it,
+                                    task_id=task_id, scorer_sha=scorer_sha,
+                                    suite_sha=suite_sha)
 
                 # ② ACT：快通道还是深通道。
                 #    同时受**候选预算**约束 —— 否则 candidates 这个维度就是装饰：
@@ -500,7 +513,29 @@ class Core:
             return _done("error", "", f"{type(e).__name__}: {e}")
 
     # ------------------------------------------------------------------
-    def _state(self, goal: str, history: Sequence[str], it: int) -> str:
+    def _admissible_critiques(self, *, task_id: str | None, scorer_sha: str,
+                              suite_sha: str) -> list[Critique]:
+        """外部评审进上下文前的三道闸。**缺任一签名 ⇒ 一律不放行。**
+
+        不放行的理由是结构性的，不是保守：
+        · 放行当前题的评审 = 内核照着自己的答案改答案（自评分，V5 的死因）；
+        · 放行别的尺子的评审 = 两把尺子的理由混用，教训变成噪声。
+        """
+        led = self.critique_ledger
+        if led is None:
+            return []
+        if not task_id or not scorer_sha or not suite_sha:
+            # 口径不全 ⇒ 静默返回空是**不行的**（那是静默降级）。
+            # 但这里发生在每次状态构建，打日志会刷屏；计入账本的 calls 已经留痕。
+            led.calls += 1
+            return []
+        return led.admissible(scorer_sha=scorer_sha, suite_sha=suite_sha,
+                              exclude_task_id=task_id)
+
+    # ------------------------------------------------------------------
+    def _state(self, goal: str, history: Sequence[str], it: int, *,
+               task_id: str | None = None, scorer_sha: str = "",
+               suite_sha: str = "") -> str:
         parts = [f"[目标] {goal}"]
         # 从记忆进到推理的**实际条数**：只在真正拼进上下文的地方累加，
         # 不在上游估一个数 —— 估出来的数会让"覆盖率"变成自我安慰。
@@ -522,6 +557,14 @@ class Core:
             parts.append("[语义记忆] " + block)
             mem_items += len(recalled)
             mem_chars += len(block)
+        crit = self._admissible_critiques(task_id=task_id, scorer_sha=scorer_sha,
+                                         suite_sha=suite_sha)
+        if crit:
+            # 只放**已完成**的题的理由，且每条都带分数与族 ——
+            # 没有来源的"教训"就是 V5 知识层失控的起点（39× 重复、无法归因）。
+            parts.append("[外部评审] " + " ｜ ".join(c.as_line()[:140] for c in crit[-3:]))
+            mem_items += len(crit[-3:])
+            mem_chars += sum(len(c.as_line()[:140]) for c in crit[-3:])
         if history:
             parts.append("[轨迹] " + " ｜ ".join(history[-6:]))
         parts.append(f"[第 {it}/{self.ledger.budget.steps if self.ledger else '?'} 步]")
@@ -606,6 +649,8 @@ class Core:
             "values": self.values.report(),
             "flow": self.flow.report(),
             "selfmodel": self.selfmodel.report(),
+            "critique": (self.critique_ledger.stats()
+                         if self.critique_ledger else {}),
             "worldmodel": self.wm.stats(),
             "planner": self.planner.stats(),
             "memory": self.memory.stats(),

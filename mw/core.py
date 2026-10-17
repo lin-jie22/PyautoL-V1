@@ -41,9 +41,10 @@ from .llm import HTTPLLM, LLM, LLMError, Message, StubLLM, build_llm
 from .memory import BlobIntegrityError, MemoryStore
 from .metacog import SelfModel, load_evidence
 from .planner import Planner, Step, action_signature, looks_complex
-from .tools import (ToolRegistry, external_agent_names, register_core_tools,
-                    register_external_agents)
+from .tools import (ToolRegistry, ToolResult, external_agent_names,
+                    register_core_tools, register_external_agents)
 from .values import Values
+from . import verify as vfy
 from .worldmodel import WorldModel
 
 
@@ -339,6 +340,24 @@ class Core:
             "skipped": {"mode": 0, "budget": 0, "no_entry": 0},
         }
 
+        # ── 校验（第二十一轮）：判据从**目标文本**派生，一次，之后不变 ──────
+        # ⛔ 必须在这里派生、而不是每次 finish 时现算：
+        #    现算就给了"答案反过来影响判据"的入口 —— 那正是自评分的形态。
+        #    判据只认目标，与答案无关；`V1_VERIFY_RETRIES=0` ⇒ 判据为空 ⇒ 整条闸不存在。
+        self._checks: tuple[vfy.Check, ...] = (
+            vfy.derive(goal) if int(self.s.limits.verify_retries) > 0 else ())
+        self.verify_stats: dict = {
+            "runs": 0, "passed": 0, "failed": 0, "exhausted": 0,
+            "checks": [c.name for c in self._checks],
+        }
+        #: 每次 `finish` 的答案原文 —— 自检打回时**留着**，供最终交付兜底。
+        #: ⚠️ 不保留它的话，"自检打回 ⇒ 重写 ⇒ 停滞 ⇒ 交付空"这条路径会把
+        #:    一个本来能拿分的答案变成 0 分，而分数下降会被读成"自检有害"。
+        #:    装置不该吃掉效应，这是第十七轮（共用记忆目录）的同一条纪律。
+        self._salvage: str = ""
+        #: 交付时的自检说明。非空 ⇒ 这次交付**没有通过自检**，状态要如实标出来。
+        self._unverified: str = ""
+
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
         counted = _LedgeredLLM(self.llm, self.ledger,
                                retries=self.s.limits.llm_retries,
@@ -526,6 +545,15 @@ class Core:
                     result = self.tools.dispatch(cand.tool, cand.args)
                     self.log(f"      ↳ {cand.tool} ok={result.ok} {cand.intent[:60]}")
 
+                    # ── ⑦ 校验闸（第二十一轮）：`finish` 的唯一出口 ─────────
+                    # 位置是**写死**的，不交给规划器选：交给它 = 它永远不选自检
+                    # ⇒ 机制恒 0 次而读数上只显示"没触发"（`recall_trigger` 那条同宗）。
+                    # ⚠️ 被自检打回时**不能立刻丢掉答案**：答案原文进 `_salvage`，
+                    #    万一重写失败（停滞/预算耗尽/熔断），最终交付退回它。
+                    #    否则一个本来能拿 0.2 分的答案会被装置变成 0 分。
+                    if cand.tool == "finish" and result.ok and self._checks:
+                        result = self._gate_finish(result)
+
                     # 通量：N 个想法里，这一个真的被执行了（`reason>act` 的消费端）
                     self.flow.take("reason>act", 1, len(cand.as_line()))
                     # 回边的原料：本步的观测原文。它是否真的活到下一回合，
@@ -600,6 +628,11 @@ class Core:
 
                     if cand.tool == "finish":
                         answer = result.output
+                        if self._unverified:
+                            # 自检反复不过 ⇒ 交付内容是真的，但**没过闸**。
+                            # 状态必须说出来：报 done 就等于把"没检查过"说成"检查过了"。
+                            self.log(f"  ⚠️ 收尾（未通过自检）: {answer[:100]}")
+                            return _done("done_unverified", answer, self._unverified)
                         self.log(f"  ✅ 收尾: {answer[:120]}")
                         return _done("done", answer, "")
 
@@ -654,6 +687,50 @@ class Core:
             return []
         return led.admissible(scorer_sha=scorer_sha, suite_sha=suite_sha,
                               exclude_task_id=task_id)
+
+    # ------------------------------------------------------------------
+    def _gate_finish(self, result: ToolResult) -> ToolResult:
+        """`finish` 之后、交付之前的那道闸。通过 ⇒ 原样返回；不过 ⇒ 变成一次失败。
+
+        ## 为什么"变成失败"而不是"另起一条提示"
+
+        把它折成 `ToolResult(ok=False, error=报告)` 有四个连带好处，全都不用新写代码：
+
+        | 已有的机制 | 自动得到的效果 |
+        |---|---|
+        | `wm.observe(..., ok=False)` | 世界模型**第一次**有了"知道会成功却失败了"的样本 ⇒ 边界 10 的学习面开了口 |
+        | `consecutive_failures += 1` | 连续打回会被熔断兜住，不会无限重写 |
+        | `memory.record("failure", …, error=…)` | 失败的**原文**进情景记忆，可回放 |
+        | `replan(error=…)` | 下一轮带**错误原文**重写，而不是原地把同一段答案再交一遍 |
+
+        ## 三条不许省
+
+        ① **打回次数必须有上限**（`limits.verify_retries`）。一个答不对的题可以
+           永远写得"结构正确"，没有上限的重写就是在烧交付的配额。
+        ② **打回的答案必须留着**（`self._salvage`）。重写失败时退回它 ——
+           装置不许把一个能拿分的答案变成 0 分。
+        ③ **未通过自检的交付不许报 `done`**。状态是读数的一部分；把它报成 done
+           就是 V5 那种"每轮全绿而目标数字五天不动一格"的同一形态。
+        """
+        v: vfy.Verdict = vfy.run(result.output, self._checks)
+        self.verify_stats["runs"] += 1
+        if v.ok:
+            self.verify_stats["passed"] += 1
+            return result
+
+        self.verify_stats["failed"] += 1
+        self._salvage = result.output
+        cap = max(0, int(self.s.limits.verify_retries))
+        if self.verify_stats["failed"] > cap:
+            # 超限：**如实交付**，并把"没过自检"写进状态。
+            self.verify_stats["exhausted"] += 1
+            self._unverified = v.report
+            self.log(f"      ⚠️ 自检连续 {self.verify_stats['failed']} 次未过 "
+                     f"（上限 {cap}）⇒ 不再重写，如实交付未通过自检的答案")
+            return result
+        self.log(f"      🧪 自检未过（第 {self.verify_stats['failed']}/{cap} 次打回）"
+                 f" ⇒ 退回重写：{v.report[:120]}")
+        return ToolResult(False, error=f"自检未通过：{v.report}")
 
     # ------------------------------------------------------------------
     def _recall_for(self, it: int, handle, *, where: str, trigger: str) -> None:
@@ -851,6 +928,16 @@ class Core:
     # ------------------------------------------------------------------
     def _finish(self, status: str, answer: str, reason: str, history: Sequence[str],
                 *, extra: dict | None = None) -> Outcome:
+        # ── 兜底：自检打回过的答案不许因为"重写失败"而一起消失 ──────────────
+        # 为什么这条必须在 stats 之前：它改变的是**交付物本身**，
+        # 而 stats 里的 `verify.exhausted` 是"这次交付没过闸"的记录。
+        # 两者一起才说清"交了什么"与"它有没有过闸"。
+        if not answer and self._salvage:
+            answer = self._salvage
+            note = "交付的是**未通过自检**的答案（重写未成功，退回原文）"
+            reason = f"{reason} ｜ {note}" if reason else note
+            if not self._unverified:
+                self._unverified = note
         stats = {
             "budget": self.ledger.snapshot() if self.ledger else {},
             "guard": self.guard.report(),
@@ -877,6 +964,12 @@ class Core:
             # "机制装了但一次没触发"和"机制根本没装"看起来一模一样。
             "expand": {**dict(self.expand_stats),
                        "state_trimmed": self.state_trimmed},
+            # 第二十一轮：校验。**连同判据一起报** ——
+            # 只报"通过 3 次"而说不出"用哪几条判据"，那个 3 没有意义
+            # （关掉全部判据也能让通过率变成 100%）。
+            "verify": {**dict(self.verify_stats),
+                       "unverified_delivery": bool(self._unverified),
+                       "salvaged": bool(self._salvage)},
             "llm": "stub" if self._llm_is_stub else "http",
             "llm_kind": self.llm_kind,   # 与 "llm" 同源；保留两个键是为了兼容旧读法
             "external_agents": self.external_agents,
@@ -949,7 +1042,16 @@ class Core:
                     f" 跳过={_ex['skipped']['budget']}(超限)"
                     f"{_ex['skipped']['mode']}(模式)"
                     f" 错误={_ex['errors']}")
+        # 校验读数：**零值也念**，并且**把判据念出来**。
+        # 只念"通过率"是一个可以靠关掉判据刷上去的数 —— 那不是读数，那是作文。
+        _vf = stats["verify"]
+        _vf_line = (f" | 校验={_vf['runs']}跑/{_vf['passed']}过/{_vf['failed']}打回"
+                    f"/{_vf['exhausted']}放弃 判据={len(_vf['checks'])}项")
+        if _vf["checks"]:
+            _vf_line += f"({'/'.join(_vf['checks'])})"
+        if _vf["unverified_delivery"]:
+            _vf_line += " ⚠️本次交付未过自检"
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
-                 f"{tx_line}{_sl_line}{_sm_line}{_ex_line}")
+                 f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}")
         return Outcome(status, answer, reason, len(history), stats)

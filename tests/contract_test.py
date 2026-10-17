@@ -1254,6 +1254,7 @@ def _env_zero_takes_effect(key: str) -> bool:
         "V1_CLOSE_RESERVE_STEPS": ("limits", "close_reserve_steps"),
         "V1_LLM_RETRIES": ("limits", "llm_retries"),
         "V1_LLM_RETRY_BACKOFF_S": ("limits", "llm_retry_backoff_s"),
+        "V1_VERIFY_RETRIES": ("limits", "verify_retries"),
     }
     grp, attr = _keys[key]
     _old = os.environ.get(key)
@@ -4594,6 +4595,248 @@ check(RS, "AR12 ★结论必须**冻结**成文件，CI 每次重算并与落盘
       _AR_FROZEN.get("tag") == "R4" and "probe_recall.py" in _AR_RT
       and "不主张分数" in str(_AR_FROZEN.get("claim", "")) + str(_AR_FROZEN.get("verdict", "")),
       f"tag={_AR_FROZEN.get('tag')!r} CI 里有探针={'probe_recall.py' in _AR_RT}")
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# AS 组 —— 校验闸（第二十一轮）
+#
+# 背景：`mw/tools.py` 首屏写着内核做四件事「预算、记忆、规划、**校验**」。
+# 前三件都在且有读数，第四件在此之前**零实现** —— 这不是能力缺口，是
+# "声明了没有"。AS 组钉两件事：
+#   ① 判据只从**题面**来（不许碰尺子三样东西）；
+#   ② 闸必须**既拦又修**，且**关得掉**（否则对照组不存在，任何 Δ 都不可归因）。
+# ══════════════════════════════════════════════════════════════════════════
+import mw.verify as _AS_V                                        # noqa: E402
+
+_AS_SRC = _src("verify.py")
+_AS_CODE = _code_only(_AS_SRC)
+
+# ── AS1：判据模块不许 import 锚层（它是内核的一部分）────────────────────
+check(RS, "AS1 ★`mw/verify.py` 的代码里不许出现 `bench` —— 判据模块属于内核\n"
+          "         —— 一旦它 import 了锚层，判据就有了一条通往参考解/断言集的\n"
+          "           物理通道；而『不许读尺子』这句话靠注释是守不住的。",
+      "bench" not in _AS_CODE, f"代码里出现 bench={'bench' in _AS_CODE}")
+
+# ── AS2：抽代码的口径必须与外部打分器**逐字节同构** ──────────────────────
+#: 不同构的代价是单向的：自检比尺子更严 ⇒ 正确答案被判成失败 ⇒ 分数下降，
+#: 而读数上看起来像"自检有害"。这类"装置吃掉效应"本项目已经踩过一次（第十七轮）。
+_AS_TASKS = [json.loads(ln) for ln in
+             (V1 / "bench" / "tasks" / "struct_convert.jsonl")
+             .read_text(encoding="utf-8").splitlines() if ln.strip()]
+_AS_T0 = _AS_TASKS[0]
+try:
+    from bench.scorers.code_exec import extract_code as _AS_ref_extract
+    _AS_SAMPLES = [_AS_T0["oracle"], _AS_T0["partial"],
+                   "```python\n" + _AS_T0["oracle"] + "\n```",
+                   "```c\nint f(int x){return x;}\n```", "",
+                   "```\nprint(1)\n```", "解释：\n```py\nx=1\n```\n完"]
+    _AS_PARITY = all(_AS_V.extract_code(s) == _AS_ref_extract(s) for s in _AS_SAMPLES)
+    _AS_PARITY_N = len(_AS_SAMPLES)
+except Exception as _e:                                          # noqa: BLE001
+    _AS_PARITY, _AS_PARITY_N = False, f"异常 {type(_e).__name__}: {_e}"
+check(RS, "AS2 ★`verify.extract_code` 与打分器 `extract_code` 必须**逐字节一致**\n"
+          "         —— 自检比尺子更严就会把正确答案判死，那时分数下降会被\n"
+          "           读成『自检有害』，而真正坏掉的是判据的口径。",
+      _AS_PARITY is True, f"{_AS_PARITY_N} 个样本（含 ```c / 空 / 无围栏）逐字节比对")
+
+# ── AS3：判据只从**题面**派生，且派生函数的输入只有 goal ────────────────
+_AS_DERIVE_ARGS = [a.arg for n in ast.walk(ast.parse(_AS_SRC))
+                   if isinstance(n, ast.FunctionDef) and n.name == "derive"
+                   for a in list(n.args.args) + list(n.args.kwonlyargs)]
+_AS_D1 = [c.kind for c in _AS_V.derive("写一个函数 foo(x)。只输出代码，函数名必须是 foo。")]
+_AS_D2 = [c.kind for c in _AS_V.derive("解释一下为什么 CSV 里的引号要双写。")]
+check(RS, "AS3 ★`derive()` 只许收 `goal` 一个输入，且不同题面必须派生出不同判据\n"
+          "         —— 若它还能收 answer 或分数，就给了『答案反过来影响判据』的入口，\n"
+          "           那正是自评分的形态（V5 的死因）。",
+      _AS_DERIVE_ARGS == ["goal"] and _AS_D1 != _AS_D2,
+      f"形参={_AS_DERIVE_ARGS} 代码题={_AS_D1} 散文题={_AS_D2}")
+
+# ── AS4：散文题**不许**派生 `compiles`（否则把解释文本判死）──────────────
+check(RS, "AS4 ★散文题只许派生 `nonempty` —— 对一段解释文本做 `compile()`\n"
+          "         —— 会把它 100% 判死。判据必须跟着题面走，不能跟着『我想要\n"
+          "           一条更硬的判据』走；那与『把门槛调松让分数变好看』是同一类动作，\n"
+          "           只是方向相反。",
+      _AS_D2 == ["nonempty"], f"散文题判据={_AS_D2}")
+
+# ── AS5：没有判据时**不许**报通过 ────────────────────────────────────────
+_AS_v0 = _AS_V.run("随便一段话", [])
+check(RS, "AS5 ★判据为空 ⇒ `ok=False`（报『没检查』，不报『通过』）\n"
+          "         —— 两者在读数上必须分开：否则『自检通过率 100%』可以靠在\n"
+          "           配置里关掉全部判据刷出来，那不是读数，那是作文。",
+      _AS_v0.ok is False, f"ok={_AS_v0.ok} report={_AS_v0.report[:40]!r}")
+
+# ── AS6：未知判据类型必须**失败**，不许静默放行 ──────────────────────────
+_AS_v1 = _AS_V.run("def f(): pass", [_AS_V.Check("神秘", "bogus")])
+check(RS, "AS6 ★未知判据类型 ⇒ 判红，**不许**静默放行\n"
+          "         —— 一个静默放行的判据比没有判据更坏：它让『检查过了』\n"
+          "           变成一句谎话，而读数上看不出差别。",
+      _AS_v1.ok is False, f"ok={_AS_v1.ok} failed={_AS_v1.failed}")
+
+# ── 端到端：脚本化模型（零模型调用）────────────────────────────────────
+class _AS_LLM:
+    """按次序交答案的脚本模型。唯一职责：让内核走『交付→打回→重写』。"""
+
+    def __init__(self, answers) -> None:
+        self.answers = list(answers)
+        self.calls = 0
+        self.seen: list[str] = []
+
+    def complete(self, messages, **kw):                          # noqa: ANN001
+        blob = "\n".join(m.content for m in messages)
+        if "准备执行的动作：" in blob:
+            return json.dumps({"expect_ok": True, "expected": "会成功",
+                               "confidence": 0.9}, ensure_ascii=False)
+        self.seen.append(blob)
+        i = min(self.calls, len(self.answers) - 1)
+        self.calls += 1
+        return json.dumps({"candidates": [{
+            "intent": f"第 {self.calls} 版", "tool": "finish",
+            "args": {"answer": self.answers[i]},
+            "rationale": "交付"}]}, ensure_ascii=False)
+
+
+_AS_SEQ = [0]
+
+
+def _as_run(answers, *, retries: int | None = None,
+            goal: str | None = None):
+    """跑一次内核。每次一个**独立**记忆库 —— 否则上一轮的事实会进下一轮的 guidance。"""
+    _AS_SEQ[0] += 1
+    kw = {} if retries is None else {"verify_retries": retries}
+    lim = cfg.Limits(max_steps=8, max_llm_calls=24, max_candidates=2,
+                     max_consecutive_failures=6, max_stall=6, **kw)
+    llm = _AS_LLM(answers)
+    mem = MemoryStore(_TMP / f"as_{_AS_SEQ[0]}.db")
+    c = Core(settings=cfg.Settings(limits=lim), llm=llm, memory=mem,
+             wire_external=False)
+    c.log = lambda m: None                                       # noqa: ARG005
+    out = c.run(goal or _AS_T0["prompt"])
+    return c, out, llm
+
+
+_AS_GOOD = _AS_T0["oracle"]
+_AS_BAD = _AS_T0["oracle"].replace('def flatten(d, prefix=""):',
+                                   'def flatten(d, prefix="":')
+_AS_C, _AS_OUT, _AS_L = _as_run([_AS_BAD, _AS_GOOD])
+_AS_VS = (_AS_OUT.stats or {}).get("verify") or {}
+
+# ── AS7：闸必须真的拦（不是装饰）──────────────────────────────────────
+check(RS, "AS7 ★第一次交**语法坏**的代码必须被打回\n"
+          "         —— 这是本轮唯一的新机制。它必须由**内核规则**触发，\n"
+          "           不能交给模型自己决定要不要检查（否则恒为 0 次）。",
+      int(_AS_VS.get("failed") or 0) >= 1,
+      f"runs={_AS_VS.get('runs')} passed={_AS_VS.get('passed')} "
+      f"failed={_AS_VS.get('failed')}")
+
+# ── AS8：打回之后必须真修好，且**交付的是修好的那一版** ─────────────────
+check(RS, "AS8 ★第二版交对 ⇒ 交付它，状态 done\n"
+          "         —— 只拦不修的话，这一轮等于给系统加了一个'永远失败'的闸，\n"
+          "           那是把 V5 的『一个永远不可能好的信号』又造了一遍。",
+      _AS_OUT.status == "done" and _AS_OUT.answer.strip() == _AS_GOOD.strip(),
+      f"status={_AS_OUT.status} 答案是否第二版={_AS_OUT.answer.strip() == _AS_GOOD.strip()}")
+
+# ── AS9：打回必须有**上限**，超限如实标状态 ────────────────────────────
+_AS_BADS = [f"```c\nint f{i}(int x) {{ return x; }}\n```" for i in range(6)]
+_AS_C2, _AS_OUT2, _ = _as_run(_AS_BADS, retries=1)
+_AS_VS2 = (_AS_OUT2.stats or {}).get("verify") or {}
+check(RS, "AS9 ★一直交坏答案 ⇒ 打回 `verify_retries` 次后放弃，并标 `done_unverified`\n"
+          "         —— 没有上限的重写会烧掉**交付**的配额（收尾余量的同一条教训）；\n"
+          "           而把它报成 `done` 就是 V5 那种『每轮全绿而目标数字不动』。",
+      int(_AS_VS2.get("failed") or 0) == 2
+      and int(_AS_VS2.get("exhausted") or 0) == 1
+      and _AS_OUT2.status == "done_unverified",
+      f"failed={_AS_VS2.get('failed')} exhausted={_AS_VS2.get('exhausted')} "
+      f"status={_AS_OUT2.status}")
+
+# ── AS10：放弃/停滞的交付**不许为空**（装置不许吃掉效应）────────────────
+_AS_C3, _AS_OUT3, _ = _as_run([_AS_BAD] * 5)
+_AS_VS3 = (_AS_OUT3.stats or {}).get("verify") or {}
+check(RS, "AS10 ★重写失败（重复动作 ⇒ 停滞）时，答案必须被 `_salvage` 保住\n"
+          "          —— 否则一个本来能拿分的答案会被装置变成 0 分，\n"
+          "            而分数下降会被读成『自检有害』。**装置不许吃掉效应。**",
+      bool(_AS_OUT3.answer.strip()) and _AS_VS3.get("salvaged") is True,
+      f"status={_AS_OUT3.status} 答案{len(_AS_OUT3.answer)}字 salvaged={_AS_VS3.get('salvaged')}")
+
+# ── AS11：关得掉（否则对照组不存在）────────────────────────────────────
+_AS_C4, _AS_OUT4, _ = _as_run([_AS_BAD, _AS_GOOD], retries=0)
+_AS_VS4 = (_AS_OUT4.stats or {}).get("verify") or {}
+check(RS, "AS11 ★`verify_retries=0` ⇒ **0 条判据、0 次运行**\n"
+          "          —— 开/关自检是两个不同的候选。关不掉就没有对照组，\n"
+          "            那时任何 Δ 都无法归因（第十六轮共用记忆目录的同类事故）。",
+      _AS_VS4.get("checks") == [] and int(_AS_VS4.get("runs") or 0) == 0,
+      f"checks={_AS_VS4.get('checks')} runs={_AS_VS4.get('runs')}")
+
+# ── AS12：开关必须进**口径签名**（开/关跑出来的分数不是同一个候选）──────
+_AS_LIM = cfg.Limits()
+check(RS, "AS12 ★`verify_retries` 必须在 `Limits.as_dict()` 里，且允许取 0\n"
+          "          —— `Limits.as_dict()` 是口径签名的输入。不进制口径的话，\n"
+          "            开/关自检的两轮会被 `paired_compare` 判成『同口径可比』，\n"
+          "            那是把尺子又往下挪了一次（V5 的死因）。\n"
+          "          ⚠️ 还必须进 `ZERO_OK_KEYS`：`_env_int` 默认把 0 当『没填』\n"
+          "            回落到默认值 —— 那样『关掉』会被**静默改成 2**。",
+      "verify_retries" in _AS_LIM.as_dict()
+      and "V1_VERIFY_RETRIES" in cfg.ENV_KEYS
+      and "V1_VERIFY_RETRIES" in cfg.ZERO_OK_KEYS,
+      f"在 as_dict={'verify_retries' in _AS_LIM.as_dict()} "
+      f"登记={'V1_VERIFY_RETRIES' in cfg.ENV_KEYS} "
+      f"允许0={'V1_VERIFY_RETRIES' in cfg.ZERO_OK_KEYS}")
+
+# ── AS13：闸只挂在 `finish` 上（不许变成第二道相位）────────────────────
+_AS_GATE_CALLS = _code_only(_CORE_SRC).count("self._gate_finish(result)")
+_AS_GATE_GUARDED = ('if cand.tool == "finish" and result.ok and self._checks:'
+                    in _code_only(_CORE_SRC))
+check(RS, "AS13 ★`_gate_finish` 只许有**一处**调用，且必须被 `cand.tool == \"finish\"` 守住\n"
+          "          —— 本轮只加一条腿，不加一个相位：主循环仍然只有一个 `while`（J6），\n"
+          "            校验是 `finish` 出口上的一道闸，不是第二次推理。",
+      _AS_GATE_CALLS == 1 and _AS_GATE_GUARDED,
+      f"调用点={_AS_GATE_CALLS} 被 finish 守住={_AS_GATE_GUARDED}")
+
+# ── AS14：salvage 只在**答案为空**时顶替 ───────────────────────────────
+_AS_FIN_BODY = _code_only(_func_body(ast.parse(_CORE_SRC), "_finish"))
+check(RS, "AS14 ★`_finish` 里 salvage 的条件必须是 `not answer and self._salvage`\n"
+          "          —— 写成只看 `self._salvage` 就会把**正常交付**的答案替换成\n"
+          "            上一版被打回的坏答案：一个静默的降级，而日志上一切正常。",
+      "if not answer and self._salvage:" in _AS_FIN_BODY,
+      f"函数体命中={'if not answer and self._salvage:' in _AS_FIN_BODY}")
+
+# ── AS15：汇总行必须念校验读数（零值也念，且念判据）──────────────────────
+check(RS, "AS15 ★`■` 汇总行必须念 `校验=`，并**把判据念出来**\n"
+          "          —— 只念通过率的数可以靠关掉判据刷上去；\n"
+          "            而『机制装了但一次没触发』与『机制没装』在只念 calls 时长得一样。",
+      "校验=" in _AS_FIN_BODY and "判据=" in _AS_FIN_BODY,
+      f"汇总行含校验={'校验=' in _AS_FIN_BODY} 含判据={'判据=' in _AS_FIN_BODY}")
+
+# ── AS16：证据冻结 + CI 重算 ───────────────────────────────────────────
+_AS_EV = V1 / "bench" / "evidence" / "verify_s21" / "verdict.json"
+_AS_RT = (V1 / "run_tests.sh").read_text(encoding="utf-8")
+_AS_FZ = json.loads(_AS_EV.read_text(encoding="utf-8")) if _AS_EV.exists() else {}
+check(RS, "AS16 ★判读必须冻成文件，CI 每次重算并与落盘判定对账\n"
+          "          —— 数字写在散文里改一个字符不容易被发现；冻成 json 之后，\n"
+          "            换数据/松判据探针会自己转红。\n"
+          "          ⚠️ 判定必须是 `R5`：它明确写着**不主张真模型分数**。",
+      _AS_FZ.get("tag") == "R5" and "probe_verify.py" in _AS_RT
+      and "不主张真模型分数" in str(_AS_FZ.get("verdict", "")),
+      f"tag={_AS_FZ.get('tag')!r} CI 里有探针={'probe_verify.py' in _AS_RT}")
+
+# ── AS17：真模型读数必须是**负面结论**，而且写进证据与 CI ────────────────
+#: ★ 这一条是本轮最重要的那句话的锚：**闸接通了，但它的收益不是"诊断信息被执行"**。
+#:   内容无关的安慰剂给出**逐字相同**的报告（只差 `elapsed_s`）⇒ §17-6 仍是 0。
+#:   ⛔ 若哪天有人把这个 tag 改成"成立"，这条断言会当场判红 ——
+#:      它防的是"把负面结论悄悄说成正面"。
+_AS_RV = (V1 / "bench" / "evidence" / "verify_s21" / "real" / "verdict.json")
+_AS_RFZ = json.loads(_AS_RV.read_text(encoding="utf-8")) if _AS_RV.exists() else {}
+check(RS, "AS17 ★真模型三臂读数必须冻结，且判定必须是**负面**的 `Q3`\n"
+          "          —— `ON == PL（去掉 elapsed_s 后逐字相同）`意味着：\n"
+          "            收益来自『打回重写』这个动作，**不是**判据的诊断信息。\n"
+          "          ⇒ 『知识必须可执行』（§17-6）这一轮**仍是 0**，不许读成正的。\n"
+          "          ⚠️ 同时钉住 heldout 那 7 题**逐题相同**（效应没有跨题集复现）。",
+      _AS_RFZ.get("tag") == "Q3"
+      and _AS_RFZ.get("on_equals_placebo_ignore_elapsed") is True
+      and (_AS_RFZ.get("ho") or {}).get("moved") == []
+      and "probe_verify_real.py" in _AS_RT,
+      f"tag={_AS_RFZ.get('tag')!r} "
+      f"ON==PL={_AS_RFZ.get('on_equals_placebo_ignore_elapsed')} "
+      f"heldout 位移={( _AS_RFZ.get('ho') or {}).get('moved')}")
 
 
 print()

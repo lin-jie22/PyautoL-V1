@@ -220,6 +220,16 @@ class Limits:
     #: 传输层重试之间的等待秒数（线性增长：0.5s、1.0s、1.5s…）。
     llm_retry_backoff_s: float = field(
         default_factory=lambda: _env_float("V1_LLM_RETRY_BACKOFF_S", 0.5, allow_zero=True))
+    #: 自检最多打回重写几次（第二十一轮，`mw/verify.py`）。取 0 = 关闭自检。
+    #:
+    #: ⚠️ 为什么它是一个**上限**而不是"无限重写"：自检只挡结构性错误，
+    #:    一个答不对的题可以永远写得"结构正确"。没有上限，"重写"就会变成
+    #:    第三种烧预算的方式 —— 而它烧掉的是**交付**的配额（`_closing_reserve` 的教训）。
+    #: ⚠️ 为什么它必须进 `Limits` 而不是写死在 `core.py`：`Limits.as_dict()` 是
+    #:    口径签名的输入之一。开/关自检跑出来的分数**不是同一个候选** ——
+    #:    不进制口径，两轮就能被 `paired_compare` 判成"可比"，那是又一次尺子下移。
+    verify_retries: int = field(
+        default_factory=lambda: _env_int("V1_VERIFY_RETRIES", 2, allow_zero=True))
 
     def as_dict(self) -> dict:
         """硬上限的**完整**快照 —— 口径签名的输入之一。
@@ -282,6 +292,7 @@ ENV_KEYS = (
     "V1_CLOSE_RESERVE_STEPS",
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
+    "V1_VERIFY_RETRIES",
 )
 
 #: **允许取 0** 的 env 键（唯一事实源）。
@@ -293,6 +304,7 @@ ENV_KEYS = (
 #:   · `V1_CLOSE_RESERVE_STEPS=0`   同上（步数口径）
 #:   · `V1_LLM_RETRIES=0`           关闭传输层重试
 #:   · `V1_LLM_RETRY_BACKOFF_S=0`   不退避（测试与本地端点）
+#:   · `V1_VERIFY_RETRIES=0`        关闭自检（对照组：开/关自检必须能被分开跑）
 #: 实测：这五个里前四个都曾被静默改写成默认值，而口径签名照样宣称理想取值。
 ZERO_OK_KEYS: tuple[str, ...] = (
     "V1_LLM_TEMPERATURE",
@@ -300,4 +312,5 @@ ZERO_OK_KEYS: tuple[str, ...] = (
     "V1_CLOSE_RESERVE_STEPS",
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
+    "V1_VERIFY_RETRIES",
 )

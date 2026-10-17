@@ -1,0 +1,86 @@
+{
+  "rules": [
+    [
+      "Q1",
+      "ON 与 OFF 至少一题不同 —— 全同 ⇒ 闸没触发，Δ=0 记 UNKNOWN，不认领"
+    ],
+    [
+      "Q2",
+      "位移必须点名定位，不许只报均值"
+    ],
+    [
+      "Q3",
+      "ON 与 PL 去掉 elapsed_s 后逐字相同 ⇒ 收益属于『打回重写』，诊断信息贡献 0"
+    ],
+    [
+      "Q4",
+      "跨题集（heldout 7 题）Δ=0 必须如实写『没有复现』，不许只报好看的那一格"
+    ]
+  ],
+  "sc": {
+    "off": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 0.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "on": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "placebo": {
+      "z01_flatten": 0.8,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0
+    },
+    "mean": {
+      "off": 0.56,
+      "on": 0.76,
+      "pl": 0.76
+    },
+    "moved": [
+      "z03_parse_query"
+    ]
+  },
+  "ho": {
+    "off": {
+      "h01_int_to_roman": 0.0,
+      "h02_merge_ranges": 1.0,
+      "h03_eval_rpn": 1.0,
+      "k01_diff_tree": 1.0,
+      "k02_encode_cookie": 0.8,
+      "k03_unflatten": 0.4,
+      "k04_to_ini": 1.0
+    },
+    "on": {
+      "h01_int_to_roman": 0.0,
+      "h02_merge_ranges": 1.0,
+      "h03_eval_rpn": 1.0,
+      "k01_diff_tree": 1.0,
+      "k02_encode_cookie": 0.8,
+      "k03_unflatten": 0.4,
+      "k04_to_ini": 1.0
+    },
+    "mean": {
+      "off": 0.7429,
+      "on": 0.7429
+    },
+    "moved": []
+  },
+  "on_equals_placebo_ignore_elapsed": true,
+  "verdict": "Q3：**内容无关的安慰剂给出逐字相同的读数** ⇒ 收益来自『打回重写』这个动作，不是判据的诊断信息 ⇒ **§17-6 仍是 0**",
+  "tag": "Q3",
+  "claim": "结构：`finish` 第一次可以失败，失败之后收尾兜底那条路才第一次被走到；⛔ 诊断信息本身没有可测贡献（安慰剂同分且逐字相同）",
+  "unknowns": [
+    "位移只落在 1 道题（z03）：1/5 = 0.20，跨 12 题摊薄后 = 0.083 —— 不是『提升 20%』",
+    "每臂单次；T=0 保证逐位可复现（第 1 条已实测），但不保证因果（第十七轮教训）",
+    "heldout 7 题 Δ=0 ⇒ 效应没有跨题集复现，不许外推",
+    "真正承重的机制是『允许失败 ⇒ 收尾兜底被走到』，而不是『校验』这个名字；把它读成『校验让模型变聪明』是越界"
+  ]
+}

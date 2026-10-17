@@ -265,7 +265,10 @@ class Core:
                     plan = self.planner.replan(
                         goal=goal, failed=Step("(上一步)", "?", {}),
                         error=last_error, history=history, n=n,
-                        blocked=sorted(attempted_sigs))
+                        blocked=sorted(attempted_sigs),
+                        # ⚠️ 重规划**更**需要易错点：它正是"刚栽了"的那一次。
+                        #    原来这里不传 ⇒ guidance 只在首次尝试时有效。
+                        guidance=self.wm.guidance(action=goal))
                 else:
                     plan = self.planner.propose(
                         goal=goal, state=state, history=history, n=n,
@@ -356,6 +359,20 @@ class Core:
 
                     history.append(f"[step {it}] {cand.as_line()} ⇒ {'成功' if result.ok else '失败'}")
 
+                    # ── 工作记忆：本步的**真实输出**必须进入下一步的上下文 ──────
+                    # 为什么这行是"协同"的要害（2026-10-17 接线审计实测）：
+                    #   `history` 只记**动作 + 成败**（`recall(...) ⇒ 成功`），
+                    #   模型在下一步**看不到工具返回了什么**；
+                    #   而 `record("outcome", …)` 写的是 **episodes 表**，
+                    #   `recall()` 只查 **facts 表** ⇒ 情景记忆在生产路径上一次都读不到
+                    #   （真模型实测：5 题写了 16 条 outcome，进入提示词的 0 条）。
+                    #   于是"三层记忆"里 working 这层**只读不写**、episodes **只写不读** ——
+                    #   多步任务的上下文连续性实际上靠的是 `history` 里那行"成功/失败"。
+                    # 修法不是再加一条通道，而是让本来为此设计的那层**通电**。
+                    self.memory.think(
+                        f"{cand.tool} ⇒ {'✔' if result.ok else '✘'} "
+                        f"{result.as_observation()[:300]}")
+
                     if not result.ok:
                         consecutive_failures += 1
                         last_error = result.error
@@ -408,7 +425,10 @@ class Core:
         parts = [f"[目标] {goal}"]
         wm = self.memory.working_view()
         if wm:
-            parts.append("[工作记忆] " + " ｜ ".join(wm[-6:]))
+            # ⚠️ **必须逐条截断**：工作记忆存的是工具输出的原文，不截断的话
+            #    一个大文件/一段长代码就能把整个上下文窗口吃掉
+            #    —— 那时"多步任务的上下文"反而变成"一步就把预算烧完"。
+            parts.append("[工作记忆] " + " ｜ ".join(w[-200:] for w in wm[-6:]))
         recalled = self.memory.recall(goal, k=self.s.limits.recall_k)
         if recalled:
             parts.append("[语义记忆] " + " ｜ ".join(f.text[:120] for f in recalled))

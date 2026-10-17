@@ -267,10 +267,16 @@ check(RS, "F5c 规则文本落在**动作层**（「我预演 X，实际 Y」）
       str([t[:60] for t in _wm_facts]))
 check(RS, "F6 一致的预测不沉淀（不制造噪声）",
       wm.observe(Prediction("a", "abc def", 0.9), "abc def") is None)
-check(RS, "F7 选择性前瞻挡下低置信预测",
-      len(wm.foresight_filter([Prediction("a", "e", 0.9),
-                               Prediction("b", "e", 0.1)])) == 1)
-check(RS, "F8 抑制计数可对账", wm.stats().get("suppressed") == 1, str(wm.stats()))
+check(RS, "F7 选择性前瞻的**唯一**门槛是 `Prediction.trustworthy`（单一声明）："
+          "曾有一个 `foresight_filter()` 批量封装，生产路径零调用、只有测试在调，"
+          "已按「装饰 API」删除",
+      Prediction("a", "e", 0.9).trustworthy is True
+      and Prediction("b", "e", 0.1).trustworthy is False,
+      f"0.9→{Prediction('a', 'e', 0.9).trustworthy} "
+      f"0.1→{Prediction('a', 'e', 0.1).trustworthy}")
+check(RS, "F8 抑制计数可对账（初值 0；只由内核在**真正跳过**时累加，"
+          "不是由某个没人调用的过滤器累加）",
+      wm.stats().get("suppressed") == 0, str(wm.stats()))
 check(RS, "F9 零 LLM 成本也能预演（检索式复用）",
       wm.predict(state="s", action="写文件", use_llm=False).source == "retrieval")
 mem2.close()
@@ -1824,6 +1830,105 @@ check(RS, "Z4 旧读数里缺 `scored`/`confusion` 等键 ⇒ 按 0 并、不抛
 check(RS, "Z5 累加器是纯函数：不改入参（否则同一个 dict 被复用两处会互相污染）",
       _z_s1["scored"] == 100 and _z_s1["confusion"]["ok_ok"] == 100,
       str(_z_s1["scored"]))
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("AA. 模块之间的**接线**（import 通了 ≠ 协同通了）")
+print("=" * 74)
+
+# 为什么要有这一组（2026-10-17 接线审计实测）：
+#   11 个模块互相 import 都通、契约全绿、回归 5/5 全绿，但**数据流是断的**：
+#   ① `MemoryStore.think()` 全项目 **0 调用点** ⇒ working 层只读不写，
+#      `_state()` 里的 `[工作记忆]` 段**永远不出现**（"三层记忆"实际是两层）；
+#   ② `record("outcome", …)` 写 **episodes 表**，而 `recall()` 只查 **facts 表**
+#      ⇒ 情景记忆在推理路径上一次都读不到
+#      （真模型实测：5 题写了 16 条 outcome，进入提示词的 0 条）；
+#   ③ `Planner.replan()` 调 `propose()` 时**不传 guidance** ⇒
+#      恰恰是"刚栽过一次"的重规划拿不到"已知易错点"。
+#   共同点：**每一处单独看都"有实现、有测试"，但没有一条断言检查"谁在调用它"。**
+#   ⇒ 这一组钉的不是"函数对不对"，是"**有没有人走这条路**"。
+#     一个永远没人调用的能力，和不存在的能力，在读数是同一件事。
+
+
+def _attr_calls(src: str, name: str) -> list[int]:
+    """源码里 `.name(...)` 形式的调用行号（**调用**，不是定义）。"""
+    return [n.lineno for n in ast.walk(ast.parse(src))
+            if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == name]
+
+
+def _kwargs_in_func(src: str, func: str, call_attr: str) -> list[str]:
+    """`func` 体内调用 `.call_attr(...)` 时用到的**关键字**名。"""
+    fns = [n for n in ast.walk(ast.parse(src))
+           if isinstance(n, ast.FunctionDef) and n.name == func]
+    if not fns:
+        return []
+    found: list[str] = []
+    for n in ast.walk(fns[0]):
+        if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == call_attr:
+            found = [k.arg for k in n.keywords if k.arg]
+    return found
+
+
+_think_sites = _attr_calls(_CORE_SRC, "think")
+check(RS, "AA1 ★结构锚：`memory.think()` 在**内核主循环**里有生产调用者"
+          "（缺陷：全项目 0 调用点 ⇒ working 层只读不写、`[工作记忆]` 段永不出现）",
+      len(_think_sites) >= 1, f"调用行号={_think_sites}")
+
+check(RS, "AA2 反证：同一探针对「只定义不调用」的源码数出 0"
+          "（证明 AA1 不是恒真的死断言）",
+      _attr_calls("class M:\n    def think(self, t):\n        pass\n", "think") == [],
+      str(_attr_calls("class M:\n    def think(self, t):\n        pass\n", "think")))
+
+_rp_kw = _kwargs_in_func((MW_DIR / "planner.py").read_text(encoding="utf-8"),
+                         "replan", "propose")
+check(RS, "AA3 ★结构锚：`replan()` 调 `propose()` 时**必须转发** `guidance`"
+          "（缺陷：原来不传 ⇒ 刚栽过一次的重规划拿不到易错点）",
+      "guidance" in _rp_kw, f"propose 关键字={_rp_kw}")
+
+check(RS, "AA4 反证：同一探针对「不转发 guidance」的 replan 判红"
+          "（证明 AA3 不是恒真的死断言）",
+      "guidance" not in _kwargs_in_func(
+          "def replan(self, **kw):\n"
+          "    return self.propose(goal='g', n=1)\n", "replan", "propose"),
+      str(_kwargs_in_func("def replan(self, **kw):\n"
+                          "    return self.propose(goal='g', n=1)\n", "replan", "propose")))
+
+# ★ 行为锚：不是"代码里有那行"，而是"跑一次以后它真的有内容"。
+#   AA1 是静态的（有没有人调），AA5 是动态的（调了以后有没有东西）。
+#   两者必须都在：只静态会漏"调了但写的是空串"，只动态会漏"在某条分支里"。
+_aa_mem = MemoryStore(_TMP / "aa_wiring.db")
+_aa_core = Core(settings=cfg.Settings(limits=cfg.Limits(max_steps=3)),
+                llm=DemoLLM(), memory=_aa_mem)
+_aa_core.run("写一个函数 add(a, b)，返回两数之和", budget_factor=1.0)
+_aa_work = _aa_mem.working_view()
+check(RS, "AA5 ★行为锚：跑过一次内核后**工作记忆非空**、且写进去的是**观测**"
+          "（不是空串）—— `think()` 接到的是 `result.as_observation()`",
+      len(_aa_work) >= 1 and all(len(w) > 3 for w in _aa_work),
+      f"{len(_aa_work)} 条，首条={_aa_work[0][:60] if _aa_work else '(空)'}")
+
+# 三层记忆的**读写矩阵** —— 曾经 working 只读不写、episodic 只写不读。
+_aa_calls = {getattr(n.func, "attr", "") for n in ast.walk(ast.parse(_CORE_SRC))
+             if isinstance(n, ast.Call)}
+check(RS, "AA6 ★结构锚：working 与 episodic 在内核路径上**读写成对**"
+          "（working: think/working_view；episodic: record/episodes）",
+      all(k in _aa_calls for k in ("think", "working_view", "record", "episodes")),
+      f"内核里出现的记忆调用={sorted(k for k in _aa_calls if k in ('think', 'working_view', 'record', 'episodes', 'recall', 'commit_fact'))}")
+
+# semantic 层的写由世界模型负责（内核只读）—— 所以写侧要在 worldmodel 里验。
+_wm_src = (MW_DIR / "worldmodel.py").read_text(encoding="utf-8")
+check(RS, "AA7 semantic 层写侧在世界模型（`commit_fact`），内核侧读侧是 `recall()`"
+          "—— 责任分明，但两侧都必须存在",
+      "commit_fact" in _wm_src and "recall" in _aa_calls,
+      f"worldmodel 写={'commit_fact' in _wm_src} core 读={'recall' in _aa_calls}")
+
+# ★ 装饰 API 的墓碑：`foresight_filter` 已删，门槛只剩 `Prediction.trustworthy`。
+#   这条断言存在的意义是**防止它被"为了覆盖率"重新加回来**。
+check(RS, "AA8 ★墓碑：`foresight_filter()` 不得复活"
+          "（它曾只有测试在用、生产零调用 —— 「装饰 API」比没有更糟）",
+      not hasattr(WorldModel, "foresight_filter"),
+      f"hasattr={hasattr(WorldModel, 'foresight_filter')}")
 
 
 # ===========================================================================

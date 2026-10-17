@@ -259,11 +259,18 @@ class Planner:
 
     def replan(self, *, goal: str, failed: Step, error: str,
                history: Sequence[str], n: int = 1,
-               blocked: Sequence[str] = ()) -> Plan:
-        """失败后重规划。**必须带上错误原文**，否则等于原地打转。"""
+               blocked: Sequence[str] = (), guidance: str = "") -> Plan:
+        """失败后重规划。**必须带上错误原文**，否则等于原地打转。
+
+        ⚠️ `guidance` 必须一起转发（2026-10-17 接线审计抓到的断点）：
+        原来这里调 `propose` 时**不传** guidance ⇒ 走默认空串 ⇒
+        **恰恰是"刚栽过一次"的重规划拿不到"已知易错点"**。
+        那是逻辑上最荒谬的一处断点：guidance 记的是"哪儿容易栽"，
+        而重规划正是"刚栽了"的那一次。断在这里，等于教训只在第一次尝试时有用。
+        """
         augmented = list(history) + [f"{failed.as_line()} ⇒ 失败: {error[:200]}"]
         plan = self.propose(goal=goal, state="(上一步失败，见下)", history=augmented,
-                            n=n, blocked=blocked)
+                            n=n, blocked=blocked, guidance=guidance)
         if plan:
             plan.note = f"因「{failed.tool}」失败而重规划"
         return plan

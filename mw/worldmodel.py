@@ -40,7 +40,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any
 
 from .llm import LLM, Message, parse_json
 
@@ -336,15 +336,13 @@ class WorldModel:
         self.memory.commit_fact(mm.as_heuristic(), source="worldmodel", confidence=0.7)
 
     # ------------------------------------------------------------------
-    def foresight_filter(self, preds: Sequence[Prediction]) -> list[Prediction]:
-        """选择性前瞻：低置信度预测**不得**进入决策链。
-
-        这一步的价值不是"更聪明"，是**防止幻觉污染**——
-        一个被喂进决策链的坏预演，会让后面每一步都建立在错误前提上。
-        """
-        kept = [p for p in preds if p.trustworthy]
-        self.suppressed += len(preds) - len(kept)
-        return kept
+    # ⛔ 这里曾经有一个 `foresight_filter(preds)` —— 2026-10-17 接线审计发现
+    #    它**只有测试在用**（`contract_test.py:271`），生产路径一次都没调用：
+    #    内核是**逐候选**预测的，用的是 `Prediction.trustworthy` 这一个属性。
+    #    保留一个"只有测试在调"的公开方法，正是本项目反复防的**装饰 API**：
+    #    它让覆盖率看起来变好，而真实路径上没有任何人走它。
+    #    ⇒ 删掉。门槛从此**只声明一处**：`Prediction.trustworthy`；
+    #      抑制计数只由内核在真正跳过时累加（`core.py` 的 `suppressed += 1`）。
 
     def guidance(self, *, action: str, k: int = 3) -> str:
         """给规划器/预演器的启发式提示：这次动作在哪容易看错。

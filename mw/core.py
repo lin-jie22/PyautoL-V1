@@ -343,10 +343,16 @@ class Core:
                     self.log(f"      ↳ {cand.tool} ok={result.ok} {cand.intent[:60]}")
 
                     # 观测 + 失配沉淀
+                    #
+                    # ⚠️ `ok=result.ok` 是**必须**传的（缺陷 #12 的结构性根因）：
+                    #    不传，世界模型就无从知道这一步到底做对了没有 ——
+                    #    它只能退回去比"措辞"，而那种比对**结构上必错**。
+                    #    `result.ok` 是内核自己持有的地面真相，没有理由不给它。
                     if pred is not None and pred.trustworthy:
-                        mm = self.wm.observe(pred, result.as_observation())
+                        mm = self.wm.observe(pred, result.as_observation(), ok=result.ok)
                         if mm:
-                            self.log(f"      🔁 失配 一致度={mm.agreement:.2f} ⇒ 已沉淀为启发式")
+                            self.log(f"      🔁 失配[{mm.kind}] {mm.as_line()}"
+                                     f" ⇒ 已沉淀为启发式")
 
                     history.append(f"[step {it}] {cand.as_line()} ⇒ {'成功' if result.ok else '失败'}")
 
@@ -499,7 +505,18 @@ class Core:
         tx_line = ""
         if tx["retries"] or tx["exhausted"]:
             tx_line = f" | 抖动重试={tx['retries']} 重试后仍失败={tx['exhausted']}"
+        # 世界模型读数：**同时**打印分母。
+        # 只印 `失配=3` 是假读数 —— 3 次预演里错 3 次、和 30 次里错 3 次，
+        # 是两件完全不同的事；前者说明信号恒红，后者说明它在工作。
+        wms = stats["worldmodel"]
+        wm_line = (f" | 预演={wms['predictions']} 检验={wms['scored']}"
+                   f" 命中={wms['hits']}"
+                   f" 命中率={'n/a' if wms['hit_rate'] is None else wms['hit_rate']}"
+                   f" 失配={wms['mismatches']}(成败{wms['mismatches_outcome']}"
+                   f"/文本{wms['mismatches_text']})")
+        if wms["unscored"]:
+            wm_line += f" ⚠️未检验={wms['unscored']}"
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
-                 f" | 失配={stats['worldmodel']['mismatches']} | 语义记忆={stats['memory']['facts']}"
+                 f"{wm_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}")
         return Outcome(status, answer, reason, len(history), stats)

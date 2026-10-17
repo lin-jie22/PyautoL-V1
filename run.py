@@ -61,7 +61,21 @@ class DemoLLM:
         blob = "\n".join(m.content for m in messages)
 
         if "预演" in blob:      # 世界模型预演
-            return json.dumps({"expected": "会返回与截断相关的历史结论条目",
+            # `expect_ok` 是预演里**唯一会被事后检验**的字段（缺陷 #12 的修复）：
+            # 说"会成功"就一定会被 `result.ok` 对照。这里**故意**让 note 那一步
+            # 预演错（说"会失败"、实际成功）—— 与第一个候选故意破坏性同理：
+            # 证明失配链路真的会跑并沉淀，而不是一个永远不会触发的摆设。
+            # 一个在自检里永远"全对"的世界模型，和 V5 的"每轮全绿"是同一种谎。
+            # ⚠️ 必须匹配**动作行**，不能用 `"note" in blob`：
+            #    预演提示词里还带着 `guidance`（上一轮的教训原文），
+            #    而那条教训的正文里就写着 `note` —— 于是 finish 那一步会被误判成 note。
+            #    第一次自检就是这么抓到的（finish 被冤枉成"预演失败"）。
+            if "准备执行的动作：note(" in blob:
+                return json.dumps({"expect_ok": False,
+                                   "expected": "写回记忆时会因守卫拒绝而失败",
+                                   "confidence": 0.72}, ensure_ascii=False)
+            return json.dumps({"expect_ok": True,
+                               "expected": "会返回与截断相关的历史结论条目",
                                "confidence": 0.72}, ensure_ascii=False)
 
         self.planner_calls += 1
@@ -164,6 +178,40 @@ def _kernel_prov(core) -> dict:
                  external_agents=core.external_agents,
                  model=core.s.llm.model,
                  temperature=core.s.llm.temperature)
+
+
+def _kwm_zero() -> dict:
+    """内核侧世界模型读数累加器的零点。"""
+    return {"predictions": 0, "scored": 0, "hits": 0, "unscored": 0,
+            "mismatches": 0, "mismatches_outcome": 0, "mismatches_text": 0,
+            "text_compared": 0, "suppressed": 0,
+            "confusion": {"ok_ok": 0, "ok_fail": 0, "fail_ok": 0, "fail_fail": 0}}
+
+
+def _kwm_absorb(acc: dict, stats: dict) -> dict:
+    """把一次内核运行的读数并进累加器（就地修改并返回）。
+
+    ⚠️ `hit_rate` **不并** —— 它是比值，逐次平均会给出错的答案
+    （100 次全对 + 1 次全错，平均 0.5；真值是 100/101）。只能由总数重算。
+    ⚠️ 缺失的键按 0 并，**不炸**：老读数文件里没有 `scored` 是正常的，
+    但"没有这个字段" ≠ "这个字段是 0" —— 所以 `hit_rate` 在 `scored==0` 时
+    返回 `None`，让"没量到"在读数里显形。
+    """
+    for k in ("predictions", "scored", "hits", "unscored", "mismatches",
+              "mismatches_outcome", "mismatches_text", "text_compared", "suppressed"):
+        acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
+    cm = acc.setdefault("confusion", {})
+    for k in ("ok_ok", "ok_fail", "fail_ok", "fail_fail"):
+        cm[k] = int(cm.get(k, 0)) + int((stats.get("confusion") or {}).get(k, 0) or 0)
+    return acc
+
+
+def _kwm_line(acc: dict) -> dict:
+    """产出落盘/打印用的读数。派生量**只在这里算一次**（同一事实只声明一处）。"""
+    d = {k: int(v) for k, v in acc.items() if k != "confusion"}
+    d["confusion"] = {k: int(v) for k, v in (acc.get("confusion") or {}).items()}
+    d["hit_rate"] = (round(d["hits"] / d["scored"], 3) if d["scored"] else None)
+    return d
 
 
 def cmd_selftest(args) -> int:
@@ -539,6 +587,15 @@ def cmd_bench(args) -> int:
     #: 血缘回调（无参 → dict）。**绝不用自由文本标签代替它** —— 见下面预检的注释。
     prov: Callable[[], dict] | None = None
 
+    #: 内核侧世界模型读数的累加器。
+    #:
+    #: ⚠️ 为什么要它：`per_task` 只记 `score/status/why`，**内核自己的读数一概丢失**。
+    #: 于是"失配=3 ⇒ 因果闭环在工作"这类判断只能靠翻 stdout 日志，
+    #: 而日志不进 `runs.jsonl`、事后无法审计 —— 这正是本项目反复防的
+    #: "读数不可复核"。世界模型的分辨力（scored/hits/混淆矩阵）现在随每次运行落盘。
+    #: 累加/派生逻辑在模块级（`_kwm_zero/_kwm_absorb/_kwm_line`），**不在这里重写一遍**。
+    _kwm = _kwm_zero()
+
     if args.solver == "null":
         solver: Callable[[object], str] = lambda t: ""            # noqa: E731
         label = "null（下界参照）"
@@ -602,6 +659,7 @@ def cmd_bench(args) -> int:
                     try:
                         c = _build("", args, allow_shell=args.allow_shell)
                         out = c.run(t.prompt, budget_factor=args.budget)
+                        _kwm_absorb(_kwm, out.stats["worldmodel"])
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
                         _seen.update(_kernel_prov(c))
@@ -616,7 +674,12 @@ def cmd_bench(args) -> int:
             prov = lambda: dict(_seen)                             # noqa: E731
         else:
             _core = _build("", args, allow_shell=args.allow_shell)
-            solver = lambda t: _core.run(t.prompt, budget_factor=args.budget).answer  # noqa: E731
+
+            def solver(t):                                         # type: ignore[misc]
+                out = _core.run(t.prompt, budget_factor=args.budget)
+                _kwm_absorb(_kwm, out.stats["worldmodel"])
+                return out.answer
+
             label += "（复用同一内核，记忆跨题累积）"
             prov = lambda: _kernel_prov(_core)                     # noqa: E731
     else:
@@ -642,6 +705,17 @@ def cmd_bench(args) -> int:
     if prov is not None:
         print(f"  血缘      llm_of_record={rep.llm_of_record()}"
               f" 外部能力={len(rep.provenance.get('external_agents') or [])} 个")
+    _kw = _kwm_line(_kwm)
+    if _kw["predictions"]:
+        # 只印"失配=N"是假读数：N 次预演里错 N 次、和 3N 次里错 N 次是两件事。
+        # 所以**必须**同时印分母（检验了几次）与混淆矩阵 —— 一个恒说"会成功"的
+        # 预测器，`fail_*` 两格恒为 0，单看准确率看不出来。
+        print(f"  世界模型  预演={_kw['predictions']} 检验={_kw['scored']} 命中={_kw['hits']}"
+              f" 命中率={'n/a' if _kw['hit_rate'] is None else _kw['hit_rate']}"
+              f" 失配={_kw['mismatches']}(成败{_kw['mismatches_outcome']}"
+              f"/文本{_kw['mismatches_text']})"
+              f" 混淆={_kw['confusion']}"
+              + (f" ⚠️未检验={_kw['unscored']}" if _kw["unscored"] else ""))
 
     # ── 血缘闸：标签可以撒谎，血缘不能。 ────────────────────────────────
     # `candidate` 是一串自由文本；只有血缘是**从内核读出来的事实**。
@@ -701,6 +775,8 @@ def cmd_bench(args) -> int:
         "solver": label, "budget_tag": tag, "repeat": repeat_n,
         "caliber_sig": caliber.signature(), "caliber": caliber.as_dict(),
         "measurement": measurement_to_dict(m), "report": rep.as_dict(),
+        # 内核侧读数（世界模型的**分辨力**）。不落盘的读数不可审计。
+        "kernel_worldmodel": _kw,
         "calibration": {"ok": cal.ok, "margin": cal.margin, "middle_n": cal.middle_n,
                         "evidence_id": (cal.evidence.evidence_id()
                                         if cal.evidence is not None else None)},

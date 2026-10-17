@@ -240,14 +240,31 @@ check(RS, "F1 相似度自反", abs(similarity("abc def", "abc def") - 1.0) < 1e
 check(RS, "F2 不相关 ⇒ 0", similarity("abc", "xyz") == 0.0)
 mem2 = MemoryStore(_TMP / "m2.db")
 wm = WorldModel(mem2, StubLLM())
-mm = wm.observe(Prediction("写文件", "会成功返回内容", 0.8), "OSError 权限不足")
-check(RS, "F3 预测与实测不符 ⇒ 产生失配", mm is not None and mm.agreement < 0.34,
-      f"agree={getattr(mm, 'agreement', None)}")
-check(RS, "F4 失配写入情景记忆",
-      any(e.kind == "mismatch" for e in mem2.episodes(kind="mismatch")))
-wf = [f for f in mem2.recall("写文件 成功返回内容", k=10) if f.source == "worldmodel"]
-check(RS, "F5 失配提炼为持久启发式（进语义记忆）", len(wf) >= 1,
-      str([f.text[:40] for f in wf]))
+# ── 文本类失配（没有成败可依，只能比措辞）──────────────────────────────
+_tm = wm.observe(Prediction("写文件", "会成功返回内容", 0.8), "OSError 权限不足")
+check(RS, "F3 文本类：预演与实测措辞差异过大 ⇒ 记为失配（kind=text）",
+      _tm is not None and _tm.kind == "text",
+      f"kind={getattr(_tm, 'kind', None)}")
+check(RS, "F4 失配写入情景记忆（带 mm_kind，事后能分辨是哪一种失配）",
+      any(e.kind == "mismatch" for e in mem2.episodes(kind="mismatch")),
+      str([e.kind for e in mem2.episodes(kind="mismatch")]))
+check(RS, "F5 ★纪律：文本类失配**不**写语义记忆 —— 措辞差异不是「哪里容易看错」，"
+          "把它写成持久规则是从测量噪声里造知识（缺陷 #12 的 9/10 条噪声就是这么来的）",
+      mem2.stats()["by_source"].get("worldmodel", 0) == 0,
+      str(mem2.stats()["by_source"]))
+
+# ── 成败类失配（内核直接持有的地面真相）── 才允许提炼成可迁移规则 ──────
+_om = wm.observe(Prediction("写文件", "会成功返回内容", 0.8, expect_ok=True),
+                 "[工具失败] OSError 权限不足", ok=False)
+_wm_facts = [f.text for f in mem2.recall("写文件", k=10) if f.source == "worldmodel"]
+check(RS, "F5b 成败类失配 ⇒ 提炼成规则并进语义记忆（这一条才可迁移）",
+      _om is not None and _om.kind == "outcome" and len(_wm_facts) >= 1,
+      f"kind={getattr(_om, 'kind', None)} facts={_wm_facts[:1]}")
+check(RS, "F5c 规则文本落在**动作层**（「我预演 X，实际 Y」），"
+          "而不是「不可假设其结果等同于「某段话」」这种字面描述 "
+          "—— 后者下一轮读到无法据以改变任何动作",
+      bool(_wm_facts) and all("预演" in t and "实际" in t for t in _wm_facts),
+      str([t[:60] for t in _wm_facts]))
 check(RS, "F6 一致的预测不沉淀（不制造噪声）",
       wm.observe(Prediction("a", "abc def", 0.9), "abc def") is None)
 check(RS, "F7 选择性前瞻挡下低置信预测",
@@ -1368,17 +1385,26 @@ from mw.worldmodel import Prediction, WorldModel                     # noqa: E40
 # 正是 V5 "字段无消费者" 的同构体。
 _v_mem = MemoryStore(_TMP / "v_causal.db")
 _v_wm = WorldModel(_v_mem, StubLLM())
+# ⚠️ 这里必须走**成败类**（`expect_ok` + `ok=`）：那是生产路径
+#    （core.py 传的是 `result.ok`），也是唯一可迁移的失配。
+#    首版这里用的是文本类 —— 修完缺陷 #12 后它不再写语义层，
+#    于是 V1/V3/V4/V6 连锁转红。那不是回归，是**这条链被测在了对的种类上**。
 _v_mm = _v_wm.observe(
-    Prediction(action="parse_duration", expected="返回一个整数秒数", confidence=0.9),
-    "直接把整段文本原样返回了，没有解析")
-check(RS, "V1 预演与实测显著不一致 ⇒ 记为失配，并沉淀成语义记忆"
+    Prediction(action="parse_duration", expected="会返回一个整数秒数", confidence=0.9,
+               expect_ok=True),
+    "[工具失败] AttributeError: 'str' object has no attribute 'split'", ok=False)
+check(RS, "V1 预演说「会成功」、实际失败 ⇒ 记为失配，并沉淀成语义记忆"
           "（不是只记一笔日志就完事）",
-      _v_mm is not None
+      _v_mm is not None and _v_mm.kind == "outcome"
       and _v_mem.stats()["by_source"].get("worldmodel", 0) >= 1,
       f"mismatch={_v_mm is not None} by_source={_v_mem.stats()['by_source']}")
-check(RS, "V2 一致时不沉淀（否则每次预测都写一条，记忆会被自己淹掉）",
+check(RS, "V2 一致时不沉淀（两个方向都对：成败吻合、文本重合）",
       _v_wm.observe(Prediction(action="a", expected="同一个结果", confidence=0.9),
-                    "同一个结果") is None,
+                    "同一个结果") is None
+      and _v_wm.observe(Prediction(action="b", expected="会成功", confidence=0.9,
+                                   expect_ok=True), "ok", ok=True) is None
+      and _v_wm.observe(Prediction(action="c", expected="会失败", confidence=0.9,
+                                   expect_ok=False), "failed", ok=False) is None,
       str(_v_wm.stats()))
 _v_g = _v_wm.guidance(action="parse_duration")
 check(RS, "V3 失配能按动作被检索回来（沉淀了却检索不到 = 装饰）",
@@ -1570,35 +1596,43 @@ check(RS, "X9 反证：把本轮那个缺陷原样喂给同一探针 ⇒ 必须�
 # ===========================================================================
 print()
 print("=" * 74)
-print("Y. 世界模型的失配信号有没有分辨力（★读数锚：当前 = 每次必判失配）")
+print("Y. 失配信号的分辨力 —— 一个永远不可能「好」的信号等于没有信号")
 print("=" * 74)
 
-# 为什么要有这一组（2026-10-17 泛化实验实测逼出来的）：
+# 缺陷 #12 的来龙去脉（2026-10-17 泛化实验实测逼出来的）：
 #   记忆在 numeric_logic 上"学"了 7 facts / 17 episodes，再考 3 道 held-out 新题，
 #   与**空记忆**逐题配对 ⇒ **Δ 全为 0**。机制不是"记忆没生效"，是：
 #       `predict` 预演的是**一句话**（"你预期会发生什么"），
 #       `observe` 比对的是**整段答案**（候选代码）。
-#   Jaccard 门槛 0.34 ⇒ 这两者**结构上不可能**相似 ⇒ **每次必判失配**。
+#   Jaccard 门槛 0.34 ⇒ 这两者**跨种类** ⇒ **结构上不可能**相似 ⇒ 每次必判失配。
 #   实测三轮共 9 次失配，一致度全部 ≤ 0.09：`0.00 0.00 0.05 0.09 0.00 0.02 0.00 0.05 0.07`。
 #   ⚠️ 这与 V5 的死因**同构**：一个**永远不可能"好"**的信号。
 #      把 `失配=3` 读成"因果闭环在工作"，就是 V5 把 `gain≡0` 读成"每轮全绿"。
-#   下面这几条是**读数锚**（不是不变量）：它们把当前这个"缺陷边界"钉在绿测试里，
-#   而不是让它藏在假绿后面。**哪天世界模型真能分辨，这几条会转红 —— 那是有意的信号，
-#   不是"变红就放宽"。**（同 W4 的做法。）
+#
+# 修法（不是调门槛 —— 那是把尺子下移）：**按种类比，绝不跨种类比。**
+#   预测的对象改成"这一步**会不会成功**"（`expect_ok`），由 `result.ok` 检验 ——
+#   那是内核直接持有的地面真相，永远可得、永远同类。
+#
+# ⚠️ 下面 Y3 仍是**读数锚**：文本比对**依然**分不出对错。它之所以还能留着，
+#    是因为它被降级成"只记情景、不进语义"（`Mismatch.teachable`）。
+#    哪天文本比对真能分辨，Y3 会转红 —— 那是有意的信号，不是"变红就放宽"。
 from mw.worldmodel import _MISMATCH_THRESHOLD                     # noqa: E402
 
 _y_mem = MemoryStore(_TMP / "y_worldmodel.db")
 
 
 class _Y_LLM:
-    """脚本化预测器：固定输出**一句话**预期 —— 线上 qwen 干的就是这件事。"""
+    """脚本化预测器：模拟线上 qwen 的返回形态（可带 / 不带 `expect_ok`）。"""
 
-    def __init__(self, expected: str) -> None:
+    def __init__(self, expected: str, expect_ok: bool | None = True) -> None:
         self.expected = expected
+        self.expect_ok = expect_ok
 
     def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
-        return json.dumps({"expected": self.expected, "confidence": 0.9},
-                          ensure_ascii=False)
+        d: dict = {"expected": self.expected, "confidence": 0.9}
+        if self.expect_ok is not None:
+            d["expect_ok"] = self.expect_ok
+        return json.dumps(d, ensure_ascii=False)
 
 
 _Y_PRED = "将输出一段实现了 int_to_roman 的代码"
@@ -1607,33 +1641,66 @@ _Y_GOOD = ("```python\ndef int_to_roman(n):\n    vals = [(1000,'M'),(900,'CM')]\
            "            out += s\n            n -= v\n    return out\n```")
 _Y_BAD = "```python\ndef int_to_roman(n):\n    return str(n)\n```"
 
-# Y1 反证：这个信号**能**判"一致" ⇒ 它不是恒假的度量（否则 Y2 只是"度量坏了"）
+# Y1 正向读数：这个信号**能**判"好" —— 旧实现结构上走不到这里。
+#    ★ 这一条比"能判坏"重要得多：一个只会说"错了"的度量与恒假度量等价。
 _ym = WorldModel(_y_mem, _Y_LLM(_Y_PRED))
-check(RS, "Y1 一致度信号**能**判「一致」（预演 ≈ 实测 ⇒ 返回 None，不沉淀）："
-          "证明它不是恒假的度量",
-      _ym.observe(Prediction("a", _Y_PRED, 0.9), _Y_PRED) is None
-      and similarity(_Y_PRED, _Y_PRED) >= _MISMATCH_THRESHOLD)
+check(RS, "Y1 预演说「会成功」+ 实际成功 ⇒ 判**一致**、不沉淀"
+          "（旧实现下这个分支结构上不可达）",
+      _ym.observe(Prediction("finish", _Y_PRED, 0.9, expect_ok=True), _Y_GOOD,
+                  ok=True) is None
+      and _ym.stats()["hits"] == 1 and _ym.stats()["mismatches"] == 0,
+      str({k: _ym.stats()[k] for k in ("scored", "hits", "mismatches")}))
 
-# Y2 ★读数锚：生成式任务的真实形态（一句话预演 vs 整段答案）⇒ 必判失配
+# Y2 ★分辨力的定义：**同一个预演**，对"做对"和"做错"必须给出**不同**判定。
+#    旧实现两次都判失配（而且错误解的一致度反而更高）⇒ 它分辨的不是对错。
 _ym2 = WorldModel(_y_mem, _Y_LLM(_Y_PRED))
-_p2 = _ym2.predict(state="目标：写 int_to_roman", action="finish({'answer': '<代码>'})",
-                   use_llm=True)
-_m2 = _ym2.observe(_p2, _Y_GOOD)
-check(RS, "Y2 ★读数锚：**一句话预演 vs 整段答案** ⇒ 一致度远低于门槛 0.34 ⇒ 每次必判失配"
-          "（实测三轮 9/9 次一致度 ≤ 0.09）",
-      _m2 is not None and _m2.agreement < _MISMATCH_THRESHOLD,
-      f"agreement={None if _m2 is None else round(_m2.agreement, 4)}")
+_y2_hit = _ym2.observe(Prediction("finish", _Y_PRED, 0.9, expect_ok=True), _Y_GOOD, ok=True)
+_y2_miss = _ym2.observe(Prediction("finish", _Y_PRED, 0.9, expect_ok=True), _Y_BAD, ok=False)
+check(RS, "Y2 ★分辨力：同一预演，做对 ⇒ 不沉淀 ／ 做错 ⇒ 沉淀。"
+          "**两者判定不同** —— 这才叫分辨力（旧实现两次都判失配）",
+      _y2_hit is None and _y2_miss is not None and _y2_miss.kind == "outcome",
+      f"做对={_y2_hit} 做错={_y2_miss}")
 
-# Y3 ★读数锚：一致度**分辨不出对错** —— 同一个预演，对"完全正确"和"完全错误"的答案
-#    给出**同一种**判定（都判失配）。所以"失配"记的是**措辞差异**，不是**做错了**。
+# Y2b 反证：把"分辨力"本身做成探针，喂两种**坏实现**进去，必须判无分辨力。
+#    ⚠️ 第一版这里写成了 `(None is None) and not (None is not None)` ——
+#    那是一句恒真的废话，不是反证。反证必须让**同一段判定逻辑**作用在坏输入上并失败。
+def _discriminates(decide) -> bool:                                # noqa: ANN001
+    """分辨力探针：同一预演，对"做对"和"做错"必须给出**不同**判定。"""
+    return decide(True) != decide(False)
+
+
+check(RS, "Y2b 反证：探针对「恒判一致」与「恒判失配」两种坏实现都判**无分辨力**，"
+          "对正确实现判有分辨力 —— 证明 Y2 不是恒真的死断言",
+      _discriminates(lambda ok: None) is False
+      and _discriminates(lambda ok: "mismatch") is False
+      and _discriminates(lambda ok: None if ok else "mismatch") is True,
+      "恒一致→False 恒失配→False 真判→True")
+
+# Y3 ★读数锚：文本比对**仍然**分不出对错 ——
+#    正确解与错误解都在门槛之下，且**错误解反而更「像」**（反相关）。
+#    这正是它被降级成"只记情景、不进语义"的理由。
 _a_good, _a_bad = similarity(_Y_PRED, _Y_GOOD), similarity(_Y_PRED, _Y_BAD)
-check(RS, "Y3 ★读数锚：一致度**分辨不出对错** —— 正确解与错误解被同样判为失配",
-      _a_good < _MISMATCH_THRESHOLD and _a_bad < _MISMATCH_THRESHOLD,
+_y3 = WorldModel(MemoryStore(_TMP / "y3_text.db"), _Y_LLM(_Y_PRED, expect_ok=None))
+_m_good = _y3.observe(Prediction("finish", _Y_PRED, 0.9, expect_ok=None), _Y_GOOD)
+_m_bad = _y3.observe(Prediction("finish", _Y_PRED, 0.9, expect_ok=None), _Y_BAD)
+check(RS, "Y3 ★读数锚：文本类比对**仍然**分不出对错（两者都判失配，且错误解一致度 ≥ 正确解）",
+      _a_good < _MISMATCH_THRESHOLD and _a_bad < _MISMATCH_THRESHOLD
+      and _a_bad >= _a_good
+      and (_m_good is not None) and (_m_bad is not None),
       f"正确={_a_good:.4f} 错误={_a_bad:.4f}（门槛 {_MISMATCH_THRESHOLD}）")
+check(RS, "Y3b ★纪律：因此文本类失配**只进情景、不进语义**"
+          "（分不出对错的信号不许生产知识）",
+      _y3.stats()["mismatches_text"] == 2
+      and _y3.memory.stats()["by_source"].get("worldmodel", 0) == 0,
+      f"text_mismatches={_y3.stats()['mismatches_text']} "
+      f"by_source={_y3.memory.stats()['by_source']}")
 
-# Y4 ★结构根因：`core.py` 调 `observe` 时**没有**把这一步的成败 `result.ok` 传进去
-#    ⇒ 世界模型在结构上**无从知道**自己预演的那一步到底做对了没有。
-#    这条把"失配与成败解耦"从现象钉到**代码形状**上。
+# Y4 ★结构锚：`core.py` 调 `observe` 时**必须**把这一步的成败 `result.ok` 传进去。
+#
+#    ⚠️ 这条断言的**方向在修复后翻转了**：修之前它断言"没有传 ok"（把缺陷钉在
+#    绿测试里），修之后它断言"必须传 ok"（把修复钉住，防止回退）。
+#    两次都指向同一个事实：**世界模型有没有拿到地面真相**。
+#    ⇒ 一个读数锚完成使命后应该翻转成不变量，而不是被删掉。
 _CORE_SRC = (MW_DIR / "core.py").read_text(encoding="utf-8")
 
 
@@ -1657,9 +1724,9 @@ def _observe_arg_names(src: str) -> list[str]:
 
 
 _obs_args = _observe_arg_names(_CORE_SRC)
-check(RS, "Y4 ★结构根因：`core.py` 调 `wm.observe` 时**没有**传入成败（`result.ok`）"
-          "⇒ 世界模型在结构上无法知道那一步做对了没有",
-      len(_obs_args) >= 2 and "ok" not in _obs_args, f"observe 实参={_obs_args}")
+check(RS, "Y4 ★结构锚：`core.py` 调 `wm.observe` 时**必须**传入成败（`result.ok`）"
+          "—— 不传，世界模型就只能退回去比措辞，而那结构上必错",
+      "ok" in _obs_args, f"observe 实参={_obs_args}")
 
 # 反证：**两种写法都要能发现**（位置 + 关键字）—— 第一版只认位置，漏掉了
 # 线上最可能出现的 `ok=result.ok`，于是"修复"注入后断言不转红。
@@ -1668,6 +1735,95 @@ check(RS, "Y5 反证：同一探针对**位置**与**关键字**两种写法都�
       "ok" in _observe_arg_names("self.wm.observe(pred, result.ok, obs)")
       and "ok" in _observe_arg_names("self.wm.observe(pred, obs, ok=result.ok)"),
       str(_observe_arg_names("self.wm.observe(pred, obs, ok=result.ok)")))
+
+# Y6 「没量到」≠「量到 0」：一次都没检验过时，命中率必须是 None，不能是 0.0。
+#    否则一个"从未被检验"的世界模型会显示成"命中率 0%" —— 那是最坏的一种假读数。
+_y6 = WorldModel(MemoryStore(_TMP / "y6.db"), _Y_LLM(_Y_PRED))
+check(RS, "Y6 `scored==0` ⇒ `hit_rate` 是 `None` 而不是 `0.0`（契约③：缺失 ≠ 否定）",
+      _y6.stats()["hit_rate"] is None, str(_y6.stats()["hit_rate"]))
+
+# Y7 对账：三个派生量必须自洽，否则读数会互相打架（V5 的四五处声明就是这个病）。
+_y7 = WorldModel(MemoryStore(_TMP / "y7.db"), _Y_LLM(_Y_PRED))
+for _ok in (True, True, False, False, True):
+    _y7.observe(Prediction("x", "e", 0.9, expect_ok=True), "o", ok=_ok)
+_y7s = _y7.stats()
+check(RS, "Y7 对账：`scored == Σ混淆矩阵`、`mismatches == 成败失配 + 文本失配`、"
+          "`hits == ok_ok + fail_fail`",
+      _y7s["scored"] == sum(_y7s["confusion"].values())
+      and _y7s["mismatches"] == _y7s["mismatches_outcome"] + _y7s["mismatches_text"]
+      and _y7s["hits"] == _y7s["confusion"]["ok_ok"] + _y7s["confusion"]["fail_fail"],
+      str(_y7s))
+
+# Y8 ★读数的抗退化：一个**恒说"会成功"**的预测器，命中率看起来还行（3/5=0.6），
+#    但混淆矩阵一眼就能看出它从不预测失败。单看准确率会被它骗过去。
+_y8 = WorldModel(MemoryStore(_TMP / "y8.db"), _Y_LLM(_Y_PRED))
+for _ok in (True, True, False, False, True):
+    _y8.observe(Prediction("x", "e", 0.9, expect_ok=True), "o", ok=_ok)
+_y8s = _y8.stats()
+check(RS, "Y8 ★读数抗退化：恒说「会成功」的预测器 —— 命中率 0.6 看似正常，"
+          "但混淆矩阵里 `预测失败` 的两格全为 0 ⇒ 它的「分辨力」是假的，读数看得见",
+      _y8s["hit_rate"] == 0.6
+      and _y8s["confusion"]["fail_ok"] == 0 and _y8s["confusion"]["fail_fail"] == 0,
+      str(_y8s))
+
+# Y9 不静默降级：预演说得出成败、调用方却没给成败 ⇒ 计入 `unscored`，
+#    **不许**偷偷改用文本比对（那是拿一把不合适的尺子把错误藏起来）。
+_y9 = WorldModel(MemoryStore(_TMP / "y9.db"), _Y_LLM(_Y_PRED))
+_y9.observe(Prediction("x", "e", 0.9, expect_ok=True), "整段观测文本，与预演毫无重合")
+_y9s = _y9.stats()
+check(RS, "Y9 预演可检验但没给 `ok` ⇒ 计入 `unscored`，且**不**降级成文本比对"
+          "（text_compared 必须为 0）",
+      _y9s["unscored"] == 1 and _y9s["text_compared"] == 0
+      and _y9s["scored"] == 0 and _y9s["hit_rate"] is None,
+      str({k: _y9s[k] for k in ("unscored", "text_compared", "scored", "hit_rate")}))
+
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("Z. 内核读数落盘 —— 累加是加法，比值不是")
+print("=" * 74)
+
+# 为什么单开一组：`runs.jsonl` 以前只记 `per_task`（score/status/why），
+# **内核自己的读数一概丢失** ⇒ "失配=3 ⇒ 因果闭环在工作"只能靠翻 stdout，
+# 日志又不落盘、事后无法复核。现在世界模型的 scored/hits/混淆矩阵随每次运行落盘。
+from run import _kwm_absorb, _kwm_line, _kwm_zero                # noqa: E402
+
+_z_s1 = {"predictions": 10, "scored": 100, "hits": 100, "mismatches": 0,
+         "mismatches_outcome": 0, "mismatches_text": 0, "text_compared": 0,
+         "unscored": 0, "suppressed": 0,
+         "confusion": {"ok_ok": 100, "ok_fail": 0, "fail_ok": 0, "fail_fail": 0}}
+_z_s2 = {"predictions": 1, "scored": 1, "hits": 0, "mismatches": 1,
+         "mismatches_outcome": 1, "mismatches_text": 0, "text_compared": 0,
+         "unscored": 0, "suppressed": 0,
+         "confusion": {"ok_ok": 0, "ok_fail": 1, "fail_ok": 0, "fail_fail": 0}}
+
+_z = _kwm_absorb(_kwm_absorb(_kwm_zero(), _z_s1), _z_s2)
+_zl = _kwm_line(_z)
+check(RS, "Z1 多次运行按**加法**并：计数与混淆矩阵逐格相加",
+      _zl["scored"] == 101 and _zl["hits"] == 100
+      and _zl["confusion"] == {"ok_ok": 100, "ok_fail": 1, "fail_ok": 0, "fail_fail": 0},
+      str(_zl))
+
+# ★ 这一条是整组里最容易被写错的：把每轮的 hit_rate 求平均，
+#   会得到 (1.0 + 0.0)/2 = 0.5，而真值是 100/101 = 0.990。**比值不可平均。**
+check(RS, "Z2 ★比值不可平均：100 次全对 + 1 次全错 ⇒ 命中率必须是 100/101=0.990，"
+          "不是逐轮平均的 0.5",
+      _zl["hit_rate"] == 0.99 and _zl["hit_rate"] != 0.5, str(_zl["hit_rate"]))
+
+check(RS, "Z3 空累加器 ⇒ `hit_rate` 为 `None`（没量到，不是 0.0）",
+      _kwm_line(_kwm_zero())["hit_rate"] is None,
+      str(_kwm_line(_kwm_zero())["hit_rate"]))
+
+# 老读数文件里没有新字段是常态 —— 累加必须容忍，但**不能**因此把"没有"读成"0 次"。
+check(RS, "Z4 旧读数里缺 `scored`/`confusion` 等键 ⇒ 按 0 并、不抛异常"
+          "（兼容旧 runs.jsonl，而不是让整个读数炸掉）",
+      _kwm_absorb(_kwm_zero(), {"predictions": 3})["predictions"] == 3,
+      str(_kwm_absorb(_kwm_zero(), {"predictions": 3})))
+
+check(RS, "Z5 累加器是纯函数：不改入参（否则同一个 dict 被复用两处会互相污染）",
+      _z_s1["scored"] == 100 and _z_s1["confusion"]["ok_ok"] == 100,
+      str(_z_s1["scored"]))
 
 
 # ===========================================================================

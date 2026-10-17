@@ -38,7 +38,7 @@ from .flow import FlowMeter
 from .guard import Guard
 from .ledger import ScoreLedger
 from .llm import HTTPLLM, LLM, LLMError, Message, StubLLM, build_llm
-from .memory import MemoryStore
+from .memory import BlobIntegrityError, MemoryStore
 from .metacog import SelfModel, load_evidence
 from .planner import Planner, Step, action_signature, looks_complex
 from .tools import (ToolRegistry, external_agent_names, register_core_tools,
@@ -57,6 +57,48 @@ from .worldmodel import WorldModel
 #:   ② 修法一旦改成"存索引 + 按需取回全文"，这个常量的语义要跟着变，
 #:      那时只有一个地方要改。
 WORKING_CHAR_CAP = 300
+
+#: 按需取回时单条观测最多回看多少字符（第二十轮，DESIGN §16.19）。
+#:
+#: ⚠️ 为什么不把它并进 `WORKING_CHAR_CAP`：两者回答的是**两个不同的问题**。
+#:   `WORKING_CHAR_CAP` = "每一步**无条件**占多少上下文"（宽度，必须小且稳定）；
+#:   `EXPAND_CHAR_CAP`  = "**一旦觉得意外**，允许临时多要多少"（可回溯深度）。
+#:   合并成一个数就等于"把每一步都变长" —— 那会让一步吃掉整个上下文，
+#:   而 §17-9 早就写死了：修法**不是**把 300 调大。
+#: ⚠️ 600 而不是 1200：它要和 `cfg.STATE_CHAR_CAP`（1600）配得上。
+#: 回看块 + 工作记忆索引 + 目标 ≈ 1000 字，剩下的才留给语义记忆与轨迹。
+#: 定得比这更大，回看就会把别的块挤掉 —— 那不是"多给了信息"，
+#: 是"用一部分上下文换另一部分"，而两者的价值没有可比性。
+EXPAND_CHAR_CAP = 600
+
+#: 工作记忆里「已被按需回看升级」的条目标记。**唯一事实源**：
+#: 写入侧用它做前缀，渲染侧用它决定"这一条还截不截"。
+#: ⚠️ 用前缀而不是另一个集合：窗口滑动会丢条目，按下标记的集合会错位。
+EXPAND_MARK = "[回看 "
+
+#: 单个任务最多回看几次。**必须有上限**，否则"按需取回"就是"迟早把窗口塞满"。
+EXPAND_MAX_PER_TASK = 3
+
+
+def recall_trigger(*, ok: bool, error: str, mismatched: bool) -> str:
+    """要不要按需回看？返回取回窗口（`"tail"` / `"whole"` / `""` = 不回看）。
+
+    ⛔ 抽成纯函数有三个理由（不是为了好看）：
+      ① **可被单独测**：否则触发条件埋在 `run()` 的循环体里，只能靠端到端撞，
+         而端到端撞不到的时候，机制"装了但一次不触发"和"没装"长得一模一样。
+      ② **只有一处**：写在循环体里，下一次改动就会在旁边再写一遍（V5 的老毛病）。
+      ③ **不含任何模型输出**：让模型自己决定"要不要看原文"，它会在 100% 的
+         情况下自信地说不用 —— 于是机制恒为 0 次，而读数上只显示"没触发"。
+
+    两条触发都要求**信息已经丢了**才动作：
+      · T1 `ok=False` 且错误原文长过工作记忆宽度 ⇒ 决定性信息可能在结尾；
+      · T2 世界模型的预演被推翻（失配）⇒ 没预料到的细节在原文里，取头尾各一半。
+    """
+    if not ok and len(error or "") > WORKING_CHAR_CAP:
+        return "tail"
+    if mismatched:
+        return "whole"
+    return ""
 
 
 class _Log:
@@ -287,6 +329,15 @@ class Core:
         # 混在一起会出现"这一轮 0 次否决"而那个 0 是上一轮留下的 —— V5 的老毛病。
         self.flow = FlowMeter()
         self.values = Values()
+        # 第二十轮：按需回看是**单轮**读数（预算也是单轮的）。
+        #: 因预算不足被丢掉的块/条目数（单轮）。**有消费者**：进 stats。
+        #: 没有这个计数，"预算吃紧"就是静默的 —— 而静默的降级正是 V5 的病。
+        self.state_trimmed = 0
+        self.expand_stats: dict = {
+            "calls": 0, "chars": 0, "errors": 0,
+            "by_trigger": {"mismatch": 0, "fail_tail": 0},
+            "skipped": {"mode": 0, "budget": 0, "no_entry": 0},
+        }
 
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
         counted = _LedgeredLLM(self.llm, self.ledger,
@@ -379,7 +430,10 @@ class Core:
                         # ⚠️ 重规划**更**需要易错点：它正是"刚栽了"的那一次。
                         #    原来这里不传 ⇒ guidance 只在首次尝试时有效。
                         guidance=self.wm.guidance(
-                            action=goal, features=features, task_id=task_id))
+                            action=goal, features=features, task_id=task_id),
+                        # ★ 失败之后**更**需要状态，不是更不需要 ——
+                        #   回看取回的报错原文就拼在状态里（第二十轮）。
+                        state=state)
                 else:
                     plan = self.planner.propose(
                         goal=goal, state=state, history=history, n=n,
@@ -485,6 +539,7 @@ class Core:
                     #    不传，世界模型就无从知道这一步到底做对了没有 ——
                     #    它只能退回去比"措辞"，而那种比对**结构上必错**。
                     #    `result.ok` 是内核自己持有的地面真相，没有理由不给它。
+                    mm = None
                     if pred is not None and pred.trustworthy:
                         mm = self.wm.observe(pred, result.as_observation(), ok=result.ok)
                         if mm:
@@ -507,10 +562,31 @@ class Core:
                     #    两者的比就是"写入截断率"。这个比不是形式主义的指标：
                     #    它直接回答"工具返回的 5000 字里，下一步还看得见多少"。
                     full = f"{cand.tool} ⇒ {'✔' if result.ok else '✘'} {result.as_observation()}"
-                    stored = full[:WORKING_CHAR_CAP]
+                    # ★ 第二十轮：**先整段存下来，再决定下一步能看见多少**。
+                    #   在此之前这里只有 `stored = full[:300]`，于是 5000 字的观测
+                    #   有 94% 当场消失且**不可找回**（§17-9 实测覆盖率 0.06）。
+                    #   现在那 94% 进了 `blobs`，工作记忆里留一个**可寻址的索引**：
+                    #     `[b#7 5025字 sha=4baa3718fdb3] <前 300 字>`
+                    #   ⇒ 宽度**一点没变**（300 仍是 300），变的是"要得回来"。
+                    handle = self.memory.capture(full, kind="observation")
+                    index = f"[{handle.ref} {handle.chars}字 sha={handle.sha}] "
+                    stored = (index + full[:WORKING_CHAR_CAP])[:WORKING_CHAR_CAP + 80]
                     self.flow.emit(it, "perceive>memory", 1, len(full))
                     self.flow.take("perceive>memory", 1, len(stored))
                     self.memory.think(stored)
+
+                    # ── 按需回看：只在**意外**发生时要回原文（第二十轮）──────
+                    # ⛔ 触发条件必须写死且**可证伪**，绝不交给模型自己决定要不要看：
+                    #    交给模型 = 它会自信地不看，然后机制恒为 0 次而没人发现。
+                    #   T1 失配：世界模型的预演被推翻 —— 意外正说明"没预料到的细节在里面"。
+                    #   T2 失败且错误被截断：报错原文长过工作记忆宽度 ⇒ 决定性信息可能已经丢了。
+                    #   ⚠️ 两条都只在"被截断"时才有意义，否则取回的就是已经在眼前的字。
+                    recall_where = recall_trigger(
+                        ok=result.ok, error=result.error, mismatched=mm is not None)
+                    if recall_where:
+                        self._recall_for(it, handle, where=recall_where,
+                                         trigger=("fail_tail" if recall_where == "tail"
+                                                  else "mismatch"))
 
                     if not result.ok:
                         consecutive_failures += 1
@@ -580,6 +656,49 @@ class Core:
                               exclude_task_id=task_id)
 
     # ------------------------------------------------------------------
+    def _recall_for(self, it: int, handle, *, where: str, trigger: str) -> None:
+        """按句柄取回原文的一窗，放进**下一回合**的上下文。
+
+        ⛔ 三条不许省：
+          ① **上限**：`EXPAND_MAX_PER_TASK`。没有上限的"按需"迟早把窗口塞满，
+             那时多步任务反而变成"一步烧完全部预算"。
+          ② **失败要留正向信号**：句柄丢了 / 库被动过 ⇒ 计数 + 日志，
+             不许 `except: pass`（那等于"取回失败了也照常跑"，读数还是 0，没人知道）。
+          ③ **截断要明示**：回看窗口小于原文时，块头写清"原文 N 字"，否则
+             模型会以为它看到的就是全部 —— 那就是把"看不见"伪装成"看完了"。
+        """
+        if self.memory_mode == ABSTRACT_MODE:
+            # ⚠️ abstract 臂的语义是"只读蒸馏层"。允许它回看原文，这个臂就不是对照了
+            #    —— 两个臂会同时读得到原文，差值变成噪声。
+            self.expand_stats["skipped"]["mode"] += 1
+            return
+        if self.expand_stats["calls"] >= EXPAND_MAX_PER_TASK:
+            self.expand_stats["skipped"]["budget"] += 1
+            self.log(f"      📎 回看已达上限 {EXPAND_MAX_PER_TASK} 次 ⇒ 不再取回")
+            return
+        try:
+            text, truncated = self.memory.expand(handle.ref, cap=EXPAND_CHAR_CAP,
+                                                 where=where)
+        except (KeyError, BlobIntegrityError) as e:
+            self.expand_stats["errors"] += 1
+            self.log(f"      ⚠️ 回看失败[{type(e).__name__}] {e} ⇒ 上下文里不会有这段")
+            return
+        head = f"{EXPAND_MARK}{handle.ref} 原文{handle.chars}字 窗={where}"
+        head += f" 已截断到{len(text)}字" if truncated else " 未截断"
+        head += f" 因由={trigger}]"
+        if not self.memory.upgrade_last(f"{head}\n{text}"):
+            # 没有可升级的条目（例如上层关掉了工作记忆写入）⇒ 计数，不假装成功。
+            self.expand_stats["skipped"]["no_entry"] += 1
+            self.log("      📎 回看取到了正文但工作记忆为空 ⇒ 无处安放（已计数）")
+            return
+        self.expand_stats["calls"] += 1
+        self.expand_stats["chars"] += len(text)
+        self.expand_stats["by_trigger"][trigger] = (
+            self.expand_stats["by_trigger"].get(trigger, 0) + 1)
+        self.log(f"      📎 回看 {handle.ref} 因由={trigger} 窗={where} "
+                 f"{len(text)}/{handle.chars} 字")
+
+    # ------------------------------------------------------------------
     def _state(self, goal: str, history: Sequence[str], it: int, *,
                task_id: str | None = None, scorer_sha: str = "",
                suite_sha: str = "") -> str:
@@ -588,15 +707,38 @@ class Core:
         # 不在上游估一个数 —— 估出来的数会让"覆盖率"变成自我安慰。
         mem_items = 0
         mem_chars = 0
-        # ① 工作记忆。⚠️ abstract 模式下**整块不读** —— 它存的是工具输出原文，
-        #   而 finish 的输出就是上一题的完整答案。留着它，abstract 臂就不成为对照。
+        # ── 预算：`cfg.STATE_CHAR_CAP`（唯一声明处），按**优先级**取舍 ──────
+        # ⚠️ 第二十轮之前这里没有预算，而规划器那边有一句 `state[:1200]`。
+        #    两侧各有一套"能放多少"的真相 ⇒ 被剪掉的东西**不会有任何报错**。
+        #    实测：回看正文拼在状态尾部，被规划器一剪，一个字都没进模型，
+        #    而读数上写着"取回成功"。⇒ 预算必须在这里显式执行。
+        # 优先级（高 → 低）：目标 > 工作记忆（含回看升级） > 步号 > 语义记忆 > 轨迹
+        #   顺序的理由：目标与"下一步的动作依据"是**不可替代**的；
+        #   语义记忆与轨迹是"有更好、没有也能继续"的辅助。
+        cap = int(cfg.STATE_CHAR_CAP)
         wm = [] if self.memory_mode == ABSTRACT_MODE else self.memory.working_view()
         if wm:
             # ⚠️ **必须逐条截断**：工作记忆存的是工具输出的原文，不截断的话
             #    一个大文件/一段长代码就能把整个上下文窗口吃掉
             #    —— 那时"多步任务的上下文"反而变成"一步就把预算烧完"。
-            recent = wm[-6:]
-            block = " ｜ ".join(w[-200:] for w in recent)
+            recent = list(wm[-6:])
+            # ⚠️ 宽度**按条**决定，不是按全局：普通条目仍是尾 200 字（省上下文），
+            #    被「按需回看」升级过的那一条已经是预算内的定稿，**不许再二次截断**
+            #    —— 否则取回来的正文会被这里悄悄剪掉，机制看起来装了其实等于没装。
+            def _render(ws: Sequence[str]) -> str:
+                return " ｜ ".join(
+                    w if w.startswith(EXPAND_MARK) else w[-200:] for w in ws)
+
+            # 预算不够就**先丢最老的条目**（新的比旧的更接近"现在"）；
+            # 而不是从尾部截断字符串 —— 尾部正是回看正文所在的位置。
+            # ⚠️ 用 `for` 而**不是** `while`：内核「只准有一个 while」是 AST 钉死的
+            #    不变量（契约 J6）。这里本来就最多丢 5 条，for 既表达上界又不破规。
+            for _ in range(5):
+                if len(recent) <= 1 or len(parts[0]) + len(_render(recent)) <= cap - 200:
+                    break
+                recent = recent[1:]
+                self.state_trimmed += 1
+            block = _render(recent)
             parts.append("[工作记忆] " + block)
             mem_items += len(recent)
             mem_chars += len(block)
@@ -623,7 +765,17 @@ class Core:
             mem_chars += sum(len(c.as_line()[:140]) for c in crit[-3:])
         if history:
             parts.append("[轨迹] " + " ｜ ".join(history[-6:]))
-        parts.append(f"[第 {it}/{self.ledger.budget.steps if self.ledger else '?'} 步]")
+        step_line = f"[第 {it}/{self.ledger.budget.steps if self.ledger else '?'} 步]"
+        # 低优先级的块**只在预算内**才拼进去：宁可少一段辅助信息，
+        # 也不许把高优先级的块（工作记忆/回看正文）挤出去。
+        keep, used = [], len(parts[0]) + len(step_line)
+        for p_ in parts[1:]:
+            if used + len(p_) + 1 <= cap:
+                keep.append(p_)
+                used += len(p_) + 1
+            else:
+                self.state_trimmed += 1
+        parts = [parts[0]] + keep + [step_line]
         state = "\n".join(parts)
         # 通量：记忆 → 推理。分子 = 真的拼进上下文的条数，分母 = 池子里可用的条数。
         # ⚠️ 这个比值**不是健康度**（库越大比例越小），只回答"这条线通没通"。
@@ -721,6 +873,10 @@ class Core:
             "worldmodel": self.wm.stats(),
             "planner": self.planner.stats(),
             "memory": self.memory.stats(),
+            # 第二十轮：按需回看。**必须报跳过原因** —— 只报 calls 的话，
+            # "机制装了但一次没触发"和"机制根本没装"看起来一模一样。
+            "expand": {**dict(self.expand_stats),
+                       "state_trimmed": self.state_trimmed},
             "llm": "stub" if self._llm_is_stub else "http",
             "llm_kind": self.llm_kind,   # 与 "llm" 同源；保留两个键是为了兼容旧读法
             "external_agents": self.external_agents,
@@ -784,7 +940,16 @@ class Core:
                         f" Δ={'n/a' if _d is None else f'{_d:+.3f}'}"
                         f" 阈值={_pw.get('margin')} {_pw.get('state')}"
                         f" 影响={_sm.get('influenced')}/{_sm.get('consulted')}]")
+        # 按需回看读数：**零值也念**。它是"可回溯"这个声明的唯一证据 ——
+        # 只在非零时打印，就会让"一次都没取回"看起来和"没装"一样。
+        _ex = stats["expand"]
+        _ex_line = (f" | 回看={_ex['calls']}次/{_ex['chars']}字"
+                    f"(失配{_ex['by_trigger'].get('mismatch', 0)}"
+                    f"/报错{_ex['by_trigger'].get('fail_tail', 0)})"
+                    f" 跳过={_ex['skipped']['budget']}(超限)"
+                    f"{_ex['skipped']['mode']}(模式)"
+                    f" 错误={_ex['errors']}")
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
-                 f"{tx_line}{_sl_line}{_sm_line}")
+                 f"{tx_line}{_sl_line}{_sm_line}{_ex_line}")
         return Outcome(status, answer, reason, len(history), stats)

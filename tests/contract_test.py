@@ -2297,17 +2297,37 @@ check(RS, "AF8 读数锚：自我模型**被咨询过但从未影响决策**（�
       next((r["detail"] for r in _cap_rows if r["capability"] == "自我模型"), "无此行"))
 
 _core_src = _src("core.py")
-check(RS, "AF9 ★单一事实源：`core.py` 的写入截断必须引用 `WORKING_CHAR_CAP`，"
-          "不许再出现 `full[:300]`（探针与实现各抄一份 300 就会漂成两套真相）",
-      "WORKING_CHAR_CAP = 300" in _core_src
-      and "full[:WORKING_CHAR_CAP]" in _core_src
-      and "full[:300]" not in _core_src,
-      f"常量声明={'WORKING_CHAR_CAP = 300' in _core_src} "
-      f"引用={'full[:WORKING_CHAR_CAP]' in _core_src} "
-      f"残留字面量={'full[:300]' in _core_src}")
 
-check(RS, "AF10 感知→记忆的硬瓶颈必须判成立：长观测 5000 字只存 300 字（6%）"
-          "—— 而下一步关于上一步的一切都只来自这 300 字",
+
+def _code_only(text: str) -> str:
+    """去掉注释与三引号字符串块 —— **静态锚必须注释感知**。
+
+    ⚠️ 第二十轮实测踩到：AF9 原先直接写 `"full[:300]" not in src`，
+    而我在同一行旁边加了一句注释解释"以前这里写的是 `full[:300]`"，
+    断言当场转红 —— 尺子看见的是**注释**，不是代码。
+    这不是实现的问题，是尺子的问题（V5 规则第 7 条）。
+    """
+    text = re.sub('"""[\\s\\S]*?"""', "", text)
+    text = re.sub("'''[\\s\\S]*?'''", "", text)
+    return "\n".join(re.sub(r"#.*$", "", ln) for ln in text.splitlines())
+
+
+_core_code = _code_only(_core_src)
+check(RS, "AF9 ★单一事实源：`core.py` 的写入截断必须引用 `WORKING_CHAR_CAP`，"
+          "不许再出现 `full[:300]`（探针与实现各抄一份 300 就会漂成两套真相）\n"
+          "          ⚠️ 判定**必须去注释**：注释里提到旧写法不算违规 ——"
+          "这正是一条断言自己转红才暴露出来的口径问题。",
+      "WORKING_CHAR_CAP = 300" in _core_code
+      and "full[:WORKING_CHAR_CAP]" in _core_code
+      and "full[:300]" not in _core_code,
+      f"常量声明={'WORKING_CHAR_CAP = 300' in _core_code} "
+      f"引用={'full[:WORKING_CHAR_CAP]' in _core_code} "
+      f"残留字面量={'full[:300]' in _core_code}"
+      f"（不去注释时={'full[:300]' in _core_src}）")
+
+check(RS, "AF10 感知→记忆的硬瓶颈**仍**判成立：长观测 5000 字只存 300 字（6%）"
+          "—— ⚠️ 第二十轮**没有**加宽这个瓶颈（那会让一步吃掉整个上下文），"
+          "只是把被截掉的那部分变成**可寻址**的（见 AR 组）",
       any(r["capability"] == "记忆" and "截断" in r["name"]
           and r["state"] == _cap.PRESENT for r in _cap_rows),
       next((r["detail"] for r in _cap_rows
@@ -4363,7 +4383,218 @@ check(RS, "AQ10 ★三条 mapper 的分工必须与设计表一致（这是整�
           "          分工一旦漂，`E3 − F` 就不再是「形状」的读数，而是一个混合物。",
       all(_AQ_role.values()), f"{_AQ_role}")
 
+
 _ap_restore()   # ⛔ 最后必须卸干净：patch 是类级别的，不还原会污染后面的组
+
+# ===========================================================================
+# AR 组（第二十轮）—— 感知 → 记忆之间那个「不可逆的漏斗」
+#
+#   缺陷（§17-9 实测）：`core.py` 里 `stored = full[:WORKING_CHAR_CAP]`，
+#   工具返回 5000 字，进下一步上下文的只有前 300 字（覆盖率 0.06），
+#   **其余部分当场消失且没有任何路径能取回**。
+#
+#   修法（§16.19）**不是**把 300 调大 —— 那会让一步吃掉整个上下文：
+#     ① 原文整段进 `blobs`，工作记忆留一个**可寻址索引**（宽度一点没变）；
+#     ② 只在**意外**发生时要回来（失败且报错被截断 / 世界模型失配）；
+#     ③ 要回来的正文**升级**工作记忆里的那一条，不另开一段。
+#
+#   AR 组钉的是**机制的四条硬约束**，不是分数：
+#     可寻址 / 逐字节可还原 / 触发可证伪 / 有上限且不回退对照臂
+# ===========================================================================
+from mw.core import (EXPAND_CHAR_CAP, EXPAND_MARK, EXPAND_MAX_PER_TASK,  # noqa: E402
+                     WORKING_CHAR_CAP, recall_trigger)
+from mw.memory import BlobIntegrityError, Handle                  # noqa: E402
+
+_AR_BODY = "traceback...\n" + ("x" * 4000) + "\n决定性信息：KeyError 'z02'"
+
+# ── AR1：原文必须**整段**落盘，且句柄自述的事实必须为真 ─────────────────
+_AR_TMP = _TMP / "ar_blobs"
+_AR_TMP.mkdir(parents=True, exist_ok=True)
+_AR_MEM = MemoryStore(_AR_TMP / "ar.db")
+_AR_H = _AR_MEM.capture(_AR_BODY)
+_AR_BACK = _AR_MEM.expand(_AR_H.ref, cap=10 ** 6)[0]
+check(RS, "AR1 ★感知写侧必须**整段**存下原文，且句柄的 `chars`/`sha` 不得撒谎\n"
+          "         —— 存的是截断版却报全文长度，就是又一个『标签撒谎』：\n"
+          "           读数上 100% 可回溯，实际取回来是残的。",
+      _AR_BACK == _AR_BODY and _AR_H.chars == len(_AR_BODY)
+      and _AR_H.sha == __import__("hashlib").sha256(
+          _AR_BODY.encode("utf-8")).hexdigest()[:12],
+      f"进={_AR_H.chars} 出={len(_AR_BACK)} sha={_AR_H.sha}")
+
+# ── AR2：三种取回窗口都必须**逐字节**落在原文里 ─────────────────────────
+_AR_WIN = {
+    "head": _AR_MEM.expand(_AR_H.ref, cap=100, where="head"),
+    "tail": _AR_MEM.expand(_AR_H.ref, cap=100, where="tail"),
+    "whole": _AR_MEM.expand(_AR_H.ref, cap=100, where="whole"),
+}
+_AR_WIN_OK = (_AR_WIN["head"][0] == _AR_BODY[:100]
+              and _AR_WIN["tail"][0] == _AR_BODY[-100:]
+              and _AR_WIN["whole"][0].startswith(_AR_BODY[:50])
+              and _AR_WIN["whole"][0].endswith(_AR_BODY[-50:])
+              and all(v[1] for v in _AR_WIN.values()))
+check(RS, "AR2 ★三种窗口必须逐字节落在原文里，且**都**报『已截断』\n"
+          "         —— `whole` 头尾各取一半是为了不让『决定性信息在结尾』这种情况\n"
+          "           被整段丢光；三者都不许把『截断了』说成『这是全文』。",
+      _AR_WIN_OK,
+      f"head={_AR_WIN['head'][0][:12]!r} tail={_AR_WIN['tail'][0][-12:]!r} "
+      f"whole 头尾={_AR_WIN['whole'][0][:10]!r}/{_AR_WIN['whole'][0][-10:]!r}")
+
+# ── AR3：句柄不存在 / 库被改过 ⇒ **必须报错**，不许静默兜底 ──────────────
+_AR_err = []
+for bad in ("b#999999", "b#0"):
+    try:
+        _AR_MEM.expand(bad, cap=10)
+        _AR_err.append(f"{bad} 没报错")
+    except KeyError:
+        pass
+_AR_MEM.conn.execute("UPDATE blobs SET text=? WHERE id=?",
+                     ("被改过", int(_AR_H.ref.lstrip("b#"))))
+_AR_MEM.conn.commit()
+try:
+    _AR_MEM.expand(_AR_H.ref, cap=10)
+    _AR_err.append("被改过却没报错")
+except BlobIntegrityError:
+    pass
+check(RS, "AR3 ★句柄不存在 ⇒ `KeyError`；原文与写侧承诺不符 ⇒ `BlobIntegrityError`\n"
+          "         —— 静默返回空串/原文会让『取回失败』长得和『取回成功』一样。\n"
+          "           这与 V5 的 `.txt 被误判成功`是同一类事故。",
+      not _AR_err, f"异常={(not _AR_err)} 漏网={_AR_err}")
+_AR_MEM.close()
+
+# ── AR4：触发条件必须**可证伪**（两个不动的情形 + 两个动的情形）─────────
+_AR_CASES = [
+    ("长报错", dict(ok=False, error="x" * (WORKING_CHAR_CAP + 1), mismatched=False), "tail"),
+    ("短报错", dict(ok=False, error="短", mismatched=False), ""),
+    ("失配", dict(ok=True, error="", mismatched=True), "whole"),
+    ("平静", dict(ok=True, error="", mismatched=False), ""),
+]
+_AR_GOT = [(n, recall_trigger(**kw)) for n, kw, _ in _AR_CASES]
+check(RS, "AR4 ★触发必须**可证伪**：该动的两个情形要动，不该动的两个**一个字都不许动**\n"
+          "         —— 只有『会触发』没有『不该触发时不触发』，"
+          "那就是一个恒真的机制；\n"
+          "           而恒真的机制在读数上与『没装』完全一样（都是 0 次或都是天天触发）。",
+      all(g == want for (_, g), (_, _, want) in zip(_AR_GOT, _AR_CASES)),
+      " ".join(f"{n}→{g or '不回看'}" for n, g in _AR_GOT))
+
+# ── AR5：触发决策**不许模型参与**（它是内核规则）────────────────────────
+#: ⚠️ 这里第一版只看了 `args.args`，而 `recall_trigger(*, …)` 的三个形参都在
+#:    `kwonlyargs` 里 ⇒ 断言读到空集合、当场转红。**是断言的口径错，不是实现的错**
+#:    —— 静态锚要按 AST 的**实际分类**取，不能凭"形参都在 args.args 里"的直觉。
+_AR_TRIG_ARGS = [a.arg for n in ast.walk(ast.parse(_CORE_SRC))
+                 if isinstance(n, ast.FunctionDef) and n.name == "recall_trigger"
+                 for a in list(n.args.args) + list(n.args.kwonlyargs)]
+check(RS, "AR5 ★触发函数只许收 `ok` / `error` / `mismatched` —— **不许**收模型输出\n"
+          "         —— 让模型自己决定『要不要回头看原文』，它会在 100% 的情况下\n"
+          "           自信地说不用；于是机制恒为 0 次，而读数上只显示『没触发』。",
+      set(_AR_TRIG_ARGS) == {"ok", "error", "mismatched"}, f"形参={_AR_TRIG_ARGS}")
+
+# ── AR6：内核里 `capture(` 必须有**生产调用点** ─────────────────────────
+_AR_CAPTURE_N = _core_code.count("self.memory.capture(")
+check(RS, "AR6 ★结构锚：`core.py` 必须真的在感知相位调 `memory.capture(`\n"
+          "         —— 只把 `blobs` 与 `expand()` 造出来而内核不调用，"
+          "那是一个『库里的能力』，不是闭环里的能力。",
+      _AR_CAPTURE_N == 1,
+      f"生产调用点={_AR_CAPTURE_N}（必须恰好 1 处：两处就意味着有两条写入路径）")
+
+# ── AR7：宽度**一点没变**（本轮没把 300 调大）──────────────────────────
+check(RS, "AR7 ★`WORKING_CHAR_CAP` 必须**仍然是 300**\n"
+          "         —— 本轮的修法是『存索引 + 按需取回』，不是『把宽度调大』：\n"
+          "           调大是拿上下文换细节，会让一步吃掉整个预算。\n"
+          "           这条断言同时防『顺手放宽』和『顺手收紧』两种漂移。",
+      WORKING_CHAR_CAP == 300 and EXPAND_CHAR_CAP < cfg.STATE_CHAR_CAP,
+      f"宽度={WORKING_CHAR_CAP} 回看窗={EXPAND_CHAR_CAP} 状态预算={cfg.STATE_CHAR_CAP}")
+
+# ── AR8：回看**升级**工作记忆，不另开一段（否则同一观测出现两次）────────
+_AR_UP = MemoryStore(_TMP / "ar_up.db")
+_AR_UP.think("[b#1 10字] 原始摘要")
+_AR_up_ok1 = _AR_UP.upgrade_last(EXPAND_MARK + "b#1 加宽后的正文")
+_AR_up_view = _AR_UP.working_view()
+_AR_UP2 = MemoryStore(_TMP / "ar_up2.db")
+_AR_up_ok2 = _AR_UP2.upgrade_last("没有条目时不该成功")
+check(RS, "AR8 ★回看必须**替换**工作记忆的最后一条，不许追加\n"
+          "         —— 追加会让同一条观测在上下文里出现两次（截断版 + 回看版），\n"
+          "           而那正是『同一事实只声明一处』的反面；\n"
+          "           第一次实现就是追加，AB7 当场转红：关掉工作记忆写入后\n"
+          "           回流率仍有 0.5，因为回看块成了第二条回边。\n"
+          "         ⚠️ 没有条目时必须返回 False（调用方据此计数），不许静默成功。",
+      _AR_up_ok1 and len(_AR_up_view) == 1
+      and _AR_up_view[0].startswith(EXPAND_MARK) and _AR_up_ok2 is False,
+      f"替换后条数={len(_AR_up_view)} 无条目时={_AR_up_ok2}")
+_AR_UP.close(); _AR_UP2.close()
+
+# ── AR9：状态预算必须**单一来源**，且够放回看正文 ──────────────────────
+_AR_PSRC = (V1 / "mw" / "planner.py").read_text(encoding="utf-8")
+_AR_PSRC_CODE = _code_only(_AR_PSRC)
+check(RS, "AR9 ★状态预算只能有**一处**声明：`planner` 里不许再出现 `state[:1200]` 这种字面量\n"
+          "         —— 第二十轮实测踩到：内核把回看正文拼进状态，规划器在最后一米\n"
+          "           又按 1200 字剪一刀，正文一个字都没进模型，而读数写着『取回成功』。\n"
+          "           两个漏斗里**下面那个**从来不会报错。",
+      "cfg.STATE_CHAR_CAP" in _AR_PSRC_CODE and "state[:1200]" not in _AR_PSRC_CODE
+      and cfg.STATE_CHAR_CAP > EXPAND_CHAR_CAP + 2 * WORKING_CHAR_CAP,
+      f"用常量={'cfg.STATE_CHAR_CAP' in _AR_PSRC_CODE} "
+      f"残留字面量={'state[:1200]' in _AR_PSRC_CODE} "
+      f"预算={cfg.STATE_CHAR_CAP} vs 回看+两条工作记忆={EXPAND_CHAR_CAP + 2 * WORKING_CHAR_CAP}")
+
+# ── AR10：重规划**不许**把状态丢掉 ────────────────────────────────────
+_AR_REPLAN_SIG = [n for n in ast.walk(ast.parse(_AR_PSRC))
+                  if isinstance(n, ast.FunctionDef) and n.name == "replan"]
+#: ⚠️ 与 AR5 同一个坑（第二次踩）：`replan(*, …)` 的形参全在 `kwonlyargs`。
+#:    ⇒ 这里必须两类都取。同一个口径错在两个断言里各犯一次 = 我并没有真的学会它。
+_AR_HAS_STATE = bool(_AR_REPLAN_SIG) and "state" in [
+    a.arg for a in (list(_AR_REPLAN_SIG[0].args.args)
+                    + list(_AR_REPLAN_SIG[0].args.kwonlyargs))]
+#: ⚠️ 这里第一版判的是"占位串还在不在源码里"，那是**错的口径**：
+#:    占位串作为"state 为空时的兜底"是合理的，违规的是"用它**顶掉** state"。
+#:    ⇒ 判据必须落在**转发关系**上：`replan` 里调 `propose` 时必须把 state 交出去。
+_AR_FORWARDS = ("state=(state" in _AR_PSRC_CODE or "state=state" in _AR_PSRC_CODE)
+_AR_PLACEHOLDER = not _AR_FORWARDS
+check(RS, "AR10 ★`replan` 必须收下并转发 `state`，不许用占位串把它顶掉\n"
+          "         —— 第二十轮实测：失败之后的下一轮**恰恰走 replan**，\n"
+          "           而它原来传的是 `state=\"(上一步失败，见下)\"` ⇒ 整个状态被扔掉。\n"
+          "           于是『最需要上下文的那一次』刚好是『上下文被丢的那一次』，\n"
+          "           与本函数 docstring 里那条 guidance 断点同宗。",
+      _AR_HAS_STATE and _AR_FORWARDS,
+      f"replan 收 state={_AR_HAS_STATE} 转发给 propose={_AR_FORWARDS}")
+
+# ── AR11：抽象臂必须读不到原文（否则那个对照臂就不成立）────────────────
+#: ⚠️ 这里第一版判的是"整个 core.py 里有没有那句话"，于是撤回态实测**没转红**：
+#:    把 `_recall_for` 里的模式闸换成 `if False:` 之后，同一句话在 `_state()` 里
+#:    还有一份 ⇒ 断言照样通过。**静态锚必须锚在函数体内**，不能锚在文件里。
+_AR_SRC_CODE = _code_only(_CORE_SRC)
+_AR_CORE_TREE = ast.parse(_CORE_SRC)
+
+
+def _func_body(tree, name: str) -> str:
+    for n in ast.walk(tree):
+        if isinstance(n, ast.FunctionDef) and n.name == name:
+            return ast.get_source_segment(_CORE_SRC, n) or ""
+    return ""
+
+
+_AR_RECALL_BODY = _code_only(_func_body(_AR_CORE_TREE, "_recall_for"))
+_AR_GUARD = "self.memory_mode == ABSTRACT_MODE" in _AR_RECALL_BODY
+_AR_COUNT = 'self.expand_stats["skipped"]["mode"] += 1' in _AR_RECALL_BODY
+check(RS, "AR11 ★`_recall_for` **函数体**内必须在 abstract 模式下拒绝取回并计数\n"
+          "          —— abstract 臂的语义是『只读蒸馏层』（§16.15）。\n"
+          "            允许它回看工具输出原文，两个臂就都读得到原文，\n"
+          "            差值当场变成噪声，而读数上仍然显示『两个臂都跑完了』。\n"
+          "          ⚠️ 判定范围必须是**这个函数的体**，不是整个文件 ——\n"
+          "            否则同一句话在别处还有一份时，撤掉这里也不转红（实测踩过）。",
+      _AR_GUARD and _AR_COUNT,
+      f"函数体内模式闸={_AR_GUARD} 计数={_AR_COUNT} 函数体长度={len(_AR_RECALL_BODY)}")
+
+# ── AR12：证据必须冻结 + CI 每次重算 ─────────────────────────────────
+_AR_EV = V1 / "bench" / "evidence" / "recall_s20" / "verdict.json"
+_AR_RT = (V1 / "run_tests.sh").read_text(encoding="utf-8")
+_AR_FROZEN = json.loads(_AR_EV.read_text(encoding="utf-8")) if _AR_EV.exists() else {}
+check(RS, "AR12 ★结论必须**冻结**成文件，CI 每次重算并与落盘判定对账\n"
+          "          —— 文档里的数字改一个字符不容易被发现；\n"
+          "            冻成 json 之后，改数据探针会自己转红。\n"
+          "          ⚠️ 判定必须是 `R4` 而不是『成立』：R4 明确写着**只主张结构**。",
+      _AR_FROZEN.get("tag") == "R4" and "probe_recall.py" in _AR_RT
+      and "不主张分数" in str(_AR_FROZEN.get("claim", "")) + str(_AR_FROZEN.get("verdict", "")),
+      f"tag={_AR_FROZEN.get('tag')!r} CI 里有探针={'probe_recall.py' in _AR_RT}")
+
 
 print()
 print("=" * 74)

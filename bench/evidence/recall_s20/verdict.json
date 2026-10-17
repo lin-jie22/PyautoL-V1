@@ -1,0 +1,88 @@
+{
+  "rules": [
+    [
+      "R1",
+      "end-to-end 的 expand.calls == 0  ⇒ 机制未通电，整组不认领"
+    ],
+    [
+      "R2",
+      "expand 回来的字节与原文不等       ⇒ 可回溯是假的，整组不认领"
+    ],
+    [
+      "R3",
+      "回看正文在 prompt 里被二次截断     ⇒ 取回了但没进上下文，不认领"
+    ],
+    [
+      "R4",
+      "R1/R2/R3 全过 ⇒ 判「可回溯性成立（结构）」—— ⛔ 只主张结构，不主张分数"
+    ]
+  ],
+  "trigger_cases": {
+    "长报错": "tail",
+    "短报错": "",
+    "失配": "whole",
+    "平静": "",
+    "长报错+失配（两者都成立时先取尾部）": "tail"
+  },
+  "capture": {
+    "chars": 4946,
+    "sha": "410e419ef8cf",
+    "byte_equal": true
+  },
+  "e2e": {
+    "calls": 1,
+    "chars": 600,
+    "errors": 0,
+    "by_trigger": {
+      "mismatch": 0,
+      "fail_tail": 1
+    },
+    "skipped": {
+      "mode": 0,
+      "budget": 0,
+      "no_entry": 0
+    },
+    "state_trimmed": 0
+  },
+  "e2e_cap": {
+    "calls": 3,
+    "chars": 1800,
+    "errors": 0,
+    "by_trigger": {
+      "mismatch": 0,
+      "fail_tail": 3
+    },
+    "skipped": {
+      "mode": 0,
+      "budget": 3,
+      "no_entry": 0
+    },
+    "state_trimmed": 9
+  },
+  "e2e_abstract": {
+    "calls": 0,
+    "chars": 0,
+    "errors": 0,
+    "by_trigger": {
+      "mismatch": 0,
+      "fail_tail": 0
+    },
+    "skipped": {
+      "mode": 1,
+      "budget": 0,
+      "no_entry": 0
+    },
+    "state_trimmed": 0
+  },
+  "prompt_has_mark": true,
+  "prompt_has_tail": true,
+  "db_readonly": true,
+  "verdict": "R4：可回溯性成立（结构）—— ⛔ 只主张结构，不主张分数，也不主张真模型用得上",
+  "tag": "R4",
+  "claim": "结构：被截掉的观测不再不可逆地消失（可寻址 + 触发式取回 + 有上限）",
+  "unknowns": [
+    "真模型是否用得上取回的原文：UNKNOWN（前四轮实测：语义与形状的贡献都是 0）",
+    "窗口选择（报错取尾 / 失配取头尾各半）是启发式，未做对照",
+    "只测了 5000 字量级；更大观测下 cap 的取舍未测"
+  ]
+}

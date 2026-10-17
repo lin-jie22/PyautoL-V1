@@ -20,6 +20,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Sequence
 
+from . import config as cfg
 from .llm import ANSWER_MARK, LLM, Message, parse_json, split_answer
 
 
@@ -172,7 +173,10 @@ class Planner:
                   ) if blocked else ""
         prompt = (
             f"目标：{goal}\n"
-            f"当前状态：\n{state[:1200]}\n"
+            # ⚠️ 这里的上限**必须**与 `core._state()` 用同一个常量：
+            #    否则"内核以为放得下"和"规划器实际收下多少"是两套真相，
+            #    而被剪掉的东西不会有任何报错（第二十轮实测栽过一次）。
+            f"当前状态：\n{state[:cfg.STATE_CHAR_CAP]}\n"
             f"{('已知易错点：' + guidance) if guidance else ''}\n"
             f"{avoid}{banned}\n"
             f"可用工具：\n{self.tools.catalog()}\n\n"
@@ -259,7 +263,8 @@ class Planner:
 
     def replan(self, *, goal: str, failed: Step, error: str,
                history: Sequence[str], n: int = 1,
-               blocked: Sequence[str] = (), guidance: str = "") -> Plan:
+               blocked: Sequence[str] = (), guidance: str = "",
+               state: str = "") -> Plan:
         """失败后重规划。**必须带上错误原文**，否则等于原地打转。
 
         ⚠️ `guidance` 必须一起转发（2026-10-17 接线审计抓到的断点）：
@@ -269,8 +274,17 @@ class Planner:
         而重规划正是"刚栽了"的那一次。断在这里，等于教训只在第一次尝试时有用。
         """
         augmented = list(history) + [f"{failed.as_line()} ⇒ 失败: {error[:200]}"]
-        plan = self.propose(goal=goal, state="(上一步失败，见下)", history=augmented,
-                            n=n, blocked=blocked, guidance=guidance)
+        # ⛔ 第二十轮修掉的一处断点：这里原本传 `state="(上一步失败，见下)"`，
+        #    也就是**把整个状态丢掉**只留一句占位。
+        #    后果在第二十轮实测里直接撞上：按需回看把报错原文尾部取回、放进状态，
+        #    而失败之后的下一轮**恰恰走的就是 replan** ⇒ 模型一个字都没看到，
+        #    读数上却写着"取回成功"。
+        #    这与本函数 docstring 里那条 guidance 断点同宗：**最需要上下文的那一次，
+        #    上下文被扔了**。没有理由：错误原文已经在 augmented 里，
+        #    状态是**额外**的信息，不是它的替代品。
+        plan = self.propose(goal=goal, state=(state or "(上一步失败，见下)"),
+                            history=augmented, n=n, blocked=blocked,
+                            guidance=guidance)
         if plan:
             plan.note = f"因「{failed.tool}」失败而重规划"
         return plan

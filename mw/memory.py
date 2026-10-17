@@ -32,6 +32,14 @@ from pathlib import Path
 from typing import Any
 
 # 规范化：去空白折叠 + 大小写无关 —— 否则 "Python 截断" 与 "python  截断" 会被当成两条
+class BlobIntegrityError(RuntimeError):
+    """原文仓的完整性被破坏（读回来的字节与写侧承诺的 sha/长度不符）。
+
+    ⚠️ 为什么不用 `sqlite3.IntegrityError`：那是 DB 约束错误，与"原文被改过"
+    是两件事，混用会让日志里分不清"我插重了"还是"库被人动过"。
+    """
+
+
 _WS = re.compile(r"\s+")
 _TOKEN = re.compile(r"[A-Za-z0-9_\u4e00-\u9fff]+")
 
@@ -80,6 +88,27 @@ class Episode:
     meta: dict = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class Handle:
+    """一次观测的**句柄** —— 指向 `blobs` 表里那一整段原文。
+
+    ★ 为什么要有这个东西（第二十轮，DESIGN §16.19）：
+      在此之前，工具返回 5000 字，进工作记忆的只有前 300 字，
+      其余 4700 字**当场消失**（`perceive>memory` 覆盖率 0.06）。
+      而下一步关于上一步的一切都只来自那 300 字。
+      `Handle` 把"消失"改成"转存 + 可寻址"：**宽度不变，可回溯性从 0 变 1**。
+
+    ⛔ `chars` 与 `sha` 是**写侧承诺的事实**，读侧要用它们自证：
+      `expand()` 必须核验读回来的文本 sha 与这里一致，否则说明库被动过。
+    """
+    ref: str        # `b#<id>`，短、稳定、可打印
+    sha: str        # 全文 sha256 前 12 位
+    chars: int      # 全文字符数
+
+    def as_line(self) -> str:
+        return f"{self.ref} · {self.chars}字 · sha={self.sha}"
+
+
 SCHEMA = """
 PRAGMA journal_mode=WAL;
 PRAGMA synchronous=NORMAL;
@@ -106,6 +135,21 @@ CREATE TABLE IF NOT EXISTS facts (
 CREATE INDEX IF NOT EXISTS idx_facts_source ON facts(source);
 
 CREATE VIRTUAL TABLE IF NOT EXISTS facts_fts USING fts5(text);
+
+-- 观测原文仓（第二十轮）。为什么不复用 episodes：
+--   episodes 有 `content`，但它是**事件流**（每条被 `record` 截到 1000 字，
+--   且按 kind 排序检索），把原文塞进去会让"事件"与"原文"两种语义混在一张表里。
+--   更重要的原因：`episodes` 是**只写不读**的（边界第 11 条），而这张表**有读路径**
+--   （`expand`），必须有读路径才能说"可回溯"。
+CREATE TABLE IF NOT EXISTS blobs (
+    id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts    REAL NOT NULL,
+    kind  TEXT NOT NULL,
+    sha   TEXT NOT NULL,
+    chars INTEGER NOT NULL,
+    text  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_blobs_sha ON blobs(sha);
 """
 
 
@@ -129,6 +173,96 @@ class MemoryStore:
 
     def working_view(self) -> list[str]:
         return [t for _, t in self.working]
+
+    def upgrade_last(self, text: str) -> bool:
+        """把工作记忆的**最后一条**换成更宽的版本（第二十轮「按需回看」用）。
+
+        ★ 为什么是"替换"而不是"追加一段"：
+          追加会让**同一条观测在上下文里出现两次**（一次截断版、一次回看版），
+          那违反本项目最基本的一条纪律：同一事实只声明一处。
+          第一次实现就是追加，`AB7` 当场转红 —— 它测出"关掉工作记忆写入之后
+          回流率仍有 0.5"，原因是回看块充当了**第二条回边**。
+          ⇒ 回看是**对同一条记忆的加宽**，它的物理载体仍是 working 这一层。
+
+        返回 `False` = 没有可升级的条目。调用方**必须计数**，不许静默：
+        "取回成功了但无处安放"与"没触发"是两件不同的事。
+        """
+        if not self.working:
+            return False
+        ts, _ = self.working[-1]
+        self.working[-1] = (ts, str(text or ""))
+        return True
+
+    # ---------------- 观测原文（第二十轮） ----------------
+    def capture(self, text: str, *, kind: str = "observation") -> Handle:
+        """把一段观测原文**整段**存下来，返回可寻址的句柄。
+
+        ⚠️ 它与 `think()` 是**两件事**，必须分开：
+          · `think()` 往工作记忆放的是**下一步能看见的那一小段**（宽度 = 调用方给的 cap）；
+          · `capture()` 往 `blobs` 放的是**原文全部**，只给"要的时候能要回来"用。
+        把两者合并（"反正存下来了就多放点"）会让一步吃掉整个上下文 ——
+        那正是 §17-9 明确否掉的修法（"不是把 300 调大"）。
+        """
+        body = "" if text is None else str(text)
+        sha = hashlib.sha256(body.encode("utf-8")).hexdigest()[:12]
+        cur = self.conn.execute(
+            "INSERT INTO blobs(ts, kind, sha, chars, text) VALUES (?,?,?,?,?)",
+            (time.time(), kind, sha, len(body), body),
+        )
+        self.conn.commit()
+        return Handle(ref=f"b#{int(cur.lastrowid or 0)}", sha=sha, chars=len(body))
+
+    def expand(self, ref: str, *, cap: int, where: str = "whole") -> tuple[str, bool]:
+        """按句柄取回原文的一窗（`head` / `tail` / `whole`）。
+
+        返回 `(text, truncated)`。**只读**：不写库、不改工作记忆、不动任何计数。
+
+        ⛔ 三条硬纪律：
+          1. **不许静默兜底**。句柄不存在 ⇒ 抛 `KeyError`；
+             读回来的 sha 与写侧承诺的不一致 ⇒ 抛 `IntegrityError`
+             （库里被动过是事实，把它悄悄藏起来比报错更糟）。
+          2. **截断必须明示**。`truncated=True` 时返回文本里带可见标记，
+             不许让调用方"以为这就是全文"（V5 的 `.txt` 判断错就是这一类）。
+          3. `cap` 由**调用方**给，不由本模块给默认值 ——
+             默认值会让"上下文预算是谁的"变成一处谁也说不清的暗契约。
+        """
+        if where not in ("head", "tail", "whole"):
+            raise ValueError(f"未知取回窗口 {where!r}；合法值：('head','tail','whole')")
+        row = self.conn.execute(
+            "SELECT sha, chars, text FROM blobs WHERE id=?",
+            (int(str(ref).lstrip("b#").lstrip("#") or 0),),
+        ).fetchone()
+        if row is None:
+            raise KeyError(f"句柄不存在：{ref!r}")
+        body = row["text"]
+        # 完整性自证：写侧承诺的 sha/chars 必须与读回来的一致。
+        if (hashlib.sha256(body.encode("utf-8")).hexdigest()[:12] != row["sha"]
+                or len(body) != row["chars"]):
+            raise BlobIntegrityError(f"句柄 {ref!r} 的原文与写侧承诺不符（库被动过）")
+        cap = max(1, int(cap))
+        if len(body) <= cap:
+            return body, False
+        if where == "head":
+            cut = body[:cap]
+        elif where == "tail":
+            cut = body[-cap:]
+        else:
+            # whole 但超 cap ⇒ 取头 + 尾（各一半）：
+            #   长观测的"决定性信息"既可能在开头（结论）也可能在结尾（报错），
+            #   ⚠️ 这条取舍是**启发式**，登记为 unknown（见 DESIGN §16.19 ⑦）。
+            half = cap // 2
+            cut = body[:half] + f"\n…[中略 {len(body) - 2 * half} 字]…\n" + body[-half:]
+        return cut, True
+
+    def blob_stats(self) -> dict:
+        """原文仓读数。**有消费者**：`stats()` 与 run.py 的读数行。
+        `dedup_sha` 只作诊断（同一段原文被存了几次），不参与任何判定。"""
+        r = self.conn.execute(
+            "SELECT COUNT(*) c, COALESCE(SUM(chars),0) s FROM blobs").fetchone()
+        dup = self.conn.execute(
+            "SELECT COUNT(*) c FROM (SELECT sha FROM blobs GROUP BY sha HAVING COUNT(*)>1)"
+        ).fetchone()["c"]
+        return {"blobs": int(r["c"]), "chars": int(r["s"]), "dedup_sha": int(dup)}
 
     # ---------------- episodic ----------------
     def record(self, kind: str, content: str, **meta: Any) -> int:
@@ -234,7 +368,10 @@ class MemoryStore:
         src = self.conn.execute(
             "SELECT source, COUNT(*) c FROM facts GROUP BY source ORDER BY c DESC"
         ).fetchall()
-        return {"facts": f, "episodes": e, "by_source": {r["source"]: r["c"] for r in src}}
+        return {"facts": f, "episodes": e,
+                "by_source": {r["source"]: r["c"] for r in src},
+                # 第二十轮：观测原文仓。**必须一起报**，否则"可回溯"是个无读数的声明。
+                "blobs": self.blob_stats()}
 
     def duplicate_rows(self) -> int:
         """恒为 0 —— 这是去重约束的自证读数，测试会断言它。"""

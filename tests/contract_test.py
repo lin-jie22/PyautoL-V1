@@ -3604,6 +3604,266 @@ check(RS, "AN12 ★抽象里不许**点名某道题**（本轮实测抓到的泄
       and _AN_id.st.kept == 0,
       _AN_id.st.as_line())
 
+# ===========================================================================
+# AO —— 第十七轮：安慰剂臂（§16.16）
+#   ★ 起因：第十六轮测到 C（读抽象层）比 A（空记忆）高 **+0.05**，
+#     但幸存经验只有一句 13 个字的话，且与受益题 k03 的内容**几乎无关**。
+#     ⇒ 有一个同样能解释这个数的假说：**存在性效应** ——
+#       上下文里多了一段 `[经验] …`，改变了生成，与那句话说了什么无关。
+#   ★ ⛔ T=0 保证**确定性**，不保证**因果性**。同一个输入给同一个输出只能证明
+#     它可以复现，不能证明它是被"经验"改的 —— 拆开两者的唯一办法是加一个
+#     **除内容以外什么都不变**的第四臂。
+#   ⇒ 这一组钉的不是"抽象层有没有用"（那是外部实验的事），
+#     而是**安慰剂这个仪器本身**的四条纪律：
+#        等长 / 不许在空层上做 / 不许等于原文 / 索引必须同步
+#     任何一条失守，安慰剂臂都会**安静地**退化成 C 臂或 A 臂，
+#     而这两种退化都不报错 —— 它们只会产出一个看起来很干净的 Δ。
+# ===========================================================================
+import importlib.util as _ilu                                   # noqa: E402
+
+_PL_PATH = V1 / "bench" / "placebo.py"
+_PL_SRC = _PL_PATH.read_text(encoding="utf-8")
+_PL_SPEC = _ilu.spec_from_file_location("v1_placebo", _PL_PATH)
+_PL = _ilu.module_from_spec(_PL_SPEC)
+_PL_SPEC.loader.exec_module(_PL)
+_PL_SH = (V1 / "bench" / "run_placebo_control.sh").read_text(encoding="utf-8")
+
+check(RS, "AO1 bench 层的 `ABSTRACT_SOURCE` 必须与内核**同源**\n"
+          "         —— 两边分开声明，某次改动只改一边之后，安慰剂会把**没有**经验\n"
+          "           的记忆当成有 ⇒ 第四臂悄悄变成空臂，而且不报错。",
+      _PL.ABSTRACT_SOURCE == ABSTRACT_SOURCE,
+      f"placebo={_PL.ABSTRACT_SOURCE!r} mw.abstractor={ABSTRACT_SOURCE!r}")
+
+
+def _ao_mk(dirname: str, abstracts, *, others=()) -> Path:
+    """造一个**目录形态**的记忆库（内含 memory.db）。返回它的路径。
+
+    ⚠️ `MemoryStore(path)` 里的 path 是**数据库文件**，不是目录 ——
+       早先这里传了一个目录进去，于是 sqlite 建出一个同名文件，
+       `placebo` 的 `--src` 检查立刻失败（rc=2），而 AO4~AO7 **全都因为
+       同一个理由"通过"了**：它们只断言 rc≠0。
+       ⇒ 那不是断言，那是对一个假成功点了头。改成真目录并额外断言 rc≠2。
+    """
+    d = Path(tempfile.mkdtemp()) / dirname
+    d.mkdir(parents=True, exist_ok=True)
+    m = MemoryStore(d / "memory.db")
+    for t in abstracts:
+        m.commit_fact(t, source=ABSTRACT_SOURCE, confidence=0.5)
+    for t in others:
+        m.commit_fact(t, source="worldmodel", confidence=0.5)
+    m.record("finish", "某段带答案原文的 finish")
+    m.close()
+    return d
+
+
+def _ao_run(argv) -> int:
+    """调用 `placebo.main`，**绝不让它把异常抛出来**（R13：异常会打断汇总行）。"""
+    try:
+        return int(_PL.main(argv))
+    except SystemExit as e:
+        return int(e.code) if isinstance(e.code, int) else 1
+    except Exception:                                           # noqa: BLE001
+        return -99                       # -99 = 出了别的异常，够与众不同
+
+
+_AO_TXT = "解析查询字符串前先处理空项"          # 13 字，与第十六轮实测同源
+_AO_VECS = [_AO_TXT, "做 X 之前先确认 Y 的边界条件", "a b c d e f"]
+_AO_perm_ok = True
+_AO_perm_bad = ""
+for _t in _AO_VECS:
+    _s = _PL.scramble(_t, 17)
+    if not (len(_s) == len(_t)
+            and collections.Counter(_s) == collections.Counter(_t)
+            and _s != _t):
+        _AO_perm_ok = False
+        _AO_perm_bad = f"{_t!r} -> {_s!r}"
+
+check(RS, "AO2 ★打乱必须是原文的**字符排列**（等长 + 同字多重集）且不得等于原文\n"
+          "         —— 打乱之所以是合格的安慰剂，正因为它保留了全部表层统计量\n"
+          "           （长度、字集、字频），只摧毁语序承载的语义。\n"
+          "           若 C 仍优于打乱臂，差别只能来自『那句话说了什么』。",
+      _AO_perm_ok, _AO_perm_bad or "全部通过")
+
+check(RS, "AO3 打乱必须**确定性**（同一输入同一输出）⇒ 实验可复核\n"
+          "         —— 不确定的安慰剂等于每次跑都在换自变量，\n"
+          "           而它的随机性会被误读成『被测对象不稳定』。",
+      _PL.scramble(_AO_TXT, 17) == _PL.scramble(_AO_TXT, 17)
+      and _PL.scramble(_AO_TXT, 17) != _PL.scramble(_AO_TXT, 18),
+      f"17={_PL.scramble(_AO_TXT, 17)!r} 18={_PL.scramble(_AO_TXT, 18)!r}")
+
+_AO_src = _ao_mk("ao_src", [_AO_TXT], others=["worldmodel 的老事实"])
+
+
+def _ao_attempts(tag: str, extra: list[str]) -> tuple[int, Path]:
+    out = Path(tempfile.mkdtemp()) / f"ao_{tag}"
+    return _ao_run(["--src", str(_AO_src), "--out", str(out)] + extra), out
+
+
+_AO_rc_len, _AO_out_len = _ao_attempts("len", ["--variant", "text", "--text", "短句"])
+check(RS, "AO4 ★长度不等必须**拒绝**，且不补空格、不截断、不留半成品目录\n"
+          "         —— 补出来的那几个字会成为第二个自变量，下场实验就得同时解释它；\n"
+          "           留下半成品则更坏：下次运行会死在『目录已存在』上，把真因藏起来。\n"
+          "         ⛔ rc==2 表示**压根没跑到替换**就退了 ⇒ 那是一次假成功。",
+      _AO_rc_len not in (0, 2) and not _AO_out_len.exists(),
+      f"rc={_AO_rc_len} 半成品留着={_AO_out_len.exists()}")
+
+_AO_rc_same, _AO_out_same = _ao_attempts(
+    "same", ["--variant", "text", "--text", _AO_TXT])
+check(RS, "AO5 ★替换文本等于原文必须拒绝 —— 那是 **C 臂本人**，不是安慰剂。\n"
+          "         这条最容易漏：调参时忘记改文本，实验就变成'自己和自己比'，\n"
+          "         然后产出一个精确到小数点后四位的 Δ=+0.0000。",
+      _AO_rc_same not in (0, 2) and not _AO_out_same.exists(),
+      f"rc={_AO_rc_same}")
+
+_AO_empty = _ao_mk("ao_empty", [], others=["只有 worldmodel 事实"])
+_AO_out_empty = Path(tempfile.mkdtemp()) / "ao_empty_out"
+_AO_rc_empty = _ao_run(["--src", str(_AO_empty), "--out", str(_AO_out_empty),
+                        "--variant", "text", "--text", "一二三四五"])
+check(RS, "AO6 ★抽象层为 0 条必须拒绝 —— 在空层上做安慰剂 = 拿空臂跟空臂比。\n"
+          "         这种读数最危险：它逐题全 0、看起来**极其干净**，\n"
+          "         而它证明的只有'这一段什么都没发生'。",
+      _AO_rc_empty not in (0, 2) and not _AO_out_empty.exists(),
+      f"rc={_AO_rc_empty}")
+
+_AO_rc_exists = _ao_run(["--src", str(_AO_src), "--out", str(_AO_src),
+                         "--variant", "scramble"])
+check(RS, "AO7 目标目录已存在必须拒绝\n"
+          "         —— 每个臂都必须是一份**全新**的复制；复用目录等于承认\n"
+          "           '我不确定它里面到底跑过什么'（这正是第十六轮的真实缺陷：\n"
+          "           B/C 共用同一个目录，跑完后库里多了一条 B 臂沉淀的事实）。",
+      _AO_rc_exists not in (0, 2),
+      f"rc={_AO_rc_exists}")
+
+_AO_new_txt = "编译报错时先读最底层栈信息"        # 同为 13 字
+_AO_out_ok = Path(tempfile.mkdtemp()) / "ao_ok"
+_AO_rc_ok = _ao_run(["--src", str(_AO_src), "--out", str(_AO_out_ok),
+                     "--variant", "text", "--text", _AO_new_txt])
+_AO_m2 = MemoryStore(_AO_out_ok / "memory.db")
+_AO_rows = [r["source"] + ":" + r["text"]
+            for r in _AO_m2.conn.execute("SELECT source, text FROM facts ORDER BY id")]
+_AO_rec_old = [f.text for f in _AO_m2.recall(_AO_TXT, k=8)]
+_AO_rec_new = [f.text for f in _AO_m2.recall(_AO_new_txt, k=8)]
+# ⛔ 必须**直接**读索引表，不能只看 `recall` 的返回：
+#   撤回态验证时删掉同步索引那两行，AO8 竟然**仍是绿的** ——
+#   因为 recall 在 FTS 失配时会退回 LIKE、再退回 `ORDER BY hits`，
+#   三条兜底路径都会把新文本照样捞回来 ⇒ 只看 recall 等于没看索引。
+_AO_fts_rows = [r["text"] for r in _AO_m2.conn.execute(
+    "SELECT rowid, text FROM facts_fts ORDER BY rowid")]
+
+check(RS, "AO8 ★FTS5 索引必须同步更新：替换后**索引里不再是旧文本**，且**有的是新文本**\n"
+          "         —— 只 UPDATE `facts` 不改 `facts_fts` 的话，检索到的还是旧话，\n"
+          "           而且**不会报错** ⇒ 安慰剂臂读的仍然是真经验，\n"
+          "           产出一个人畜无害的 Δ=0，然后被读成'存在性效应成立'。",
+      _AO_rc_ok == 0 and _AO_TXT not in _AO_fts_rows
+      and _AO_new_txt in _AO_fts_rows
+      and _AO_TXT not in _AO_rec_old and _AO_new_txt in _AO_rec_new
+      and any(r.split(":", 1)[0] == ABSTRACT_SOURCE
+              and r.split(":", 1)[1] == _AO_new_txt
+              for r in _AO_rows),
+      f"rc={_AO_rc_ok} 索引={_AO_fts_rows} 库={_AO_rows}")
+
+check(RS, "AO9 去重键（facts.key）必须跟着文本一起重算，且全库去重约束不许破\n"
+          "         —— 键是坐在**旧文本**上的指纹偷懒不动它 ⇒ 两条不同安慰剂会撞同一行，\n"
+          "           `ON CONFLICT` 把后一条静默吃掉，第二、第三个安慰剂臂凭空消失。",
+      _AO_m2.duplicate_rows() == 0
+      and fingerprint(_AO_new_txt) in [
+          r["key"] for r in _AO_m2.conn.execute("SELECT key FROM facts")]
+      and "worldmodel 的老事实" in [r["text"] for r in
+                                    _AO_m2.conn.execute("SELECT text FROM facts")],
+      f"dups={_AO_m2.duplicate_rows()} rows={_AO_rows}")
+
+_AO_src_still = [r["text"] for r in MemoryStore(_AO_src / "memory.db").conn.execute(
+    "SELECT text FROM facts ORDER BY id")]
+check(RS, "AO10 ★源记忆库必须**原封不动**（只读）\n"
+          "         —— 安慰剂工具碰了源，'各臂同源'这个前提就没了，\n"
+          "           而且污染是**顺着实验顺序**累积的：先跑的臂改得最多。",
+      _AO_src_still == [_AO_TXT, "worldmodel 的老事实"],
+      f"源库现状={_AO_src_still}")
+
+_AO_mw_hits = [p.name for p in sorted(MW_DIR.glob("*.py"))
+               if "placebo" in p.read_text(encoding="utf-8")]
+check(RS, "AO11 ★内核不许知道'安慰剂'的存在（`mw/*.py` 里连这个词都不许出现）\n"
+          "         —— 安慰剂是**测量仪器**，不是能力。\n"
+          "           一旦内核里有了 '我被告知这是一条安慰剂' 的分支，\n"
+          "           测到的就不再是这个系统，而是这个系统的应试技巧。",
+      not _AO_mw_hits,
+      f"含 placebo 的内核模块={_AO_mw_hits}")
+
+# ⚠️ 先算好值再拼进 f-string：早先在 f-string 的花括号里直接嵌转义引号，
+#    跨 Python 版本的行为不保证，而且一旦读起来费劲就容易看漏错别字。
+_AO_base_flag = '--memory-dir "${BASE}"'
+#: 第 2 步之后（base 冻结之后）的脚本片段 —— 这里**不许**再有人直接用 base 跑
+_AO_after = _PL_SH.split("第 2 步", 1)[1] if "第 2 步" in _PL_SH else ""
+check(RS, "AO12 ★每个臂必须有**自己的一份**记忆副本，且能在跑之前自证同源\n"
+          "         —— 解析实验脚本：**冻结之后**（第 2 步之后）\n"
+          "           任何命令都不许再把 base 当 `--memory-dir` 传；\n"
+          "           必须有 `mem_base → mem_${arm}` 的复制动作；\n"
+          "           并且要打印 sha256 —— 不打印就等于要求读者相信我没有搞混。",
+      "第 2 步" in _PL_SH
+      and 'cp -R "${BASE}" "${ROOT}/mem_${arm}"' in _PL_SH
+      and _AO_after.count(_AO_base_flag) == 0
+      and "BASE_SHA" in _PL_SH and "shasum" in _PL_SH,
+      f"冻结后 base 直传次数={_AO_after.count(_AO_base_flag)} "
+      f"含复制={'cp -R' in _PL_SH}")
+
+check(RS, "AO13 等长容差默认值必须是 **0**（严格等长）\n"
+          "         —— `--allow-len-delta` 存在只是为了诊断。默认一放宽，\n"
+          "           '多写或少写几个字'就会被当成同一个变量，实验当场失去归因能力。",
+      '"--allow-len-delta", type=int, default=0,' in _PL_SRC
+      and "allow_len_delta" in _PL_SRC,
+      "默认值不是 0")
+
+check(RS, "AO14 三个安慰剂文本必须在脚本里**逐字可见**（可复核）\n"
+          "         —— '我和安慰剂比过'这句话本身没有信息；\n"
+          "           读者要能当场看到那句安慰剂到底是什么话。\n"
+          "           （D1 是打乱 ⇒ 可见的是它的生成方式而非结果。）",
+      "--variant scramble" in _PL_SH
+      and "编译报错时先读最底层栈信息" in _PL_SH
+      and "解析查询字符串时可忽略空项" in _PL_SH,
+      "脚本里看不到安慰剂原文")
+
+_PL_PROBE = V1 / "bench" / "probe_placebo.py"
+_PL_EV = V1 / "bench" / "evidence" / "placebo_s17"
+_RUN_TESTS_SRC_RT = (V1 / "run_tests.sh").read_text(encoding="utf-8")
+
+check(RS, "AO15 ★安慰剂的**结论**必须可重算，不能只是散文里的一个数\n"
+          "         —— `bench/evidence/placebo_s17/` 里冻着两轮共 9 份原始 runs.jsonl，\n"
+          "           `bench/probe_placebo.py` 每次跑都把它们从头算一遍：\n"
+          "           数字改一个字词就可能不易察觉，而换数据探针会自己转红。\n"
+          "           ⛔ 它锁的是『按这些数据、按事前规则，结论必须是什么』，不锁结论本身。",
+      _PL_PROBE.exists()
+      and len(sorted(_PL_EV.glob("*.runs.jsonl"))) >= 9
+      and "probe_placebo.py" in _RUN_TESTS_SRC_RT,
+      f"探针={_PL_PROBE.exists()} 证据份数={len(sorted(_PL_EV.glob('*.runs.jsonl')))}")
+
+
+def _ao_probe_rc(argv) -> tuple[int, str]:
+    """跑探针；**异常不许抛出来**（R13），返回 (码, 末行)。"""
+    import io
+    import contextlib
+    buf = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf):
+            rc = int(_PL_probe_main(argv))
+        return rc, buf.getvalue().strip().splitlines()[-1][:80]
+    except SystemExit as e:
+        return (int(e.code) if isinstance(e.code, int) else 1), "SystemExit"
+    except Exception:                                           # noqa: BLE001
+        return -99, "异常"
+
+
+_PL_probe_spec = _ilu.spec_from_file_location("v1_probe_placebo", _PL_PROBE)
+_PL_probe = _ilu.module_from_spec(_PL_probe_spec)
+_PL_probe_spec.loader.exec_module(_PL_probe)
+_PL_probe_main = _PL_probe.main
+
+_AO_rc_noev, _AO_last = _ao_probe_rc(["--evidence", str(Path(tempfile.mkdtemp()) / "nope")])
+check(RS, "AO16 ★探针读不到证据时必须是**带理由的失败**，不许悄悄算成 0 分\n"
+          "         —— 缺行 ⟶ 返回 0.0 是本项目最容易复发的错误之一：\n"
+          "           '某道题没跑'会被读成'某道题得 0 分'，这是两种完全不同的事实。",
+      _AO_rc_noev != 0 and "不存在" in _AO_last,
+      f"rc={_AO_rc_noev} 末行={_AO_last!r}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

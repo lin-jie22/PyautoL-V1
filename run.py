@@ -193,7 +193,18 @@ def _kwm_zero() -> dict:
     return {"predictions": 0, "scored": 0, "hits": 0, "unscored": 0,
             "mismatches": 0, "mismatches_outcome": 0, "mismatches_text": 0,
             "text_compared": 0, "suppressed": 0,
+            # —— 外部奖励通道：写了几条 / **读了几条** ——
+            # ⛔ 只报"写入 N 条"而不报"读到几条"，正是 V5 的"字段无消费者"：
+            #    一个你永远看不出它有没有被用过的通道 = 装饰。
+            "rewards_recorded": 0, "rewards_seen": 0, "rewards_skipped_self": 0,
+            "rewards_rejected_source": 0, "rewards_rejected_missing": 0,
             "confusion": {"ok_ok": 0, "ok_fail": 0, "fail_ok": 0, "fail_fail": 0}}
+
+
+#: ⛔ 累加键**由零点派生**，不许另写一份名单。
+#: 本轮自踩：奖励通道的三个新字段没被搬进累加器（旧代码是一份硬编码的键名单），
+#: 于是日志上"写了 5 条"而"读到 0 条"—— 一个你看不出有没有被用过的通道 = 装饰。
+_KWM_NUM_KEYS: tuple[str, ...] = tuple(k for k in _kwm_zero() if k != "confusion")
 
 
 def _kwm_absorb(acc: dict, stats: dict) -> dict:
@@ -205,8 +216,7 @@ def _kwm_absorb(acc: dict, stats: dict) -> dict:
     但"没有这个字段" ≠ "这个字段是 0" —— 所以 `hit_rate` 在 `scored==0` 时
     返回 `None`，让"没量到"在读数里显形。
     """
-    for k in ("predictions", "scored", "hits", "unscored", "mismatches",
-              "mismatches_outcome", "mismatches_text", "text_compared", "suppressed"):
+    for k in _KWM_NUM_KEYS:
         acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
     cm = acc.setdefault("confusion", {})
     for k in ("ok_ok", "ok_fail", "fail_ok", "fail_fail"):
@@ -743,7 +753,8 @@ def cmd_bench(args) -> int:
                                    score_ledger=_ledger, caliber_sig=_cal_sig)
                         out = c.run(t.prompt, budget_factor=args.budget,
                                     task_id=t.id, family=suite.name,
-                                    scorer_sha=scorer.sha(), suite_sha=suite.sha())
+                                    scorer_sha=scorer.sha(), suite_sha=suite.sha(),
+                                    features=_feat_of.get(t.id))
                         _kwm_absorb(_kwm, out.stats["worldmodel"])
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
@@ -765,7 +776,8 @@ def cmd_bench(args) -> int:
             def solver(t):                                         # type: ignore[misc]
                 out = _core.run(t.prompt, budget_factor=args.budget,
                                 task_id=t.id, family=suite.name,
-                                scorer_sha=scorer.sha(), suite_sha=suite.sha())
+                                scorer_sha=scorer.sha(), suite_sha=suite.sha(),
+                                features=_feat_of.get(t.id))
                 _kwm_absorb(_kwm, out.stats["worldmodel"])
                 return out.answer
 
@@ -776,6 +788,12 @@ def cmd_bench(args) -> int:
         label = "oracle（上界参照）"
         print()
         print("  ℹ️ 未配置真模型（V1_LLM_API_KEY）⇒ 本轮跑的是**参照点**，不是模型成绩。")
+
+    # ── 题面结构特征：**外部**算好，交给内核做奖励检索用 ──────────────
+    # ⛔ 内核**不**自己算它（见 `Core.run` 的说明）：一旦内核能从目标文本里
+    #    给自己造特征，它就能给自己挑"看起来像"的先例 ⇒ 检索退化成自证。
+    from mw.features import feature_set as _feature_set
+    _feat_of = {t.id: _feature_set(t.as_dict()) for t in suite.tasks}
 
     print()
     print(f"--- 第 2 步  跑任务集  solver={label}  预算档={tag}  repeat={repeat_n} ---")
@@ -813,6 +831,38 @@ def cmd_bench(args) -> int:
             print(f"  分数账本  会话#{_sess} 追加 {_w['added']} 行"
                   f"（拒绝 {_w['rejected']} 行{_dup}）⇒ 下一次起跑时自我模型可读")
 
+    # ── 外部奖励：把**外部打分器**给的分数写进记忆（只读通道，§17-5）────
+    #
+    # 为什么需要它：内核的动作只有 `finish`，`finish` 永不失败 ⇒ `result.ok`
+    # 恒为 True ⇒ 世界模型**没有可学的失败** ⇒ 语义记忆 0 条 ⇒ 泛化实验
+    # 变成"空记忆 vs 空记忆"，Δ=0 是算术必然（DESIGN §15.2b 实测）。
+    # 失败的其实是"答案对不对"，而那只有外部打分器知道。
+    #
+    # ⛔ 三条边界，缺一条这条路就变成作弊：
+    #   ① 来源必须是外部（`REWARD_SOURCE`），内核自评一律拒收；
+    #   ② 写在**整轮跑完之后**（与账本同理）：轮内写会让第 N 题读到第 N-1 题；
+    #   ③ 检索时排除**同一题号**（`reward_guidance`）⇒ 开卷考同一道题不算学习。
+    if getattr(args, "use_reward", False) and args.solver not in ("oracle", "null", "partial"):
+        from mw.llm import StubLLM
+        from mw.memory import MemoryStore
+        from mw.worldmodel import REWARD_SOURCE, WorldModel
+        _rwm = WorldModel(MemoryStore(cfg.settings().paths.db), StubLLM())
+        _rw_ok = _rw_rej = 0
+        for r in rep.per_task:
+            f = _feat_of.get(r.get("id"))
+            if f is None:
+                continue
+            _passed = is_passed(r.get("score"))
+            _fail = "" if _passed else str(r.get("why") or "")[:160]
+            if _rwm.record_reward(task_id=str(r.get("id")), features=f,
+                                  passed=_passed, score=r.get("score"),
+                                  failure=_fail, source=REWARD_SOURCE):
+                _rw_ok += 1
+            else:
+                _rw_rej += 1
+        print(f"  外部奖励  写入 {_rw_ok} 条（拒 {_rw_rej}）"
+              f" ⇒ 下一次起跑时内核可按结构特征检索同类题的历史得分")
+
     print(f"  {m.as_line()}")
     print(f"  {rep.summary_line()}")
     if _crit_saved:
@@ -833,6 +883,13 @@ def cmd_bench(args) -> int:
               f" 失配={_kw['mismatches']}(成败{_kw['mismatches_outcome']}"
               f"/文本{_kw['mismatches_text']})"
               f" 混淆={_kw['confusion']}"
+              + (f" 奖励[写={_kw.get('rewards_recorded', 0)}"
+                 f" 读={_kw.get('rewards_seen', 0)}"
+                 f" 挡自己={_kw.get('rewards_skipped_self', 0)}"
+                 f" 拒={_kw.get('rewards_rejected_source', 0)}"
+                 f"+{_kw.get('rewards_rejected_missing', 0)}]"
+                 if (_kw.get('rewards_recorded') or _kw.get('rewards_seen')
+                     or _kw.get('rewards_skipped_self')) else "")
               + (f" ⚠️未检验={_kw['unscored']}" if _kw["unscored"] else ""))
 
     # ── 血缘闸：标签可以撒谎，血缘不能。 ────────────────────────────────
@@ -921,6 +978,8 @@ def main() -> int:
     p.add_argument("--critique-file", default="",
                    help="评审账本路径（默认 state/critique.jsonl）。"
                         "打分器给的理由会落盘到这里，供**下一轮**读取")
+    p.add_argument("--use-reward", action="store_true",
+                   help="把外部打分器的分数作为**只读**奖励写进记忆（DESIGN §17-5）")
     p.add_argument("--use-critique", action="store_true",
                    help="把账本里的评审投喂给内核（**接线验证用，不是能力测量**）。"
                         "轮内投喂会让后面的题不再是同一条件下的测量 —— repeat 的意义当场消失")

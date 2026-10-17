@@ -237,13 +237,20 @@ class Core:
     # ------------------------------------------------------------------
     def run(self, goal: str, *, budget_factor: float = 1.0, tag: str | None = None,
             family: str | None = None, task_id: str | None = None,
-            scorer_sha: str = "", suite_sha: str = "") -> Outcome:
+            scorer_sha: str = "", suite_sha: str = "",
+            features: frozenset[str] | set[str] | None = None) -> Outcome:
         """跑一个任务。
 
         `family` 是**能力族标签**（如 `numeric_logic`），只给自我模型做资源建议用。
         ⚠️ 刻意**不**从 goal 里猜族：一旦自我模型读得到题目内容，
         它就会在"看题之后"给自己分配资源，那就退化成自评分的入口了。
         调用方不给 ⇒ 传 None ⇒ 自我模型返回默认值并明说"样本不足"。
+
+        `features` 是**题面结构特征**（由 `mw.features` 从题面算出），
+        用来检索历史外部奖励（§17-5）。⛔ 内核**绝不自己算**它 ——
+        一旦内核能从目标文本里给自己造特征，它就能给自己挑"看起来像"的先例，
+        检索这件事就退化成又一次自证。来源必须是外部锚层。
+        调用方不给 ⇒ 奖励通道这一路不参与（另一侧照常工作），不静默降级。
 
         `task_id` / `scorer_sha` / `suite_sha` 是外部评审的**口径签名三件套**：
         · `task_id` 用于挡掉"当前题自己的评审"（防自评，第一道闸）；
@@ -354,11 +361,13 @@ class Core:
                         blocked=sorted(attempted_sigs),
                         # ⚠️ 重规划**更**需要易错点：它正是"刚栽了"的那一次。
                         #    原来这里不传 ⇒ guidance 只在首次尝试时有效。
-                        guidance=self.wm.guidance(action=goal))
+                        guidance=self.wm.guidance(
+                            action=goal, features=features, task_id=task_id))
                 else:
                     plan = self.planner.propose(
                         goal=goal, state=state, history=history, n=n,
-                        guidance=self.wm.guidance(action=goal),
+                        guidance=self.wm.guidance(
+                            action=goal, features=features, task_id=task_id),
                         blocked=sorted(attempted_sigs))
                 if plan.degraded:
                     self.log(f"  ⚠️ {plan.note}")

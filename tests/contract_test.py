@@ -1795,7 +1795,8 @@ print("=" * 74)
 # 为什么单开一组：`runs.jsonl` 以前只记 `per_task`（score/status/why），
 # **内核自己的读数一概丢失** ⇒ "失配=3 ⇒ 因果闭环在工作"只能靠翻 stdout，
 # 日志又不落盘、事后无法复核。现在世界模型的 scored/hits/混淆矩阵随每次运行落盘。
-from run import _kwm_absorb, _kwm_line, _kwm_zero                # noqa: E402
+from run import (_KWM_NUM_KEYS, _kwm_absorb, _kwm_line,         # noqa: E402
+                 _kwm_zero)
 
 _z_s1 = {"predictions": 10, "scored": 100, "hits": 100, "mismatches": 0,
          "mismatches_outcome": 0, "mismatches_text": 0, "text_compared": 0,
@@ -3168,6 +3169,136 @@ check(RS, "AK9 对照探针必须存在、且**声明了事前冻结**（不许�
       and "事前声明" in _AK_probe.read_text(encoding="utf-8")
       and "FEATURES_VERSION" in _src("features.py"),
       f"探针={_AK_probe.exists()}")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AL 组 —— 外部奖励只读通道（DESIGN §17-5：给「学习与泛化」一条真实的学习面）
+#
+# 背景（实测，不是推演）：内核的动作只有 `finish`，而 `finish` 永不失败
+#   ⇒ `result.ok` 恒 True ⇒ 世界模型**没有可学的失败** ⇒ 语义记忆 0 条
+#   ⇒ 泛化实验变成「空记忆 vs 空记忆」，Δ=0 是**算术必然**（§15.2b）。
+# 失败的其实是"答案对不对"，而那只有外部打分器知道。
+#
+# ⛔ 这条路**极容易变成作弊**，所以本组钉的全是边界，不是功能：
+#    · 内核自评一律拒收（自评分绕开外部锚层）
+#    · 当前题读不到自己的分数（开卷考同一道题不算学习）
+#    · 只记已答完的题（写在整轮跑完之后）
+# ═══════════════════════════════════════════════════════════════════════════
+from mw.worldmodel import REWARD_SOURCE, REWARD_MIN_SIM  # noqa: E402
+
+_AL_db = _TMP / "al_reward.db"
+_AL_store = MemoryStore(_AL_db)
+_AL_wm = WorldModel(_AL_store, StubLLM())
+
+check(RS, "AL1 ★★内核**自评**一律拒收：source 不是外部打分器 ⇒ 不写、且计数\n"
+          "         —— 自评分是整个项目立论的掘穿点：外部锚层存在的理由就是\n"
+          "            『变好』必须有外部依据，自己给自己打分正好绕开它",
+      (not _AL_wm.record_reward(task_id="t1", features={"in_str"}, passed=True,
+                                score=1.0, source="self"))
+      and _AL_wm.rewards_rejected_source == 1
+      and _AL_wm.rewards_recorded == 0,
+      f"拒自评={_AL_wm.rewards_rejected_source} 已写={_AL_wm.rewards_recorded}")
+
+check(RS, "AL2 缺题号或缺特征 ⇒ 拒收（无法归属或检索不到 ⇒ 不写）\n"
+          "         —— 没有题号就挡不住「读到自己的分数」；没有特征就找不到同类题",
+      (not _AL_wm.record_reward(task_id="", features={"in_str"}, passed=True,
+                                source=REWARD_SOURCE))
+      and (not _AL_wm.record_reward(task_id="t2", features=set(), passed=True,
+                                    source=REWARD_SOURCE))
+      and _AL_wm.rewards_rejected_missing == 2,
+      f"拒缺失={_AL_wm.rewards_rejected_missing}")
+
+# —— 正常写入三条（两条同类、一条**同题号**）——
+_AL_wm.record_reward(task_id="learn_1", features={"in_str", "op_convert", "level1"},
+                     passed=False, score=0.33, failure="减法规则没处理",
+                     source=REWARD_SOURCE)
+_AL_wm.record_reward(task_id="learn_2", features={"in_str", "op_convert", "level1"},
+                     passed=True, score=1.0, source=REWARD_SOURCE)
+_AL_wm.record_reward(task_id="probe_self", features={"in_str", "op_convert", "level1"},
+                     passed=True, score=1.0, source=REWARD_SOURCE)
+check(RS, "AL3 合法外部奖励必须写进去（三条 ⇒ 计数=3）",
+      _AL_wm.rewards_recorded == 3, f"已写={_AL_wm.rewards_recorded}")
+
+# ⛔ 关键：换一个 WorldModel 实例（模拟**新进程起跑**），按特征检索
+_AL_wm2 = WorldModel(MemoryStore(_AL_db), StubLLM())
+_AL_g = _AL_wm2.reward_guidance(features={"in_str", "op_convert", "level1"},
+                                task_id="probe_self")
+check(RS, "AL4 ★★★检索必须**排除当前题号**：自己的历史得分绝不能进上下文\n"
+          "         —— 读到自己上一次在这道题上的分数 = 开卷考同一道题。\n"
+          "            那不是学习，那是把测试集答案抄进提示词。",
+      "probe_self" not in _AL_g
+      and _AL_wm2.rewards_skipped_self >= 1
+      and _AL_g.count("- 同类题") == 2,
+      f"跳过自己={_AL_wm2.rewards_skipped_self} 命中={_AL_g.count('- 同类题')}")
+
+check(RS, "AL5 ★★提示必须是**可执行**的：给出『先检查什么』，不是『不可假设…』\n"
+          "         —— 后者是 V1 之前 9/10 条 facts 的形态（读了也改不了任何动作），\n"
+          "            正是 §15.2 里『学到的知识不可执行』那一层",
+      ("先检查" in _AL_g) and ("不可假设" not in _AL_g)
+      and ("得分" in _AL_g),
+      _AL_g.replace("\n", " ｜ ")[:110])
+
+check(RS, "AL6 结构不重合 ⇒ 不给提示（避免把不相干题的分数塞进决策链）",
+      _AL_wm2.reward_guidance(features={"in_dict", "op_nest", "level2"},
+                              task_id="x") == "",
+      f"min_sim={REWARD_MIN_SIM}")
+
+check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
+          "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
+      _AL_wm2.reward_guidance(features=None, task_id="x") == ""
+      and "历史同类题" not in _AL_wm2.guidance(action="写一个函数 f(s)"),
+      "默认不参与")
+
+check(RS, "AL8 ★内核**不许自己造特征**：`core.py` 不得 import `mw.features`\n"
+          "         —— 一旦内核能从目标文本里给自己算特征，它就能给自己挑\n"
+          "            『看起来像』的先例 ⇒ 检索退化成又一次自证。\n"
+          "            特征必须由外部锚层提供（`run.py` 算好传进来）。",
+      "mw.features" not in _strip_docstrings(_src("core.py"))
+      and "from .features" not in _strip_docstrings(_src("core.py")),
+      "core.py 未引 features（docstring 里讨论它不算 —— 静态锚必须剥注释）")
+
+_AL_RUN = (V1 / "run.py").read_text(encoding="utf-8")
+
+# ⚠️ 本条来自一个**真 bug**（本轮自踩）：`WorldModel.stats()` 新增了三个奖励字段，
+#    而 `run.py` 的累加器用的是一份**手写的键名单** ⇒ 新字段一次都没被搬进去。
+#    表现：日志上"写了 5 条"，而"读到几条"永远是 0 —— 你根本看不出通道有没有被用过。
+_AL_wm_stats = WorldModel(MemoryStore(_TMP / "al_stats.db"), StubLLM()).stats()
+#: 比值类读数**不许被累加**（逐次平均会给出错的答案：`_kwm_absorb` 的注释已经写了
+#: 100 次全对 + 1 次全错 ⇒ 平均 0.5，真值 100/101）。它们由总数重算。
+_AL_DERIVED = {"hit_rate", "suppress_rate"}
+_AL_num = {k for k, v in _AL_wm_stats.items()
+           if isinstance(v, (int, float)) and k not in _AL_DERIVED}
+check(RS, "AL11 ★★世界模型的**每个**数值读数都必须被累加器搬运\n"
+          "         （键名单必须由零点派生，不许另写一份）\n"
+          "         —— 本轮自踩：奖励的三个新字段没进名单 ⇒ 日志上写=5 / 读=0，\n"
+          "            一个你看不出有没有被用过的通道 = 装饰（V5 的同名病灶）",
+      _AL_num <= set(_KWM_NUM_KEYS),
+      f"未被搬运={sorted(_AL_num - set(_KWM_NUM_KEYS))}")
+
+check(RS, "AL12 「读了几条」必须**有消费者**：`rewards_seen` 必须出现在打印里\n"
+          "         —— 只报『写入几条』不报『读到几条』，等于给通道发了一张\n"
+          "            永远不检票的票。本轮实测靠它才第一次看见 读=14。",
+      "rewards_seen" in _AL_RUN and "挡自己" in _AL_RUN,
+      "打印侧已消费")
+
+# ⚠️ 本条来自一个**真 bug**（本轮自踩）：写成 `paths.memory_db`，而真实属性叫
+#    `paths.db` ⇒ 跑完 5 题、写完账本之后才 AttributeError 崩掉，
+#    奖励一条没写，而下游的"考试"跑得**好好的**（拿到的是空记忆）。
+#    ⇒ 一个拼错的属性名会让整条实验链**静默地答错问题**。
+_AL_paths = cfg.settings().paths
+_AL_attr = sorted(set(re.findall(r"paths\.(\w+)", _AL_RUN)))
+_AL_bad = [a for a in _AL_attr if not hasattr(_AL_paths, a)]
+check(RS, "AL10 ★`run.py` 里引用的 `paths.*` 属性必须**真实存在**\n"
+          "         —— 本轮自踩：写成 `paths.memory_db`（真名 `paths.db`）⇒ 跑完\n"
+          "            才崩，奖励一条没写，而下游考试照常跑完（拿到空记忆）。\n"
+          "            一个拼错的属性名会让整条实验链**静默地答错问题**。",
+      not _AL_bad,
+      f"引用={_AL_attr} 不存在={_AL_bad}")
+
+check(RS, "AL9 奖励必须写在**整轮跑完之后**：`record_reward` 的调用点\n"
+          "        必须在 `run_suite(` 之后（轮内写 ⇒ 第 N 题读到第 N-1 题）",
+      _AL_RUN.find("record_reward") > _AL_RUN.find("run_suite(solver"),
+      f"record_reward@{_AL_RUN.find('record_reward')} > "
+      f"run_suite@{_AL_RUN.find('run_suite(solver')}")
 
 print()
 print("=" * 74)

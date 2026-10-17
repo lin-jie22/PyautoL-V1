@@ -47,6 +47,14 @@ from .llm import LLM, Message, parse_json
 _MISMATCH_THRESHOLD = 0.34  # **文本比对**的失配门槛（只在"同种东西"之间用，见 observe）
 _FORESIGHT_FLOOR = 0.35     # 置信度低于此值 ⇒ 不进入决策链
 
+#: 外部奖励的**唯一合法来源**。内核自评的一律拒收（见 `record_reward`）。
+REWARD_SOURCE = "external_scorer"
+
+#: 检索历史奖励时的最小结构重合度。低于此值 ⇒ 不算"同类题"。
+#: ⛔ 这个数不是调出来的旋钮：它是"两道题的特征集合至少要有三成重合"
+#: 这句话的直接翻译，与 `_MISMATCH_THRESHOLD`（0.34）刻意取同一个量级。
+REWARD_MIN_SIM = 0.30
+
 
 def _tokens(text: str) -> set[str]:
     return set(re.findall(r"[A-Za-z0-9_\u4e00-\u9fff]{2,}", (text or "").lower()))
@@ -179,6 +187,12 @@ class WorldModel:
                                    "fail_ok": 0, "fail_fail": 0}
         self.text_compared: int = 0
         self.text_mismatches: int = 0
+        # —— 外部奖励通道（§17-5：给学习与泛化一条真实的学习面）——
+        self.rewards_recorded: int = 0
+        self.rewards_rejected_source: int = 0   # 自评 / 来源不明 ⇒ 拒（防自评分）
+        self.rewards_rejected_missing: int = 0  # 缺题号或特征 ⇒ 无法归属 ⇒ 拒
+        self.rewards_seen: int = 0              # 检索时被**真正读进上下文**的次数
+        self.rewards_skipped_self: int = 0      # 命中但被"防自评"挡下的次数
 
     @property
     def mismatches(self) -> int:
@@ -344,18 +358,135 @@ class WorldModel:
     #    ⇒ 删掉。门槛从此**只声明一处**：`Prediction.trustworthy`；
     #      抑制计数只由内核在真正跳过时累加（`core.py` 的 `suppressed += 1`）。
 
-    def guidance(self, *, action: str, k: int = 3) -> str:
+    # ------------------------------------------------------------------
+    # 外部奖励：**只读输入**（DESIGN §17-5）
+    #
+    # 这条通道存在的理由是一处结构性空洞，不是优化：
+    #   内核的动作只有 `finish`，而 `finish` **永不失败**
+    #   ⇒ `result.ok` 恒为 True ⇒ 世界模型**没有可学的失败**
+    #   ⇒ 语义记忆 0 条 ⇒ 泛化实验变成"空记忆 vs 空记忆"，Δ=0 是算术必然
+    #   （DESIGN §15.2b 实测：修完失配信号后，学到的 facts 从 9 条噪音变成 0 条）。
+    # 失败的其实是"答案对不对"，而那只有**外部打分器**知道。
+    #
+    # 它与已有不变量完全同构：**尺子可被内核读取，不可被内核改写。**
+    # 这里把它贯彻到"分数"这一层 —— 内核可以读外部给的分数，绝不许自己给。
+    # ------------------------------------------------------------------
+    def record_reward(self, *, task_id: str, features: frozenset[str] | set[str],
+                      passed: bool, score: float | None = None,
+                      failure: str = "", source: str = "") -> bool:
+        """把**外部打分器**给的分数作为一条 outcome 写进记忆。
+
+        ⛔ 三条硬边界，每条都有可归因的拒绝计数（不静默）：
+
+        1. `source` 必须是 `REWARD_SOURCE`。内核自评一律拒 ⇒ `rewards_rejected_source`。
+           这不是洁癖：内核给自己打分就是**自评分**，而自评分会绕开外部锚层
+           —— 整个项目的立论（"变好"要有外部依据）会在这里被掘穿。
+        2. `task_id` 与 `features` 缺一不可 ⇒ `rewards_rejected_missing`。
+           没有题号就挡不住"当前题读到自己的分数"；没有特征就检索不到同类题。
+        3. **只记已答完的题。** 纪律由调用顺序保证（外部在打分**之后**写），
+           检索侧再挡一道：`reward_guidance` 排除当前 `task_id`。
+
+        `features` 必须由 `mw.features` 从**题面**算出（不含答案、不含得分）。
+        本方法**不校验**它的来源 —— 校验放在 `features.py`（AK1/AK2 静态钉死），
+        同一事实只声明一处。
+        """
+        if source != REWARD_SOURCE:
+            self.rewards_rejected_source += 1
+            return False
+        if not task_id or not features:
+            self.rewards_rejected_missing += 1
+            return False
+        rkey = ",".join(sorted(str(f) for f in features))
+        self.memory.record(
+            "reward",
+            f"题 {task_id}：外部得分 {score if score is not None else 'n/a'}，"
+            f"{'通过' if passed else '未通过'}"
+            f"{('，失败模式：' + failure) if failure else ''}",
+            task_id=str(task_id), rkey=rkey, passed=bool(passed),
+            score=(None if score is None else round(float(score), 4)),
+            failure=str(failure)[:200], source=source,
+        )
+        self.rewards_recorded += 1
+        return True
+
+    def reward_guidance(self, *, features: frozenset[str] | set[str] | None,
+                        task_id: str | None = None, k: int = 3) -> str:
+        """按**结构特征**检索历史外部奖励，生成**可执行**的提示。
+
+        为什么按特征而不是按文本：文本检索是词法的，实测给 `int_to_roman`
+        检索出的第一条是「执行 [goal query recall …]」这种自指噪音（§15.2 ②）。
+        特征重合度是集合运算，与用词无关 —— 契约 AK8 实测它对检索**有效**
+        （同结构族内相似度 0.418 vs 跨族 0.226）。
+
+        ⛔ `task_id` 相同的记录**一律跳过**（`rewards_skipped_self` 计数）：
+        读到自己上一次在这道题上的分数 = 开卷考同一道题，
+        那不是"学习"，那是把测试集答案抄进提示词。
+        """
+        if not features:
+            return ""
+        cur = set(str(f) for f in features)
+        hits: list[tuple[float, dict]] = []
+        for ep in self.memory.episodes(kind="reward", limit=300):
+            meta = getattr(ep, "meta", None)
+            if not isinstance(meta, dict):
+                continue
+            tid = str(meta.get("task_id") or "")
+            if not tid:
+                continue
+            if task_id is not None and tid == str(task_id):
+                self.rewards_skipped_self += 1
+                continue
+            hist = set(x for x in str(meta.get("rkey") or "").split(",") if x)
+            if not hist:
+                continue
+            sim = len(cur & hist) / len(cur | hist)
+            if sim < REWARD_MIN_SIM:
+                continue
+            hits.append((sim, meta))
+        if not hits:
+            return ""
+        hits.sort(key=lambda x: -x[0])
+        lines = []
+        for sim, meta in hits[:k]:
+            passed = bool(meta.get("passed"))
+            sc = meta.get("score")
+            fail = str(meta.get("failure") or "")
+            head = f"同类题（结构重合 {sim:.2f}）：历史{'通过' if passed else '未通过'}"
+            if isinstance(sc, (int, float)):
+                head += f"，得分 {float(sc):.2f}"
+            # ⚠️ 写**可执行**形态：给出"先检查什么"，不是"不可假设…"
+            #    （后者是 V1 之前 9/10 条 facts 的形态，读了也改不了任何动作）
+            if fail:
+                head += f" ⇒ 先检查：{fail}"
+            else:
+                head += " ⇒ 无记录的失败模式"
+            lines.append("- " + head)
+        self.rewards_seen += len(hits[:k])
+        return "历史同类题的外部得分：\n" + "\n".join(lines)
+
+    def guidance(self, *, action: str, k: int = 3,
+                 features: frozenset[str] | set[str] | None = None,
+                 task_id: str | None = None) -> str:
         """给规划器/预演器的启发式提示：这次动作在哪容易看错。
 
         只挑 `source=="worldmodel"` 的事实 —— 而那只有 outcome 类失配会写
         （见 `learn`）。所以喂进决策链的**只可能是"动作成败"类教训**，
         不会再把"措辞差异"当成易错点。
+
+        `features` / `task_id` 来自**外部**（题面特征与题号）：给了就把
+        外部奖励通道的历史也拼进来（见 `reward_guidance`）。
+        ⚠️ 它们是 Optional 而不是必填，因为内核**不认识题**——
+        它只认"目标文本"。题面结构与题号属于外部锚层，由调用方持有。
         """
+        parts: list[str] = []
         facts = self.memory.recall(action, k=k)
         wm = [f for f in facts if f.source == "worldmodel"]
-        if not wm:
-            return ""
-        return "已知易错点：\n" + "\n".join(f"- {f.text}" for f in wm)
+        if wm:
+            parts.append("已知易错点：\n" + "\n".join(f"- {f.text}" for f in wm))
+        rg = self.reward_guidance(features=features, task_id=task_id, k=k)
+        if rg:
+            parts.append(rg)
+        return "\n".join(parts)
 
     def stats(self) -> dict:
         """读数。**没有静默的 0**：
@@ -381,4 +512,10 @@ class WorldModel:
             "suppressed": self.suppressed,
             "suppress_rate": round(
                 self.suppressed / self.predictions, 3) if self.predictions else 0.0,
+            # —— 外部奖励通道（只读）——
+            "rewards_recorded": self.rewards_recorded,
+            "rewards_rejected_source": self.rewards_rejected_source,
+            "rewards_rejected_missing": self.rewards_rejected_missing,
+            "rewards_seen": self.rewards_seen,
+            "rewards_skipped_self": self.rewards_skipped_self,
         }

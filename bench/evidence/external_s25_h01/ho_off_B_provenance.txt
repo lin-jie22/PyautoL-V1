@@ -1,0 +1,8 @@
+# 版本臂 B
+code_root=/Users/linshaojie/V1
+git=849d8ad17cc87475b6a56cc7d8e6baf88f4fc74c
+started=2026-10-18T19:20:56
+budget=2 suite=bench/heldout arm=OFF fresh=yes
+model=qwen2.5:7b temperature=0 max_tokens=1024
+rc=0
+ended=2026-10-18T19:29:40

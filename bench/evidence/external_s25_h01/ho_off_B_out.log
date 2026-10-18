@@ -1,0 +1,174 @@
+
+██████████████████████████████████████████████████████████████████████████
+█ 领域  numeric_logic_heldout   （numeric_logic_heldout.jsonl）
+██████████████████████████████████████████████████████████████████████████
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  numeric_logic_heldout  n=3  suite_sha=8a052e6cd79bc6545a3ae39f771c0b97
+  打分器  code_exec  scorer_sha=279bb5195b1eb61b784422d6845ff184
+
+--- 第 1 步  校准：尺子自证有分辨力（V5 缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=3/3
+  h01_int_to_roman: oracle=1.0000 partial=0.4000 null=0.0000 ✅
+  h02_merge_ranges: oracle=1.0000 partial=0.8000 null=0.0000 ✅
+  h03_eval_rpn: oracle=1.0000 partial=0.8000 null=0.0000 ✅
+  理由: 全部 3 条两极可分，其中 3 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=ef687ed31f6779ad
+  [观察]
+    - h01_int_to_roman: oracle=1.0000 partial=0.4000 null=0.0000
+    - h02_merge_ranges: oracle=1.0000 partial=0.8000 null=0.0000
+    - h03_eval_rpn: oracle=1.0000 partial=0.8000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 3 条任务上两极可分
+    - 中段有序检查 3 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=279bb5195b1e、suite_sha=8a052e6cd79b；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 54 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=2x  repeat=1 ---
+19:20:57 ▶ 任务开始: 写一个函数 int_to_roman(n)，把整数转成罗马数字字符串（遵循减法规则，如 4=IV、9=IX、1994=MCMXCIV）。只输出代码，函数名必须是 int_to_roman。
+19:20:57   budget[2x] steps=0/24 llm=0/48 cand=0(宽6) wall=0.09s/240s | llm_kind=http | 外部能力 0 个
+19:24:13   ⏳ 预算耗尽 [wall_s]：已用 196.01 / 上限 240
+19:24:13   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+19:24:13   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+19:24:42   📦 收尾交付 488 字符（来源=收尾调用）
+19:24:42 ■ closed | steps=0 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=0 否决=0(-) | 通量[perceive>memory=n/a memory>reason=n/a reason>act=n/a] 回流=n/a | 语义记忆=0 | 抖动重试=2 重试后仍失败=0 | 上限被裁短=2 | 墙钟放弃首发=0/重试=1 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 int_to_roman/语言标签/可编译) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 488字)
+19:24:42 ▶ 任务开始: 写一个函数 merge_ranges(intervals)：输入是若干个闭区间 [start, end] 的列表（可能无序），合并所有重叠或相邻接的区间，返回按 start 升序排列的区间列表（每个区间用长度为 2 的 list 表示）。只
+19:24:42   budget[2x] steps=0/24 llm=0/48 cand=0(宽6) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+19:25:07   [1] 通道=深 候选=1
+19:25:12       ↳ finish ok=True 直接实现 merge_ranges 函数
+19:25:12   ✅ 收尾: ```python
+def merge_ranges(intervals):
+    if not intervals:
+        return []
+    intervals.sort(key=lambda x: x[0])
+  
+19:25:12 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.8 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 merge_ranges/语言标签/可编译)
+19:25:13 ▶ 任务开始: 写一个函数 eval_rpn(tokens)，对逆波兰表达式求值。tokens 是字符串列表，可能是多位数整数或 '+ - * /' 四个运算符；除法按**向零取整**（如 13/5 == 2，-7/2 == -3）。只输出代码，函数名必须
+19:25:13   budget[2x] steps=0/24 llm=0/48 cand=0(宽6) wall=0.15s/240s | llm_kind=http | 外部能力 0 个
+19:26:20   [1] 通道=深 候选=1
+19:26:25       ↳ finish ok=True 使用栈来实现逆波兰表达式的求值
+19:26:25   ✅ 收尾: ```python
+def eval_rpn(tokens):
+    stack = []
+    for token in tokens:
+        if token.isdigit() or (token[0] == '-' a
+19:26:25 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.581 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 eval_rpn/语言标签/可编译)
+  分数账本  会话#0 追加 3 行（拒绝 0 行） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@2x n=1 mean=0.6667 std=0.0000 [0.6667,0.6667] 极差=0.0000
+  attempted=3 recorded=3 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=54 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) 混淆={'ok_ok': 2, 'ok_fail': 0, 'fail_ok': 0, 'fail_fail': 0}
+  传输层    抖动重试=2 重试后仍失败=0 上限被裁短=2 墙钟放弃首发=0/重试=1 （共 3 题）
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=eead8a6f39829832 scorer=279bb5195b1e suite=8a052e6cd79b repeat=1 budget=2x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=db2924b064 llm_cond=b2afc72253 max_tokens=1024 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s25_h01/ho_off_B/bench/runs.jsonl
+
+██████████████████████████████████████████████████████████████████████████
+█ 领域  struct_convert_heldout   （struct_convert_heldout.jsonl）
+██████████████████████████████████████████████████████████████████████████
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  struct_convert_heldout  n=4  suite_sha=8e3d642d5b25ca019c4c305ac39b3312
+  打分器  code_exec  scorer_sha=279bb5195b1eb61b784422d6845ff184
+
+--- 第 1 步  校准：尺子自证有分辨力（V5 缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=4/4
+  k01_diff_tree: oracle=1.0000 partial=0.8000 null=0.0000 ✅
+  k02_encode_cookie: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  k03_unflatten: oracle=1.0000 partial=0.4000 null=0.0000 ✅
+  k04_to_ini: oracle=1.0000 partial=0.8000 null=0.0000 ✅
+  理由: 全部 4 条两极可分，其中 4 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=854f4aeb60ded80d
+  [观察]
+    - k01_diff_tree: oracle=1.0000 partial=0.8000 null=0.0000
+    - k02_encode_cookie: oracle=1.0000 partial=0.6000 null=0.0000
+    - k03_unflatten: oracle=1.0000 partial=0.4000 null=0.0000
+    - k04_to_ini: oracle=1.0000 partial=0.8000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 4 条任务上两极可分
+    - 中段有序检查 4 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=279bb5195b1e、suite_sha=8e3d642d5b25；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 54 条  投喂=关（默认：保住测量一致性）
+  分数账本  score_ledger.jsonl  载入 3 行  同口径采纳 3 行  （自我模型据此起跑）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=2x  repeat=1 ---
+19:26:28 ▶ 任务开始: 写一个函数 diff_tree(a, b)：递归比较两个 dict 的**叶子**（标量）值，差异路径用 '.' 连接嵌套键，返回 {路径: [a 里的值, b 里的值]}；某一边缺这个键时那一边写 None；两边完全相同时返回空 dict
+19:26:28   budget[2x] steps=0/24 llm=0/48 cand=0(宽6) wall=0.1s/240s | llm_kind=http | 外部能力 0 个
+19:27:27   [1] 通道=深 候选=1
+19:27:31       ↳ finish ok=True 直接实现 diff_tree 函数
+19:27:31   ✅ 收尾: ```python
+def diff_tree(a, b, path=""):
+    result = {}
+    keys_a = set(a.keys())
+    keys_b = set(b.keys())
+    for ke
+19:27:31 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.646 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 账本采纳=3 拒(缺字段=0/无签名=0/异口径=0) | 自我[闸=关 Δ=n/a 阈值=0.02 UNKNOWN 影响=0/1] | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 diff_tree/语言标签/可编译)
+19:27:32 ▶ 任务开始: 写一个函数 encode_cookie(d)：把 dict 编码成 Cookie 请求头字符串。规则：键按字典序排序；值为 None 的键跳过；其余写成 'k=v'，值必须 percent-encode —— 空格→%20，分号→%3B，逗
+19:27:32   budget[2x] steps=0/24 llm=0/48 cand=0(宽6) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+19:27:54   [1] 通道=深 候选=1
+19:27:59       ↳ finish ok=True 直接实现 encode_cookie 函数
+19:27:59   ✅ 收尾: ```python
+def encode_cookie(d):
+    def percent_encode(s):
+        return s.replace(' ', '%20').replace(';', '%3B').repl
+19:27:59 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 账本采纳=3 拒(缺字段=0/无签名=0/异口径=0) | 自我[闸=关 Δ=n/a 阈值=0.02 UNKNOWN 影响=0/1] | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 encode_cookie/语言标签/可编译)
+19:28:00 ▶ 任务开始: 写一个函数 unflatten(flat)：把展平 dict 还原成嵌套结构。键里的 '.' 表示嵌套 dict，'k[i]' 表示 k 是一个 list、第 i 个元素；列表长度取该层出现过的最大下标 +1，未填的位置写 None。返回还
+19:28:00   budget[2x] steps=0/24 llm=0/48 cand=0(宽6) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+19:29:01   [1] 通道=深 候选=1
+19:29:05       ↳ finish ok=True 直接实现 unflatten 函数
+19:29:05   ✅ 收尾: ```python
+def unflatten(flat):
+    def parse_key(key):
+        if '[' in key:
+            base, index = key.split('[')
+ 
+19:29:05 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.48 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 账本采纳=3 拒(缺字段=0/无签名=0/异口径=0) | 自我[闸=关 Δ=n/a 阈值=0.02 UNKNOWN 影响=0/1] | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 unflatten/语言标签/可编译)
+19:29:05 ▶ 任务开始: 写一个函数 to_ini(d)：把嵌套 dict 转成 INI 文本。顶层键是 section，值是一个 dict；每个 section 输出 '[section]' 一行，接着每行 'key=value'（按 dict 的**出现顺序**
+19:29:05   budget[2x] steps=0/24 llm=0/48 cand=0(宽6) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+19:29:36   [1] 通道=深 候选=1
+19:29:40       ↳ finish ok=True 直接编写代码实现功能
+19:29:40   ✅ 收尾: ```python
+def to_ini(d):
+    def format_value(v):
+        if v is None:
+            return ''
+        elif isinstance(v,
+19:29:40 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.526 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 账本采纳=3 拒(缺字段=0/无签名=0/异口径=0) | 自我[闸=关 Δ=n/a 阈值=0.02 UNKNOWN 影响=0/1] | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 to_ini/语言标签/可编译)
+  分数账本  会话#0 追加 4 行（拒绝 0 行） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@2x n=1 mean=0.8500 std=0.0000 [0.8500,0.8500] 极差=0.0000
+  attempted=4 recorded=4 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=54 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=4 检验=4 命中=4 命中率=1.0 失配=0(成败0/文本0) 混淆={'ok_ok': 4, 'ok_fail': 0, 'fail_ok': 0, 'fail_fail': 0}
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=4167032f974f1e55 scorer=279bb5195b1e suite=8e3d642d5b25 repeat=1 budget=2x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=db2924b064 llm_cond=b2afc72253 max_tokens=1024 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s25_h01/ho_off_B/bench/runs.jsonl
+
+==========================================================================
+跨领域汇总 —— 同一个内核 + 同一把打分器，逐个领域独立跑
+==========================================================================
+  领域                  题数      mean   可信    血缘        备注
+  numeric_logic_heldout   3    0.6667   ✅     http      
+  struct_convert_heldout   4    0.8500   ✅     http      
+  ------------------------------------------------------------------------
+  可信领域 2/2   其中**非零** 2/2   ← 『通用』的最小判据：每个领域都非零
+  汇总已落盘 /private/tmp/v1_s25_h01/ho_off_B/bench/cross_domain.json

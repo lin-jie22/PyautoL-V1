@@ -1,0 +1,8 @@
+# 版本臂 A
+code_root=/tmp/v1s25a
+git=66b9e41dd00043e7107e4353eb56d6b913b8a9a6
+started=2026-10-18T19:09:25
+budget=2 suite=bench/heldout arm=OFF fresh=yes
+model=qwen2.5:7b temperature=0 max_tokens=1024
+rc=1
+ended=2026-10-18T19:20:36

@@ -313,6 +313,30 @@ else
   FAIL=1
 fi
 
+# ── 步骤 6i：2x 档的证据**必须可核验**（第二十四轮）──────────────────────
+# 为什么单列一步：`external_s23` 那批证据产生于口径签名补上 `tool_catalog_sha`
+# **之前** ⇒ 它只能判 `unverifiable`（不许读成 pass）。而 2x 那批是新代码跑的，
+# **必须**判成 `pass`（只差声明过的 `limits` 与 `tool_catalog_sha`）。
+# ⛔ 这一步一旦变成 `fail`，意味着"两臂只差外部能力"这句话又变回散文。
+echo
+echo "=============================================================="
+echo "步骤 6i 2x 档证据的口径核验（必须是 pass，不是 unverifiable）"
+echo "=============================================================="
+if "$PY" bench/probe_external_real.py --dir bench/evidence/external_s24_2x \
+      > /tmp/v1_external_2x.out 2>&1; then
+  grep -E "口径核验|^(  sc|  ho):|Δ\(配对|【" /tmp/v1_external_2x.out | sed 's/^/  /'
+  if grep -q "口径核验: pass" /tmp/v1_external_2x.out; then
+    echo "  ✅ 2x 证据可核验：两臂只差声明的变量"
+  else
+    echo "  ❌ 2x 证据**不可**核验（判成了 unverifiable/fail）⇒ 那次对照不算同一个实验"
+    FAIL=1
+  fi
+else
+  echo "  ❌ 2x 结论探针失败（证据缺失？判据被改？）："
+  tail -20 /tmp/v1_external_2x.out | sed 's/^/  /'
+  FAIL=1
+fi
+
 # ── 步骤 7：证据来源指纹（第十五轮实测逼出）──────────────────────────────
 # 起因：同一套 struct_convert 在 --max-tokens 1024 / 1536 下给出 0.400 / 0.7600
 #   两个相差近一倍的读数。回头查那是哪个预算，却发现四份真实账本里**一行都不带

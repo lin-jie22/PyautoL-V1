@@ -5125,8 +5125,12 @@ check(RS, "AE7 ★`external/code_agent.py` 不许 import 内核或 bench，也�
 check(RS, "AE8 ★`--no-external` 必须在**两个** `_build` 分支都传进 `wire_external`\n"
           "          —— 只在一个分支生效，OFF 臂就有一半的题带着外部能力跑，\n"
           "            而两臂的标签长得一模一样（那是第十六轮 B/C 共用记忆目录的同构）。",
-      _AE_RUN.count('wire_external=not getattr(args, "no_external", False)') == 2,
-      f"透传处={_AE_RUN.count('wire_external=not getattr(args, ' + chr(34) + 'no_external' + chr(34) + ', False)')}")
+      # ⚠️ 锚点必须收到"结束 `Core(...)` 调用"的 `))`：第二十四轮口径签名也要读
+      #    同一个开关，于是**字面量合法地多出现一次** —— 旧锚点（不含 `))`）
+      #    把这一处合法新增判成失败。这不是把断言放松，是把它收窄到真正要管的对象。
+      _AE_RUN.count('wire_external=not getattr(args, "no_external", False))') == 2,
+      f"透传处(_build 里)={_AE_RUN.count('wire_external=not getattr(args, ' + chr(34) + 'no_external' + chr(34) + ', False))')}"
+      f" / 全部出现={_AE_RUN.count('wire_external=not getattr(args, ' + chr(34) + 'no_external' + chr(34) + ', False)')}")
 
 # ── AE9：端到端（行为，不是静态）—— 外部答案真的被采用 ────────────────────
 #: ⚠️ 静态检查抓不到接线错误：`cands = [Step(...)] + list(cands)` 写对了位置，
@@ -5172,6 +5176,210 @@ check(RS, "AE9 ★端到端：外部能力被调用 **1 次**，其答案走同�
       and _ae_ext["used_as_answer"] == 1 and "def flatten" in _ae_out.answer,
       f"调用={_ae_hits['n']} stats={_ae_ext['calls']}/{_ae_ext['ok']}/"
       f"{_ae_ext['used_as_answer']} 交付含代码={'def flatten' in _ae_out.answer}")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AT1–AT8（第二十四轮）：口径签名补齐 + 失败可归因 + 探针求和
+#
+# 这八条全是**实测逼出来的**，不是为了凑数：
+#   · 工具目录进提示词却不进口径签名 ⇒ 同 mean、不同分布，标签仍写"同口径"
+#   · 失败原因只留最后一条、且只在"全败"时留 ⇒ "7 调 5 败"在证据里不可归因
+#   · 探针第三次只读最后一条记录 ⇒ 冻结的 verdict 把"跑了 7 次"写成"跑了 4 次"
+# ═══════════════════════════════════════════════════════════════════════════
+from mw.bench import (CALIBER_KEYS as _af_ck, Caliber as _af_Cal,  # noqa: E402
+                      caliber_from_dict as _af_cfd)
+from mw.ledger import LEDGER_SIG_EXCLUDE as _af_excl       # noqa: E402
+from mw.ledger import ledger_sig_of as _af_lsig            # noqa: E402
+from mw.tools import catalog_sha as _af_cat_sha            # noqa: E402
+
+import hashlib as _af_hl                                   # noqa: E402
+import importlib.util as _af_ilu                           # noqa: E402
+
+_af_s = cfg.Settings()
+_af_tmp = Path(tempfile.mkdtemp(prefix="v1_af_"))
+_af_old_st = os.environ.get("V1_STATE_DIR")
+os.environ["V1_STATE_DIR"] = str(_af_tmp / "state")
+_af_cores: dict = {}
+try:
+    for _t in ("off", "on"):
+        _af_cores[_t] = Core(_af_s, llm=StubLLM(),
+                             wire_external=(_t == "on"), log=lambda *_: None)
+finally:
+    os.environ["V1_STATE_DIR"] = _af_old_st or ""
+    if not _af_old_st:
+        os.environ.pop("V1_STATE_DIR", None)
+
+#: `catalog_sha()` 算出的指纹 vs. **真实 Core** 的目录哈希 —— 必须逐字相同。
+_af_pairs_t = {}
+for _t, _c in _af_cores.items():
+    _real = _af_hl.sha256(_c.tools.catalog().encode("utf-8")).hexdigest()[:16]
+    _fn = _af_cat_sha(wire_external=(_t == "on"),
+                      agents_path=_af_s.paths.root / "agents.json",
+                      workspace=_af_s.paths.workspace)
+    _af_pairs_t[_t] = (_real, _fn)
+
+check(RS, "AT1 ★工具目录指纹必须**等于真实 Core 的目录哈希**（OFF 与 ON 各一次）\n"
+          "          —— 指纹一旦与真实提示词脱节，『同口径』就还是散文；\n"
+          "            这条把 `catalog_sha()` 与 `Core.tools.catalog()` 直接对撞。",
+      all(r == f for r, f in _af_pairs_t.values())
+      and _af_pairs_t["off"][0] != _af_pairs_t["on"][0],
+      f"off={_af_pairs_t['off'][0]}/{_af_pairs_t['off'][1]} "
+      f"on={_af_pairs_t['on'][0]}/{_af_pairs_t['on'][1]}")
+
+check(RS, "AT2 ★`tool_catalog_sha` 必须**进口径签名**，且 run.py 真的把它填进去\n"
+          "          —— 只加字段不填值 = 装饰字段（V5 的『只声明上限却不截断』）。",
+      "tool_catalog_sha" in _af_ck
+      and "tool_catalog_sha=tools_catalog_sha(" in _AE_RUN,
+      f"在 CALIBER_KEYS={'tool_catalog_sha' in _af_ck} "
+      f"在 run.py 构造处={'tool_catalog_sha=tools_catalog_sha(' in _AE_RUN}")
+
+# ── AT3：改 `agents.json`（哪怕只改描述）必须改变指纹 ──────────────────────
+#: ⛔ 这是"改 agents.json 就等于改提示词"最直接的证据：`catalog_line()` 含描述文字。
+_af_ag = _af_tmp / "agents.json"
+_af_ag.write_text(json.dumps({"agents": {"x": {
+    "type": "shell", "command": ["true"], "description": "描述甲"}}},
+    ensure_ascii=False), encoding="utf-8")
+_af_sha_a = _af_cat_sha(wire_external=True, agents_path=_af_ag)
+_af_ag.write_text(json.dumps({"agents": {"x": {
+    "type": "shell", "command": ["true"], "description": "描述乙"}}},
+    ensure_ascii=False), encoding="utf-8")
+_af_sha_b = _af_cat_sha(wire_external=True, agents_path=_af_ag)
+
+check(RS, "AT3 ★只改 `agents.json` 里的**一句描述**，指纹必须变\n"
+          "          —— 因为 `catalog_line()` 把描述拼进提示词（planner.py:182）。\n"
+          "            指纹不变 ⇒ 提示词变了而签名说没变（标签撒谎）。",
+      _af_sha_a != _af_sha_b,
+      f"{_af_sha_a} vs {_af_sha_b}")
+
+
+# ── AT4：`diff_except` 的三态（声明命中 / 意外 / 空声明 = diff）────────────
+def _af_cal(**kw):
+    _base = dict(scorer_sha="s", suite_sha="u", repeat=1, budget_tag="1x",
+                 temperature=0.0, fresh=True, memory_scope="per_task_fresh",
+                 memory_seed=(0, 0), limits={"external_answer_tool": ""},
+                 llm_cond={"model": "m"}, max_tokens=1024, tool_catalog_sha="aaa")
+    _base.update(kw)
+    return _af_Cal(**_base)
+
+
+_af_u, _af_d = _af_cal().diff_except(
+    _af_cal(tool_catalog_sha="bbb", limits={"external_answer_tool": "agent:x"}),
+    ("tool_catalog_sha", "limits"))
+_af_u2, _af_d2 = _af_cal().diff_except(_af_cal(temperature=0.8), ("tool_catalog_sha",))
+check(RS, "AT4 ★『声明的变量豁免』必须**只**放行声明过的字段\n"
+          "          —— 两臂只差外部能力这件事，从此是可核验的断言而不是散文：\n"
+          "            声明命中的进 `declared`，没声明的一律进 `unexpected`。",
+      _af_u == [] and set(_af_d) == {"tool_catalog_sha", "limits"}
+      and _af_u2 == ["temperature"] and _af_d2 == [],
+      f"声明命中⇒unexpected={_af_u} declared={_af_d}；"
+      f"未声明⇒unexpected={_af_u2}")
+
+# ── AT5：账本签名**不含**目录指纹（这条取舍必须被钉住，否则会被人"顺手修好"）──
+_af_sig_old = _af_lsig({k: v for k, v in _af_cal().as_dict().items()
+                        if k != "tool_catalog_sha"})
+_af_sig_new = _af_lsig(_af_cal(tool_catalog_sha="zzz").as_dict())
+check(RS, "AT5 ★账本签名必须**排除** `tool_catalog_sha`（已声明的取舍）\n"
+          "          —— 不排除 ⇒ 历史 8 个会话的行全部失效（admissible 归零），\n"
+          "            而它们的目录指纹已不可追溯，补算就是伪造血缘。\n"
+          "            代价（账本行读不到指纹）写在 DESIGN §16.23 ⑦ 边界里。",
+      "tool_catalog_sha" in _af_excl and _af_sig_old == _af_sig_new,
+      f"排除={_af_excl} 旧签名={_af_sig_old} 新签名={_af_sig_new}")
+
+# ── AT6：探针的 `_kex` 必须**求和**（第三次踩"只读最后一条"）───────────────
+_af_spec = _af_ilu.spec_from_file_location(
+    "v1_probe_ext", str(V1 / "bench" / "probe_external_real.py"))
+_af_probe = _af_ilu.module_from_spec(_af_spec)
+_af_spec.loader.exec_module(_af_probe)                       # type: ignore[union-attr]
+_af_ev = _af_tmp / "ev"
+_af_ev.mkdir(parents=True, exist_ok=True)
+_af_probe.EV = _af_ev
+_af_rows = [
+    {"kernel_external": {"calls": 3, "ok": 1, "err": 2, "tool": "agent:x",
+                         "err_reasons": ["原因甲"], "discriminated": 1}},
+    {"kernel_external": {"calls": 4, "ok": 1, "err": 3, "tool": "agent:x",
+                         "err_reasons": ["原因乙"], "discriminated": 0}},
+]
+(_af_ev / "ho_on.jsonl").write_text(
+    "\n".join(json.dumps(r, ensure_ascii=False) for r in _af_rows) + "\n",
+    encoding="utf-8")
+_af_kex = _af_probe._kex("ho_on")
+check(RS, "AT6 ★探针的 `_kex` 必须**把全部记录加总**（不是只读最后一条）\n"
+          "          —— `--suite-dir` 每个领域一条记录，累加器在每条里各自从零开始。\n"
+          "            第三次踩同一个坑：冻结的 verdict 把『跑了 7 次』写成『跑了 4 次』。",
+      _af_kex.get("calls") == 7 and _af_kex.get("ok") == 2
+      and _af_kex.get("err") == 5 and _af_kex.get("records") == 2
+      and _af_kex.get("err_reasons") == ["原因甲", "原因乙"],
+      f"calls={_af_kex.get('calls')} ok={_af_kex.get('ok')} "
+      f"records={_af_kex.get('records')} reasons={_af_kex.get('err_reasons')}")
+
+# ── AT7：口径核验三态（pass / fail / unverifiable）─────────────────────────
+_af_c_off = _af_cal(limits={"external_answer_tool": ""}, tool_catalog_sha="aaa").as_dict()
+_af_c_on = _af_cal(limits={"external_answer_tool": "agent:x"},
+                   tool_catalog_sha="bbb").as_dict()
+for _n, _c in (("sc_off", _af_c_off), ("sc_on", _af_c_on),
+               ("ho_off", _af_c_off), ("ho_on", _af_c_on)):
+    (_af_ev / f"{_n}.jsonl").write_text(
+        json.dumps({"caliber": _c}, ensure_ascii=False) + "\n", encoding="utf-8")
+_af_pair_def = (("struct_convert", "sc_off", "sc_on"),
+                ("heldout", "ho_off", "ho_on"))
+_af_cc_pass = _af_probe._caliber_check(_af_pair_def)
+#: 意外差异：把 ON 的 temperature 改掉
+_af_bad = _af_cal(limits={"external_answer_tool": "agent:x"},
+                  tool_catalog_sha="bbb", temperature=0.8).as_dict()
+(_af_ev / "sc_on.jsonl").write_text(
+    json.dumps({"caliber": _af_bad}, ensure_ascii=False) + "\n", encoding="utf-8")
+_af_cc_fail = _af_probe._caliber_check(_af_pair_def)
+#: 缺字段：旧证据
+_af_oldcal = {k: v for k, v in _af_c_off.items() if k != "tool_catalog_sha"}
+(_af_ev / "sc_on.jsonl").write_text(
+    json.dumps({"caliber": _af_oldcal}, ensure_ascii=False) + "\n", encoding="utf-8")
+_af_cc_unk = _af_probe._caliber_check(_af_pair_def)
+check(RS, "AT7 ★口径核验必须三态：`pass` / `fail` / `unverifiable`\n"
+          "          —— 把『没核验到』读成『核验通过』是契约③的同一种病\n"
+          "            （缺失不得被读作肯定）。旧证据缺字段 ⇒ unverifiable。",
+      _af_cc_pass["status"] == "pass"
+      and _af_cc_fail["status"] == "fail"
+      and _af_cc_unk["status"] == "unverifiable",
+      f"pass={_af_cc_pass['status']} fail={_af_cc_fail['status']} "
+      f"unk={_af_cc_unk['status']} "
+      f"unexpected={_af_cc_fail.get('unexpected')}")
+
+# ── AT8：外部能力的**逐次失败原因**必须进证据（不止最后一条）──────────────
+_af_reg = ToolRegistry()
+
+
+def _af_boom(args: dict) -> str:
+    raise ValueError("boom-AT8")
+
+
+_af_reg.register(ToolSpec("agent:af", "契约用坏外部能力", {"task": "任务"},
+                          _af_boom, external=True, mutating=True,
+                          produces_answer=True))
+_af_old_tool = os.environ.get("V1_EXTERNAL_ANSWER_TOOL")
+os.environ["V1_EXTERNAL_ANSWER_TOOL"] = "agent:af"
+_af_st2 = os.environ.get("V1_STATE_DIR")
+os.environ["V1_STATE_DIR"] = str(_af_tmp / "state2")
+try:
+    _af_core_bad = Core(cfg.Settings(), llm=StubLLM(), tools=_af_reg,
+                        wire_external=False, log=lambda *_: None)
+    _af_out_bad = _af_core_bad.run("写一个函数 flatten(d)，把嵌套 dict 展平。"
+                                   "只输出代码，函数名必须是 flatten。")
+    _af_ext_bad = dict(_af_out_bad.stats["external"])
+finally:
+    os.environ["V1_STATE_DIR"] = _af_st2 or ""
+    if not _af_st2:
+        os.environ.pop("V1_STATE_DIR", None)
+    os.environ["V1_EXTERNAL_ANSWER_TOOL"] = _af_old_tool or ""
+    if not _af_old_tool:
+        os.environ.pop("V1_EXTERNAL_ANSWER_TOOL", None)
+
+_af_reasons = list(_af_ext_bad.get("err_reasons") or [])
+check(RS, "AT8 ★外部能力失败时，**原因原文**必须进 `err_reasons`（不只是 last_error）\n"
+          "          —— 只留最后一条时，`ho_on` 的『7 调 5 败』在证据里退化成\n"
+          "            一句笼统的话，而三种病（超时/空返回/解析失败）修法完全不同。",
+      _af_ext_bad.get("calls") == 1 and _af_ext_bad.get("err") == 1
+      and any("boom-AT8" in r for r in _af_reasons),
+      f"calls={_af_ext_bad.get('calls')} err={_af_ext_bad.get('err')} "
+      f"reasons={_af_reasons[:2]}")
 
 
 print()

@@ -37,6 +37,8 @@ from mw.ledger import (CALIBER_FIELD, ScoreLedger, is_passed,  # noqa: E402
 from mw.llm import Message                        # noqa: E402
 from mw.measure import (Measurement, budget_curve, noise_floor,  # noqa: E402
                         paired_compare, repeat, summarize)
+#: 工具目录指纹的**唯一**实现（契约 AF1 拿它与真实 `Core.tools.catalog()` 对撞）。
+from mw.tools import catalog_sha as tools_catalog_sha     # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -230,6 +232,9 @@ def _kex_zero() -> dict:
             "skipped_no_budget": 0,
             #: 理论要跑筛选、实际因为时间不够**没跑成**的次数
             "exec_skipped": 0,
+            #: 逐次失败原因（去重、上限 6 条）。⛔ 只留 `last_error` 会让
+            #: "7 调 5 败"退化成一句笼统的话 —— 不可归因的失败等于没测。
+            "err_reasons": [],
             "last_error": ""}
 
 
@@ -243,6 +248,13 @@ def _kex_absorb(acc: dict, stats: dict) -> dict:
         acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
     if int(stats.get("calls") or 0) and not int(stats.get("ok") or 0):
         acc["last_error"] = str(stats.get("last_error") or "")[:200]
+    # ★ 逐次失败原因进证据：**不是**只在"全败"时留一条。
+    #   ⛔ 一个臂 7 调 2 成 5 败时，`ok>0` ⇒ 旧写法根本不记原因；
+    #      而"哪几种病"恰恰是下一步该修什么的唯一依据。
+    for _why in (stats.get("err_reasons") or []):
+        _w = str(_why)[:240]
+        if _w and _w not in acc["err_reasons"] and len(acc["err_reasons"]) < 6:
+            acc["err_reasons"].append(_w)
     meta = stats.get("meta") or {}
     #: 外部进程的自述：采了几份、写了几个用例、有没有退到"能编译的第一份"。
     #: ⚠️ 自述不是判据，只做"它到底做了什么"的审计。
@@ -771,7 +783,16 @@ def cmd_bench(args) -> int:
                       # budget_tag 只是倍数，乘在绝对值上 —— 不含绝对值的"同口径"是假的。
                       limits=s.limits.as_dict(),
                       llm_cond=s.llm.cond(),
-                      max_tokens=int(args.max_tokens))
+                      max_tokens=int(args.max_tokens),
+                      # ★ 第二十三轮补上的漏洞：`planner.py:182` 把工具目录拼进提示词，
+                      #   于是"改 agents.json 就等于改提示词"。实测后果见
+                      #   `bench.Caliber.tool_catalog_sha` 的注释（同 mean、不同分布）。
+                      # ⚠️ 必须与 Core 真实建的注册表**逐字一致** —— 契约 AF1 拿
+                      #   `Core(...).tools.catalog()` 的哈希与它直接对撞。
+                      tool_catalog_sha=tools_catalog_sha(
+                          wire_external=not getattr(args, "no_external", False),
+                          agents_path=s.paths.root / "agents.json",
+                          workspace=s.paths.workspace))
     # 账本签名与基线签名**不是同一把**（见 mw.ledger.LEDGER_SIG_EXCLUDE）：
     # 基线要钉死题目集（"同一个候选有没有变好"）；
     # 自我模型要跨题目集（"我在哪些族上弱"）—— 钉死了就没这个问题可问。

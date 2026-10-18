@@ -1,0 +1,131 @@
+{
+  "tag": "R2",
+  "verdict": "两个合法口径判读不一致（配对=R2 / 补零=R3） ⇒ UNKNOWN：分辨率不足以在两种口径下同号",
+  "caliber_conflict": true,
+  "caliber_check": {
+    "status": "pass",
+    "pairs": {
+      "struct_convert": {
+        "unexpected": [],
+        "declared": [
+          "limits",
+          "tool_catalog_sha"
+        ]
+      },
+      "heldout": {
+        "unexpected": [],
+        "declared": [
+          "limits",
+          "tool_catalog_sha"
+        ]
+      }
+    },
+    "declared": [
+      "tool_catalog_sha",
+      "limits"
+    ]
+  },
+  "judge_paired": {
+    "tag": "R2",
+    "why": "UNKNOWN：Δ 低于分辨率阈值，不认领"
+  },
+  "judge_fillzero": {
+    "tag": "R3",
+    "why": "窄题集效应：只在单侧成立，不得推广"
+  },
+  "arms": {
+    "sc": {
+      "off": 0.76,
+      "on": 0.76,
+      "n_off": 5,
+      "n_on": 5,
+      "n_paired": 5
+    },
+    "ho": {
+      "off": 0.9,
+      "on": 0.9667,
+      "n_off": 6,
+      "n_on": 6,
+      "n_paired": 5
+    }
+  },
+  "means_comparable": {
+    "sc": true,
+    "ho": true
+  },
+  "delta": {
+    "struct_convert": 0.0,
+    "heldout": 0.04
+  },
+  "delta_legacy_fillzero": {
+    "struct_convert": 0.0,
+    "heldout": 0.0571
+  },
+  "dropped": {
+    "struct_convert": {},
+    "heldout": {
+      "h01_int_to_roman": {
+        "off": null,
+        "on": 1.0
+      },
+      "k01_diff_tree": {
+        "off": 0.8,
+        "on": null
+      }
+    }
+  },
+  "moved": {
+    "struct_convert": [],
+    "heldout": [
+      "k02_encode_cookie"
+    ]
+  },
+  "moved_detail": {
+    "struct_convert": {},
+    "heldout": {
+      "k02_encode_cookie": [
+        0.8,
+        1.0
+      ]
+    }
+  },
+  "external_on_struct": {
+    "calls": 5,
+    "ok": 5,
+    "err": 0,
+    "used_as_answer": 5,
+    "chars": 2098,
+    "samples": 10,
+    "tests": 20,
+    "fallback": 1,
+    "discriminated": 2,
+    "skipped_no_budget": 0,
+    "exec_skipped": 1,
+    "records": 1,
+    "tool": "agent:code_agent",
+    "ok_rate": 1.0
+  },
+  "external_on_heldout": {
+    "calls": 6,
+    "ok": 5,
+    "err": 1,
+    "used_as_answer": 5,
+    "chars": 2562,
+    "samples": 10,
+    "tests": 25,
+    "fallback": 0,
+    "discriminated": 1,
+    "skipped_no_budget": 0,
+    "exec_skipped": 0,
+    "records": 2,
+    "tool": "agent:code_agent",
+    "last_error": "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：全部实现都编译不过 ⇒ 不交付坏代码（交给内核自己处理）",
+    "err_reasons": [
+      "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：全部实现都编译不过 ⇒ 不交付坏代码（交给内核自己处理）"
+    ],
+    "ok_rate": 0.833
+  },
+  "external_off_calls": 0,
+  "threshold": 0.05,
+  "note": "T=0 逐位可复现只保证『这批题上可复现』，不保证可推广；外部能力的 assert 是模型自写的，只能排序不能判分。"
+}

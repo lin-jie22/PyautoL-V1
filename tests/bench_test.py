@@ -74,11 +74,15 @@ _empty = B.Caliber()
 check(RS, "A1 缺省 Caliber 的每个字段都是哨兵，不是默认值",
       all(_empty.as_dict()[k] == "<MISSING>" for k in B.CALIBER_KEYS),
       str(_empty.as_dict()))
-check(RS, "A2 口径键就是这十一个（供给侧运行时状态刻意不入闸）",
+check(RS, "A2 口径键就是这十二个（供给侧运行时状态刻意不入闸）",
+      # ⚠️ 第二十四轮加了第 12 个 `tool_catalog_sha` —— 它**不是**运行时状态，
+      #    而是**提示词**的一部分（planner.py:182 把工具目录拼进提示词）。
+      #    这条断言当场转红，说明"数一遍键"的写法确实能抓住新增字段。
       tuple(B.CALIBER_KEYS) == ("scorer_sha", "suite_sha", "repeat",
                                 "budget_tag", "temperature", "fresh",
                                 "memory_scope", "memory_seed",
-                                "limits", "llm_cond", "max_tokens"),
+                                "limits", "llm_cond", "max_tokens",
+                                "tool_catalog_sha"),
       str(tuple(B.CALIBER_KEYS)))
 # ⛔ 这一条是"口径混淆"的入口：把熔断/重试之类的运行时状态写进口径，
 #    会让"供给侧崩了"的那一轮自动获得一把新尺子 —— 正是要防的事。

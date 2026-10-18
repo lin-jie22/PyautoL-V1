@@ -227,6 +227,46 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AS23", "bench/withdraw_check.py",
      '_SUMMARY = re.compile(r"V1 契约测试汇总\\s+PASS=(\\d+)\\s+FAIL=(\\d+)")',
      '_SUMMARY = re.compile(r"汇总\\s+PASS=(\\d+)\\s+FAIL=(\\d+)")'),
+    # ══ AT1–AT8（第二十四轮）：口径签名补齐 / 失败可归因 / 探针求和 ═════════
+    # ── AT1：指纹与真实 Core 脱节（占位记忆换成 None ⇒ 少 recall/note 两个工具）──
+    ("AT1", "mw/tools.py",
+     "    register_core_tools(reg, memory=_StubMemory() if with_memory else None,\n"
+     "                        workspace=workspace)",
+     "    register_core_tools(reg, memory=None,\n"
+     "                        workspace=workspace)"),
+    # ── AT2：字段填了但填的是空串（"只加字段不填值"的撤回态）────────────────
+    ("AT2", "run.py",
+     "tool_catalog_sha=tools_catalog_sha(",
+     'tool_catalog_sha=(lambda *_a, **_k: "")('),
+    # ── AT3：目录行里去掉描述（改 agents.json 描述不再改变提示词指纹）────────
+    ("AT3", "mw/tools.py",
+     '        return f"- {self.name}({args}): {self.description}{mark}{mut}"',
+     '        return f"- {self.name}({args}): ^{mark}{mut}"  # 撤回态：描述不进口录'),
+    # ── AT4：豁免表形同虚设（放行一切，只报 declared）────────────────────────
+    ("AT4", "mw/bench.py",
+     "        want = {str(x) for x in (declared or ())}\n"
+     "        diff = self.diff(other)\n"
+     "        return ([k for k in diff if k not in want],\n"
+     "                [k for k in diff if k in want])",
+     "        diff = self.diff(other)\n"
+     "        return ([], diff)  # 撤回态：声明形同虚设"),
+    # ── AT5：把目录指纹塞回账本签名（历史 8 个会话的行会全部失效）────────────
+    ("AT5", "mw/ledger.py",
+     'LEDGER_SIG_EXCLUDE: tuple[str, ...] = ("suite_sha", "repeat", "tool_catalog_sha")',
+     'LEDGER_SIG_EXCLUDE: tuple[str, ...] = ("suite_sha", "repeat")'),
+    # ── AT6：探针只读最后一条记录（第三次踩的那个坑）────────────────────────
+    ("AT6", "bench/probe_external_real.py",
+     '    for r in rows:\n        ex = r.get("kernel_external") or {}',
+     '    for r in rows[-1:]:\n        ex = r.get("kernel_external") or {}'),
+    # ── AT7："没核验到"被读成"核验通过"（三态塌成两态）──────────────────────
+    ("AT7", "bench/probe_external_real.py",
+     '    if fails:\n        out["status"] = "fail"',
+     '    if False:  # 撤回态：核验永不判失败\n        out["status"] = "fail"'),
+    # ── AT8：失败原因不落盘（只留 last_error 的老写法）──────────────────────
+    ("AT8", "mw/core.py",
+     "                            if _why not in _rs and len(_rs) < _ERR_REASON_CAP:\n"
+     "                                _rs.append(_why)",
+     "                            _ = _why  # 撤回态：原因不进证据"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -255,6 +295,14 @@ COUPLED: dict[str, frozenset[str]] = {
     #: 这是变异的直接副作用，不是锚定跑偏：要消掉多红只能让那行被用起来，
     #: 但那样变异就不再是"碰一下锚层"了（AS1 要抓的正是"碰"，不是"用"）。
     "AS1": frozenset({"K5"}),
+    #: AT4 把豁免表改成"放行一切" ⇒ 探针的 `_caliber_check` 再也判不出意外差异
+    #: （本该 `fail` 的变体变成 `pass`）⇒ AT7 的三态断言必然红。
+    #: 这是**合理的连带**：AT7 测的是探针，而探针用的正是 `diff_except`。
+    "AT4": frozenset({"AT7"}),
+    #: AE9 把注入开关读成空串 ⇒ **所有**外部能力的题都不再注入，而 AT8 的夹具
+    #: 正是"让一个必然失败的 agent 被调用一次"⇒ 一次都不会被调用 ⇒ AT8 必然红。
+    #: 这是**合理的连带**：AT8 测的是"失败原因落盘"，而它需要失败真的发生。
+    "AE9": frozenset({"AT8"}),
     #: AS4 把 `if _CODE_ONLY.search(goal)` 改成 `if True` ⇒ **散文题也派生
     #: `compiles` 判据** ⇒ 那些题被自检错误打回 ⇒ 交付路径整个变了。
     #: 于是两条端到端读数自然不成立：

@@ -165,6 +165,12 @@ class _LedgeredLLM:
         raise AssertionError("不可达：retries ≥ 0 保证循环至少执行一次并 return 或 raise")
 
 
+#: 外部能力失败原因的**保留上限**（去重后）。
+#: 为什么要有上限：一个反复失败的臂会写几十条同义句子，读数会被噪声塞满；
+#: 而 6 条足以覆盖"超时 / 空返回 / 解析失败 / 未交付 / 非零退出"这几种病。
+_ERR_REASON_CAP = 6
+
+
 @dataclass
 class Outcome:
     status: str                      # done | budget_exhausted | cascade | blocked
@@ -505,8 +511,13 @@ class Core:
                     #   60s 的上限会让 agent **恒**在 `gen_stopped_early` 或
                     #   `tests=0` 状态交付 ⇒ 执行筛选从来跑不到。
                     #   85 仍守得住 45s 收尾余量：it==1 时 wall_left≈117 ⇒ 117−45=72。
+                    # ★ 第二十四轮：上限**随预算档缩放**，不再写死 85。
+                    #   写死等于"2x 档的外部件仍然是 1x 的大小" —— 那样 2x 实验
+                    #   测的还是"1x 下的外部能力"，只不过内核自己多想了想。
+                    #   缩放基准取 `wall_s / max_wall_s`（1x ⇒ 恰好 85，与上一轮逐字相同）。
+                    _cap = 85.0 * max(1.0, budget.wall_s / max(1.0, self.s.limits.max_wall_s))
                     _wall_left = budget.wall_s - self.ledger.elapsed()
-                    _dl = max(5.0, min(85.0, _wall_left - self.s.limits.close_reserve_s))
+                    _dl = max(5.0, min(_cap, _wall_left - self.s.limits.close_reserve_s))
                     # ⛔ 额度不够时**根本不注入**：给 5s 的外部能力只会
                     #    "准时地失败"并且白吃 5s。宁可让内核自己解（至少会交个答案）。
                     if _dl >= 20.0:
@@ -612,6 +623,11 @@ class Core:
                         else:
                             _es["err"] += 1
                             _es["last_error"] = (result.error or "")[:200]
+                            # 原文进证据（去重、限量）：一条都留不下来 = 不可归因。
+                            _why = (result.error or "（无错误信息）")[:240]
+                            _rs = _es["err_reasons"]
+                            if _why not in _rs and len(_rs) < _ERR_REASON_CAP:
+                                _rs.append(_why)
                     if _produces and result.ok and self._checks:
                         result = self._gate_finish(result)
 
@@ -966,6 +982,15 @@ class Core:
             #: 因为**额度不够**而根本没被注入的次数（不是失败，是没试）：
             #: 与 `err` 分开计 —— "没试"和"试了失败"的修法完全不同。
             "skipped_no_budget": 0,
+            #: 逐次失败的**原因原文**（去重、上限 `_ERR_REASON_CAP` 条）。
+            #:
+            #: ⛔ 为什么不能只留 `last_error`（第二十三轮实测代价）：ho_on 7 次调用
+            #:    5 次失败，可证据里只剩**最后一条**，而且判读只看 `ok==0` 的臂
+            #:    ⇒ "7 调 2 成 5 败"这件事在证据里退化成一句笼统的话，
+            #:    我必须手工复现才能知道到底是超时 / 空返回 / 解析失败。
+            #:    三种病的修法完全不同（调预算 / 换模型 / 改正则）——
+            #:    **不可归因的失败等于没测**。
+            "err_reasons": [],
             "last_error": "",
             "meta": {},
         }
@@ -1228,7 +1253,9 @@ class Core:
             if int(_ex.get("skipped_no_budget") or 0):
                 _ex2_line += f" ⛔额度不足未注入={_ex['skipped_no_budget']}次"
             if _ex["err"]:
-                _ex2_line += f" ⚠️{_ex['last_error'][:60]}"
+                _rs = _ex.get("err_reasons") or []
+                _head = (_rs[0] if _rs else str(_ex.get("last_error") or ""))[:60]
+                _ex2_line += f" ⚠️{_ex['err']}败/{len(_rs)}种: {_head}"
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}{_ex2_line}")

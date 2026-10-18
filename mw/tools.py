@@ -310,6 +310,51 @@ def external_agent_names(reg: ToolRegistry) -> list[str]:
     return [n for n in reg.names() if n.startswith("agent:")]
 
 
+class _StubMemory:
+    """只为**注册**而存在的记忆占位。
+
+    ⛔ 它不是可用记忆：任何 handler 真被调用都会抛错。
+       敢用它的唯一理由：`catalog_sha()` 只需要注册**发生**，不需要工具**能跑**；
+       而 `register_core_tools` 只在注册那一刻判 `memory is not None`（mw/tools.py:128）。
+    """
+
+    def recall(self, *a: Any, **k: Any) -> str:
+        raise RuntimeError("占位记忆，不可调用")
+
+    def commit_fact(self, *a: Any, **k: Any) -> tuple[str, bool]:
+        raise RuntimeError("占位记忆，不可调用")
+
+
+def catalog_sha(*, wire_external: bool = True,
+                agents_path: Any = None,
+                with_memory: bool = True,
+                workspace: Path | None = None) -> str:
+    """工具目录指纹 —— 口径签名里"提示词到底给了模型哪些工具"那一项。
+
+    ## 为什么它必须进口径签名（第二十三轮实测）
+
+    `planner.py:182` 把 `tools.catalog()` 拼进规划器提示词。于是**改 `agents.json`
+    就等于改提示词**，而 T=0 只保证"同样输入给同样输出"，不保证"改了提示词还不改输出"。
+    实测后果：本轮 OFF 臂 `z01=1.0, z03=0.8`，上一版是 `z01=0.8, z03=1.0`
+    —— **两个 mean 都是 0.7600，分布却换了**。而当时的"同口径"标签照样打着。
+
+    ## 为什么是一个函数而不是各处自己 hash
+
+    "注册表怎么建"这件事必须与 Core **逐字一致**，否则指纹会与真实提示词脱节：
+    契约 AF1 直接把本函数的结果与 `Core(...).tools.catalog()` 的哈希对撞。
+
+    ⚠️ `with_memory=False` 只在"我想看纯内建目录"时用；默认 True 才是 Core 的真形状。
+    """
+    from hashlib import sha256
+
+    reg = ToolRegistry()
+    register_core_tools(reg, memory=_StubMemory() if with_memory else None,
+                        workspace=workspace)
+    if wire_external and agents_path:
+        register_external_agents(reg, agents_path)
+    return sha256(reg.catalog().encode("utf-8")).hexdigest()[:16]
+
+
 def shlex_split(cmd: str) -> list[str]:
     """给 guard 用的安全切分；失败时回退到整串。"""
     try:

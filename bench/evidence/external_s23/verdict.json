@@ -2,6 +2,21 @@
   "tag": "R3",
   "verdict": "窄题集效应：只在单侧成立，不得推广",
   "caliber_conflict": false,
+  "caliber_check": {
+    "status": "unverifiable",
+    "pairs": {
+      "struct_convert": {
+        "why": "caliber 里缺 tool_catalog_sha（第二十三轮之前的证据）"
+      },
+      "heldout": {
+        "why": "caliber 里缺 tool_catalog_sha（第二十三轮之前的证据）"
+      }
+    },
+    "declared": [
+      "tool_catalog_sha",
+      "limits"
+    ]
+  },
   "judge_paired": {
     "tag": "R3",
     "why": "窄题集效应：只在单侧成立，不得推广"
@@ -64,35 +79,37 @@
   },
   "external_on_struct": {
     "calls": 5,
-    "chars": 932,
-    "discriminated": 2,
-    "err": 2,
-    "exec_skipped": 0,
-    "fallback": 0,
-    "last_error": "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码",
     "ok": 3,
+    "err": 2,
+    "used_as_answer": 3,
+    "chars": 932,
     "samples": 5,
-    "skipped_no_budget": 0,
-    "tasks": 5,
     "tests": 15,
+    "fallback": 0,
+    "discriminated": 2,
+    "skipped_no_budget": 0,
+    "exec_skipped": 0,
+    "records": 1,
     "tool": "agent:code_agent",
-    "used_as_answer": 3
+    "last_error": "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码",
+    "ok_rate": 0.6
   },
   "external_on_heldout": {
-    "calls": 4,
-    "chars": 241,
-    "discriminated": 0,
-    "err": 3,
-    "exec_skipped": 1,
+    "calls": 7,
+    "ok": 2,
+    "err": 5,
+    "used_as_answer": 2,
+    "chars": 673,
+    "samples": 2,
+    "tests": 5,
     "fallback": 1,
-    "last_error": "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码",
-    "ok": 1,
-    "samples": 1,
+    "discriminated": 0,
     "skipped_no_budget": 0,
-    "tasks": 4,
-    "tests": 0,
+    "exec_skipped": 1,
+    "records": 2,
     "tool": "agent:code_agent",
-    "used_as_answer": 1
+    "last_error": "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码",
+    "ok_rate": 0.286
   },
   "external_off_calls": 0,
   "threshold": 0.05,

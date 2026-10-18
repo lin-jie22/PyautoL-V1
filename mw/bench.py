@@ -130,7 +130,8 @@ def _sha_file(p: Path) -> str:
 CALIBER_KEYS: tuple[str, ...] = ("scorer_sha", "suite_sha", "repeat",
                                  "budget_tag", "temperature", "fresh",
                                  "memory_scope", "memory_seed",
-                                 "limits", "llm_cond", "max_tokens")
+                                 "limits", "llm_cond", "max_tokens",
+                                 "tool_catalog_sha")
 
 
 @dataclass(frozen=True)
@@ -164,6 +165,15 @@ class Caliber:
     llm_cond: Any = _MISSING
     #: 生成上限（`--max-tokens`）。它决定截断阈，而截断会直接改变分数。
     max_tokens: Any = _MISSING
+    #: 工具目录指纹（`mw.tools.catalog_sha`）—— **提示词**的一部分。
+    #:
+    #: ⛔ 第二十三轮实测逼出来的漏洞：`planner.py:182` 把 `tools.catalog()` 拼进
+    #:    规划器提示词，于是改 `agents.json` 就等于改提示词，而签名里**一个字都没有**。
+    #:    观测后果：OFF 臂 `z01=1.0, z03=0.8`、上一版 `z01=0.8, z03=1.0`
+    #:    —— 两个 mean 都是 0.7600，**分布却换了**，而标签照样写着"同口径"。
+    #:    这与 `temperature` / `memory_scope` 两次是同一个病：**不是尺子坏了，
+    #:    是尺子量错了对象**。
+    tool_catalog_sha: Any = _MISSING
 
     def as_dict(self) -> dict:
         return {k: _val(getattr(self, k)) for k in CALIBER_KEYS}
@@ -176,6 +186,24 @@ class Caliber:
     def diff(self, other: "Caliber") -> list[str]:
         """点名差异字段 —— 拒绝时必须说清**哪一项**变了（不许只说"不一致"）。"""
         return [k for k in CALIBER_KEYS if _val(getattr(self, k)) != _val(getattr(other, k))]
+
+    def diff_except(self, other: "Caliber", declared: Any) -> tuple[list[str], list[str]]:
+        """**声明的变量豁免**：把差异分成 (意外的, 已声明的)。
+
+        ## 为什么需要"豁免"而不是"放行"
+
+        有些实验的**自变量本身就是口径字段**（路线①里 ON/OFF 的唯一差别就是
+        工具目录与 `limits.external_answer_tool`）。若一律拒绝，实验做不成；
+        若一律放行，就等于"换个来源就换把尺子"。
+
+        第三条路：**声明哪些字段允许不同**，剩下的任何一个不同都算失败。
+        这样"两臂只差一个变量"从**散文承诺**变成了可核验的事实 ——
+        契约 AF4 与 `bench/probe_external_real.py` 的 `caliber_check` 都用它。
+        """
+        want = {str(x) for x in (declared or ())}
+        diff = self.diff(other)
+        return ([k for k in diff if k not in want],
+                [k for k in diff if k in want])
 
     def same_as(self, other: "Caliber") -> bool:
         return not self.diff(other)
@@ -199,6 +227,18 @@ class Caliber:
                 val = str(raw)
             cells.append(f"{abbr.get(k, k)}={val}")
         return f"sig={self.signature()} " + " ".join(cells)
+
+
+def caliber_from_dict(raw: dict) -> Caliber:
+    """从落盘的 `caliber` 字典还原口径对象 —— **唯一**的反序列化实现。
+
+    ⛔ 为什么要有它：探针要核验"两臂只差声明的变量"，就得把两臂的 caliber
+       都还原成 `Caliber` 再走 `diff_except`；若探针自己拼一份
+       `Caliber(**{...})`，那就是同一事实两处声明（V5 的老病）。
+    ⚠️ 缺失键补 `_MISSING` 哨兵，**不补默认值** —— 补默认值会让
+       "旧证据没记这个字段"和"这个字段等于默认值"变成同一件事。
+    """
+    return Caliber(**{k: dict(raw).get(k, _MISSING) for k in CALIBER_KEYS})
 
 
 # ===========================================================================
@@ -835,8 +875,7 @@ class BaselineStore:
         d = self.load()
         if not d or "caliber" not in d:
             return None
-        raw = d["caliber"]
-        return Caliber(**{k: raw.get(k, _MISSING) for k in CALIBER_KEYS})
+        return caliber_from_dict(d["caliber"])
 
     def save(self, m: Measurement, caliber: Caliber, *,
              allow_supersede: bool = False) -> tuple[bool, str]:

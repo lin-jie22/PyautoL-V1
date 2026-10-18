@@ -171,7 +171,17 @@ def canonical(obj: Any) -> str:
 #: ⛔ 剩下的**一个都不许再放**：`scorer_sha`（换尺子）、`temperature`（换采样）、
 #: `limits`（换预算绝对值）、`llm_cond`（换模型）、`memory_*`（换起跑记忆）
 #: —— 任一项变了，两条分数就不是同一个东西，混进来就是跨口径比较。
-LEDGER_SIG_EXCLUDE: tuple[str, ...] = ("suite_sha", "repeat")
+#:
+#: ⚠️ 例外**只有一个**，而且理由是**证据可继性**而不是"放松"：
+#:    `tool_catalog_sha`（第二十三轮加的）。它必须排除，否则**历史 8 个会话的行
+#:    全部失效**（它们的签名是在没有这个字段时算的，`admissible` 会返回 0 行，
+#:    自我模型的族信号当场归零）—— 而历史行的目录指纹**已不可追溯**
+#:    （`agents.json` 被改过，事后补算就是伪造血缘）。
+#:    代价是**已登记**的：账本行里读不到目录指纹，两个目录不同的会话可以写进
+#:    同一份账本而不被签名拦住。这是"判据完整性 vs 8 个会话的证据"之间的取舍，
+#:    选了后者，并把它写进 DESIGN §16.23 ⑦ 的边界里（不是藏起来）。
+#:    ⛔ 下一轮若要补，只能走"新增一列、不做签名"的路，不许把它塞回签名。
+LEDGER_SIG_EXCLUDE: tuple[str, ...] = ("suite_sha", "repeat", "tool_catalog_sha")
 
 
 def ledger_caliber_of(caliber: dict) -> dict:

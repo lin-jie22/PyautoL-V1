@@ -5103,6 +5103,147 @@ check(RS, "AV3 ★蒸馏器必须**收到**失败原料，且 failure 排在**�
       f"第一条={(_AV_SPY.user_texts[0][:44] if _AV_SPY.user_texts else '无')}")
 
 # ══════════════════════════════════════════════════════════════════════════
+# AW 组（第二十八轮，§17-6 6c）：运行期语义记忆**写入**通道必须可关
+# ══════════════════════════════════════════════════════════════════════════
+#: 实测（6c 首跑三臂）：空库臂在跑的过程中被模型自己调 `note` 写回 facts ——
+#: "种子是唯一处理"的前提被运行期写入混杂，三臂不再可比，整组作废。
+#: 修法 = `allow_note` 开关（Limits 进口径签名 + tools 注册条件化 + core 透传）。
+
+from mw.tools import register_core_tools as _aw_register        # noqa: E402
+
+_AW_MEM = MemoryStore(_TMP / "aw_probe.db")
+_AW_REG_ON = ToolRegistry()
+_aw_register(_AW_REG_ON, memory=_AW_MEM)                        # 默认 ⇒ note 在册
+_AW_REG_OFF = ToolRegistry()
+_aw_register(_AW_REG_OFF, memory=_AW_MEM, allow_note=False)     # 关 ⇒ note 不在册
+
+check(RS, "AW1 ★默认（allow_note=True）⇒ `note` **在册**且 mutating=True\n"
+          "          —— 开关的默认值必须保持历史行为逐位不变（只做加法不做偷换）。",
+      _AW_REG_ON.get("note") is not None and _AW_REG_ON.get("note").mutating is True,
+      f"note在册={_AW_REG_ON.get('note') is not None} "
+      f"mutating={getattr(_AW_REG_ON.get('note'), 'mutating', 'NA')}")
+
+check(RS, "AW2 ★allow_note=False ⇒ `note` **不在册**（不是'注册了但拒绝执行'）\n"
+          "          —— 工具目录进口径签名：不在册 ⇒ 目录变 ⇒ 口径变，\n"
+          "            是声明出来的不同候选；在册但拒绝 = 同标签藏两种行为 = 标签撒谎。",
+      _AW_REG_OFF.get("note") is None,
+      f"note在册={_AW_REG_OFF.get('note') is not None}")
+
+check(RS, "AW3 ★关写入**不关读**：`recall`（只读）与 `finish` 仍在册\n"
+          "          —— 6c 三臂要的是'种子是唯一写入口'，检索通道必须照常。",
+      _AW_REG_OFF.get("recall") is not None and _AW_REG_OFF.get("finish") is not None,
+      f"recall在册={_AW_REG_OFF.get('recall') is not None} "
+      f"finish在册={_AW_REG_OFF.get('finish') is not None}")
+
+#: AW4：env 生效（T5 同款纪律：env 必须真的能改到 Limits 的字段）。
+_AW_ENV_SAVED = os.environ.pop("V1_ALLOW_NOTE", None)
+try:
+    os.environ["V1_ALLOW_NOTE"] = "0"
+    _aw_off = cfg.Limits().allow_note
+finally:
+    if _AW_ENV_SAVED is None:
+        os.environ.pop("V1_ALLOW_NOTE", None)
+    else:
+        os.environ["V1_ALLOW_NOTE"] = _AW_ENV_SAVED
+check(RS, "AW4 ★V1_ALLOW_NOTE=0 ⇒ `Limits.allow_note` 为 False（env 真的生效）\n"
+          "          —— '每次调用都重新读 env'的承诺（settings() 文档）必须对布尔也成立；\n"
+          "            另外 as_dict() 自动包含本字段（fields(self) 派生）⇒ 进口径签名。",
+      _aw_off is False and "allow_note" in cfg.Limits().as_dict(),
+      f"env关闭读数={_aw_off} as_dict含字段={'allow_note' in cfg.Limits().as_dict()}")
+
+#: AW5：端到端传播 —— Core 必须把 Limits 的开关送到工具注册表。
+#: ⛔ 这是最容易断的一根线：config 有字段、tools 有参数，中间的透传漏了
+#:    就是"两处都写着对、连起来不对"。第二十轮奖励通道的教训同宗。
+_AW_ENV_SAVED2 = os.environ.get("V1_ALLOW_NOTE")
+try:
+    os.environ["V1_ALLOW_NOTE"] = "0"
+    _aw_core = Core(cfg.Settings(), llm=StubLLM(), wire_external=False,
+                    log=lambda *_: None)
+finally:
+    if _AW_ENV_SAVED2 is None:
+        os.environ.pop("V1_ALLOW_NOTE", None)
+    else:
+        os.environ["V1_ALLOW_NOTE"] = _AW_ENV_SAVED2
+check(RS, "AW5 ★V1_ALLOW_NOTE=0 时构造的 Core，其工具注册表里**没有** `note`\n"
+          "          —— Limits → Core → register_core_tools 的透传线；\n"
+          "            config 与 tools 各自正确但中间断线 = 实验照样被混杂。",
+      _aw_core.tools.get("note") is None
+      and _aw_core.tools.get("recall") is not None,
+      f"core.note在册={_aw_core.tools.get('note') is not None} "
+      f"core.recall在册={_aw_core.tools.get('recall') is not None}")
+
+# ══════════════════════════════════════════════════════════════════════════
+# AX 组（第二十八轮，§17-6 6c）：世界模型的语义**沉淀**通道必须可关
+# ══════════════════════════════════════════════════════════════════════════
+#: 实测（6c 第二跑的完整性核对）：allow_note=0 之后 facts 仍在长 ——
+#: P 6→8、E 0→2，写入者是 `worldmodel.learn()`（source=worldmodel）。
+#: 运行期写语义层有**两条**通道，只关一条 = 假装修好了。
+
+from mw.worldmodel import Prediction as _AXPred                  # noqa: E402
+
+_AX_MEM_ON = MemoryStore(_TMP / "ax_on.db")
+_ax_wm_on = WorldModel(_AX_MEM_ON, StubLLM())
+#: 必须走**成败类**失配（teachable）——文本类根本不进语义层（缺陷 #12 修复后）。
+_ax_wm_on.observe(_AXPred(action="parse_duration", expected="会返回一个整数秒数",
+                          confidence=0.9, expect_ok=True),
+                  "OSError 权限不足", ok=False)
+_ax_on_facts = _AX_MEM_ON.stats()["facts"]
+
+_AX_MEM_OFF = MemoryStore(_TMP / "ax_off.db")
+_ax_wm_off = WorldModel(_AX_MEM_OFF, StubLLM(), allow_learn=False)
+_ax_mm_off = _ax_wm_off.observe(_AXPred(action="parse_duration", expected="会返回一个整数秒数",
+                                        confidence=0.9, expect_ok=True),
+                                "OSError 权限不足", ok=False)
+_ax_wm_off.learn(_ax_mm_off)
+_ax_off_facts = _AX_MEM_OFF.stats()["facts"]
+_ax_off_mm = _AX_MEM_OFF.stats()["episodes"]
+
+check(RS, "AX1 ★默认（allow_learn=True）⇒ 可教学失配**沉淀为语义事实**\n"
+          "          —— 开关默认值必须保持历史行为逐位不变（worldmodel 的学习是主线功能）。",
+      _ax_on_facts >= 1,
+      f"沉淀后 facts={_ax_on_facts}")
+
+check(RS, "AX2 ★allow_learn=False ⇒ 同一个可教学失配**不进语义层**，\n"
+          "          但情景里的 mismatch 行**照记**（案例不丢，只是不上架）\n"
+          "          —— 6c 三臂要的是'种子是唯一 facts 来源'，而情景层不进检索，\n"
+          "            关它不影响送达；但学习案例照记，关掉不是销毁证据。",
+      _ax_off_facts == 0 and _ax_off_mm >= 1,
+      f"facts={_ax_off_facts} mismatch情景行={_ax_off_mm}")
+
+#: AX3：env 生效（AW4 同款）。
+_AX_ENV_SAVED = os.environ.pop("V1_ALLOW_LEARN", None)
+try:
+    os.environ["V1_ALLOW_LEARN"] = "0"
+    _ax_env_off = cfg.Limits().allow_learn
+finally:
+    if _AX_ENV_SAVED is None:
+        os.environ.pop("V1_ALLOW_LEARN", None)
+    else:
+        os.environ["V1_ALLOW_LEARN"] = _AX_ENV_SAVED
+check(RS, "AX3 ★V1_ALLOW_LEARN=0 ⇒ `Limits.allow_learn` 为 False，\n"
+          "          且 as_dict() 自动包含本字段（fields(self) 派生 ⇒ 进口径签名）。",
+      _ax_env_off is False and "allow_learn" in cfg.Limits().as_dict(),
+      f"env关闭读数={_ax_env_off} "
+      f"as_dict含字段={'allow_learn' in cfg.Limits().as_dict()}")
+
+#: AX4：Core 透传（AW5 同款：config 与模块各自正确、中间断线 = 假修好）。
+_AX_ENV_SAVED2 = os.environ.get("V1_ALLOW_LEARN")
+try:
+    os.environ["V1_ALLOW_LEARN"] = "0"
+    _ax_core = Core(cfg.Settings(), llm=StubLLM(), wire_external=False,
+                    log=lambda *_: None)
+finally:
+    if _AX_ENV_SAVED2 is None:
+        os.environ.pop("V1_ALLOW_LEARN", None)
+    else:
+        os.environ["V1_ALLOW_LEARN"] = _AX_ENV_SAVED2
+check(RS, "AX4 ★V1_ALLOW_LEARN=0 时构造的 Core，其世界模型 `allow_learn` 为 False\n"
+          "          —— Limits → Core → WorldModel 的透传线；6c 首跑证明\n"
+          "            这条线断了实验就会被混杂，而它断的时候每一层单看都是'对的'。",
+      getattr(_ax_core.wm, "allow_learn", None) is False,
+      f"core.wm.allow_learn={getattr(_ax_core.wm, 'allow_learn', 'NA')}")
+
+# ══════════════════════════════════════════════════════════════════════════
 # AE 组（第二十三轮，路线①）：外部能力作为**答案来源**接入
 # ══════════════════════════════════════════════════════════════════════════
 _AE_CORE = _code_only(_CORE_SRC)

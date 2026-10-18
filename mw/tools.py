@@ -94,7 +94,8 @@ class ToolRegistry:
 # 内建：它们不是"功能"，是内核跑起来所需的最小骨骼
 # ---------------------------------------------------------------------------
 def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
-                        workspace: Path | None = None) -> None:
+                        workspace: Path | None = None,
+                        allow_note: bool = True) -> None:
     """注册内核自带的极简工具。刻意极少 —— 其余全部走外部。
 
     语义是「**保证**核心工具在册」，不是「新增」：
@@ -104,6 +105,12 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
     再调一次本函数。若这里无脑 register，注入就必然因 `finish` 重名而崩 ——
     实测就是这么撞的（契约 L6）。但"唯一事实源"的重名检查**不能**因此放松：
     它正是用来抓"同一个工具被两处定义"的。
+
+    `allow_note=False`：**不注册** `note`（运行期语义记忆写入通道整个不在册）。
+    为什么是"不注册"而不是"注册了但拒绝执行"：工具目录（tool_catalog_sha）
+    进口径签名 —— 不在册 ⇒ 目录变 ⇒ 口径变，这是**声明出来的不同候选**；
+    在册但拒绝 ⇒ 目录不变，同一个候选标签下藏着两种行为，那是标签撒谎。
+    `recall`（只读）不受影响 —— 关写入不关读。第二十八轮 §17-6 6c 用。
     """
 
     def _put(spec: ToolSpec) -> None:
@@ -143,11 +150,12 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
         _put(ToolSpec(
             "recall", "检索语义记忆", {"query": "查询词"}, _recall,
         ))
-        _put(ToolSpec(
-            "note", "写入一条语义记忆（自动去重）",
-            {"text": "事实文本", "source": "来源", "confidence": "0~1 可信度"},
-            _note, mutating=True,
-        ))
+        if allow_note:
+            _put(ToolSpec(
+                "note", "写入一条语义记忆（自动去重）",
+                {"text": "事实文本", "source": "来源", "confidence": "0~1 可信度"},
+                _note, mutating=True,
+            ))
 
     def _run_shell(args: dict) -> str:
         cmd = str(args.get("cmd", "")).strip()

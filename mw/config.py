@@ -55,6 +55,20 @@ def _env_float(key: str, default: float, *, allow_zero: bool = False) -> float:
     return v if (v >= 0.0 if allow_zero else v > 0.0) else default
 
 
+def _env_bool(key: str, default: bool) -> bool:
+    """读布尔 env：`0`/`false`（不分大小写）⇒ False，其余非空 ⇒ True。
+
+    ⛔ 只有"明确写 0/false"才关。空串 / 写错值都回默认 ——
+    跟 `_env_int` 的纪律一致：解析失败不是"关"，是"没配"。
+    （"false" 被 int() 拒收的教训在这里同样适用：不能用 _env_int 读布尔的理由
+     是 `V1_...=false` 会静默回默认，而布尔的默认恰恰是用户想改的值。）
+    """
+    raw = os.environ.get(key)
+    if raw is None or raw.strip() == "":
+        return default
+    return raw.strip().lower() not in ("0", "false")
+
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -241,6 +255,26 @@ class Limits:
     #:    不是同一个候选 —— 不进制就会让 `paired_compare` 判成"可比"。
     external_answer_tool: str = field(
         default_factory=lambda: os.environ.get("V1_EXTERNAL_ANSWER_TOOL", "").strip())
+    #: 是否允许模型在运行期调用 `note` **写**语义记忆（第二十八轮，§17-6 6c）。
+    #:
+    #: 为什么必须可关（实测逼出来的）：三臂记忆实验里，空库臂在跑的过程中
+    #: 被模型自己调 `note` 写回了 facts —— "种子是唯一处理"的前提被运行期
+    #: 写入混杂，三臂不再可比。关掉它 ⇒ 播种内容是唯一的 facts 来源，
+    #: 送达（recall 兜底 top-k）成为确定性事件。只读的 `recall` 不受影响。
+    #:
+    #: ⚠️ 必须进 `Limits`（⇒ 进口径签名）：开/关注入语义记忆跑出来的分数
+    #:    不是同一个候选，不进制就会让 `paired_compare` 判成"可比"。
+    allow_note: bool = field(
+        default_factory=lambda: _env_bool("V1_ALLOW_NOTE", True))
+    #: 是否允许世界模型把可教学的失配**沉淀成语义事实**（第二十八轮，§17-6 6c）。
+    #:
+    #: 这是运行期写语义层的**第二条**通道（第一条 `note`，见 `allow_note`）：
+    #: 预测失配 → `worldmodel.learn()` → `commit_fact(source="worldmodel")`。
+    #: 三臂记忆实验里空库臂被它写回了 facts ⇒ 处理被混杂。关掉它 ⇒ 失配仍记
+    #: 情景（不进检索），只是不进语义层 —— "种子是唯一 facts 来源"才成立。
+    #: ⚠️ 与 `allow_note` 同理必须进 `Limits`（口径签名）。
+    allow_learn: bool = field(
+        default_factory=lambda: _env_bool("V1_ALLOW_LEARN", True))
 
     def as_dict(self) -> dict:
         """硬上限的**完整**快照 —— 口径签名的输入之一。
@@ -305,6 +339,8 @@ ENV_KEYS = (
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",
     "V1_EXTERNAL_ANSWER_TOOL",
+    "V1_ALLOW_NOTE",
+    "V1_ALLOW_LEARN",
 )
 
 #: **允许取 0** 的 env 键（唯一事实源）。

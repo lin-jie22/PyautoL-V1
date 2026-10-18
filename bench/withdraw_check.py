@@ -348,6 +348,66 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '                            -int(getattr(e, "id", 0) or 0)))\n'
      '    return eps',
      '    return eps  # 撤回态：不排序，failure 混回堆里'),
+    # ── AW1：note 注册门槛失效（无条件注册）⇒ 默认行为被偷换 ────────────────
+    #: ⚠️ 变异必须打在"默认路径也拿得到 note"上（`if False:`）——
+    #:    打成 `if True:` 时默认路径照样注册 ⇒ AW1 自己不红（锚定跑偏，首跑实测）。
+    ("AW1", "mw/tools.py",
+     '        if allow_note:\n'
+     '            _put(ToolSpec(\n'
+     '                "note", "写入一条语义记忆（自动去重）",',
+     '        if False:\n'
+     '            _put(ToolSpec(\n'
+     '                "note", "写入一条语义记忆（自动去重）",'),
+    # ── AW2：开关被无视（allow_note=False 也注册）⇒ OFF 臂照样能写 ─────────
+    ("AW2", "mw/tools.py",
+     '        if allow_note:\n'
+     '            _put(ToolSpec(\n'
+     '                "note", "写入一条语义记忆（自动去重）",',
+     '        if memory is not None:\n'
+     '            _put(ToolSpec(\n'
+     '                "note", "写入一条语义记忆（自动去重）",'),
+    # ── AW3：关写入连读也关了（整块 memory 工具被 allow_note 门控）──────────
+    ("AW3", "mw/tools.py",
+     '    if memory is not None:\n'
+     '        def _recall(args: dict) -> str:',
+     '    if memory is not None and allow_note:\n'
+     '        def _recall(args: dict) -> str:'),
+    # ── AW4：env 不生效（default_factory 忽略 V1_ALLOW_NOTE）────────────────
+    ("AW4", "mw/config.py",
+     '    allow_note: bool = field(\n'
+     '        default_factory=lambda: _env_bool("V1_ALLOW_NOTE", True))',
+     '    allow_note: bool = field(\n'
+     '        default_factory=lambda: True)  # 撤回态：env 读了个寂寞'),
+    # ── AW5：Core 透传线断（硬编码 True）⇒ Limits 的开关到不了注册表 ────────
+    ("AW5", "mw/core.py",
+     '                            allow_note=self.s.limits.allow_note)',
+     '                            allow_note=True)'),
+    # ── AX1：沉淀本身被撤（commit_fact 不再被调用）⇒ 默认行为被偷换 ──────────
+    #: ⚠️ 变异必须打在 **commit** 上：AX1 断言的是默认（True）路径的行为，
+    #:    打在 allow_learn 检查上时默认路径照常沉淀 ⇒ AX1 自己不红（首跑实测）。
+    ("AX1", "mw/worldmodel.py",
+     '        self.memory.commit_fact(mm.as_heuristic(), source="worldmodel", confidence=0.7)',
+     '        _ = mm.as_heuristic()  # 撤回态：失配不再沉淀为语义事实'),
+    # ── AX2：开关被无视（allow_learn=False 也沉淀）──────────────────────────
+    ("AX2", "mw/worldmodel.py",
+     '        if not mm.teachable:\n'
+     '            return\n'
+     '        if not self.allow_learn:\n'
+     '            return',
+     '        if not mm.teachable:\n'
+     '            return\n'
+     '        if not (self.allow_learn or True):\n'
+     '            return'),
+    # ── AX3：env 不生效（default_factory 忽略 V1_ALLOW_LEARN）───────────────
+    ("AX3", "mw/config.py",
+     '    allow_learn: bool = field(\n'
+     '        default_factory=lambda: _env_bool("V1_ALLOW_LEARN", True))',
+     '    allow_learn: bool = field(\n'
+     '        default_factory=lambda: True)  # 撤回态：env 读了个寂寞'),
+    # ── AX4：Core 透传线断（硬编码 True）⇒ Limits 的开关到不了世界模型 ───────
+    ("AX4", "mw/core.py",
+     '                             allow_learn=self.s.limits.allow_learn)',
+     '                             allow_learn=True)'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -363,6 +423,21 @@ COUPLED: dict[str, frozenset[str]] = {
     # salvage 条件去掉 `not answer and` 之后，**正常交付**也会被上一版坏答案顶掉
     # ⇒ AS8（"第二版交对就交付它"）必然红。这正是 AS14 注释里预言的那个静默降级。
     "AS14": frozenset({"AS8"}),
+    #: AW 组：env → Limits → Core 是一条**串联链**，上游断下游必红 —— 合理连带：
+    #:   AW2（开关被无视）⇒ Core 注册表里 note 在册 ⇒ AW5（端到端传播）红；
+    #:   AW3（整块门控）⇒ OFF 时 recall 消失 ⇒ AW5 红；
+    #:   AW4（env 读不到）⇒ Limits 恒 True ⇒ Core 照常注册 note ⇒ AW5 红。
+    #: AW1（默认路径也不注册 note）⇒ 默认工具目录变了 ⇒ I6/I7（目录断言）红。
+    "AW1": frozenset({"I6", "I7"}),
+    #: AX1（沉淀被撤）⇒ worldmodel 的学习行为断言全红：I7（覆盖读数）、
+    #: V1/V3/V4（失配沉淀与检索）、V6（下一次预演带"已知易错点"）——
+    #: 这些就是"学习"本身，撤沉淀它们必红。合理连带。
+    "AX1": frozenset({"I7", "V1", "V3", "V4", "V6"}),
+    #: AX3（env 读不到）⇒ Limits 恒 True ⇒ Core 的世界模型照常可学 ⇒ AX4 红（串联链）。
+    "AX3": frozenset({"AX4"}),
+    "AW2": frozenset({"AW5"}),
+    "AW3": frozenset({"AW5"}),
+    "AW4": frozenset({"AW5"}),
     #: AE2 删掉 ENV_KEYS 登记 ⇒ A 组"登记 == 实际读取"必然红（代码读了没登记的 env
     #: 就是静默漂移，那条本来就该红）。这是**合理的连带**，不是锚定跑偏。
     "AE2": frozenset({"A1"}),

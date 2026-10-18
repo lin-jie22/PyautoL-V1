@@ -1,0 +1,86 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  struct_convert_heldout  n=4  suite_sha=8e3d642d5b25ca019c4c305ac39b3312
+  打分器  code_exec  scorer_sha=279bb5195b1eb61b784422d6845ff184
+
+--- 第 1 步  校准：尺子自证有分辨力（V5 缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=4/4
+  k01_diff_tree: oracle=1.0000 partial=0.8000 null=0.0000 ✅
+  k02_encode_cookie: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  k03_unflatten: oracle=1.0000 partial=0.4000 null=0.0000 ✅
+  k04_to_ini: oracle=1.0000 partial=0.8000 null=0.0000 ✅
+  理由: 全部 4 条两极可分，其中 4 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=854f4aeb60ded80d
+  [观察]
+    - k01_diff_tree: oracle=1.0000 partial=0.8000 null=0.0000
+    - k02_encode_cookie: oracle=1.0000 partial=0.6000 null=0.0000
+    - k03_unflatten: oracle=1.0000 partial=0.4000 null=0.0000
+    - k04_to_ini: oracle=1.0000 partial=0.8000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 4 条任务上两极可分
+    - 中段有序检查 4 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=279bb5195b1e、suite_sha=8e3d642d5b25；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 54 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）  预算档=1x  repeat=1 ---
+21:49:21 ▶ 任务开始: 写一个函数 diff_tree(a, b)：递归比较两个 dict 的**叶子**（标量）值，差异路径用 '.' 连接嵌套键，返回 {路径: [a 里的值, b 里的值]}；某一边缺这个键时那一边写 None；两边完全相同时返回空 dict
+21:49:21   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+21:50:13   [1] 通道=深 候选=3
+21:50:21       ↳ finish ok=True 直接实现目标函数
+21:50:21   ✅ 收尾: ```python
+def diff_tree(a, b, path=""):
+    result = {}
+    keys_a = set(a.keys())
+    keys_b = set(b.keys())
+    for ke
+21:50:21 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.646 memory>reason=1.0 reason>act=0.333] 回流=n/a | 语义记忆=6 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 diff_tree/语言标签/可编译)
+21:50:22 ▶ 任务开始: 写一个函数 encode_cookie(d)：把 dict 编码成 Cookie 请求头字符串。规则：键按字典序排序；值为 None 的键跳过；其余写成 'k=v'，值必须 percent-encode —— 空格→%20，分号→%3B，逗
+21:50:22   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+21:51:04   [1] 通道=深 候选=3
+21:51:11       ↳ finish ok=True 直接实现 encode_cookie 函数
+21:51:11   ✅ 收尾: ```python
+def encode_cookie(d):
+    def percent_encode(s):
+        return s.replace(' ', '%20').replace(';', '%3B').repl
+21:51:11 ■ done | steps=1 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.333] 回流=n/a | 语义记忆=6 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 encode_cookie/语言标签/可编译)
+21:51:12 ▶ 任务开始: 写一个函数 unflatten(flat)：把展平 dict 还原成嵌套结构。键里的 '.' 表示嵌套 dict，'k[i]' 表示 k 是一个 list、第 i 个元素；列表长度取该层出现过的最大下标 +1，未填的位置写 None。返回还
+21:51:12   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+21:52:20   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 't(k, {})\n                current_dict = current_dict[k]\n        current_dict[keys[-1]] = value\n    return result\n"""}]}]'
+21:52:20   [1] 通道=深 候选=1
+21:52:26       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+21:52:26       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+21:52:26   ⏳ 预算耗尽 [wall_s]：已用 73.9371 / 上限 120
+21:52:26   ⏱ 墙钟被重试链挡住，但还剩 46s ⇒ 转向收尾
+21:52:26   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+21:52:48   📦 收尾交付 672 字符（来源=收尾调用）
+21:52:48 ■ closed | steps=1 | guard_blocked=0 | 预演=3 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.12 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=6 | 上限被裁短=3 | 墙钟放弃首发=1/重试=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 unflatten/语言标签/可编译) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 672字)
+21:52:49 ▶ 任务开始: 写一个函数 to_ini(d)：把嵌套 dict 转成 INI 文本。顶层键是 section，值是一个 dict；每个 section 输出 '[section]' 一行，接着每行 'key=value'（按 dict 的**出现顺序**
+21:52:49   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+21:53:44   [1] 通道=深 候选=3
+21:53:48       ↳ finish ok=True 直接编写代码实现目标功能
+21:53:48   ✅ 收尾: ```python
+def to_ini(d):
+    def format_value(v):
+        if v is None:
+            return ''
+        elif isinstance(v,
+21:53:48 ■ done | steps=1 | guard_blocked=0 | 预演=4 检验=3 命中=3 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.526 memory>reason=1.0 reason>act=0.333] 回流=n/a | 语义记忆=6 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 to_ini/语言标签/可编译)
+  分数账本  会话#0 追加 4 行（拒绝 0 行） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.8500 std=0.0000 [0.8500,0.8500] 极差=0.0000
+  attempted=4 recorded=4 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=54 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=10 检验=8 命中=8 命中率=1.0 失配=0(成败0/文本0) 混淆={'ok_ok': 8, 'ok_fail': 0, 'fail_ok': 0, 'fail_fail': 0}
+  传输层    抖动重试=0 重试后仍失败=0 上限被裁短=12 墙钟放弃首发=1/重试=0 （共 4 题）
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=531f81019ea8b487 scorer=279bb5195b1e suite=8e3d642d5b25 repeat=1 budget=1x temperature=0.0 fresh=False memory_scope=explicit_dir memory_seed=(6, 0) limits=f048a56d8d llm_cond=b2afc72253 max_tokens=1024 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_6c_out3/P/bench/runs.jsonl

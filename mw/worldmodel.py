@@ -172,9 +172,16 @@ class Mismatch:
 
 
 class WorldModel:
-    def __init__(self, memory: Any, llm: LLM) -> None:
+    def __init__(self, memory: Any, llm: LLM, *, allow_learn: bool = True) -> None:
         self.memory = memory
         self.llm = llm
+        #: 是否允许把可教学的失配**沉淀成语义事实**（`learn()` 的 commit_fact）。
+        #: False 时失配仍记情景（`mismatch` 行，不进检索），只是不进语义层。
+        #: 为什么必须可关（第二十八轮 6c 首跑实测）：这是运行期写语义层的**第二条**
+        #: 通道（第一条是 `note` 工具，`allow_note` 管）——三臂记忆实验里
+        #: 空库臂被它写回了 facts，"种子是唯一处理"被混杂，整组作废。
+        #: ⚠️ 与 `allow_note` 一样进口径签名（Limits 字段）。
+        self.allow_learn = bool(allow_learn)
         self.predictions: int = 0
         self.suppressed: int = 0   # selective foresight 挡下的低置信预测数
         # —— 分辨力读数（缺陷 #12 的修复带来的）——
@@ -345,6 +352,8 @@ class WorldModel:
                            action=mm.action[:200], agreement=round(mm.agreement, 3),
                            mm_kind=mm.kind)
         if not mm.teachable:
+            return
+        if not self.allow_learn:
             return
         # 成败是**观测到的事实**，不是文本相似度的函数 ⇒ 置信度不跟 agreement 走。
         self.memory.commit_fact(mm.as_heuristic(), source="worldmodel", confidence=0.7)

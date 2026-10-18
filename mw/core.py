@@ -326,7 +326,9 @@ class Core:
             max_consecutive_failures=self.s.limits.max_consecutive_failures,
         )
 
-        register_core_tools(self.tools, memory=self.memory, workspace=self.s.paths.workspace)
+        register_core_tools(self.tools, memory=self.memory,
+                            workspace=self.s.paths.workspace,
+                            allow_note=self.s.limits.allow_note)
         if wire_external:
             register_external_agents(self.tools, self.s.paths.root / "agents.json")
         # 外部能力以**注册表**为准，而不是以"本次调用新增了什么"为准。
@@ -348,7 +350,8 @@ class Core:
         self._reset_external()
         self.planner = Planner(self.llm, self.tools,
                                max_tokens=self.s.limits.llm_max_tokens)
-        self.wm = WorldModel(self.memory, self.llm)
+        self.wm = WorldModel(self.memory, self.llm,
+                             allow_learn=self.s.limits.allow_learn)
 
         # ── 三个"调制层"（不是相位）────────────────────────────────────
         # 相位是环上的必经点，缺了就断流；调制层只改变**怎么走**。

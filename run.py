@@ -127,13 +127,15 @@ def _build(goal: str, args, *, allow_shell: bool = False,
         from mw.llm import StubLLM
         core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger,
                     score_ledger=score_ledger, caliber_sig=caliber_sig,
-                    memory_mode=mem_mode)
+                    memory_mode=mem_mode,
+                    wire_external=not getattr(args, "no_external", False))
         core.guard = Guard(allow_shell=allow_shell, workspace=s.paths.workspace,
                            max_consecutive_failures=s.limits.max_consecutive_failures)
     else:
         core = Core(s, critique_ledger=critique_ledger,
                     score_ledger=score_ledger, caliber_sig=caliber_sig,
-                    memory_mode=mem_mode)
+                    memory_mode=mem_mode,
+                    wire_external=not getattr(args, "no_external", False))
     return core
 
 
@@ -211,6 +213,55 @@ def _kwm_zero() -> dict:
 #: 本轮自踩：奖励通道的三个新字段没被搬进累加器（旧代码是一份硬编码的键名单），
 #: 于是日志上"写了 5 条"而"读到 0 条"—— 一个你看不出有没有被用过的通道 = 装饰。
 _KWM_NUM_KEYS: tuple[str, ...] = tuple(k for k in _kwm_zero() if k != "confusion")
+
+
+def _kex_zero() -> dict:
+    """外部能力读数的累加器零点（第二十三轮，路线①）。
+
+    ⛔ 为什么要落盘：`stats["external"]` 只在**内存里**，而 bench 的读数是从
+    `runs.jsonl` 读的。不落盘 ⇒ "外部能力配了没用上"这件事在证据里不可见，
+    只能靠我回忆 —— 那就是不可审计。
+    ⚠️ `calls` 与 `used_as_answer` 必须分列：调用成功 ≠ 答案被采用。
+    """
+    return {"tool": "", "tasks": 0, "calls": 0, "ok": 0, "err": 0,
+            "used_as_answer": 0, "chars": 0,
+            "samples": 0, "tests": 0, "fallback": 0, "discriminated": 0,
+            #: 因为**额度不够**而根本没被注入（不是失败，是没试）
+            "skipped_no_budget": 0,
+            #: 理论要跑筛选、实际因为时间不够**没跑成**的次数
+            "exec_skipped": 0,
+            "last_error": ""}
+
+
+def _kex_absorb(acc: dict, stats: dict) -> dict:
+    """把一次内核运行的外部能力读数并进累加器（就地修改并返回）。"""
+    tool = str(stats.get("tool") or "")
+    if tool:
+        acc["tool"] = tool
+    for k in ("calls", "ok", "err", "used_as_answer", "chars",
+              "skipped_no_budget"):
+        acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
+    if int(stats.get("calls") or 0) and not int(stats.get("ok") or 0):
+        acc["last_error"] = str(stats.get("last_error") or "")[:200]
+    meta = stats.get("meta") or {}
+    #: 外部进程的自述：采了几份、写了几个用例、有没有退到"能编译的第一份"。
+    #: ⚠️ 自述不是判据，只做"它到底做了什么"的审计。
+    #: ⛔ 第二十三轮实测抓到的谎报：原来写的是 `+= meta["k"]` —— 那是**配置**的
+    #:    k，不是**实际生成的份数**。于是"k=3 但时间不够只生成 1 份"会被记成
+    #:    `samples=3`，读数看起来"采了 3 份、筛过了"，实际只交了第一份。
+    pc = meta.get("pass_counts") or []
+    acc["samples"] = int(acc.get("samples", 0)) + len(pc)
+    acc["tests"] = int(acc.get("tests", 0)) + int(meta.get("tests") or 0)
+    if meta.get("fallback"):
+        acc["fallback"] = int(acc.get("fallback", 0)) + 1
+    if meta.get("exec_skipped"):
+        acc["exec_skipped"] = int(acc.get("exec_skipped", 0)) + 1
+    # ★ 选择器**到底有没有做选择**：三份实现打成平手时，"按通过数排序"等于
+    #   按生成顺序交付第一份 —— 读数上必须能看出"筛选是空转的"。
+    #   ⛔ 只报 "k=3 采样" 会让人以为筛选起了作用（第二十二轮"触发≠救回"的同构错误）。
+    if len(set(pc)) > 1:
+        acc["discriminated"] = int(acc.get("discriminated", 0)) + 1
+    return acc
 
 
 def _kco_zero() -> dict:
@@ -680,6 +731,7 @@ def cmd_bench(args) -> int:
     #: 累加/派生逻辑在模块级（`_kwm_zero/_kwm_absorb/_kwm_line`），**不在这里重写一遍**。
     _kwm = _kwm_zero()
     _kco = _kco_zero()      # 收尾兜底（第二十二轮）：与 _kwm 同源的落盘读数
+    _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
 
     # ── 外部评审账本 ────────────────────────────────────────────────
     # 打分器给的**理由**（`Scored.why`）此前只有一个去处：写进日志给人看。
@@ -810,6 +862,8 @@ def cmd_bench(args) -> int:
                                     features=_feat_of.get(t.id))
                         _kwm_absorb(_kwm, out.stats["worldmodel"], c)
                         _kco_absorb(_kco, out.stats.get("closeout") or {})
+                        _kex_absorb(_kex, out.stats.get("external") or {})
+                        _kex["tasks"] += 1
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
                         _seen.update(_kernel_prov(c))
@@ -834,6 +888,8 @@ def cmd_bench(args) -> int:
                                 features=_feat_of.get(t.id))
                 _kwm_absorb(_kwm, out.stats["worldmodel"], _core)
                 _kco_absorb(_kco, out.stats.get("closeout") or {})
+                _kex_absorb(_kex, out.stats.get("external") or {})
+                _kex["tasks"] += 1
                 return out.answer
 
             label += "（复用同一内核，记忆跨题累积）"
@@ -1018,6 +1074,8 @@ def cmd_bench(args) -> int:
         "kernel_worldmodel": _kw,
         # 收尾兜底读数（第二十二轮）：**不落盘的读数不可审计**。
         "kernel_closeout": _kco,
+        # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。
+        "kernel_external": _kex,
         "calibration": {"ok": cal.ok, "margin": cal.margin, "middle_n": cal.middle_n,
                         "evidence_id": (cal.evidence.evidence_id()
                                         if cal.evidence is not None else None)},
@@ -1075,6 +1133,10 @@ def main() -> int:
     p.add_argument("--compare", action="store_true", help="与基线比较并给出判定")
     p.add_argument("--allow-supersede", action="store_true",
                    help="口径变更时允许替换基线（旧值会另存 superseded）")
+    p.add_argument("--no-external", action="store_true",
+                   help="**不注册任何外部能力**（`agents.json` 视同不存在）。"
+                        "对照实验的 OFF 臂用它：外部能力的存在本身就是一个变量，"
+                        "不拔掉它，'开外部能力'与'多了一个工具'就分不开。")
     p.add_argument("--fresh", action="store_true",
                    help="每题新建内核（记忆不跨题）；同时进入口径签名")
     p.add_argument("--memory-dir", default="",

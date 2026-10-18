@@ -230,6 +230,17 @@ class Limits:
     #:    不进制口径，两轮就能被 `paired_compare` 判成"可比"，那是又一次尺子下移。
     verify_retries: int = field(
         default_factory=lambda: _env_int("V1_VERIFY_RETRIES", 2, allow_zero=True))
+    #: 指定一个**外部能力**作为答案的第一来源（第二十三轮，路线①）。
+    #: 空字符串 = 关（默认）：内核的行为与之前**逐位相同**。
+    #:
+    #: 为什么它是配置而不是"让规划器自己选"：
+    #:   第十三轮已经证实过 —— 交给模型选，机制会恒 0 次触发，而读数只说
+    #:   "没被选到"，看起来像"外部能力没用"。位置必须写死（与 `_gate_finish`
+    #:   写死在 `finish` 出口同宗理由）。
+    #: ⚠️ 它必须进口径签名（`as_dict` 自动包含）：开/关外部能力跑出来的分数
+    #:    不是同一个候选 —— 不进制就会让 `paired_compare` 判成"可比"。
+    external_answer_tool: str = field(
+        default_factory=lambda: os.environ.get("V1_EXTERNAL_ANSWER_TOOL", "").strip())
 
     def as_dict(self) -> dict:
         """硬上限的**完整**快照 —— 口径签名的输入之一。
@@ -293,6 +304,7 @@ ENV_KEYS = (
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",
+    "V1_EXTERNAL_ANSWER_TOOL",
 )
 
 #: **允许取 0** 的 env 键（唯一事实源）。

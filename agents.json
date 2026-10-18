@@ -3,14 +3,19 @@
     "V1 的外部能力登记处。内核不认识具体能力，只认识「stdin 进 / stdout 出」这个契约。",
     "把 external/example_agent.py 换成任何东西都行：另一个模型调用、一个 WorkBuddy skill、",
     "一个 MCP server 的包装、一段脚本 —— 内核不需要知道，也不该知道。",
-    "本文件不存在时内核照常运行（外部能力 = 0），这是刻意的：内核的可验证性不依赖任何外部系统。"
+    "本文件不存在时内核照常运行（外部能力 = 0），这是刻意的：内核的可验证性不依赖任何外部系统。",
+    "",
+    "第二十三轮（路线①）：把只会回显的 example 换成 code_agent（会生成 + 执行筛选）。",
+    "produces_answer: true 表示它的 stdout 就是**候选答案**，走 finish 的同一个出口、",
+    "同一道自检闸、同一条交付路径 —— 外部能力换的是「答案从哪来」，不是「判据松不松」。"
   ],
   "agents": {
-    "example": {
+    "code_agent": {
       "type": "shell",
-      "description": "范例外部 agent（把任务原文回显成 JSON）。替换 external/example_agent.py 即可接入真实能力。",
-      "command": ["python3", "external/example_agent.py"],
-      "timeout_s": 120
+      "description": "会执行的编码 agent：同题多角度生成 3 份实现，自写 assert 用例，真跑后选通过最多的一份，返回可直接交付的代码。",
+      "command": ["python3", "external/code_agent.py"],
+      "timeout_s": 300,
+      "produces_answer": true
     }
   }
 }

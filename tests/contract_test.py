@@ -4789,15 +4789,26 @@ check(RS, "AS12 ★`verify_retries` 必须在 `Limits.as_dict()` 里，且允许
       f"登记={'V1_VERIFY_RETRIES' in cfg.ENV_KEYS} "
       f"允许0={'V1_VERIFY_RETRIES' in cfg.ZERO_OK_KEYS}")
 
-# ── AS13：闸只挂在 `finish` 上（不许变成第二道相位）────────────────────
+# ── AS13：闸只挂在**答案出口**上（不许变成第二道相位）──────────────────
+#: 第二十三轮改了守卫的字面量：`cand.tool == "finish"` → `_produces`，
+#: 因为外部能力的答案要走**同一道**闸（`produces_answer`）。
+#: ⚠️ 但**不变量没有变松**，所以检查必须同时钉住三件事：
+#:   ① 调用点仍然只有一处（不是"每处都加一道闸"）；
+#:   ② 守卫仍然是 `_produces and result.ok and self._checks`；
+#:   ③ `_produces` 的定义里**必须**含 `cand.tool == "finish"` ——
+#:      否则"外部能力"可以把内核自己的收尾动作挤出去，闸就成了外部专用的。
 _AS_GATE_CALLS = _code_only(_CORE_SRC).count("self._gate_finish(result)")
-_AS_GATE_GUARDED = ('if cand.tool == "finish" and result.ok and self._checks:'
+_AS_GATE_GUARDED = ('if _produces and result.ok and self._checks:'
                     in _code_only(_CORE_SRC))
-check(RS, "AS13 ★`_gate_finish` 只许有**一处**调用，且必须被 `cand.tool == \"finish\"` 守住\n"
+_AS_PRODUCES = '_produces = cand.tool == "finish" or bool(' in _code_only(_CORE_SRC)
+check(RS, "AS13 ★`_gate_finish` 只许有**一处**调用，且必须被「答案来源」守住\n"
           "          —— 本轮只加一条腿，不加一个相位：主循环仍然只有一个 `while`（J6），\n"
-          "            校验是 `finish` 出口上的一道闸，不是第二次推理。",
-      _AS_GATE_CALLS == 1 and _AS_GATE_GUARDED,
-      f"调用点={_AS_GATE_CALLS} 被 finish 守住={_AS_GATE_GUARDED}")
+          "            校验是答案出口上的一道闸，不是第二次推理。\n"
+          "          ⚠️ 外部能力的答案走同一道闸（第二十三轮）⇒ 守卫换成 `_produces`，\n"
+          "            但 `_produces` 的定义里必须仍含 `finish` —— 否则闸会变成外部专用。",
+      _AS_GATE_CALLS == 1 and _AS_GATE_GUARDED and _AS_PRODUCES,
+      f"调用点={_AS_GATE_CALLS} 被 _produces 守住={_AS_GATE_GUARDED} "
+      f"含 finish={_AS_PRODUCES}")
 
 # ── AS14：salvage 只在**答案为空**时顶替 ───────────────────────────────
 _AS_FIN_BODY = _code_only(_func_body(ast.parse(_CORE_SRC), "_finish"))
@@ -5022,6 +5033,145 @@ check(RS, "AS25 ★收尾读数必须冻成证据，且**触发次数 ≠ 改掉
       f"OFF 触发={_CO_OFF.get('triggered')} mean={_CO_OFF_M.get('mean')} | "
       f"ON 触发={_CO_ON.get('triggered')} 原因={_CO_ON.get('by_reason')} "
       f"改交付={_CO_ON.get('overrode_rejected')} mean={_CO_ON_M.get('mean')}")
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# AE 组（第二十三轮，路线①）：外部能力作为**答案来源**接入
+# ══════════════════════════════════════════════════════════════════════════
+_AE_CORE = _code_only(_CORE_SRC)
+_AE_TOOLS = _code_only((V1 / "mw" / "tools.py").read_text(encoding="utf-8"))
+_AE_RUN = _code_only(_RUN_SRC) if "_RUN_SRC" in globals() else _code_only(
+    (V1 / "run.py").read_text(encoding="utf-8"))
+_AE_AGENT = (V1 / "external" / "code_agent.py").read_text(encoding="utf-8")
+
+# ── AE1：`produces_answer` 必须显式标注，内建工具一个都不许带 ──────────────
+#: 理由：如果"能产出答案"变成默认，那么 `recall`/`note`/`http_get` 的输出
+#: 都会变成候选答案 —— 那是一次静默的语义升级，读数上完全看不出来。
+_AE_REG = ToolRegistry()
+register_core_tools(_AE_REG)
+_AE_BUILTIN_ANSWER = [n for n in _AE_REG.names()
+                      if getattr(_AE_REG.get(n), "produces_answer", False)]
+check(RS, "AE1 ★`produces_answer` 默认必须是 False，且**内建工具一个都不许带**\n"
+          "          —— 若它变成默认，`recall`/`note` 的输出都会成为候选答案：\n"
+          "            那是一次静默的语义升级，而读数上完全看不出来。",
+      _AE_BUILTIN_ANSWER == [],
+      f"内建里声明产出答案的={_AE_BUILTIN_ANSWER or '无'}")
+
+# ── AE2：开关必须进口径签名（开/关外部能力不是同一个候选）───────────────────
+_AE_LIM = {f.name: f for f in __import__("dataclasses").fields(cfg.Limits)}
+check(RS, "AE2 ★`external_answer_tool` 必须进 `Limits.as_dict()`（口径签名）并登记 ENV_KEYS\n"
+          "          —— 开/关外部能力的分数不是同一个候选；不进制就会被判成『可比』，\n"
+          "            那是与 temperature 那次同源的尺子事故。",
+      "external_answer_tool" in cfg.Limits().as_dict()
+      and "V1_EXTERNAL_ANSWER_TOOL" in cfg.ENV_KEYS,
+      f"在 as_dict={'external_answer_tool' in cfg.Limits().as_dict()} "
+      f"登记={'V1_EXTERNAL_ANSWER_TOOL' in cfg.ENV_KEYS}")
+
+# ── AE3：注入点**唯一**，且必须只注入第 1 步 ─────────────────────────────
+_AE_INJECT = _AE_CORE.count("cands = [Step(")
+check(RS, "AE3 ★外部能力只许有**一处**注入点，且必须守在第 1 步\n"
+          "          —— 每步都注入 = 把规划器整个挤掉（那就不是『能力外部化』，\n"
+          "            是『内核只剩一个转发器』）。",
+      _AE_INJECT == 1 and "if _ext and it == 1 and self.tools.get(_ext) is not None:"
+      in _AE_CORE,
+      f"注入点={_AE_INJECT} 守在第1步={'if _ext and it == 1 and self.tools.get(_ext) is not None:' in _AE_CORE}")
+
+# ── AE4：外部答案必须走**同一道**闸，且采用数是独立读数 ────────────────────
+check(RS, "AE4 ★外部能力的答案走 `_gate_finish`，且 `used_as_answer` 与 `ok` 分列\n"
+          "          —— 『调用成功』≠『答案被采用』：前者可能被自检打回或被改写。\n"
+          "            混成一列，就会把『接了但没用上』读成『接上了』。",
+      'self.external_stats["used_as_answer"] += 1' in _AE_CORE
+      and '"calls": 0, "ok": 0, "err": 0' in _AE_CORE,
+      f"采用点={_AE_CORE.count(chr(34)+'used_as_answer'+chr(34)+'] += 1')}")
+
+# ── AE5：外部 agent 的失败**不许冒充答案** ────────────────────────────────
+check(RS, "AE5 ★外部 agent 交付空答案/带 error 时必须 raise，不许当成『成功的答案』\n"
+          "          —— 把 `(rc=0)` 或空串当答案是静默降级：读数看起来正常，\n"
+          "            实际什么都没交（V5 的病）。",
+      _AE_TOOLS.count("raise RuntimeError") >= 2
+      and "answer 为空（不是 0 分，是没答案）" in _AE_TOOLS
+      and "外部 agent 未交付" in _AE_TOOLS,
+      f"raise 处={_AE_TOOLS.count('raise RuntimeError')}")
+
+# ── AE6：读数必须四列分开（调/成/败/采用），且必须落盘到 runs.jsonl ─────────
+check(RS, "AE6 ★外部能力读数必须落盘（`kernel_external`），且**两个 solver 分支都并**\n"
+          "          —— 只接一个分支 = 一半的题没有读数，而汇总行看起来正常。",
+      '"kernel_external": _kex' in _AE_RUN
+      and _AE_RUN.count('_kex_absorb(_kex, out.stats.get("external") or {})') == 2,
+      f"落盘={'"kernel_external": _kex' in _AE_RUN} "
+      f"并入点={_AE_RUN.count('_kex_absorb(_kex, out.stats.get(chr(34)+chr(34)) or {})')}")
+
+# ── AE7：外部 agent 是**外部进程**，不许 import 内核，也不许读尺子 ──────────
+#: ⛔ 它一旦 import `mw.*`，就不再是"外部能力"，而是内核的一部分 ——
+#:   那时"能力来自外部"这句话就没有证据了（与 AP1「假记忆不许进内核」同宗）。
+_AE_AGENT_IMPORTS = [ln for ln in _AE_AGENT.splitlines()
+                     if ln.strip().startswith(("import ", "from "))
+                     and ("mw" in ln or "bench" in ln)]
+#: ⚠️ 必须**注释/文档感知**：`code_agent.py` 的 docstring 里写着
+#:    "任务集里的 `tests` / `oracle` 一律不进来" —— 用整文件 `in` 去判，
+#:    那句**否定句**会把断言判红（本轮真踩到，R7 的同类错误：静态锚撞注释）。
+_AE_AGENT_CODE = _code_only(_AE_AGENT)
+_AE_AGENT_LEAK = [k for k in ("oracle", "jsonl", "bench/tasks")
+                  if k in _AE_AGENT_CODE]
+check(RS, "AE7 ★`external/code_agent.py` 不许 import 内核或 bench，也不许读 tests/oracle\n"
+          "          —— 它一旦 import `mw.*` 就不是外部能力而是内核的一部分，\n"
+          "            『能力来自外部』这句话当场失去证据。\n"
+          "          ⚠️ 检查必须**注释感知**：docstring 里那句『不许读 oracle』\n"
+          "            本身含 oracle，整文件 `in` 会把否定句判成违规（本轮踩到）。",
+      _AE_AGENT_IMPORTS == [] and _AE_AGENT_LEAK == [],
+      f"越界 import={_AE_AGENT_IMPORTS or '无'} 代码里触及尺子={_AE_AGENT_LEAK or '无'}")
+
+# ── AE8：`--no-external` 必须真的**不注册**（OFF 臂的地基）──────────────────
+check(RS, "AE8 ★`--no-external` 必须在**两个** `_build` 分支都传进 `wire_external`\n"
+          "          —— 只在一个分支生效，OFF 臂就有一半的题带着外部能力跑，\n"
+          "            而两臂的标签长得一模一样（那是第十六轮 B/C 共用记忆目录的同构）。",
+      _AE_RUN.count('wire_external=not getattr(args, "no_external", False)') == 2,
+      f"透传处={_AE_RUN.count('wire_external=not getattr(args, ' + chr(34) + 'no_external' + chr(34) + ', False)')}")
+
+# ── AE9：端到端（行为，不是静态）—— 外部答案真的被采用 ────────────────────
+#: ⚠️ 静态检查抓不到接线错误：`cands = [Step(...)] + list(cands)` 写对了位置，
+#:    但 `produces_answer` 没传进 dispatch 分支，照样"看不见"。所以必须真跑一次。
+import os as _os
+import tempfile as _tf
+_os.environ["V1_EXTERNAL_ANSWER_TOOL"] = "agent:ae"
+_os.environ["V1_LLM_OFFLINE"] = "1"
+_ae_reg = ToolRegistry()
+_ae_hits = {"n": 0}
+
+
+def _ae_handler(args: dict) -> str:
+    _ae_hits["n"] += 1
+    return "```python\ndef flatten(d):\n    return {}\n```"
+
+
+_ae_reg.register(ToolSpec("agent:ae", "契约用假外部能力", {"task": "任务"},
+                          _ae_handler, external=True, mutating=True,
+                          produces_answer=True))
+_ae_tmp = _tf.mkdtemp(prefix="v1_ae_")
+_ae_old = _os.environ.get("V1_STATE_DIR")
+_os.environ["V1_STATE_DIR"] = _ae_tmp + "/state"
+try:
+    _ae_core = Core(cfg.Settings(), llm=StubLLM(), tools=_ae_reg,
+                    wire_external=False, log=lambda *_: None)
+    _ae_out = _ae_core.run("写一个函数 flatten(d)，把嵌套 dict 展平。只输出代码，"
+                           "函数名必须是 flatten。")
+    _ae_ext = _ae_out.stats["external"]
+finally:
+    _os.environ["V1_STATE_DIR"] = _ae_old or ""
+    if not _ae_old:
+        _os.environ.pop("V1_STATE_DIR", None)
+    # ⚠️ 三个 env 都要清：留下任何一个，后面的断言就会在"外部能力开着"的条件下跑，
+    #    而它们自己不知道 —— 第十六轮"所有相关 env 都要设"的同一条教训。
+    _os.environ.pop("V1_EXTERNAL_ANSWER_TOOL", None)
+    _os.environ.pop("V1_LLM_OFFLINE", None)
+
+check(RS, "AE9 ★端到端：外部能力被调用 **1 次**，其答案走同一条交付路径被采用\n"
+          "          —— 静态检查抓不到接线错误（位置写对、标记没传到 dispatch 分支，\n"
+          "            照样『看不见』）。所以这一条必须真跑。",
+      _ae_hits["n"] == 1 and _ae_ext["calls"] == 1 and _ae_ext["ok"] == 1
+      and _ae_ext["used_as_answer"] == 1 and "def flatten" in _ae_out.answer,
+      f"调用={_ae_hits['n']} stats={_ae_ext['calls']}/{_ae_ext['ok']}/"
+      f"{_ae_ext['used_as_answer']} 交付含代码={'def flatten' in _ae_out.answer}")
 
 
 print()

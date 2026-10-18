@@ -1,0 +1,100 @@
+{
+  "tag": "R3",
+  "verdict": "窄题集效应：只在单侧成立，不得推广",
+  "caliber_conflict": false,
+  "judge_paired": {
+    "tag": "R3",
+    "why": "窄题集效应：只在单侧成立，不得推广"
+  },
+  "judge_fillzero": {
+    "tag": "R3",
+    "why": "窄题集效应：只在单侧成立，不得推广"
+  },
+  "arms": {
+    "sc": {
+      "off": 0.76,
+      "on": 0.76,
+      "n_off": 5,
+      "n_on": 5,
+      "n_paired": 5
+    },
+    "ho": {
+      "off": 0.7714,
+      "on": 0.9429,
+      "n_off": 7,
+      "n_on": 7,
+      "n_paired": 7
+    }
+  },
+  "means_comparable": {
+    "sc": true,
+    "ho": true
+  },
+  "delta": {
+    "struct_convert": 0.0,
+    "heldout": 0.1714
+  },
+  "delta_legacy_fillzero": {
+    "struct_convert": 0.0,
+    "heldout": 0.1714
+  },
+  "dropped": {
+    "struct_convert": {},
+    "heldout": {}
+  },
+  "moved": {
+    "struct_convert": [],
+    "heldout": [
+      "h01_int_to_roman",
+      "k02_encode_cookie"
+    ]
+  },
+  "moved_detail": {
+    "struct_convert": {},
+    "heldout": {
+      "h01_int_to_roman": [
+        0.0,
+        1.0
+      ],
+      "k02_encode_cookie": [
+        0.8,
+        1.0
+      ]
+    }
+  },
+  "external_on_struct": {
+    "calls": 5,
+    "chars": 932,
+    "discriminated": 2,
+    "err": 2,
+    "exec_skipped": 0,
+    "fallback": 0,
+    "last_error": "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码",
+    "ok": 3,
+    "samples": 5,
+    "skipped_no_budget": 0,
+    "tasks": 5,
+    "tests": 15,
+    "tool": "agent:code_agent",
+    "used_as_answer": 3
+  },
+  "external_on_heldout": {
+    "calls": 4,
+    "chars": 241,
+    "discriminated": 0,
+    "err": 3,
+    "exec_skipped": 1,
+    "fallback": 1,
+    "last_error": "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码",
+    "ok": 1,
+    "samples": 1,
+    "skipped_no_budget": 0,
+    "tasks": 4,
+    "tests": 0,
+    "tool": "agent:code_agent",
+    "used_as_answer": 1
+  },
+  "external_off_calls": 0,
+  "threshold": 0.05,
+  "note": "T=0 逐位可复现只保证『这批题上可复现』，不保证可推广；外部能力的 assert 是模型自写的，只能排序不能判分。"
+}

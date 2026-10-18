@@ -42,7 +42,8 @@ from .memory import BlobIntegrityError, MemoryStore
 from .metacog import SelfModel, load_evidence
 from .planner import Planner, Step, action_signature, looks_complex
 from .tools import (ToolRegistry, ToolResult, external_agent_names,
-                    register_core_tools, register_external_agents)
+                    external_last_meta, register_core_tools,
+                    register_external_agents)
 from .values import Values
 from . import verify as vfy
 from .worldmodel import WorldModel
@@ -261,6 +262,10 @@ class Core:
         # `_close_out` 是一个可以**单独调用**的单元（契约 AS20 正是这么测它的语义的），
         # 只把状态建在 `run()` 里会让"没跑过 run 的实例"一调就 AttributeError。
         self._reset_closeout()
+        #: 外部能力读数（第二十三轮，路线①）。与收尾读数同宗理由建在 `__init__`：
+        #: 单轮读数也要能被单独构造的实例读到，否则一处 AttributeError 就会
+        #: 把整条汇总行带走（AS20 那条教训）。
+        self._reset_external()
         self.planner = Planner(self.llm, self.tools,
                                max_tokens=self.s.limits.llm_max_tokens)
         self.wm = WorldModel(self.memory, self.llm)
@@ -367,6 +372,9 @@ class Core:
         #    全项目对它的记录**只有两句中文日志**。日志能证明"走到过"，不能回答
         #    "走到过几次、几次真的改了交付物"。而后者才是"它有没有用"的第一个问题。
         self._reset_closeout()
+        # 外部能力读数是**单轮**的（与预算同源）：跨轮累计会让"这一轮 0 次调用"
+        # 显示成上一轮的数字 —— V5 的老毛病（读数混了时间维度）。
+        self._reset_external()
 
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
         counted = _LedgeredLLM(self.llm, self.ledger,
@@ -480,6 +488,33 @@ class Core:
                 # 探索宽度**真实生效**：规划器可能多给了候选，这里按 n 截断。
                 # （只声明上限却不截断 = 字段无消费者，V5 的同类病灶。）
                 cands = plan.steps[:n]
+                # ── 外部能力作为**第一来源**（第二十三轮，路线①）──────────────
+                # ⛔ 为什么写死在这里、不交给规划器选：第十三轮已经证实过 ——
+                #    交给模型选，机制会恒 0 次触发，而读数只会说"没被选到"，
+                #    读起来像"外部能力没用"。位置必须与 `_gate_finish` 同样是**写死的**。
+                # ⚠️ 只注入第 1 步：外部能力是"另一个答案来源"，不是"每一步都问一遍"。
+                #    后面几步仍由规划器决定（它可以改写、可以收尾）。
+                _ext = self.s.limits.external_answer_tool
+                if _ext and it == 1 and self.tools.get(_ext) is not None:
+                    # ★ 把**剩余墙钟**一起交给外部能力：它必须知道现在几点了。
+                    #   `min(85, 剩余 − 收尾余量)`：85 是"外部能力最贵值多少"的上限，
+                    #   剩下的时间要留给自检、重规划与交付 —— 否则外部能力会
+                    #   把预算吃光并以"没答案"收场（k04 实测）。
+                    # ⚠️ 上限从 60 提到 85 是**实测逼出来的**：单次生成 ≈ 25 字符/秒，
+                    #   一道题输出 400~800 字 ⇒ 单次 16~32s；k=2 也要 2×32+8+2 ≈ 74s。
+                    #   60s 的上限会让 agent **恒**在 `gen_stopped_early` 或
+                    #   `tests=0` 状态交付 ⇒ 执行筛选从来跑不到。
+                    #   85 仍守得住 45s 收尾余量：it==1 时 wall_left≈117 ⇒ 117−45=72。
+                    _wall_left = budget.wall_s - self.ledger.elapsed()
+                    _dl = max(5.0, min(85.0, _wall_left - self.s.limits.close_reserve_s))
+                    # ⛔ 额度不够时**根本不注入**：给 5s 的外部能力只会
+                    #    "准时地失败"并且白吃 5s。宁可让内核自己解（至少会交个答案）。
+                    if _dl >= 20.0:
+                        cands = [Step("整题交给外部能力", _ext,
+                                      {"task": goal, "deadline_s": round(_dl, 1)})] + list(cands)
+                    else:
+                        self.external_stats["skipped_no_budget"] = (
+                            self.external_stats.get("skipped_no_budget", 0) + 1)
                 self.ledger.spend_candidate(len(cands))
                 self.log(f"  [{it}] 通道={'深' if complex_task else '快'} 候选={len(cands)}")
                 # 通量：推理交了 N 个想法出去（下游是否真的做，看 `reason>act` 的消费）
@@ -561,7 +596,23 @@ class Core:
                     # ⚠️ 被自检打回时**不能立刻丢掉答案**：答案原文进 `_salvage`，
                     #    万一重写失败（停滞/预算耗尽/熔断），最终交付退回它。
                     #    否则一个本来能拿 0.2 分的答案会被装置变成 0 分。
-                    if cand.tool == "finish" and result.ok and self._checks:
+                    # ★ 第二十三轮：`produces_answer` 的外部能力走**同一道闸**。
+                    #   外部能力换的是"答案从哪来"，不是"判据松不松"。
+                    _produces = cand.tool == "finish" or bool(
+                        spec is not None and spec.produces_answer)
+                    if spec is not None and spec.produces_answer:
+                        # 外部能力的读数：**尝试**次数与成功次数分开记 ——
+                        # 只记成功会让"它一直在失败"看起来像"它没被调用"。
+                        _es = self.external_stats
+                        _es["calls"] += 1
+                        if result.ok:
+                            _es["ok"] += 1
+                            _es["chars"] += len(result.output or "")
+                            _es["meta"] = external_last_meta(cand.tool)
+                        else:
+                            _es["err"] += 1
+                            _es["last_error"] = (result.error or "")[:200]
+                    if _produces and result.ok and self._checks:
                         result = self._gate_finish(result)
 
                     # 通量：N 个想法里，这一个真的被执行了（`reason>act` 的消费端）
@@ -636,8 +687,13 @@ class Core:
                     consecutive_failures = 0
                     last_error = ""
 
-                    if cand.tool == "finish":
+                    if _produces:
+                        # 两个来源（内核自己的 finish / 外部能力的答案）走**同一条**
+                        # 交付路径：同一道自检闸、同一个 `done_unverified` 语义。
+                        # ⛔ 外部能力**不许**有"免检通道" —— 那就成了"换个来源就换把尺子"。
                         answer = result.output
+                        if spec is not None and spec.produces_answer:
+                            self.external_stats["used_as_answer"] += 1
                         if self._unverified:
                             # 自检反复不过 ⇒ 交付内容是真的，但**没过闸**。
                             # 状态必须说出来：报 done 就等于把"没检查过"说成"检查过了"。
@@ -896,6 +952,24 @@ class Core:
         #: `_closing_reserve_hit()` 写、`_close_out()` 读 —— 条件只在**一处**声明。
         self._reserve_reason: str = ""
 
+    def _reset_external(self) -> None:
+        """外部能力读数的**唯一**初始化处（`__init__` 与 `run()` 都调它）。
+
+        ⚠️ `calls` 与 `ok` 必须分列：只记成功会让"它一直在失败"看起来像
+        "它没被调用"，而这两种病（没接上 / 接上但坏了）的修法完全不同。
+        ⚠️ `meta` 是外部进程的**自述**，不是判据。
+        """
+        self.external_stats: dict = {
+            "tool": self.s.limits.external_answer_tool,
+            "calls": 0, "ok": 0, "err": 0, "chars": 0,
+            "used_as_answer": 0,
+            #: 因为**额度不够**而根本没被注入的次数（不是失败，是没试）：
+            #: 与 `err` 分开计 —— "没试"和"试了失败"的修法完全不同。
+            "skipped_no_budget": 0,
+            "last_error": "",
+            "meta": {},
+        }
+
     # ------------------------------------------------------------------
     def _closing_reserve_hit(self) -> bool:
         """预算是否已进入"只够收尾"的区间。
@@ -1030,6 +1104,12 @@ class Core:
             "closeout": {**dict(self.closeout_stats),
                          "origin": dict(self.closeout_stats["origin"]),
                          "by_reason": dict(self.closeout_stats["by_reason"])},
+            # 第二十三轮（路线①）：外部能力。**零值也进 stats**，但汇总行只在
+            # 配了外部能力时念 —— 没配的时候印"外部=0次"是噪声。
+            # ⛔ `used_as_answer` 必须与 `ok` 分列：调用成功但答案没被采用
+            #    （例如被自检打回、或被规划器改写）是完全不同的一件事。
+            "external": {**dict(self.external_stats),
+                         "meta": dict(self.external_stats.get("meta") or {})},
             "llm": "stub" if self._llm_is_stub else "http",
             "llm_kind": self.llm_kind,   # 与 "llm" 同源；保留两个键是为了兼容旧读法
             "external_agents": self.external_agents,
@@ -1126,7 +1206,30 @@ class Core:
                              f"(与被闸打回那版同={_co['same_as_rejected']})")
             if _co["empty"]:
                 _co_line += f" ⚠️交了空={_co['empty']}"
+        # 外部能力读数（第二十三轮）：只在**配了**外部能力时念。
+        # 为什么 `calls=0` 也必须被看见：配了却没调用 = 接线断了，
+        # 而"没配"和"配了没接上"在别的读数上完全同形。
+        _ex = stats["external"]
+        _ex2_line = ""
+        if _ex.get("tool"):
+            _ex2_line = (f" | 外部[{_ex['tool']}] 调={_ex['calls']}"
+                         f" 成={_ex['ok']} 败={_ex['err']}"
+                         f" 采用={_ex['used_as_answer']} {_ex['chars']}字")
+            # ★ `份=k→n` 是**配置 vs 实际**：只印 `k` 会让人以为采样齐了。
+            #   第二十三轮实测：`k=3` 但时间不够只生成 1 份，读数却写着 samples=3。
+            _m = _ex.get("meta") or {}
+            if _m:
+                _ex2_line += (f" 份={_m.get('k')}→{len(_m.get('pass_counts') or [])}"
+                              f" 用例={_m.get('tests')}")
+                if _m.get("exec_skipped"):
+                    _ex2_line += f" ⚠️筛选跳过({_m['exec_skipped']})"
+                if _m.get("gen_stopped_early"):
+                    _ex2_line += " 生成提前停"
+            if int(_ex.get("skipped_no_budget") or 0):
+                _ex2_line += f" ⛔额度不足未注入={_ex['skipped_no_budget']}次"
+            if _ex["err"]:
+                _ex2_line += f" ⚠️{_ex['last_error'][:60]}"
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
-                 f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}")
+                 f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}{_ex2_line}")
         return Outcome(status, answer, reason, len(history), stats)

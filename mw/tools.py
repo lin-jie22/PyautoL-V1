@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shlex
 import subprocess
 import urllib.request
@@ -32,6 +33,10 @@ class ToolSpec:
     handler: Callable[[dict], str]
     external: bool = False
     mutating: bool = False   # True = 会改外部世界，guard 会额外审
+    #: True = 这个工具的 `output` **就是候选答案**，可直接走 `finish` 的出口。
+    #: 第二十三轮（路线①）：外部能力要把"答案"交回来，而不是交一句"我做了"。
+    #: ⚠️ 它只是**改变了交付的来源**，没有改变判据：这样的输出照样过 `_gate_finish`。
+    produces_answer: bool = False
 
     def catalog_line(self) -> str:
         args = ", ".join(self.params.keys()) or "无"
@@ -178,6 +183,17 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
 # ---------------------------------------------------------------------------
 # 外部 agent / skill 接入（用户要求的核心形态）
 # ---------------------------------------------------------------------------
+#: 外部 agent 自己报告的**内部读数**（它采样了几份、选中第几份、写了几个用例）。
+#: ⚠️ 它是外部进程的自述，**不是**内核的判据：只进审计与死因分析，
+#:    绝不允许回流成"分数"或影响判据（那会是搬进内核的自评分）。
+_EXT_META: dict[str, dict] = {}
+
+
+def external_last_meta(name: str) -> dict:
+    """最近一次该外部 agent 的自述读数 —— 单一查询口径（别处不要读全局）。"""
+    return dict(_EXT_META.get(name) or {})
+
+
 def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
     """从 agents.json 注册外部 agent。返回注册成功的名字列表。
 
@@ -209,21 +225,65 @@ def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
             argv = spec.get("command") or []
             if not isinstance(argv, list) or not argv:
                 continue
+            wants_answer = bool(spec.get("produces_answer", False))
 
             def _handler(args: dict, _argv=list(argv), _cwd=cwd,
-                         _to=float(spec.get("timeout_s", 120))) -> str:
+                         _to=float(spec.get("timeout_s", 120)),
+                         _answer=wants_answer, _name=tool_name) -> str:
                 # 任务文本通过 stdin 传，避免 shell 注入与引号地狱。
                 # ⚠️ argv/cwd/timeout 一律用默认参数**绑定到本轮的 spec**：
                 #    直接读循环变量 `spec` 是 late binding —— 所有 agent 会共用
                 #    最后一个 spec 的超时值。这类闭包踩坑在实测里很难看出来。
+                # ★ 第二十三轮：内核把**剩余墙钟**交给外部能力（成本要对预算可见）。
+                # ⛔ 在此之前外部调用的耗时完全不在预算层视野里：实测 k04 的
+                #    agent 跑了 128s，把 120s 预算吃光，交付为空。
+                #    只声明 `timeout_s=300`（spec 里）是**上限**，不是预算。
+                _env = None
+                _dl = args.get("deadline_s")
+                if _dl is not None:
+                    _env = {**os.environ, "AGENT_DEADLINE_S": str(float(_dl))}
+                    _to = max(5.0, min(float(_to), float(_dl) + 15.0))
                 proc = subprocess.run(
                     _argv, input=str(args.get("task", "")), capture_output=True,
-                    text=True, timeout=_to, cwd=_cwd,
+                    text=True, timeout=_to, cwd=_cwd, env=_env,
                 )
-                return (proc.stdout or "")[:8000] or f"(rc={proc.returncode})"
+                raw = (proc.stdout or "")[:8000] or f"(rc={proc.returncode})"
+                # ⛔ 只有 `(rc=N)` 的失败是**不可归因**的失败：说不出是哪一步死的，
+                #    也分不出"模型超时 / 代码写错 / 依赖缺失"。
+                #    第二十三轮实测代价：外部 agent 4/4 全部 rc=1，
+                #    而日志里只剩一个 `(rc=1)`，白跑一轮。
+                #    ⇒ stdout 为空时**必须**把 stderr 的尾巴带上。
+                if not (proc.stdout or "").strip():
+                    _err = (proc.stderr or "").strip().splitlines()
+                    raw = (f"(rc={proc.returncode}) stderr尾: "
+                           + (" | ".join(_err[-3:])[:400] if _err else "(stderr 为空)"))
+                if not _answer:
+                    return raw
+                # ── 答案型外部能力（第二十三轮）────────────────────────────
+                # 契约：stdout 一行 JSON {"answer": "...", "meta": {...}}。
+                # ⛔ 解析失败 / answer 为空 / 带 error ⇒ **raise**，让 dispatch
+                #    把它变成一次 `ok=False` 的失败。：
+                #    绝不能把 "(rc=0)" 或空串当成"成功的答案" —— 那是静默降级，
+                #    而静默降级正是 V5 的病（读数看起来正常，实际什么都没交）。
+                try:
+                    data = json.loads(raw)
+                except json.JSONDecodeError as e:
+                    raise RuntimeError(
+                        f"外部 agent 违约：stdout 不是 JSON ⇒ {raw[:160]!r}") from e
+                if not isinstance(data, dict):
+                    raise RuntimeError(f"外部 agent 违约：JSON 不是对象 ⇒ {raw[:160]!r}")
+                _EXT_META[_name] = dict(data.get("meta") or {})
+                err = str(data.get("error") or "").strip()
+                ans = str(data.get("answer") or "").strip()
+                if err:
+                    raise RuntimeError(f"外部 agent 未交付：{err}")
+                if not ans:
+                    raise RuntimeError("外部 agent 未交付：answer 为空（不是 0 分，是没答案）")
+                return ans
 
             reg.register(ToolSpec(tool_name, desc, {"task": "交给该 agent 的任务"},
-                                  _handler, external=True, mutating=True))
+                                  _handler, external=True, mutating=True,
+                                  produces_answer=wants_answer))
 
         elif kind == "http":
             url = str(spec.get("url", ""))

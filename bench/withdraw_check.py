@@ -107,8 +107,14 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '    "V1_LLM_RETRIES",\n'
      '    "V1_LLM_RETRY_BACKOFF_S",\n)'),
     # ── AS13：闸只许挂在 finish 上（去掉 tool 守卫 ⇒ 每个动作都过闸）────
+    #: ⚠️ 锚点第二十三轮改过一次：出口守卫从字面量 `cand.tool == "finish"`
+    #:    升级成了 `_produces`（= finish 或 produces_answer 的外部能力），
+    #:    否则外部能力的答案会绕过这道闸。锚点必须跟着实现走 ——
+    #:    留着旧字面量的后果是"锚点出现 0 次"，驱动器当场拒绝执行（实测）。
+    #:    AS13 的断言同时要求 `_produces` 的**定义里**必须含 finish，
+    #:    所以"换成 _produces"不等于"闸被放宽"。
     ("AS13", "mw/core.py",
-     'if cand.tool == "finish" and result.ok and self._checks:',
+     "if _produces and result.ok and self._checks:",
      "if result.ok and self._checks:"),
     # ── AS14：salvage 只在答案为空时顶替（去掉 `not answer and` 前置条件）──
     #: ⚠️ AS8 没有自己的入口 —— 它与 AS7 锚在**同一行**（`if v.ok:`），
@@ -161,6 +167,56 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #: ⚠️ 锚点**刻意不往回退成完全不锚定**的版本：那样驱动器自己就找不到唯一汇总行，
     #:    于是每一条撤回都会因为"汇总行不唯一"被记成失败 —— 那是驱动器自伤，
     #:    不是断言转红。用"少一个前缀"这个变异，行为不变、断言必红。
+    # ══ AE 组（第二十三轮，外部能力）══════════════════════════════════════
+    # ── AE1：内建工具不许带 produces_answer（给 `note` 单独打上标记）────────
+    #: ⛔ 第一版把**默认值**翻成 True，结果 9 条断言同时红 —— 那不是锚定跑偏，
+    #:   是变异太粗：所有工具的输出立刻都成了"候选答案"，任何依赖
+    #:   "工具输出不是答案"的路径都会断。**改窄到单个工具**，信号才指向 AE1 本身。
+    #: ⚠️ 第二版打在 `note` 上 —— **锚点在场、对象不在场**：`note` 只在
+    #:    `memory is not None` 时注册，而 AE1 用的注册表没有 memory ⇒ 变异等于没改。
+    #:    现在打在**必然注册**的 `http_get` 上（它也是真实的 `external=True` 工具）。
+    ("AE1", "mw/tools.py",
+     '        "http_get", "取一个 URL 的文本内容", {"url": "URL"}, _http_get, external=True,\n    ))',
+     '        "http_get", "取一个 URL 的文本内容", {"url": "URL"}, _http_get, external=True,\n        produces_answer=True,\n    ))'),
+    # ── AE2：开关必须登记 ENV_KEYS（删掉登记）────────────────────────────
+    #: ⚠️ 会连带 A 组的"登记 == 实际读取"（那条本来就该红：代码读了没登记的 env
+    #:    就是静默漂移），见 COUPLED。
+    ("AE2", "mw/config.py",
+     '    "V1_VERIFY_RETRIES",\n    "V1_EXTERNAL_ANSWER_TOOL",\n)',
+     '    "V1_VERIFY_RETRIES",\n)'),
+    # ── AE3：注入只许守在第 1 步（把 `it == 1` 放宽成 `it >= 1`）──────────
+    ("AE3", "mw/core.py",
+     "if _ext and it == 1 and self.tools.get(_ext) is not None:",
+     "if _ext and it >= 1 and self.tools.get(_ext) is not None:"),
+    # ── AE4：采用数必须独立计数（把 += 1 改成 += 0）──────────────────────
+    #: 会连带 AE9（它断言 used_as_answer == 1），见 COUPLED。
+    ("AE4", "mw/core.py",
+     'self.external_stats["used_as_answer"] += 1',
+     'self.external_stats["used_as_answer"] += 0'),
+    # ── AE5：空答案必须 raise（改成把原文当答案返回）──────────────────────
+    ("AE5", "mw/tools.py",
+     '                    raise RuntimeError("外部 agent 未交付：answer 为空（不是 0 分，是没答案）")',
+     '                    return raw'),
+    # ── AE6：读数必须落盘（把键名改掉）──────────────────────────────────
+    ("AE6", "run.py", '"kernel_external": _kex', '"kernel_external_x": _kex'),
+    # ── AE7：外部 agent 不许 import 内核（加一行违约 import）──────────────
+    ("AE7", "external/code_agent.py",
+     "from __future__ import annotations\n",
+     "from __future__ import annotations\nimport mw.config  # 撤回态：违约\n"),
+    # ── AE8：--no-external 两个分支都要透传（把桩分支改成恒 True）─────────
+    ("AE8", "run.py",
+     "        core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger,\n"
+     "                    score_ledger=score_ledger, caliber_sig=caliber_sig,\n"
+     "                    memory_mode=mem_mode,\n"
+     '                    wire_external=not getattr(args, "no_external", False))',
+     "        core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger,\n"
+     "                    score_ledger=score_ledger, caliber_sig=caliber_sig,\n"
+     "                    memory_mode=mem_mode,\n"
+     "                    wire_external=True)"),
+    # ── AE9：端到端（把开关读成空 ⇒ 完全不注入）──────────────────────────
+    ("AE9", "mw/core.py",
+     "                _ext = self.s.limits.external_answer_tool",
+     '                _ext = ""  # 撤回态：不注入'),
     # ── AS25：真模型收尾证据必须可重算（把触发次数改掉一个）────────────────
     ("AS25", "bench/evidence/closeout_s22/on.jsonl",
      '"triggered":2', '"triggered":3'),
@@ -186,9 +242,27 @@ COUPLED: dict[str, frozenset[str]] = {
     # salvage 条件去掉 `not answer and` 之后，**正常交付**也会被上一版坏答案顶掉
     # ⇒ AS8（"第二版交对就交付它"）必然红。这正是 AS14 注释里预言的那个静默降级。
     "AS14": frozenset({"AS8"}),
+    #: AE2 删掉 ENV_KEYS 登记 ⇒ A 组"登记 == 实际读取"必然红（代码读了没登记的 env
+    #: 就是静默漂移，那条本来就该红）。这是**合理的连带**，不是锚定跑偏。
+    "AE2": frozenset({"A1"}),
+    #: AE4 把 used_as_answer 改成 += 0 ⇒ AE9 那条"答案被采用"必然红。
+    "AE4": frozenset({"AE9"}),
     # 触发数不涨（`+= 0`）⇒ 汇总行也就没有"收尾=1次"可印 ⇒ AS19 必然红。
     # 上游的计数断了，下游"把计数念出来"这条断言自然不成立 —— 合理连带。
     "AS18": frozenset({"AS19"}),
+    #: AS1 往 `mw/verify.py` 末尾**追加一行 import**（模拟"判据模块碰锚层"）。
+    #: 那一行是**未被使用**的 ⇒ K5（"内核没有死导入"）必然红。
+    #: 这是变异的直接副作用，不是锚定跑偏：要消掉多红只能让那行被用起来，
+    #: 但那样变异就不再是"碰一下锚层"了（AS1 要抓的正是"碰"，不是"用"）。
+    "AS1": frozenset({"K5"}),
+    #: AS4 把 `if _CODE_ONLY.search(goal)` 改成 `if True` ⇒ **散文题也派生
+    #: `compiles` 判据** ⇒ 那些题被自检错误打回 ⇒ 交付路径整个变了。
+    #: 于是两条端到端读数自然不成立：
+    #:   I1  —— `done` 不再达成（答案反复被打回，状态落到别的分支）；
+    #:   AB7 —— "关掉工作记忆写入 ⇒ 回流率归零"的前提是有一条正常交付路径，
+    #:           路径被打断后这条读数无意义。
+    #: ⇒ 合理连带（上游断了，下游读数自然不成立）。
+    "AS4": frozenset({"I1", "AB7"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，
@@ -312,7 +386,11 @@ def _run_suite() -> tuple[bool, set[str], str]:
     summary_ok, _shown = _summary(out)
     m = _SUMMARY.findall(out)
     passed, failed = (int(m[0][0]), int(m[0][1])) if summary_ok else (0, 0)
-    red = set(re.findall(r"❌\s*(AS\d+)", out))
+    #: ⚠️ 第二十三轮把标签范围从 `AS\d+` 放宽到 `[A-Z]{1,2}\d+`：
+    #:    新加的 AE 组（外部能力）若不进来，"撤回 AE7 却没转红"就会被读成通过。
+    #:    只认"❌ 紧跟标签"的形状 —— 被撤掉的子进程自己打印的 `❌ 长度不等…`
+    #:    不带标签，不会被误算进红集。
+    red = set(re.findall(r"❌\s*([A-Z]{1,2}\d+)\b", out))
     clean = summary_ok and "Traceback" not in out
     return (p.returncode == 0 and failed == 0), red, out
 

@@ -823,6 +823,333 @@ def unflatten(flat):
 ]
 
 
+# ===========================================================================
+# 领域 G7：§17-7 新题池（两侧都有提升空间 —— 登记见 DESIGN §17-7 ★7a）
+# ===========================================================================
+TASKS["tasks/g7_struct"] = [
+    {
+        "id": "g7s1_flatten_nested",
+        "prompt": ("写一个函数 flatten_nested(d)：把嵌套结构展平成单层 dict。"
+                   "嵌套 dict 用 '.' 连接键（如 {'a':{'b':1}} → {'a.b':1}）；"
+                   "嵌套 list 用 '[i]' 下标（如 {'a':[10,20]} → {'a[0]':10,'a[1]':20}）；"
+                   "值为 None 的条目整个跳过（不出现任何键）；"
+                   "可以混合嵌套（{'a':{'b':[1]}} → {'a.b[0]':1}）。"
+                   "只输出代码，函数名必须是 flatten_nested。"),
+        "tests": [
+            "assert flatten_nested({'a': 1}) == {'a': 1}",
+            "assert flatten_nested({'a': {'b': 2}}) == {'a.b': 2}",
+            "assert flatten_nested({'a': [10, 20]}) == {'a[0]': 10, 'a[1]': 20}",
+            "assert flatten_nested({'a': {'b': None}}) == {}",
+            "assert flatten_nested({'a': [None, 5]}) == {'a[1]': 5}",
+        ],
+        "oracle": r'''def flatten_nested(d):
+    out = {}
+    def walk(node, prefix):
+        if isinstance(node, dict):
+            children = [(v, prefix + "." + str(k) if prefix else str(k))
+                        for k, v in node.items()]
+        elif isinstance(node, list):
+            children = [(v, f"{prefix}[{i}]") for i, v in enumerate(node)]
+        else:
+            out[prefix] = node
+            return
+        for v, key in children:
+            if isinstance(v, (dict, list)):
+                walk(v, key)
+            elif v is not None:
+                out[key] = v
+    walk(d, "")
+    return out''',
+        "partial": r'''def flatten_nested(d):
+    out = {}
+    def walk(node, prefix):
+        for k, v in node.items():
+            key = prefix + "." + str(k) if prefix else str(k)
+            if isinstance(v, dict):
+                walk(v, key)
+            elif v is not None:
+                out[key] = v
+    walk(d, "")
+    return out''',
+        "null": "",
+        "meta": {"tags": "struct,flatten,recursion", "level": "hard"},
+    },
+    {
+        "id": "g7s2_parse_headers",
+        "prompt": ("写一个函数 parse_headers(s)，解析 'k1: v1; k2: v2' 形式的头字符串。"
+                   "规则：条目用 ';' 分隔；键值用第一个 ':' 分隔；键和未加引号的值"
+                   "都要去掉首尾空白；值若用**双引号包住**，则引号内的 ';' 与 ':' "
+                   "不算分隔符、值取引号内原文（不去空白、不再去引号）；"
+                   "空键跳过。只输出代码，函数名必须是 parse_headers。"),
+        "tests": [
+            "assert parse_headers('a: 1; b: 2') == {'a': '1', 'b': '2'}",
+            "assert parse_headers('a: \"x;y\"') == {'a': 'x;y'}",
+            "assert parse_headers('a: \"q:z\"; b: 3') == {'a': 'q:z', 'b': '3'}",
+            "assert parse_headers('  k :  v  ') == {'k': 'v'}",
+            "assert parse_headers('a: \"\"') == {'a': ''}",
+        ],
+        "oracle": r'''def parse_headers(s):
+    out = {}
+    i, n = 0, len(s)
+    while i < n:
+        j = s.find(':', i)
+        if j < 0:
+            break
+        key = s[i:j].strip()
+        k = j + 1
+        while k < n and s[k] == ' ':
+            k += 1
+        quoted = k < n and s[k] == '"'
+        if quoted:
+            e = s.find('"', k + 1)
+            if e < 0:
+                val, i = s[k + 1:], n
+            else:
+                val = s[k + 1:e]
+                i = e + 1
+                while i < n and s[i] != ';':
+                    i += 1
+                i += 1
+        else:
+            e = s.find(';', k)
+            if e < 0:
+                val, i = s[k:], n
+            else:
+                val, i = s[k:e], e + 1
+        if key:
+            out[key] = val if quoted else val.strip()
+    return out''',
+        "partial": r'''def parse_headers(s):
+    out = {}
+    for part in s.split(';'):
+        if ':' not in part:
+            continue
+        key, val = part.split(':', 1)
+        key, val = key.strip(), val.strip()
+        if key:
+            out[key] = val.strip('"')
+    return out''',
+        "null": "",
+        "meta": {"tags": "struct,parse,quoting", "level": "hard"},
+    },
+    {
+        "id": "g7s3_csv_row",
+        "prompt": ("写一个函数 csv_row(fields)，把字段列表编码成一行 CSV 文本。"
+                   "规则：字段用 ',' 连接；字段若含 ','、'\"'、'\\n' 或 '\\r' 之一，"
+                   "整个字段用双引号包住，且字段内的 '\"' 写成两个 '\"'；"
+                   "其余字段原样。只输出代码，函数名必须是 csv_row。"),
+        "tests": [
+            "assert csv_row(['a', 'b']) == 'a,b'",
+            "assert csv_row(['a,b', 'c']) == '\"a,b\",c'",
+            "assert csv_row(['say \"hi\"', 'x']) == '\"say \"\"hi\"\"\",x'",
+            "assert csv_row(['plain']) == 'plain'",
+            "assert csv_row(['l1\\nl2', '']) == '\"l1\\nl2\",'",
+        ],
+        "oracle": r'''def csv_row(fields):
+    out = []
+    for f in fields:
+        f = str(f)
+        if any(c in f for c in ',"\n\r'):
+            f = '"' + f.replace('"', '""') + '"'
+        out.append(f)
+    return ','.join(out)''',
+        "partial": r'''def csv_row(fields):
+    out = []
+    for f in fields:
+        f = str(f)
+        if ',' in f:
+            f = '"' + f + '"'
+        out.append(f)
+    return ','.join(out)''',
+        "null": "",
+        "meta": {"tags": "struct,serialize,csv", "level": "medium"},
+    },
+    {
+        "id": "g7s4_xml_escape_attrs",
+        "prompt": ("写一个函数 xml_escape_attrs(d)，把 dict 编码成 XML 属性串。"
+                   "规则：按 dict 出现顺序输出 k=\"v\"，用单个空格连接；"
+                   "值里的 '&' '<' '>' '\"' 分别转成 '&amp;' '&lt;' '&gt;' '&quot;'"
+                   "（必须是**逐字符单次**替换 —— 不能链式 replace，否则会把前一步"
+                   "生成的 '&amp;' 再改坏）；值为 None 的键跳过。"
+                   "只输出代码，函数名必须是 xml_escape_attrs。"),
+        "tests": [
+            "assert xml_escape_attrs({'a': '1'}) == 'a=\"1\"'",
+            "assert xml_escape_attrs({'a': 'x<y', 'b': 'z'}) == 'a=\"x&lt;y\" b=\"z\"'",
+            "assert xml_escape_attrs({'a': 'x\"y&z'}) == 'a=\"x&quot;y&amp;z\"'",
+            "assert xml_escape_attrs({'a': None, 'b': '2'}) == 'b=\"2\"'",
+            "assert xml_escape_attrs({'a': 'q\"q'}) == 'a=\"q&quot;q\"'",
+        ],
+        "oracle": r'''def xml_escape_attrs(d):
+    esc = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}
+    parts = []
+    for k, v in d.items():
+        if v is None:
+            continue
+        parts.append(str(k) + '="' + ''.join(esc.get(c, c) for c in str(v)) + '"')
+    return ' '.join(parts)''',
+        "partial": r'''def xml_escape_attrs(d):
+    parts = []
+    for k, v in d.items():
+        if v is None:
+            continue
+        s = (str(v).replace('"', '&quot;').replace('<', '&lt;')
+             .replace('>', '&gt;').replace('&', '&amp;'))
+        parts.append(str(k) + '="' + s + '"')
+    return ' '.join(parts)''',
+        "null": "",
+        "meta": {"tags": "struct,escape,single-pass", "level": "medium"},
+    },
+]
+
+TASKS["tasks/g7_numeric"] = [
+    {
+        "id": "g7n1_split_amount",
+        "prompt": ("写一个函数 split_amount(total, n)：把非负整数 total 分成 n 份"
+                   "非负整数，各份相差不超过 1，**较大的份排在前面**。"
+                   "如 total=10, n=3 → [4, 3, 3]；分不完时末尾补 0"
+                   "（total=3, n=5 → [1, 1, 1, 0, 0]）。"
+                   "只输出代码，函数名必须是 split_amount。"),
+        "tests": [
+            "assert split_amount(10, 3) == [4, 3, 3]",
+            "assert split_amount(7, 7) == [1, 1, 1, 1, 1, 1, 1]",
+            "assert split_amount(3, 5) == [1, 1, 1, 0, 0]",
+            "assert split_amount(0, 3) == [0, 0, 0]",
+            "assert split_amount(9, 2) == [5, 4]",
+        ],
+        "oracle": r'''def split_amount(total, n):
+    q, r = divmod(total, n)
+    return [q + 1] * r + [q] * (n - r)''',
+        "partial": r'''def split_amount(total, n):
+    q, r = divmod(total, n)
+    return [q] * (n - r) + [q + 1] * r''',
+        "null": "",
+        "meta": {"tags": "numeric,division,order", "level": "easy"},
+    },
+    {
+        "id": "g7n2_next_permutation",
+        "prompt": ("写一个函数 next_permutation(seq)：返回序列按字典序的**下一个**"
+                   "排列（新列表，不改入参）；若已是最大排列，则回绕到升序最小排列。"
+                   "如 [1,2,3] → [1,3,2]；[3,2,1] → [1,2,3]。"
+                   "只输出代码，函数名必须是 next_permutation。"),
+        "tests": [
+            "assert next_permutation([1, 2, 3]) == [1, 3, 2]",
+            "assert next_permutation([3, 2, 1]) == [1, 2, 3]",
+            "assert next_permutation([1, 1, 5]) == [1, 5, 1]",
+            "assert next_permutation([1, 3, 2]) == [2, 1, 3]",
+            "assert next_permutation([2, 3, 1]) == [3, 1, 2]",
+        ],
+        "oracle": r'''def next_permutation(seq):
+    a = list(seq)
+    i = len(a) - 2
+    while i >= 0 and a[i] >= a[i + 1]:
+        i -= 1
+    if i < 0:
+        return sorted(a)
+    j = len(a) - 1
+    while a[j] <= a[i]:
+        j -= 1
+    a[i], a[j] = a[j], a[i]
+    a[i + 1:] = reversed(a[i + 1:])
+    return a''',
+        "partial": r'''def next_permutation(seq):
+    a = list(seq)
+    a[-1], a[-2] = a[-2], a[-1]
+    return a''',
+        "null": "",
+        "meta": {"tags": "numeric,permutation,algorithm", "level": "hard"},
+    },
+    {
+        "id": "g7n3_spiral_order",
+        "prompt": ("写一个函数 spiral_order(m)：按**顺时针螺旋**顺序返回矩阵 "
+                   "（list of list）的所有元素；空矩阵返回 []。"
+                   "如 [[1,2,3],[4,5,6],[7,8,9]] → "
+                   "[1,2,3,6,9,8,7,4,5]。"
+                   "只输出代码，函数名必须是 spiral_order。"),
+        "tests": [
+            "assert spiral_order([[1, 2, 3], [4, 5, 6], [7, 8, 9]]) == [1, 2, 3, 6, 9, 8, 7, 4, 5]",
+            "assert spiral_order([[1]]) == [1]",
+            "assert spiral_order([]) == []",
+            "assert spiral_order([[1, 2], [3, 4]]) == [1, 2, 4, 3]",
+            "assert spiral_order([[1, 2, 3]]) == [1, 2, 3]",
+        ],
+        "oracle": r'''def spiral_order(m):
+    if not m:
+        return []
+    out = []
+    top, bot = 0, len(m) - 1
+    left, right = 0, len(m[0]) - 1
+    while top <= bot and left <= right:
+        for c in range(left, right + 1):
+            out.append(m[top][c])
+        top += 1
+        for r in range(top, bot + 1):
+            out.append(m[r][right])
+        right -= 1
+        if top <= bot:
+            for c in range(right, left - 1, -1):
+                out.append(m[bot][c])
+            bot -= 1
+        if left <= right:
+            for r in range(bot, top - 1, -1):
+                out.append(m[r][left])
+            left += 1
+    return out''',
+        "partial": r'''def spiral_order(m):
+    if not m:
+        return []
+    out = list(m[0])
+    for row in m[1:]:
+        out.append(row[-1])
+    return out''',
+        "null": "",
+        "meta": {"tags": "numeric,matrix,traversal", "level": "hard"},
+    },
+    {
+        "id": "g7n4_min_meeting_rooms",
+        "prompt": ("写一个函数 min_meeting_rooms(intervals)：区间 [start, end) "
+                   "表示一场会议（**左闭右开** —— end 等于下一个 start 时不冲突），"
+                   "求最少需要多少间会议室；空列表返回 0。"
+                   "如 [[0,30],[5,10],[15,20]] → 2。"
+                   "只输出代码，函数名必须是 min_meeting_rooms。"),
+        "tests": [
+            "assert min_meeting_rooms([[0, 30], [5, 10], [15, 20]]) == 2",
+            "assert min_meeting_rooms([[7, 10], [2, 4]]) == 1",
+            "assert min_meeting_rooms([]) == 0",
+            "assert min_meeting_rooms([[1, 5], [2, 6], [3, 7], [4, 8]]) == 4",
+            "assert min_meeting_rooms([[1, 5], [5, 6]]) == 1",
+        ],
+        "oracle": r'''def min_meeting_rooms(intervals):
+    if not intervals:
+        return 0
+    starts = sorted(s for s, e in intervals)
+    ends = sorted(e for s, e in intervals)
+    rooms = best = 0
+    ei = 0
+    for s in starts:
+        while ei < len(ends) and ends[ei] <= s:
+            ei += 1
+            rooms -= 1
+        rooms += 1
+        best = max(best, rooms)
+    return best''',
+        "partial": r'''def min_meeting_rooms(intervals):
+    if not intervals:
+        return 0
+    points = sorted(p for s, e in intervals for p in (s, e))
+    rooms = best = 0
+    for p in points:
+        if any(s == p for s, e in intervals):
+            rooms += 1
+            best = max(best, rooms)
+        else:
+            rooms -= 1
+    return best''',
+        "null": "",
+        "meta": {"tags": "numeric,intervals,sweep", "level": "medium"},
+    },
+]
+
+
 def _self_check() -> None:
     """每一行都必须自己跑一遍：oracle=1.0 / partial 严格居中 / null=0.0。
 

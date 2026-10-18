@@ -267,6 +267,66 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      "                            if _why not in _rs and len(_rs) < _ERR_REASON_CAP:\n"
      "                                _rs.append(_why)",
      "                            _ = _why  # 撤回态：原因不进证据"),
+    # ══ AU 组（第二十五轮，重试链守墙钟 + 读数分辨率）══════════════════════
+    # ── AU1：`check_wall()` 不再查墙钟（加一行 return 让它永远放行）────────
+    ("AU1", "mw/budget.py",
+     "    def check_wall(self) -> None:",
+     "    def check_wall(self) -> None:\n        return  # 撤回态：墙钟闸失效"),
+    # ── AU2：不再裁剪（上限恒等于端点默认值 ⇒ 单次又能吃满整题预算）────────
+    #: 会连带 AU4：AU4 的夹具正是"第一发被裁短"，不裁剪就没有 shortened 可计。
+    ("AU2", "mw/core.py",
+     "        return min(float(base), float(left))",
+     "        return float(base)  # 撤回态：不裁剪"),
+    # ── AU3：拒绝发起失效（不再返回 0 ⇒ 发出一个注定超时的请求）──────────
+    #: 连带 AU5/AU8：两者的前提都是"这一发被拒绝"，拒绝失效后它们走不到那一格。
+    ("AU3", "mw/core.py",
+     "        if left <= self.MIN_ATTEMPT_S:\n            return 0.0",
+     "        if False:  # 撤回态：拒绝发起失效\n            return 0.0"),
+    # ── AU4："裁短但仍发出"不再计数（证据看不见它要证明的事）──────────────
+    ("AU4", "mw/core.py",
+     "                if _base is not None and float(_to) < float(_base):\n"
+     "                    self.wall_shortened += 1",
+     "                if False:  # 撤回态：裁短不计数\n"
+     "                    self.wall_shortened += 1"),
+    # ── AU5：两个"放弃"计数混成一个（首发/重试分不开）──────────────────────
+    #: 连带 AU4：它断言 `wall_refused_first == 0`（首发确实发出去了），
+    #: 计数被对调后这个数变成 1 ⇒ AU4 必红。
+    ("AU5", "mw/core.py",
+     "                if attempt == 0:\n                    self.wall_refused_first += 1",
+     "                if attempt != 0:  # 撤回态：两种放弃混为一谈\n"
+     "                    self.wall_refused_first += 1"),
+    # ── AU6：离线桩也被裁剪（桩分支返回一个具体上限，而非"不裁剪"的 inf）────
+    #: ⛔ 第一版把整个分支删掉（`if False:`）—— 后果是**所有离线路径**都
+    #:    `float(None)` 崩掉，31 条断言同时红。那不是锚定跑偏，是变异太粗：
+    #:    桩分支是整条离线套件的地基。**改窄到只改返回值**，信号才指向 AU6 本身
+    #:    （1e9 秒的 timeout 在离线路径上完全等价于 inf）。
+    ("AU6", "mw/core.py",
+     '        if base is None:                     # 桩/无网络：不裁剪\n'
+     '            return float("inf")',
+     '        if base is None:                     # 桩/无网络：不裁剪\n'
+     '            return 1e9  # 撤回态：桩上限不再是 inf'),
+    # ── AU7：收尾不释放余量（"留了 45s 却不用"）────────────────────────────
+    ("AU7", "mw/core.py",
+     "        if self._counted is not None:\n            self._counted.reserve_release()",
+     "        if False:  # 撤回态：收尾不释放余量\n"
+     "            self._counted.reserve_release()"),
+    # ── AU8：墙钟被裁到底时**不再**转向交付（退回"交付零东西"）────────────
+    ("AU8", "mw/core.py",
+     "                if _left > _LedgeredLLM.MIN_ATTEMPT_S:",
+     "                if False:  # 撤回态：墙钟裁到底也不转向收尾"),
+    # ── AU9：累加器只覆盖不加总（读数字段退化成"最后一题的值"）────────────
+    ("AU9", "run.py",
+     '    for k in ("retries", "exhausted", "wall_shortened",\n'
+     '              "wall_refused_first", "wall_refused_retry"):',
+     '    for k in ("retries", "exhausted", "wall_shortened",\n'
+     '              "wall_refused_first", "wall_refused_retry"):\n'
+     '        acc[k] = int(stats.get(k, 0) or 0)  # 撤回态：覆盖而非加总\n'
+     '        continue'),
+    # ── AU10：汇总行只念固定的两个原因（新原因在日志上消失）────────────────
+    ("AU10", "mw/core.py",
+     '                        + "".join(f"/{k}{v}" for k, v in _co["by_reason"].items()\n'
+     '                                  if k not in ("steps", "wall") and v)\n',
+     '                        + ""  # 撤回态：只念固定的两个原因\n'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -311,6 +371,25 @@ COUPLED: dict[str, frozenset[str]] = {
     #:           路径被打断后这条读数无意义。
     #: ⇒ 合理连带（上游断了，下游读数自然不成立）。
     "AS4": frozenset({"I1", "AB7"}),
+    #: AU2 不裁剪 ⇒ AU4 的夹具（"第一发被裁到 75s"）不复存在 ⇒ `wall_shortened`
+    #: 恒为 0 ⇒ "裁短必须被计数"这条断言自然不成立。**合理连带**：
+    #: AU4 测的是"裁短有没有被观测到"，而它需要裁短真的发生。
+    "AU2": frozenset({"AU4"}),
+    #: AU3 的"拒绝发起"失效 ⇒ 两个下游必然不成立：
+    #:   AU5 —— 它要的是"墙钟不够再试 ⇒ 抛 BudgetExhausted"，拒绝失效后
+    #:          内核会把负剩余时间当 timeout 发出去，错误变成 LLMError；
+    #:   AU8 —— 它要的是"第一发被拒 ⇒ 转向收尾"，拒绝失效后内核照常调端点，
+    #:          交付路径整个变了；
+    #:   AU7 —— 它读的是"收尾后预留已释放"，而收尾根本没发生 ⇒ 没有读数可判。
+    #: ⇒ 合理连带（上游断了，下游三条断言自然不成立）。
+    "AU3": frozenset({"AU5", "AU7", "AU8"}),
+    #: AU5 把"首发放弃"与"重试放弃"对调 ⇒ AU4 断言"首发放弃恒为 0"必然红。
+    "AU5": frozenset({"AU4"}),
+    #: AU8 不转向收尾 ⇒ 那次运行根本走不到 `_close_out` ⇒ 两条下游必然不成立：
+    #:   AU7  —— 它读的是"收尾后预留已释放"，没有收尾就没有读数；
+    #:   AU10 —— 没有收尾就没有「收尾=」那一行可念。
+    #: ⇒ 合理连带（上游断了，下游两条断言自然不成立）。
+    "AU8": frozenset({"AU7", "AU10"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

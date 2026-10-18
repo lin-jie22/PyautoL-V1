@@ -5382,6 +5382,296 @@ check(RS, "AT8 ★外部能力失败时，**原因原文**必须进 `err_reasons
       f"reasons={_af_reasons[:2]}")
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# AU1–AU9（第二十五轮）：重试链必须守墙钟 + 读数必须能看见"它到底裁了几个"
+#
+# 这九条全部来自一次**实测事故**，不是为凑数：
+#   `llm_retries=2` + `timeout_s=120` + `wall_s=120` ⇒ 一次逻辑调用串起
+#   `3×120 + 退避 = 361.5s`，超支 3 倍，日志上只留一个 `TimeoutError`、`steps=0`。
+#   ⇒ 实现**违反了自己声明的硬上限**（§16.24）。
+#
+# ⚠️ 本组有一条是"自踩"钉住的：我最初只计"因墙钟放弃"的次数，
+#    于是「裁到 75s 后照发并超时」与「用满 120s 后超时」在读数上**一模一样** ——
+#    那个计数看不见它本该证明的事。AU4 就是钉"裁短也要计数"的。
+# ═══════════════════════════════════════════════════════════════════════════
+import time as _au_time                                            # noqa: E402
+import importlib.util as _au_ilu                                   # noqa: E402
+from mw.core import _LedgeredLLM as _au_L                          # noqa: E402
+from mw.llm import LLMError as _au_LLMError                        # noqa: E402
+
+
+class _AUCanned:
+    """一个可指定 `timeout_s` 的假端点：**永远失败**（用它测裁剪与计数）。
+
+    `timeout_s` 这个属性本身就是被测接口的一部分：`_attempt_timeout()` 用它当
+    上限，`getattr(..., None)` 取不到就不裁剪（离线桩就是这么走的）。
+    """
+
+    def __init__(self, timeout_s: float | None = 100.0, *, fail: bool = True) -> None:
+        if timeout_s is not None:
+            self.timeout_s = timeout_s
+        self.fail = fail
+        self.seen: list[float | None] = []
+
+    def complete(self, messages, *, max_tokens: int = 512,
+                 temperature: float | None = None,
+                 timeout_s: float | None = None) -> str:
+        self.seen.append(timeout_s)
+        if self.fail:
+            raise _au_LLMError("模拟尾延迟", transient=True)
+        return "ok"
+
+
+# ── AU1：`check_wall()` 只查墙钟（不许拿 `check()` 去守重试）───────────────
+#: 构造"steps 与 llm_calls 都已用尽、但墙钟还剩很多"的状态。
+_au_b_lg = Ledger(Budget(steps=2, llm_calls=2, wall_s=600.0, candidates=1))
+_au_b_lg.steps_used = 2
+_au_b_lg.llm_calls_used = 2
+_au_b_kind_check = _exc_kind(_au_b_lg.check)
+_au_wall_fn = getattr(_au_b_lg, "check_wall", None)
+_au_b_ok = _raises(_au_wall_fn, BudgetExhausted) if _au_wall_fn else True
+#: 反证：**墙钟**用尽时它必须抛，且 kind 必须是 `wall_s`（不是 steps）。
+_au_b_late = Ledger(Budget(steps=9, llm_calls=9, wall_s=1.0, candidates=1),
+                    t0=_au_time.monotonic() - 30.0)
+_au_b_late_kind = _exc_kind(getattr(_au_b_late, "check_wall", lambda: None))
+
+check(RS, "AU1 ★`Ledger.check_wall()` 必须**只**查墙钟：steps/llm_calls 都用尽、\n"
+          "          墙钟未尽时**不许**抛；墙钟尽时必须抛且 `kind == 'wall_s'`。\n"
+          "          —— 拿 `check()` 去守重试，会把「步数刚好用完的最后一次重试」\n"
+          "            误判成「步数耗尽」，归因直接错掉（错误的原因比错误本身更贵）。",
+      _au_b_kind_check == "steps" and not _au_b_ok and _au_b_late_kind == "wall_s",
+      f"check()⇒{_au_b_kind_check}  check_wall()抛={_au_b_ok}  "
+      f"墙钟尽⇒{_au_b_late_kind}")
+
+
+# ── AU2：裁剪上限 = min(base, 剩余 − 收尾余量)，且**不许**超过 base ────────
+def _au_cap(wall_s: float, reserve: float, base: float = 100.0) -> float:
+    _lg = Ledger(Budget(steps=9, llm_calls=9, wall_s=wall_s, candidates=1))
+    _lm = _au_L(_AUCanned(base), _lg, retries=2, wall_reserve_s=reserve)
+    try:
+        return float(_lm._attempt_timeout())
+    except Exception as _e:  # noqa: BLE001
+        # 撤回态可能抛（`float(None)` / 属性被删）。返回 NaN：任何比较都为假
+        # ⇒ 断言自然转红，而**汇总行还在**（R13 硬坑：崩了不是判红）。
+        return float("nan")
+
+
+_au_cap_tight = _au_cap(30.0, 5.0)        # 剩余≈30 − 5 = 25 ⇒ 25 < base
+_au_cap_loose = _au_cap(1000.0, 0.0)      # 剩余远大于 base ⇒ **必须**是 base
+#: 端点自称"无上限"（inf）时，上限 = 剩余预算本身 —— 仍是"预算说了算"，
+#: 不会变成无穷。⚠️ 这一格我第一版写错过：断言成 inf，实际是 1000−0=1000。
+#: 裁到 1000 才是对的：`min(inf, 剩余)` = 剩余。
+_au_cap_inf = _au_cap(1000.0, 0.0, float("inf"))
+
+check(RS, "AU2 ★单次尝试的上限 = `min(端点默认上限, 剩余 − 收尾余量)`，\n"
+          "          且**永不超过**端点默认上限（预算宽裕时不许把它放大）；\n"
+          "          端点自称无上限(inf)时，上限回落为**剩余预算**（不是无穷）。\n"
+          "          —— 这是 361s 的正面修复：单次尝试再也吃不满整题预算。",
+      24.0 < _au_cap_tight <= 25.5 and abs(_au_cap_loose - 100.0) < 1e-6
+      and abs(_au_cap_inf - 1000.0) < 1.0,
+      f"紧={_au_cap_tight:.2f} 宽={_au_cap_loose:.2f} inf端点={_au_cap_inf:.2f}")
+
+
+# ── AU3：剩余不够一次起步价 ⇒ 返回 0（"别试了"），由调用方决定抛什么 ──────
+_au_zero = _au_cap(20.0, 16.0)            # 20 − 16 = 4 ≤ MIN_ATTEMPT_S(5)
+_au_just = _au_cap(20.0, 13.0)            # 20 − 13 = 7 > 5 ⇒ 允许试
+check(RS, "AU3 ★剩余 ≤ `MIN_ATTEMPT_S` ⇒ `_attempt_timeout()` 返回 **0**（拒绝发起），\n"
+          "          而不是返回一个注定超时的正数（那只是把收尾预算也烧掉）。",
+      _au_zero == 0.0 and _au_just > 5.0,
+      f"不够⇒{_au_zero} 刚好够⇒{_au_just:.2f}")
+
+
+# ── AU4：★"被裁短但发出去了"必须有独立计数（自踩钉住的一条）─────────────
+#: 事故参数：wall=120、reserve=45、base=120 ⇒ 第一发就被裁到 75s。
+_au_lg4 = Ledger(Budget(steps=9, llm_calls=9, wall_s=120.0, candidates=1))
+_au_inner4 = _AUCanned(120.0)
+_au_l4 = _au_L(_au_inner4, _au_lg4, retries=2, wall_reserve_s=45.0)
+_au_l4_exc = None
+try:
+    _au_l4.complete([Message("user", "hi")])
+except BudgetExhausted:
+    _au_l4_exc = "budget"
+except _au_LLMError:
+    _au_l4_exc = "llm"
+except Exception as _au_e4:  # noqa: BLE001
+    _au_l4_exc = f"ERR:{type(_au_e4).__name__}"
+#: ⚠️ 撤回态下这两个属性可能不存在 ⇒ 一律 `getattr(..., 0)`，**不做算术**（R13 硬坑）。
+_au_short = int(getattr(_au_l4, "wall_shortened", 0) or 0)
+_au_ref_first = int(getattr(_au_l4, "wall_refused_first", 0) or 0)
+_au_ref_retry = int(getattr(_au_l4, "wall_refused_retry", 0) or 0)
+
+check(RS, "AU4 ★『上限被裁短**且真的发出去**』必须单独计数（`wall_shortened ≥ 1`），\n"
+          "          且**不能**被并进『放弃』类计数（那两类的修法与它相反）。\n"
+          "          —— 自踩：我最初只在『放弃』时计数 ⇒ 「裁到 75s 照发并超时」与\n"
+          "            「用满 120s 后超时」在读数上完全一样，证据看不见要证明的事。",
+      _au_short >= 1 and _au_ref_first == 0
+      and all((t is None or t < 120.0) for t in _au_inner4.seen),
+      f"shortened={_au_short} refused_first={_au_ref_first} "
+      f"refused_retry={_au_ref_retry} 实发上限={_au_inner4.seen} 出口={_au_l4_exc}")
+
+
+# ── AU5：墙钟已不够再试 ⇒ 放弃的是**重试**（与"首发即放弃"分开）───────────
+#: 用一个把墙钟"用掉"的端点：第一次调用期间把 t0 往前拨 60s（合法操作 ——
+#: `Ledger.t0` 就是时间原点，拨它等价于"时间过去了 60s"，不必真睡 60s）。
+class _AUTimeEater(_AUCanned):
+    def __init__(self, ledger: Ledger) -> None:
+        super().__init__(100.0, fail=True)
+        self.ledger = ledger
+
+    def complete(self, messages, *, max_tokens: int = 512,
+                 temperature: float | None = None,
+                 timeout_s: float | None = None) -> str:
+        self.seen.append(timeout_s)
+        self.ledger.t0 -= 60.0          # 这一次调用"花掉了" 60s
+        raise _au_LLMError("模拟尾延迟", transient=True)
+
+
+_au_lg5 = Ledger(Budget(steps=9, llm_calls=9, wall_s=100.0, candidates=1))
+_au_l5 = _au_L(_AUTimeEater(_au_lg5), _au_lg5, retries=2,
+               backoff_s=0.0, wall_reserve_s=45.0)
+_au_l5_exc = None
+try:
+    _au_l5.complete([Message("user", "hi")])
+except BudgetExhausted:
+    _au_l5_exc = "budget"
+except _au_LLMError:
+    _au_l5_exc = "llm"
+except Exception as _au_e5:  # noqa: BLE001
+    _au_l5_exc = f"ERR:{type(_au_e5).__name__}"
+_au_l5_sent = list(getattr(_au_l5.inner, "seen", []))
+check(RS, "AU5 ★墙钟**已不够再试**时：抛出的是 `BudgetExhausted`（可归因），\n"
+          "          计数落在 `wall_refused_retry`（放弃的是重试），\n"
+          "          而 `wall_refused_first` **仍为 0**（首发确实发出去了）。\n"
+          "          —— 这两个数的修法不同：前者减工作量，后者预算档位就不对。",
+      _au_l5_exc == "budget"
+      and int(getattr(_au_l5, "wall_refused_retry", 0) or 0) == 1
+      and int(getattr(_au_l5, "wall_refused_first", 0) or 0) == 0
+      and len(_au_l5_sent) >= 1,
+      f"出口={_au_l5_exc} refused_retry="
+      f"{getattr(_au_l5, 'wall_refused_retry', 'NA')} "
+      f"refused_first={getattr(_au_l5, 'wall_refused_first', 'NA')} "
+      f"实发={_au_l5_sent}")
+
+
+# ── AU6：离线桩（无 `timeout_s` 属性）⇒ **不裁剪**，离线路径零影响 ────────
+_au_lg6 = Ledger(Budget(steps=9, llm_calls=9, wall_s=120.0, candidates=1))
+_au_l6 = _au_L(StubLLM(), _au_lg6, retries=2, wall_reserve_s=45.0)
+#: ⚠️ 撤回态下这里会抛 `TypeError`（`float(None)`）。R13 的硬坑：**不许**让异常
+#: 逃出去打断汇总行 —— 那是"崩了"，不是"判红"。所以取值一律包在本辅助里。
+try:
+    _au_stub_cap = _au_l6._attempt_timeout()
+except Exception as _au_e6:  # noqa: BLE001
+    _au_stub_cap = f"ERR:{type(_au_e6).__name__}"
+check(RS, "AU6 ★没有 `timeout_s` 属性的端点（离线桩）⇒ `_attempt_timeout()` 返回 inf，\n"
+          "          **不裁剪**。⇒ 全部离线契约与自检路径的耗时行为一个字没变。\n"
+          "          —— 这条是 R2『正常路径不受影响』的结构证据（离线侧）。",
+      _au_stub_cap == float("inf"),
+      f"桩上限={_au_stub_cap}")
+
+
+# ── AU7 的读数依赖 AU8 那次运行 ⇒ **必须排在 AU8 之后**（顺序是实质的，不是排版）
+#: ⚠️ AU7 判的是"收尾到底有没有把预留**用掉**"，只有真跑过一次收尾才有读数。
+
+
+
+# ── AU8：`BudgetExhausted` 在余量还在时**转向交付**（status=closed）───────
+#: ⚠️ 用 env 把档位压小，让"墙钟已被裁到底、但还剩 > MIN_ATTEMPT_S"这一格可达：
+#:    wall=20、reserve=15 ⇒ 第一发的可用量 = 20 − 15 = 5 ≤ MIN ⇒ 拒绝发起；
+#:    而此刻总剩余 20s > 5s ⇒ 内核**必须**去收尾交付，而不是直接报 budget_exhausted。
+_au_env = {k: os.environ.get(k) for k in
+           ("V1_MAX_WALL_S", "V1_CLOSE_RESERVE_S", "V1_MAX_STEPS",
+            "V1_MAX_LLM_CALLS", "V1_STATE_DIR")}
+os.environ["V1_MAX_WALL_S"] = "20"
+os.environ["V1_CLOSE_RESERVE_S"] = "15"
+os.environ["V1_MAX_STEPS"] = "6"
+os.environ["V1_MAX_LLM_CALLS"] = "8"
+os.environ["V1_STATE_DIR"] = str(_TMP / "au8_state")
+_au_status8 = ""
+_au_co8: dict = {}
+_au_tx8: dict = {}
+_au_core8 = None
+_au_log8: list[str] = []
+try:
+    _au_core8 = Core(cfg.Settings(), llm=_AUCanned(120.0), wire_external=False,
+                     log=lambda *a: _au_log8.append(str(a[0]) if a else ""))
+    _au_out8 = _au_core8.run("写一个函数 flatten(d)，把嵌套 dict 展平。只输出代码。")
+    _au_status8 = _au_out8.status
+    _au_co8 = dict(_au_out8.stats.get("closeout") or {})
+    _au_tx8 = dict(_au_out8.stats.get("transport") or {})
+except Exception as _au_e8:  # noqa: BLE001
+    # 撤回态可能抛 ⇒ 记成 ERR 而不是让异常逃出去打断汇总行（R13 硬坑）。
+    _au_status8 = f"ERR:{type(_au_e8).__name__}"
+finally:
+    for _k, _v in _au_env.items():
+        if _v is None:
+            os.environ.pop(_k, None)
+        else:
+            os.environ[_k] = _v
+
+check(RS, "AU8 ★墙钟被裁到底、但总剩余仍够收尾 ⇒ 出口是 `closed`（转向交付），\n"
+          "          不是 `budget_exhausted`（交付零东西）。且 `closeout.triggered ≥ 1`。\n"
+          "          —— 第二十四轮 `h01`/`k01` 就是死在『交付零』上：`steps=0`。",
+      _au_status8 == "closed" and int(_au_co8.get("triggered") or 0) >= 1,
+      f"status={_au_status8} triggered={_au_co8.get('triggered')} "
+      f"by_reason={_au_co8.get('by_reason')} transport={_au_tx8}")
+
+
+# ── AU7：收尾必须**真的**把预留放出来（行为锚，不是语法锚）─────────────────
+_au_c8 = getattr(_au_core8, "_counted", None)
+_au_reserve_after = getattr(_au_c8, "wall_reserve_s", None)
+check(RS, "AU7 ★触发收尾后 `_counted.wall_reserve_s` 必须变成 **0.0**\n"
+          "          —— 探索阶段扣下余量是对的，收尾阶段还扣着就等于「留了不用」，\n"
+          "            那份 45s 就是装饰字段。\n"
+          "          ⛔ 自踩：第一版锚的是 `_close_out` 的 AST 里**有没有**\n"
+          "            `reserve_release()` 这个调用。撤回态把那一行改成死代码后，\n"
+          "            AST 里**仍然有**它 ⇒ 断言照旧全绿（`红=无`，当场抓到）。\n"
+          "            ——「代码里有这个词」与「运行时发生过这件事」是两件事。",
+      _au_reserve_after == 0.0,
+      f"收尾后 wall_reserve_s={_au_reserve_after}")
+
+
+# ── AU10：收尾的**每一个**触发原因都必须被念出来（分项与总数不许自相矛盾）──
+_au_co_line = next((ln for ln in _au_log8 if "收尾=" in ln), "")
+_au_missing_why = [k for k, v in (_au_co8.get("by_reason") or {}).items()
+                   if int(v or 0) and f"{k}{v}" not in _au_co_line]
+check(RS, "AU10 ★`收尾=N次` 的括号里必须出现**每一个**非零触发原因（含 `wall_retry`）。\n"
+          "          —— 实测：加 `wall_retry` 之后日志写着「收尾=1次(步0/时0)」：\n"
+          "            总数 1，分项 0+0。自相矛盾的那一位恰好就是**这次修好的那条路径**，\n"
+          "            而它恰恰是在日志里看不见的那一个。\n"
+          "          ⇒ 触发原因可以自由增加，打印必须按 `by_reason` **自动**跟上。",
+      bool(_au_co_line) and not _au_missing_why,
+      f"缺={_au_missing_why} 行={_au_co_line[:120]!r}")
+
+
+# ── AU9：五个计数必须**有消费者**（stats 出口 + 落盘键）─────────────────
+_au_tx_keys = {"retries", "exhausted", "wall_shortened",
+               "wall_refused_first", "wall_refused_retry"}
+_au_tx_missing = _au_tx_keys - set(_au_tx8)
+_au_run_src = (V1 / "run.py").read_text(encoding="utf-8")
+#: 落盘键：不落盘的读数不可审计（与 `kernel_closeout` / `kernel_external` 同源）。
+_au_landed = '"kernel_transport": _ktx' in _au_run_src
+#: 累加器必须**真的加总**（不是只声明）。用 importlib 载入 run.py 直接调 —— 
+#: 静态看一眼 `for k in (...)` 无法区分"加总"与"赋值"。
+_au_spec = _au_ilu.spec_from_file_location("v1_run_mod", str(V1 / "run.py"))
+_au_run_mod = _au_ilu.module_from_spec(_au_spec)
+_au_spec.loader.exec_module(_au_run_mod)                      # type: ignore[union-attr]
+_au_acc = _au_run_mod._ktx_zero()
+_au_run_mod._ktx_absorb(_au_acc, {"retries": 2, "wall_shortened": 3,
+                                 "wall_refused_first": 1})
+_au_run_mod._ktx_absorb(_au_acc, {"retries": 1, "wall_refused_retry": 4})
+
+check(RS, "AU9 ★传输层五个计数必须**都有消费者**：进 `stats.transport`、\n"
+          "          进 `runs.jsonl`（`kernel_transport`）、且累加器真的**加总**。\n"
+          "          —— 只声明不消费 = 装饰字段（V5『只声明上限却不截断』的同构体）；\n"
+          "            而『加总』必须是行为测出来的：静态看一眼 for 循环分不清\n"
+          "            `acc[k] = v` 与 `acc[k] += v`。",
+      not _au_tx_missing and _au_landed
+      and _au_acc.get("retries") == 3 and _au_acc.get("wall_shortened") == 3
+      and _au_acc.get("wall_refused_first") == 1
+      and _au_acc.get("wall_refused_retry") == 4 and _au_acc.get("tasks") == 2,
+      f"缺键={sorted(_au_tx_missing)} 落盘={_au_landed} 累加={_au_acc}")
+
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

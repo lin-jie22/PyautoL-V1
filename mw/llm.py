@@ -53,7 +53,8 @@ class Message:
 
 class LLM(Protocol):
     def complete(self, messages: Sequence[Message], *, max_tokens: int = 512,
-                 temperature: float | None = None) -> str: ...
+                 temperature: float | None = None,
+                 timeout_s: float | None = None) -> str: ...
 
 
 # ---------------------------------------------------------------------------
@@ -66,8 +67,17 @@ class HTTPLLM:
         self.cfg = cfg
         self.ledger = ledger
 
+    #: 单次尝试的**默认**上限（口径值）。调用方可以用 `timeout_s=` 把它**调小**，
+    #: 但永远调不大 —— `_LedgeredLLM` 用它来把单次尝试裁进剩余预算。
+    #: ⚠️ 口径签名读的仍然是 `cfg.timeout_s`（见 §16.24 ④）：这里只暴露值，
+    #:    不改变"这把尺子量的是什么"。
+    @property
+    def timeout_s(self) -> float:
+        return float(self.cfg.timeout_s)
+
     def complete(self, messages: Sequence[Message], *, max_tokens: int = 512,
-                 temperature: float | None = None) -> str:
+                 temperature: float | None = None,
+                 timeout_s: float | None = None) -> str:
         if self.ledger is not None:
             self.ledger.spend_llm()
         # ⚠️ `None` ⇒ 取配置里的温度，**不是**取一个写死的默认值。
@@ -75,6 +85,9 @@ class HTTPLLM:
         #    而口径签名写着 0.0 —— 那次"T=0 不可复现"就是这么来的。
         if temperature is None:
             temperature = self.cfg.temperature
+        # ⚠️ 同理，`timeout_s=None` ⇒ 取配置值。**不许**在这里写死一个数：
+        #    写死就等于绕过调用方对剩余预算的裁剪（第二十四轮 361s 的一半原因）。
+        _to = self.cfg.timeout_s if timeout_s is None else float(timeout_s)
         body = json.dumps({
             "model": self.cfg.model,
             "messages": [m.as_dict() for m in messages],
@@ -91,7 +104,7 @@ class HTTPLLM:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=self.cfg.timeout_s) as resp:
+            with urllib.request.urlopen(req, timeout=_to) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:  # 4xx/5xx 带 body，不能只看状态码
             detail = e.read().decode("utf-8", "replace")[:400]
@@ -129,7 +142,10 @@ class StubLLM:
         self.calls: list[list[Message]] = []
 
     def complete(self, messages: Sequence[Message], *, max_tokens: int = 512,
-                 temperature: float | None = None) -> str:
+                 temperature: float | None = None,
+                 timeout_s: float | None = None) -> str:
+        # `timeout_s` 是**真有**端点的参数；桩不联网，接受它只为让
+        # `_LedgeredLLM` 的裁剪逻辑在离线路径上也不用分叉（分叉就会漏测）。
         self.calls.append(list(messages))
         blob = "\n".join(m.content for m in messages)
         for key, resp in self.scripts:

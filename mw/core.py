@@ -130,17 +130,72 @@ class _LedgeredLLM:
     模型侧失败（4xx 参数错、响应结构不符）**一律不重试** —— 重发同样的请求
     只会得到同样的错；那种情况正确的动作是**换路径**（改提示词 / 改协议），
     而不是原地重发。把两者混在一起重试，就是 V5 的"同一假设无限重派"。
+
+    ── 墙钟：重试链本身也必须守预算（第二十五轮）────────────────────────
+    实测事故：`llm_retries=2` + `timeout_s=120` ⇒ 一次**逻辑**调用串起
+    `3 × 120 + 退避 1.5 = 361.5s`，而 `wall_s` 也是 120。日志上只留一个
+    `LLMError: TimeoutError`、`steps=0`，看起来像"模型太慢"，实际是
+    **重试链把预算超支了 3 倍**（第二十四轮 `h01`/`k01` 各被这样打掉一次）。
+
+    所以每次尝试前做两件事，缺一不可：
+      1. `check_wall()`：墙钟已尽 ⇒ 抛 `BudgetExhausted`（**可归因**，不是 error）
+      2. 按剩余预算**裁剪**本次 `timeout_s` ⇒ 单次尝试永远不会吃光整题
+         （`wall_reserve_s` 那部分留给收尾兜底，否则"准时失败"会退化成"没答案"）
     """
 
+    #: 剩余不足这么多秒就**不再开**下一次尝试 —— 一次几乎注定超时的请求，
+    #: 只会把最后一点收尾预算也花掉。5s 是"连一次握手都不够"的量级。
+    MIN_ATTEMPT_S: float = 5.0
+
     def __init__(self, inner: LLM, ledger: Ledger, *,
-                 retries: int = 0, backoff_s: float = 0.5) -> None:
+                 retries: int = 0, backoff_s: float = 0.5,
+                 wall_reserve_s: float = 0.0) -> None:
         self.inner = inner
         self.ledger = ledger
         self.retries = max(0, int(retries))
         self.backoff_s = max(0.0, float(backoff_s))
+        #: 留给收尾兜底的秒数。**不进口径签名**（它不改变量的是什么，只改变
+        #: 失败时怎么退场），但它的值来自 `limits.close_reserve_s`（已在签名里）。
+        self.wall_reserve_s = max(0.0, float(wall_reserve_s))
         #: 读数字段：抖动重试了几次、最终仍失败几次。**有消费者**（进 stats）。
         self.transient_retries = 0
         self.transient_exhausted = 0
+        # ── 墙钟相关的三个计数（第二十五轮）──────────────────────────────
+        # ⛔ 为什么是**三个**而不是一个"被墙钟拦住的次数"：
+        #    它们的修法完全不同，合并即不可归因。
+        #: ① 本次尝试的超时上限**被裁短**，但请求**真的发出去了**。
+        #:    ⇒ 说明预算比"一次调用的正常耗时"还紧：要么减工作量，要么升档。
+        #:    ⚠️ 这个字段是 R2/P3 的唯一证据：若只在"放弃"时计数，那么
+        #:    「裁到 75s 后照发并超时」与「用满 120s 后超时」在读数上一模一样
+        #:    —— 我最初就是这么写的，等于让证据看不见它要证明的那件事。
+        self.wall_shortened = 0
+        #: ② 连**第一次**都没发出去就放弃（预算连一次起步价都不够）。
+        self.wall_refused_first = 0
+        #: ③ 放弃的是**重试**（第一次发出去了，但墙钟已不够再试一次）。
+        self.wall_refused_retry = 0
+
+    def _attempt_timeout(self) -> float:
+        """本次尝试许用多少秒。**唯一**的裁剪处。
+
+        上限 = `min(inner 的默认上限, 剩余 − 收尾余量)`。
+        剩余 ≤ `MIN_ATTEMPT_S` ⇒ 返回 0 表示"别试了"（由调用方决定抛什么）。
+        """
+        base = getattr(self.inner, "timeout_s", None)
+        if base is None:                     # 桩/无网络：不裁剪
+            return float("inf")
+        left = self.ledger.budget.wall_s - self.ledger.elapsed() - self.wall_reserve_s
+        if left <= self.MIN_ATTEMPT_S:
+            return 0.0
+        return min(float(base), float(left))
+
+    def reserve_release(self) -> None:
+        """进入**收尾阶段**：把留给收尾的余量放出来给这一次调用用。
+
+        ⚠️ 没有这一步，`wall_reserve_s` 就是装饰字段（只声明、不兑现）：
+        探索阶段把它扣下来，收尾阶段若还扣着，收尾调用照样拿不到时间。
+        第二十五轮的实测动机正是这个 —— "留了 45s"和"45s 能被用上"是两件事。
+        """
+        self.wall_reserve_s = 0.0
 
     def complete(self, messages: Sequence[Message], **kw: Any) -> str:
         # ⚠️ 这里刻意用 `for` 而**不是** `while`：内核「只准有一个 while」
@@ -148,9 +203,28 @@ class _LedgeredLLM:
         #    写成 for 既表达"最多 N+1 次"，又不让那条不变量被悄悄破掉。
         #    （把 J6 放宽去容纳一个 while = 尺子下移，那不是修法。）
         for attempt in range(self.retries + 1):
+            # ① 墙钟闸：已尽 ⇒ 这是一等公民的预算事件，不是传输层吵闹。
+            self.ledger.check_wall()
+            # ② 裁剪：把本次尝试装进"剩余 − 收尾余量"。
+            _to = self._attempt_timeout()
+            if _to == 0.0:
+                if attempt == 0:
+                    self.wall_refused_first += 1
+                else:
+                    self.wall_refused_retry += 1
+                raise BudgetExhausted("wall_s", self.ledger.elapsed(),
+                                      self.ledger.budget.wall_s)
             self.ledger.spend_llm()
             try:
-                return self.inner.complete(messages, **kw)
+                if _to == float("inf"):
+                    return self.inner.complete(messages, **kw)
+                # ⚠️ 只有真的裁短了才计数：`_to == base` 说明这一发没被预算影响，
+                #    把它也记进 `wall_shortened` 就让这个计数失去分辨率
+                #    （"每发都算"= 没有信息）。
+                _base = getattr(self.inner, "timeout_s", None)
+                if _base is not None and float(_to) < float(_base):
+                    self.wall_shortened += 1
+                return self.inner.complete(messages, timeout_s=_to, **kw)
             except LLMError as e:
                 transient = bool(getattr(e, "transient", False))
                 if not transient:
@@ -385,7 +459,10 @@ class Core:
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
         counted = _LedgeredLLM(self.llm, self.ledger,
                                retries=self.s.limits.llm_retries,
-                               backoff_s=self.s.limits.llm_retry_backoff_s)
+                               backoff_s=self.s.limits.llm_retry_backoff_s,
+                               # 重试链不许把收尾预算吃掉 —— 否则"准时失败"
+                               # 会退化成"没答案"（§16.24 ③）。
+                               wall_reserve_s=self.s.limits.close_reserve_s)
         self._counted = counted
         self.planner.llm = counted
         self.wm.llm = counted
@@ -745,6 +822,20 @@ class Core:
         except BudgetExhausted as e:
             # 预算是硬约束：如实报告"没做完"，不假装完成
             self.log(f"  ⏳ {e}")
+            # ★ 第二十五轮：墙钟在**调用内部**被重试链挡住时（`spent < limit`
+            #   说明预算并没有真用尽，只是被 `wall_reserve_s` 保护着），
+            #   余量其实还在 —— 既然留了就必须用掉，否则那份余量是装饰字段。
+            #   ⛔ 判据刻意用「剩余 > 一次尝试」而**不是** `_closing_reserve_hit()`：
+            #      后者的阈值是 `wall_left <= reserve`，会在 `(reserve, reserve+5]`
+            #      这段区间返回 False ⇒ 明明还有 47s 却被判成"没余量"。
+            #      实测算过：`reserve=45`、`left=2` 时就是这一格。
+            #   只对 `wall_s` 生效：steps / llm_calls 用尽时没有"时间还在"这回事。
+            if getattr(e, "kind", "") == "wall_s":
+                _left = self.ledger.budget.wall_s - self.ledger.elapsed()
+                if _left > _LedgeredLLM.MIN_ATTEMPT_S:
+                    self._reserve_reason = "wall_retry"
+                    self.log(f"  ⏱ 墙钟被重试链挡住，但还剩 {_left:.0f}s ⇒ 转向收尾")
+                    return self._close_out(goal, history, _done)
             return _done("budget_exhausted", "", str(e))
         except Exception as e:  # noqa: BLE001
             self.log(f"  💥 内核异常 {type(e).__name__}: {e}")
@@ -1041,9 +1132,21 @@ class Core:
         收尾是"最后一道网"，它自己的作用域绝不能再依赖调用栈。
         """
         self.log("  ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）")
+        # ★ 把留给收尾的时间**放出来**（第二十五轮）：探索阶段扣下它是对的，
+        #   收尾阶段还扣着就等于「留了余量但不用」。契约 AU7 钉住本条。
+        if self._counted is not None:
+            self._counted.reserve_release()
         co = self.closeout_stats
         co["triggered"] += 1
-        co["by_reason"][self._reserve_reason or "steps"] += 1
+        # ⛔ 这里**必须**用 `.get(..., 0) + 1`，不许写成 `[...] += 1`。
+        #    实测（第二十五轮 AU8）：新加的 `_reserve_reason="wall_retry"`
+        #    （重试链被墙钟挡住、但余量还在）撞上零点里只有 `steps`/`wall`
+        #    两个键的字典 ⇒ `KeyError` ⇒ **收尾路径自己炸掉** ⇒ status=error、
+        #    交付零东西。而这个方法存在的唯一目的就是"别交付零"。
+        #    ⇒ 「新增一个原因值」与「新增一个字典键」是两处声明，必须解耦：
+        #      原因值可以自由增加，读数统计按出现即计数。契约 AU8 钉住本条。
+        _why = self._reserve_reason or "steps"
+        co["by_reason"][_why] = int(co["by_reason"].get(_why, 0)) + 1
         best = ""
         origin = ""
         try:
@@ -1142,10 +1245,18 @@ class Core:
             "loop": dict(extra or {}),
             # 传输层抖动 —— "基础设施的锅 ≠ 模型的锅"这条的读数出口。
             # 有消费者：`■` 汇总行会把它打印出来（零值不显示，避免噪声）。
+            # ★ 第二十五轮：把"端点病"与"预算病"分开计 —— 这两者的修法
+            #   相反（修端点 vs 减工作量），混成一个数就等于没读。
             "transport": ({
                 "retries": self._counted.transient_retries,
                 "exhausted": self._counted.transient_exhausted,
-            } if self._counted is not None else {"retries": 0, "exhausted": 0}),
+                "wall_shortened": self._counted.wall_shortened,
+                "wall_refused_first": self._counted.wall_refused_first,
+                "wall_refused_retry": self._counted.wall_refused_retry,
+            } if self._counted is not None else
+                {"retries": 0, "exhausted": 0,
+                 "wall_shortened": 0, "wall_refused_first": 0,
+                 "wall_refused_retry": 0}),
         }
         self.memory.record("finish", f"{status}: {answer or reason}"[:1000],
                            status=status, stats=stats)
@@ -1153,6 +1264,15 @@ class Core:
         tx_line = ""
         if tx["retries"] or tx["exhausted"]:
             tx_line = f" | 抖动重试={tx['retries']} 重试后仍失败={tx['exhausted']}"
+        # ⛔ 墙钟类必须单独念：并进"抖动重试"会让"预算不够"看起来像"端点抖动"，
+        #    而这两者的修法完全相反（减工作量 vs 修端点）。
+        # ⚠️ `wall_shortened` 与另外两个**不是**同一件事：前者是"发出去了但上限
+        #    被裁短"（预算紧），后两者是"根本没发/没重试"（预算尽）。分开印。
+        if tx.get("wall_shortened"):
+            tx_line += f" | 上限被裁短={tx['wall_shortened']}"
+        if tx.get("wall_refused_first") or tx.get("wall_refused_retry"):
+            tx_line += (f" | 墙钟放弃首发={tx['wall_refused_first']}"
+                        f"/重试={tx['wall_refused_retry']}")
         # 世界模型读数：**同时**打印分母。
         # 只印 `失配=3` 是假读数 —— 3 次预演里错 3 次、和 30 次里错 3 次，
         # 是两件完全不同的事；前者说明信号恒红，后者说明它在工作。
@@ -1224,8 +1344,14 @@ class Core:
         if _co["triggered"]:
             _co_line = (f" | 收尾={_co['triggered']}次(步{_co['by_reason']['steps']}"
                         f"/时{_co['by_reason']['wall']}"
-                        f" 来源{','.join(f'{k}:{v}' for k, v in _co['origin'].items()) or '-'}"
-                        f" {_co['chars']}字)")
+                        # ⚠️ `steps`/`wall` 之外的触发原因必须**自动**补进来。
+                        #    第二十五轮加 `wall_retry`（重试链被墙钟挡住、但余量还在）
+                        #    时就踩到了：只印固定的两项 ⇒ 日志写着"收尾=1次(步0/时0)"，
+                        #    自相矛盾，而矛盾的那一位正是修好这次事故的那条路径。
+                        + "".join(f"/{k}{v}" for k, v in _co["by_reason"].items()
+                                  if k not in ("steps", "wall") and v)
+                        + f" 来源{','.join(f'{k}:{v}' for k, v in _co['origin'].items()) or '-'}"
+                        + f" {_co['chars']}字)")
             if _co["overrode_rejected"] or _co["same_as_rejected"]:
                 _co_line += (f" 改交付={_co['overrode_rejected']}"
                              f"(与被闸打回那版同={_co['same_as_rejected']})")

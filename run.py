@@ -299,6 +299,39 @@ def _kco_absorb(acc: dict, stats: dict) -> dict:
     return acc
 
 
+def _ktx_zero() -> dict:
+    """传输层 / 墙钟读数的累加器零点（第二十五轮，DESIGN §16.24）。
+
+    ⛔ 为什么要落盘：`stats["transport"]` 只在**内存里**。而"这次修复有没有
+    误伤正常路径"（P3：正常端点上 `wall_refused_*` 恒为 0）是一个**必须被
+    事后审计**的事实 —— 只留在运行时日志里，就得靠我回忆，那等于没测。
+    与 `kernel_closeout` / `kernel_external` 同源同理由。
+
+    ⚠️ 五个计数必须分列，不能合成一个"重试次数"：
+      · `retries` / `exhausted` = **端点的锅**（抖动 / 一直失败）⇒ 修端点
+      · `wall_shortened` = **预算紧**（本次尝试的上限被裁短，但发出去了）⇒ 减工作量/升档
+      · `wall_refused_first` / `wall_refused_retry` = **预算尽**（根本没发/没重试）
+    合成一个数字，就等于把三种修法混成一种。
+    """
+    return {"tasks": 0, "retries": 0, "exhausted": 0,
+            "wall_shortened": 0, "wall_refused_first": 0,
+            "wall_refused_retry": 0}
+
+
+def _ktx_absorb(acc: dict, stats: dict) -> dict:
+    """把一次内核运行的传输层读数并进累加器（就地修改并返回）。
+
+    ⚠️ `tasks` 在**这里**加，不由调用方另写一句 `_ktx["tasks"] += 1`：
+       调用点已经有两处（每题新建内核 / 复用内核），两处各写一遍就是
+       "同一事实声明两处"，漏一处即静默少计一次。
+    """
+    for k in ("retries", "exhausted", "wall_shortened",
+              "wall_refused_first", "wall_refused_retry"):
+        acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
+    acc["tasks"] = int(acc.get("tasks", 0)) + 1
+    return acc
+
+
 def _kwm_absorb(acc: dict, stats: dict, core: object = None) -> dict:
     """把一次内核运行的读数并进累加器（就地修改并返回）。
 
@@ -744,6 +777,7 @@ def cmd_bench(args) -> int:
     _kwm = _kwm_zero()
     _kco = _kco_zero()      # 收尾兜底（第二十二轮）：与 _kwm 同源的落盘读数
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
+    _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
 
     # ── 外部评审账本 ────────────────────────────────────────────────
     # 打分器给的**理由**（`Scored.why`）此前只有一个去处：写进日志给人看。
@@ -885,6 +919,7 @@ def cmd_bench(args) -> int:
                         _kco_absorb(_kco, out.stats.get("closeout") or {})
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
+                        _ktx_absorb(_ktx, out.stats.get("transport") or {})
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
                         _seen.update(_kernel_prov(c))
@@ -911,6 +946,7 @@ def cmd_bench(args) -> int:
                 _kco_absorb(_kco, out.stats.get("closeout") or {})
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
+                _ktx_absorb(_ktx, out.stats.get("transport") or {})
                 return out.answer
 
             label += "（复用同一内核，记忆跨题累积）"
@@ -1040,6 +1076,20 @@ def cmd_bench(args) -> int:
                  if _kw["layer_recalled"] or _kw["layer_abstract"] else "")
               + (f" ⚠️未检验={_kw['unscored']}" if _kw["unscored"] else ""))
 
+    # ── 传输层读数（第二十五轮）：**只在出过事时**才占一行 ────────────────
+    # 为什么要印：R2 主张"这次修复不改变正常路径"，而它的证据是
+    # 正常端点上"放弃"类计数全程为 0（而"上限被裁短"会是 N ≡ 调用次数的常数
+    # —— 默认 wall=120 / reserve=45 ⇒ 每次尝试的上限都是 75s，这个数**必然**非零，
+    # 把它误当成"出事了"就会把正常路径读成故障）。
+    # 一个不打印的 0 无法与"根本没统计"区分开 —— 所以这一行同时印分母 `tasks`。
+    if _ktx["retries"] or _ktx["exhausted"] or _ktx["wall_shortened"] \
+            or _ktx["wall_refused_first"] or _ktx["wall_refused_retry"]:
+        print(f"  传输层    抖动重试={_ktx['retries']} 重试后仍失败={_ktx['exhausted']}"
+              f" 上限被裁短={_ktx['wall_shortened']}"
+              f" 墙钟放弃首发={_ktx['wall_refused_first']}"
+              f"/重试={_ktx['wall_refused_retry']}"
+              f" （共 {_ktx['tasks']} 题）")
+
     # ── 血缘闸：标签可以撒谎，血缘不能。 ────────────────────────────────
     # `candidate` 是一串自由文本；只有血缘是**从内核读出来的事实**。
     # 要求真模型却拿到桩 ⇒ 拒绝出分、拒绝判定、拒绝写基线（fail-closed）。
@@ -1097,6 +1147,8 @@ def cmd_bench(args) -> int:
         "kernel_closeout": _kco,
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。
         "kernel_external": _kex,
+        # 传输层 / 墙钟读数（第二十五轮）：重试链有没有超支预算，必须可事后审计。
+        "kernel_transport": _ktx,
         "calibration": {"ok": cal.ok, "margin": cal.margin, "middle_n": cal.middle_n,
                         "evidence_id": (cal.evidence.evidence_id()
                                         if cal.evidence is not None else None)},

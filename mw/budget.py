@@ -82,6 +82,21 @@ class Ledger:
         if self.elapsed() >= self.budget.wall_s:
             raise BudgetExhausted("wall_s", self.elapsed(), self.budget.wall_s)
 
+    def check_wall(self) -> None:
+        """**只**查墙钟。给重试链用。
+
+        ⚠️ 为什么不能直接用 `check()`：重试是同一步之内的宽限，`steps` 本来
+        就没有消耗。拿 `check()` 去守重试，会把"步数刚好用完的最后一次重试"
+        误判成"步数耗尽"，归因直接错掉（而错误的原因比错误本身更贵）。
+
+        起因（第二十四轮实测）：`llm_retries=2` 且 `timeout_s=120` 时，一次
+        逻辑调用可以串起 `3 × 120 = 360s`，而 `wall_s` 也是 120 —— 实现
+        **违反了自己声明的硬上限**，且日志上只留一个 `TimeoutError`，
+        看不出是重试把它撑到 3 倍。契约 AU1 钉住本条。
+        """
+        if self.elapsed() >= self.budget.wall_s:
+            raise BudgetExhausted("wall_s", self.elapsed(), self.budget.wall_s)
+
     def spend_step(self) -> None:
         self.steps_used += 1
 

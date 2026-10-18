@@ -4565,10 +4565,18 @@ _AR_SRC_CODE = _code_only(_CORE_SRC)
 _AR_CORE_TREE = ast.parse(_CORE_SRC)
 
 
-def _func_body(tree, name: str) -> str:
+def _func_body(tree, name: str, src: str | None = None) -> str:
+    """取一个函数的**源码片段**。
+
+    ⚠️ `src` 必须显式传：默认值 `_CORE_SRC` 只对 `mw/core.py` 成立。
+    第二十二轮实测踩到：拿 `withdraw_check.py` 的树去调它，函数体是从
+    **core.py 的同一名字函数**里切出来的（同名函数 `_restore_all` 不存在时返回空串），
+    于是断言读的是另一个文件 —— 又是"锚点在场、对象不在场"。
+    """
+    text = _CORE_SRC if src is None else src
     for n in ast.walk(tree):
         if isinstance(n, ast.FunctionDef) and n.name == name:
-            return ast.get_source_segment(_CORE_SRC, n) or ""
+            return ast.get_source_segment(text, n) or ""
     return ""
 
 
@@ -4837,6 +4845,183 @@ check(RS, "AS17 ★真模型三臂读数必须冻结，且判定必须是**负�
       f"tag={_AS_RFZ.get('tag')!r} "
       f"ON==PL={_AS_RFZ.get('on_equals_placebo_ignore_elapsed')} "
       f"heldout 位移={( _AS_RFZ.get('ho') or {}).get('moved')}")
+
+# ── AS18–AS21（第二十二轮）：收尾兜底必须**有读数**，而不只有两句日志 ────────
+#: ⛔ 动机：第二十一轮的整条位移（0.5600 → 0.7600）都走的是这条路 ——
+#:   `finish` 被打回 → 重规划 → 价值层否决 → 收尾余量 → `_close_out` → 交付。
+#:   而当时全项目对它的记录**只有两句中文日志**。日志能证明"走到过"，
+#:   回答不了"走到过几次、几次真的改了交付物"—— 而后者是"它有没有用"的第一个问题。
+_CO = _q_out.stats.get("closeout") or {}
+check(RS, "AS18 ★收尾必须留下**结构化读数**（触发数 / 触发原因 / 答案来源 / 字数）\n"
+          "          —— 只留日志 = 只能证明『走到过』；\n"
+          "            『走到过几次、几次真改了交付物』是它能不能被评估的前提。",
+      _CO.get("triggered") == 1
+      and _CO.get("origin") == {"收尾调用": 1}
+      and _CO.get("by_reason") == {"steps": 1, "wall": 0}
+      and _CO.get("chars", 0) > 0 and _CO.get("empty") == 0,
+      f"triggered={_CO.get('triggered')} origin={_CO.get('origin')} "
+      f"by_reason={_CO.get('by_reason')} chars={_CO.get('chars')}")
+
+check(RS, "AS19 ★汇总行必须把收尾读数念出来（触发时带原因与来源）\n"
+          "          —— 否则『收尾改变了交付物』这件事在日志上只剩一句散文，\n"
+          "            而散文里的数字没法被重算。",
+      any("收尾=1次" in ln and "来源收尾调用:1" in ln and "步1/时0" in ln
+          for ln in _q_log.lines),
+      f"日志含收尾读数={any('收尾=1次' in ln for ln in _q_log.lines)}")
+
+# AS20. `overrode_rejected` 的语义必须严格是**不同**，不是"被救回来"。
+#   直接对 `_close_out` 做单元级验证（它是可单独调用的），两种情形各一次：
+#   ①`_salvage` 与收尾答案不同 ⇒ overrode=1；②逐字相同 ⇒ same=1。
+#   ⚠️ 只测 ① 会让"恒等于 overrode"的实现通过 —— 那就退化成一句自我表扬。
+_co_seen: dict = {}
+
+
+def _co_done(status: str, answer: str, reason: str) -> str:      # noqa: ANN001
+    _co_seen["status"], _co_seen["answer"] = status, answer
+    return "ok"
+
+
+_co_a = Core(settings=_q_settings, llm=_QLLM(),
+             memory=MemoryStore(_TMP / "co_a.db"), log=_Log(None))
+_co_a._salvage = "旧版本（被闸打回的那一版）"
+_co_a._close_out("读一下这个文件", ["h1"], _co_done)
+_co_b = Core(settings=_q_settings, llm=_QLLM(),
+             memory=MemoryStore(_TMP / "co_b.db"), log=_Log(None))
+_co_b._salvage = "最终答案：42"          # 与 `_QLLM` 的收尾答案**逐字**相同
+_co_b._close_out("读一下这个文件", ["h1"], _co_done)
+check(RS, "AS20 ★`overrode_rejected` 只主张**不同**，且必须两种情况都分得开\n"
+          "          —— 只报『改了多少次』而不报『其中多少次其实和被打回那版一样』，\n"
+          "            等于把『收尾救回了答案』这句没被验证的话写进读数。",
+      _co_a.closeout_stats["overrode_rejected"] == 1
+      and _co_a.closeout_stats["same_as_rejected"] == 0
+      and _co_b.closeout_stats["same_as_rejected"] == 1
+      and _co_b.closeout_stats["overrode_rejected"] == 0
+      and _co_seen.get("status") == "closed",
+      f"A(不同):改={_co_a.closeout_stats['overrode_rejected']}"
+      f"/同={_co_a.closeout_stats['same_as_rejected']} "
+      f"B(逐字同):改={_co_b.closeout_stats['overrode_rejected']}"
+      f"/同={_co_b.closeout_stats['same_as_rejected']}")
+
+# AS21. 读数初始化只许有**一处**声明，且 `__init__` 与 `run()` 各调一次。
+#   为什么钉：`_close_out` 是可单独调用的单元 ⇒ 状态只建在 `run()` 里会让
+#   AS20 那种测法一调就 AttributeError；而两处各写一份字典则会静默漂移。
+_AS_RESET_CALLS = _code_only(_CORE_SRC).count("self._reset_closeout()")
+check(RS, "AS21 ★收尾读数只在 `_reset_closeout()` 里声明一次，`__init__` 与 `run()` 各调一次\n"
+          "          —— 两处各写一份字典 = 迟早漂移（`run` 加了字段而 `__init__` 没加）；\n"
+          "            只建在 `run()` 里 = `_close_out` 无法被单独验证。",
+      _AS_RESET_CALLS == 2
+      and _code_only(_CORE_SRC).count('"overrode_rejected": 0') == 1,
+      f"调用点={_AS_RESET_CALLS} 声明处="
+      f"{_code_only(_CORE_SRC).count(chr(34) + 'overrode_rejected' + chr(34) + ': 0')}")
+
+# ── AS22（第二十二轮）：R13 驱动器自己的两个**破坏性缺陷**必须被钉住 ──────────
+#: ★ 这两个不是理论风险，是本轮真实发生的事故：
+#:   ① 「有备份就无条件还原」把**本轮合法的修改**整个覆盖掉了 ——
+#:      `/tmp/v1_withdraw_bak` 里躺着上一轮的 core.py，新一轮一启动就被照着还原，
+#:      `closeout_stats` 当场消失，契约从 444 条掉到 AS20 的 AttributeError。
+#:      日志还写着"启动先还原 5 个残留变异文件"，读起来像在修，实际在删。
+#:   ② 汇总行正则 `PASS=(\d+)\s+FAIL=(\d+)` 会在**任何地方**命中 ——
+#:      契约测试崩了之后，它抓到的是 H8 断言自己打印的 `（PASS=7 FAIL=0）`，
+#:      于是"基线 7/0 全绿"这个假读数把它带过了基线闸。
+#:   ⇒ 工具链的判据和内核的判据一样，必须能**精确地**说"是我期待的那个读数"。
+_AS_WC = (V1 / "bench" / "withdraw_check.py").read_text(encoding="utf-8")
+_AS_WC_TREE = ast.parse(_AS_WC)
+# ⚠️ 这两条必须做**表外检查**：本驱动器要撤回的锚点有一部分就写在它自己的 CSES 表里，
+#    用整文件 `in` 去判，表里那一份字面量会让断言恒真（本轮实测踩到）。
+_AS_RESTORE_BODY = _code_only(_func_body(_AS_WC_TREE, "_restore_all", _AS_WC))
+check(RS, "AS22 ★R13 驱动器只许还原「当前内容 == 当初写进去的变异」的备份\n"
+          "          —— 无条件还原会把**本轮合法的修改**整个覆盖掉：\n"
+          "            本轮真实事故——上一轮的 core.py 备份在新一轮启动时被照着还原，\n"
+          "            `closeout_stats` 当场消失、契约从 444 条掉到 AS20 的 AttributeError，\n"
+          "            而日志写着『启动先还原 5 个残留变异文件』，读起来像在修，实际在删。",
+      'if _sha(dst) == rec.get("mutated")' in _AS_RESTORE_BODY
+      and 'skipped.append(rel)' in _AS_RESTORE_BODY,
+      f"只还原真变异={'if _sha(dst) == rec.get("mutated")' in _AS_RESTORE_BODY} "
+      f"过期就跳过={'skipped.append(rel)' in _AS_RESTORE_BODY}")
+
+# AS23：既看**字面量**（必须锚在整句上），也**复现那次事故**（拿一条嵌套的假汇总喂给它）。
+_AS_SUM_LIT = ""
+for _node in _AS_WC_TREE.body:
+    if (isinstance(_node, ast.Assign)
+            and any(getattr(_t, "id", "") == "_SUMMARY" for _t in _node.targets)):
+        _call = _node.value
+        if (isinstance(_call, ast.Call) and getattr(_call.func, "attr", "") == "compile"
+                and _call.args):
+            try:
+                _AS_SUM_LIT = ast.literal_eval(_call.args[0])
+            except Exception:                                      # noqa: BLE001
+                _AS_SUM_LIT = ""
+#: 样本 = 一次真实事故的复现：上面那行是 H8 断言自己打印的假汇总，下面才是真的。
+_AS_SAMPLE = "（PASS=7  FAIL=0）\nV1 契约测试汇总  PASS=446  FAIL=0\n"
+_AS_HITS = re.compile(_AS_SUM_LIT).findall(_AS_SAMPLE) if _AS_SUM_LIT else []
+check(RS, "AS23 ★基线判读的汇总行必须**锚在整句上**，且**唯一**\n"
+          "          —— 本轮真实事故：`PASS=(\\d+)\\s+FAIL=(\\d+)` 会在任何地方命中，\n"
+          "            契约测试中途崩了之后它抓到的是 H8 断言自己打印的『PASS=7 FAIL=0』，\n"
+          "            于是『基线 7/0』这个假读数把它带过了基线闸。\n"
+          "          ⚠️ 所以这条不只查字面量，还把那条假汇总**喂回给正则**看它认不认。",
+      _AS_SUM_LIT.startswith("V1 契约测试汇总")
+      and _AS_HITS == [("446", "0")]
+      and "if len(m) == 1" in _AS_WC,
+      f"字面量={_AS_SUM_LIT!r} 样本命中={_AS_HITS}")
+
+
+# ── AS24（第二十二轮）：收尾读数必须**落盘**（有消费者），否则等于装饰字段 ────
+#: ⛔ V5 的死因之一就是"字段必须有消费者"这条被违反：日志上有数、没人读得到。
+#:   所以收尾读数不能只活在 `stats` 里 —— 它必须进 `runs.jsonl`，
+#:   而且**两个 solver 分支（每题新建内核 / 复用内核）都要并进去**，
+#:   只接一个分支就是"一半的题没有读数"，而汇总行看起来完全正常。
+_RUN_SRC = (V1 / "run.py").read_text(encoding="utf-8")
+_RAW_ABSORB = _code_only(_RUN_SRC).count('_kco_absorb(_kco, out.stats.get("closeout") or {})')
+check(RS, "AS24 ★收尾读数必须落盘，且**两个 solver 分支都并进去**\n"
+          "          —— 不落盘的读数不可审计；只接一个分支 = 一半的题没有读数，\n"
+          "            而汇总行看起来一切正常。",
+      '"kernel_closeout": _kco' in _RUN_SRC and _RAW_ABSORB == 2,
+      f"落盘键={'"kernel_closeout": _kco' in _RUN_SRC} 并入点={_RAW_ABSORB}（须为 2）")
+
+
+# ── AS25（第二十二轮）：收尾读数的**真模型冻结证据**必须可重算 ──────────────
+#: ★ 这一条把"收尾在 5 题里触发 2 次、改掉交付物 1 次"从散文里搬进对账。
+#:   冻结点：`bench/evidence/closeout_s22/{off,on}.jsonl`（同题集、同尺子、T=0）。
+#: ⛔ 两个数字必须一起看：
+#:   · `triggered=2` 但 `overrode_rejected=1` ⇒ **另一次收尾并没有改变交付物**
+#:     （那题没被打回过，收尾只是把答案按时交出来）；
+#:   · `by_reason.wall=2 / steps=0` ⇒ 两次都是**时间**触发的，不是步数用尽。
+#:     这一点很要紧：它说明这个题集上"收尾"主要在兜**模型慢**，不在兜"想太多"。
+_CO_EV = V1 / "bench" / "evidence" / "closeout_s22"
+
+
+def _co_ev(name: str) -> tuple[dict, dict]:
+    p = _CO_EV / f"{name}.jsonl"
+    if not p.exists():
+        return {}, {}
+    rows = [json.loads(ln) for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    if not rows:
+        return {}, {}
+    rep = rows[-1].get("report") or {}
+    pt = rep.get("per_task") or []
+    mean = round(sum(t["score"] for t in pt) / len(pt), 4) if pt else None
+    return (rows[-1].get("kernel_closeout") or {}), {"mean": mean, "n": len(pt)}
+
+
+_CO_OFF, _CO_OFF_M = _co_ev("off")
+_CO_ON, _CO_ON_M = _co_ev("on")
+check(RS, "AS25 ★收尾读数必须冻成证据，且**触发次数 ≠ 改掉交付物的次数**\n"
+          "          —— 只报『收尾触发了 N 次』会让人把它读成『救回了 N 道题』。\n"
+          "            实测：5 题触发 2 次，其中只有 1 次与『被闸打回的那一版』不同。\n"
+          "          ⚠️ 两次都是 `wall` 触发（步数触发 0 次）⇒ 这个题集上收尾兜的是\n"
+          "            『模型慢』，不是『想太多』；换题集必须重新登记。",
+      _CO_OFF.get("triggered") == 0
+      and _CO_ON.get("triggered") == 2
+      and _CO_ON.get("by_reason") == {"steps": 0, "wall": 2}
+      and _CO_ON.get("origin") == {"收尾调用": 2}
+      and _CO_ON.get("overrode_rejected") == 1
+      and _CO_ON.get("same_as_rejected") == 0
+      and _CO_ON.get("empty") == 0
+      and _CO_ON.get("chars", 0) > 0
+      and _CO_OFF_M.get("mean") == 0.56 and _CO_ON_M.get("mean") == 0.76,
+      f"OFF 触发={_CO_OFF.get('triggered')} mean={_CO_OFF_M.get('mean')} | "
+      f"ON 触发={_CO_ON.get('triggered')} 原因={_CO_ON.get('by_reason')} "
+      f"改交付={_CO_ON.get('overrode_rejected')} mean={_CO_ON_M.get('mean')}")
 
 
 print()

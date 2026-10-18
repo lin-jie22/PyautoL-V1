@@ -213,6 +213,29 @@ def _kwm_zero() -> dict:
 _KWM_NUM_KEYS: tuple[str, ...] = tuple(k for k in _kwm_zero() if k != "confusion")
 
 
+def _kco_zero() -> dict:
+    """收尾兜底读数的累加器零点（第二十二轮）。
+
+    ⛔ 为什么要落盘：第二十一轮的全部位移都走 `_close_out`，而它当时只有两句日志。
+    日志能证明"走到过"，回答不了"几道题走到过 / 几次真的改掉了交付物" ——
+    **不落盘的读数不可审计**，这一条与 `kernel_worldmodel` 同源。
+    """
+    return {"triggered": 0, "chars": 0, "empty": 0,
+            "overrode_rejected": 0, "same_as_rejected": 0,
+            "origin": {}, "by_reason": {"steps": 0, "wall": 0}}
+
+
+def _kco_absorb(acc: dict, stats: dict) -> dict:
+    """把一次内核运行的收尾读数并进累加器（就地修改并返回）。"""
+    for k in ("triggered", "chars", "empty", "overrode_rejected", "same_as_rejected"):
+        acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
+    for k, v in (stats.get("origin") or {}).items():
+        acc["origin"][k] = int(acc["origin"].get(k, 0)) + int(v or 0)
+    for k, v in (stats.get("by_reason") or {}).items():
+        acc["by_reason"][k] = int(acc["by_reason"].get(k, 0)) + int(v or 0)
+    return acc
+
+
 def _kwm_absorb(acc: dict, stats: dict, core: object = None) -> dict:
     """把一次内核运行的读数并进累加器（就地修改并返回）。
 
@@ -656,6 +679,7 @@ def cmd_bench(args) -> int:
     #: "读数不可复核"。世界模型的分辨力（scored/hits/混淆矩阵）现在随每次运行落盘。
     #: 累加/派生逻辑在模块级（`_kwm_zero/_kwm_absorb/_kwm_line`），**不在这里重写一遍**。
     _kwm = _kwm_zero()
+    _kco = _kco_zero()      # 收尾兜底（第二十二轮）：与 _kwm 同源的落盘读数
 
     # ── 外部评审账本 ────────────────────────────────────────────────
     # 打分器给的**理由**（`Scored.why`）此前只有一个去处：写进日志给人看。
@@ -785,6 +809,7 @@ def cmd_bench(args) -> int:
                                     scorer_sha=scorer.sha(), suite_sha=suite.sha(),
                                     features=_feat_of.get(t.id))
                         _kwm_absorb(_kwm, out.stats["worldmodel"], c)
+                        _kco_absorb(_kco, out.stats.get("closeout") or {})
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
                         _seen.update(_kernel_prov(c))
@@ -808,6 +833,7 @@ def cmd_bench(args) -> int:
                                 scorer_sha=scorer.sha(), suite_sha=suite.sha(),
                                 features=_feat_of.get(t.id))
                 _kwm_absorb(_kwm, out.stats["worldmodel"], _core)
+                _kco_absorb(_kco, out.stats.get("closeout") or {})
                 return out.answer
 
             label += "（复用同一内核，记忆跨题累积）"
@@ -990,6 +1016,8 @@ def cmd_bench(args) -> int:
         "measurement": measurement_to_dict(m), "report": rep.as_dict(),
         # 内核侧读数（世界模型的**分辨力**）。不落盘的读数不可审计。
         "kernel_worldmodel": _kw,
+        # 收尾兜底读数（第二十二轮）：**不落盘的读数不可审计**。
+        "kernel_closeout": _kco,
         "calibration": {"ok": cal.ok, "margin": cal.margin, "middle_n": cal.middle_n,
                         "evidence_id": (cal.evidence.evidence_id()
                                         if cal.evidence is not None else None)},

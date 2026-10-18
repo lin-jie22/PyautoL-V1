@@ -257,6 +257,10 @@ class Core:
 
         self.ledger: Ledger | None = None   # run() 里构造（预算属于单次任务）
         self._counted: _LedgeredLLM | None = None  # run() 里构造（抖动重试的读数出口）
+        # 收尾兜底的读数（第二十二轮）：在 `__init__` 里就要存在 ——
+        # `_close_out` 是一个可以**单独调用**的单元（契约 AS20 正是这么测它的语义的），
+        # 只把状态建在 `run()` 里会让"没跑过 run 的实例"一调就 AttributeError。
+        self._reset_closeout()
         self.planner = Planner(self.llm, self.tools,
                                max_tokens=self.s.limits.llm_max_tokens)
         self.wm = WorldModel(self.memory, self.llm)
@@ -357,6 +361,12 @@ class Core:
         self._salvage: str = ""
         #: 交付时的自检说明。非空 ⇒ 这次交付**没有通过自检**，状态要如实标出来。
         self._unverified: str = ""
+        # ── 收尾兜底（第二十二轮）：把一条**一直在跑、却只有日志没有读数**的路接上
+        # ⛔ 为什么必须结构化：第二十一轮的整条位移都来自这条路（`finish` 被打回 ⇒
+        #    重规划 ⇒ 价值层否决 ⇒ 收尾余量 ⇒ `_close_out` ⇒ 交付），而当时
+        #    全项目对它的记录**只有两句中文日志**。日志能证明"走到过"，不能回答
+        #    "走到过几次、几次真的改了交付物"。而后者才是"它有没有用"的第一个问题。
+        self._reset_closeout()
 
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
         counted = _LedgeredLLM(self.llm, self.ledger,
@@ -865,6 +875,28 @@ class Core:
         return state
 
     # ------------------------------------------------------------------
+    def _reset_closeout(self) -> None:
+        """收尾兜底读数的**唯一**初始化处（`__init__` 与 `run()` 都调它）。
+
+        ⚠️ 两处各写一份 = 迟早漂移：`run()` 加了字段而 `__init__` 没加，
+        单独调 `_close_out` 的那个测试就会 KeyError —— 而它测的恰恰是语义。
+        """
+        self.closeout_stats: dict = {
+            "triggered": 0,
+            "by_reason": {"steps": 0, "wall": 0},
+            "origin": {},              # {"收尾调用"/"episodic"/"history"/"空": 次数}
+            "chars": 0,
+            "empty": 0,
+            #: 与 `_salvage`（被闸打回的那一版）**逐字**比较的结果。
+            #: ⚠️ 只主张**不同**，不主张**更好** —— 更好只有外部打分器能判。
+            "overrode_rejected": 0,
+            "same_as_rejected": 0,
+        }
+        #: 本次进入收尾余量是哪条阈值触发的（`steps` / `wall`）。由
+        #: `_closing_reserve_hit()` 写、`_close_out()` 读 —— 条件只在**一处**声明。
+        self._reserve_reason: str = ""
+
+    # ------------------------------------------------------------------
     def _closing_reserve_hit(self) -> bool:
         """预算是否已进入"只够收尾"的区间。
 
@@ -884,10 +916,17 @@ class Core:
         lim = self.s.limits
         steps_left = b.steps - self.ledger.steps_used
         wall_left = b.wall_s - self.ledger.elapsed()
+        # ⚠️ 这里写 `self._reserve_reason` 是**有意的副作用**：条件（"预算够不够收尾"）
+        #    只许在**一处**声明，而读数要区分"步数触发的"与"时间触发的" ——
+        #    两者修法完全不同（前者是任务太大，后者是调用太慢）。
+        #    把条件抄第二遍去算原因，就是本项目反复踩的"同一事实声明两处"。
         if lim.close_reserve_steps > 0 and steps_left <= lim.close_reserve_steps:
+            self._reserve_reason = "steps"
             return True
         if lim.close_reserve_s > 0 and wall_left <= lim.close_reserve_s:
+            self._reserve_reason = "wall"
             return True
+        self._reserve_reason = ""
         return False
 
     def _close_out(self, goal: str, history: Sequence[str],
@@ -903,6 +942,9 @@ class Core:
         收尾是"最后一道网"，它自己的作用域绝不能再依赖调用栈。
         """
         self.log("  ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）")
+        co = self.closeout_stats
+        co["triggered"] += 1
+        co["by_reason"][self._reserve_reason or "steps"] += 1
         best = ""
         origin = ""
         try:
@@ -922,6 +964,18 @@ class Core:
             origin = "history"
         if not best:
             origin = "空"
+        # ── 读数（第二十二轮）：来源分布 + 交付量 + **有没有改掉被打回的那一版** ──
+        # ⚠️ `overrode_rejected` 的语义严格限定为"不同"：它与 `_salvage` 逐字比较，
+        #    只能说"收尾让交付物变了"，**不能说**"收尾救回了这道题"。
+        #    把"不同"读成"更好"是本项目最容易被自己骗过去的一步。
+        co["origin"][origin] = co["origin"].get(origin, 0) + 1
+        co["chars"] += len(best)
+        if not best:
+            co["empty"] += 1
+        if self._salvage:
+            key = ("same_as_rejected" if best.strip() == self._salvage.strip()
+                   else "overrode_rejected")
+            co[key] += 1
         self.log(f"  📦 收尾交付 {len(best)} 字符（来源={origin}）")
         return done("closed", best, "closing_reserve：预算不足，交付已有材料")
 
@@ -970,6 +1024,12 @@ class Core:
             "verify": {**dict(self.verify_stats),
                        "unverified_delivery": bool(self._unverified),
                        "salvaged": bool(self._salvage)},
+            # 第二十二轮：收尾兜底。**零值也进 stats**（汇总行才按需省）——
+            # `origin` 是字典而不是单个字符串：只记"最后一次从哪来"会掩盖
+            # "三次里两次退到 history"这种退化（那是"绝不返回空"的代价面）。
+            "closeout": {**dict(self.closeout_stats),
+                         "origin": dict(self.closeout_stats["origin"]),
+                         "by_reason": dict(self.closeout_stats["by_reason"])},
             "llm": "stub" if self._llm_is_stub else "http",
             "llm_kind": self.llm_kind,   # 与 "llm" 同源；保留两个键是为了兼容旧读法
             "external_agents": self.external_agents,
@@ -1051,7 +1111,22 @@ class Core:
             _vf_line += f"({'/'.join(_vf['checks'])})"
         if _vf["unverified_delivery"]:
             _vf_line += " ⚠️本次交付未过自检"
+        # 收尾兜底读数（第二十二轮）：**触发时才印**（`status=closed` 已经是它的
+        # 存在性证据，每行都印"收尾=0次"只会变成噪声）。但一旦触发就必须带全：
+        # 哪条阈值、从哪来、多少字符、有没有改掉被打回的那一版。
+        _co = stats["closeout"]
+        _co_line = ""
+        if _co["triggered"]:
+            _co_line = (f" | 收尾={_co['triggered']}次(步{_co['by_reason']['steps']}"
+                        f"/时{_co['by_reason']['wall']}"
+                        f" 来源{','.join(f'{k}:{v}' for k, v in _co['origin'].items()) or '-'}"
+                        f" {_co['chars']}字)")
+            if _co["overrode_rejected"] or _co["same_as_rejected"]:
+                _co_line += (f" 改交付={_co['overrode_rejected']}"
+                             f"(与被闸打回那版同={_co['same_as_rejected']})")
+            if _co["empty"]:
+                _co_line += f" ⚠️交了空={_co['empty']}"
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
-                 f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}")
+                 f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}")
         return Outcome(status, answer, reason, len(history), stats)

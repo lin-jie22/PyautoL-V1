@@ -1,0 +1,62 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  g7_heldout  n=2  suite_sha=4c160ef721360ddf9a75b247082476c2
+  打分器  code_exec  scorer_sha=279bb5195b1eb61b784422d6845ff184
+
+--- 第 1 步  校准：尺子自证有分辨力（V5 缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=2/2
+  g7s2_parse_headers: oracle=1.0000 partial=0.8000 null=0.0000 ✅
+  g7s4_xml_escape_attrs: oracle=1.0000 partial=0.4000 null=0.0000 ✅
+  理由: 全部 2 条两极可分，其中 2 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=f535dfafdba9f8ba
+  [观察]
+    - g7s2_parse_headers: oracle=1.0000 partial=0.8000 null=0.0000
+    - g7s4_xml_escape_attrs: oracle=1.0000 partial=0.4000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 2 条任务上两极可分
+    - 中段有序检查 2 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=279bb5195b1e、suite_sha=4c160ef72136；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 68 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）  预算档=1x  repeat=1 ---
+02:14:21 ▶ 任务开始: 写一个函数 parse_headers(s)，解析 'k1: v1; k2: v2' 形式的头字符串。规则：条目用 ';' 分隔；键值用第一个 ':' 分隔；键和未加引号的值都要去掉首尾空白；值若用**双引号包住**，则引号内的 ';' 与
+02:14:21   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+02:15:06   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: '{"intent": "获取更多解析规则", "tool": "recall", "args": {"query": "如何解析带有引号的键值对"}, "rationale": "从语义记忆中获取更多关于解析带有引号的键值对的信息。"}]}'
+02:15:06   [1] 通道=深 候选=1
+02:15:10       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:15:36   ⏳ 预算耗尽 [wall_s]：已用 75.5068 / 上限 120
+02:15:36   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+02:15:36   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+02:15:47   📦 收尾交付 322 字符（来源=收尾调用）
+02:15:47 ■ closed | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.102 memory>reason=0.684 reason>act=1.0] 回流=1.0 | 语义记忆=9 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=4 | 墙钟放弃首发=0/重试=1 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 parse_headers/语言标签/可编译) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 322字)
+02:15:47 ▶ 任务开始: 写一个函数 xml_escape_attrs(d)，把 dict 编码成 XML 属性串。规则：按 dict 出现顺序输出 k="v"，用单个空格连接；值里的 '&' '<' '>' '"' 分别转成 '&amp;' '&lt;' '&gt
+02:15:48   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.03s/120s | llm_kind=http | 外部能力 0 个
+02:16:35   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现目标函数", "tool": "finish", "args": {"answer": "def xml_escape_attrs(d):\\n    result = []\\n    for k, v in d.items():\\n        if v is not None:\\n            escaped_v = s'
+02:16:36   [1] 通道=深 候选=1
+02:16:40       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:16:59   [2] 通道=深 候选=2
+02:16:59       ⊘ [values:answer] 否决 — 空答案
+02:16:59   ⏳ 预算耗尽 [wall_s]：已用 71.9498 / 上限 120
+02:16:59   ⏱ 墙钟被重试链挡住，但还剩 48s ⇒ 转向收尾
+02:16:59   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+02:17:06   📦 收尾交付 145 字符（来源=收尾调用）
+02:17:06 ■ closed | steps=2 | guard_blocked=0 | 预演=3 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=1.102 memory>reason=0.714 reason>act=0.333] 回流=1.0 | 语义记忆=9 | 上限被裁短=4 | 墙钟放弃首发=2/重试=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 xml_escape_attrs/语言标签/可编译) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 145字)
+  分数账本  会话#0 追加 2 行（拒绝 0 行） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+  attempted=2 recorded=2 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=68 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=4 检验=3 命中=3 命中率=1.0 失配=0(成败0/文本0) 混淆={'ok_ok': 3, 'ok_fail': 0, 'fail_ok': 0, 'fail_fail': 0}
+  传输层    抖动重试=1 重试后仍失败=0 上限被裁短=8 墙钟放弃首发=2/重试=1 （共 2 题）
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=3522c3c8f62104a8 scorer=279bb5195b1e suite=4c160ef72136 repeat=1 budget=1x temperature=0.0 fresh=False memory_scope=explicit_dir memory_seed=(9, 0) limits=f048a56d8d llm_cond=b2afc72253 max_tokens=1024 tool_catalog_sha=8decb60895d4
+  读数已落盘 /Users/linshaojie/V1/bench/evidence/knowledge_s30/work_P/bench_r2/runs.jsonl

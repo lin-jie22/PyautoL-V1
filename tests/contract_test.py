@@ -5244,6 +5244,55 @@ check(RS, "AX4 ★V1_ALLOW_LEARN=0 时构造的 Core，其世界模型 `allow_le
       f"core.wm.allow_learn={getattr(_ax_core.wm, 'allow_learn', 'NA')}")
 
 # ══════════════════════════════════════════════════════════════════════════
+# AY 组（第三十轮）：§17-7b 的两件装置 —— 训练史的闸 / 注入诊断的零调用
+# ══════════════════════════════════════════════════════════════════════════
+#: 为什么是行为断言而不是源码字符串锚：装置修正⑦ 的病是**判据错位**
+#: （把 rc 当"零失败史"），字符串锚抓不到语义；只有"造一个库、问它数出几条"
+#: 才能钉住"结论来自哪一列"。
+sys.path.insert(0, str(V1 / "bench"))                            # noqa: E402
+from build_g7_seed import history_counts                          # noqa: E402
+from probe_inject import _scan                                   # noqa: E402
+
+_AY_DB = _TMP / "ay_train.db"
+_ay_mem = MemoryStore(_AY_DB)
+_ay_mem.record("reward", "题 t1：外部得分 0.6，未通过，失败模式：…")
+_ay_mem.record("reward", "题 t2：外部得分 1.0，通过")
+_ay_mem.record("outcome", "这只是一条普通情景（不是奖励通道）")
+_AY_REWARD, _AY_BAD = history_counts(_ay_mem)
+
+check(RS, "AY1 ★`history_counts` 只数 reward 通道，且「未通过」单独计数\n"
+          "          —— 装置修正⑦：训练史的闸必须来自内容，不来自 rc。\n"
+          "             rc 的语义是「本轮有没有没量到的条目」，答不了\n"
+          "             『蒸馏有没有原料』这个问题（★7b 实测撞出来的判据错位）。",
+      (_AY_REWARD, _AY_BAD) == (2, 1),
+      f"reward={_AY_REWARD} 未通过={_AY_BAD}（期望 2/1；outcome 不计入）")
+
+_AY_DB2 = _TMP / "ay_train_allpass.db"
+_ay_mem2 = MemoryStore(_AY_DB2)
+_ay_mem2.record("reward", "题 t3：外部得分 1.0，通过")
+_AY_R2, _AY_B2 = history_counts(_ay_mem2)
+check(RS, "AY2 ★全通过的训练史 ⇒ 「未通过」为 0 ⇒ 闸必须判作废\n"
+          "          —— 反面用例：没有它，把 LIKE 写成恒真也测不出来。",
+      (_AY_R2, _AY_B2) == (1, 0),
+      f"reward={_AY_R2} 未通过={_AY_B2}（期望 1/0）")
+
+#: AY3：注入诊断必须**零模型调用**且把 48 格扫满 ——
+#: 它是我用来否掉"语义记忆被 cap 挤掉"这个解释的工具，
+#: 工具本身若偷偷调模型/少扫几格，那个"48/48 存活"的结论就不再可复算。
+_AY_CORE_MEM = MemoryStore(_TMP / "ay_probe.db")
+_AY_CORE_MEM.commit_fact("遇到引号内的分隔符时，不要当分隔符切分。",
+                         source="abstract", confidence=0.5)
+_AY_STUB = StubLLM()
+_AY_CORE = Core(llm=_AY_STUB, memory=_AY_CORE_MEM, memory_mode="raw")
+_AY_ROWS = _scan(_AY_CORE, "写一个函数 f(s)，解析字符串。")
+check(RS, "AY3 ★注入诊断：48 格全扫、每格都有 `[语义记忆]`、模型零调用\n"
+          "          —— 结论「不是被 STATE_CHAR_CAP 挤掉」必须可复算。",
+      len(_AY_ROWS) == 48 and all(r["has_head"] for r in _AY_ROWS)
+      and _AY_STUB.call_count == 0,
+      f"格数={len(_AY_ROWS)} 全含块={all(r['has_head'] for r in _AY_ROWS)} "
+      f"模型调用={_AY_STUB.call_count}")
+
+# ══════════════════════════════════════════════════════════════════════════
 # AE 组（第二十三轮，路线①）：外部能力作为**答案来源**接入
 # ══════════════════════════════════════════════════════════════════════════
 _AE_CORE = _code_only(_CORE_SRC)

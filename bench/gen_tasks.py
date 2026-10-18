@@ -1150,6 +1150,172 @@ TASKS["tasks/g7_numeric"] = [
 ]
 
 
+# §17-7b 训练套件：与 g7_heldout **同族不同题**（阳性对照）。
+# 族 = 「结构内的分隔符不算分隔符」/「单次逐字符映射」/「引号转义生成」。
+# ⛔ 函数名、断言、输入形态与 heldout 零重合 —— 见 DESIGN §17-7 ★7b 的对照表。
+TASKS["tasks/g7_family_train"] = [
+    {
+        "id": "g7t1_split_top_level",
+        "prompt": ("写一个函数 split_top_level(s)：按**顶层**逗号切分字符串，"
+                   "圆括号 () 与方括号 [] 内部的逗号**不算**分隔符（括号可嵌套）；"
+                   "每段去掉首尾空白；空段丢弃。"
+                   "例：'a,[1,2],b' → ['a','[1,2]','b']。"
+                   "只输出代码，函数名必须是 split_top_level。"),
+        "tests": [
+            "assert split_top_level('a,b') == ['a', 'b']",
+            "assert split_top_level('a,[1,2],b') == ['a', '[1,2]', 'b']",
+            "assert split_top_level('a,(x,(y,z)),b') == ['a', '(x,(y,z))', 'b']",
+            "assert split_top_level('') == []",
+            "assert split_top_level(' a , b ') == ['a', 'b']",
+        ],
+        "oracle": r'''def split_top_level(s):
+    out, buf, depth = [], [], 0
+    for ch in s:
+        if ch in '([':
+            depth += 1
+            buf.append(ch)
+        elif ch in ')]':
+            depth = max(0, depth - 1)
+            buf.append(ch)
+        elif ch == ',' and depth == 0:
+            out.append(''.join(buf))
+            buf = []
+        else:
+            buf.append(ch)
+    out.append(''.join(buf))
+    return [x.strip() for x in out if x.strip()]''',
+        "partial": r'''def split_top_level(s):
+    return [x.strip() for x in s.split(',') if x.strip()]''',
+        "null": "",
+        "meta": {"tags": "struct,split,depth", "level": "medium"},
+    },
+    {
+        "id": "g7t2_parse_pairs",
+        "prompt": ("写一个函数 parse_pairs(s)，解析 'k1=v1; k2=v2' 形式的串。"
+                   "规则：条目用 ';' 分隔；键值用第一个 '=' 分隔；"
+                   "键与未加引号的值去掉首尾空白；值若被**单引号**包住，"
+                   "则单引号内的 ';' 与 '=' 不算分隔符、值取引号内原文"
+                   "（不去空白、不保留引号）；空段跳过。"
+                   "只输出代码，函数名必须是 parse_pairs。"),
+        "tests": [
+            "assert parse_pairs('a=1;b=2') == {'a': '1', 'b': '2'}",
+            "assert parse_pairs(\"a=1;b='x;y'\") == {'a': '1', 'b': 'x;y'}",
+            "assert parse_pairs(\"a=' q = z '\") == {'a': ' q = z '}",
+            "assert parse_pairs('a=') == {'a': ''}",
+            "assert parse_pairs('a=1;;b=2') == {'a': '1', 'b': '2'}",
+        ],
+        "oracle": r'''def parse_pairs(s):
+    out = {}
+    i, n = 0, len(s)
+    while i < n:
+        if s[i] == ';':
+            i += 1
+            continue
+        j = s.find('=', i)
+        if j < 0:
+            break
+        nxt = s.find(';', i)
+        if 0 <= nxt < j:
+            i = nxt + 1
+            continue
+        key = s[i:j].strip()
+        k = j + 1
+        quoted = k < n and s[k] == "'"
+        if quoted:
+            e = s.find("'", k + 1)
+            if e < 0:
+                val, i = s[k + 1:], n
+            else:
+                val = s[k + 1:e]
+                i = e + 1
+                while i < n and s[i] != ';':
+                    i += 1
+                i += 1
+        else:
+            e = s.find(';', k)
+            if e < 0:
+                val, i = s[k:], n
+            else:
+                val, i = s[k:e], e + 1
+        if key:
+            out[key] = val if quoted else val.strip()
+    return out''',
+        "partial": r'''def parse_pairs(s):
+    return dict(p.split('=', 1) for p in s.split(';') if p)''',
+        "null": "",
+        "meta": {"tags": "struct,parse,quoting", "level": "hard"},
+    },
+    {
+        "id": "g7t3_encode_attrs",
+        "prompt": ("写一个函数 encode_attrs(d)，把 dict 编码成属主串："
+                   "按 dict 出现顺序输出 k=\"v\"，单个空格连接；"
+                   "值里的 '<' '>' '&' 要转成 '&lt;' '&gt;' '&amp;' ——"
+                   "必须是**逐字符单次**映射（先替换出来的实体里的 '&' "
+                   "不许再被替换一次）；值为 None 的键跳过，空串保留。"
+                   "只输出代码，函数名必须是 encode_attrs。"),
+        "tests": [
+            "assert encode_attrs({'a': '1'}) == 'a=\"1\"'",
+            "assert encode_attrs({'a': 'x<y'}) == 'a=\"x&lt;y\"'",
+            "assert encode_attrs({'a': 'x&y'}) == 'a=\"x&amp;y\"'",
+            "assert encode_attrs({'a': '<&>'}) == 'a=\"&lt;&amp;&gt;\"'",
+            "assert encode_attrs({'a': None, 'b': ''}) == 'b=\"\"'",
+        ],
+        "oracle": r'''def encode_attrs(d):
+    table = {'&': '&amp;', '<': '&lt;', '>': '&gt;'}
+    out = []
+    for k, v in d.items():
+        if v is None:
+            continue
+        out.append(str(k) + '="' + ''.join(table.get(c, c) for c in str(v)) + '"')
+    return ' '.join(out)''',
+        "partial": r'''def encode_attrs(d):
+    out = []
+    for k, v in d.items():
+        if v is None:
+            continue
+        s = str(v)
+        for a, b in (('<', '&lt;'), ('>', '&gt;'), ('&', '&amp;')):
+            s = s.replace(a, b)
+        out.append(str(k) + '="' + s + '"')
+    return ' '.join(out)''',
+        "null": "",
+        "meta": {"tags": "struct,escape,single-pass", "level": "medium"},
+    },
+    {
+        "id": "g7t4_quote_join",
+        "prompt": ("写一个函数 quote_join(items)，把字符串列表拼成一行："
+                   "元素之间用 ', ' 连接；元素里含 ',' 或 '\"' 时整个元素要用"
+                   '双引号包住，且元素内部的 \'"\' 要写成两个 \'"\'（CSV 风格）；'
+                   "其余元素原样输出；空列表返回空串。"
+                   "只输出代码，函数名必须是 quote_join。"),
+        "tests": [
+            "assert quote_join(['a', 'b']) == 'a, b'",
+            "assert quote_join(['a,b']) == '\"a,b\"'",
+            "assert quote_join(['a\"b']) == '\"a\"\"b\"'",
+            "assert quote_join([]) == ''",
+            "assert quote_join(['', 'a']) == ', a'",
+        ],
+        "oracle": r'''def quote_join(items):
+    out = []
+    for x in items:
+        x = str(x)
+        if ',' in x or '"' in x:
+            out.append('"' + x.replace('"', '""') + '"')
+        else:
+            out.append(x)
+    return ', '.join(out)''',
+        "partial": r'''def quote_join(items):
+    out = []
+    for x in items:
+        x = str(x)
+        out.append('"' + x + '"' if ',' in x else x)
+    return ', '.join(out)''',
+        "null": "",
+        "meta": {"tags": "struct,quote,generate", "level": "medium"},
+    },
+]
+
+
 def _self_check() -> None:
     """每一行都必须自己跑一遍：oracle=1.0 / partial 严格居中 / null=0.0。
 

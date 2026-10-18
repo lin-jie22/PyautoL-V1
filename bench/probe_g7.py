@@ -6,6 +6,10 @@
   三臂（H 纯 abstract facts / P 逐条等长安慰剂 / E 空），heldout 2 题逐题配对，
   每臂 3 次 repeat，T=0。
 
+ⓘ 同一探针服务两轮：★7a（训练/考试**跨族**）与 ★7b（训练/考试**同族**阳性对照）。
+  判据逐条相同（同一把尺子），但**判读语义不同** —— 7b 的 R3a 只记「同族可迁移」，
+  ⛔ 不构成 7a 翻案（7a 问的是跨族）。二者是两个独立命题，不许合并。
+
   R1  冻结种子库上重放 heldout goals 的 recall()：H≥1 / P≥1 / E=0；
       且每臂每 repeat 跑后 facts 数 == 种子     ⇒ 不满足 ⇒ 整组作废
   R-noise  每臂每题 3 次 repeat 的极差；记 max_range（纯记录，进 R3 判定）
@@ -13,6 +17,8 @@
   R3b  Δ_H ≥ 0.15 且（Δ_P ≥ 0.05 或 max_range > 0.05）⇒ 存在性/噪声，降级不得认领
   R3c  Δ_H < 0.15 ⇒ 不认领，如实登记
   R4   逐题三臂 × 3 次并列全表；任何翻转逐题列出
+  R5   注入保真（**只登记，不判定**）：`core.py` 拼上下文时 `f.text[:120]`，
+       H 臂 facts 里超过 120 字的条数与保留字符比例 ⇒ 只用来解释 R3c
   Δ_H = mean(H) − mean(E)、Δ_P = mean(P) − mean(E)，各在 3 次 repeat 均值上算。
 
 用法：
@@ -109,6 +115,23 @@ def main(argv: list[str] | None = None) -> int:
     if not ok_delivery:
         print("❌ R1 不成立 ⇒ 处理未送达/被混杂，整组作废（按登记不许判读）")
         return 2
+
+    # ── R5 注入保真（只登记，不判定）─────────────────────────────────────
+    # `core.py` 的 `f.text[:120]` 是拼上下文时的硬截断。这里**只报数**：
+    # 若启发式长于 120 字，判别条件可能根本没进上下文 —— 那是 R3c 的一种解释，
+    # ⛔ 不是改判据的理由（改判据 = 又一根可调旋钮）。
+    from mw.memory import MemoryStore
+    CAP = 120
+    seed_h = MemoryStore(ev / "seed_H.db")
+    fh = [r["text"] for r in
+          seed_h.conn.execute("SELECT text FROM facts").fetchall()]
+    over = [t for t in fh if len(t) > CAP]
+    kept = (sum(min(len(t), CAP) for t in fh) / sum(len(t) for t in fh)) if fh else 1.0
+    print(f"== R5 注入保真 ==  facts={len(fh)} 条，> {CAP} 字 {len(over)} 条，"
+          f"注入后保留字符 {kept:.1%}（单条上限 {CAP}，只记录不判定）")
+    for t in over:
+        print(f"   ⚠️ len={len(t)} 被截到 {CAP}：{t[:40]}…{t[-20:]}")
+    seed_h.close()
 
     # ── R4 逐题全表 + R-noise ───────────────────────────────────────────
     print("== R4 逐题（三臂 × 3 repeats）==")

@@ -408,6 +408,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AX4", "mw/core.py",
      '                             allow_learn=self.s.limits.allow_learn)',
      '                             allow_learn=True)'),
+    # ── AY1/AY2：训练史的闸从内容退回"看谁的通过/未通过都算" ─────────────────
+    #: ⚠️ 这**一条变异同时打红 AY1 和 AY2**，且是**合理的连带**：
+    #:    两条断言是同一个命题的正面用例与反面用例（有失败 / 全通过），
+    #:    实现只有一处 ⇒ 一起翻。写进 COUPLED 白名单，不当作锚定跑偏。
+    #:    `'%通过%'` 同时命中「未通过」与「通过」⇒ 反向用例（全通过应为 0）必红。
+    ("AY1", "bench/build_g7_seed.py",
+     "        \"AND content LIKE '%未通过%'\").fetchone()[\"c\"]",
+     "        \"AND content LIKE '%通过%'\").fetchone()[\"c\"]"),
+    # ── AY3：注入诊断少扫几格 ⇒ 「48/48 存活」这句话就不再可复算 ─────────────
+    ("AY3", "bench/probe_inject.py",
+     "    for n_wm in (0, 1, 2, 4):",
+     "    for n_wm in (0, 1, 2):"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -420,6 +432,8 @@ COUPLED: dict[str, frozenset[str]] = {
     #   AS10 同理 —— 没有打回就没有"重写失败"，`_salvage` 也就无从被触发。
     # ⇒ 这是**合理的连带**（上游断了，下游两条断言自然不成立），不是锚定跑偏。
     "AS7": frozenset({"AS8", "AS9", "AS10"}),
+    # AY1/AY2 是同一命题的正反用例，实现只有一处 ⇒ 必然一起翻（见上）。
+    "AY1": frozenset({"AY2"}),
     # salvage 条件去掉 `not answer and` 之后，**正常交付**也会被上一版坏答案顶掉
     # ⇒ AS8（"第二版交对就交付它"）必然红。这正是 AS14 注释里预言的那个静默降级。
     "AS14": frozenset({"AS8"}),

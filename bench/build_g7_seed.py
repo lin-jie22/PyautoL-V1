@@ -63,11 +63,36 @@ def _run_training(train_suite: Path, mem_dir: Path) -> dict:
     ]
     r = subprocess.run(cmd, cwd=_ROOT, env=env,
                        capture_output=True, text=True, timeout=1800)
+    # 装置修正⑦（DESIGN §17-7 ★7b）：**不许**把 rc 当"零失败史"的判据。
+    # `run.py:1157` = `return 0 if rep.trustworthy() else 1`，而
+    # `trust` 只排除「没量到的条目」(skipped_no_answer / failed_scorer)
+    # ⇒ rc≠0 说的是"本轮有题没量到"，与"模型有没有犯错"是两件事。
+    # 有题没量到要**打印出来**（它不产生失败史，不等于答对），
+    # 真正的闸交给调用方数失败史条数。
+    early = [ln.strip() for ln in r.stdout.splitlines()
+             if "早退" in ln or "solver 未产出答案" in ln]
     if r.returncode != 0:
-        print(r.stdout[-2000:])
-        print(r.stderr[-2000:])
-        raise SystemExit(f"❌ 训练会话 rc={r.returncode}")
-    return {"rc": r.returncode}
+        print(f"  ⚠️ 训练会话 rc={r.returncode}"
+              f"（语义=本轮有没量到的条目，**不是**零失败史）")
+        for ln in early[:6]:
+            print(f"     · {ln}")
+        print("     ⇒ 这些条目**不产生失败史**，也**不等于答对**；按条数另判。")
+    return {"rc": r.returncode, "early": early}
+
+
+def history_counts(mem_train) -> tuple[int, int]:
+    """训练史的**唯一**判据来源：返回 (reward 条数, 其中「未通过」条数)。
+
+    装置修正⑦（DESIGN §17-7 ★7b）：本函数存在的理由是**不许再拿 rc 当判据** ——
+    `run.py` 的 rc 说的是"本轮有没有没量到的条目"，"有没有失败史"是另一个问题。
+    只有「未通过」的条数能回答"蒸馏有没有原料"。
+    """
+    n_reward = mem_train.conn.execute(
+        "SELECT COUNT(*) c FROM episodes WHERE kind='reward'").fetchone()["c"]
+    n_bad = mem_train.conn.execute(
+        "SELECT COUNT(*) c FROM episodes WHERE kind='reward' "
+        "AND content LIKE '%未通过%'").fetchone()["c"]
+    return int(n_reward), int(n_bad)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -75,6 +100,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out-dir", required=True)
     p.add_argument("--train-suite", required=True)
     p.add_argument("--heldout", required=True)
+    # 复用**已经跑完**的训练库（训练相 10 分钟）：必须先存在，且打印其 sha256。
+    # 用途只有一个 —— 改了蒸馏/种子逻辑之后不必重跑训练；⛔ 不许用它跳过
+    # "训练根本没跑"这件事（库不存在就报错，不静默新建空库）。
+    p.add_argument("--skip-training", action="store_true")
     args = p.parse_args(argv)
 
     out = Path(args.out_dir).expanduser()
@@ -84,25 +113,32 @@ def main(argv: list[str] | None = None) -> int:
 
     # ── 训练相：真模型自然失败史 ──────────────────────────────────────────
     train_dir = out / "memTrain"
-    print("== 训练相：真模型内核跑训练套件（自然失败史）==")
-    _run_training(Path(args.train_suite), train_dir)
+    train_db = train_dir / "memory.db"
+    if args.skip_training:
+        if not train_db.exists():
+            raise SystemExit(f"❌ --skip-training 但训练库不存在：{train_db}")
+        import hashlib
+        print("== 训练相：复用既有训练库（--skip-training）==")
+        print(f"  sha256={hashlib.sha256(train_db.read_bytes()).hexdigest()}")
+    else:
+        print("== 训练相：真模型内核跑训练套件（自然失败史）==")
+        _run_training(Path(args.train_suite), train_dir)
 
-    memTrain_mem = train_dir / "memory.db" if (train_dir / "memory.db").exists() \
-        else train_dir
+    memTrain_mem = train_db if train_db.exists() else train_dir
     from mw.memory import MemoryStore
     memTrain = MemoryStore(memTrain_mem)
     stats0 = memTrain.stats()
     print(f"  训练后 episodes={stats0['episodes']} facts={stats0['facts']}")
 
-    fails = memTrain.conn.execute(
-        "SELECT COUNT(*) c FROM episodes WHERE kind IN ('failure','reward')"
-    ).fetchone()["c"]
     n_reward = memTrain.conn.execute(
         "SELECT COUNT(*) c FROM episodes WHERE kind='reward'").fetchone()["c"]
     n_fail = memTrain.conn.execute(
         "SELECT COUNT(*) c FROM episodes WHERE kind='failure'").fetchone()["c"]
-    print(f"  失败史 episode：failure={n_fail} reward={n_reward}")
-    if fails == 0:
+    # 有原料的**唯一**判据（装置修正⑦）：reward episode 里明确写了「未通过」的条数。
+    n_reward, n_bad = history_counts(memTrain)
+    print(f"  失败史 episode：failure={n_fail} reward={n_reward}"
+          f"（其中「未通过」{n_bad} 条）")
+    if n_bad == 0:
         print("❌ 训练会话零失败史 ⇒ 蒸馏无原料 ⇒ 整组作废（登记：不许换题凑）")
         return 1
 

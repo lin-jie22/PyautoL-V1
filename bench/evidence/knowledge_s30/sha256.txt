@@ -1,0 +1,10 @@
+== 臂 H 种子 sha256 ==
+63ff00a04179c79cffd072ef67f7195b764d234e2fdcf1aed29877213d440008  bench/evidence/knowledge_s30/seed_H.db
+== 臂 P 种子 sha256 ==
+1c3a952e22724789ed5e258fab09bc7d2898a633eab6bd3655a938bcf247ea1d  bench/evidence/knowledge_s30/seed_P.db
+== 臂 E 种子 sha256 ==
+9694ea99e057c8570889c8b31c6dba5ed701aaf2fb7a80864c205a8cd8dfa0b2  bench/evidence/knowledge_s30/seed_E.db
+3da56742622d70ba7c8a9222c259356cfc83f704b462a5e0b23c84e2d7a2029e  train_memory.db
+aa4d2d9194082a5b9e5f259038dc06e3ee2f1634158870bf01aab0bdd1c99644  d1_suite.jsonl
+46ce79e3cda45a960d635b33dd6e7c1110688649ecd5747bf82250d747f95d91  d1_runs.jsonl
+49b63cac4d1d0eac62524db89279822e71084ada86245cf7aa9bc3e0b849b8db  calib_runs.jsonl

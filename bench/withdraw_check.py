@@ -327,6 +327,27 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '                        + "".join(f"/{k}{v}" for k, v in _co["by_reason"].items()\n'
      '                                  if k not in ("steps", "wall") and v)\n',
      '                        + ""  # 撤回态：只念固定的两个原因\n'),
+    # ── AV1：打回落盘的 failure 行把错误原文从 content 里抽走（meta 保留）────
+    ("AV1", "mw/core.py",
+     '                        self.memory.record(\n'
+     '                            "failure",\n'
+     '                            f"{cand.as_line()} — {result.error[:200]}",\n'
+     '                            error=result.error[:300])',
+     '                        self.memory.record(\n'
+     '                            "failure", cand.as_line(),  # 撤回态：content 无诊断原文\n'
+     '                            error=result.error[:300])'),
+    # ── AV2：超限交付不落 failure（"最终为什么没过闸"零痕迹）────────────────
+    ("AV2", "mw/core.py",
+     '            self.memory.record(\n'
+     '                "failure", f"自检超限未过（{self.verify_stats[\'failed\']}次）— {v.report[:200]}",\n'
+     '                error=v.report[:300])',
+     '            _ = v.report  # 撤回态：超限交付不落情景记忆'),
+    # ── AV3：蒸馏原料不排序（failure 混回堆里，注意力最低处）────────────────
+    ("AV3", "mw/abstractor.py",
+     '    eps.sort(key=lambda e: (0 if getattr(e, "kind", "") in _FAIL_KINDS else 1,\n'
+     '                            -int(getattr(e, "id", 0) or 0)))\n'
+     '    return eps',
+     '    return eps  # 撤回态：不排序，failure 混回堆里'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

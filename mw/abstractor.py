@@ -202,11 +202,21 @@ def _source_episodes(memory: MemoryStore,
                      sources: Sequence[str] | None) -> Iterable:
     """原材料 —— **一律取 episodic 原文**：不预先过滤含代码块的行 ——
     那正是要交给 LLM 去丢掉的东西；本模块只负责把**产出**里的代码挡住。
+
+    ★ 第二十七轮（§17-6 6b）：**失败类排最前**。实测（真模型 13 进 1 出）：
+    原料按 id 倒序喂进去，失败记录混在 goal/finish/outcome 里，
+    11 条被模型判 NONE —— 不是模型挑剔，是成功记录本来就没什么可提的。
+    失败记录（打回/超限，content 现在带错误原文）才是"怎么避免坑"的原料，
+    它们必须排在注意力最高的位置。
     """
     try:
-        return list(memory.episodes(limit=500))
+        eps = list(memory.episodes(limit=500))
     except Exception:                          # noqa: BLE001 — 记忆库损坏不是 distill 的错
         return []
+    _FAIL_KINDS = ("failure",)
+    eps.sort(key=lambda e: (0 if getattr(e, "kind", "") in _FAIL_KINDS else 1,
+                            -int(getattr(e, "id", 0) or 0)))
+    return eps
 
 
 def _to_one_line(text: str) -> str:

@@ -773,8 +773,15 @@ class Core:
                     if not result.ok:
                         consecutive_failures += 1
                         last_error = result.error
-                        self.memory.record("failure", cand.as_line(),
-                                           error=result.error[:300])
+                        # ★ 第二十七轮（§17-6 6a）：错误原文必须进 **content** ——
+                        #   蒸馏器只读 content，meta 它看不见。实测（离线探针）：
+                        #   打回明明落了 failure 行，content 却只有 `finish({...}) — v0`
+                        #   这种动作行 ⇒ 蒸馏器看到的是零信息行，输出 NONE 是必然。
+                        #   "知识原料断供"的第一处断点就在这一列。
+                        self.memory.record(
+                            "failure",
+                            f"{cand.as_line()} — {result.error[:200]}",
+                            error=result.error[:300])
                         executed = True
                         break
                     consecutive_failures = 0
@@ -898,6 +905,13 @@ class Core:
             # 超限：**如实交付**，并把"没过自检"写进状态。
             self.verify_stats["exhausted"] += 1
             self._unverified = v.report
+            # ★ 第二十七轮（§17-6 6a）：超限交付不进主循环的失败分支
+            #   （result.ok=True ⇒ 走交付）⇒ 不落 failure 的话，
+            #   "最终为什么没过闸"这件事在情景记忆里**零痕迹** ——
+            #   而它恰恰是这题最该被蒸馏成经验的信息。
+            self.memory.record(
+                "failure", f"自检超限未过（{self.verify_stats['failed']}次）— {v.report[:200]}",
+                error=v.report[:300])
             self.log(f"      ⚠️ 自检连续 {self.verify_stats['failed']} 次未过 "
                      f"（上限 {cap}）⇒ 不再重写，如实交付未通过自检的答案")
             return result

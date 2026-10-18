@@ -5036,6 +5036,73 @@ check(RS, "AS25 ★收尾读数必须冻成证据，且**触发次数 ≠ 改掉
 
 
 # ══════════════════════════════════════════════════════════════════════════
+# AV 组（第二十七轮，§17-6 6a/6b）：失败必须带着**诊断原文**进蒸馏器的视野
+# ══════════════════════════════════════════════════════════════════════════
+#: 实测（离线探针 + 真模型蒸馏 13 进 1 出）：打回明明落了 failure 行，
+#: content 却只有 `finish({...}) — v0` 这种动作行，错误原文只在 meta 里 ——
+#: 而蒸馏器**只读 content** ⇒ 它看到的是零信息行 ⇒ 模型输出 NONE 是必然。
+#: 这就是 §17-6 "知识原料断供"的第一处断点：不是没有失败，是失败的理由
+#: 从来没有到达过唯一一个能把失败变成经验的位置。
+
+_AV_FAILS = list(_AS_C2.memory.episodes(kind="failure"))
+check(RS, "AV1 ★打回落盘的 failure 行，content 必须带着**错误原文**（不只动作行）\n"
+          "          —— meta 里的 error 蒸馏器看不见；content 没有诊断原文，\n"
+          "            『失败 → 经验』这条链在第一步就断了（§17-6 的断点①）。",
+      len(_AV_FAILS) >= 1 and any("自检未通过" in f.content for f in _AV_FAILS),
+      f"failure行数={len(_AV_FAILS)} "
+      f"首行content={(_AV_FAILS[0].content[:60] if _AV_FAILS else '无')}")
+
+check(RS, "AV2 ★**超限交付**（打回次数用尽后如实交付）也必须落 failure 行\n"
+          "          —— 超限那次 result.ok=True ⇒ 不走主循环的失败分支，\n"
+          "            不补一行的话『这题最终为什么没过闸』在情景记忆里零痕迹，\n"
+          "            而它恰恰是这题最该被蒸馏成经验的信息（断点②）。",
+      any("自检超限未过" in f.content for f in _AV_FAILS),
+      f"failure行数={len(_AV_FAILS)} "
+      f"含超限={any('自检超限未过' in f.content for f in _AV_FAILS)}")
+
+# ── AV3：蒸馏器**行为锚**——失败原料必须真的到达它、且排在注意力最高处 ──────
+#: ⛔ 必须是行为锚而不是源码锚：第二十五轮 AU7 实测，AST/字符串锚在撤回态下
+#:   可以全绿（死代码里仍有那个调用）。这里让假 LLM 把收到的 prompt 记下来，
+#:   直接检查『第一份被蒸馏的原料是 failure』——撤掉排序 ⇒ 立刻转红。
+_AV_MEM = MemoryStore(_TMP / "av_probe.db")
+_AV_MEM.record("goal", "写一个函数 flatten(d)，把嵌套 dict 展平。只输出代码。")
+#: ⚠️ failure 故意放在**中间**写：episodes() 按 id 倒序返回，
+#:    failure 最后写的话它天然排第一 ⇒ 撤掉排序也绿（AV3 首跑就抓到了这个恒真）。
+#:    放中间 ⇒ 无排序时第一条是 outcome ⇒ 排序才有可观测的效果。
+_AV_MEM.record("failure",
+               "finish({'answer': '...'}) — 自检未通过：语言标签：答案以 ```c 开头，"
+               "这不是 Python。")
+_AV_MEM.record("outcome", "工具返回了一些正常的观测文本，没有任何教训。")
+
+
+class _AVSpyLLM:
+    """只干一件事：把 distill 发来的每一条 prompt 原样记下来。"""
+
+    def __init__(self) -> None:
+        self.user_texts: list[str] = []
+
+    def complete(self, messages, **kw):                              # noqa: ANN001, ANN202
+        for m in messages:
+            if getattr(m, "role", "") == "user":
+                self.user_texts.append(str(getattr(m, "content", "")))
+        return "NONE"                    # 内容无关：本探针只看原料，不看产出
+
+
+_AV_SPY = _AVSpyLLM()
+from mw.abstractor import distill as _av_distill                 # noqa: E402
+
+_av_distill(_AV_MEM, _AV_SPY, max_tokens=64)
+check(RS, "AV3 ★蒸馏器必须**收到**失败原料，且 failure 排在**第一批**\n"
+          "          —— 成功记录本来就没东西可提（真模型实测 13 进 1 出、11 条 NONE），\n"
+          "            失败记录才是『怎么避免坑』的原料；混在堆里 = 注意力最低处 = 白给。\n"
+          "          ⚠️ 这是行为锚：假 LLM 记下收到的 prompt，撤掉排序立刻转红。",
+      bool(_AV_SPY.user_texts)
+      and _AV_SPY.user_texts[0].startswith("执行记录（kind=failure）")
+      and any("自检未通过" in t for t in _AV_SPY.user_texts),
+      f"蒸馏条数={len(_AV_SPY.user_texts)} "
+      f"第一条={(_AV_SPY.user_texts[0][:44] if _AV_SPY.user_texts else '无')}")
+
+# ══════════════════════════════════════════════════════════════════════════
 # AE 组（第二十三轮，路线①）：外部能力作为**答案来源**接入
 # ══════════════════════════════════════════════════════════════════════════
 _AE_CORE = _code_only(_CORE_SRC)

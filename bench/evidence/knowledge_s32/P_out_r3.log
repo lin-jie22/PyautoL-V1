@@ -1,0 +1,92 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  g7e_heldout  n=4  suite_sha=5c5ad025739ba5516b79a7719fafa41b
+  打分器  code_exec  scorer_sha=279bb5195b1eb61b784422d6845ff184
+
+--- 第 1 步  校准：尺子自证有分辨力（V5 缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=4/4
+  g7d2_dedupe_keep: oracle=1.0000 partial=0.2000 null=0.0000 ✅
+  g7d3_fmt_amount: oracle=1.0000 partial=0.2000 null=0.0000 ✅
+  g7e1_parse_flag: oracle=1.0000 partial=0.4000 null=0.0000 ✅
+  g7e2_truncate_tail: oracle=1.0000 partial=0.2000 null=0.0000 ✅
+  理由: 全部 4 条两极可分，其中 4 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=b0577a391ba6df27
+  [观察]
+    - g7d2_dedupe_keep: oracle=1.0000 partial=0.2000 null=0.0000
+    - g7d3_fmt_amount: oracle=1.0000 partial=0.2000 null=0.0000
+    - g7e1_parse_flag: oracle=1.0000 partial=0.4000 null=0.0000
+    - g7e2_truncate_tail: oracle=1.0000 partial=0.2000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 4 条任务上两极可分
+    - 中段有序检查 4 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=279bb5195b1e、suite_sha=5c5ad025739b；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 89 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）  预算档=1x  repeat=1 ---
+12:41:23 ▶ 任务开始: 写一个函数 dedupe_keep(xs)：对字符串列表去重，返回列表保持原顺序。比较之前怎么归一化、遇到重复时保留第几次出现的那条原文，按本项目定下的去重惯例处理（惯例不在题面里）。只输出代码，函数名必须是 dedupe_keep。
+12:41:23   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+12:41:58   [1] 通道=深 候选=3
+12:42:04       ↳ finish ok=True 直接实现去重逻辑
+12:42:04   ✅ 收尾: ```python
+def dedupe_keep(xs):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in xs if not (x in seen or s
+12:42:04 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.19 memory>reason=1.0 reason>act=0.333] 回流=n/a | 语义记忆=4 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 dedupe_keep/语言标签/可编译)
+12:42:04 ▶ 任务开始: 写一个函数 fmt_amount(x)：把数字格式化成金额字符串，输入可能是 int 或 float。千分位用什么符号、保留几位小数、负数怎么写，按本项目定下的金额惯例处理（惯例不在题面里）。只输出代码，函数名必须是 fmt_amount。
+12:42:04   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+12:42:33   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接完成任务", "tool": "finish", "args": {}, "rationale": "根据目标，直接输出 fmt_amount 函数的代码。"}], "candidates": [{"intent": "根据金额惯例处理", "tool": "recall", "args": {"query": "金额惯例"}, "rat'
+12:42:33   [1] 通道=深 候选=1
+12:42:41       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+12:43:01   [2] 通道=深 候选=1
+12:43:09       ↳ finish ok=True 直接完成任务
+12:43:09   ✅ 收尾: ```python
+def fmt_amount(x):
+    return "{:,.2f}".format(x)
+```
+12:43:09 ■ done | steps=2 | guard_blocked=0 | 预演=3 检验=3 命中=3 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.155 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=4 | 上限被裁短=5 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 fmt_amount/语言标签/可编译)
+12:43:09 ▶ 任务开始: 写一个函数 parse_flag(s)：把配置里的开关值转成 True / False / None（无法识别）。哪些写法算真、哪些算假、空串算什么，按本项目定下的开关解析惯例处理（惯例不在题面里）；入参大小写不敏感、首尾空白忽略。只输出代
+12:43:09   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+12:43:55   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "根据开关解析惯例处理字符串，转换为布尔值或 None", "tool": "recall", "args": {}, "rationale": "回忆项目中的开关解析惯例，确定哪些字符串表示 True、False 和 None。"}, {"intent": "定义函数 parse_flag 实现字符串到布尔值的转换", "tool": "fi'
+12:43:55   [1] 通道=深 候选=1
+12:43:58       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+12:44:20   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "根据开关解析惯例处理字符串，转换为布尔值或 None", "tool": "finish", "args": {}, "rationale": "根据已知的惯例，直接实现函数逻辑"}], "finish": {"answer": ```python\ndef parse_flag(s):\n    s = s.strip().lower()\n  '
+12:44:20   [2] 通道=深 候选=1
+12:44:20       ⊘ [values:answer] 否决 — 目标要求展开（140 字），答案只有 24 字
+12:44:20   ⛔ 全部候选被拦 (1 次连续失败)
+12:44:20   ⏳ 预算耗尽 [wall_s]：已用 71.3218 / 上限 120
+12:44:20   ⏱ 墙钟被重试链挡住，但还剩 49s ⇒ 转向收尾
+12:44:20   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+12:44:29   📦 收尾交付 219 字符（来源=收尾调用）
+12:44:29 ■ closed | steps=3 | guard_blocked=0 | 预演=4 检验=4 命中=4 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=1.1 memory>reason=0.609 reason>act=0.5] 回流=0.769 | 语义记忆=4 | 上限被裁短=4 | 墙钟放弃首发=1/重试=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 parse_flag/语言标签/可编译) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 219字)
+12:44:29 ▶ 任务开始: 写一个函数 truncate_tail(s, n)：把过长的字符串截短到最多 n 个字符。超长时保留哪一头、加什么标记，按本项目定下的截断惯例处理（惯例不在题面里）；不超长时原样返回。只输出代码，函数名必须是 truncate_tail。
+12:44:29   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+12:44:58   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "实现 truncate_tail 函数", "tool": "finish", "args": {}, "rationale": "根据目标，直接实现所需函数，无需调用其他工具"}], "candidates": [{"intent": "实现 truncate_tail 函数", "tool": "finish", "args": {"an'
+12:44:58   [1] 通道=深 候选=1
+12:45:03       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+12:45:25   [2] 通道=深 候选=2
+12:45:30       ↳ finish ok=True 直接实现 truncate_tail 函数
+12:45:30   ✅ 收尾: ```python
+def truncate_tail(s, n):
+    return s[:n] + ('...' if len(s) > n else '')
+```
+12:45:30 ■ done | steps=2 | guard_blocked=0 | 预演=6 检验=6 命中=6 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.146 memory>reason=0.647 reason>act=0.667] 回流=1.0 | 语义记忆=4 | 上限被裁短=5 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 truncate_tail/语言标签/可编译)
+  分数账本  会话#0 追加 4 行（拒绝 0 行） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.2000 std=0.0000 [0.2000,0.2000] 极差=0.0000
+  attempted=4 recorded=4 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=89 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=14 检验=14 命中=14 命中率=1.0 失配=0(成败0/文本0) 混淆={'ok_ok': 14, 'ok_fail': 0, 'fail_ok': 0, 'fail_fail': 0}
+  传输层    抖动重试=0 重试后仍失败=0 上限被裁短=17 墙钟放弃首发=1/重试=0 （共 4 题）
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=8e00b85fa2f7f1b9 scorer=279bb5195b1e suite=5c5ad025739b repeat=1 budget=1x temperature=0.0 fresh=False memory_scope=explicit_dir memory_seed=(4, 0) limits=f048a56d8d llm_cond=b2afc72253 max_tokens=1024 tool_catalog_sha=8decb60895d4
+  读数已落盘 /Users/linshaojie/V1/bench/evidence/knowledge_s32/work_P/bench_r3/runs.jsonl

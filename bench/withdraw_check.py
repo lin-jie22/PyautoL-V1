@@ -420,6 +420,30 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AY3", "bench/probe_inject.py",
      "    for n_wm in (0, 1, 2, 4):",
      "    for n_wm in (0, 1, 2):"),
+    # ── AZ 组（§17-7d 修正⑨）：安慰剂与处理的**等价性**必须逐条可撤 ─────────
+    # AZ1：每个汉字替换成**两个**字 ⇒ 长度不再相等（条数仍相等）。
+    ("AZ1", "bench/build_g7d_seed.py",
+     "                buf.append(_SCRAMBLE_POOL[(ord(ch) * 31 + i) % len(_SCRAMBLE_POOL)])",
+     "                buf.extend([_SCRAMBLE_POOL[(ord(ch) * 31 + i) % len(_SCRAMBLE_POOL)]] * 2)"),
+    # AZ2：条件反过来 ⇒ 留下的是汉字、被替换的是 ASCII ⇒ 检索行为不再等价。
+    ("AZ2", "bench/build_g7d_seed.py",
+     '            if ord(ch) < 128 or not ("\\u4e00" <= ch <= "\\u9fff"):',
+     '            if "\\u4e00" <= ch <= "\\u9fff":'),
+    # AZ3：不替换汉字 ⇒ 安慰剂与原句逐字相同（P ≡ H）。
+    ("AZ3", "bench/build_g7d_seed.py",
+     "                buf.append(_SCRAMBLE_POOL[(ord(ch) * 31 + i) % len(_SCRAMBLE_POOL)])",
+     "                buf.append(ch)"),
+    # AZ4：拆掉"已有种子库就拒绝重建"的闸 ⇒ 旧 facts 可以静默混入。
+    ("AZ4", "bench/build_g7d_seed.py",
+     "    if stale:",
+     "    if False and stale:"),
+    # AZ5：把一条惯例写超 120 字 ⇒ 注入时会被 core.py 静默截断。
+    ("AZ5", "bench/build_g7d_seed.py",
+     '        "金额惯例：千分位用空格分隔，保留两位小数，负数用圆括号包裹、不写负号。",',
+     '        "金额惯例：千分位用空格分隔，保留两位小数，负数用圆括号包裹、不写负号；'
+     '这条被故意写长到超过一百二十个字，用来证明注入截断的闸真的会转红，'
+     '而不是一句装饰性的注释在测试里恒绿；再补一句让它足够长，长到必须被截断才能通过；'
+     '还要再长一点，否则它自己就只是一条没越过阈值的普通注释而已。",'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

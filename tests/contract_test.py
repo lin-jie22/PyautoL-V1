@@ -5293,6 +5293,46 @@ check(RS, "AY3 ★注入诊断：48 格全扫、每格都有 `[语义记忆]`、
       f"模型调用={_AY_STUB.call_count}")
 
 # ══════════════════════════════════════════════════════════════════════════
+# AZ 组（第三十二轮，§17-7d 装置修正⑨）：安慰剂必须与处理**等价**，
+# 不许只是"内容不一样"。等价性断了，R7 的闸就变成了装饰。
+# ══════════════════════════════════════════════════════════════════════════
+import build_g7d_seed as _G7D                                    # noqa: E402
+import contextlib as _ctx                                        # noqa: E402
+import io as _io                                                 # noqa: E402
+
+# 两条真实惯例作样本：一条纯中文、一条含题面里也出现的 ASCII token
+# （`true` / `None`）—— 后者正是 ⑨a 里 H 被 FTS 精确命中的那一类。
+_AZ_H = ["去重惯例：比较前先去掉首尾空白并转小写，遇到重复时保留第一次出现的那条原文。",
+         "开关惯例：只把 y/yes/1 当成真，'true'、'on' 这类历史脏值一律算假，"
+         "其余无法识别的返回 None。"]
+_AZ_P = _G7D.build_placebo(_AZ_H)
+_AZ_BAD = _G7D.check_placebo(_AZ_H, _AZ_P)
+
+check(RS, "AZ1 骨架安慰剂逐字等长\n"
+          "          —— 差一个字就不是同一把尺子；⑨a/⑨c 两次修的都是这件事。",
+      not any("长度不等" in m for m in _AZ_BAD), str(_AZ_BAD))
+check(RS, "AZ2 骨架安慰剂保留全部 ASCII token\n"
+          "          —— FTS 是 OR+精确 token：改掉它，两臂检索行为就不再等价。",
+      not any("ASCII" in m for m in _AZ_BAD), str(_AZ_BAD))
+check(RS, "AZ3 骨架安慰剂不等于原句（汉字必须真被打散，否则 P ≡ H）",
+      not any("与原句相同" in m for m in _AZ_BAD), str(_AZ_BAD))
+
+#: AZ4：构建器必须拒绝在**已有种子库**的目录上重建（⑨b：旧 facts 混库）。
+_AZ_STALE = Path(tempfile.mkdtemp(prefix="v1_az4_"))
+(_AZ_STALE / "memH").mkdir(parents=True)
+MemoryStore(_AZ_STALE / "memH" / "memory.db").close()
+_AZ_BUF = _io.StringIO()
+with _ctx.redirect_stdout(_AZ_BUF):
+    _AZ_RC = _G7D.main(["--out-dir", str(_AZ_STALE),
+                        "--heldout", str(V1 / "bench" / "heldout" / "g7e_heldout.jsonl")])
+check(RS, "AZ4 已有种子库的目录必须拒绝重建（旧 facts 混入 = 处理不纯）",
+      _AZ_RC == 1 and not (_AZ_STALE / "memP" / "memory.db").exists(),
+      f"rc={_AZ_RC} memP_exists={(_AZ_STALE / 'memP' / 'memory.db').exists()}")
+check(RS, "AZ5 全部惯例文本 ≤120 字（否则 core.py 注入时静默截断到 120）",
+      all(len(t) <= 120 for t in _G7D.FACTS.values()),
+      str([(k, len(v)) for k, v in _G7D.FACTS.items() if len(v) > 120]))
+
+# ══════════════════════════════════════════════════════════════════════════
 # AE 组（第二十三轮，路线①）：外部能力作为**答案来源**接入
 # ══════════════════════════════════════════════════════════════════════════
 _AE_CORE = _code_only(_CORE_SRC)

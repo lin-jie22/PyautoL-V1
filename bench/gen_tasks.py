@@ -1316,6 +1316,222 @@ TASKS["tasks/g7_family_train"] = [
 ]
 
 
+# §17-7d 题族：**题面不完备** —— 判别性惯例只存在于记忆里（DESIGN ★7d 事前登记）。
+# ⛔ 每道题都必须满足两条：①惯例是项目内任意约定，从题面逻辑上推不出来；
+#    ②题面**一个字的惯例都不给**，只给"按本项目定下的约定处理"。
+# 若校准时发现某题的惯例能被常识猜中（E 臂 1.00），按登记剔除并如实记录。
+TASKS["tasks/g7d_spec_incomplete"] = [
+    {
+        "id": "g7d1_parse_date_flex",
+        "prompt": ("写一个函数 parse_date_flex(s)：把 '03/04/2024' 这种三段斜杠日期"
+                   "转成 'YYYY-MM-DD'。哪一段是日、哪一段是月，按本项目定下的"
+                   "日期惯例处理（惯例不在题面里）；已经是 'YYYY-MM-DD' 形式的"
+                   "直接原样返回。只输出代码，函数名必须是 parse_date_flex。"),
+        "tests": [
+            "assert parse_date_flex('03/04/2024') == '2024-04-03'",
+            "assert parse_date_flex('01/02/2024') == '2024-02-01'",
+            "assert parse_date_flex('05/06/2024') == '2024-06-05'",
+            "assert parse_date_flex('09/10/2024') == '2024-10-09'",
+            "assert parse_date_flex('2024-04-03') == '2024-04-03'",
+        ],
+        "oracle": r'''def parse_date_flex(s):
+    p = s.split('/')
+    if len(p) != 3:
+        return s
+    d, m, y = p[0].strip(), p[1].strip(), p[2].strip()
+    if not (d.isdigit() and m.isdigit() and y.isdigit()):
+        return s
+    return '%04d-%02d-%02d' % (int(y), int(m), int(d))''',
+        "partial": r'''def parse_date_flex(s):
+    p = s.split('/')
+    if len(p) != 3:
+        return s
+    m, d, y = p[0].strip(), p[1].strip(), p[2].strip()
+    if not (d.isdigit() and m.isdigit() and y.isdigit()):
+        return s
+    return '%04d-%02d-%02d' % (int(y), int(m), int(d))''',
+        "null": "",
+        "meta": {"tags": "spec-incomplete,date,convention", "level": "easy"},
+    },
+    {
+        "id": "g7d2_dedupe_keep",
+        "prompt": ("写一个函数 dedupe_keep(xs)：对字符串列表去重，返回列表保持原顺序。"
+                   "比较之前怎么归一化、遇到重复时保留第几次出现的那条原文，"
+                   "按本项目定下的去重惯例处理（惯例不在题面里）。"
+                   "只输出代码，函数名必须是 dedupe_keep。"),
+        "tests": [
+            "assert dedupe_keep(['A', 'a']) == ['A']",
+            "assert dedupe_keep(['b', ' a ', 'A']) == ['b', ' a ']",
+            "assert dedupe_keep(['x', 'y', 'X', 'y ']) == ['x', 'y']",
+            "assert dedupe_keep(['a', 'b', 'A']) == ['a', 'b']",
+            "assert dedupe_keep([]) == []",
+        ],
+        "oracle": r'''def dedupe_keep(xs):
+    seen, out = set(), []
+    for x in xs:
+        k = x.strip().lower()
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(x)
+    return out''',
+        "partial": r'''def dedupe_keep(xs):
+    out = []
+    for x in xs:
+        if x not in out:
+            out.append(x)
+    return out''',
+        "null": "",
+        "meta": {"tags": "spec-incomplete,dedupe,convention", "level": "easy"},
+    },
+    {
+        "id": "g7d3_fmt_amount",
+        "prompt": ("写一个函数 fmt_amount(x)：把数字格式化成金额字符串，输入可能是 int "
+                   "或 float。千分位用什么符号、保留几位小数、负数怎么写，"
+                   "按本项目定下的金额惯例处理（惯例不在题面里）。"
+                   "只输出代码，函数名必须是 fmt_amount。"),
+        "tests": [
+            "assert fmt_amount(1234.5) == '1 234.50'",
+            "assert fmt_amount(-1234.5) == '(1 234.50)'",
+            "assert fmt_amount(0) == '0.00'",
+            "assert fmt_amount(1234567.891) == '1 234 567.89'",
+            "assert fmt_amount(-0.5) == '(0.50)'",
+        ],
+        "oracle": r'''def fmt_amount(x):
+    neg = float(x) < 0
+    s = ("%.2f" % abs(float(x)))
+    ip, _, fp = s.partition(".")
+    groups = []
+    while len(ip) > 3:
+        groups.insert(0, ip[-3:])
+        ip = ip[:-3]
+    groups.insert(0, ip)
+    s = " ".join(groups) + "." + fp
+    return "(" + s + ")" if neg else s''',
+        "partial": r'''def fmt_amount(x):
+    return "%.2f" % float(x) if abs(float(x)) < 1000 else (
+        "{:,.2f}".format(float(x)))''',
+        "null": "",
+        "meta": {"tags": "spec-incomplete,money,convention", "level": "easy"},
+    },
+    {
+        "id": "g7d4_slugify",
+        "prompt": ("写一个函数 slugify(s)：把标题转成 URL slug。大小写怎么处理、"
+                   "空白变成什么、允许哪些字符、连续分隔符要不要合并、首尾分隔符"
+                   "怎么办，按本项目定下的 slug 惯例处理（惯例不在题面里）。"
+                   "只输出代码，函数名必须是 slugify。"),
+        "tests": [
+            "assert slugify('Hello World') == 'hello-world'",
+            "assert slugify('  A  B  ') == 'a-b'",
+            "assert slugify('X_Y!') == 'xy'",
+            "assert slugify('a---b') == 'a-b'",
+            "assert slugify('') == ''",
+        ],
+        "oracle": r'''def slugify(s):
+    t = ''
+    for ch in s.lower():
+        if (ch.isalnum() and ord(ch) < 128) or ch == '-':
+            t += ch
+        elif ch.isspace():
+            t += '-'
+    return '-'.join(p for p in t.split('-') if p)''',
+        "partial": r'''def slugify(s):
+    return s.strip().lower().replace(' ', '-')''',
+        "null": "",
+        "meta": {"tags": "spec-incomplete,slug,convention", "level": "easy"},
+    },
+    # ── 池 v2（装置修正⑧，DESIGN ★7d）：v1 校准里 g7d1 / g7d4 的 E 臂 **1.00**
+    #    ⇒ 那两条惯例能被她常识猜中 ⇒ 按登记"该题作废"，不再进入选题。
+    #    下面三道按**反常识默认**设计：惯例必须是"项目内任意决定"，
+    #    模型的默认写法必须**恰好相反**，且 5 条断言里只留 1 条不依赖该惯例。
+    {
+        "id": "g7e1_parse_flag",
+        "prompt": ("写一个函数 parse_flag(s)：把配置里的开关值转成 True / False / None"
+                   "（无法识别）。哪些写法算真、哪些算假、空串算什么，"
+                   "按本项目定下的开关解析惯例处理（惯例不在题面里）；"
+                   "入参大小写不敏感、首尾空白忽略。"
+                   "只输出代码，函数名必须是 parse_flag。"),
+        "tests": [
+            "assert parse_flag('y') is True",
+            "assert parse_flag('true') is False",
+            "assert parse_flag('TRUE') is False",
+            "assert parse_flag('on') is False",
+            "assert parse_flag('maybe') is None",
+        ],
+        "oracle": r'''def parse_flag(s):
+    t = str(s).strip().lower()
+    if t in ('y', 'yes', '1'):
+        return True
+    if t in ('n', 'no', '0', 'off', 'false', 'true', 'on'):
+        return False
+    return None''',
+        "partial": r'''def parse_flag(s):
+    t = str(s).strip().lower()
+    if t in ('y', 'yes', '1', 'true', 'on'):
+        return True
+    if t in ('n', 'no', '0', 'off', 'false'):
+        return False
+    return None''',
+        "null": "",
+        "meta": {"tags": "spec-incomplete,flag,legacy", "level": "easy"},
+    },
+    {
+        "id": "g7e2_truncate_tail",
+        "prompt": ("写一个函数 truncate_tail(s, n)：把过长的字符串截短到最多 n 个字符。"
+                   "超长时保留哪一头、加什么标记，按本项目定下的截断惯例处理"
+                   "（惯例不在题面里）；不超长时原样返回。"
+                   "只输出代码，函数名必须是 truncate_tail。"),
+        "tests": [
+            "assert truncate_tail('abc', 5) == 'abc'",
+            "assert truncate_tail('abcdef', 3) == '…def'",
+            "assert truncate_tail('0123456789', 4) == '…6789'",
+            "assert truncate_tail('日志第二段现场', 4) == '…二段现场'",
+            "assert truncate_tail('abcdefg', 2) == '…fg'",
+        ],
+        "oracle": r'''def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-n:]''',
+        "partial": r'''def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return s[:n] + '…' ''',
+        "null": "",
+        "meta": {"tags": "spec-incomplete,truncate,legacy", "level": "easy"},
+    },
+    {
+        "id": "g7e3_dedupe_last",
+        "prompt": ("写一个函数 dedupe_last(xs)：对字符串列表去重。比较之前怎么归一化、"
+                   "重复时保留哪一次出现的原文与位置，按本项目定下的去重惯例处理"
+                   "（惯例不在题面里）。只输出代码，函数名必须是 dedupe_last。"),
+        "tests": [
+            "assert dedupe_last(['A', 'a']) == ['a']",
+            "assert dedupe_last(['x', 'y', 'X']) == ['y', 'X']",
+            "assert dedupe_last([]) == []",
+            "assert dedupe_last(['b', ' a ', 'A']) == ['b', 'A']",
+            "assert dedupe_last(['k']) == ['k']",
+        ],
+        "oracle": r'''def dedupe_last(xs):
+    last = {}
+    for i, x in enumerate(xs):
+        last[x.strip().lower()] = i
+    keep = set(last.values())
+    return [x for i, x in enumerate(xs) if i in keep]''',
+        "partial": r'''def dedupe_last(xs):
+    out, seen = [], set()
+    for x in xs:
+        k = x.strip().lower()
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(x)
+    return out''',
+        "null": "",
+        "meta": {"tags": "spec-incomplete,dedupe,legacy", "level": "easy"},
+    },
+]
+
+
 def _self_check() -> None:
     """每一行都必须自己跑一遍：oracle=1.0 / partial 严格居中 / null=0.0。
 

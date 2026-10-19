@@ -5812,6 +5812,133 @@ check(RS, "AZ25 ★7i 降级兜底的 `recall` query 必须是**目标文本**�
       _AZ25_Q == _AZ25_GOAL[:64] and _AZ25_Q != "goal" and bool(_AZ25_Q2),
       f"goal 非空→query={_AZ25_Q!r}；goal 为空→query={_AZ25_Q2!r}")
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ26–AZ30（第三十八轮，§17-7j）：把"题面能不能控制命中几条"焊死
+#
+# 为什么必须有这一组：7i 把全表兜底拔掉之后，§17-7 手上**没有可用的 suite**
+# 了 —— 四题的真命中是 **0/0/1/1**（前两题零命中、后两题靠 ASCII 偶然命中）。
+# 没有可控的 suite，任何"邻域效应"的读数都无处安放。
+#
+# 机制（7j 动手前实测，不是推断）：`_TOKEN = [A-Za-z0-9_\u4e00-\u9fff]+`
+# 把**整段连续中文当一个 token**，而 FTS5 找的是**完全相同的串** ⇒ 中文只能
+# "整串逐字命中"（`g7e2` 命中的是 `不超长时原样返回` 这 7 个字恰好一字不差）。
+# ⇒ 常规命中源是 ASCII token。所以钥匙用 ASCII（`ZK1`…），**且必须是 ASCII**：
+#   `build_placebo` 只打散汉字、原位保留 ASCII；钥匙若是汉字，P 臂的钥匙会被
+#   打散 ⇒ 两臂检索行为不同 ⇒ 条数/字符数不等 ⇒ R7 的等长在注入层就破。
+# ══════════════════════════════════════════════════════════════════════════
+import bench.build_g7j_heldout as _G7J                               # noqa: E402
+
+_AZ26_N0 = _az_rows(V1 / "bench" / "heldout" / "g7j_n0_heldout.jsonl")
+_AZ26_N4 = _az_rows(V1 / "bench" / "heldout" / "g7j_n4_heldout.jsonl")
+_AZ26_FACTS = _G7D.VARIANTS["7j"]
+_AZ26_MEM = MemoryStore(_TMP / "az26.db")
+for _v in _AZ26_FACTS.values():
+    _AZ26_MEM.commit_fact(_v, source="abstract", confidence=0.5)
+_AZ26_K = cfg.Limits().recall_k
+
+
+def _az26_got(rows: list[dict]) -> list[list[str]]:
+    return [[f.text for f in _AZ26_MEM.recall(t["prompt"], k=_AZ26_K)]
+            for t in rows]
+
+
+_AZ26_G0 = _az26_got(_AZ26_N0)
+_AZ26_G4 = _az26_got(_AZ26_N4)
+_AZ26_GOLD = _az26_got(_AZ6_HINT)          # 正向对照：原题面（没有钥匙）
+_AZ26_C0 = [len(g) for g in _AZ26_G0]
+_AZ26_C4 = [len(g) for g in _AZ26_G4]
+_AZ26_COLD = [len(g) for g in _AZ26_GOLD]
+_AZ26_OWN0 = all(_AZ26_FACTS[t["id"]] in g for t, g in zip(_AZ26_N0, _AZ26_G0))
+_AZ26_OWN4 = all(_AZ26_FACTS[t["id"]] in g for t, g in zip(_AZ26_N4, _AZ26_G4))
+check(RS, "AZ26 ★7j 钥匙必须**可控**：题面提 N 把就命中 N 条，且不多不少\n"
+          "          —— n0 提 1 把 ⇒ 1 条；n4 提 4 把 ⇒ 4 条；两次都必须含『本条』。\n"
+          "          ⚠️ 必须带**正向对照**：原题面（没有钥匙）仍是 0/0/1/1 ——\n"
+          "             没有这一格，『命中来自钥匙』就只是推断（也可能是惯例正文里\n"
+          "             的中文恰好又撞上了，7e 的 `g7e2` 就是这么偶然命中的）。",
+      _AZ26_C0 == [1, 1, 1, 1] and _AZ26_C4 == [4, 4, 4, 4]
+      and _AZ26_OWN0 and _AZ26_OWN4 and _AZ26_COLD == [0, 0, 1, 1],
+      f"n0={_AZ26_C0} n4={_AZ26_C4} 原题面={_AZ26_COLD} "
+      f"本条在n0={_AZ26_OWN0} 本条在n4={_AZ26_OWN4}")
+
+# ── AZ27：钥匙必须落在 `fts_query` 的 24-token 窗口**内** ──────────────────
+#: `fts_query` 只取前 24 个 token（`toks[:24]`）。"题面里写了钥匙"与"FTS 收到
+#: 钥匙"是两件事 —— 窗口外的钥匙等于没写，而读数上看不出任何异常（就是命中少）。
+_AZ27_BAD: list[str] = []
+_AZ27_TOKS: list[tuple[str, int, int]] = []
+for _t in _AZ26_N4:
+    _tk = _G7J.query_tokens(_t["prompt"])
+    _AZ27_TOKS.append((_t["id"], len(_G7J._TOKEN.findall(_t["prompt"])), len(_tk)))
+    _AZ27_BAD += _G7J.check_windows(_t["prompt"], _t["id"], "n4")
+check(RS, "AZ27 ★7j 四把钥匙必须**全部**落在 `fts_query` 的 24-token 窗口内\n"
+          "          —— `fts_query` 只取前 24 个；窗口外等于没提，而现象只是\n"
+          "             『命中少了几条』，与『FTS 坏了』长得一模一样。",
+      not _AZ27_BAD,
+      f"题面token→窗口={'/'.join(f'{a}:{b}→{c}' for a, b, c in _AZ27_TOKS)} "
+      f"违规={_AZ27_BAD or '无'}")
+
+# ── AZ28：骨架安慰剂后 P 臂必须**等条数** ────────────────────────────────
+#: 这是"钥匙必须用 ASCII"的**反证**：把钥匙换成汉字再看会怎样（这里不真换，
+#: 只钉住当前构造成立）。R7 的等长只有在**两臂条数相等**时才等价于字符数相等。
+_AZ28_H = list(_AZ26_FACTS.values())
+_AZ28_P = _G7D.build_placebo(_AZ28_H)
+_AZ28_BAD = _G7D.check_placebo(_AZ28_H, _AZ28_P)
+_AZ28_PMEM = MemoryStore(_TMP / "az28.db")
+for _v in _AZ28_P:
+    _AZ28_PMEM.commit_fact(_v, source="abstract", confidence=0.5)
+_AZ28_P4 = [len(_AZ28_PMEM.recall(t["prompt"], k=_AZ26_K)) for t in _AZ26_N4]
+check(RS, "AZ28 ★7j 骨架安慰剂之后 P 臂必须**等条数**（否则 R7 的等长在注入层就破）\n"
+          "          —— 钥匙用 ASCII 的唯一理由：`build_placebo` 只打散汉字、\n"
+          "             原位保留 ASCII。钥匙若是汉字，P 臂的钥匙被打散 ⇒\n"
+          "             两臂检索行为不同 ⇒ 条数/字符数不等，Δ 无法归因。",
+      _AZ28_P4 == _AZ26_C4 and not _AZ28_BAD,
+      f"P臂条数={_AZ28_P4}（H 臂={_AZ26_C4}）等价性违规={_AZ28_BAD or '无'}")
+
+# ── AZ29：`[语义记忆]` 块在 n4 档**真的出现**且条数对 ──────────────────────
+#: `_state()` 的 cap 会把**低优先级块整块丢掉**（`state_trimmed += 1`）。
+#: 若语义块被丢掉，"没送达"会被读成"模型不用"—— 那正是 7d 读错的那条路。
+#: ⚠️ 必须走真实路径（Core + StubLLM），不许手工塞 state。
+_AZ29_T = next(t for t in _AZ26_N4 if t["id"] == "g7d2_dedupe_keep")
+_AZ29_MEM = MemoryStore(Path(tempfile.mkdtemp(prefix="v1_az29_")) / "memory.db")
+for _v in _AZ26_FACTS.values():
+    _AZ29_MEM.commit_fact(_v, source=ABSTRACT_SOURCE, confidence=0.5)
+_AZ29_CORE = Core(llm=StubLLM(), memory=_AZ29_MEM, memory_mode="raw")
+_AZ29_CORE.run(_AZ29_T["prompt"], task_id=_AZ29_T["id"])
+_AZ29_ST = _AZ29_CORE.state_log[0][1] if _AZ29_CORE.state_log else ""
+_AZ29_BLOCK = ""
+for _line in _AZ29_ST.splitlines():
+    if _line.startswith("[语义记忆]"):
+        _AZ29_BLOCK = _line[len("[语义记忆]"):].strip()
+        break
+_AZ29_N = len(re.findall(r"（ZK\d）", _AZ29_BLOCK))
+_AZ29_MEM.close()
+check(RS, "AZ29 ★7j 第 1 步的 `[语义记忆]` 块必须**真的存在**且含恰好 4 条\n"
+          "          —— `_state()` 的 cap 会把低优先级块**整块丢掉**；\n"
+          "             若语义块被丢掉，『没送达』会被读成『模型不用』。\n"
+          "          ⚠️ 走真实路径（Core + StubLLM），不许手工塞 state。",
+      bool(_AZ29_ST) and _AZ29_BLOCK != "" and _AZ29_N == 4,
+      f"state={len(_AZ29_ST)}字 语义块={'有空' if _AZ29_BLOCK else '❌空'} "
+      f"条数={_AZ29_N}（期望 4）")
+
+
+# ── AZ30：同一个 R1 预检必须**有分辨力** ──────────────────────────────────
+#: 只证明"7j 通过"等于只说"现在是绿的"，挡不住"预检恒真"。
+#: 反向对照必须走**同一条代码路径**并且**失败**（rc=2 = 处理未送达）。
+def _az30_rc(tag: str, heldout: Path, variant: str) -> int:
+    d = Path(tempfile.mkdtemp(prefix=f"v1_az30_{tag}_")) / "seed"
+    with _ctx.redirect_stdout(_io.StringIO()):
+        return _G7D.main(["--out-dir", str(d), "--heldout", str(heldout),
+                          "--variant", variant])
+
+
+_AZ30_J = _az30_rc("7j", V1 / "bench" / "heldout" / "g7j_n0_heldout.jsonl", "7j")
+_AZ30_D = _az30_rc("7d", V1 / "bench" / "heldout" / "g7e_hint_heldout.jsonl", "7d")
+check(RS, "AZ30 ★7j 同一个 R1 预检必须**有分辨力**：7j 通过、7d 仍失败\n"
+          "          —— 前两题的题面与四条 facts FTS 零交集 ⇒ 7d/7f 在拔掉兜底后\n"
+          "             **不可重建**。这不许被『为了让预检过而放宽』抹平：\n"
+          "             零命中就是处理未送达，该修的是题面（7j），不是预检。",
+      _AZ30_J == 0 and _AZ30_D == 2,
+      f"7j rc={_AZ30_J}（期望 0） 7d rc={_AZ30_D}（期望 2）")
+
 
 
 # ══════════════════════════════════════════════════════════════════════════

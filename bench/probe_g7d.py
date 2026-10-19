@@ -68,11 +68,11 @@ def _load_scores(ev: Path) -> dict[str, list[dict[str, float]]]:
     return out
 
 
-def _check_delivery(ev: Path) -> tuple[bool, list[str]]:
+def _check_delivery(ev: Path, heldout: Path = HELDOUT) -> tuple[bool, list[str]]:
     from build_g7d_seed import FACTS
     from mw.memory import MemoryStore
 
-    tasks = [json.loads(l) for l in HELDOUT.read_text().splitlines() if l.strip()]
+    tasks = [json.loads(l) for l in heldout.read_text().splitlines() if l.strip()]
     lines: list[str] = []
     ok = True
     seeds = {a: MemoryStore(ev / f"seed_{a}.db") for a in ARMS}
@@ -115,14 +115,18 @@ def _check_delivery(ev: Path) -> tuple[bool, list[str]]:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--evidence", required=True)
+    #: 7e 起 suite 可换（默认仍是 7d 的 g7e_heldout.jsonl）—— 换的只是题面
+    #: 那一句话，判据/阈值/读数口径**一个字节不动**。
+    p.add_argument("--heldout", default=str(HELDOUT))
     args = p.parse_args(argv)
     ev = Path(args.evidence).expanduser().resolve()
+    heldout = Path(args.heldout).expanduser().resolve()
 
     reps = _load_scores(ev)
     ids = sorted(reps["H"][0])
 
     print("== R1 送达（冻结种子库 recall 重放 + own-fact + 完整性）==")
-    ok_delivery, d_lines = _check_delivery(ev)
+    ok_delivery, d_lines = _check_delivery(ev, heldout)
     for l in d_lines:
         print(l)
     if not ok_delivery:

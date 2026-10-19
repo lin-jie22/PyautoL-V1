@@ -10,7 +10,9 @@ OUT="${2:?用法: run_g7d.sh <SEED_DIR> <OUT_DIR>}"
 cd "$(dirname "$0")/.."
 ROOT="$(pwd)"
 PY="${PYTHON:-python3}"
-SUITE="$ROOT/bench/heldout/g7e_heldout.jsonl"
+SUITE="${V1_SUITE:-$ROOT/bench/heldout/g7e_heldout.jsonl}"
+# ⛔ 三臂必须跑**同一个** suite 文件（前置②）；`V1_SUITE` 只允许在这里换一次，
+#    换了就是另一把尺子（7e 就是这么换的：只有题面的一句话不同）。
 
 export NO_PROXY=127.0.0.1 no_proxy=127.0.0.1
 export V1_LLM_BASE_URL="${V1_LLM_BASE_URL:-http://localhost:11434/v1}"
@@ -46,7 +48,7 @@ for ARM in H P E; do
     if [ "$SEED_HASH" != "$WANT" ]; then
       echo "❌ 臂 $ARM repeat $R 种子 sha256 不一致 ⇒ 整组作废"; exit 3
     fi
-    echo "== 臂 $ARM repeat $R 开跑（g7d_heldout）=="
+    echo "== 臂 $ARM repeat $R 开跑（$(basename "$SUITE")）=="
     V1_BENCH_DIR="$D/bench_r$R" V1_STATE_DIR="$D/mem_r$R" \
       "$PY" "$ROOT/run.py" --bench --solver llm --temperature 0 \
         --max-tokens 1024 --budget 1 --no-external \

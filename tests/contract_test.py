@@ -2200,19 +2200,22 @@ check(RS, "AD7 ★「没记」≠「失败」：`load_evidence` 必须丢掉缺 
 _coh = (V1 / "bench" / "coherence.py").read_text(encoding="utf-8")
 _i_dry = _coh.find("_dry_shell(core)")
 _i_patch = _coh.find("patch(core)")
-check(RS, "AE1 ★实验工具的危险性不许超过被测系统：`coherence.py` 必须在"
+# ⚠️ 这组用 `AEb` 前缀，不是 `AE`：第二十三轮的「外部能力」组已经占用了 AE1–AE5。
+#    第三十三轮实测：两处同名 ⇒ R13 按 `❌ AE2` 取样时**分不清是哪一条**，
+#    "目标转红"就可能是被另一条顶替的。撞名不是格式问题，是判读问题。
+check(RS, "AEb1 ★实验工具的危险性不许超过被测系统：`coherence.py` 必须在"
           "**施加变体之前**装 `run_shell` 干跑保险"
           "（关掉守卫后 `rm -rf ~` 会真的执行 —— 第一次跑靠宿主沙箱兜住，"
           "那不是我的代码在工作）",
       0 <= _i_dry < _i_patch,
       f"dry@{_i_dry} patch@{_i_patch}")
 
-check(RS, "AE2 消融必须为每个变体隔离记忆目录（`facts` 跨轮累积，"
+check(RS, "AEb2 消融必须为每个变体隔离记忆目录（`facts` 跨轮累积，"
           "共用目录量到的是「记忆多少」而不是「这个部件有没有用」）",
       "TemporaryDirectory" in _coh and "V1_STATE_DIR" in _coh,
       f"TemporaryDirectory={'TemporaryDirectory' in _coh} V1_STATE_DIR={'V1_STATE_DIR' in _coh}")
 
-check(RS, "AE3 消融报告必须同时给「声明」与「实测」分类，且不一致时以实测为准"
+check(RS, "AEb3 消融报告必须同时给「声明」与「实测」分类，且不一致时以实测为准"
           "（先验与实测分歧本身就是最有信息量的一行）",
       "declared" in _coh and "actual" in _coh and "classify" in _coh,
       f"declared={'declared' in _coh} actual={'actual' in _coh} classify={'classify' in _coh}")
@@ -5331,6 +5334,53 @@ check(RS, "AZ4 已有种子库的目录必须拒绝重建（旧 facts 混入 = �
 check(RS, "AZ5 全部惯例文本 ≤120 字（否则 core.py 注入时静默截断到 120）",
       all(len(t) <= 120 for t in _G7D.FACTS.values()),
       str([(k, len(v)) for k, v in _G7D.FACTS.items() if len(v) > 120]))
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ6/AZ7（第三十三轮，§17-7e）：hint suite 必须是**派生**出来的，不是手抄的。
+# 7e 的全部实验价值都压在一句话上 —— 只改了"指向"，没改别的。
+# 手抄一次就等于给自己留了"顺手把句子改顺"的口子；这两条断言把它焊死：
+#   AZ6 = 除题面外逐字段不动（ids/tests/oracle/partial/null/meta 一个字节不许变）
+#   AZ7 = 题面只差这一处，且**真的**指向记忆（长度差恰为 +2，反向替换逐字节可逆）
+# ══════════════════════════════════════════════════════════════════════════
+import build_g7e_hint as _G7E                                    # noqa: E402
+
+
+def _az_rows(path: Path) -> list[dict]:
+    return [json.loads(l) for l in
+            path.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+_AZ6_BASE = _az_rows(V1 / "bench" / "heldout" / "g7e_heldout.jsonl")
+_AZ6_HINT = _az_rows(V1 / "bench" / "heldout" / "g7e_hint_heldout.jsonl")
+_AZ6_DERIVED = _G7E.derive(_AZ6_BASE)
+_AZ6_FIELDS = ("id", "tests", "oracle", "partial", "null", "meta")
+_AZ6_BAD = [
+    (b.get("id"), k)
+    for b, d, h in zip(_AZ6_BASE, _AZ6_DERIVED, _AZ6_HINT)
+    for k in _AZ6_FIELDS
+    if d.get(k) != h.get(k)
+]
+check(RS, "AZ6 ★hint suite 除题面外**逐字段不动**（7e 只改『指向』这一件事）\n"
+          "          —— 手抄的 suite 只要顺手改顺一句，7d/7e 就不是同一把尺子了。",
+      len(_AZ6_BASE) == len(_AZ6_HINT) == len(_AZ6_DERIVED) and not _AZ6_BAD,
+      f"n={len(_AZ6_BASE)}/{len(_AZ6_HINT)}/{len(_AZ6_DERIVED)} 漂移={_AZ6_BAD}")
+
+_AZ7_BAD = []
+for _b, _h in zip(_AZ6_BASE, _AZ6_HINT):
+    _p = _h["prompt"]
+    if _p != _G7E.hint_prompt(_b["prompt"]):
+        _AZ7_BAD.append((_h.get("id"), "与派生结果不等"))
+    if _G7E.HINT_CLAUSE not in _p:
+        _AZ7_BAD.append((_h.get("id"), "题面没指向记忆"))
+    if _G7E.BASE_CLAUSE in _p:
+        _AZ7_BAD.append((_h.get("id"), "旧句还在（改了不止一处）"))
+    if len(_p) - len(_b["prompt"]) != len(_G7E.HINT_CLAUSE) - len(_G7E.BASE_CLAUSE):
+        _AZ7_BAD.append((_h.get("id"), "长度差不是 +2"))
+    if _p.replace(_G7E.HINT_CLAUSE, _G7E.BASE_CLAUSE) != _b["prompt"]:
+        _AZ7_BAD.append((_h.get("id"), "反向替换回不到 7d 题面"))
+check(RS, "AZ7 ★题面**只差这一处**且真的指向记忆（长度差 +2、反向替换逐字节可逆）\n"
+          "          —— 这是 7e 唯一的自变量；它不干净，整组读数就没有归因力。",
+      not _AZ7_BAD, str(_AZ7_BAD))
 
 # ══════════════════════════════════════════════════════════════════════════
 # AE 组（第二十三轮，路线①）：外部能力作为**答案来源**接入

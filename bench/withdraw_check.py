@@ -182,8 +182,8 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #: ⚠️ 会连带 A 组的"登记 == 实际读取"（那条本来就该红：代码读了没登记的 env
     #:    就是静默漂移），见 COUPLED。
     ("AE2", "mw/config.py",
-     '    "V1_VERIFY_RETRIES",\n    "V1_EXTERNAL_ANSWER_TOOL",\n)',
-     '    "V1_VERIFY_RETRIES",\n)'),
+     '    "V1_VERIFY_RETRIES",\n    "V1_EXTERNAL_ANSWER_TOOL",\n',
+     '    "V1_VERIFY_RETRIES",\n'),
     # ── AE3：注入只许守在第 1 步（把 `it == 1` 放宽成 `it >= 1`）──────────
     ("AE3", "mw/core.py",
      "if _ext and it == 1 and self.tools.get(_ext) is not None:",
@@ -444,6 +444,14 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '这条被故意写长到超过一百二十个字，用来证明注入截断的闸真的会转红，'
      '而不是一句装饰性的注释在测试里恒绿；再补一句让它足够长，长到必须被截断才能通过；'
      '还要再长一点，否则它自己就只是一条没越过阈值的普通注释而已。",'),
+    # AZ6：派生时把 tests 丢掉 ⇒ 除题面外不再是逐字段不动（7e 的自变量不干净）。
+    ("AZ6", "bench/build_g7e_hint.py",
+     '            "tests": row["tests"],',
+     '            "tests": [],'),
+    # AZ7：派生器退化成恒等函数 ⇒ 题面根本没指向记忆（唯一变更没发生）。
+    ("AZ7", "bench/build_g7e_hint.py",
+     "    return prompt.replace(BASE_CLAUSE, HINT_CLAUSE)",
+     "    return prompt"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -455,7 +463,13 @@ COUPLED: dict[str, frozenset[str]] = {
     #        （它期望 failed==2）；
     #   AS10 同理 —— 没有打回就没有"重写失败"，`_salvage` 也就无从被触发。
     # ⇒ 这是**合理的连带**（上游断了，下游两条断言自然不成立），不是锚定跑偏。
-    "AS7": frozenset({"AS8", "AS9", "AS10"}),
+    #   ★第三十三轮补登 AV1/AV2：它们读的就是 `_AS_C2.memory.episodes(kind="failure")`
+    #     那几行 —— 闸永不拒 ⇒ 没有 failure 行 ⇒ 两条断言的前提整体消失。
+    #     实测（第三十三轮）：AS7 撤回后 AV1/AV2 同时红，`failure行数=0`。
+    "AS7": frozenset({"AS8", "AS9", "AS10", "AV1", "AV2"}),
+    #: AS9 撤掉 `failed > cap` ⇒ 超限分支永不可达 ⇒ AV2（超限交付要落 failure 行）
+    #: 的前提消失。实测：AS9 撤回后 AV2 红，其余只 AS9 自己红。
+    "AS9": frozenset({"AV2"}),
     # AY1/AY2 是同一命题的正反用例，实现只有一处 ⇒ 必然一起翻（见上）。
     "AY1": frozenset({"AY2"}),
     # salvage 条件去掉 `not answer and` 之后，**正常交付**也会被上一版坏答案顶掉
@@ -473,6 +487,11 @@ COUPLED: dict[str, frozenset[str]] = {
     "AX1": frozenset({"I7", "V1", "V3", "V4", "V6"}),
     #: AX3（env 读不到）⇒ Limits 恒 True ⇒ Core 的世界模型照常可学 ⇒ AX4 红（串联链）。
     "AX3": frozenset({"AX4"}),
+    #: AS18（`triggered += 0`）⇒ AU8 要求 `triggered ≥ 1` ⇒ 计数恒 0 必红。
+    #: AS19（打印键改成 `收尾X=`）⇒ AU10 找 `收尾=` 那行，找不到 ⇒ 必红。
+    #: AU3（拒绝发起失效）⇒ 收尾触发路径改变 ⇒ AU10 的 `by_reason` 分项与打印行对不上。
+    #: 三条都是"同一个 `_au_co` 对象被上下游两条断言同时观测"，实测逐条复现。
+    "AS19": frozenset({"AU10"}),
     "AW2": frozenset({"AW5"}),
     "AW3": frozenset({"AW5"}),
     "AW4": frozenset({"AW5"}),
@@ -483,7 +502,9 @@ COUPLED: dict[str, frozenset[str]] = {
     "AE4": frozenset({"AE9"}),
     # 触发数不涨（`+= 0`）⇒ 汇总行也就没有"收尾=1次"可印 ⇒ AS19 必然红。
     # 上游的计数断了，下游"把计数念出来"这条断言自然不成立 —— 合理连带。
-    "AS18": frozenset({"AS19"}),
+    # ★第三十三轮补登 AU8/AU10：AU8 直接要求 `closeout.triggered ≥ 1`（计数恒 0 必红）；
+    #   AU10 读的是同一份 `by_reason` 打印行（分项与总数一起被打断）。实测逐条复现。
+    "AS18": frozenset({"AS19", "AU8", "AU10"}),
     #: AS1 往 `mw/verify.py` 末尾**追加一行 import**（模拟"判据模块碰锚层"）。
     #: 那一行是**未被使用**的 ⇒ K5（"内核没有死导入"）必然红。
     #: 这是变异的直接副作用，不是锚定跑偏：要消掉多红只能让那行被用起来，
@@ -516,7 +537,9 @@ COUPLED: dict[str, frozenset[str]] = {
     #:          交付路径整个变了；
     #:   AU7 —— 它读的是"收尾后预留已释放"，而收尾根本没发生 ⇒ 没有读数可判。
     #: ⇒ 合理连带（上游断了，下游三条断言自然不成立）。
-    "AU3": frozenset({"AU5", "AU7", "AU8"}),
+    #: ★第三十三轮补登 AU10：拒绝发起失效后收尾被**另一条路径**触发，
+    #:   `by_reason` 的分项与"收尾="打印行对不上 ⇒ AU10 红。实测复现。
+    "AU3": frozenset({"AU5", "AU7", "AU8", "AU10"}),
     #: AU5 把"首发放弃"与"重试放弃"对调 ⇒ AU4 断言"首发放弃恒为 0"必然红。
     "AU5": frozenset({"AU4"}),
     #: AU8 不转向收尾 ⇒ 那次运行根本走不到 `_close_out` ⇒ 两条下游必然不成立：

@@ -1,0 +1,37 @@
+
+== ① 题面对比（钥匙数 / token 数） ==
+  g7d2_dedupe_keep       n0: 120字/1把钥匙   n4: 135字/4把钥匙
+  g7d3_fmt_amount        n0: 123字/1把钥匙   n4: 138字/4把钥匙
+  g7e1_parse_flag        n0: 141字/1把钥匙   n4: 156字/4把钥匙
+  g7e2_truncate_tail     n0: 122字/1把钥匙   n4: 137字/4把钥匙
+
+== ② 语义块对比（H 臂 r1，it=1；state 来自 7k 冻结证据） ==
+  ev_n0 g7d2_dedupe_keep        51字/1条 本条在第1位 逐字节✅
+  ev_n0 g7d3_fmt_amount         48字/1条 本条在第1位 逐字节✅
+  ev_n0 g7e1_parse_flag         71字/1条 本条在第1位 逐字节✅
+  ev_n0 g7e2_truncate_tail      64字/1条 本条在第1位 逐字节✅
+  ev_n4 g7d2_dedupe_keep       219字/4条 本条在第1位 逐字节✅
+  ev_n4 g7d3_fmt_amount        219字/4条 本条在第2位 逐字节✅
+  ev_n4 g7e1_parse_flag        219字/4条 本条在第1位 逐字节✅
+  ev_n4 g7e2_truncate_tail     219字/4条 本条在第1位 逐字节✅
+
+== ③ recall 输出过 full[:300] 与 尾200 两道闸（零模型模拟） ==
+  g7j_n0 g7d2_dedupe_keep       recall=1条 输出= 43字 [:300]过  尾200存活位=[1] 丢失=['g7d3_fmt_amount', 'g7e1_parse_flag', 'g7e2_truncate_tail']
+  g7j_n0 g7d3_fmt_amount        recall=1条 输出= 40字 [:300]过  尾200存活位=[2] 丢失=['g7d2_dedupe_keep', 'g7e1_parse_flag', 'g7e2_truncate_tail']
+  g7j_n0 g7e1_parse_flag        recall=1条 输出= 63字 [:300]过  尾200存活位=[3] 丢失=['g7d2_dedupe_keep', 'g7d3_fmt_amount', 'g7e2_truncate_tail']
+  g7j_n0 g7e2_truncate_tail     recall=1条 输出= 56字 [:300]过  尾200存活位=[4] 丢失=['g7d2_dedupe_keep', 'g7d3_fmt_amount', 'g7e1_parse_flag']
+  g7j_n4 g7d2_dedupe_keep       recall=4条 输出=205字 [:300]过  尾200存活位=[2, 3, 4] 丢失=['g7d2_dedupe_keep']  ⚠️本条被截
+  g7j_n4 g7d3_fmt_amount        recall=4条 输出=205字 [:300]过  尾200存活位=[2, 3, 4] 丢失=['g7d2_dedupe_keep']
+  g7j_n4 g7e1_parse_flag        recall=4条 输出=205字 [:300]过  尾200存活位=[1, 2, 4] 丢失=['g7e1_parse_flag']  ⚠️本条被截
+  g7j_n4 g7e2_truncate_tail     recall=4条 输出=205字 [:300]过  尾200存活位=[1, 2, 3] 丢失=['g7e2_truncate_tail']  ⚠️本条被截
+
+== 汇总：候选机制的装置侧判定 ==
+  候选A 语义块变长/变多（第1步上下文）      ：实锤存在差异（50字/1条 vs 219字/4条），
+          但与行为的因果未测 —— 第1步语义块里本条逐字节完整，模型"看得到"。
+  候选B f.text[:120] 截断                   ：排除 —— 四条最长 70 字，R5 100% 保留。
+  候选C full[:300] 截断                     ：排除 —— n4 recall 输出 205 字 < 300。
+  候选D 每条输出尾 200 字（第2步起的通道）  ：实锤 —— n4 输出 205 字 > 200，
+          每题恰好截掉【排头那条】惯例；g7d2/g7e1/g7e2 的排头恰是本条，
+          g7d3 丢的是 ZK1（本条 ZK2 完整）。⚠️ 与 7k 行为读数的因果方向未测：
+          n0 有效应的两题（g7d2/g7d3）里，g7d2 本条被截、g7d3 本条完好 ——
+          "本条被截"解释不了 g7d3 归零，候选机制彼此不互斥。

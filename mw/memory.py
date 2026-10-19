@@ -349,8 +349,25 @@ class MemoryStore:
         return key, is_new
 
     def recall(self, query: str, k: int = 6) -> list[Fact]:
-        """语义检索：FTS5 优先，语法/空结果时退回 LIKE。**永不抛异常**。"""
+        """语义检索：FTS5 优先，语法错误/零命中时退回 LIKE。**永不抛异常**。
+
+        ★ 第三十七轮（§17-7i 装置修正⑮）：**删掉了第三级"全表 top-k"兜底**。
+        为什么必须删（三条理由，独立性递减）：
+          · 它是**静默兜底** —— 无计数、无留痕、与 query 完全无关，违反本项目
+            自 V5 起的硬规则 6（无静默兜底）；`fts_fallbacks` 只记第二级。
+          · 实测（7d–7g 全部冻结证据，**33 次** `recall` 调用）：**每一次**都返回
+            **全部 4 条**（389 字）。题面的 token 与 facts 有交集（AZ10 钉住）
+            ⇒ `_state()` 走 FTS 拿到 4/4/1/1；而模型自己写的短 query 与 facts
+            零交集 ⇒ 落到这一级 ⇒ 拿到全表。于是"1 条族"在第 2 步之后变成
+            4 条族，而模型基本都在第 2 步之后才交付。
+          · 模型问"如何截断字符串"、拿到"金额格式惯例"是**噪音**，不是记忆能力。
+        ⇒ 零命中就返回 `[]`，让模型看到"(语义记忆中无相关条目)"：这个信号比假命中
+          更诚实。空/纯空白 query 同样返回 `[]`（`LIKE '%%'` 是同一个静默兜底的
+          另一个入口 —— 堵一级不堵另一级 = 假装修好）。
+        """
         k = max(1, int(k))
+        if not normalize(query).strip():
+            return []
         q = fts_query(query)
         if q:
             try:
@@ -370,11 +387,6 @@ class MemoryStore:
             "SELECT *, 0.0 AS score FROM facts WHERE text LIKE ? ORDER BY hits DESC LIMIT ?",
             (like, k),
         ).fetchall()
-        if not rows:
-            rows = self.conn.execute(
-                "SELECT *, 0.0 AS score FROM facts ORDER BY hits DESC, updated_ts DESC LIMIT ?",
-                (k,),
-            ).fetchall()
         return [self._fact(r, r["score"]) for r in rows]
 
     @staticmethod

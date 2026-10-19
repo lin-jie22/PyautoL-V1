@@ -89,13 +89,28 @@ def main(argv: list[str] | None = None) -> int:
     order = [json.loads(l)["id"] for l in
              Path(args.heldout).read_text(encoding="utf-8").splitlines() if l.strip()]
 
-    print(f"== 第 1 步（本题尚无工具输出）⇒ **判红层** ==")
+    print(f"== 第 1 步（本题尚无工具输出）⇒ **判红层只看泄漏** ==")
+    #: ⚠️ 第三十七轮（§17-7i）起有**三种**状态，必须分开报：
+    #:   ① 语义块里有本条、别处没有 ⇒ 送达且干净；
+    #:   ② 语义块里没有、别处也没有 ⇒ **零命中**（删掉全表兜底之后，
+    #:      题面与 facts 无 FTS 交集时这是**合法**结果，不是"未送达"故障）；
+    #:   ③ 别处出现任何惯例 ⇒ 泄漏（跨题残留或第二条通道）。
+    #: 第一版只有 ①②→同一个布尔，于是 `g7d2`（零命中）被报成"跨题残留仍在"——
+    #: 那是把"没送到"读成"从别的路送来"，方向刚好相反。
     ok = True
+    _absent: list[str] = []
+    _leak: list[tuple[str, list[str]]] = []
     for row in first_states(rows):
         tid = str(row.get("task") or "")
         a = audit_state(row.get("state") or "", facts, tid)
-        ok &= a["ok"]
-        print("  " + format_audit(a))
+        if a["outside_all"]:
+            _leak.append((tid, list(a["outside_all"])))
+            ok = False
+        elif not a["own_in_semantic"]:
+            _absent.append(tid)
+        print("  " + format_audit(a)
+              + ("" if a["own_in_semantic"] or a["outside_all"]
+                 else "  ← 零命中：本题第 1 步**没有任何惯例**（合法，不是泄漏）"))
 
     print("\n== 后续步骤（登记层，**不判红**）==")
     per_task: dict[str, list[dict]] = {}
@@ -117,10 +132,19 @@ def main(argv: list[str] | None = None) -> int:
               f"{','.join(leaked) if leaked else '无'}"
               f"（有 ⇒ 来自本题自己 `recall` 的工具输出，是通道行为，不是跨题残留）")
 
-    print("\n== 结论 ==\n  " + ("✅ 第 1 步全部干净：跨题残留 = 0"
-                               if ok else
-                               "❌ 第 1 步就有惯例出现在 `[语义记忆]` 之外 "
-                               "⇒ 跨题残留仍在，本轮读数不得归因"))
+    print("\n== 结论 ==")
+    if ok:
+        print("  ✅ 第 1 步**无泄漏**：`[语义记忆]` 之外的块里没有任何惯例")
+    else:
+        print("  ❌ 第 1 步出现泄漏：" + "；".join(
+            f"{t} ← {','.join(v)}" for t, v in _leak))
+        print("     ⇒ 本轮读数不得归因（泄漏会随任务边界/工具输出漂移）")
+    if _absent:
+        print(f"  ⚠️ 零命中（第 1 步没有任何惯例，**不是故障**）："
+              f"{','.join(_absent)}")
+        print("     ⇒ 这些题的语义块是空的：删掉全表兜底之后，题面与 facts")
+        print("        无 FTS 交集就是合法结果。⛔ 不许读成\"未送达\"，")
+        print("        也不许把它们的分数当\"记忆无效\"的证据。")
     return 0 if ok else 1
 
 

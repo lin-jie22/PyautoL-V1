@@ -3527,8 +3527,15 @@ _AN_mem.commit_fact("不是抽象层的旧事实", source="worldmodel", confiden
 _AN_mem.commit_fact("做 X 之前先检查 Y", source=ABSTRACT_SOURCE, confidence=0.5)
 _AN_raw = Core(llm=DemoLLM(), memory=_AN_mem, memory_mode="raw")
 _AN_abs = Core(llm=DemoLLM(), memory=_AN_mem, memory_mode=ABSTRACT_MODE)
-_AN_s_raw = _AN_raw._state("目标", [], 1)
-_AN_s_abs = _AN_abs._state("目标", [], 1)
+#: ⚠️ 第三十七轮（§17-7i）改过这里，**判据没动**，动的是喂进去的 query。
+#: 原来用 `"目标"`（与两条 facts 零 token 交集）⇒ 全靠 `recall()` 的第三级
+#: "全表 top-k"兜底才召回两条。那一级已按装置修正⑮ 删除（静默兜底），
+#: 于是这两条断言会红 —— 但红的原因不是"过滤坏了"，是**它们原本站在兜底上**。
+#: 现在把 query 写成两条原文的拼接：**召回 2 条 → 过滤后剩 1 条**，
+#: 这才真的在测"过滤只看 source"；用 `"目标"` 反而只召回 0 条，测了个寂寞。
+_AN_goal = "不是抽象层的旧事实 做 X 之前先检查 Y"
+_AN_s_raw = _AN_raw._state(_AN_goal, [], 1)
+_AN_s_abs = _AN_abs._state(_AN_goal, [], 1)
 
 check(RS, "AN5 abstract 模式下**工作记忆整块不进上下文**\n"
           "         —— 工作记忆存的是工具输出原文，而 finish 的输出就是答案原文。\n"
@@ -3536,12 +3543,27 @@ check(RS, "AN5 abstract 模式下**工作记忆整块不进上下文**\n"
       "工作记忆" in _AN_s_raw and "工作记忆" not in _AN_s_abs,
       f"raw含={'工作记忆' in _AN_s_raw} abstract含={'工作记忆' in _AN_s_abs}")
 
+#: ⚠️ 第三十七轮（§17-7i）：AN6 的**判据位置**从"整段 state"改到"`[经验]` 块"，
+#: 判据内容（只留 abstract、滤掉 worldmodel）一个字没改。
+#: 为什么必须挪：新 goal 为了能召回两条 facts，本身就含两条的原文 ⇒ `[目标]`
+#: 块里必然出现它们。用整段 state 判 = 把"目标里写了什么"当成"记忆送了什么"，
+#: 正是 AZ19 那条（R1 只查整段）的同宗错误。挪到块上才是真的在测过滤。
+def _an_block(state: str, head: str) -> str:
+    i = state.find(head)
+    if i < 0:
+        return ""
+    j = state.find("\n[", i + len(head))
+    return state[i:j if j >= 0 else len(state)]
+
+
+_AN_exp = _an_block(_AN_s_abs, "[经验]")
+
 check(RS, "AN6 abstract 模式下只有 `source==abstract` 的事实留得下\n"
           "         —— 且过滤必须**只看 source**：'长得像经验'是由运气决定的判据，\n"
           "           source 才是写侧承诺的事实。",
-      "做 X 之前先检查 Y" in _AN_s_abs
-      and "不是抽象层的旧事实" not in _AN_s_abs,
-      f"abstract臂上下文={_AN_s_abs[:160]!r}")
+      "做 X 之前先检查 Y" in _AN_exp
+      and "不是抽象层的旧事实" not in _AN_exp,
+      f"经验块={_AN_exp[:120]!r}")
 
 check(RS, "AN7 层读数必须有消费者：`memory_layer_view` 要被 `_kwm_absorb` **主动取走**\n"
           "         —— 第三次踩'新建字段没人搬运'的根因就是要求每个调用点**记着传**。\n"
@@ -5304,7 +5326,11 @@ _AY_CORE_MEM.commit_fact("遇到引号内的分隔符时，不要当分隔符切
                          source="abstract", confidence=0.5)
 _AY_STUB = StubLLM()
 _AY_CORE = Core(llm=_AY_STUB, memory=_AY_CORE_MEM, memory_mode="raw")
-_AY_ROWS = _scan(_AY_CORE, "写一个函数 f(s)，解析字符串。")
+#: ⚠️ 第三十七轮（§17-7i）：goal 从 `"写一个函数 f(s)，解析字符串。"` 改成
+#: 含那条 fact 的 token 的句子。原 goal 与 fact 零交集 ⇒ 以前靠 `recall()`
+#: 的第三级"全表 top-k"兜底才让 48 格都有块；那一级已删（装置修正⑮）。
+#: 判据（48 格 / 每格有块 / 模型零调用）**一个字没改** —— 只是不再站在兜底上。
+_AY_ROWS = _scan(_AY_CORE, "遇到引号内的分隔符时，应该怎么切分？")
 check(RS, "AY3 ★注入诊断：48 格全扫、每格都有 `[语义记忆]`、模型零调用\n"
           "          —— 结论「不是被 STATE_CHAR_CAP 挤掉」必须可复算。",
       len(_AY_ROWS) == 48 and all(r["has_head"] for r in _AY_ROWS)
@@ -5623,8 +5649,13 @@ check(RS, "AZ17 ★7h 题边界清空：`reset_working()` 必须在 `record(\"go
 _AZ18_TASKS = [json.loads(l) for l in
                (V1 / "bench" / "heldout" / "g7e_hint_heldout.jsonl")
                .read_text(encoding="utf-8").splitlines() if l.strip()]
-_AZ18_T1 = next(t for t in _AZ18_TASKS if t["id"] == "g7d2_dedupe_keep")
-_AZ18_T2 = next(t for t in _AZ18_TASKS if t["id"] == "g7e2_truncate_tail")
+#: ⚠️ 第三十七轮（§17-7i）改过题号：第 1 题从 `g7d2`（题面与 facts **零命中**）
+#:    换成 `g7e2`（真命中 1 条）。旧写法在删掉全表兜底之后，第 1 题的 `recall`
+#:    只返回"(语义记忆中无相关条目)" ⇒ 工作记忆里**没有 fact** ⇒ 撤回"不清空"时
+#:    第 2 题第 1 步也看不见任何惯例 ⇒ **AZ18 恒绿**（R13 实测就是这么暴露的）。
+#:    现在第 1 题会真的把 `g7e2` 那条写进工作记忆，第 2 题是 `g7e1` ⇒ 残留可见。
+_AZ18_T1 = next(t for t in _AZ18_TASKS if t["id"] == "g7e2_truncate_tail")
+_AZ18_T2 = next(t for t in _AZ18_TASKS if t["id"] == "g7e1_parse_flag")
 _AZ18_MEM = MemoryStore(Path(tempfile.mkdtemp(prefix="v1_az18_")) / "memory.db")
 for _k, _v in _G7D.FACTS.items():
     _AZ18_MEM.commit_fact(_v, source=ABSTRACT_SOURCE, confidence=0.5)
@@ -5693,6 +5724,93 @@ check(RS, "AZ21 ★7h 每一行 `per_task` 都必须带 `elapsed_s`，且各题�
       and any(float(r.get("elapsed_s") or 0) > 0 for r in _AZ21_ROWS),
       f"行数={len(_AZ21_ROWS)} 缺字段={_AZ21_MISSING} 逐题之和={_AZ21_SUM}s "
       f"整轮={round(_AZ21_REP.elapsed_s, 2)}s")
+
+# ── AZ22：§17-7i 装置修正⑮ —— 零命中必须**真的**返回空 ─────────────────
+#: 删掉的是 `recall()` 的第三级"全表 top-k"：它与 query 完全无关、无计数、
+#: 无留痕（`fts_fallbacks` 只记第二级）⇒ 静默兜底。
+#: 实测（7d–7g 全部冻结证据）：**33 次** `recall` 调用**每一次**都返回全部 4 条，
+#: 于是"1 条族"在第 2 步之后变成 4 条族。
+#: ⚠️ 这条必须同时带**正向对照**（库里真有东西时能召回）：否则"返回空"可能只是
+#:    库是空的，或者检索整个坏了 —— 两种都与"修好兜底"长得一模一样。
+_AZ22_MEM = MemoryStore(_TMP / "az22.db")
+for _t in ("惯例甲：去重保留首次出现的写法。", "惯例乙：截断保留尾部并前置省略号。"):
+    _AZ22_MEM.commit_fact(_t, source="abstract", confidence=0.5)
+_AZ22_FB0 = _AZ22_MEM.fts_fallbacks
+_AZ22_HIT = _AZ22_MEM.recall("惯例甲", k=6)
+_AZ22_ZERO = _AZ22_MEM.recall("zzzz qqqq", k=6)
+_AZ22_EMPTY = _AZ22_MEM.recall("", k=6)
+_AZ22_BLANK = _AZ22_MEM.recall("   ", k=6)
+_AZ22_FB1 = _AZ22_MEM.fts_fallbacks
+check(RS, "AZ22 ★7i 零命中必须返回**空**，不许静默给全表（装置修正⑮）\n"
+          "          —— 第三级兜底 `ORDER BY hits DESC, updated_ts DESC` 与 query\n"
+          "             完全无关：模型问'如何截断'，拿到'金额格式惯例'。\n"
+          "          ⚠️ 必须带正向对照：库里有东西时仍能召回，且不靠 `OperationalError`。",
+      len(_AZ22_HIT) == 1 and not _AZ22_ZERO and _AZ22_FB0 == _AZ22_FB1,
+      f"正向命中={len(_AZ22_HIT)} 零命中={len(_AZ22_ZERO)} "
+      f"fallback={_AZ22_FB0}->{_AZ22_FB1}")
+
+# ── AZ23：§17-7i 的**反证组** —— 删兜底以后，装置的"4 条族"真相露出来了 ──
+#: ⚠️ 本条的期望值在动手**当天被实测推翻过一次**（如实登记）：
+#:    事前登记写的是"四题条数仍是 4/4/1/1"，实测是 **0/0/1/1**。
+#:    为什么：前两题的题面与四条 facts **FTS 零命中**，7d–7g 记录的
+#:    "注入 4 条"**全部来自第三级全表兜底**。⇒ §17-7 的两个族从来不是
+#:    "1 条 vs 4 条"，而是"**命中 1 条 vs 完全没命中（按全表处理）**"。
+#:    这条绿只说明一件事：删兜底**没有误伤** FTS，而且"真能召回 4 条"是可能的
+#:    （只要 query 真的含那四条）—— 因此 7j 必须重做 suite，不许拿 7d 当对照。
+_AZ23_K = cfg.Limits().recall_k
+_AZ23_MEM = MemoryStore(_TMP / "az23.db")
+for _v in _G7D.FACTS.values():
+    _AZ23_MEM.commit_fact(_v, source="abstract", confidence=0.5)
+_AZ23_COUNTS = [len(_AZ23_MEM.recall(_t["prompt"], k=_AZ23_K))
+                for _t in _AZ6_HINT]
+#: ⚠️ 反证要**分两批**拼，不能把四条原文拼成一个 query：`fts_query` 只取
+#:    **前 24 个 token**，四条拼起来是 **27** 个 ⇒ 末尾被挤出 ⇒ 谁把某条惯例
+#:    改长（AZ5 的撤回态把它顶到 34 个），第四条就"召不回"了 —— 那是**量具的
+#:    上限**，不是"FTS 坏了"。两批各是 **8 / 19**（变长后 15 / 19），都低于 24。
+#:    也不能逐条单查：那样 `LIMIT MIN(?,1)` 的撤回态测不出来（每次本来就只有 1 条）。
+_AZ23_V = list(_G7D.FACTS.values())
+_AZ23_HIT4 = sum(len(_AZ23_MEM.recall(" ".join(_AZ23_V[i:i + 2]), k=_AZ23_K))
+                 for i in (0, 2))
+check(RS, "AZ23 ★7i 删兜底暴露了装置的真实身份：\"4 条族\"那 4 条**从来不是检索到的**\n"
+          "          —— 前两题题面与四条 facts FTS 零命中，7d–7g 记的 4/4/1/1 里\n"
+          "             两个『4』全部来自被删的第三级全表兜底。删掉之后实测\n"
+          "             **0/0/1/1** ⇒ 那个族应改名为『零命中族』。\n"
+          "          ⚠️ 反证：四条惯例分两批拼接后必须召回 **4 条**（8/19 token，\n"
+          "             都低于 `fts_query` 的 24-token 上限）。否则红的是 FTS，不是兜底。",
+      _AZ23_COUNTS == [0, 0, 1, 1] and _AZ23_HIT4 == 4,
+      f"题面条数={_AZ23_COUNTS}（实测；7d 记为 4/4/1/1 全来自兜底） "
+      f"两批拼接召回={_AZ23_HIT4}（期望 4）")
+
+#: ⚠️ 空 query 这个入口必须**单独成条**：`LIKE '%%'` 会用空 query 把全表捞回来，
+#: 与"零命中给全表"是同一个静默兜底的两个入口。只堵一个 = 假装修好，
+#: 而且堵完看上去一切正常（AZ22 绿、AZ24 红）。
+check(RS, "AZ24 ★7i 另一个入口：空/纯空白 query 也必须返回**空**\n"
+          "          —— `normalize(query)` 为空白时 `LIKE '%%'` 命中全表，\n"
+          "             与第三级兜底是同一条缺陷的两个入口。",
+      not _AZ22_EMPTY and not _AZ22_BLANK,
+      f"空串={len(_AZ22_EMPTY)} 空白={len(_AZ22_BLANK)}")
+
+# ── AZ25：§17-7i 的**第二处根因** —— 降级兜底的 query 是字面量 `"goal"` ────
+#: 这一条是 7h 那条缺陷的**另一半**，也是"33 次 recall 全部返回 4 条"的直接原因：
+#: `_fallback` 里写的是 `{"query": "goal"}`（字面量），它与任何 fact 零交集
+#: ⇒ 每次降级 recall 都落到第三级全表兜底。删掉兜底之后它变成"永远空"，
+#: 而日志仍写 `recall ok=True` —— "成功"的语义被掏空，比失败更难发现。
+_AZ25_MEM = MemoryStore(_TMP / "az25.db")
+_AZ25_REG = ToolRegistry()
+register_core_tools(_AZ25_REG, memory=_AZ25_MEM)
+_AZ25_PL = Planner(StubLLM(), _AZ25_REG)
+_AZ25_GOAL = "把列表去重，保留首次出现的那条原文"
+_AZ25_STEPS = _AZ25_PL._fallback(steps_used=0, goal=_AZ25_GOAL)
+_AZ25_Q = str(_AZ25_STEPS[0].args.get("query", "")) if _AZ25_STEPS else ""
+_AZ25_EMPTY = _AZ25_PL._fallback(steps_used=0, goal="")
+_AZ25_Q2 = str(_AZ25_EMPTY[0].args.get("query", "")) if _AZ25_EMPTY else ""
+check(RS, "AZ25 ★7i 降级兜底的 `recall` query 必须是**目标文本**，不是字面量 \"goal\"\n"
+          "          —— 字面量与任何 fact 零交集 ⇒ 每次降级 recall 都落到全表兜底\n"
+          "             （7d–7g 实测 **33 次全部返回 4 条**）；兜底删掉后它变成\n"
+          "             \"永远空\"，而日志仍写 `recall ok=True` —— 比失败更难发现。\n"
+          "          ⚠️ goal 为空时仍要给出**合法**参数：降级不等于瘫痪。",
+      _AZ25_Q == _AZ25_GOAL[:64] and _AZ25_Q != "goal" and bool(_AZ25_Q2),
+      f"goal 非空→query={_AZ25_Q!r}；goal 为空→query={_AZ25_Q2!r}")
 
 
 

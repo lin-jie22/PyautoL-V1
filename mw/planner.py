@@ -202,7 +202,7 @@ class Planner:
                 return self._degrade(
                     f"模型输出被**截断**（⇒ 调大 max_tokens，当前 {self.max_tokens}）；"
                     "原文片段: " + repr(raw[-120:]),
-                    steps_used=len(history))
+                    steps_used=len(history), goal=goal)
             self.json_fail += 1
             # 把原文片段带进 note：只说"不可解析"等于什么都没说 ——
             # 上一版就是因此把"模型填了 tool=None"误读成"模型不会写 JSON"。
@@ -210,7 +210,7 @@ class Planner:
             return self._degrade(
                 "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: "
                 + repr(raw[:200]),
-                steps_used=len(history))
+                steps_used=len(history), goal=goal)
         steps, why, bad = self._extract(data)
         self.last_bad_tools = bad
         if not steps:
@@ -218,10 +218,10 @@ class Planner:
                 self.no_tool_fit += 1
                 return self._degrade(
                     f"模型想要的工具未注册: {bad[:3]}（能力缺口 ⇒ 加工具/改工具描述）",
-                    steps_used=len(history))
+                    steps_used=len(history), goal=goal)
             self.empty_plan += 1
             return self._degrade("合法 JSON 但没有可用候选（⇒ 改提示词）",
-                                 steps_used=len(history))
+                                 steps_used=len(history), goal=goal)
         if payload:
             # 载荷**原样**注入 finish 的 answer，覆盖 JSON 里的占位。
             # 注意这里没有做任何转义/解码/剥壳 —— 代码从模型直达打分器。
@@ -256,10 +256,11 @@ class Planner:
                         self.answer_retry_fail += 1
         return Plan(steps)
 
-    def _degrade(self, note: str, *, steps_used: int) -> Plan:
+    def _degrade(self, note: str, *, steps_used: int, goal: str = "") -> Plan:
         """降级出口唯一 —— 保证 self.degraded 与分项计数**同源**，不会两处漂移。"""
         self.degraded += 1
-        return Plan(self._fallback(steps_used=steps_used), degraded=True, note=note)
+        return Plan(self._fallback(steps_used=steps_used, goal=goal),
+                    degraded=True, note=note)
 
     def replan(self, *, goal: str, failed: Step, error: str,
                history: Sequence[str], n: int = 1,
@@ -341,7 +342,7 @@ class Planner:
             return [], "unknown_tool", bad
         return [], "empty", []
 
-    def _fallback(self, *, steps_used: int) -> list[Step]:
+    def _fallback(self, *, steps_used: int, goal: str = "") -> list[Step]:
         """确定性兜底：先尽量从记忆里捞，再直接收尾。
 
         两条硬约束（第二条是契约测试 G2 抓出来的真实缺陷）：
@@ -351,8 +352,15 @@ class Planner:
         """
         names = set(self.tools.names())
         if steps_used == 0 and "recall" in names:
+            # ★ 第三十七轮（§17-7i）：这里原来写的是**字面量** `"goal"`。
+            #   它与任何 fact 都零交集 ⇒ 每一次降级 recall 都落到 `recall()` 的
+            #   第三级全表兜底（实测：7d–7g 的 **33 次** recall 全部返回 4 条）。
+            #   兜底删掉之后它变成"永远空"⇒ 那条通道等于没接线，而日志仍写
+            #   `recall ok=True`（"成功"的语义被掏空）。
+            #   ⇒ 用**真正的目标文本**：这才是"先在记忆中查找与目标相关的既有结论"。
+            _q = (goal or "goal").strip()[:64] or "goal"
             return [Step("先在记忆中查找与目标相关的既有结论", "recall",
-                         {"query": "goal"}, "降级兜底：先检索")]
+                         {"query": _q}, "降级兜底：先检索")]
         if "finish" in names:
             return [Step("信息不足，直接给出当前最优答复", "finish",
                          {"answer": "（规划降级：模型输出不可解析，未能形成有效计划）"},

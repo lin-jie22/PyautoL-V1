@@ -526,11 +526,44 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ21", "mw/bench.py",
      '"elapsed_s": round(time.time() - _t_task, 2)})',
      '"elapsed_s": 0})'),
+    # ══════════════════════════════════════════════════════════════════════
+    # AZ22–AZ23（§17-7i）：删掉静默兜底那两级，各配一条撤回态。
+    # ══════════════════════════════════════════════════════════════════════
+    # AZ22a：把第三级"全表 top-k"原样加回 ⇒ 零命中又变成"给全表"。
+    #        ⚠️ 会连带打红 AZ23（前两题的 0 条变回 4 条）—— 见 COUPLED：
+    #           两件事锚在同一段 SQL 上，本来就是同一条事实的两个面。
+    ("AZ22", "mw/memory.py",
+     '            (like, k),\n        ).fetchall()\n        return [self._fact(r, r["score"]) for r in rows]',
+     '            (like, k),\n        ).fetchall()\n        if not rows:\n'
+     '            rows = self.conn.execute(\n'
+     '                "SELECT *, 0.0 AS score FROM facts ORDER BY hits DESC,'
+     ' updated_ts DESC LIMIT ?",\n'
+     '                (k,),\n'
+     '            ).fetchall()\n'
+     '        return [self._fact(r, r["score"]) for r in rows]'),
+    # AZ22b：只堵"零命中"这一个入口、留着"空 query"那个 ⇒ `LIKE '%%'` 照样给全表。
+    #        这正是"只堵一个入口 = 假装修好"的撤回态。
+    ("AZ24", "mw/memory.py",
+     '        if not normalize(query).strip():\n            return []',
+     '        if False:\n            return []'),
+    # AZ23：把 FTS 每次最多回 1 条 ⇒ "四原文拼接能召回 4 条"立刻不成立。
+    #        ⛔ 只动上限，不动分词也不动 SQL 结构：要证明的是**条数读数**有牙。
+    ("AZ23", "mw/memory.py",
+     '                       ORDER BY score LIMIT ?"""',
+     '                       ORDER BY score LIMIT MIN(?, 1)"""'),
+    # AZ25：把降级兜底的 query 换回**字面量** `"goal"` ⇒ 与任何 fact 零交集
+    #       ⇒ 那条通道永远不会命中（兜底已删，"永远空"而日志仍写 ok=True）。
+    ("AZ25", "mw/planner.py",
+     '            _q = (goal or "goal").strip()[:64] or "goal"',
+     '            _q = "goal"'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
 #: ⛔ 写成白名单而不是"允许任意多条"：允许多条就等于不再检查锚定跑偏。
 COUPLED: dict[str, frozenset[str]] = {
+    #: AZ22a（把全表兜底加回）⇒ 前两题的"零命中"又变成 4 条 ⇒ AZ23 的
+    #: `[0,0,1,1]` 立刻不成立。**同一段 SQL 的两个面**，合理连带。
+    "AZ22": frozenset({"AZ23"}),
     # 闸永不拒（`if v.ok` → `if True`）时，连带转红的三条，理由各不相同：
     #   AS8  直接后果 —— 交付出去的就是第一版坏答案（分数停在 0）；
     #   AS9  从未打回 ⇒ `failed` 恒 0 ⇒ "超上限就放弃"这条分支**根本走不到**

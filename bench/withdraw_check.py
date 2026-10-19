@@ -472,6 +472,33 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ11", "bench/build_g7d_seed.py",
      "\"例：'YES' 为真、'on' 为假、'maybe' 为 None。\",",
      "\"例：'YES' 为真、'on' 为假、'  1 ' 为真、'maybe' 为 None。\","),
+    # AZ12：把观察对象也一起填充 ⇒ "邻域长度 → 它的分数"这个单变量没了，
+    #       曲线变成"它自己的长度 → 它的分数"（7f 那种混淆的更高配版）。
+    #       ⚠️ 用"追加"而不是 `_pad_to`：后者在 l40 会**截断**观察对象 ⇒
+    #          连带改变它的 token 交集 ⇒ 顺带把 AZ14 也打红（那不是同一个事实）。
+    ("AZ12", "bench/build_g7d_seed.py",
+     "    return {k: (pool[k] if k == obs_key else _pad_to(FACTS[k], target))",
+     "    return {k: (pool[k] + PAD if k == obs_key else _pad_to(FACTS[k], target))"),
+    # AZ13：填充只补一句就返回 ⇒ 档位 60/84/120 在库里全是 35+PAD 长度，
+    #       "档位"不再等于长度，四档实际只有一档。
+    ("AZ13", "bench/build_g7d_seed.py",
+     "    return text + (PAD * (need // len(PAD) + 1))[:need]",
+     "    return text + PAD"),
+    # AZ14：填充句里塞 ASCII ⇒ FTS 命中面可能变（本条测 ①）。
+    #       ⚠️ 刻意**不带空格**：带空格会让"补到第 ℓ 字"的切片可能以空格结尾，
+    #          `normalize` 一 strip 长度就不再等于 ℓ ⇒ 顺带把 AZ13 也打红。
+    ("AZ14", "bench/build_g7d_seed.py",
+     'PAD = "此处为长度档位所用的填充文字与本题无关。"',
+     'PAD = "此处为长度档位n所用的填充文字与本题无关。"'),
+    # AZ15：名字说 l120、值给 84 ⇒ 轴重复（两个 84），"120 档"根本不存在。
+    ("AZ15", "bench/build_g7d_seed.py",
+     '"l120": 120}',
+     '"l120": 84}'),
+    # AZ16：工作记忆只保留**头** 200 字而不是尾 200 字 ⇒ 泄漏到后续题的那一段
+    #       换成了输出的开头（"哪一段会漏"变了，长度轴上的非单调性也就没了依据）。
+    ("AZ16", "mw/core.py",
+     "w if w.startswith(EXPAND_MARK) else w[-200:] for w in ws)",
+     "w if w.startswith(EXPAND_MARK) else w[:200] for w in ws)"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

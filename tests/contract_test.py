@@ -5458,6 +5458,137 @@ check(RS, "AZ11 ★7f 惯例必须已是**规范形式**：`normalize(v) == v`\n
       not _G7F_UNNORMAL, str(_G7F_UNNORMAL))
 
 # ══════════════════════════════════════════════════════════════════════════
+# AZ12–AZ15（第三十五轮，§17-7g）：**邻域对照臂 N** 的构造不变量。
+# 7g 的全部价值压在一句话上 —— "只改邻域的**长度**"。
+# 这四条各自焊死一个会让那句话变成假话的口子：
+#   AZ12 = 观察对象**逐字节冻结**，且其余三条**真的**被改了（邻域没动 = 没测）
+#   AZ13 = 其余三条的长度**逐条等于档位值**、≤120（否则被 core 静默截断）、
+#          且已是规范形式（否则 R1 的 own-fact 逐字节判不过）
+#   AZ14 = 填充段**不许含 ASCII**，且观察对象的题面与 facts 的 **token 交集**
+#          与 7d 完全相同 —— 交集一变，`recall()` 就从 fallback top-k（4 条）
+#          跳到 FTS 精确命中（1 条），"长度"与"注入量"两个变量同时动
+#   AZ15 = 档位名与档位值必须一致、轴严格递增、变体集合 = 2 观察对象 × 4 档
+#          （只跑一档就宣布"曲线"= 用两个点画一条线）
+# ══════════════════════════════════════════════════════════════════════════
+_G7N_VARIANTS = {k: v for k, v in _G7D.VARIANTS.items() if k.startswith("7g_")}
+
+_AZ12_BAD: list[tuple[str, str]] = []
+for _n, _f in _G7N_VARIANTS.items():
+    _o = _n.split("_")[1]
+    _ok_, _pool = _G7D.OBSERVERS[_o]
+    if _f.get(_ok_) != _pool[_ok_]:
+        _AZ12_BAD.append((_n, "观察对象被改了（曲线不再是「别人的长度 → 它的分数」）"))
+    for _k in _G7D.FACTS:
+        if _k != _ok_ and _f.get(_k) == _G7D.FACTS[_k]:
+            _AZ12_BAD.append((_n, f"{_k} 没被改（邻域没动）"))
+check(RS, "AZ12 ★7g 观察对象的惯例必须**逐字节冻结**，其余三条必须**真的**被改\n"
+          "          —— 观察对象一动，「邻域长度 → 它的分数」就不再是单变量；\n"
+          "             邻域没动，这一档等于把上一档又跑了一遍。",
+      not _AZ12_BAD, str(_AZ12_BAD))
+
+_AZ13_BAD: list[tuple[str, str, int, int]] = []
+for _n, _f in _G7N_VARIANTS.items():
+    _o = _n.split("_")[1]
+    _tgt = _G7D.NEIGH_LEVELS[_n.split("_")[2]]
+    _ok_ = _G7D.OBSERVERS[_o][0]
+    for _k, _v in _f.items():
+        if _k == _ok_:
+            continue
+        if len(_v) != _tgt:
+            _AZ13_BAD.append((_n, f"{_k} 长度", len(_v), _tgt))
+        if len(_v) > 120:
+            _AZ13_BAD.append((_n, f"{_k} 超过注入截断", len(_v), 120))
+        if _G7F_NORM(_v) != _v:
+            _AZ13_BAD.append((_n, f"{_k} 不是规范形式", len(_v), len(_G7F_NORM(_v))))
+check(RS, "AZ13 ★7g 邻域三条必须**逐条**等于档位长度、≤120、且已是规范形式\n"
+          "          —— 长度不等 ⇒「档位」不是那个档位；>120 ⇒ `f.text[:120]`\n"
+          "             静默截断，档位 120 与 120 以上在上下文里是同一个值；\n"
+          "             不规范 ⇒ `commit_fact` 一改写法，R1 就报「未送达」。",
+      not _AZ13_BAD, str(_AZ13_BAD))
+
+from mw.memory import _TOKEN as _G7N_TOK                         # noqa: E402
+
+_AZ14_BAD: list[tuple[str, str, str]] = []
+for _n, _f in _G7N_VARIANTS.items():
+    _o = _n.split("_")[1]
+    _ok_, _pool = _G7D.OBSERVERS[_o]
+    # ① 填充段不许含 ASCII（ASCII 会改 FTS 命中 ⇒ 条数不再是 4/4/1/1）
+    for _k, _v in _f.items():
+        if _k == _ok_:
+            continue
+        _base = _G7D.FACTS[_k]
+        if _v.startswith(_base) and any(ord(_c) < 128 for _c in _v[len(_base):]):
+            _AZ14_BAD.append((_n, _k, "填充段里有 ASCII"))
+    # ② 观察对象的**题面**与全部 facts 的 token 交集必须与**它自己的冻结配置**相同
+    #    （`recall()` 只要有任何一条命中就走 FTS，不再兜底 top-k）
+    #    ⚠️ 基线必须按观察对象取（o1→7d、o2→7f）：否则 7f 自己一改，
+    #       AZ10 会连带把这条打红 —— 那是**观测点耦在一起**，不是同一个事实被两处声明。
+    _pr = {t["id"]: t["prompt"] for t in _AZ6_HINT}[_ok_]
+    _pt = set(_G7N_TOK.findall(_pr))
+    _base = {_k: (_pool[_k] if _k == _ok_ else _G7D.FACTS[_k]) for _k in _G7D.FACTS}
+    _u_old = set().union(*[set(_G7N_TOK.findall(_v))
+                           for _v in _base.values()]) & _pt
+    _u_new = set().union(*[set(_G7N_TOK.findall(_v)) for _v in _f.values()]) & _pt
+    if _u_old != _u_new:
+        _AZ14_BAD.append((_n, _ok_, f"交集变了 {sorted(_u_new - _u_old)} / "
+                                    f"{sorted(_u_old - _u_new)}"))
+check(RS, "AZ14 ★7g 填充段**不许含 ASCII**，且观察对象题面的 token 交集与 7d 逐题相同\n"
+          "          —— `recall()` 的两条路径是**质变**：FTS 无命中 ⇒ fallback 4 条；\n"
+          "             一旦命中 ⇒ 1 条。交集一变，「邻域长度」与「注入条数」两个\n"
+          "             变量同时动，曲线就不再是那条曲线。",
+      not _AZ14_BAD, str(_AZ14_BAD))
+
+_AZ15_BAD = [(k, v) for k, v in _G7D.NEIGH_LEVELS.items() if int(k[1:]) != v]
+_AZ15_VALS = sorted(_G7D.NEIGH_LEVELS.values())
+_AZ15_EXPECT = {f"7g_{_o}_{_l}" for _o in _G7D.OBSERVERS for _l in _G7D.NEIGH_LEVELS}
+check(RS, "AZ15 ★7g 档位名 == 档位值、轴严格递增、变体集合 = 2 观察对象 × 4 档\n"
+          "          —— 名字说 120 实际 84，是最典型的「读数与装置不一致」；\n"
+          "             只跑一档就宣布曲线，等于用两个点画一条线。",
+      not _AZ15_BAD and _AZ15_VALS == [40, 60, 84, 120]
+      and set(_G7N_VARIANTS) == _AZ15_EXPECT,
+      f"名字/值不符={_AZ15_BAD} 轴={_AZ15_VALS} "
+      f"缺档={sorted(_AZ15_EXPECT ^ set(_G7N_VARIANTS))}")
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ16（第三十五轮，§17-7g）：★同一份事实有**两条**注入路径。
+#
+# ⛔ 这条钉的是**缺陷的形状**，不是合格证。
+#    `recall` 工具成功时返回的是**全部** facts 的拼接；`core.py` 用
+#    `think(stored)` 把它写进工作记忆；`MemoryStore.working` 是进程级 deque，
+#    `Core.run()` **不随任务边界清空**；`_state()` 又无条件读 `working_view()`。
+#    ⇒ 第 4 题的状态里会出现第 1–3 题 recall 出来的那些惯例（实测：7f 的库里
+#      非本题惯例 2/3 条经 `[工作记忆]` 进了第 4 题的 state）。
+#    ⇒ R1 只查 `recall()` 的返回条数，**查不到这条路** —— 于是"1 条族的上下文
+#      里没有邻域"这句话是错的。
+#
+# 三个条件同时钉住，少一个就说不清"泄漏的到底是哪一段"：
+#   ① 工作记忆块在 state 里；
+#   ② 一条超长工具输出进 state 后，**尾部**还在（`_render` 取 `w[-200:]`）；
+#   ③ **头部**已经不在 ⇒ 泄漏的具体内容是"输出的最后 200 字"，
+#      而不是"输出的开头" —— 这决定了改长度时泄漏内容**非单调**地变。
+# ══════════════════════════════════════════════════════════════════════════
+_G7N_HEAD = "【头标记】"
+_G7N_TAIL = "【尾标记】"
+_G7N_MEM = MemoryStore(Path(tempfile.mkdtemp(prefix="v1_az16_")) / "memory.db")
+_G7N_MEM.think(_G7N_HEAD + "填充" * 120 + _G7N_TAIL)      # 总长 > 200 ⇒ 必然被切
+_G7N_CORE = Core(llm=StubLLM(), memory=_G7N_MEM, memory_mode="raw")
+_G7N_ST = _G7N_CORE._state("随便一道题", [], 1, task_id="az16",
+                           scorer_sha="probe", suite_sha="probe")
+_G7N_HAS_BLOCK = "[工作记忆]" in _G7N_ST
+_G7N_TAIL_KEPT = _G7N_TAIL in _G7N_ST
+_G7N_HEAD_GONE = _G7N_HEAD not in _G7N_ST
+_G7N_MEM.close()
+check(RS, "AZ16 ★7g「同一份事实有两条注入路径」：工具输出会被拼进**后续题**的 state，\n"
+          "          且只保留**尾 200 字**（本断言钉的是缺陷形状，不是合格证）\n"
+          "          —— `recall` 返回全部 facts ⇒ `think()` ⇒ 工作记忆 ⇒ 不随任务清空\n"
+          "             ⇒ `_state()` 无条件读它。R1 只查 `recall()`，看不见这条路。",
+      _G7N_HAS_BLOCK and _G7N_TAIL_KEPT and _G7N_HEAD_GONE,
+      f"块={_G7N_HAS_BLOCK} 尾在={_G7N_TAIL_KEPT} 头不在={_G7N_HEAD_GONE} "
+      f"state={len(_G7N_ST)}字")
+
+
+
+# ══════════════════════════════════════════════════════════════════════════
 # AE 组（第二十三轮，路线①）：外部能力作为**答案来源**接入
 # ══════════════════════════════════════════════════════════════════════════
 _AE_CORE = _code_only(_CORE_SRC)

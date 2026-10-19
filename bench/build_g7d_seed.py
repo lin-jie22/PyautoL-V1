@@ -89,6 +89,65 @@ FACTS_G7F.update({
 #: 7f 只能通过显式 `--variant 7f` 进来，不许把默认值悄悄换掉。
 VARIANTS: dict[str, dict[str, str]] = {"7d": FACTS, "7f": FACTS_G7F}
 
+# ──────────────────────────────────────────────────────────────────────────
+# ★7g（第三十五轮）：**邻域对照臂 N**（DESIGN §17-7 ★7g 事前登记）
+#
+# 要回答的问题：7f 那个 0.80（观察题 `g7d2`，邻域 182→291 字）是**局部**的还是
+# **全局**的？做法：观察对象的惯例**逐字节冻结**，只改**其余三条**的注入长度。
+#
+# 为什么这条轴能成立（必读，否则会把读数读反）：`recall()` 有**两条路径**
+#   · `g7d2`/`g7d3`：题面里没有任何能与 facts 对上的 token（`fts_query` 把中文
+#     整段当一个 token，而 `_TOKEN` 把 CJK 并进了字符类）⇒ FTS 无命中 ⇒
+#     **fallback top-k** ⇒ 上下文**恒 4 条**（`score=0.000` 就是这个分支的指纹），
+#     且自己的惯例**排在最后**（`ORDER BY hits DESC, updated_ts DESC`）。
+#   · `g7e1`/`g7e2`：FTS **精确命中**（`g7e1` 中 `None`、`g7e2` 中 `n`）⇒ 上下文**恒 1 条**。
+# ⇒ 邻域只在 4 条族里"在场"；1 条族的曲线**必须**是平的 —— 这是可被推翻的断言。
+# ──────────────────────────────────────────────────────────────────────────
+
+#: 填充句：纯中文、**无 ASCII**（ASCII 会改 FTS 命中 ⇒ 与"只改长度"混成一锅）、
+#: 无语义指向（不引入题面 token）。
+PAD = "此处为长度档位所用的填充文字与本题无关。"
+
+#: 档位 = **每条邻居**的注入字符数。上端 120 = `core.py` 里 `f.text[:120]` 的饱和点：
+#: 再长也不会进上下文，所以轴在上端**按构造封顶**，不许假装还能往上走。
+NEIGH_LEVELS: dict[str, int] = {"l40": 40, "l60": 60, "l84": 84, "l120": 120}
+
+#: 观察对象 → (冻结键, 冻结文本的**事实源**)。
+#: ⛔ o2 冻结的是 **7f 的 82 字形式**（含例子）：要问的是"7f 里 `g7e2` 的 1.00
+#:   是不是邻域带出来的" ⇒ 必须在**它的文本已经含有例子**的前提下改邻域。
+OBSERVERS: dict[str, tuple[str, dict[str, str]]] = {
+    "o1": ("g7d2_dedupe_keep", FACTS),
+    "o2": ("g7e2_truncate_tail", FACTS_G7F),
+}
+
+
+def _pad_to(text: str, target: int) -> str:
+    """把一条惯例调到 `target` 字：**保留原句**，再用固定填充句补到长度；超长则截断。
+
+    ⚠️ 只截断不重写：把原句换掉就变成"换了内容"，与"只改长度"这个单变量冲突。
+    """
+    if len(text) >= target:
+        cut = text[:target].rstrip()          # ⚠️ 不许以空白结尾：normalize 会 strip
+        if len(cut) < target:                 # 截在空格上时用填充补齐，保持字数为准
+            cut += PAD[:target - len(cut)]
+        return cut
+    need = target - len(text)
+    return text + (PAD * (need // len(PAD) + 1))[:need]
+
+
+def build_neighborhood(level: str, observer: str) -> dict[str, str]:
+    """一档邻域配置：观察对象**逐字节冻结**，其余三条调到 `level` 指定的长度。"""
+    target = NEIGH_LEVELS[level]
+    obs_key, pool = OBSERVERS[observer]
+    return {k: (pool[k] if k == obs_key else _pad_to(FACTS[k], target))
+            for k in FACTS}
+
+
+for _obs in OBSERVERS:
+    for _lvl in NEIGH_LEVELS:
+        VARIANTS[f"7g_{_obs}_{_lvl}"] = build_neighborhood(_lvl, _obs)
+
+
 #: 骨架安慰剂的汉字池（书架/天气域）—— 只用来替换汉字，不改 ASCII 与标点。
 _SCRAMBLE_POOL = (
     "书架旅行手册目录标签阳台花盆天气雨伞抽屉螺丝刀格子傍晚光线整齐出版年份"

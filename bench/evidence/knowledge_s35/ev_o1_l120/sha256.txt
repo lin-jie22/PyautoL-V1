@@ -1,0 +1,6 @@
+== 题面 sha256（所有档位共用同一文件）==
+696d812d4d25a8760473d86b26ccb2410c4709262e4b148552f74d8e0f52882d  /tmp/v1_g7n/ev_o1_l120/suite.jsonl
+== 臂 H 种子 sha256 ==
+face88025e83b5b741c67e29cf673eb61887c65849c620df548199425e798f02  /tmp/v1_g7n/ev_o1_l120/seed_H.db
+== 臂 P 种子 sha256 ==
+a7e3ced9e69b13b57bc6fbaa6a6c5b8e338bbd7152fe7621836e4b990b640138  /tmp/v1_g7n/ev_o1_l120/seed_P.db

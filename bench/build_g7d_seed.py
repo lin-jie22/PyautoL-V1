@@ -61,6 +61,34 @@ FACTS: dict[str, str] = {
 
 CAP = 120          # core.py 的注入截断
 
+#: ★7f（第三十四轮）的**唯一变更**：把三条**未被采用**的惯例改写为
+#: 「原句 + 一个输入→输出例子」的统一句式。`g7d2_dedupe_keep`（7e 已采用的那条）
+#: **逐字节不动** —— 否则无法回答"是例子起作用，还是把已经会的那条改坏了"。
+#:
+#: ⛔ 装置修正⑪：例子**不许写函数名**。
+#:   DESIGN 原模板是 `truncate_tail('0123456789', 4) == '…6789'`，含函数名 ⇒
+#:   题面里的 `truncate_tail` 会被 FTS 精确命中该条 ⇒ H 臂注入从 4 条降到 1 条。
+#:   P 臂（骨架安慰剂保留 ASCII）也会降到 1 条，两臂仍等长（R1 不报警）——
+#:   但这时"文本形式"与"注入量/检索精度"**两个变量同时变了**，读数无法归因。
+#:   ⇒ 例子只写输入→输出；契约 AZ10 钉住"与题面的 token 交集必须与 7d 逐题完全相同"。
+FACTS_G7F: dict[str, str] = dict(FACTS)
+FACTS_G7F.update({
+    "g7d3_fmt_amount":
+        "金额惯例：千分位用空格分隔，保留两位小数，负数用圆括号包裹、不写负号。"
+        "例：1234.5 要写成 1 234.50，-1234.5 写成 (1 234.50)。",
+    "g7e1_parse_flag":
+        "开关惯例：只把 y/yes/1 当成真，'true'、'on' 这类历史脏值一律算假，"
+        "其余无法识别的返回 None。"
+        "例：'YES' 为真、'on' 为假、'maybe' 为 None。",
+    "g7e2_truncate_tail":
+        "截断惯例：超长时保留最后 n 个字符，前面加一个省略号字符 '…'（U+2026），"
+        "不超长时原样返回。例：'0123456789' 取 n=4 得 '…6789'。",
+})
+
+#: 变体表（`--variant` 选）。⛔ 默认 `7d`：7d/7e 的历史读数必须仍可复现；
+#: 7f 只能通过显式 `--variant 7f` 进来，不许把默认值悄悄换掉。
+VARIANTS: dict[str, dict[str, str]] = {"7d": FACTS, "7f": FACTS_G7F}
+
 #: 骨架安慰剂的汉字池（书架/天气域）—— 只用来替换汉字，不改 ASCII 与标点。
 _SCRAMBLE_POOL = (
     "书架旅行手册目录标签阳台花盆天气雨伞抽屉螺丝刀格子傍晚光线整齐出版年份"
@@ -116,7 +144,10 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--out-dir", required=True)
     p.add_argument("--heldout", required=True)
+    #: ★7f：默认 `7d`（历史可复现）。7f 必须显式选，不许偷偷换默认值。
+    p.add_argument("--variant", default="7d", choices=sorted(VARIANTS))
     args = p.parse_args(argv)
+    facts = VARIANTS[args.variant]
 
     out = Path(args.out_dir).expanduser()
     # 装置修正⑨b：**不许在已有种子的目录上重建** —— 第一次重建时旧 facts 与新
@@ -133,14 +164,15 @@ def main(argv: list[str] | None = None) -> int:
     ids = [t["id"] for t in heldout]
 
     # ── 闸 0：题与惯例必须一一对应（漏一条 = 那道题注定被当"通道坏了"）──
-    missing = [i for i in ids if i not in FACTS]
+    print(f"== 惯例变体 = {args.variant}（{len(facts)} 条）==")
+    missing = [i for i in ids if i not in facts]
     if missing:
         print(f"❌ 这几道题没有对应的惯例：{missing} ⇒ 整组作废（不许跑）")
         return 1
-    unused = [k for k in FACTS if k not in ids]
+    unused = [k for k in facts if k not in ids]
     if unused:
         print(f"   ⓘ 未入选的惯例 {len(unused)} 条（不注入）：{unused}")
-    h_texts = [FACTS[i] for i in ids]
+    h_texts = [facts[i] for i in ids]
     over = [(i, len(t)) for i, t in zip(ids, h_texts) if len(t) > CAP]
     if over:
         print(f"❌ 惯例超过 {CAP} 字（会被 core.py 静默截断）：{over}")
@@ -175,7 +207,7 @@ def main(argv: list[str] | None = None) -> int:
     print("== R1 送达预检（own-fact，不是只数条数）==")
     ok = True
     for t in heldout:
-        want = FACTS[t["id"]]
+        want = facts[t["id"]]
         gotH = [f.text for f in memH.recall(t["prompt"], k=6)]
         gotP = [f.text for f in memP.recall(t["prompt"], k=6)]
         gotE = [f.text for f in memE.recall(t["prompt"], k=6)]

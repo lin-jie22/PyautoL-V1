@@ -68,9 +68,13 @@ def _load_scores(ev: Path) -> dict[str, list[dict[str, float]]]:
     return out
 
 
-def _check_delivery(ev: Path, heldout: Path = HELDOUT) -> tuple[bool, list[str]]:
+def _check_delivery(ev: Path, heldout: Path = HELDOUT,
+                    facts: dict[str, str] | None = None
+                    ) -> tuple[bool, list[str]]:
     from build_g7d_seed import FACTS
     from mw.memory import MemoryStore
+    if facts is None:                     # ★7f：变体由调用方传入，默认仍是 7d
+        facts = FACTS
 
     tasks = [json.loads(l) for l in heldout.read_text().splitlines() if l.strip()]
     lines: list[str] = []
@@ -95,7 +99,7 @@ def _check_delivery(ev: Path, heldout: Path = HELDOUT) -> tuple[bool, list[str]]
     # 送达：own-fact + **两臂等量**（装置修正⑨d：等长只有在条数/字符数都相等时
     # 才等价于"注入量相等"；"H 送得越多越好"是错的判据）
     for t in tasks:
-        want = FACTS[t["id"]]
+        want = facts[t["id"]]
         got = {a: [f.text for f in seeds[a].recall(t["prompt"], k=6)] for a in ARMS}
         own = want in got["H"]
         n_ok = len(got["H"]) == len(got["P"])
@@ -118,6 +122,8 @@ def main(argv: list[str] | None = None) -> int:
     #: 7e 起 suite 可换（默认仍是 7d 的 g7e_heldout.jsonl）—— 换的只是题面
     #: 那一句话，判据/阈值/读数口径**一个字节不动**。
     p.add_argument("--heldout", default=str(HELDOUT))
+    #: ★7f：惯例文本变体（只影响 R1 的 own-fact 比对；判据/阈值不动）
+    p.add_argument("--facts", default="7d", choices=["7d", "7f"])
     args = p.parse_args(argv)
     ev = Path(args.evidence).expanduser().resolve()
     heldout = Path(args.heldout).expanduser().resolve()
@@ -126,7 +132,8 @@ def main(argv: list[str] | None = None) -> int:
     ids = sorted(reps["H"][0])
 
     print("== R1 送达（冻结种子库 recall 重放 + own-fact + 完整性）==")
-    ok_delivery, d_lines = _check_delivery(ev, heldout)
+    from build_g7d_seed import VARIANTS
+    ok_delivery, d_lines = _check_delivery(ev, heldout, VARIANTS[args.facts])
     for l in d_lines:
         print(l)
     if not ok_delivery:

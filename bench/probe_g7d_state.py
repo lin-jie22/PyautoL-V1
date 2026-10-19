@@ -37,14 +37,17 @@ if not os.environ.get("V1_STATE_DIR"):
 from mw.core import Core                                     # noqa: E402
 from mw.llm import StubLLM                                   # noqa: E402
 from mw.memory import MemoryStore                            # noqa: E402
-from build_g7d_seed import FACTS                             # noqa: E402
+from build_g7d_seed import VARIANTS                          # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--seed", required=True)
     p.add_argument("--heldout", required=True)
+    #: ★7f：惯例文本变体（只影响"逐字在不在"的比对；不改任何判据）
+    p.add_argument("--facts", default="7d", choices=sorted(VARIANTS))
     args = p.parse_args(argv)
+    facts = VARIANTS[args.facts]
 
     seed = Path(args.seed).expanduser().resolve()
     tasks = [json.loads(l) for l in
@@ -57,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
                          scorer_sha="probe", suite_sha="probe")
         head = "[语义记忆]"
         i = st.find(head)
-        want = FACTS.get(t["id"], "")
+        want = facts.get(t["id"], "")
         has_block = i >= 0
         has_fact = bool(want) and want[: min(len(want), 120)] in st
         good = has_block and has_fact

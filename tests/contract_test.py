@@ -4140,21 +4140,29 @@ check(RS, "AP12 ★基线 E0 与正对照 E3 必须跑**未被 patch** 的进程
       and 'if [ "${entry}" = "fake" ]' in _AP_SH,
       f"E0/E3/T 齐备={all(x in _AP_SH for x in ('run_arm E0  run', 'run_arm E3  run', 'run_arm T   fake'))}")
 
+# --- AP13 的计数先算好，避免 f-string 表达式里出现反斜杠 ---
+_AP13_NEEDLE = '--memory-dir "${dir}/mem"'          # 外层单引号，内部双引号无需转义
+_AP13_HITS = _AP_SH.count(_AP13_NEEDLE)
+
 check(RS, "AP13 ★每一臂必须有**自己的一份**记忆目录，不许共用\n"
           "         —— 第十七轮就是因为 B/C 共用同一个 `--memory-dir`：\n"
           "           C 的起跑库里躺着 B 跑出来的 episode，同一个 C 从 0.8500\n"
           "           变成 0.7500，一个 +0.40 的单题涨幅整个消失。",
-      _AP_SH.count('--memory-dir "${dir}/mem"') == 1
+      _AP13_HITS == 1
       and 'dir="${ROOT}/${arm}"' in _AP_SH,
-      f"memory-dir 出现次数={_AP_SH.count('--memory-dir \"${dir}/mem\"')}")
+      f"memory-dir 出现次数={_AP13_HITS}")
 
 _AP_EV = V1 / "bench" / "evidence" / "fakemem_s18"
+# --- AP14 的份数也先算好，f-string 里不再出现条件表达式 + 引号嵌套 ---
+_AP14_RUNS = sorted(_AP_EV.glob("*.runs.jsonl")) if _AP_EV.is_dir() else []
+_AP14_COUNT = len(_AP14_RUNS)
+
 check(RS, "AP14 ★五臂的原始读数必须**冻结成文件**，结论不许只躺在散文里\n"
           "         —— 写在文档里的数字改一个字词就可能不易察觉；\n"
           "           冻成一堆 jsonl 之后，改数字探针会自己转红。",
-      _AP_EV.is_dir() and len(sorted(_AP_EV.glob("*.runs.jsonl"))) >= 5
+      _AP_EV.is_dir() and _AP14_COUNT >= 5
       and (V1 / "bench" / "probe_fakemem.py").exists(),
-      f"证据份数={len(sorted(_AP_EV.glob('*.runs.jsonl'))) if _AP_EV.is_dir() else 0}")
+      f"证据份数={_AP14_COUNT}")
 
 # ── AP15：判读实现**只有一处**（第十八轮自踩，必须钉住）───────────────────
 # 第十八轮收尾时发现：判读逻辑在 `run_fakemem_control.sh` 里嵌了一份，
@@ -4164,19 +4172,23 @@ check(RS, "AP14 ★五臂的原始读数必须**冻结成文件**，结论不许
 # 这不是"抄错了"，这是**同一样东西有两处声明**的必然结果（V5 规则第 2 条）。
 # ⇒ 修法不是把两处改一致，而是**删掉一处**：脚本收尾直接调探针的 --write。
 _AP_PROBE = (V1 / "bench" / "probe_fakemem.py").read_text(encoding="utf-8")
+# --- AP15 的三个判定值先算好，f-string 表达式里不再出现反斜杠 ---
+_AP15_SCRIPT_VERDICT = bool(re.search(r"^\s*verdict\s*=", _AP_SH, re.M))
+_AP15_SCRIPT_GAP = "content_gap" in _AP_SH
+_AP15_SELF_JUDGE = _AP15_SCRIPT_VERDICT or _AP15_SCRIPT_GAP
+_AP15_HAS_DEF = "def verdict_of(" in _AP_PROBE
+_AP15_DEF_N = _AP_PROBE.count("verdict_of(")
+
 check(RS, "AP15 ★判读规则**只许存在一份实现**：脚本必须委托给探针，不许自己再算一遍\n"
           "         —— 第十八轮的真实教训：两份实现各写一遍，其中一份多了 `**`，\n"
           "           落盘的判定与探针重算立刻不等。抄一遍就会漂，与抄得对不对无关。\n"
-          "           ⇒ 修法是把脚本里那份**删掉**，而不是把它改对。",
+          "         ⇒ 修法是把脚本里那份**删掉**，而不是把它改对。",
       'bench/probe_fakemem.py --evidence "${EVID}" --write' in _AP_SH
-      and not re.search(r"^\s*verdict\s*=", _AP_SH, re.M)
-      and not re.search(r"content_gap\s*=", _AP_SH)
-      and "def verdict_of(" in _AP_PROBE
-      and _AP_PROBE.count("verdict_of(") >= 2,          # 定义 1 处 + 调用 ≥1 处
-      f"脚本自带判读={bool(re.search(r'^\\s*verdict\\s*=', _AP_SH, re.M)) or 'content_gap' in _AP_SH} "
-      f"探针定义={('def verdict_of(' in _AP_PROBE)}")
-
-
+      and not _AP15_SCRIPT_VERDICT
+      and not _AP15_SCRIPT_GAP
+      and _AP15_HAS_DEF
+      and _AP15_DEF_N >= 2,          # 定义 1 处 + 调用 ≥1 处
+      f"脚本自带判读={_AP15_SELF_JUDGE} 探针定义={_AP15_HAS_DEF}")
 # ===========================================================================
 # AQ 组（第十九轮）—— ① 把「等长安慰剂」做成一等公民（§17-16）
 #                    ② 把「存在性」与「形状」拆开（§17-15）
@@ -4943,15 +4955,18 @@ _AS_WC_TREE = ast.parse(_AS_WC)
 # ⚠️ 这两条必须做**表外检查**：本驱动器要撤回的锚点有一部分就写在它自己的 CSES 表里，
 #    用整文件 `in` 去判，表里那一份字面量会让断言恒真（本轮实测踩到）。
 _AS_RESTORE_BODY = _code_only(_func_body(_AS_WC_TREE, "_restore_all", _AS_WC))
+# --- AS22 的两个判定先算好，f-string 里不再出现嵌套双引号 ---
+_AS22_NEEDLE = 'if _sha(dst) == rec.get("mutated")'
+_AS22_ONLY_MUTATED = _AS22_NEEDLE in _AS_RESTORE_BODY
+_AS22_SKIP_STALE = 'skipped.append(rel)' in _AS_RESTORE_BODY
+
 check(RS, "AS22 ★R13 驱动器只许还原「当前内容 == 当初写进去的变异」的备份\n"
           "          —— 无条件还原会把**本轮合法的修改**整个覆盖掉：\n"
           "            本轮真实事故——上一轮的 core.py 备份在新一轮启动时被照着还原，\n"
           "            `closeout_stats` 当场消失、契约从 444 条掉到 AS20 的 AttributeError，\n"
           "            而日志写着『启动先还原 5 个残留变异文件』，读起来像在修，实际在删。",
-      'if _sha(dst) == rec.get("mutated")' in _AS_RESTORE_BODY
-      and 'skipped.append(rel)' in _AS_RESTORE_BODY,
-      f"只还原真变异={'if _sha(dst) == rec.get("mutated")' in _AS_RESTORE_BODY} "
-      f"过期就跳过={'skipped.append(rel)' in _AS_RESTORE_BODY}")
+      _AS22_ONLY_MUTATED and _AS22_SKIP_STALE,
+      f"只还原真变异={_AS22_ONLY_MUTATED} 过期就跳过={_AS22_SKIP_STALE}")
 
 # AS23：既看**字面量**（必须锚在整句上），也**复现那次事故**（拿一条嵌套的假汇总喂给它）。
 _AS_SUM_LIT = ""
@@ -4986,12 +5001,14 @@ check(RS, "AS23 ★基线判读的汇总行必须**锚在整句上**，且**唯�
 #:   只接一个分支就是"一半的题没有读数"，而汇总行看起来完全正常。
 _RUN_SRC = (V1 / "run.py").read_text(encoding="utf-8")
 _RAW_ABSORB = _code_only(_RUN_SRC).count('_kco_absorb(_kco, out.stats.get("closeout") or {})')
+# --- AS24 的两个判定先算好，f-string 里不再出现嵌套引号 ---
+_AS24_LANDED = '"kernel_closeout": _kco' in _RUN_SRC
+
 check(RS, "AS24 ★收尾读数必须落盘，且**两个 solver 分支都并进去**\n"
           "          —— 不落盘的读数不可审计；只接一个分支 = 一半的题没有读数，\n"
           "            而汇总行看起来一切正常。",
-      '"kernel_closeout": _kco' in _RUN_SRC and _RAW_ABSORB == 2,
-      f"落盘键={'"kernel_closeout": _kco' in _RUN_SRC} 并入点={_RAW_ABSORB}（须为 2）")
-
+      _AS24_LANDED and _RAW_ABSORB == 2,
+      f"落盘键={_AS24_LANDED} 并入点={_RAW_ABSORB}（须为 2）")
 
 # ── AS25（第二十二轮）：收尾读数的**真模型冻结证据**必须可重算 ──────────────
 #: ★ 这一条把"收尾在 5 题里触发 2 次、改掉交付物 1 次"从散文里搬进对账。
@@ -5253,8 +5270,8 @@ check(RS, "AX4 ★V1_ALLOW_LEARN=0 时构造的 Core，其世界模型 `allow_le
 #: （把 rc 当"零失败史"），字符串锚抓不到语义；只有"造一个库、问它数出几条"
 #: 才能钉住"结论来自哪一列"。
 sys.path.insert(0, str(V1 / "bench"))                            # noqa: E402
-from build_g7_seed import history_counts                          # noqa: E402
-from probe_inject import _scan                                   # noqa: E402
+from bench.build_g7_seed import history_counts                          # noqa: E402
+from bench.probe_inject import _scan                                   # noqa: E402
 
 _AY_DB = _TMP / "ay_train.db"
 _ay_mem = MemoryStore(_AY_DB)
@@ -5299,7 +5316,7 @@ check(RS, "AY3 ★注入诊断：48 格全扫、每格都有 `[语义记忆]`、
 # AZ 组（第三十二轮，§17-7d 装置修正⑨）：安慰剂必须与处理**等价**，
 # 不许只是"内容不一样"。等价性断了，R7 的闸就变成了装饰。
 # ══════════════════════════════════════════════════════════════════════════
-import build_g7d_seed as _G7D                                    # noqa: E402
+import bench.build_g7d_seed as _G7D                                    # noqa: E402
 import contextlib as _ctx                                        # noqa: E402
 import io as _io                                                 # noqa: E402
 
@@ -5342,7 +5359,7 @@ check(RS, "AZ5 全部惯例文本 ≤120 字（否则 core.py 注入时静默截
 #   AZ6 = 除题面外逐字段不动（ids/tests/oracle/partial/null/meta 一个字节不许变）
 #   AZ7 = 题面只差这一处，且**真的**指向记忆（长度差恰为 +2，反向替换逐字节可逆）
 # ══════════════════════════════════════════════════════════════════════════
-import build_g7e_hint as _G7E                                    # noqa: E402
+import bench.build_g7e_hint as _G7E                                    # noqa: E402
 
 
 def _az_rows(path: Path) -> list[dict]:
@@ -5381,6 +5398,64 @@ for _b, _h in zip(_AZ6_BASE, _AZ6_HINT):
 check(RS, "AZ7 ★题面**只差这一处**且真的指向记忆（长度差 +2、反向替换逐字节可逆）\n"
           "          —— 这是 7e 唯一的自变量；它不干净，整组读数就没有归因力。",
       not _AZ7_BAD, str(_AZ7_BAD))
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ8/AZ9/AZ10（第三十四轮，§17-7f）：只改**未被采用的三条**的表述形式。
+# 7f 的全部实验价值压在一个单变量上 —— "同一把尺子、只换记忆文本的形状"。
+# 这三条断言各自焊死一个口子：
+#   AZ8  = 只有那三条变了，且每条都真的带上了「例：」；`g7d2`（已采用）逐字节不动
+#   AZ9  = 键集与 7d 完全相同、每条仍 ≤120 字（否则 core.py 静默截断）
+#   AZ10 = 与题面的 token 交集必须与 7d **逐题完全相同**（装置修正⑪）
+#          —— 交集一变，FTS 命中就变，注入条数就变 ⇒ "形式"与"注入量"两个变量同时动
+# ══════════════════════════════════════════════════════════════════════════
+_G7F_CHANGED = ("g7d3_fmt_amount", "g7e1_parse_flag", "g7e2_truncate_tail")
+_AZ8_BAD: list[tuple[str, str]] = []
+for _k in _G7D.FACTS:
+    if _k not in _G7F_CHANGED:
+        if _G7D.FACTS_G7F.get(_k) != _G7D.FACTS[_k]:
+            _AZ8_BAD.append((_k, "不该改的键被改了"))
+for _k in _G7F_CHANGED:
+    _v = _G7D.FACTS_G7F.get(_k, "")
+    if "例：" not in _v:
+        _AZ8_BAD.append((_k, "没有「例：」"))
+    if _v == _G7D.FACTS.get(_k):
+        _AZ8_BAD.append((_k, "与 7d 逐字节相同（等于没改）"))
+check(RS, "AZ8 ★7f 只改**未被采用的三条**，且每条真的带上了「例：」\n"
+          "          —— 已采用的 `g7d2` 一个字节都不许动，否则分不清「例子起作用」\n"
+          "             与「把已经会的那条改坏了」。",
+      not _AZ8_BAD, str(_AZ8_BAD))
+
+check(RS, "AZ9 7f 惯例：键集与 7d **完全相同**、每条仍 ≤120 字（core.py 会静默截断）",
+      set(_G7D.FACTS_G7F) == set(_G7D.FACTS)
+      and all(len(v) <= 120 for v in _G7D.FACTS_G7F.values()),
+      str([(k, len(v)) for k, v in _G7D.FACTS_G7F.items()
+           if len(v) > 120] or sorted(set(_G7D.FACTS_G7F) ^ set(_G7D.FACTS))))
+
+from mw.memory import _TOKEN as _G7F_TOK                         # noqa: E402
+
+_AZ10_BAD: list[tuple[str, list[str], list[str]]] = []
+for _t in _AZ6_HINT:
+    _pt = set(_G7F_TOK.findall(_t["prompt"]))
+    _old = set(_G7F_TOK.findall(_G7D.FACTS[_t["id"]])) & _pt
+    _new = set(_G7F_TOK.findall(_G7D.FACTS_G7F[_t["id"]])) & _pt
+    if _old != _new:
+        _AZ10_BAD.append((_t["id"], sorted(_new - _old), sorted(_old - _new)))
+check(RS, "AZ10 ★7f 惯例与题面的 **token 交集**必须与 7d 逐题完全相同\n"
+          "          —— 交集一变，FTS 命中就变、注入条数就变（7e 实测 4/4/1/1），\n"
+          "             于是「文本形式」与「注入量/检索精度」两个变量同时动，读数无法归因。",
+      not _AZ10_BAD, str(_AZ10_BAD))
+
+from mw.memory import normalize as _G7F_NORM                     # noqa: E402
+
+_G7F_UNNORMAL = [
+    (k, len(v), len(_G7F_NORM(v)))
+    for k, v in _G7D.FACTS_G7F.items() if _G7F_NORM(v) != v
+]
+check(RS, "AZ11 ★7f 惯例必须已是**规范形式**：`normalize(v) == v`\n"
+          "          —— `MemoryStore.commit_fact` 写入时折叠连续空白并 strip，\n"
+          "             原文一变，R1 的 own-fact 就**永远**判不过（实测：例子里的\n"
+          "             `'  1 '` 让 102 字存成 101 字，四题里只它一条报「未送达」）。",
+      not _G7F_UNNORMAL, str(_G7F_UNNORMAL))
 
 # ══════════════════════════════════════════════════════════════════════════
 # AE 组（第二十三轮，路线①）：外部能力作为**答案来源**接入

@@ -452,6 +452,26 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ7", "bench/build_g7e_hint.py",
      "    return prompt.replace(BASE_CLAUSE, HINT_CLAUSE)",
      "    return prompt"),
+    # AZ8：把**已采用**的那条也改掉 ⇒ 7f 不再是"只改未采用的三条"，
+    #      读数分不清"例子起作用"与"把已经会的那条改坏了"。
+    ("AZ8", "bench/build_g7d_seed.py",
+     "FACTS_G7F: dict[str, str] = dict(FACTS)",
+     'FACTS_G7F: dict[str, str] = {**FACTS, '
+     '"g7d2_dedupe_keep": "改动过的去重惯例"}'),
+    # AZ9：往 7f 变体里塞一个 7d 没有的键 ⇒ 键集不再相同（多出一条无题可配的惯例）。
+    ("AZ9", "bench/build_g7d_seed.py",
+     "FACTS_G7F.update({",
+     'FACTS_G7F.update({"g7f_extra": "多余的惯例",'),
+    # AZ10：给例子塞一个**题面里也有**的中文 token ⇒ 该条被 FTS 精确命中，
+    #        H 臂注入从 4 条降到 1 条（P 臂不会同步）⇒「形式」与「注入量」同时变。
+    ("AZ10", "bench/build_g7d_seed.py",
+     "\"不超长时原样返回。例：'0123456789' 取 n=4 得 '…6789'。\",",
+     "\"不超长时原样返回。例：'0123456789' 取 n=4 得 '…6789'，超长时保留哪一头？\","),
+    # AZ11：例子带连续空白 ⇒ `commit_fact` 的 normalize 会折叠/ strip，
+    #        存进库的文本 ≠ FACTS 原文 ⇒ R1 的 own-fact 永远判不过。
+    ("AZ11", "bench/build_g7d_seed.py",
+     "\"例：'YES' 为真、'on' 为假、'maybe' 为 None。\",",
+     "\"例：'YES' 为真、'on' 为假、'  1 ' 为真、'maybe' 为 None。\","),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -766,8 +786,12 @@ def main(argv: list[str] | None = None) -> int:
           f"红={sorted(back_red) or '无'}")
     ok_all = ok_all and back_ok
 
-    if _sha(V1 / "tests" / "contract_test.py") != _guard:
-        print("\n  ⛔ 运行期间 `tests/contract_test.py` 被改动 ⇒ 本轮读数作废（边跑边改）")
+    _guard_end = _sha(V1 / "tests" / "contract_test.py")
+    if _guard_end != _guard:
+        print(f"\n  ⛔ 运行期间 `tests/contract_test.py` 被改动 ⇒ 本轮读数作废（边跑边改）")
+        # ★第三十四轮：把两个值印出来。只报警不给值 = 只能靠回忆时间线，
+        #   而"回忆时间线"正是这条闸当初要取代的东西。
+        print(f"     基线后 sha={_guard}  结束时 sha={_guard_end}")
         ok_all = False
 
     print("\n" + "=" * 74)

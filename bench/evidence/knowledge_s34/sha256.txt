@@ -1,0 +1,8 @@
+== 题面 sha256（三臂共用同一文件）==
+696d812d4d25a8760473d86b26ccb2410c4709262e4b148552f74d8e0f52882d  /tmp/v1_g7f/out/suite.jsonl
+== 臂 H 种子 sha256 ==
+048b942bb5656af6809dcd2dfd540fa47f29d4505c5311804e61cf6219627aff  /tmp/v1_g7f/out/seed_H.db
+== 臂 P 种子 sha256 ==
+41d3a8a8b1e26f1fcfe84308d2b8edb5ca074b026c06b4d80b41ff628452307a  /tmp/v1_g7f/out/seed_P.db
+== 臂 E 种子 sha256 ==
+9694ea99e057c8570889c8b31c6dba5ed701aaf2fb7a80864c205a8cd8dfa0b2  /tmp/v1_g7f/out/seed_E.db

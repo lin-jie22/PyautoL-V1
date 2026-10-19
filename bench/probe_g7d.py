@@ -123,7 +123,8 @@ def main(argv: list[str] | None = None) -> int:
     #: 那一句话，判据/阈值/读数口径**一个字节不动**。
     p.add_argument("--heldout", default=str(HELDOUT))
     #: ★7f：惯例文本变体（只影响 R1 的 own-fact 比对；判据/阈值不动）
-    p.add_argument("--facts", default="7d", choices=["7d", "7f"])
+    #: ★7k：加 "7j"（钥匙变体；VARIANTS["7j"] 由 build_g7d_seed 提供）
+    p.add_argument("--facts", default="7d", choices=["7d", "7f", "7j"])
     args = p.parse_args(argv)
     ev = Path(args.evidence).expanduser().resolve()
     heldout = Path(args.heldout).expanduser().resolve()

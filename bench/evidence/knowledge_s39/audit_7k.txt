@@ -1,0 +1,2 @@
+ev_n0 state ok=54 bad=0 transport不一致=0
+ev_n4 state ok=63 bad=0 transport不一致=0

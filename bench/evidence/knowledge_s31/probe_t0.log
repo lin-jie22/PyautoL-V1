@@ -1,0 +1,15 @@
+model=qwen2.5:7b temperature=0.0 base=http://localhost:11434/v1
+── system=97 字 user=136 字 × 5 次 ──
+  #1 180 字 sha=a3a23bf9192b
+  #2 180 字 sha=a3a23bf9192b
+  #3 180 字 sha=a3a23bf9192b
+  #4 180 字 sha=a3a23bf9192b
+  #5 180 字 sha=a3a23bf9192b
+  ⇒ 唯一输出数 = 1 / 5  ✔ 逐字节可复现
+── system=1448 字 user=178 字 × 5 次 ──
+  #1 656 字 sha=c8c3169dcaa8
+  #2 656 字 sha=c8c3169dcaa8
+  #3 656 字 sha=c8c3169dcaa8
+  #4 656 字 sha=c8c3169dcaa8
+  #5 656 字 sha=c8c3169dcaa8
+  ⇒ 唯一输出数 = 1 / 5  ✔ 逐字节可复现

@@ -1306,7 +1306,7 @@ V1/
 │   ├── placebo_verify.py           ★第二十一轮：内容无关的安慰剂臂（与闸逐行同构）
 │   ├── run_verify_control.sh       ★第二十一轮：两题集 × 两臂（OFF/ON/安慰剂）
 │   ├── withdraw_check.py           ★R13 撤回驱动器：逐条撤实现，**必须精确转红**
-│   │                                （51 条撤离态：AS / AE / AT / AU 四组）
+│   │                                （65 条撤离态：AS / AE / AT / AU / AW / AX / AY）
 │   ├── probe_wall_retry.py         ★第二十五轮：重试链守墙钟的正式探针
 │   │                                （**本机**慢端点；对照臂逐字复刻旧语义；
 │   │                                 小档约 10s 进 `run_tests.sh`，`--real` 约 7min）
@@ -1320,6 +1320,10 @@ V1/
 │   ├── run_isolation_control.sh   第十五轮：隔离 vs 累积（记忆作为实验变量）
 │   ├── run_budget_control.sh      第十五轮：预算组对照
 │   ├── run_generalization.sh      跨套件泛化
+│   ├── build_g7_seed.py / run_g7.sh / probe_g7.py   ★§17-7 知识执行三臂装置（s29/s30）
+│   ├── build_d2_suite.py / run_d2.sh / probe_d2.py  ★§17-7c 单条判别式闸（s31）
+│   │                                ⛔ 改过题面 ⇒ 只做诊断，不产生任何 Δ
+│   ├── probe_t0.py                 ★§17-7c 直连 LLM 的 T=0 复现性（零内核，短/长 prompt 各 5 次）
 │   └── evidence/          冻结证据（可被人重算/推翻）
 │       ├── score_ledger_*.jsonl            真实账本
 │       └── placebo_s17/*.runs.jsonl        第十七轮两轮 9 份原始考试结果

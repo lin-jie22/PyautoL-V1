@@ -776,6 +776,11 @@ def run_suite(
         total = 0.0
         for t in suite.tasks:
             rep.attempted += 1
+            # ★ 第三十六轮（§17-7h 装置修正⑭④）：**逐题**墙钟。
+            # 在此之前只有整轮 `elapsed_s`，单题耗时只能拿"÷题数"估
+            # （s35 实测 38–65 s/题，**最坏值未知**）。而"预算余量够不够"
+            # 恰恰是一个**最坏值**问题：四题平均 50s 与"有一题 119s"是两件事。
+            _t_task = time.time()
             try:
                 ans = solver(t)
             except Exception as e:  # noqa: BLE001 —— solver 崩了不该带走整轮
@@ -795,7 +800,10 @@ def run_suite(
             rep.recorded += 1
             total += sc.score
             rep.per_task.append({"rep": r + 1, "id": t.id, "score": sc.score,
-                                 "why": sc.why[:200]})
+                                 "why": sc.why[:200],
+                                 # ★逐题墙钟（§17-7h）：只加字段，不改任何判据。
+                                 # 口径与整轮 `elapsed_s` 同源（time.time()）。
+                                 "elapsed_s": round(time.time() - _t_task, 2)})
             # ── 外部评审落盘 ──────────────────────────────────────────
             # 打分器给的**理由**（`why`）此前只有一个去处：写进日志给人看。
             # 现在它进账本，成为下一轮可以被内核读取的只读输入。

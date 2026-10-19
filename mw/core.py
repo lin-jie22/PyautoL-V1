@@ -60,6 +60,14 @@ from .worldmodel import WorldModel
 #:      那时只有一个地方要改。
 WORKING_CHAR_CAP = 300
 
+#: 每次 `_state()` 的产物最多留几步（第三十六轮 §17-7h）。
+#:
+#: 为什么是 12：`limits.max_steps` 的默认值就是 12，超过它没有任何意义
+#: （多出来的状态不可能被生成）。留的是一个**上界**，不是一个调参旋钮：
+#: 它的唯一用途是"runner 可以在任务结束后把这批 state 取走落盘"，
+#: 供**内核之外**的探针按块审计（R1 第二层）。⛔ 内核不读它做任何决策。
+STATE_LOG_CAP = 24
+
 #: 按需取回时单条观测最多回看多少字符（第二十轮，DESIGN §16.19）。
 #:
 #: ⚠️ 为什么不把它并进 `WORKING_CHAR_CAP`：两者回答的是**两个不同的问题**。
@@ -348,6 +356,15 @@ class Core:
         #: 单轮读数也要能被单独构造的实例读到，否则一处 AttributeError 就会
         #: 把整条汇总行带走（AS20 那条教训）。
         self._reset_external()
+        #: ★题边界清掉的**上一题残留**工作记忆条数（第三十六轮 §17-7h）。
+        #: 与上面两条同宗理由建在 `__init__`：`_finish` 可以被单独调用（AS20 的教训），
+        #: 只把它建在 `run()` 里会让"没跑过 run 的实例"一调就 AttributeError。
+        #: **有消费者**：`_finish` 的 stats + `■` 汇总行（零值不印）。
+        self.working_cross_task: int = 0
+        #: ★每次 `_state()` 的产物（第三十六轮 §17-7h）。**只读证据出口**：
+        #: 内核不读它做决策；runner 在任务结束后取走落盘，由外部探针审计。
+        #: 建在 `__init__` 的理由同上面两条（单独调用 `_state` 的探针也会用到）。
+        self.state_log: list[tuple[int, str]] = []
         self.planner = Planner(self.llm, self.tools,
                                max_tokens=self.s.limits.llm_max_tokens)
         self.wm = WorldModel(self.memory, self.llm,
@@ -426,6 +443,10 @@ class Core:
         #: 因预算不足被丢掉的块/条目数（单轮）。**有消费者**：进 stats。
         #: 没有这个计数，"预算吃紧"就是静默的 —— 而静默的降级正是 V5 的病。
         self.state_trimmed = 0
+        # ★单轮读数：每次 `_state()` 的产物属于**这一轮**（与预算同源）。
+        # 不清空的话，第 k 题的 dump 里会混进第 k−1 题的 state ——
+        # 那正是本轮在修的同一类错误（跨题残留），不能在新字段上重演一遍。
+        self.state_log = []
         self.expand_stats: dict = {
             "calls": 0, "chars": 0, "errors": 0,
             "by_trigger": {"mismatch": 0, "fail_tail": 0},
@@ -478,6 +499,24 @@ class Core:
             # 静默降级 = 缺陷（不是特性）：它让读数看起来像模型成绩，实际什么也没测。
             self.log("  ⚠️ 配置了真模型（V1_LLM_API_KEY 已设）但内核使用离线桩"
                      " ⇒ 本次读数**不得**当作模型能力")
+        # ── 题边界：工作记忆是**本题的**草稿纸，不是上一题的 ──────────────
+        # ★ 第三十六轮（§17-7h 装置修正⑭①）。三条实测支撑，缺一条都不该改内核：
+        #   · `MemoryStore.working` 是**进程级** deque，而 bench 复用**同一个** Core
+        #     连跑多题 ⇒ 上一题的工具输出留在下一题的 `[工作记忆]` 块里；
+        #   · `recall` 工具成功时返回的是**全部** facts 的拼接（实测 389 字），
+        #     `_state()` 只取每条输出的**尾 200 字** ⇒ 漏出去的是"尾巴那段"，
+        #     取决于上一题恰好返回了什么；
+        #   · 实测（`probe_g7n_leak.py`，零模型调用）：第 4 题的 state 里出现
+        #     **非本题**惯例 2/3 条，而 R1 只查 `recall()` **看不见**这条路。
+        # ⇒ 改"邻域长度"会同时改变"漏出去的是哪一段" = 那条轴从来不是单变量。
+        # ⛔ 清空点必须在**写侧**（这里）。改在 `_state()` 里过滤会让泄漏**隐身**
+        #    （计数恒 0、泄漏照旧）—— 那正是"修完等于没修"的标准形态。
+        # ⚠️ 返回值必须被消费：`stats["working_cross_task"]` 是"上一题残留了几条"
+        #    的唯一读数，零值也要进 stats（否则"没残留"与"没接线"一样）。
+        self.working_cross_task = self.memory.reset_working()
+        if self.working_cross_task:
+            self.log(f"  🧹 题边界：清掉上一题残留的工作记忆"
+                     f" {self.working_cross_task} 条")
         self.memory.record("goal", goal, budget_tag=budget.tag)
 
         history: list[str] = []
@@ -1044,6 +1083,16 @@ class Core:
                 self.state_trimmed += 1
         parts = [parts[0]] + keep + [step_line]
         state = "\n".join(parts)
+        # ★ 第三十六轮（§17-7h 装置修正⑭②）：把**真正拼给模型的那段文本**留下。
+        # 为什么必须有它：R1 之前只有两条二手的证据 —— `recall()` 返回了什么、
+        # 以及"`want[:120] in state`"（整段 state）。后者会把经工作记忆漏进来的
+        # 也算成"送达"，于是**第二条注入路径**在读数里完全不可见（s35 实测）。
+        # ⛔ 内核**不**写盘、**不**判断"这段对不对"：它只留证据，
+        #    由 runner 取走落盘、由**内核之外**的探针按块切开判定。
+        # ⚠️ 有界：只留最近 `STATE_LOG_CAP` 步（预算的步数上限是 12）。
+        self.state_log.append((it, state))
+        if len(self.state_log) > STATE_LOG_CAP:
+            del self.state_log[:-STATE_LOG_CAP]
         # 通量：记忆 → 推理。分子 = 真的拼进上下文的条数，分母 = 池子里可用的条数。
         # ⚠️ 这个比值**不是健康度**（库越大比例越小），只回答"这条线通没通"。
         self.flow.emit(it, "memory>reason", self.memory.pool_size(), 0)
@@ -1260,6 +1309,9 @@ class Core:
             "external_agents": self.external_agents,
             # 停滞/重复 —— "重复的成功不是进展"这条的读数出口
             "loop": dict(extra or {}),
+            # ★ 题边界清掉的上一题残留工作记忆（第三十六轮 §17-7h）。
+            # 零值也要进 stats：没有这个计数，"清干净了"与"没接线"完全同形。
+            "working_cross_task": self.working_cross_task,
             # 传输层抖动 —— "基础设施的锅 ≠ 模型的锅"这条的读数出口。
             # 有消费者：`■` 汇总行会把它打印出来（零值不显示，避免噪声）。
             # ★ 第二十五轮：把"端点病"与"预算病"分开计 —— 这两者的修法
@@ -1290,6 +1342,10 @@ class Core:
         if tx.get("wall_refused_first") or tx.get("wall_refused_retry"):
             tx_line += (f" | 墙钟放弃首发={tx['wall_refused_first']}"
                         f"/重试={tx['wall_refused_retry']}")
+        # ★ 题边界清空（§17-7h）：零值不印（正常单题跑恒 0），非零必须念 ——
+        #   它是"上一题的工具输出确实漏进了本题上下文"的唯一读数。
+        if stats.get("working_cross_task"):
+            tx_line += f" | 题边界清空工作记忆={stats['working_cross_task']}条"
         # 世界模型读数：**同时**打印分母。
         # 只印 `失配=3` 是假读数 —— 3 次预演里错 3 次、和 30 次里错 3 次，
         # 是两件完全不同的事；前者说明信号恒红，后者说明它在工作。

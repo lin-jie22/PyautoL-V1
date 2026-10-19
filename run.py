@@ -196,6 +196,28 @@ def _kernel_prov(core) -> dict:
                  temperature=core.s.llm.temperature)
 
 
+def _dump_states(path: str, task_id: str,
+                 states: list[tuple[int, str]] | None) -> int:
+    """把内核本轮每次 `_state()` 的产物落到证据文件（第三十六轮 §17-7h）。
+
+    ⛔ 为什么由 **runner** 写而不是内核写：内核不产生实验产物，也不该知道
+       "这一轮是不是在跑实验"。它只把 state 留在内存里（有界），
+       有 `--state-dump` 的调用方才取走 —— 没有就是零开销、零盘上痕迹。
+
+    ⛔ 落盘的是**原文**，不做任何裁剪：R1 的第二层要按块切开比对，
+       裁一刀就等于替判据先把可疑的部分删掉了。
+    """
+    if not path or not states:
+        return 0
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("a", encoding="utf-8") as f:
+        for it, st in states:
+            f.write(json.dumps({"task": task_id, "it": it, "state": st},
+                               ensure_ascii=False) + "\n")
+    return len(states)
+
+
 def _kwm_zero() -> dict:
     """内核侧世界模型读数累加器的零点。"""
     return {"predictions": 0, "scored": 0, "hits": 0, "unscored": 0,
@@ -920,6 +942,9 @@ def cmd_bench(args) -> int:
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
                         _ktx_absorb(_ktx, out.stats.get("transport") or {})
+                        # ★state 证据出口（§17-7h）：只在 `--state-dump` 时写盘
+                        _dump_states(getattr(args, "state_dump", ""),
+                                     t.id, getattr(c, "state_log", None))
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
                         _seen.update(_kernel_prov(c))
@@ -947,6 +972,10 @@ def cmd_bench(args) -> int:
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
                 _ktx_absorb(_ktx, out.stats.get("transport") or {})
+                # ★state 证据出口（§17-7h）：同一内核连跑多题，`state_log` 在
+                # `run()` 开头清空 ⇒ 每次 dump 出来的都是**本题**的 state。
+                _dump_states(getattr(args, "state_dump", ""),
+                             t.id, getattr(_core, "state_log", None))
                 return out.answer
 
             label += "（复用同一内核，记忆跨题累积）"
@@ -1216,6 +1245,10 @@ def main() -> int:
                    help="显式指定记忆目录（**记忆 = 可持有的实验变量**）："
                         "用于『先在一个套件上学、再到另一个套件上考』的泛化实验。"
                         "给了它就不再每题隔离（口径 scope=explicit_dir）。")
+    p.add_argument("--state-dump", default="",
+                   help="把每次 `_state()` 的产物追加到该文件（JSONL，**只读证据**）。"
+                        "R1 的第二层用它：按块切开、查 `[语义记忆]` 之外有没有事实文本。"
+                        "不给 ⇒ 内核一次都不写盘（零开销）。")
     args = p.parse_args()
 
     if args.bench:

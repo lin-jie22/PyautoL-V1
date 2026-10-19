@@ -53,7 +53,8 @@ for ARM in H P E; do
       "$PY" "$ROOT/run.py" --bench --solver llm --temperature 0 \
         --max-tokens 1024 --budget 1 --no-external \
         --suite "$SUITE" \
-        --memory-dir "$D/mem_r$R" >"$OUT/${ARM}_out_r${R}.log" 2>&1
+        --memory-dir "$D/mem_r$R" \
+        --state-dump "$OUT/states_${ARM}_r${R}.jsonl" >"$OUT/${ARM}_out_r${R}.log" 2>&1
     echo "  rc=$? log=$OUT/${ARM}_out_r${R}.log"
     cp "$D/bench_r$R/runs.jsonl" "$OUT/${ARM}_r${R}_runs.jsonl"
     # 跑后库留档（完整性核对：facts 数必须与种子一致）

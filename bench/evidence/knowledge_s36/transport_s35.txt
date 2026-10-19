@@ -1,0 +1,18 @@
+== 运输层路径签名（4 个事件计数；排除 wall_shortened）==
+  ✅ 同路径    ev_E           E  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ⛔ 作废     ev_o1_l120     H  r1:(wall_refused_first=3 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=1 retries=1 exhausted=0)
+  ✅ 同路径    ev_o1_l120     P  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ⛔ 作废     ev_o1_l40      H  r1:(wall_refused_first=0 wall_refused_retry=2 retries=2 exhausted=0) / r2:(wall_refused_first=2 wall_refused_retry=1 retries=1 exhausted=0)
+  ✅ 同路径    ev_o1_l40      P  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ✅ 同路径    ev_o1_l60      H  r1:(wall_refused_first=0 wall_refused_retry=1 retries=1 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=1 retries=1 exhausted=0)
+  ✅ 同路径    ev_o1_l60      P  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ✅ 同路径    ev_o1_l84      H  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ✅ 同路径    ev_o1_l84      P  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ⛔ 作废     ev_o2_l120     H  r1:(wall_refused_first=2 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=1 retries=1 exhausted=0)
+  ✅ 同路径    ev_o2_l120     P  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ✅ 同路径    ev_o2_l40      H  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ✅ 同路径    ev_o2_l40      P  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0) / r2:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+  ·  不可判   rerun_check    H  r1:(wall_refused_first=0 wall_refused_retry=1 retries=1 exhausted=0)
+  ·  不可判   rerun_check    P  r1:(wall_refused_first=0 wall_refused_retry=0 retries=0 exhausted=0)
+
+== 合计 ==  15 格（其中 2 格 repeat 数 <2 ⇒ 不可判），路径不同 **3** 格 ⇒ 这些格不作归因

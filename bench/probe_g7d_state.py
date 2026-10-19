@@ -7,9 +7,14 @@ R1 只证明 `recall()` 能取回惯例；**取回 ≠ 进了拼给模型的状�
 "48/48 格都在"）。所以本轮必须再证一遍：**每道题的惯例原文确实出现在 state 里**。
 
 本探针直接调用真实 `Core._state()`（不跑循环、不调模型），逐题输出：
-    state 长度 / `[语义记忆]` 块在不在 / 本题那条惯例是否逐字出现在块里。
+    state 长度 / `[语义记忆]` 块在不在 / 本题那条惯例是否**逐字留在语义块里** /
+    ⚠️ **有没有 fact 文本出现在语义块之外**（第三十六轮 §17-7h ⑭② 新增的第二层）。
 
-⛔ 它不改判据、不进任何判定；它只回答"送到没送到"。
+⛔ 旧写法是 `want[:120] in st`（**整段** state）—— 7g 实测证明那会把经
+   `[工作记忆]` 漏进来的也算成"送达"，于是第二条注入路径在读数里完全不可见。
+   现在改由 `bench/state_audit.py` 按块切开判定（`own_in_semantic and not outside_all`）。
+
+⛔ 它不改判据、不进任何判定；它只回答"送到没送到、有没有第二条路"。
 
 用法：
     python3 bench/probe_g7d_state.py --seed bench/evidence/knowledge_s32/seed_H.db \
@@ -38,6 +43,7 @@ from mw.core import Core                                     # noqa: E402
 from mw.llm import StubLLM                                   # noqa: E402
 from mw.memory import MemoryStore                            # noqa: E402
 from build_g7d_seed import VARIANTS                          # noqa: E402
+from state_audit import audit_state, format_audit            # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -58,20 +64,20 @@ def main(argv: list[str] | None = None) -> int:
         core = Core(llm=StubLLM(), memory=mem, memory_mode="raw")
         st = core._state(t["prompt"], [], 1, task_id=t["id"],
                          scorer_sha="probe", suite_sha="probe")
-        head = "[语义记忆]"
-        i = st.find(head)
-        want = facts.get(t["id"], "")
-        has_block = i >= 0
-        has_fact = bool(want) and want[: min(len(want), 120)] in st
-        good = has_block and has_fact
+        # ★ §17-7h ⑭②：判据从"整段 state 里有这 120 字"改成**按块**审计。
+        #   旧写法（`want[:120] in st`）会把经工作记忆漏进来的也算成"送达"，
+        #   而 7g 实测那条路真的存在 ⇒ 旧判据看不见它。
+        a = audit_state(st, facts, t["id"])
+        good = a["ok"]
         ok &= good
-        print(f"{'✅' if good else '❌'} {t['id']:24s} state_len={len(st):4d}"
-              f" 块={'有' if has_block else '无'} 本条惯例逐字在={has_fact}")
-        if has_block:
+        print("  " + format_audit(a)
+              + f"  state_len={len(st):4d} 块字符数={a['blocks']}")
+        i = st.find("[语义记忆]")
+        if i >= 0:
             print(f"     {st[i:i + 150]}".replace("\n", " "))
         mem.close()
-    print("状态级送达：" + ("通过（惯例确实进了拼给模型的状态）"
-                          if ok else "❌ 失败 ⇒ 不能把读数读成'模型不用'"))
+    print("状态级送达（两层）：" + ("通过（本题惯例在语义块里，且**没有** fact 漏在别的块）"
+                                  if ok else "❌ 失败 ⇒ 不能把读数读成'模型不用'"))
     return 0 if ok else 2
 
 

@@ -5552,14 +5552,11 @@ check(RS, "AZ15 ★7g 档位名 == 档位值、轴严格递增、变体集合 = 
 # ══════════════════════════════════════════════════════════════════════════
 # AZ16（第三十五轮，§17-7g）：★同一份事实有**两条**注入路径。
 #
-# ⛔ 这条钉的是**缺陷的形状**，不是合格证。
-#    `recall` 工具成功时返回的是**全部** facts 的拼接；`core.py` 用
-#    `think(stored)` 把它写进工作记忆；`MemoryStore.working` 是进程级 deque，
-#    `Core.run()` **不随任务边界清空**；`_state()` 又无条件读 `working_view()`。
-#    ⇒ 第 4 题的状态里会出现第 1–3 题 recall 出来的那些惯例（实测：7f 的库里
-#      非本题惯例 2/3 条经 `[工作记忆]` 进了第 4 题的 state）。
-#    ⇒ R1 只查 `recall()` 的返回条数，**查不到这条路** —— 于是"1 条族的上下文
-#      里没有邻域"这句话是错的。
+# ⛔ 这条钉的是**渲染规则**（`_render` 取 `w[-200:]`），不是跨题泄漏本身 ——
+#    跨题那半已由第三十六轮（AZ17/AZ18）修掉：`run()` 进题先 `reset_working()`。
+#    但渲染规则仍然有效且必须钉住：**同一题内** `recall` 工具成功时返回的是
+#    **全部** facts 的拼接（389 字），它照样会进本题的工作记忆 ⇒
+#    "漏出去的是哪一段"仍然由 `w[-200:]` 决定（这决定了改长度时泄漏内容非单调）。
 #
 # 三个条件同时钉住，少一个就说不清"泄漏的到底是哪一段"：
 #   ① 工作记忆块在 state 里；
@@ -5578,13 +5575,124 @@ _G7N_HAS_BLOCK = "[工作记忆]" in _G7N_ST
 _G7N_TAIL_KEPT = _G7N_TAIL in _G7N_ST
 _G7N_HEAD_GONE = _G7N_HEAD not in _G7N_ST
 _G7N_MEM.close()
-check(RS, "AZ16 ★7g「同一份事实有两条注入路径」：工具输出会被拼进**后续题**的 state，\n"
-          "          且只保留**尾 200 字**（本断言钉的是缺陷形状，不是合格证）\n"
-          "          —— `recall` 返回全部 facts ⇒ `think()` ⇒ 工作记忆 ⇒ 不随任务清空\n"
-          "             ⇒ `_state()` 无条件读它。R1 只查 `recall()`，看不见这条路。",
+check(RS, "AZ16 ★7g「同一份事实有两条注入路径」的**渲染规则**：工作记忆只保留**尾 200 字**\n"
+          "          —— 跨题那半已由 AZ17/AZ18 修掉（进题先清空），但**同一题内**\n"
+          "             `recall` 返回全部 facts 时仍走这条路 ⇒ 泄漏的永远是\"最后 200 字\"，\n"
+          "             这决定了改长度时漏出去的内容**非单调**地变。\n"
+          "          ⚠️ 本断言用 `_state()` 直接构造（不经 `run()`），所以不受清空点影响。",
       _G7N_HAS_BLOCK and _G7N_TAIL_KEPT and _G7N_HEAD_GONE,
       f"块={_G7N_HAS_BLOCK} 尾在={_G7N_TAIL_KEPT} 头不在={_G7N_HEAD_GONE} "
       f"state={len(_G7N_ST)}字")
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ17–AZ21（第三十六轮，§17-7h）：**修装置**，不是跑实验。
+#
+# 7g 的判读给出三条并列的装置缺陷：① 工作记忆跨题不清（第二条注入路径）、
+# ② R1 只查 `recall()` 看不见它、③ 运输层路径不进读数（外加 ④ 没有逐题墙钟）。
+# 在这四条修好之前**任何**单题读数都无法归因 ⇒ 本轮只修装置，⛔ 不跑臂、不认领 Δ。
+# ══════════════════════════════════════════════════════════════════════════
+import bench.state_audit as _SA                              # noqa: E402
+import bench.transport as _TR                                # noqa: E402
+from mw.bench import run_suite                               # noqa: E402
+
+# ── AZ17：清空点的**位置与消费者** ────────────────────────────────────────
+_AZ17_CODE = _code_only((V1 / "mw" / "core.py").read_text(encoding="utf-8"))
+_AZ17_MEM = MemoryStore(Path(tempfile.mkdtemp(prefix="v1_az17_")) / "memory.db")
+_AZ17_MEM.think("上一题的工具输出 ①")
+_AZ17_MEM.think("上一题的工具输出 ②")
+_AZ17_N = _AZ17_MEM.reset_working()
+_AZ17_VIEW = _AZ17_MEM.working_view()
+_AZ17_MEM.close()
+_AZ17_AT = _AZ17_CODE.find("reset_working()")
+_AZ17_GOAL = _AZ17_CODE.find('record("goal"')
+check(RS, "AZ17 ★7h 题边界清空：`reset_working()` 必须在 `record(\"goal\")` **之前**，\n"
+          "          且清掉的条数必须进 stats（否则\"清干净了\"与\"没接线\"完全同形）\n"
+          "          —— `working` 是**进程级** deque，bench 复用同一个 Core 连跑多题；\n"
+          "             清空点若落在读侧（`_state()` 过滤），泄漏会**隐身**：计数恒 0、泄漏照旧。",
+      0 <= _AZ17_AT < _AZ17_GOAL and _AZ17_N == 2 and _AZ17_VIEW == []
+      and '"working_cross_task": self.working_cross_task' in _AZ17_CODE,
+      f"顺序 reset@{_AZ17_AT} < goal@{_AZ17_GOAL}；清掉={_AZ17_N} 剩={_AZ17_VIEW}；"
+      f"stats 消费者={'有' if '\"working_cross_task\": self.working_cross_task' in _AZ17_CODE else '无'}")
+
+# ── AZ18：端到端 —— 第 2 题的**第 1 步** state 里不许有第 1 题的残留 ─────────
+# 走**真实路径**：第 1 题由内核自己调 `recall`（StubLLM 的首选动作），
+# 工具返回全部 facts ⇒ `think()` 写进工作记忆 ⇒ 那正是 7g 实测泄漏的形状。
+# ⛔ 不用 `mem.think(...)` 手工塞：手工塞只能证明"清空函数被调了"，
+#    证明不了"内核产出的那些条目真的被清掉"。
+_AZ18_TASKS = [json.loads(l) for l in
+               (V1 / "bench" / "heldout" / "g7e_hint_heldout.jsonl")
+               .read_text(encoding="utf-8").splitlines() if l.strip()]
+_AZ18_T1 = next(t for t in _AZ18_TASKS if t["id"] == "g7d2_dedupe_keep")
+_AZ18_T2 = next(t for t in _AZ18_TASKS if t["id"] == "g7e2_truncate_tail")
+_AZ18_MEM = MemoryStore(Path(tempfile.mkdtemp(prefix="v1_az18_")) / "memory.db")
+for _k, _v in _G7D.FACTS.items():
+    _AZ18_MEM.commit_fact(_v, source=ABSTRACT_SOURCE, confidence=0.5)
+_AZ18_CORE = Core(llm=StubLLM(), memory=_AZ18_MEM, memory_mode="raw")
+_AZ18_OUT1 = _AZ18_CORE.run(_AZ18_T1["prompt"], task_id=_AZ18_T1["id"])
+_AZ18_WORK1 = len(_AZ18_MEM.working_view())      # ⟶ 必须 >0，否则本断言是空的
+_AZ18_OUT2 = _AZ18_CORE.run(_AZ18_T2["prompt"], task_id=_AZ18_T2["id"])
+_AZ18_ST2 = _AZ18_CORE.state_log[0][1] if _AZ18_CORE.state_log else ""
+_AZ18_AUDIT = _SA.audit_state(_AZ18_ST2, _G7D.FACTS, _AZ18_T2["id"])
+_AZ18_MEM.close()
+check(RS, "AZ18 ★7h 端到端：第 1 题由内核自己 `recall`（工作记忆确实被写满），\n"
+          "          第 2 题**第 1 步**的 state 里**不许**有 fact 出现在 `[语义记忆]` 之外\n"
+          "          —— 此前实测：非本题惯例 2/3 条经 `[工作记忆]` 进了第 4 题的 state，\n"
+          "             而 R1 只查 `recall()` 完全看不见 ⇒ 那条轴从来不是单变量。",
+      _AZ18_WORK1 > 0 and bool(_AZ18_ST2) and _AZ18_AUDIT["ok"],
+      f"第1题留下={_AZ18_WORK1}条；第2题清掉="
+      f"{_AZ18_OUT2.stats.get('working_cross_task')}条；"
+      f"第2题第1步审计={'✅' if _AZ18_AUDIT['ok'] else '❌'} "
+      f"语义块本条={_AZ18_AUDIT['own_in_semantic']} "
+      f"其它块有={_AZ18_AUDIT['outside_all']} state={len(_AZ18_ST2)}字")
+
+# ── AZ19：R1 第二层 —— 审计必须**分块**，不许"整段里有就算送达" ─────────────
+_AZ19_F = {"t1": "惯例甲：去重时保留首次出现的写法，归一化只用 strip().lower()。",
+           "t2": "惯例乙：截断超长串时保留尾部，前置一个省略号。"}
+_AZ19_OKST = "[目标] 题目\n[语义记忆] " + _AZ19_F["t1"] + "\n[轨迹] [step 1] recall ⇒ 成功"
+_AZ19_LEAK = ("[目标] 题目\n[工作记忆] recall ⇒ ✔ " + _AZ19_F["t2"]
+              + "\n[语义记忆] " + _AZ19_F["t1"] + "\n")
+_AZ19_A = _SA.audit_state(_AZ19_OKST, _AZ19_F, "t1")
+_AZ19_B = _SA.audit_state(_AZ19_LEAK, _AZ19_F, "t1")
+check(RS, "AZ19 ★7h R1 第二层：`audit_state` 必须把\"在语义块里\"与\"在别的块里\"**分开报**\n"
+          "          —— 旧写法 `want[:120] in state`（整段）会把经 `[工作记忆]` 漏进来的\n"
+          "             也算成送达；7g 实测那条路真的存在 ⇒ 旧判据看不见它。\n"
+          "          ⛔ 不许合并成一个布尔：一合并，泄漏就又变成不可见的了。",
+      _AZ19_A["ok"] and _AZ19_A["own_in_semantic"] and not _AZ19_A["outside_all"]
+      and not _AZ19_B["ok"] and _AZ19_B["own_in_semantic"]
+      and _AZ19_B["outside_all"] == ["t2"],
+      f"干净={_AZ19_A['ok']} 泄漏={_AZ19_B['ok']} outside={_AZ19_B['outside_all']} "
+      f"own语义块(泄漏态)={_AZ19_B['own_in_semantic']}")
+
+# ── AZ20：运输层路径进读数（在 s35 冻结证据上必须复现 7g 的实测）──────────
+_AZ20_ROOT = V1 / "bench" / "evidence" / "knowledge_s35"
+_AZ20_VOID: list[tuple[str, str]] = []
+for _d in sorted(p for p in _AZ20_ROOT.glob("ev_*") if p.is_dir()):
+    for _c in _TR.audit_dir(_d):
+        if _c["checked"] and _c["void"]:
+            _AZ20_VOID.append((_d.name, _c["arm"]))
+check(RS, "AZ20 ★7h 运输层路径进读数：同格两次 repeat 路径不同 ⇒ **该格作废**\n"
+          "          —— 必须在 s35 冻结证据上**恰好**标出 3 格，且翻掉的那格在内；\n"
+          "             这是\"规则能复现 7g 的实测\"的反证组（多标/少标都说明签名取错了）。\n"
+          "          ⚠️ `wall_shortened` **不进签名**：它 ≡ 调用次数，会把每一格都标成不同。",
+      sorted(_AZ20_VOID) == [("ev_o1_l120", "H"), ("ev_o1_l40", "H"),
+                             ("ev_o2_l120", "H")],
+      f"被标作废的格={sorted(_AZ20_VOID)}（期望 o1_l120/H、o1_l40/H、o2_l120/H）")
+
+# ── AZ21：逐题墙钟（④）—— 只加字段，不改判据 ─────────────────────────────
+_AZ21_SC = ExternalScorer([sys.executable, str(_AH_SCORER)], name="assertion")
+_AZ21_M, _AZ21_REP = run_suite(lambda _t: _t.oracle, _AZ21_SC, _AH_s, repeat_n=1)
+_AZ21_ROWS = _AZ21_REP.per_task
+_AZ21_MISSING = [r.get("id") for r in _AZ21_ROWS if "elapsed_s" not in r]
+_AZ21_SUM = round(sum(float(r.get("elapsed_s") or 0) for r in _AZ21_ROWS), 2)
+check(RS, "AZ21 ★7h 每一行 `per_task` 都必须带 `elapsed_s`，且各题之和 ≤ 整轮耗时\n"
+          "          —— 此前只有整轮 `elapsed_s`，单题耗时只能 `÷题数` 估\n"
+          "             （s35：38–65 s/题，**最坏值未知**）；而\"预算余量够不够\"\n"
+          "             恰恰是一个最坏值问题。⛔ 本轮只补读数，不动 `V1_MAX_WALL_S`。",
+      bool(_AZ21_ROWS) and not _AZ21_MISSING and _AZ21_SUM <= _AZ21_REP.elapsed_s + 0.5
+      and any(float(r.get("elapsed_s") or 0) > 0 for r in _AZ21_ROWS),
+      f"行数={len(_AZ21_ROWS)} 缺字段={_AZ21_MISSING} 逐题之和={_AZ21_SUM}s "
+      f"整轮={round(_AZ21_REP.elapsed_s, 2)}s")
 
 
 

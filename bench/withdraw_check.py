@@ -499,6 +499,33 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ16", "mw/core.py",
      "w if w.startswith(EXPAND_MARK) else w[-200:] for w in ws)",
      "w if w.startswith(EXPAND_MARK) else w[:200] for w in ws)"),
+    # ══════════════════════════════════════════════════════════════════════
+    # AZ17–AZ21（§17-7h）：**修装置**那四条各自的撤回态。
+    # ══════════════════════════════════════════════════════════════════════
+    # AZ17：把"清掉了几条"换成常数 0 ⇒ 清空**照旧发生**，但读数消失
+    #       ⇒ "清干净了"与"没接线"再也分不开（字段必须有消费者）。
+    #       ⚠️ 刻意**不动**清空那一行：动了它 AZ18 也会红（见 COUPLED）。
+    ("AZ17", "mw/core.py",
+     '            "working_cross_task": self.working_cross_task,',
+     '            "working_cross_task": 0,'),
+    # AZ18：题边界不再清空 ⇒ 第 1 题 `recall` 出来的全部 facts 留在工作记忆里，
+    #       第 2 题第 1 步的 state 里就会出现非本题惯例（正是 7g 实测的形状）。
+    ("AZ18", "mw/core.py",
+     "        self.working_cross_task = self.memory.reset_working()",
+     "        self.working_cross_task = 0"),
+    # AZ19：审计退回"整段里有就算"（`others` 恒空）⇒ 经 `[工作记忆]` 漏进来的
+    #       再也看不见 —— 那正是旧判据 `want[:120] in st` 的病。
+    ("AZ19", "bench/state_audit.py",
+     '    others = "".join(v for k, v in blk.items() if k not in _SEMANTIC_HEADS)',
+     '    others = ""'),
+    # AZ20：作废规则恒假 ⇒ 路径不同的格不再被标出来（"路径"这条读数等于没进)。
+    ("AZ20", "bench/transport.py",
+     "    void = checked and len(sigs) > 1",
+     "    void = False"),
+    # AZ21：逐题墙钟写死 0 ⇒ 字段在、但完全没有信息（"最坏值"仍然不可知）。
+    ("AZ21", "mw/bench.py",
+     '"elapsed_s": round(time.time() - _t_task, 2)})',
+     '"elapsed_s": 0})'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -540,6 +567,11 @@ COUPLED: dict[str, frozenset[str]] = {
     #: 三条都是"同一个 `_au_co` 对象被上下游两条断言同时观测"，实测逐条复现。
     "AS19": frozenset({"AU10"}),
     "AW2": frozenset({"AW5"}),
+    #: AZ18：撤掉题边界清空 ⇒ AZ17 的**顺序锚**（`reset_working()` 在
+    #: `record("goal")` 之前）也找不到调用点（`find` 返回 −1）。
+    #: 这是同一行实现被两条断言锚定（AZ17 看"在不在/顺序与消费者"，
+    #: AZ18 看"有没有用"），属于**合理连带**，不是锚定跑偏。
+    "AZ18": frozenset({"AZ17"}),
     "AW3": frozenset({"AW5"}),
     "AW4": frozenset({"AW5"}),
     #: AE2 删掉 ENV_KEYS 登记 ⇒ A 组"登记 == 实际读取"必然红（代码读了没登记的 env

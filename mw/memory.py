@@ -174,6 +174,26 @@ class MemoryStore:
     def working_view(self) -> list[str]:
         return [t for _, t in self.working]
 
+    def reset_working(self) -> int:
+        """**题边界**：清空工作记忆，返回被清掉的条数。
+
+        ★ 为什么这件事必须在内核里做（第三十六轮 §17-7h）：
+          `working` 是**进程级** deque，而 bench 模式复用**同一个** `Core` 连跑多题。
+          于是上一题的工具输出会留在下一题的 `[工作记忆]` 块里 —— 而 `recall` 工具
+          成功时返回的是**全部** facts 的拼接（实测 389 字），
+          `_state()` 又只取每条输出的**尾 200 字** ⇒ 漏出去的正好是"尾巴那段"，
+          取决于上一题恰好返回了什么。实测（`probe_g7n_leak.py`）：第 4 题的 state 里
+          出现**非本题**惯例 2/3 条，而 R1 只查 `recall()` 完全看不见这条路。
+          ⇒ 改"邻域长度"必然同时改变"漏出去的是哪一段" = 那条轴从来不是单变量。
+
+        ⛔ 清空点必须在**写侧**（题边界）。改在 `_state()` 里过滤会让泄漏**隐身**：
+           计数恒 0、泄漏照旧 —— 那是"修完等于没修"的典型形态。
+        ⚠️ 返回值**必须被消费**（进 stats）：它是"上一题残留了几条"的唯一读数。
+        """
+        n = len(self.working)
+        self.working.clear()
+        return n
+
     def upgrade_last(self, text: str) -> bool:
         """把工作记忆的**最后一条**换成更宽的版本（第二十轮「按需回看」用）。
 

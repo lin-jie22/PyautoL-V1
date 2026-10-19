@@ -58,7 +58,8 @@ for ARM in $ARMS; do
       "$PY" "$ROOT/run.py" --bench --solver llm --temperature 0 \
         --max-tokens 1024 --budget 1 --no-external \
         --suite "$SUITE" \
-        --memory-dir "$D/mem_r$R" >"$OUT/${ARM}_out_r${R}.log" 2>&1
+        --memory-dir "$D/mem_r$R" \
+        --state-dump "$OUT/states_${ARM}_r${R}.jsonl" >"$OUT/${ARM}_out_r${R}.log" 2>&1
     echo "  rc=$? log=$OUT/${ARM}_out_r${R}.log"
     cp "$D/bench_r$R/runs.jsonl" "$OUT/${ARM}_r${R}_runs.jsonl"
     cp "$D/mem_r$R/memory.db" "$OUT/final_${ARM}_r${R}.db"

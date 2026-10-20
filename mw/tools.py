@@ -336,7 +336,8 @@ class _StubMemory:
 def catalog_sha(*, wire_external: bool = True,
                 agents_path: Any = None,
                 with_memory: bool = True,
-                workspace: Path | None = None) -> str:
+                workspace: Path | None = None,
+                allow_note: bool = True) -> str:
     """工具目录指纹 —— 口径签名里"提示词到底给了模型哪些工具"那一项。
 
     ## 为什么它必须进口径签名（第二十三轮实测）
@@ -352,12 +353,18 @@ def catalog_sha(*, wire_external: bool = True,
     契约 AF1 直接把本函数的结果与 `Core(...).tools.catalog()` 的哈希对撞。
 
     ⚠️ `with_memory=False` 只在"我想看纯内建目录"时用；默认 True 才是 Core 的真形状。
+
+    ★ 第四十五轮（§17-7q）：`allow_note` 必须跟 Core **同源**。7n 实锤的
+    "内核两真相"之一：Core 用 `self.s.limits.allow_note`（env 可关）建活注册表，
+    而口径签名走本函数默认 True ⇒ `V1_ALLOW_NOTE=off` 时指纹描述的提示词
+    与真实提示词**不是一个**（note 工具在不在目录里，目录文本就不同）。
+    调用方（run.py）必须传活注册表的同一取值；默认 True 保持与 AF1 的对撞成立。
     """
     from hashlib import sha256
 
     reg = ToolRegistry()
     register_core_tools(reg, memory=_StubMemory() if with_memory else None,
-                        workspace=workspace)
+                        workspace=workspace, allow_note=allow_note)
     if wire_external and agents_path:
         register_external_agents(reg, agents_path)
     return sha256(reg.catalog().encode("utf-8")).hexdigest()[:16]

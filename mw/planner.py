@@ -241,7 +241,15 @@ class Planner:
                 got = ""
                 _raised = False
                 try:
-                    got = self.answer(goal)
+                    # ★ 第四十五轮（§17-7q）：这里原来调 `self.answer(goal)`，
+                    #   补救 prompt 只有 goal —— 而 7n/7o 实锤（16/16 格零例外）：
+                    #   K=0（模型没往 ANSWER 段写代码）的格**确定性**落到这条路，
+                    #   它拿不到 propose 明明手里的 state（含 [语义记忆]），
+                    #   于是只能交基线答案 ⇒ D=0.2。这与第二十轮 replan 丢 state、
+                    #   guidance 断点**同宗**：最需要上下文的那一次，上下文被扔了。
+                    #   修法 = 把 state 原样带进补救（截断在 answer() 内部，
+                    #   用与这里同一个 cfg.STATE_CHAR_CAP —— 单一事实源）。
+                    got = self.answer(goal, state=state)
                 except Exception as e:  # noqa: BLE001 —— 模型抖动不该带走整轮
                     _raised = True
                     self.answer_retry_fail += 1
@@ -290,15 +298,25 @@ class Planner:
             plan.note = f"因「{failed.tool}」失败而重规划"
         return plan
 
-    def answer(self, goal: str) -> str:
+    def answer(self, goal: str, state: str = "") -> str:
         """专门索要**答案原文**（不带 JSON 协议）。
 
         收尾与定向补救共用这一条路 —— 单一事实源：两处各写一遍提示词，
         迟早会漂移成"两种提问形态"，那两边都得重测。
+
+        ★ 第四十五轮（§17-7q）：`state` 不再可扔。7o 定律（16/16 格）：
+        K=0 格的交付**确定性**走本方法，而旧版 prompt 只有 goal ⇒
+        记忆盲补救 ⇒ 基线交付。调用方（propose 的补救 / core 的收尾）
+        必须把各自手里的 state 带进来；截断用 `cfg.STATE_CHAR_CAP`，
+        与 `propose()` 拼提示词处同一个常量 —— 否则又是两套真相。
         """
+        prompt = f"目标：{goal}\n"
+        if state:
+            prompt += f"当前状态：\n{state[:cfg.STATE_CHAR_CAP]}\n"
+        prompt += "请直接给出最终答案。"
         return self.llm.complete(
             [Message("system", _ANSWER_SYS),
-             Message("user", f"目标：{goal}\n请直接给出最终答案。")],
+             Message("user", prompt)],
             max_tokens=self.max_tokens) or ""
 
     # ------------------------------------------------------------------

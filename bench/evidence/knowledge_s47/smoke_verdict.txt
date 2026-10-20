@@ -1,0 +1,8 @@
+propose 请求: 6  含[语义记忆]: 6
+补救/收尾请求: 5  含[语义记忆]: 5
+  #1 remedy/closeout 含记忆=True user长度=526 头部='目标：写一个函数 dedupe_keep(xs)：对字符串列表去重，返回列表保持原顺序。比较之前怎么归一化、遇到重复时保留第几次出现的那条原文，按记忆里记着的（'
+  #6 remedy/closeout 含记忆=True user长度=715 头部='目标：写一个函数 fmt_amount(x)：把数字格式化成金额字符串，输入可能是 int 或 float。千分位用什么符号、保留几位小数、负数怎么写，按记忆里'
+  #9 remedy/closeout 含记忆=True user长度=568 头部='目标：写一个函数 parse_flag(s)：把配置里的开关值转成 True / False / None（无法识别）。哪些写法算真、哪些算假、空串算什么，按记'
+  #12 remedy/closeout 含记忆=True user长度=530 头部='目标：写一个函数 truncate_tail(s, n)：把过长的字符串截短到最多 n 个字符。超长时保留哪一头、加什么标记，按记忆里记着的（ZK1）（ZK2）'
+  #15 remedy/closeout 含记忆=True user长度=651 头部='目标：写一个函数 truncate_tail(s, n)：把过长的字符串截短到最多 n 个字符。超长时保留哪一头、加什么标记，按记忆里记着的（ZK1）（ZK2）'
+SMOKE: PASS（补救请求全部带语义记忆）

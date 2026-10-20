@@ -759,6 +759,16 @@ def cmd_bench(args) -> int:
 
     suite = Suite.load(suite_path)
     scorer = ExternalScorer([sys.executable, str(scorer_path)], source=scorer_path)
+    # ★ 第四十五轮（§17-7q）：`--max-tokens` 必须是**一个**真相。
+    #   7n 实测：caliber 记 1024（CLI 默认）而内核 Planner 实际用 2048
+    #   （limits.llm_max_tokens）—— 口径签名描述的调用与真实调用不是同一个。
+    #   修法：CLI 显式给 ⇒ 在 settings() 之前写进 env（**唯一配置入口**，
+    #   Limits 是 frozen dataclass —— 首版直接赋值实测 FrozenInstanceError；
+    #   绕 frozen 用 object.__setattr__ 是私改配置层，不干）；
+    #   不给 ⇒ 沿用 limits 默认（2048，行为不变）。下面 caliber / llm-direct
+    #   一律读**生效值** s.limits.llm_max_tokens。
+    if args.max_tokens is not None:
+        os.environ["V1_LLM_MAX_TOKENS"] = str(int(args.max_tokens))
     s = cfg.settings()
 
     print("=" * 74)
@@ -839,16 +849,21 @@ def cmd_bench(args) -> int:
                       # budget_tag 只是倍数，乘在绝对值上 —— 不含绝对值的"同口径"是假的。
                       limits=s.limits.as_dict(),
                       llm_cond=s.llm.cond(),
-                      max_tokens=int(args.max_tokens),
+                      # ★ 第四十五轮：一律记**生效值**（limits 已被 CLI 覆盖过），
+                      #   不再读 args.max_tokens —— 两套真相在这里出过实测事故。
+                      max_tokens=int(s.limits.llm_max_tokens),
                       # ★ 第二十三轮补上的漏洞：`planner.py:182` 把工具目录拼进提示词，
                       #   于是"改 agents.json 就等于改提示词"。实测后果见
                       #   `bench.Caliber.tool_catalog_sha` 的注释（同 mean、不同分布）。
                       # ⚠️ 必须与 Core 真实建的注册表**逐字一致** —— 契约 AF1 拿
                       #   `Core(...).tools.catalog()` 的哈希与它直接对撞。
+                      # ★ 第四十五轮（§17-7q）：allow_note 必须同源 —— note 注册与否
+                      #   改变目录文本；7n 实锤"口径 True / 活注册表 False"的两真相。
                       tool_catalog_sha=tools_catalog_sha(
                           wire_external=not getattr(args, "no_external", False),
                           agents_path=s.paths.root / "agents.json",
-                          workspace=s.paths.workspace))
+                          workspace=s.paths.workspace,
+                          allow_note=s.limits.allow_note))
     # 账本签名与基线签名**不是同一把**（见 mw.ledger.LEDGER_SIG_EXCLUDE）：
     # 基线要钉死题目集（"同一个候选有没有变好"）；
     # 自我模型要跨题目集（"我在哪些族上弱"）—— 钉死了就没这个问题可问。
@@ -892,7 +907,8 @@ def cmd_bench(args) -> int:
         def solver(t):                                             # type: ignore[misc]
             return _llm.complete(
                 [Message("system", DIRECT_SYSTEM), Message("user", t.prompt)],
-                max_tokens=int(args.max_tokens), temperature=float(args.temperature),
+                max_tokens=int(s.limits.llm_max_tokens),
+                temperature=float(args.temperature),
             )
 
         label = f"真模型直连 {s.llm.model} T={args.temperature:g}"
@@ -1227,8 +1243,11 @@ def main() -> int:
                         "oracle/partial/null=参照点")
     p.add_argument("--temperature", type=float, default=0.0,
                    help="真模型采样温度。**噪声实验的核心旋钮**：0=贪心（应当确定）")
-    p.add_argument("--max-tokens", type=int, default=1024,
-                   help="单次调用 token 上限。思考型模型会先花 token 在 reasoning 上，"
+    p.add_argument("--max-tokens", type=int, default=None,
+                   help="单次调用 token 上限。不给 ⇒ 沿用 limits.llm_max_tokens"
+                        "（env V1_LLM_MAX_TOKENS，默认 2048）；给了 ⇒ **覆盖内核**"
+                        "（第四十五轮起真正进 Planner，此前只进口径签名 = 两套真相）。"
+                        "思考型模型会先花 token 在 reasoning 上，"
                         "给太小会得到空 content（这是实测踩过的坑）")
     p.add_argument("--baseline", default="", help="基线文件（默认 $V1_BENCH_DIR/bench_baseline.json）")
     p.add_argument("--save-baseline", action="store_true", help="把本次读数写入基线（过口径闸）")

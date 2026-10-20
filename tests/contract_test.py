@@ -6688,6 +6688,111 @@ check(RS, "AZ35 ★7p 合并 eval log：consolidate() 的每行 schema 必须逐
       f"transport={_az35.get('transport')}")
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ36–AZ40（第四十五轮，§17-7q）：改内核轮 —— 补救带状态 / catalog sha 同源 /
+# --max-tokens 单一真相。背景：7o 定律（16/16 格零例外）K=0 ⇒ 记忆盲补救 ⇒
+# 基线交付；7n 实锤内核两真相（catalog sha、max_tokens 1024 vs 2048）。
+# ══════════════════════════════════════════════════════════════════════════
+class _AZ36LLM(StubLLM):
+    """两次输出 + 记录每次 user 消息（断言"补救请求里到底写了什么"）。"""
+
+    def __init__(self, outs):                                      # noqa: ANN001
+        super().__init__()
+        self.outs = list(outs)
+        self.n = 0
+        self.user_msgs: list[str] = []
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        self.user_msgs.append(messages[-1].content)
+        i = min(self.n, len(self.outs) - 1)
+        self.n += 1
+        return self.outs[i]
+
+
+# ── AZ36：定向补救的 prompt 必须带 state（含 [语义记忆]）──────────────────
+_az36 = _AZ36LLM([_PLAN_NO_ANS, "答案"])
+_az36_pl = Planner(_az36, tr3)
+_az36_pl.propose(goal="g", state="AZ36STATE [语义记忆] 惯例甲", history=[], n=1)
+check(RS, "AZ36 ★7q 补救 prompt 必须带 state：propose 手里的记忆不许在补救时被扔掉\n"
+          "          （7o 定律：K=0 格确定性走补救；记忆盲补救 = 基线交付的根因）。\n"
+          "          撤掉 `self.answer(goal, state=state)` 的 state 参数 ⇒ 红。",
+      len(_az36.user_msgs) >= 2 and "AZ36STATE" in _az36.user_msgs[1],
+      f"补救user含标记={'AZ36STATE' in (_az36.user_msgs[1] if len(_az36.user_msgs) > 1 else '')} "
+      f"调用数={_az36.n}")
+
+# ── AZ37：收尾调用的 prompt 必须带已 commit 的语义记忆 ────────────────────
+class _AZ37LLM(StubLLM):
+    def __init__(self):                                            # noqa: ANN204
+        super().__init__()
+        self.user_msgs: list[str] = []
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        self.user_msgs.append(messages[-1].content)
+        return "收尾答案"
+
+
+_az37_db = _TMP / "az37.db"
+if _az37_db.exists():
+    _az37_db.unlink()
+_az37_core = Core(settings=_q_settings, llm=_AZ37LLM(),
+                  memory=MemoryStore(_az37_db), log=_Log(None))
+_az37_core.memory.commit_fact("az37token 惯例：交付前必须 strip 并 lower 尾部标记qkz",
+                              source="selftest", confidence=1.0)
+# `_salvage` 建在 run()（core.py:470）；单独调 `_close_out` 必须自己补上
+# （AS20 的先例同样如此），否则收尾路径 AttributeError —— 那是崩，不是判红。
+_az37_core._salvage = ""
+# ⚠️ 夹具纪律（R13 首跑抓到）：goal 只准含 recall 命中用的 ASCII 钥匙
+#    （az37token），**不许含惯例正文** —— 否则断言锚在 goal 上，
+#    撤掉 state 也"绿"（红=无，判据恒真的假通过）。
+_az37_core._close_out("完成 az37token 的交付任务", ["h1"], _co_done)
+_az37_msgs = _az37_core.llm.user_msgs
+_az37_hit = any("[语义记忆]" in m and "交付前必须 strip 并 lower" in m
+                for m in _az37_msgs)
+check(RS, "AZ37 ★7q 收尾调用必须带 state：`_close_out` 现算 `_state()` 传入，\n"
+          "          已 commit 的语义记忆**正文**（goal 里没有的那段）必须出现在\n"
+          "          补救请求里。撤掉 `_close_out` 的 `_state` 接线 ⇒ 红。",
+      _az37_hit,
+      f"收尾user含fact正文={_az37_hit} 调用数={len(_az37_msgs)}")
+
+# ── AZ38：catalog_sha 的 allow_note 必须真的改变指纹 ──────────────────────
+from mw.tools import catalog_sha as _az_cat_sha                    # noqa: E402
+_az38_on = _az_cat_sha(allow_note=True)
+_az38_off = _az_cat_sha(allow_note=False)
+check(RS, "AZ38 ★7q catalog sha 两真相：allow_note=False 的指纹必须与 True 不同\n"
+          "          （note 注册与否改变目录文本 = 改变提示词）。\n"
+          "          撤掉 forwarding（恒 True）⇒ 两者相等 ⇒ 红。",
+      _az38_on != _az38_off,
+      f"on={_az38_on} off={_az38_off}")
+
+# ── AZ39：forwarding 保真 —— 默认指纹必须与手工同参注册表逐字一致 ─────────
+from mw.tools import ToolRegistry as _az_TR, register_core_tools as _az_rc  # noqa: E402
+from mw.tools import _StubMemory as _az_SM                        # noqa: E402
+from hashlib import sha256 as _az_h                                # noqa: E402
+_az39_reg = _az_TR()
+# ⚠️ memory 必须用 _StubMemory()（与 catalog_sha 默认 with_memory=True 同形状）：
+#    memory=None 会少注册 recall/note 两个工具（AT1 的坑），基线必红。
+_az_rc(_az39_reg, memory=_az_SM(), allow_note=True)
+_az39_sha = _az_h(_az39_reg.catalog().encode("utf-8")).hexdigest()[:16]
+check(RS, "AZ39 ★7q catalog sha 转发保真：catalog_sha()（默认）必须与\n"
+          "          `register_core_tools(memory=占位, allow_note=True)` 的注册表哈希\n"
+          "          逐字一致（脱节 = 指纹描述的不是真实提示词，两真相换方向复活）。",
+      _az39_sha == _az_cat_sha(),
+      f"手工={_az39_sha} catalog_sha()={_az_cat_sha()}")
+
+# ── AZ40：--max-tokens 必须是**一个**真相（CLI 覆盖内核，caliber 记生效值）──
+check(RS, "AZ40 ★7q --max-tokens 单一真相：run.py 必须在 settings() 之前把 CLI\n"
+          "          显式值写进 env（唯一配置入口；Limits frozen，首版直接赋值\n"
+          "          实测 FrozenInstanceError），且 caliber / llm-direct 读**生效值**\n"
+          "          `s.limits.llm_max_tokens`（7n 实锤：caliber 记 1024、内核实际\n"
+          "          2048 = 两套真相）。",
+      'os.environ["V1_LLM_MAX_TOKENS"] = str(int(args.max_tokens))' in _AE_RUN
+      and "max_tokens=int(s.limits.llm_max_tokens)" in _AE_RUN
+      and '"--max-tokens", type=int, default=None' in _AE_RUN,
+      f"env覆盖行={'os.environ[\"V1_LLM_MAX_TOKENS\"] = str(int(args.max_tokens))' in _AE_RUN} "
+      f"生效值={'max_tokens=int(s.limits.llm_max_tokens)' in _AE_RUN} "
+      f"defaultNone={'\"--max-tokens\", type=int, default=None' in _AE_RUN}")
+
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

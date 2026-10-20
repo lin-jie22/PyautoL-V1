@@ -1216,7 +1216,17 @@ class Core:
         best = ""
         origin = ""
         try:
-            best = self.planner.answer(goal).strip()
+            # ★ 第四十五轮（§17-7q）：收尾调用原来只传 goal —— 与 propose 的
+            #   定向补救同宗的"记忆盲"断点（最需要上下文的那一次，上下文被扔了）。
+            #   这里现算一份完整 state（含 [语义记忆]/[工作记忆] 块）带进补救。
+            #   state_log 会多一条收尾时刻的快照 —— 这是**如实**记录：
+            #   补救请求里真的放了这些内容，读数就该看得见。
+            #   ⚠️ `_close_out` 可被单独调用（AS20 的单元级验证）⇒ ledger 可能
+            #      还是 None —— 取步号必须防 None，否则收尾路径自己炸掉，
+            #      而它存在的唯一目的就是"别交付零"。
+            _co_it = self.ledger.steps_used if self.ledger is not None else 0
+            _co_state = self._state(goal, history, _co_it)
+            best = self.planner.answer(goal, state=_co_state).strip()
             origin = "收尾调用"
         except Exception as e:  # noqa: BLE001
             self.log(f"      收尾调用失败 {type(e).__name__}: {e}")

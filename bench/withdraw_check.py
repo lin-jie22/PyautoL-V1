@@ -231,9 +231,9 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # ── AT1：指纹与真实 Core 脱节（占位记忆换成 None ⇒ 少 recall/note 两个工具）──
     ("AT1", "mw/tools.py",
      "    register_core_tools(reg, memory=_StubMemory() if with_memory else None,\n"
-     "                        workspace=workspace)",
+     "                        workspace=workspace, allow_note=allow_note)",
      "    register_core_tools(reg, memory=None,\n"
-     "                        workspace=workspace)"),
+     "                        workspace=workspace, allow_note=allow_note)"),
     # ── AT2：字段填了但填的是空串（"只加字段不填值"的撤回态）────────────────
     ("AT2", "run.py",
      "tool_catalog_sha=tools_catalog_sha(",
@@ -621,6 +621,31 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ35", "bench/evallog.py",
      '"transport": _parse_transport(d.get("kernel_transport")),',
      '"transport_x": _parse_transport(d.get("kernel_transport")),'),
+    # ══ AZ36–AZ40（第四十五轮，§17-7q）：改内核轮 ══════════════════════════
+    # AZ36：补救丢 state ⇒ 补救请求里没有记忆 ⇒ AZ36 红。
+    #   （P1–P5 不受影响：补救本身照常返回答案，丢的只是 state。）
+    ("AZ36", "mw/planner.py",
+     "                    got = self.answer(goal, state=state)",
+     "                    got = self.answer(goal)  # 撤回态"),
+    # AZ37：收尾丢 state ⇒ 收尾请求里没有语义记忆原文 ⇒ AZ37 红。
+    ("AZ37", "mw/core.py",
+     "            _co_state = self._state(goal, history, _co_it)",
+     "            _co_state = ''  # 撤回态"),
+    # AZ38：catalog_sha 转发失效（恒 True）⇒ allow_note 不再改变指纹 ⇒ AZ38 红。
+    #   ⚠️ AZ39 的手动注册表用默认 True ⇒ 指纹一致 ⇒ AZ39 不红（单变量）。
+    ("AZ38", "mw/tools.py",
+     "                        workspace=workspace, allow_note=allow_note)",
+     "                        workspace=workspace, allow_note=True)  # 撤回态"),
+    # AZ39：forwarding 反向失效（恒 False）⇒ 默认指纹与手工 True 注册表脱节
+    #   ⇒ AZ39 红；连带 AZ38（on==off ⇒ 相等判据崩）。见 COUPLED。
+    ("AZ39", "mw/tools.py",
+     "                        workspace=workspace, allow_note=allow_note)",
+     "                        workspace=workspace, allow_note=False)  # 撤回态"),
+    # AZ40：env 覆盖行删掉 ⇒ --max-tokens 退回"caliber 一套、内核一套"
+    #   的两真相 ⇒ AZ40 红。caliber 读生效值的那行不动（单变量）。
+    ("AZ40", "run.py",
+     'os.environ["V1_LLM_MAX_TOKENS"] = str(int(args.max_tokens))',
+     "pass  # 撤回态"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -631,6 +656,22 @@ COUPLED: dict[str, frozenset[str]] = {
     #: ★第三十八轮补登 AZ26/AZ30：兜底回来了 ⇒ n0 档命中 4 条（AZ26 红）；
     #:   7d 的 R1 预检反而"通过"了 ⇒ AZ30 的分辨力断言（7d 必须 rc=2）红。
     "AZ22": frozenset({"AZ23", "AZ26", "AZ30"}),
+    #: ★第四十五轮（§17-7q）：AZ39 撤回态把 forwarding 打成恒 False ⇒
+    #:   ① AZ38 的 on/off 相等判据同时崩（同一段 forwarding 的两个面）；
+    #:   ② **AT1 连带**：AT1 锚的就是"catalog_sha() 默认形状与 Core 逐字一致"
+    #:     （AF1 同源），恒 False 让默认指纹丢了 note ⇒ 真实脱节，不是锚定跑偏
+    #:     —— 实现被三处锚定（AZ38/AZ39/AT1），合理连带。
+    #: AZ38 撤回态（恒 True）已核对**不**连带 AZ39/AT1（默认形状仍一致，
+    #: 首跑实测 红=['AZ38'] 单红）—— 单变量。
+    "AZ39": frozenset({"AZ38", "AT1"}),
+    #: ★第四十五轮（§17-7q）全量复跑补登记（AW1/AW2/AT1 三条，合并进下方
+    #: 原条目 + 新增 AT1）：
+    #:  · AW1/AW2 撤的是"note 按 allow_note 注入"本身 ⇒ note 无论开关都不注册
+    #:    ⇒ catalog_sha 的 on/off 指纹必然相等 ⇒ AZ38 连带（并入原条目）。
+    #:  · AT1 撤的是"catalog_sha 注册表带 memory"⇒ recall/note 双双消失
+    #:    ⇒ AZ38（on/off 相等）+ AZ39（默认指纹与手工注册表脱节）连带。
+    #: 反向均已核对：AZ38 撤回态实测 红=['AZ38'] 单红；AZ39 已登记
+    #: {AZ38, AT1}。单向成立。
     #: ★第三十八轮补登：AZ23（FTS LIMIT 1）⇒ n4 档只回 1 条 ⇒ AZ26（命中数）
     #: 与 AZ29（语义块含恰好 4 条）同时红。同一条 SQL 的三个观测点。
     "AZ23": frozenset({"AZ26", "AZ29"}),
@@ -690,7 +731,8 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   AW3（整块门控）⇒ OFF 时 recall 消失 ⇒ AW5 红；
     #:   AW4（env 读不到）⇒ Limits 恒 True ⇒ Core 照常注册 note ⇒ AW5 红。
     #: AW1（默认路径也不注册 note）⇒ 默认工具目录变了 ⇒ I6/I7（目录断言）红。
-    "AW1": frozenset({"I6", "I7"}),
+    #: ★第四十五轮（§17-7q）补登 AZ38：note 无论开关都不注册 ⇒ on/off 指纹相等。
+    "AW1": frozenset({"I6", "I7", "AZ38"}),
     #: AX1（沉淀被撤）⇒ worldmodel 的学习行为断言全红：I7（覆盖读数）、
     #: V1/V3/V4（失配沉淀与检索）、V6（下一次预演带"已知易错点"）——
     #: 这些就是"学习"本身，撤沉淀它们必红。合理连带。
@@ -702,7 +744,14 @@ COUPLED: dict[str, frozenset[str]] = {
     #: AU3（拒绝发起失效）⇒ 收尾触发路径改变 ⇒ AU10 的 `by_reason` 分项与打印行对不上。
     #: 三条都是"同一个 `_au_co` 对象被上下游两条断言同时观测"，实测逐条复现。
     "AS19": frozenset({"AU10"}),
-    "AW2": frozenset({"AW5"}),
+    #: ★第四十五轮（§17-7q）补登 AZ38：AW2 让开关被无视 ⇒ note 恒在册
+    #:   ⇒ catalog_sha 的 off 形状与 on 相同 ⇒ AZ38（on≠off 判据）连带。
+    "AW2": frozenset({"AW5", "AZ38"}),
+    #: ★第四十五轮（§17-7q）新增：AT1（catalog_sha 注册表 memory=None）
+    #:   ⇒ recall/note 双双从默认指纹消失 ⇒ AZ38（on/off 相等）与
+    #:   AZ39（默认指纹与手工 _StubMemory 注册表脱节）同时崩。
+    #:   实测 红=['AT1','AZ38','AZ39']，目标 ✔，其余全净。
+    "AT1": frozenset({"AZ38", "AZ39"}),
     #: AZ18：撤掉题边界清空 ⇒ AZ17 的**顺序锚**（`reset_working()` 在
     #: `record("goal")` 之前）也找不到调用点（`find` 返回 −1）。
     #: 这是同一行实现被两条断言锚定（AZ17 看"在不在/顺序与消费者"，

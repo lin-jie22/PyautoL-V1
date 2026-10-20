@@ -1,0 +1,35 @@
+§17-7o 知识 vs 握手 三元组（K=propose响应最高片段分 / HS=直答无补救 / D=交付分）
+
+== n0 r1 ==
+  g7d2_dedupe_keep: K=1.00 HS=1 D=1.00 (propose×1 ANSWER段×1 rescue×0 k_scores=[1.0] dsha=e376c6fb03)
+  g7d3_fmt_amount: K=0.40 HS=1 D=0.40 (propose×1 ANSWER段×1 rescue×0 k_scores=[0.4] dsha=c53023b146)
+  g7e1_parse_flag: K=0.00 HS=0 D=0.20 (propose×1 ANSWER段×0 rescue×1 k_scores=[0.0] dsha=0065ae7093)
+  g7e2_truncate_tail: K=0.00 HS=0 D=0.20 (propose×2 ANSWER段×0 rescue×2 k_scores=[0.0, 0.0] dsha=512be361e3)
+
+== n0 r2 ==
+  g7d2_dedupe_keep: K=1.00 HS=1 D=1.00 (propose×1 ANSWER段×1 rescue×0 k_scores=[1.0] dsha=e376c6fb03)
+  g7d3_fmt_amount: K=0.40 HS=1 D=0.40 (propose×1 ANSWER段×1 rescue×0 k_scores=[0.4] dsha=c53023b146)
+  g7e1_parse_flag: K=0.00 HS=0 D=0.20 (propose×1 ANSWER段×0 rescue×1 k_scores=[0.0] dsha=0065ae7093)
+  g7e2_truncate_tail: K=0.00 HS=0 D=0.20 (propose×2 ANSWER段×0 rescue×2 k_scores=[0.0, 0.0] dsha=512be361e3)
+
+== n4 r1 ==
+  g7d2_dedupe_keep: K=0.00 HS=0 D=0.20 (propose×1 ANSWER段×0 rescue×1 k_scores=[0.0] dsha=bdf787008a)
+  g7d3_fmt_amount: K=0.00 HS=0 D=0.20 (propose×2 ANSWER段×0 rescue×1 k_scores=[0.0, 0.0] dsha=d6cc24f482)
+  g7e1_parse_flag: K=0.00 HS=0 D=0.20 (propose×1 ANSWER段×0 rescue×1 k_scores=[0.0] dsha=0065ae7093)
+  g7e2_truncate_tail: K=0.00 HS=0 D=0.20 (propose×2 ANSWER段×0 rescue×3 k_scores=[0.0, 0.0] dsha=9f983c658d)
+
+== n4 r2 ==
+  g7d2_dedupe_keep: K=0.00 HS=0 D=0.20 (propose×1 ANSWER段×0 rescue×1 k_scores=[0.0] dsha=bdf787008a)
+  g7d3_fmt_amount: K=0.00 HS=0 D=0.20 (propose×2 ANSWER段×0 rescue×1 k_scores=[0.0, 0.0] dsha=d6cc24f482)
+  g7e1_parse_flag: K=0.00 HS=0 D=0.20 (propose×1 ANSWER段×0 rescue×1 k_scores=[0.0] dsha=0065ae7093)
+  g7e2_truncate_tail: K=0.00 HS=0 D=0.20 (propose×2 ANSWER段×0 rescue×3 k_scores=[0.0, 0.0] dsha=9f983c658d)
+
+== 汇总（按 变体×任务，两 rep 并排）==
+  n0 g7d2_dedupe_keep: r1=(K=1.00,HS=1,D=1.00)  r2=(K=1.00,HS=1,D=1.00)
+  n0 g7d3_fmt_amount: r1=(K=0.40,HS=1,D=0.40)  r2=(K=0.40,HS=1,D=0.40)
+  n0 g7e1_parse_flag: r1=(K=0.00,HS=0,D=0.20)  r2=(K=0.00,HS=0,D=0.20)
+  n0 g7e2_truncate_tail: r1=(K=0.00,HS=0,D=0.20)  r2=(K=0.00,HS=0,D=0.20)
+  n4 g7d2_dedupe_keep: r1=(K=0.00,HS=0,D=0.20)  r2=(K=0.00,HS=0,D=0.20)
+  n4 g7d3_fmt_amount: r1=(K=0.00,HS=0,D=0.20)  r2=(K=0.00,HS=0,D=0.20)
+  n4 g7e1_parse_flag: r1=(K=0.00,HS=0,D=0.20)  r2=(K=0.00,HS=0,D=0.20)
+  n4 g7e2_truncate_tail: r1=(K=0.00,HS=0,D=0.20)  r2=(K=0.00,HS=0,D=0.20)

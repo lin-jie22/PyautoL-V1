@@ -1493,6 +1493,8 @@ V1/
 │   │                                24-token 窗口、`[语义记忆]` 块是否被 cap 整块丢掉
 │   ├── probe_7n.py                 ★§17-7n **直发重放探针**（零内核改动）：真 Planner +
 │   │                                冻结 state 单发 propose；挖出交付路径双态
+│   ├── probe_7o.py                 ★§17-7o **知识 vs 握手三元组探针**（分析零模型）：
+│   │                                K=propose响应片段分 / HS=ANSWER段直答 / D=交付分
 │   ├── suite_manifest.py           ★§17-7p **考题完整性闸**：heldout/*.jsonl 逐文件
 │   │                                sha256 对照 suites.manifest.json——改考题必须
 │   │                                刻意重新 build（刻意的摩擦 = 功能）
@@ -1548,7 +1550,11 @@ V1/
 │                                           **s45** = 7p：量具补强——code_exec
 │                                           沙箱（rlimits+cwd 隔离）回归
 │                                           6/6 打分语义未变、s42/s43 合并
-│                                           evallog、考题 manifest）
+│                                           evallog、考题 manifest；
+│                                           **s46** = 7o：K/HS/D 三元组
+│                                           16/16 格零例外——K>0⇔握手成功，
+│                                           交付分被 (K,HS) 完全解释，
+│                                           n4 抹除归位到"不产出代码"层）
 │   ├── tasks/            代码领域：code_exec 量「能不能跑通」
 │   │   └── coding_small.jsonl  6 道纯函数题（含参考解 / 部分解）
 │   └── tasks_lang/      语言领域：assertion 量「说不说得清」（4 题 × 6 条断言）

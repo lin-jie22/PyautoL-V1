@@ -300,6 +300,9 @@ V1_LLM_MODEL=qwen2.5:7b python3 run.py --bench --solver llm-direct \
 ```bash
 cd /Users/linshaojie/V1
 
+# 0) 一键快速上手（下面 1-3 步 + 噪声下限读数，约 1 分钟）
+./quickstart.sh
+
 # 1) 离线端到端自检（无需网络、无需密钥，几秒跑完）
 python3 run.py --selftest
 

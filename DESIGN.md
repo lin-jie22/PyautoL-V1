@@ -6166,3 +6166,8 @@ replan 丢 state、guidance 断点**同宗**：最需要上下文的那一次，
   同一 forwarding 行的四个观测点；AZ39 撤回连带 AT1 为双向对称（AZ39 撤 =
   恒 False ⇒ AT1 锚的默认形状脱节；AT1 撤 = memory=None ⇒ AZ39 判据崩）。
 - 下一步 = §19 产品化 R-a（quickstart.sh）。
+
+### §19 R-a 交付（同日）：quickstart.sh
+- 四步：自检 → 契约 530/0 → 锚层 97/0（五把假尺子反证组）→ stub 测量模式
+  （--repeat 2 ⇒ 极差读数 0.0000 = 测量管线不引入噪声的现场证明）。
+- 本机实测全绿；README 第六节加 `./quickstart.sh` 入口（第 0 步）。

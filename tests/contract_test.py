@@ -6841,6 +6841,26 @@ check(RS, "AZ43 ★R-c demo 三臂结构：demo/run_demo.sh 必须存在且引�
       f"存在={_az43_has} 三臂={_az43_src.count('--solver ')} "
       f"读数锚={'1.0000' in _az43_src and '0.6194' in _az43_src}")
 
+# ── AZ44（§19 R-d，第四十五轮）：产品摘要块结构 ─────────────────────────
+_az44_rd = _az_Path(__file__).resolve().parent.parent / "README.md"
+_az44_src = _az44_rd.read_text(encoding="utf-8") if _az44_rd.exists() else ""
+_az44_head = _az44_src[:6000]
+check(RS, "AZ44 ★R-d 产品摘要块：README 顶部必须含 ①「产品摘要」节、\n"
+          "          ②三个实测入口命令（quickstart / run_demo / run_tests）、\n"
+          "          ③Inspect AI 差异表（测量有效性定位）、④诚实边界句\n"
+          "          （⛔ 不许出现 AGI 声称）。计数必须与实测一致\n"
+          "          （533 契约 / 97 锚层 / 108 撤回态）。",
+      "产品摘要" in _az44_head
+      and "./quickstart.sh" in _az44_head
+      and "run_demo.sh" in _az44_head
+      and "./run_tests.sh" in _az44_head
+      and "Inspect AI" in _az44_head and "测量有效性" in _az44_head
+      and "不是 AGI" in _az44_head
+      and "533" in _az44_head and "108 条撤回态" in _az44_head,
+      f"摘要={'产品摘要' in _az44_head} 三入口={all(x in _az44_head for x in ('./quickstart.sh', 'run_demo.sh', './run_tests.sh'))} "
+      f"差异表={'Inspect AI' in _az44_head} 边界={'不是 AGI' in _az44_head} "
+      f"计数={'533' in _az44_head and '108 条撤回态' in _az44_head}")
+
 
 print()
 print("=" * 74)

@@ -1,0 +1,11 @@
+== A n4 ==
+ARM_A_r1_EXIT=0
+ARM_A_r2_EXIT=0
+== D n0 + n4 ==
+ARM_D_n0_EXIT=0
+ARM_D_r1_EXIT=0
+ARM_D_r2_EXIT=0
+== B n4 ==
+ARM_B_r1_EXIT=0
+ARM_B_r2_EXIT=0
+ALL_DONE

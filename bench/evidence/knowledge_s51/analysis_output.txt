@@ -1,0 +1,29 @@
+臂 A: n4 mean=0.5250 rep逐位=False
+    g7d2_dedupe_keep: [1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.6]
+    g7e1_parse_flag: [0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2]
+臂 D: n4 mean=0.4000 rep逐位=True
+    g7d2_dedupe_keep: [1.0, 1.0]
+    g7d3_fmt_amount: [0.0, 0.0]
+    g7e1_parse_flag: [0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2]
+臂 B: n4 mean=0.2000 rep逐位=True
+    g7d2_dedupe_keep: [0.2, 0.2]
+    g7d3_fmt_amount: [0.2, 0.2]
+    g7e1_parse_flag: [0.2, 0.2]
+    g7e2_truncate_tail: [0.2, 0.2]
+
+D 臂 n0 邻域（登记：只查不回归）:
+    g7d2_dedupe_keep: 1.0
+    g7d3_fmt_amount: 0.0
+    g7e1_parse_flag: 1.0
+    g7e2_truncate_tail: 1.0
+
+装置自检（补救请求语义记忆块形态）:
+  A: 14/14 ✅
+  D: 15/15 ✅
+  B: 10/10 ✅
+
+判定: Δ(D−A)=-0.1250  Δ(D−B)=+0.2000  门槛=Δ(D−A)≥0.05
+★7t:  不认领 —— Δ(D−A) 未达门槛，病源不在呈现结构 ⇒ 下一轮转 R-i（过滤）

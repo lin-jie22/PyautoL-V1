@@ -6849,17 +6849,43 @@ check(RS, "AZ44 ★R-d 产品摘要块：README 顶部必须含 ①「产品摘�
           "          ②三个实测入口命令（quickstart / run_demo / run_tests）、\n"
           "          ③Inspect AI 差异表（测量有效性定位）、④诚实边界句\n"
           "          （⛔ 不许出现 AGI 声称）。计数必须与实测一致\n"
-          "          （534 契约 / 97 锚层 / 108 撤回态）。",
+          "          （535 契约 / 97 锚层 / 109 撤回态）。",
       "产品摘要" in _az44_head
       and "./quickstart.sh" in _az44_head
       and "run_demo.sh" in _az44_head
       and "./run_tests.sh" in _az44_head
       and "Inspect AI" in _az44_head and "测量有效性" in _az44_head
       and "不是 AGI" in _az44_head
-      and "534" in _az44_head and "108 条撤回态" in _az44_head,
+      and "535" in _az44_head and "109 条撤回态" in _az44_head,
       f"摘要={'产品摘要' in _az44_head} 三入口={all(x in _az44_head for x in ('./quickstart.sh', 'run_demo.sh', './run_tests.sh'))} "
       f"差异表={'Inspect AI' in _az44_head} 边界={'不是 AGI' in _az44_head} "
-      f"计数={'534' in _az44_head and '108 条撤回态' in _az44_head}")
+      f"计数={'535' in _az44_head and '109 条撤回态' in _az44_head}")
+
+# ── AZ46（§17-7v-b，第五十轮）：补救通道的指令性语句 ─────────────────────
+_az46_pl = _az_Path(__file__).resolve().parent.parent / "mw" / "planner.py"
+_az46_src = _az46_pl.read_text(encoding="utf-8") if _az46_pl.exists() else ""
+_az46_fn = _az46_src.find("def answer(self, goal")
+_az46_body = _az46_src[_az46_fn:_az46_fn + 2600] if _az46_fn >= 0 else ""
+# ⛔ 只认**代码行**形态（自踩四次的同类：裸串 find 会先命中注释里的同一句）。
+_az46_dis = _az46_body.find("prompt += _ANSWER_FIDELITY")
+_az46_end = _az46_body.find('prompt += "请直接给出最终答案。"')
+# 常量值必须是一句**有内容**的指令（防退化成空串/单字 —— 那等于没加）。
+_az46_m = re.search(r'_ANSWER_FIDELITY\s*=\s*"([^"]*)"', _az46_src)
+_az46_val = _az46_m.group(1) if _az46_m else ""
+check(RS, "AZ46 ★7v-b 补救通道指令性语句：mw/planner.py 必须定义唯一常量\n"
+          "          `_ANSWER_FIDELITY`（一句 ≥20 字的**指令性**语句），并由\n"
+          "          `answer()` 拼在状态块之后、「请直接给出最终答案」之前。\n"
+          "          实测依据（s54 四臂）：Δ(A−B)=+0.15、Δ(A−C2 非指令串)=+0.20，\n"
+          "          而 A 与等长异义指令 C1 **逐位相同** ⇒ 效应由**指令性**承载，\n"
+          "          ⛔ **不是**「忠实引用」的特定语义（措辞不得夸大）。\n"
+          "          撤回语义：删掉拼接 ⇒ 补救退回无指令 ⇒ 必须红。",
+      _az46_body.count("prompt += _ANSWER_FIDELITY") == 1
+      and _az46_src.count("_ANSWER_FIDELITY =") == 1
+      and len(_az46_val) >= 20
+      and 0 <= _az46_dis < _az46_end,
+      f"体内拼接={_az46_body.count('prompt += _ANSWER_FIDELITY')} "
+      f"定义={_az46_src.count('_ANSWER_FIDELITY =')} 字数={len(_az46_val)} "
+      f"序位={_az46_dis}<{_az46_end}")
 
 print()
 print("=" * 74)

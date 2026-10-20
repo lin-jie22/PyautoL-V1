@@ -1,0 +1,68 @@
+===== 臂 A =====
+  req  16 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) > n: ⏎         return '…' + s[-n:] ⏎     return s ⏎ ```
+  req  22 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) > n: ⏎         return '…' + s[-n:] ⏎     return s ⏎ ```
+  req  50 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req  56 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+  req  84 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req  90 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+  req 118 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req 124 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+===== 臂 B =====
+  req  16 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) > n: ⏎         return '…' + s[-n:] ⏎     return s ⏎ ```
+  req  22 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) > n: ⏎         return '…' + s[-n:] ⏎     return s ⏎ ```
+  req  50 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req  56 尾部=['(n-3):'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-(n-3):] ⏎ ```
+  req  84 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req  90 尾部=['(n-3):'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-(n-3):] ⏎ ```
+  req 118 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req 124 尾部=['(n-3):'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-(n-3):] ⏎ ```
+===== 臂 C1 =====
+  req  16 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) > n: ⏎         return '…' + s[-n:] ⏎     return s ⏎ ```
+  req  22 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) > n: ⏎         return '…' + s[-n:] ⏎     return s ⏎ ```
+  req  50 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+  req  56 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+  req  84 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+  req  90 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+  req 118 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+  req 124 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-n:] ⏎ ```
+===== 臂 C2 =====
+  req  16 尾部=['n:'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) > n: ⏎         return '…' + s[-n:] ⏎     return s ⏎ ```
+  req  22 尾部=['(n-3):'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req  50 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req  56 尾部=['(n-3):'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-(n-3):] ⏎ ```
+  req  84 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req  90 尾部=['(n-3):'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-(n-3):] ⏎ ```
+  req 118 尾部=['(n-3):'] ZK1渗漏=是
+        ```python ⏎ def truncate_tail(s, n): ⏎     s = s.strip().lower() ⏎     if len(s) > n: ⏎         return '…' + s[-(n-3):] ⏎     return s ⏎ ```
+  req 124 尾部=['(n-3):'] ZK1渗漏=否
+        ```python ⏎ def truncate_tail(s, n): ⏎     if len(s) <= n: ⏎         return s ⏎     return '…' + s[-(n-3):] ⏎ ```

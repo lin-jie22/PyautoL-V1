@@ -1,0 +1,44 @@
+臂 A: n4 mean=0.7000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [1.0, 1.0, 1.0]
+臂 B: n4 mean=0.5500 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.6, 0.6, 0.6]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 C1: n4 mean=0.7000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [1.0, 1.0, 1.0]
+臂 C2: n4 mean=0.5000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+
+n0 邻域（登记：A 不低于 B 的 g7d2/g7d3）:
+  A: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  B: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  C1: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  C2: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=0.2
+
+装置自检（补救/收尾请求带的指令句）:
+  A: 18/18 ✅
+  C1: 18/18 ✅
+  C2: 18/18 ✅
+  B: 18/18 ✅
+
+判定: Δ(A−B)=+0.1500  Δ(A−C1)=+0.0000  Δ(A−C2)=+0.2000  门槛=≥0.05
+        噪声(A/B 极差最大)=0.0000  rep逐位全一致=True  邻域不回归=True  装置=True
+★7v-b:  不认领 —— 见上
+  A: 18/18 ✅
+  C1: 18/18 ✅
+  C2: 18/18 ✅
+  B: 18/18 ✅
+
+判定: Δ(A−B)=+0.1500  Δ(A−C1)=+0.0000  Δ(A−C2)=+0.2000  门槛=≥0.05
+        噪声(A/B 极差最大)=0.0000  rep逐位全一致=True  邻域不回归=True  装置=True
+★7v-b:  PASS —— 只认领『指令性语句存在效应』：A 与 C1 逐位相同，措辞不得夸大为语义特异

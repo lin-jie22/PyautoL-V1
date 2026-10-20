@@ -1,0 +1,2 @@
+ev_s42 state ok=9 bad=0 transport不一致=0
+  （零泄漏；H 臂 own 全在 [语义记忆]，P/E 臂全净）

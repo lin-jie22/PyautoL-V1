@@ -1,0 +1,2 @@
+ev_s43 state ok=12 bad=0 transport不一致=0
+  （零泄漏）

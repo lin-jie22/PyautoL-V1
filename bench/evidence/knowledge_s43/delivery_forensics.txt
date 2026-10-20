@@ -1,0 +1,43 @@
+§17-7m-γ (ii)：交付文本取证（零模型，读 final_*.db 的 episodes[goal→finish]）
+
+== 7m-β（1 条惯例 + 4 钥匙题面，全 0.2）==
+  H r1: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+  H r2: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+  H r3: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+  P r1: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+  P r2: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+  P r3: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+  E r1: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+  E r2: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+  E r3: finish sha=bdf787008a strip/lower=无  (=E_r1 逐字节同)
+
+== 7k n4 H（4 条惯例 + 4 钥匙题面，0.2）==
+  H r1: strip/lower=无 seen_add=有
+  H r2: strip/lower=无 seen_add=有
+  H r3: strip/lower=无 seen_add=有
+
+== 7k n0 H（1 条惯例 + 1 钥匙题面，1.0）==
+  H r1: strip/lower=有
+  H r2: strip/lower=有
+  H r3: strip/lower=有
+
+== 代表性 finish 全文 ==
+--- 0.2 格（= 基线写法，9+3 格逐字节同）---
+done: ```python
+def dedupe_keep(xs):
+    seen = set()
+    seen_add = seen.add
+    return [x for i, x in enumerate(xs) if not (x in seen or seen_add(x))]
+```
+--- 1.0 格（= 惯例逐字采用）---
+done: ```python
+def dedupe_keep(xs):
+    seen = set()
+    result = []
+    for x in xs:
+        x_normalized = x.strip().lower()
+        if x_normalized not in seen:
+            seen.add(x_normalized)
+            result.append(x)
+    return result
+```

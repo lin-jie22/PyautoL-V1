@@ -1,0 +1,8 @@
+== 题面 sha256（三臂共用同一文件）==
+e3e6fed20730c99e8e916c5456534389a1c0330fac82fcd48a6beb5d411f5b2b  bench/evidence/knowledge_s43/suite.jsonl
+== 臂 H 种子 sha256 ==
+db589de94082bc1379a8087ef72403d80f645b37eb12ed4666e7ebd5d95fca36  bench/evidence/knowledge_s43/seed_H.db
+== 臂 P 种子 sha256 ==
+173517351e2561924bcc084e211ae1f9af66f3061667b721900aa38b7fc32bcf  bench/evidence/knowledge_s43/seed_P.db
+== 臂 E 种子 sha256 ==
+9694ea99e057c8570889c8b31c6dba5ed701aaf2fb7a80864c205a8cd8dfa0b2  bench/evidence/knowledge_s43/seed_E.db

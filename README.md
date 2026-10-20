@@ -306,6 +306,9 @@ cd /Users/linshaojie/V1
 # 0) 一键快速上手（下面 1-3 步 + 噪声下限读数，约 1 分钟）
 ./quickstart.sh
 
+# 0b) 三臂演示（oracle/null/partial 参照点，读数逐位可复现，约 30 秒）
+bash demo/run_demo.sh
+
 # 1) 离线端到端自检（无需网络、无需密钥，几秒跑完）
 python3 run.py --selftest
 

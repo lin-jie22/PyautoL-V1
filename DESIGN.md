@@ -6206,3 +6206,30 @@ replan 丢 state、guidance 断点**同宗**：最需要上下文的那一次，
 - /tmp 一次性 venv 实测：`pip install .` 后 `v1 --selftest` 与
   `python -m mw --selftest`（在 /tmp 下跑，排除源码目录干扰）全绿；
   run_tests.sh 依赖审计面不变（mw/__main__.py 只 import sys/run，均在 ALLOWED）。
+
+### §19 R-c 登记（2026-10-20 21:0x，跑之前写死）：演示资产
+
+**范围**：`demo/run_demo.sh` + `demo/README.md` —— 三臂对照最小可复现实例，
+零模型、零网络、零密钥，约 1 分钟跑完。
+
+**设计（写死）**：
+1. 三臂全部用**确定性参照点**（不引真模型，读数必须逐位可复现）：
+   - oracle 臂（上界参照）：`--offline --repeat 3 --solver oracle` ⇒ 预期 mean=1.0000、极差 0.0000；
+   - null 臂（下界参照）：`--solver null` ⇒ 预期低分恒定、极差 0.0000；
+   - partial 臂（半参照）：`--solver partial` ⇒ 预期中间值、极差 0.0000。
+2. 极差 0.0000 = "测量管线不引入噪声"的现场证明（离线桩确定性）。
+3. `demo/README.md` 预期读数**写死数字**：实跑不符 = 演示红，不许"差不多就行"。
+4. 契约 AZ43（静态锚：demo 脚本必须存在且引用三个 solver 与 --repeat 3）
+   —— 撤回态：删 demo/run_demo.sh 的 oracle 臂 ⇒ 红。
+   ⛔ demo 是演示不是量具：**不在** contract_test 里真跑 demo（避免契约依赖
+   shell 脚本执行路径）；AZ43 只锚结构。
+5. 实测验收：`bash demo/run_demo.sh` 全绿且读数与 README 预期逐位一致。
+
+### §19 R-c 交付（同日）：演示资产
+- `demo/run_demo.sh` + `demo/README.md`：三臂参照点（oracle 1.0000 / null 0.0000 /
+  partial 0.6194），判据 = 实跑读数与 README 写死值**逐位一致**。
+- ⛔ 实测踩坑两条：①测量模式（--repeat≥2）离线时**强制 oracle 参照**（run.py:1000）
+  ⇒ 三臂差异必须走 --bench 模式；②null 臂"未产出答案"是本义 ⇒ rep.trustworthy()=False
+  ⇒ run.py rc=1（如实信号，run.py:1203 既有语义不改）⇒ demo 判据不依赖退出码。
+  ③bash 变量名后紧跟全角字符（`$want（`）会被解析进变量名 ⇒ `${want}`。
+- 契约 532→533（AZ43 静态结构锚）；撤回态 +1（AZ43 单红，还原后基线 533/0）。

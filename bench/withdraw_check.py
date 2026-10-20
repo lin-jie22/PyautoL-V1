@@ -659,6 +659,12 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ42", "mw/__main__.py",
      "    sys.exit(main())",
      "    pass  # 撤回态"),
+    # ── AZ43（§19 R-c，第四十五轮）：演示资产 ─────────────────────────
+    # AZ43：删掉 oracle 臂 ⇒ 三臂缺一 + 写死读数锚不全 ⇒ 结构锚红。
+    #   只动 oracle 臂一行（单变量）；null/partial 行不动。
+    ("AZ43", "demo/run_demo.sh",
+     'arm 1.0000 "oracle" --solver oracle',
+     'pass  # 撤回态'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

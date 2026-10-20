@@ -6824,6 +6824,23 @@ check(RS, "AZ42 ★R-b `python -m mw` 入口必须真跑通：子进程 rc=0 且
       _az42_p.returncode == 0 and "通过" in (_az42_p.stdout + _az42_p.stderr),
       f"rc={_az42_p.returncode} 尾部={(_az42_p.stdout + _az42_p.stderr)[-60:]!r}")
 
+# ── AZ43（§19 R-c，第四十五轮）：演示资产的三臂结构 ─────────────────────
+# ⛔ demo 是演示不是量具：**不在**契约里真跑 demo（避免契约依赖 shell
+#    执行路径）；AZ43 只锚结构 —— 三臂（oracle/null/partial）+ 读数校验。
+_az43_d = _az_Path(__file__).resolve().parent.parent / "demo" / "run_demo.sh"
+_az43_has = _az43_d.exists()
+_az43_src = _az43_d.read_text(encoding="utf-8") if _az43_has else ""
+check(RS, "AZ43 ★R-c demo 三臂结构：demo/run_demo.sh 必须存在且引用\n"
+          "          oracle/null/partial 三个参照臂，并对每臂做**写死读数**的\n"
+          "          校验（1.0000/0.0000/0.6194，demo/README.md 同源）——\n"
+          "          演示读数漂移 = 演示红，不许'差不多就行'。",
+      _az43_has and "--solver oracle" in _az43_src and "--solver null" in _az43_src
+      and "--solver partial" in _az43_src
+      and all(x in _az43_src for x in ("1.0000", "0.0000", "0.6194"))
+      and "mean=" in _az43_src,
+      f"存在={_az43_has} 三臂={_az43_src.count('--solver ')} "
+      f"读数锚={'1.0000' in _az43_src and '0.6194' in _az43_src}")
+
 
 print()
 print("=" * 74)

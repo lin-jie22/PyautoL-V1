@@ -1,0 +1,30 @@
+臂 A: n4 mean=0.5667 rep均值=['0.5000', '0.7000', '0.5000'] rep逐位=False 逐题极差=0.8000 rep均值极差=0.2000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 1.0, 0.2]
+臂 B: n4 mean=0.5500 rep均值=['0.5500', '0.5500', '0.5500'] rep逐位=True 逐题极差=0.0000 rep均值极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.6, 0.6, 0.6]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 C: n4 mean=0.7000 rep均值=['0.7000', '0.7000', '0.7000'] rep逐位=True 逐题极差=0.0000 rep均值极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [1.0, 1.0, 1.0]
+
+n0 邻域（K>0 格，登记：A 不低于 B）:
+  A: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  B: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  C: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+
+装置自检（补救/收尾请求是否带指令句）:
+  A: 21/21 ✅
+  C: 19/19 ✅
+  B: 18/18 ✅
+
+判定: Δ(A−B)=+0.0167  Δ(A−C)=-0.1333  门槛=≥0.05
+        噪声: A极差=0.8000 B极差=0.0000 ⇒ 需 min(Δ) > 0.8000
+        邻域不回归: True   装置自检: True
+★7u:  不认领 —— 见上，逐条如实登记

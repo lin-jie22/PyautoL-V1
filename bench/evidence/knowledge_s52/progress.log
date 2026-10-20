@@ -1,0 +1,16 @@
+== A (消歧指令) n0 + n4 x3 ==
+ARM_A_n0_EXIT=0
+ARM_A_r1_EXIT=0
+ARM_A_r2_EXIT=0
+ARM_A_r3_EXIT=0
+== B (基线@9b922e8) n0 + n4 x3 ==
+ARM_B_n0_EXIT=0
+ARM_B_r1_EXIT=0
+ARM_B_r2_EXIT=0
+ARM_B_r3_EXIT=0
+== C (等长中性指令) n0 + n4 x3 ==
+ARM_C_n0_EXIT=0
+ARM_C_r1_EXIT=0
+ARM_C_r2_EXIT=0
+ARM_C_r3_EXIT=0
+ALL_DONE

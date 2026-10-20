@@ -594,6 +594,33 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ30", "bench/build_g7d_seed.py",
      "    memH.close(); memP.close(); memE.close()\n    return 0 if ok else 2",
      "    memH.close(); memP.close(); memE.close()\n    return 0"),
+    # ── AZ31–AZ33（第四十三轮，§17-7p）：code_exec 沙箱补强 ────────────────
+    # AZ31：TimeoutExpired 分支改 raise ⇒ CPU 炸弹把打分器整个炸掉（rc!=0）
+    #   ⇒ AZ31 红。⚠️ 不能选"删掉 timeout 参数"：那会让撤回态**挂死** ——
+    #   R13 第三条硬坑（崩了 ≠ 判红）的挂死变体。
+    ("AZ31", "bench/scorers/code_exec.py",
+     '''        except subprocess.TimeoutExpired:
+            return False, f"超时 >{_TIMEOUT_S:g}s"''',
+     '''        except subprocess.TimeoutExpired:
+            raise  # 撤回态'''),
+    # AZ32：FSIZE 上限 no-op ⇒ 2MB 落盘成功 ⇒ 该条转绿 ⇒ AZ32 红。
+    #   ⚠️ 只撤 FSIZE 一道（CPU/AS 保持），保证单变量。
+    ("AZ32", "bench/scorers/code_exec.py",
+     "    resource.setrlimit(resource.RLIMIT_FSIZE, (_FSIZE_B, _FSIZE_B))",
+     "    pass  # 撤回态"),
+    # AZ33：cwd 隔离撤掉 ⇒ 候选的标记文件落进调用方 cwd ⇒ AZ33 红。
+    ("AZ33", "bench/scorers/code_exec.py",
+     "cwd=workdir, preexec_fn=_sandbox,",
+     "preexec_fn=_sandbox,"),
+    # AZ34：verify() 丢掉明细 ⇒ 覆盖集变空 ⇒ "每份考题都被覆盖"必红。
+    #   ⚠️ 不能 mutate 成 `return True, lines`：不篡改考题时行数照旧 ⇒ 恒绿。
+    ("AZ34", "bench/suite_manifest.py",
+     "    return ok, lines",
+     "    return ok, []  # 撤回态"),
+    # AZ35：transport 字段改名 ⇒ schema 缺键 ⇒ AZ35 红。
+    ("AZ35", "bench/evallog.py",
+     '"transport": _parse_transport(d.get("kernel_transport")),',
+     '"transport_x": _parse_transport(d.get("kernel_transport")),'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

@@ -5827,6 +5827,52 @@ run.py:  if _mem_dir:
       响应」与「最终交付」分开量——这是把"知识"与"握手"拆开的第一把尺，
       7e/7f/7g 时代的 0.2 读数全部有同样的混杂嫌疑，逐代复查另立。
 
+═══════════════════════════════════════════════════════════════════════════
+★7p（第四十三轮）量具补强轮 —— 「跟 Inspect AI 比」的可执行回应
+═══════════════════════════════════════════════════════════════════════════
+
+1. **主张（写死，可证伪）**：规模层（套件数/生态）**不比**，4 题对 100+
+   基准没有意义；要在**测量有效性**层做出 Inspect 没有的东西——它保证
+   "尺子稳定"（同题同分），V1 保证"分数不是装置伪影"（三臂/安慰剂/撤回态/
+   逐格取证）。本轮把对方四件机械长处补进来，使量具 = **Inspect 的机械
+   可靠性 + V1 的因果有效性层**。这是"比它好"的可辩护版本；⛔ 不许扩成
+   "全面超过"。
+
+2. **补强清单（零内核行为变更；`mw/` 不动，只动 `bench/`）**：
+   ① **code_exec 沙箱补强**：`run_one` 加 preexec rlimits
+      （RLIMIT_CPU=6s / RLIMIT_AS=512MB / RLIMIT_FSIZE=1MB）+
+      `cwd=独立临时目录`（跑完清理）。现状只有 wall timeout + `python -I`
+      ——内存炸弹/磁盘炸弹会拖死打分器，落盘会污染调用方目录。
+      ⚠️ 打分语义不变：正常代码的分数分布必须不变（回归验证）。
+   ② **套件指纹 manifest**：`bench/suite_manifest.py`（build/verify）+
+      `bench/suites.manifest.json` 落库。改考题必须重新生成 manifest
+      ——**刻意的摩擦** = 污染闸（对齐 Google 双盲的"考题完整性"精神，
+      成本最低的一格）。注：`run.py` 运行期已印 `suite_sha`，但没有
+      **入库的持久对照**。
+   ③ **合并 eval log**：`bench/evallog.py` 把一个 evidence 目录
+      （runs.jsonl ×9 格）收敛成单文件 `evallog.jsonl`
+      （每格：arm/rep/model/suite_sha/per_task{id,score,why,elapsed_s}/
+      transport 签名）。Inspect 的 `.eval` 结构化日志对应物；
+      判读不再散在 5 类文件里。
+   ④ **provider 层如实修正**：`LLMConfig` 本来就是 OpenAI 兼容 env 驱动
+      （`V1_LLM_BASE_URL/MODEL/KEY`，default_factory 每次读 env）——
+      偷清单第四项**已经就位**，不做代码改动，只在 evallog 里把
+      `model` 显式落字段（从 `report.candidate`/`llm_of_record` 取证）。
+
+3. **契约**：AZ31（CPU 炸弹 ⇒ 该条 fail 且打分器不炸、rc=0 有 score）/
+   AZ32（FSIZE 炸弹 ⇒ 1MB cap 生效，2MB 落盘必失败）/ AZ33（cwd 隔离 ⇒
+   候选写 cwd 的文件不落在调用方目录）/ AZ34（heldout sha 与 manifest
+   逐一致）/ AZ35（evallog 对合成 evidence 的 schema 逐字段在）。
+   契约 520→**525**，撤回态 95→**100**。
+
+4. **回归判据（跑臂前写死）**：现役 g7 全部历史读数是在旧 code_exec 上
+   量出来的；沙箱补强不得改变分数 ⇒ 用 s42/s43 的 H 臂交付原文重放打分
+   （零模型），新旧打分器分数必须逐格相等。
+
+5. **⛔ 边界**：不动 `mw/`（尾 200 闸/catalog sha 两真相等内核缺陷
+   仍归 R13 另立轮）；不扩套件；不承诺 Docker（本机无守护进程，rlimit
+   是可验证的子集，Docker 化如实登记为未做）。
+
 8. **警告（保留）**：`bench.py` 给的是**工具**。如果哪天有人把
    `--save-baseline --allow-supersede` 当成"刷新一下基线"随手跑，
    口径闸就白做了 —— 那是人的问题，不是代码的问题，但值得写在这里。

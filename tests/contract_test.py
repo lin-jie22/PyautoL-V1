@@ -6578,6 +6578,116 @@ check(RS, "AU9 ★传输层五个计数必须**都有消费者**：进 `stats.tr
       f"缺键={sorted(_au_tx_missing)} 落盘={_au_landed} 累加={_au_acc}")
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ31–AZ35（第四十三轮，§17-7p）：量具补强 —— 沙箱/考题完整性/合并日志
+#
+# 背景：「跟 Inspect AI 比」的回应。Inspect 保证"尺子稳定"（同题同分），
+# 本组把它的机械长处补进来，同时保留 V1 的因果有效性层（三臂/撤回态）。
+# 全部判据锚在 bench/ 量具上，⛔ 不动 mw/。
+# ══════════════════════════════════════════════════════════════════════════
+_azp_spec = _au_ilu.spec_from_file_location(
+    "v1_code_exec", str(V1 / "bench" / "scorers" / "code_exec.py"))
+_azp_ce = _au_ilu.module_from_spec(_azp_spec)
+_azp_spec.loader.exec_module(_azp_spec and _azp_ce)             # type: ignore[union-attr]
+
+# ── AZ31：打分器进程级生存性 —— 两种炸弹都只判 fail，打分器 rc=0 有 score ──
+import subprocess as _az31_sp                                      # noqa: E402
+
+def _az31_scorer(answer: str) -> dict:
+    _p = _az31_sp.run(
+        [sys.executable, str(V1 / "bench" / "scorers" / "code_exec.py")],
+        input=json.dumps({"task": {"id": "az31", "tests": ["assert True"]},
+                          "answer": answer}),
+        capture_output=True, text=True, timeout=60)
+    if _p.returncode != 0 or not _p.stdout.strip():
+        return {"rc": _p.returncode}
+    return {"rc": 0, **json.loads(_p.stdout.strip().splitlines()[-1])}
+
+_az31_wall = _az31_scorer("import time\ntime.sleep(30)")   # 墙钟炸弹 → TimeoutExpired 分支
+_az31_cpu = _az31_scorer("while True: pass")               # CPU 炸弹 → RLIMIT_CPU SIGXCPU
+check(RS, "AZ31 ★7p 沙箱：墙钟炸弹与 CPU 炸弹都必须**只判 fail**（score=0.0），\n"
+          "          打分器进程本身 rc=0 活着出 JSON。撤掉 TimeoutExpired 分支\n"
+          "          （改 raise）⇒ 墙钟炸弹把打分器炸死（rc!=0）⇒ 此判据红。\n"
+          "          ⚠️ 实测校准：while True 被 RLIMIT_CPU=6s 先杀（SIGXCPU），\n"
+          "          走不到 TimeoutExpired 分支 —— 第一版撤回态红=无，当场抓到。",
+      _az31_wall.get("rc") == 0 and _az31_wall.get("score") == 0.0
+      and "超时" in str(_az31_wall.get("why", ""))
+      and _az31_cpu.get("rc") == 0 and _az31_cpu.get("score") == 0.0,
+      f"墙钟={_az31_wall} CPU={_az31_cpu}")
+
+# ── AZ32：磁盘炸弹必须被 FSIZE cap 截住 ────────────────────────────────────
+_az32 = _azp_ce.run_one(
+    "open('az32_big.bin','wb').write(b'0' * (2 * 1024 * 1024))", "assert True")
+check(RS, "AZ32 ★7p 沙箱：2MB 落盘必须被 RLIMIT_FSIZE=1MB 截成 fail\n"
+          "          （write() 抛 OSError ⇒ 该条判 fail，打分器继续）。\n"
+          "          撤掉 rlimits ⇒ 2MB 落盘成功 ⇒ 该条转绿 ⇒ 此判据红。",
+      _az32[0] is False,
+      f"ok={_az32[0]} why={_az32[1][:80]!r}")
+
+# ── AZ33：候选代码落盘必须落在临时 cwd，不污染调用方目录 ───────────────────
+_az33_caller = Path.cwd()
+_az33_marker = _az33_caller / "az33_marker.txt"
+if _az33_marker.exists():
+    _az33_marker.unlink()
+_az33 = _azp_ce.run_one(
+    "open('az33_marker.txt','w').write('x')", "assert True")
+check(RS, "AZ33 ★7p 沙箱：候选代码写 cwd 的文件必须落进打分器临时目录，\n"
+          "          **不出现在调用方工作目录**。撤掉 cwd=workdir ⇒ 标记文件\n"
+          "          落进调用方目录 ⇒ 此判据红。",
+      _az33[0] is True and not _az33_marker.exists(),
+      f"ok={_az33[0]} 调用方有标记={_az33_marker.exists()}")
+
+# ── AZ34：heldout 考题与 manifest 逐一致（污染闸）─────────────────────────
+_azp_mspec = _au_ilu.spec_from_file_location(
+    "v1_suite_manifest", str(V1 / "bench" / "suite_manifest.py"))
+_azp_sm = _au_ilu.module_from_spec(_azp_mspec)
+_azp_mspec.loader.exec_module(_azp_sm)                          # type: ignore[union-attr]
+_az34_ok, _az34_lines = _azp_sm.verify()
+_az34_covered = {ln.split()[1] for ln in _az34_lines if "✅" in ln or "❌" in ln}
+_az34_have = {p.name for p in sorted(_azp_sm.HELDOUT.glob("*.jsonl"))}
+check(RS, "AZ34 ★7p 考题完整性：heldout/*.jsonl 与 suites.manifest.json\n"
+          "          逐文件 sha 一致，且**每一份**考题都被 manifest 覆盖。\n"
+          "          改考题不重新 build ⇒ sha 不一致 ⇒ 红；新增考题不登记 ⇒ 红。\n"
+          "          刻意的摩擦 = 功能本身。",
+      _az34_ok and _az34_have <= _az34_covered and len(_az34_have) > 0,
+      f"verify={_az34_ok} 覆盖={len(_az34_covered)}/{len(_az34_have)}")
+
+# ── AZ35：evallog 合并器 schema（合成 evidence，不耦合历史快照）────────────
+_azp_espec = _au_ilu.spec_from_file_location(
+    "v1_evallog", str(V1 / "bench" / "evallog.py"))
+_azp_el = _au_ilu.module_from_spec(_azp_espec)
+_azp_espec.loader.exec_module(_azp_el)                          # type: ignore[union-attr]
+_az35_ev = _TMP / "az35_ev"
+_az35_ev.mkdir(exist_ok=True)
+_az35_fake = {
+    "kernel_transport": "{'wall_refused_first': 0, 'wall_refused_retry': 0, 'retries': 0, 'exhausted': 0}",
+    "measurement": {"mean": 0.4, "n": 1, "std": 0.0},
+    "report": {
+        "candidate": "内核/http qwen2.5:7b（测试）", "llm_of_record": "http",
+        "elapsed_s": 12.5, "errors": [], "failed_scorer": 0,
+        "per_task": [{"id": "t1", "rep": 1, "score": 0.4, "why": "x", "elapsed_s": 12.0}],
+    },
+}
+(_az35_ev / "H_r1_runs.jsonl").write_text(json.dumps(_az35_fake) + "\n")
+_az35_rows = _azp_el.consolidate(_az35_ev, suite="fake.jsonl")
+_az35 = _az35_rows[0] if _az35_rows else {}
+_az35_need = {"arm", "rep", "model", "llm_of_record", "candidate", "suite",
+              "per_task", "mean", "elapsed_s", "errors", "failed_scorer",
+              "transport"}
+check(RS, "AZ35 ★7p 合并 eval log：consolidate() 的每行 schema 必须逐字段在\n"
+          "          （arm/rep/model/…/transport），且 str(dict) 形态的\n"
+          "          kernel_transport 必须被解析成 dict（7m-β 的坑，不解析 =\n"
+          "          transport 又变回不可 grep 的字符串）。",
+      _az35_need <= set(_az35) and _az35.get("arm") == "H"
+      and _az35.get("rep") == 1 and _az35.get("model") == "qwen2.5:7b"
+      and isinstance(_az35.get("transport"), dict)
+      and "parse_error" not in _az35.get("transport", {})
+      and _az35.get("mean") == 0.4,
+      f"缺键={sorted(_az35_need - set(_az35))} "
+      f"arm={_az35.get('arm')} model={_az35.get('model')!r} "
+      f"transport={_az35.get('transport')}")
+
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

@@ -1,0 +1,9 @@
+§17-7p 沙箱补强回归：s42/s43 冻结交付原文在新 code_exec（rlimits+cwd 隔离）上重放
+判据（DESIGN ★7p 第4条）：分数必须与历史读数逐格相等（全部 0.2）
+  ✅ s42 H r1: rc=0 score=0.2
+  ✅ s42 H r2: rc=0 score=0.2
+  ✅ s42 H r3: rc=0 score=0.2
+  ✅ s43 H r1: rc=0 score=0.2
+  ✅ s43 H r2: rc=0 score=0.2
+  ✅ s43 H r3: rc=0 score=0.2
+回归结论：✅ 打分语义未变（6/6 相等）

@@ -33,12 +33,32 @@ from __future__ import annotations
 
 import json
 import re
+import resource
+import shutil
 import subprocess
 import sys
+import tempfile
 
 #: 从 Markdown 围栏里抽代码；抽不到就整段当代码（模型常常直接给裸代码）
 _FENCE = re.compile(r"```(?:python|py)?[ \t]*\r?\n(.*?)```", re.S)
 _TIMEOUT_S = 8.0
+#: ★7p 沙箱补强（实测校准，不是拍脑袋）：
+#:   · RLIMIT_CPU=6s —— CPU 炸弹（`while True: pass`）由内核 SIGXCPU 终结；
+#:   · RLIMIT_FSIZE=1MB —— 磁盘炸弹（写大文件）在 write() 处直接抛 OSError；
+#:   · RLIMIT_AS —— ⚠️ **仅 Linux**。macOS 的子进程里 setrlimit(RLIMIT_AS)
+#:     实测直接抛错（2026-10-20，512MB 与 2GB 均复现），⇒ macOS 上内存炸弹
+#:     **没有 rlimit 防护**，这是平台限制，如实登记，不假装修了。
+#:   · cwd = 独立临时目录（跑完删）—— 候选代码落盘不再污染调用方目录。
+_CPU_S = 6
+_FSIZE_B = 1024 * 1024
+_AS_B = 512 * 1024 * 1024
+
+
+def _sandbox() -> None:  # pragma: no cover - 在子进程里执行
+    resource.setrlimit(resource.RLIMIT_CPU, (_CPU_S, _CPU_S))
+    resource.setrlimit(resource.RLIMIT_FSIZE, (_FSIZE_B, _FSIZE_B))
+    if sys.platform == "linux":
+        resource.setrlimit(resource.RLIMIT_AS, (_AS_B, _AS_B))
 
 
 def extract_code(answer: str) -> str:
@@ -49,21 +69,29 @@ def extract_code(answer: str) -> str:
 
 
 def run_one(code: str, test: str) -> tuple[bool, str]:
-    """把「候选代码 + 一条断言」拼起来丢进隔离子进程跑。rc==0 即通过。"""
+    """把「候选代码 + 一条断言」拼起来丢进隔离子进程跑。rc==0 即通过。
+
+    ★7p：子进程带 rlimits（CPU/FSIZE，Linux 另加 AS）+ 独立临时 cwd。
+    """
     src = f"{code}\n\n{test}\n"
+    workdir = tempfile.mkdtemp(prefix="v1_score_")
     try:
-        p = subprocess.run(
-            [sys.executable, "-I", "-c", src],
-            capture_output=True, text=True, timeout=_TIMEOUT_S,
-        )
-    except subprocess.TimeoutExpired:
-        return False, f"超时 >{_TIMEOUT_S:g}s"
-    except OSError as e:  # 解释器都起不来 —— 这是环境故障，不是候选的错
-        raise RuntimeError(f"无法启动子进程: {e}") from e
-    if p.returncode == 0:
-        return True, ""
-    err = (p.stderr or "").strip().splitlines()
-    return False, (err[-1][:140] if err else f"rc={p.returncode}")
+        try:
+            p = subprocess.run(
+                [sys.executable, "-I", "-c", src],
+                capture_output=True, text=True, timeout=_TIMEOUT_S,
+                cwd=workdir, preexec_fn=_sandbox,
+            )
+        except subprocess.TimeoutExpired:
+            return False, f"超时 >{_TIMEOUT_S:g}s"
+        except OSError as e:  # 解释器都起不来 —— 这是环境故障，不是候选的错
+            raise RuntimeError(f"无法启动子进程: {e}") from e
+        if p.returncode == 0:
+            return True, ""
+        err = (p.stderr or "").strip().splitlines()
+        return False, (err[-1][:140] if err else f"rc={p.returncode}")
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
 
 
 def main() -> int:

@@ -1,0 +1,55 @@
+工具目录 sha=8decb60895d4a972（真实跑臂=8decb60895d4）✅
+== ★7n 直发探针 == model=qwen2.5:7b base=http://localhost:11434/v1 T=0.0 max_tokens=1024 STATE_CHAR_CAP=1600
+
+-- S1_n0_1key_1fact --
+  r1: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  r2: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  r3: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  ⇒ 格判定: ADOPT ADOPT ADOPT
+
+-- S2_n4_4key_4fact --
+  r1: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  r2: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  r3: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  ⇒ 格判定: ADOPT ADOPT ADOPT
+
+-- S3_7mb_4key_1fact --
+  r1: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  r2: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  r3: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  ⇒ 格判定: ADOPT ADOPT ADOPT
+
+-- S4_pad15_1key_1fact --
+  r1: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  r2: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  r3: ADOPT
+      answer 前 90 字: '```python\ndef dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x'
+  ⇒ 格判定: ADOPT ADOPT ADOPT
+
+-- S0_no_mem --
+  r1: DIVERGE:recall
+  r2: DIVERGE:recall
+  r3: DIVERGE:recall
+  ⇒ 格判定: DIVERGE:recall DIVERGE:recall DIVERGE:recall
+
+== 汇总（登记闸）==
+  S1_n0_1key_1fact: ADOPT 3/3  ADOPT ADOPT ADOPT
+  S2_n4_4key_4fact: ADOPT 3/3  ADOPT ADOPT ADOPT
+  S3_7mb_4key_1fact: ADOPT 3/3  ADOPT ADOPT ADOPT
+  S4_pad15_1key_1fact: ADOPT 3/3  ADOPT ADOPT ADOPT
+  S0_no_mem: ADOPT 0/3  DIVERGE:recall DIVERGE:recall DIVERGE:recall
+
+== 判读 ==
+  ⚠️ DIVERGE（单发未选 finish——与真实 loop 行为分歧，如实登记）: {'S0_no_mem': ['DIVERGE:recall', 'DIVERGE:recall', 'DIVERGE:recall']}
+  ⇒ M3：单发全采纳 —— 抹除只在 loop 内发生

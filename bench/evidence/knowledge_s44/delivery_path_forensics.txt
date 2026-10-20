@@ -1,0 +1,14 @@
+§17-7n 交付路径取证（2026-10-20 12:29 loop run，capture_run12_29_with_resp.jsonl）
+================================================================
+请求1 propose（含[语义记忆]）响应（原文）：
+  候选1 tool=finish args={} answer 空 —— "根据题面和语义记忆，可以直接写出代码实现去重功能"
+  候选2 tool=run_shell cmd 内嵌完整惯例代码：
+    "def dedupe_keep(xs): seen = set(); return [x for x in xs if
+     (x.strip().lower() not in seen) and not seen.add(x.strip().lower())];"
+    ⇒ strip().lower() 惯例**已被采用**，但放错了通道
+请求3 planner.answer()（user 只有 goal，无[语义记忆]）响应：
+  seen_add 基线代码 ⇒ 这就是最终交付 ⇒ 0.2
+逐字节重放请求1（同服务器）：5/5 ADOPT + 冷启动 1/1 ADOPT
+  ⇒ 12:19 loop 的 BASE 与重放 ADOPT 并存 = 同字节不同时刻答案可翻（ollama KV/批处理
+  非确定性，7g 翻转先例的放大版），但交付路径结构不依赖它：两次 loop run
+  （12:19 / 12:29）交付都是 BASE，且都走了 answer() 补救。

@@ -1,0 +1,9 @@
+== W120 (现状) x3 ==
+ARM_W120_r1_EXIT=0 wall=120
+ARM_W120_r2_EXIT=0 wall=120
+ARM_W120_r3_EXIT=0 wall=120
+== W600 (放大墙钟) x3 ==
+ARM_W600_r1_EXIT=0 wall=600
+ARM_W600_r2_EXIT=0 wall=600
+ARM_W600_r3_EXIT=0 wall=600
+ALL_DONE

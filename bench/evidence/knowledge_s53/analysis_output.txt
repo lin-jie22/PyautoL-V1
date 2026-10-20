@@ -1,0 +1,13 @@
+== 逐题：通道 / 分数（3 rep）==
+g7d2_dedupe_keep       | W120: 通道1种['finish', 'finish', 'finish'] 分[1.0, 1.0, 1.0] 极差0.00 | W600: 通道1种['finish', 'finish', 'finish'] 分[1.0, 1.0, 1.0] 极差0.00
+g7d3_fmt_amount        | W120: 通道1种['finish', 'finish', 'finish'] 分[0.6, 0.6, 0.6] 极差0.00 | W600: 通道1种['finish', 'finish', 'finish'] 分[0.6, 0.6, 0.6] 极差0.00
+g7e1_parse_flag        | W120: 通道1种['finish', 'finish', 'finish'] 分[0.4, 0.4, 0.4] 极差0.00 | W600: 通道1种['finish', 'finish', 'finish'] 分[0.4, 0.4, 0.4] 极差0.00
+g7e2_truncate_tail     | W120: 通道1种['finish', 'finish', 'finish'] 分[0.2, 0.2, 0.2] 极差0.00 | W600: 通道1种['finish', 'finish', 'finish'] 分[0.2, 0.2, 0.2] 极差0.00
+
+== 判据（照登记）==
+  1. 对照成立（W120 下 g7e2 ≥2 种通道）: False  通道=['finish', 'finish', 'finish']
+  2. 主判据（W600 下 g7e2 通道一致 + 分数逐位一致）: True
+     W120 分=[0.2, 0.2, 0.2] 极差=0.00 | W600 分=[0.2, 0.2, 0.2] 极差=0.00 | W600 通道=['finish', 'finish', 'finish']
+
+  噪声总量（4 题极差之和）: W120=0.00  W600=0.00
+★7v-a:  不成立/部分成立 —— 见上，如实登记（病源可能不在 wall）

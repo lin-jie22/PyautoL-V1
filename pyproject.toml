@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyautol-v1"
+version = "1.0.0"
+description = "V1 —— 一个可测量的 agent 内核（零第三方运行依赖；先有测量基座，再有能力）"
+readme = "README.md"
+requires-python = ">=3.11"
+# ⛔ 硬约束：零第三方运行依赖。run_tests.sh 步骤 1 的 AST 审计与
+#    tests/contract_test.py 的契约把守这条线；这里加任何 dependencies
+#    都会被 AZ41 判红。
+dependencies = []
+license = { text = "MIT" }
+
+[project.scripts]
+v1 = "run:main"
+
+[tool.setuptools]
+py-modules = ["run"]
+packages = ["mw"]

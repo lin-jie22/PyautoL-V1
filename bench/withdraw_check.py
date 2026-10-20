@@ -646,6 +646,19 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ40", "run.py",
      'os.environ["V1_LLM_MAX_TOKENS"] = str(int(args.max_tokens))',
      "pass  # 撤回态"),
+    # ── AZ41/AZ42（§19 R-b，第四十五轮）：安装形态 ─────────────────────
+    # AZ41：dependencies 塞进第三方名 ⇒ "零第三方运行依赖"边界破 ⇒ AZ41 红。
+    #   其余字段不动（单变量）。
+    ("AZ41", "pyproject.toml",
+     "dependencies = []",
+     'dependencies = ["requests"]  # 撤回态'),
+    # AZ42：__main__ 的转发调用注释掉 ⇒ `python -m mw` 变成空操作 ⇒
+    #   子进程 rc 虽为 0 但无"通过"标记 ⇒ AZ42 判据（rc==0 且含通过）红；
+    #   连带 K5（死导入检查）：sys/main 不再被使用 ⇒ 结构性死导入。
+    #   同一行删除的两个观测面，合理连带。见 COUPLED。
+    ("AZ42", "mw/__main__.py",
+     "    sys.exit(main())",
+     "    pass  # 撤回态"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -747,6 +760,9 @@ COUPLED: dict[str, frozenset[str]] = {
     #: ★第四十五轮（§17-7q）补登 AZ38：AW2 让开关被无视 ⇒ note 恒在册
     #:   ⇒ catalog_sha 的 off 形状与 on 相同 ⇒ AZ38（on≠off 判据）连带。
     "AW2": frozenset({"AW5", "AZ38"}),
+    #: ★第四十五轮 R-b 补登：AZ42（转发调用变 pass）⇒ __main__.py 的
+    #:   sys/main 两个 import 变死导入 ⇒ K5（结构检查，扫 mw/*.py）红。
+    "AZ42": frozenset({"K5"}),
     #: ★第四十五轮（§17-7q）新增：AT1（catalog_sha 注册表 memory=None）
     #:   ⇒ recall/note 双双从默认指纹消失 ⇒ AZ38（on/off 相等）与
     #:   AZ39（默认指纹与手工 _StubMemory 注册表脱节）同时崩。
@@ -789,7 +805,11 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   AB7 —— "关掉工作记忆写入 ⇒ 回流率归零"的前提是有一条正常交付路径，
     #:           路径被打断后这条读数无意义。
     #: ⇒ 合理连带（上游断了，下游读数自然不成立）。
-    "AS4": frozenset({"I1", "AB7"}),
+    #: ★第四十五轮 R-b 全量复跑补登：AS4（散文题强制走代码提取）⇒ selftest
+    #:   端到端行为改变 ⇒ AZ42（`python -m mw --selftest` 动态判据）连带。
+    #:   AZ42 是"selftest 真跑通"的观测面 —— 任何破坏 selftest 的撤回都会
+    #:   连带它，合理。反查：AZ41（静态）不受行为影响，实测未连。
+    "AS4": frozenset({"I1", "AB7", "AZ42"}),
     #: AU2 不裁剪 ⇒ AU4 的夹具（"第一发被裁到 75s"）不复存在 ⇒ `wall_shortened`
     #: 恒为 0 ⇒ "裁短必须被计数"这条断言自然不成立。**合理连带**：
     #: AU4 测的是"裁短有没有被观测到"，而它需要裁短真的发生。

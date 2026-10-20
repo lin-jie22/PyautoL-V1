@@ -6171,3 +6171,38 @@ replan 丢 state、guidance 断点**同宗**：最需要上下文的那一次，
 - 四步：自检 → 契约 530/0 → 锚层 97/0（五把假尺子反证组）→ stub 测量模式
   （--repeat 2 ⇒ 极差读数 0.0000 = 测量管线不引入噪声的现场证明）。
 - 本机实测全绿；README 第六节加 `./quickstart.sh` 入口（第 0 步）。
+
+### §19 R-b 登记（2026-10-20 20:00，跑之前写死）：安装形态
+
+用户指令「继续」→ 按 §19 顺序走 R-b。
+
+**范围**：`pyproject.toml` + `python -m mw` 双入口；零第三方**运行**依赖不破坏
+（安装器本身不算运行依赖；内核 import 面不变）。
+
+**设计（写死）**：
+1. `pyproject.toml`：`requires-python>=3.11`；**无 dependencies**（硬约束 = 依赖审计
+   ALLOWED 集合不变）；`py-modules=["run"]` + `packages=["mw"]`（bench.py 物理在
+   mw/ 下、随包走，不改变"bench 非内核"的语义约束——那由 mw.__init__ 的模块清单
+   与契约把守，不由打包把守）；`[project.scripts] v1 = "run:main"`。
+2. `mw/__main__.py`：`from run import main; sys.exit(main())`。
+   双场景成立性论证：源码目录 `python -m mw` 时 cwd 在 sys.path（run 可 import）；
+   已安装环境 run 作为 py-module 装进 site-packages（同样可 import）。
+   ⛔ 不把 run.py 挪进 mw/：挪动会改 mw 的模块清单（__init__ 注释钉死"唯一事实源"），
+   连带 AF 系契约与 run_tests.sh 审计路径 —— 收益为零，风险面一大片。
+3. 契约两条 + 撤回态两条：
+   - AZ41（静态）：pyproject 存在、dependencies 缺失或空、requires-python>=3.11、
+     scripts.v1 指向 run:main。撤回：dependencies 塞入第三方名 ⇒ 红。
+   - AZ42（动态）：`python -m mw --selftest` 子进程 rc=0（真跑，数秒）。
+     撤回：__main__.py 的 main() 调用注释掉 ⇒ 红。
+4. 实测验收：/tmp 一次性 venv `pip install .` → `v1 --selftest` 与
+   `python -m mw --selftest` 都全绿；`run_tests.sh` 七步全绿（依赖审计不许变红）。
+5. README 第六节补"安装形态"两行。
+
+### §19 R-b 交付（同日）：安装形态
+- `pyproject.toml`（dependencies=[]、scripts.v1=run:main）+ `mw/__main__.py`
+  （只转发 run.main，单一 CLI 真相不复制）。
+- 契约 530→532（AZ41 静态/AZ42 动态）；撤回态 +2 条，AZ42 撤回连带 K5（死导入）
+  已登记 COUPLED；AZ41 判据首版笔误（">3.11" in ">=3.11" 恒 False）当场修。
+- /tmp 一次性 venv 实测：`pip install .` 后 `v1 --selftest` 与
+  `python -m mw --selftest`（在 /tmp 下跑，排除源码目录干扰）全绿；
+  run_tests.sh 依赖审计面不变（mw/__main__.py 只 import sys/run，均在 ALLOWED）。

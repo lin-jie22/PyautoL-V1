@@ -6793,6 +6793,38 @@ check(RS, "AZ40 ★7q --max-tokens 单一真相：run.py 必须在 settings() �
       f"defaultNone={'\"--max-tokens\", type=int, default=None' in _AE_RUN}")
 
 
+# ── AZ41/AZ42（§19 R-b，第四十五轮）：安装形态 —— 零第三方运行依赖的双入口 ──
+import subprocess as _az_sp                                            # noqa: E402
+import tomllib as _az_toml                                             # noqa: E402
+from pathlib import Path as _az_Path                                   # noqa: E402
+
+_az41_py = _az_Path(__file__).resolve().parent.parent / "pyproject.toml"
+_az41_has = _az41_py.exists()
+if _az41_has:
+    _az41 = _az_toml.loads(_az41_py.read_text(encoding="utf-8"))
+    _az41_deps = _az41.get("project", {}).get("dependencies", [])
+    _az41_req = _az41.get("project", {}).get("requires-python", "")
+    _az41_script = _az41.get("project", {}).get("scripts", {}).get("v1", "")
+check(RS, "AZ41 ★R-b pyproject 零依赖安装形态：pyproject.toml 必须存在且\n"
+          "          dependencies 为空（零第三方运行依赖是内核的硬边界）、\n"
+          "          requires-python>=3.11、[project.scripts] v1 指向 run:main\n"
+          "          （单一 CLI 真相仍是 run.main，脚本入口只准转发）。",
+      _az41_has and _az41_deps == [] and "3.11" in _az41_req
+      and _az41_script == "run:main",
+      f"存在={_az41_has} deps={_az41_deps} requires-python={_az41_req!r} "
+      f"scripts.v1={_az41_script!r}")
+
+_az42_p = _az_sp.run(
+    [sys.executable, "-m", "mw", "--selftest"],
+    capture_output=True, text=True, timeout=120,
+    cwd=str(_az_Path(__file__).resolve().parent.parent))  # type: ignore[name-defined]
+check(RS, "AZ42 ★R-b `python -m mw` 入口必须真跑通：子进程 rc=0 且含自检\n"
+          "          通过标记。入口文件只准 `from run import main` 转发 ——\n"
+          "          复制逻辑 = 两套 CLI 真相（撤掉转发 ⇒ 红）。",
+      _az42_p.returncode == 0 and "通过" in (_az42_p.stdout + _az42_p.stderr),
+      f"rc={_az42_p.returncode} 尾部={(_az42_p.stdout + _az42_p.stderr)[-60:]!r}")
+
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

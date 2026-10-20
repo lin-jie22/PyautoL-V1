@@ -297,6 +297,9 @@ V1_LLM_MODEL=qwen2.5:7b python3 run.py --bench --solver llm-direct \
 
 零第三方依赖。只用 Python 3.11+ 标准库（本机实测 3.13.12 / SQLite 3.50.4 / FTS5 可用）。
 
+安装形态（可选）：`pip install .` 之后得到 `v1` 命令与 `python -m mw` 双入口
+（`dependencies = []` 由契约 AZ41 钉死——装它不会带进任何第三方包）。
+
 ```bash
 cd /Users/linshaojie/V1
 

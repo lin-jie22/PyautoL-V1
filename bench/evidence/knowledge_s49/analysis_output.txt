@@ -1,0 +1,29 @@
+臂 A: n4 mean=0.5500  rep逐位一致=True
+    g7d2_dedupe_keep: ['1.0', '1.0']
+    g7d3_fmt_amount: ['0.6', '0.6']
+    g7e1_parse_flag: ['0.4', '0.4']
+    g7e2_truncate_tail: ['0.2', '0.2']
+臂 B: n4 mean=0.2000  rep逐位一致=True
+    g7d2_dedupe_keep: ['0.2', '0.2']
+    g7d3_fmt_amount: ['0.2', '0.2']
+    g7e1_parse_flag: ['0.2', '0.2']
+    g7e2_truncate_tail: ['0.2', '0.2']
+臂 C: n4 mean=0.2000  rep逐位一致=True
+    g7d2_dedupe_keep: ['0.2', '0.2']
+    g7d3_fmt_amount: ['0.2', '0.2']
+    g7e1_parse_flag: ['0.2', '0.2']
+    g7e2_truncate_tail: ['0.2', '0.2']
+
+邻域复核（n0；K>0 格 = g7d2/g7d3）:
+  g7d2_dedupe_keep: A=1.0 B=1.0 ✅一致
+  g7d3_fmt_amount: A=0.4 B=0.4 ✅一致
+  g7e1_parse_flag: A=0.6 B=0.2 📈泛化提升
+  g7e2_truncate_tail: A=1.0 B=0.2 📈泛化提升
+
+装置自检（补救/收尾请求内容）:
+  A: 14/14 ✅
+  B: 16/16 ✅
+  C: 11/11 ✅
+
+判定：Δ(A−B)=+0.3500  Δ(A−C)=+0.3500  门槛=双对照≥+0.05
+★7r 判读： PASS —— H7r 成立，可认领行为 Δ（补救带语义记忆提升交付分）

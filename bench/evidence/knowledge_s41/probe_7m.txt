@@ -1,0 +1,77 @@
+
+== ① 真实 recall 工具输出宽度（as_line 格式，零模型复算） ==
+  g7j_n0 g7d2_dedupe_keep       hit=1条 真实输出= 64字 尾200后丢=['ZK2', 'ZK3', 'ZK4']
+  g7j_n0 g7d3_fmt_amount        hit=1条 真实输出= 61字 尾200后丢=['ZK1', 'ZK3', 'ZK4']
+  g7j_n0 g7e1_parse_flag        hit=1条 真实输出= 84字 尾200后丢=['ZK1', 'ZK2', 'ZK4']
+  g7j_n0 g7e2_truncate_tail     hit=1条 真实输出= 77字 尾200后丢=['ZK1', 'ZK2', 'ZK3']
+  g7j_n4 g7d2_dedupe_keep       hit=4条 真实输出=289字 尾200后丢=['ZK1', 'ZK2']
+  g7j_n4 g7d3_fmt_amount        hit=4条 真实输出=289字 尾200后丢=['ZK1', 'ZK2']
+  g7j_n4 g7e1_parse_flag        hit=4条 真实输出=289字 尾200后丢=['ZK3']
+  g7j_n4 g7e2_truncate_tail     hit=4条 真实输出=289字 尾200后丢=['ZK4']
+  ⚠️ 7l ③ 的 205 字是纯 text join；真实输出含 as_line 前缀（[abstract c=0.50 x{n}] ≈ 22 字/条）——上面的数字是本轮真值。
+
+== ② ev_n0 H 臂逐步轨迹（本条 = 该题对应惯例） ==
+  r1 g7d2_dedupe_keep       it1 sem=1条/ 45字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✗ ZK3:✗ ZK4:✗ 本条TXT:✓
+  r1 g7d3_fmt_amount        it1 sem=1条/ 42字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✓ ZK3:✗ ZK4:✗ 本条TXT:✓
+  r1 g7e1_parse_flag        it1 sem=1条/ 65字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✓ ZK4:✗ 本条TXT:✓
+  r1 g7e2_truncate_tail     it1 sem=1条/ 58字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✗ ZK4:✓ 本条TXT:✓
+  r1 g7e2_truncate_tail     it2 sem=1条/ 58字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✗ ZK4:✓ 本条TXT:✓
+  r2 g7d2_dedupe_keep       it1 sem=1条/ 45字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✗ ZK3:✗ ZK4:✗ 本条TXT:✓
+  r2 g7d3_fmt_amount        it1 sem=1条/ 42字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✓ ZK3:✗ ZK4:✗ 本条TXT:✓
+  r2 g7e1_parse_flag        it1 sem=1条/ 65字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✓ ZK4:✗ 本条TXT:✓
+  r2 g7e2_truncate_tail     it1 sem=1条/ 58字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✗ ZK4:✓ 本条TXT:✓
+  r2 g7e2_truncate_tail     it2 sem=1条/ 58字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✗ ZK4:✓ 本条TXT:✓
+  r3 g7d2_dedupe_keep       it1 sem=1条/ 45字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✗ ZK3:✗ ZK4:✗ 本条TXT:✓
+  r3 g7d3_fmt_amount        it1 sem=1条/ 42字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✓ ZK3:✗ ZK4:✗ 本条TXT:✓
+  r3 g7e1_parse_flag        it1 sem=1条/ 65字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✓ ZK4:✗ 本条TXT:✓
+  r3 g7e2_truncate_tail     it1 sem=1条/ 58字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✗ ZK4:✓ 本条TXT:✓
+  r3 g7e2_truncate_tail     it2 sem=1条/ 58字 本条全文:✓ wm回显=0条 ZK1:✗ ZK2:✗ ZK3:✗ ZK4:✓ 本条TXT:✓
+
+== ② ev_n4 H 臂逐步轨迹（本条 = 该题对应惯例） ==
+  r1 g7d2_dedupe_keep       it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r1 g7d3_fmt_amount        it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r1 g7d3_fmt_amount        it2 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r1 g7e1_parse_flag        it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r1 g7e2_truncate_tail     it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r1 g7e2_truncate_tail     it2 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r2 g7d2_dedupe_keep       it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r2 g7d3_fmt_amount        it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r2 g7d3_fmt_amount        it2 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r2 g7e1_parse_flag        it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r2 g7e2_truncate_tail     it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r2 g7e2_truncate_tail     it2 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r3 g7d2_dedupe_keep       it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r3 g7d3_fmt_amount        it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r3 g7d3_fmt_amount        it2 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r3 g7e1_parse_flag        it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r3 g7e2_truncate_tail     it1 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+  r3 g7e2_truncate_tail     it2 sem=4条/213字 本条全文:✓ wm回显=0条 ZK1:✓ ZK2:✓ ZK3:✓ ZK4:✓ 本条TXT:✓
+
+== ③ 交付步（每格最大 it）本条存活汇总 ==
+  ev_n0 r1 g7d2_dedupe_keep       交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r1 g7d3_fmt_amount        交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r1 g7e1_parse_flag        交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r1 g7e2_truncate_tail     交付步 it2 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r2 g7d2_dedupe_keep       交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r2 g7d3_fmt_amount        交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r2 g7e1_parse_flag        交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r2 g7e2_truncate_tail     交付步 it2 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r3 g7d2_dedupe_keep       交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r3 g7d3_fmt_amount        交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r3 g7e1_parse_flag        交付步 it1 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n0 r3 g7e2_truncate_tail     交付步 it2 sem=1条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r1 g7d2_dedupe_keep       交付步 it1 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r1 g7d3_fmt_amount        交付步 it2 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r1 g7e1_parse_flag        交付步 it1 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r1 g7e2_truncate_tail     交付步 it2 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r2 g7d2_dedupe_keep       交付步 it1 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r2 g7d3_fmt_amount        交付步 it2 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r2 g7e1_parse_flag        交付步 it1 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r2 g7e2_truncate_tail     交付步 it2 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r3 g7d2_dedupe_keep       交付步 it1 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r3 g7d3_fmt_amount        交付步 it2 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r3 g7e1_parse_flag        交付步 it1 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+  ev_n4 r3 g7e2_truncate_tail     交付步 it2 sem=4条 本条全文@sem:✓ KEY@wm:✗ TXT@wm:✗ ⇒ 在场
+
+== ④ R-noise 逐位复核（同 (task,it) 的 state sha256，r1–r3） ==
+  11 格同位对比，漂移 0 格  ✅（与 7k 判读 R-noise=0.0000 一致）

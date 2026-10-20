@@ -10,3 +10,4 @@ __pycache__/
 .DS_Store
 *.egg-info/
 .venv/
+az32_big.bin

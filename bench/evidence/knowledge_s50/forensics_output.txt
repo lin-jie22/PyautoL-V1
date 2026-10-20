@@ -1,0 +1,15 @@
+#8 [n0(1条)] 渗漏=False 折中=False 正确形状=True
+    代码: ```python def truncate_tail(s, n): if len(s) > n: return '…' + s[-n:] return s ```
+#11 [n0(1条)] 渗漏=False 折中=False 正确形状=True
+    代码: ```python def truncate_tail(s, n): if len(s) > n: return '…' + s[-n:] return s ```
+#25 [n4(4条)] 渗漏=True 折中=True 正确形状=False
+    代码: ```python def truncate_tail(s, n): s = s.strip().lower() if len(s) > n: return '…' + s[-(n-3):] return s ```
+#28 [n4(4条)] 渗漏=False 折中=True 正确形状=False
+    代码: ```python def truncate_tail(s, n): if len(s) <= n: return s return '…' + s[-(n-3):] ```
+#42 [n4(4条)] 渗漏=True 折中=True 正确形状=False
+    代码: ```python def truncate_tail(s, n): s = s.strip().lower() if len(s) > n: return '…' + s[-(n-3):] return s ```
+#45 [n4(4条)] 渗漏=False 折中=True 正确形状=False
+    代码: ```python def truncate_tail(s, n): if len(s) <= n: return s return '…' + s[-(n-3):] ```
+
+补救请求总数=6（其中多惯例块=4）
+判定: n0 全部正确形状 / n4 全部渗漏或折中 ⇒ H-b 成立（跨惯例干扰）

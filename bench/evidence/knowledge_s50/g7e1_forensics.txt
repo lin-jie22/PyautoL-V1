@@ -1,0 +1,6 @@
+#5 [n0(1条)] ZK3把'true'判False: False
+    ```python def parse_flag(s): s = s.strip().lower() if s in ('y', 'yes', '1'): return True if s in ('false', 'on'): return False return None ```
+#22 [n4(4条)] ZK3把'true'判False: False
+    ```python def parse_flag(s): s = s.strip().lower() if s in ('y', 'yes', '1'): return True if s in ('false', 'off', 'no', '0'): return False return None ```
+#39 [n4(4条)] ZK3把'true'判False: False
+    ```python def parse_flag(s): s = s.strip().lower() if s in ('y', 'yes', '1'): return True if s in ('false', 'off', 'no', '0'): return False return None ```

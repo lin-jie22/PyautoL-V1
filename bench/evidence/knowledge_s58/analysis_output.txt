@@ -1,0 +1,71 @@
+臂 A : n4 mean=0.7000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [1.0, 1.0, 1.0]
+臂 B0: n4 mean=0.5500 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.6, 0.6, 0.6]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 W1: n4 mean=0.5500 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.6, 0.6, 0.6]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 W2: n4 mean=0.5500 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.6, 0.6, 0.6]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 W3: n4 mean=0.5500 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.6, 0.6, 0.6]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+
+n0 邻域（前置：处理臂的 g7d2/g7d3 不低于 B0）:
+  B0: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  W1: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  W2: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  W3: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  A : g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+
+装置自检（补救请求里反馈标记的出现情况；首次补救按设计不带）:
+  A : 补救= 19 带失败行=  0 带上次答案=  0 期望(fail=不要,ans=不要) ✅
+  B0: 补救= 18 带失败行=  0 带上次答案=  0 期望(fail=不要,ans=不要) ✅
+  W1: 补救= 18 带失败行=  0 带上次答案=  0 期望(fail=要,ans=不要) ❌
+  W2: 补救= 18 带失败行=  0 带上次答案=  0 期望(fail=不要,ans=要) ❌
+  W3: 补救= 18 带失败行=  0 带上次答案=  0 期望(fail=要,ans=要) ❌
+
+成立判定（g7e2 3/3=1.0 且 mean≥0.65 且 g7d3≥0.6；A 只作闸门）:
+  B0: 未成立  g7e2=[0.2, 0.2, 0.2]  g7d3=[0.6, 0.6, 0.6]  mean=0.5500
+  W1: 未成立  g7e2=[0.2, 0.2, 0.2]  g7d3=[0.6, 0.6, 0.6]  mean=0.5500
+  W2: 未成立  g7e2=[0.2, 0.2, 0.2]  g7d3=[0.6, 0.6, 0.6]  mean=0.5500
+  W3: 未成立  g7e2=[0.2, 0.2, 0.2]  g7d3=[0.6, 0.6, 0.6]  mean=0.5500
+  A : 分数够但 g7d3 掉破 0.6（拿代价换的分，不算成立）  g7e2=[1.0, 1.0, 1.0]  g7d3=[0.4, 0.4, 0.4]  mean=0.7000
+
+前置: 装置=False rep逐位全一致=True 总极差=0.0000 邻域不回归=True
+★窗口闸门（A 正对照复现）: True  A g7e2=[1.0, 1.0, 1.0]
+
+★7w【按字面登记】: 作废 —— 前置不成立（装置/窗口闸门/邻域）
+
+逐格极差（>0 即为窗内不稳）:
+  无（全格极差 0）
+
+通道标记（kernel_closeout / kernel_transport）:
+  B0/r1: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  B0/r2: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  B0/r3: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W1/r1: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W1/r2: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W1/r3: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W2/r1: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W2/r2: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W2/r3: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W3/r1: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W3/r2: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  W3/r3: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  A /r1: 收尾=1 理由={'steps': 0, 'wall': 0, 'wall_retry': 1} wall拒首=0 wall缩=18
+  A /r2: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17
+  A /r3: 收尾=0 理由={'steps': 0, 'wall': 0} wall拒首=0 wall缩=17

@@ -1,0 +1,100 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  g7j_n4_heldout  n=4  suite_sha=ade4193511035b675cda0896538ceedd
+  打分器  code_exec  scorer_sha=86b7d95431465445abdc3debd187e620
+
+--- 第 1 步  校准：尺子自证有分辨力（V5 缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=4/4
+  g7d2_dedupe_keep: oracle=1.0000 partial=0.2000 null=0.0000 ✅
+  g7d3_fmt_amount: oracle=1.0000 partial=0.2000 null=0.0000 ✅
+  g7e1_parse_flag: oracle=1.0000 partial=0.4000 null=0.0000 ✅
+  g7e2_truncate_tail: oracle=1.0000 partial=0.2000 null=0.0000 ✅
+  理由: 全部 4 条两极可分，其中 4 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=24ace77e69e07165
+  [观察]
+    - g7d2_dedupe_keep: oracle=1.0000 partial=0.2000 null=0.0000
+    - g7d3_fmt_amount: oracle=1.0000 partial=0.2000 null=0.0000
+    - g7e1_parse_flag: oracle=1.0000 partial=0.4000 null=0.0000
+    - g7e2_truncate_tail: oracle=1.0000 partial=0.2000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 4 条任务上两极可分
+    - 中段有序检查 4 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=86b7d9543146、suite_sha=ade419351103；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 8 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）  预算档=1x  repeat=1 ---
+22:53:46 ▶ 任务开始: 写一个函数 dedupe_keep(xs)：对字符串列表去重，返回列表保持原顺序。比较之前怎么归一化、遇到重复时保留第几次出现的那条原文，按记忆里记着的（ZK1）（ZK2）（ZK3）（ZK4）惯例处理（惯例不在题面里）。只输出代码，函数名必
+22:53:46   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+22:54:18   [1] 通道=深 候选=3
+22:54:25       ↳ finish ok=True 直接实现 dedupe_keep 函数
+22:54:25   ✅ 收尾: ```python
+def dedupe_keep(xs):
+    seen = set()
+    result = []
+    for x in xs:
+        normalized = x  # 假设不需要归一化，直接使用
+22:54:25 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.111 memory>reason=0.0 reason>act=0.333] 回流=n/a | 语义记忆=4 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 dedupe_keep/语言标签/可编译)
+22:54:26 ▶ 任务开始: 写一个函数 fmt_amount(x)：把数字格式化成金额字符串，输入可能是 int 或 float。千分位用什么符号、保留几位小数、负数怎么写，按记忆里记着的（ZK1）（ZK2）（ZK3）（ZK4）惯例处理（惯例不在题面里）。只输出代码，
+22:54:26   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+22:54:26   🧹 题边界：清掉上一题残留的工作记忆 1 条
+22:54:53   [1] 通道=深 候选=3
+22:54:58       ↳ recall ok=True 根据记忆中的惯例确定格式化规则
+22:55:17   [2] 通道=深 候选=1
+22:55:25       ↳ finish ok=True 直接完成任务
+22:55:25       🔁 失配[outcome] finish({'answer': '```python\ndef fmt_amount(x):\n    if x < 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+22:55:25       📎 回看 b#3 因由=mismatch 窗=whole 125/125 字
+22:55:25   ✅ 收尾: ```python
+def fmt_amount(x):
+    if x < 0:
+        return f"({x:.2f})"
+    return f"{x:.2f}".replace('.', ',')
+```
+22:55:25 ■ done | steps=2 | guard_blocked=0 | 预演=3 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.132 memory>reason=0.111 reason>act=0.5] 回流=0.9 | 语义记忆=4 | 上限被裁短=6 | 题边界清空工作记忆=1条 | 回看=1次/125字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 fmt_amount/语言标签/可编译)
+22:55:26 ▶ 任务开始: 写一个函数 parse_flag(s)：把配置里的开关值转成 True / False / None（无法识别）。哪些写法算真、哪些算假、空串算什么，按记忆里记着的（ZK1）（ZK2）（ZK3）（ZK4）惯例处理（惯例不在题面里）；入参大小
+22:55:26   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+22:55:26   🧹 题边界：清掉上一题残留的工作记忆 2 条
+22:56:01   [1] 通道=深 候选=2
+22:56:07       ↳ recall ok=True 根据记忆中的惯例处理字符串，转换为布尔值或 None。
+22:56:27   [2] 通道=深 候选=1
+22:56:36       ↳ finish ok=True 实现 parse_flag 函数
+22:56:36   ✅ 收尾: ```python
+def parse_flag(s):
+    s = s.strip().lower()
+    if s in ('y', 'yes', '1'):
+        return True
+    if s in ('
+22:56:36 ■ done | steps=2 | guard_blocked=0 | 预演=5 检验=5 命中=4 命中率=0.8 失配=1(成败1/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.112 memory>reason=0.111 reason>act=0.667] 回流=0.9 | 语义记忆=4 | 上限被裁短=6 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 parse_flag/语言标签/可编译)
+22:56:37 ▶ 任务开始: 写一个函数 truncate_tail(s, n)：把过长的字符串截短到最多 n 个字符。超长时保留哪一头、加什么标记，按记忆里记着的（ZK1）（ZK2）（ZK3）（ZK4）惯例处理（惯例不在题面里）；不超长时原样返回。只输出代码，函数名必
+22:56:37   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+22:56:37   🧹 题边界：清掉上一题残留的工作记忆 2 条
+22:57:04   [1] 通道=深 候选=2
+22:57:08       ↳ recall ok=True 根据记忆中的惯例直接写出代码
+22:57:23   [2] 通道=深 候选=1
+22:57:29       ↳ finish ok=True 根据记忆中的惯例直接写出代码
+22:57:29   ✅ 收尾: ```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    else:
+        return s[:n] + '...'
+```
+22:57:30 ■ done | steps=2 | guard_blocked=0 | 预演=7 检验=7 命中=6 命中率=0.857 失配=1(成败1/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.372 memory>reason=0.111 reason>act=0.667] 回流=1.0 | 语义记忆=4 | 上限被裁短=6 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 truncate_tail/语言标签/可编译)
+  分数账本  会话#0 追加 4 行（拒绝 0 行） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.2000 std=0.0000 [0.2000,0.2000] 极差=0.0000
+  attempted=4 recorded=4 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=8 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=16 检验=16 命中=13 命中率=0.812 失配=3(成败3/文本0) 混淆={'ok_ok': 13, 'ok_fail': 0, 'fail_ok': 3, 'fail_fail': 0}
+  传输层    抖动重试=0 重试后仍失败=0 上限被裁短=21 墙钟放弃首发=0/重试=0 （共 4 题）
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=ad97484c23ad47b4 scorer=86b7d9543146 suite=ade419351103 repeat=1 budget=1x temperature=0.0 fresh=False memory_scope=explicit_dir memory_seed=(4, 0) limits=d2c6ca8968 llm_cond=fd3e825132 max_tokens=1024 tool_catalog_sha=c89aa901bfb1
+  读数已落盘 /private/tmp/v1_7x_wt_m0/bench_out/runs.jsonl

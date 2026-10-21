@@ -1,0 +1,81 @@
+臂 A : n4 mean=0.7000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [1.0, 1.0, 1.0]
+臂 S1: n4 mean=0.5000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 S2: n4 mean=0.5000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 S3: n4 mean=0.5000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 B : n4 mean=0.5500 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.6, 0.6, 0.6]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+
+n0 邻域（前置：处理臂的 g7d2/g7d3 不低于 B）:
+  B : g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  S1: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  S2: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  S3: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  A : g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+
+装置自检（每条补救/收尾请求里**只**带自己那一句，且补救请求数 ≥1）:
+  A : 20/20 ✅
+  S1: 20/20 ✅
+  S2: 19/19 ✅
+  S3: 18/18 ✅
+  B : 18/18 ✅
+
+复现判定（复现 = g7e2 3/3 全 1.0 且 mean ≥ 0.65）:
+  B : 未复现   g7e2=[0.2, 0.2, 0.2]  mean=0.5500
+  S1: 未复现   g7e2=[0.2, 0.2, 0.2]  mean=0.5000
+  S2: 未复现   g7e2=[0.2, 0.2, 0.2]  mean=0.5000
+  S3: 未复现   g7e2=[0.2, 0.2, 0.2]  mean=0.5000
+  A : 复现    g7e2=[1.0, 1.0, 1.0]  mean=0.7000
+
+前置: 装置=True rep逐位全一致=True 总极差=0.0000 邻域不回归=True
+★窗口闸门（A 正对照复现）: True  A g7e2=[1.0, 1.0, 1.0]
+
+★7v-d【按字面登记】: 未定位（S1/S2/S3 都不复现）⇒ 重开方向
+
+逐格极差（>0 即为窗内不稳）:
+  无（全格极差 0）
+
+逐题明细（n4 三 rep）:
+  B  含逐条=—  加句=否  mean=0.5500
+      g7d2_dedupe_keep       [1.0, 1.0, 1.0]
+      g7d3_fmt_amount        [0.6, 0.6, 0.6]
+      g7e1_parse_flag        [0.4, 0.4, 0.4]
+      g7e2_truncate_tail     [0.2, 0.2, 0.2]
+  S1 含逐条=否  加句=是  mean=0.5000
+      g7d2_dedupe_keep       [1.0, 1.0, 1.0]
+      g7d3_fmt_amount        [0.4, 0.4, 0.4]
+      g7e1_parse_flag        [0.4, 0.4, 0.4]
+      g7e2_truncate_tail     [0.2, 0.2, 0.2]
+  S2 含逐条=是  加句=是  mean=0.5000
+      g7d2_dedupe_keep       [1.0, 1.0, 1.0]
+      g7d3_fmt_amount        [0.4, 0.4, 0.4]
+      g7e1_parse_flag        [0.4, 0.4, 0.4]
+      g7e2_truncate_tail     [0.2, 0.2, 0.2]
+  S3 含逐条=是  加句=是  mean=0.5000
+      g7d2_dedupe_keep       [1.0, 1.0, 1.0]
+      g7d3_fmt_amount        [0.4, 0.4, 0.4]
+      g7e1_parse_flag        [0.4, 0.4, 0.4]
+      g7e2_truncate_tail     [0.2, 0.2, 0.2]
+  A  含逐条=是  加句=是  mean=0.7000
+      g7d2_dedupe_keep       [1.0, 1.0, 1.0]
+      g7d3_fmt_amount        [0.4, 0.4, 0.4]
+      g7e1_parse_flag        [0.4, 0.4, 0.4]
+      g7e2_truncate_tail     [1.0, 1.0, 1.0]

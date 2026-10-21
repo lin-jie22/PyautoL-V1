@@ -1,0 +1,16 @@
+=== 1) 干净克隆 ===
+DESIGN.md LICENSE README.md agents.example.json agents.json bench demo external mw pyproject.toml quickstart.sh run.py run_tests.sh tests 
+=== 2) 隔离环境 + pip install ===
+
+[notice] A new release of pip is available: 25.3 -> 26.2.2
+[notice] To update, run: /private/tmp/v1_probe/venv/bin/python3 -m pip install --upgrade pip
+运行时第三方依赖（除 pip 自身应为空）:
+pyautol-v1 1.0.0
+
+=== 3) 缺陷复现：站在 checkout 里，用安装出来的 v1 跑 --bench ===
+❌ 找不到 /private/tmp/v1_probe/venv/lib/python3.13/site-packages/bench/tasks/coding_small.jsonl
+EXIT=2
+
+=== 4) 空目录：应给出可操作提示（不是一句裸路径） ===
+❌ 找不到 /private/tmp/v1_probe/venv/lib/python3.13/site-packages/bench/tasks/coding_small.jsonl
+EXIT=2

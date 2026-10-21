@@ -11,3 +11,7 @@ __pycache__/
 *.egg-info/
 .venv/
 az32_big.bin
+
+# 打包副产物（pip install . 会在源码树留下 build/）
+build/
+dist/

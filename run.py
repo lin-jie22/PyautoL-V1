@@ -738,6 +738,24 @@ def cmd_bench(args) -> int:
         args.fresh = False
 
     root = Path(__file__).resolve().parent
+
+    def _data_path(rel: Path) -> Path:
+        """仓库里的**数据文件**（任务集 / 打分器）放哪儿：**当前目录优先，包目录兜底**。
+
+        ★ 第五十八轮（产品化 D-a，实测证据 `bench/evidence/knowledge_s61/install_probe.txt`）：
+        `pip install .` 之后 `run.py` 落在 `site-packages`，`root` 随之落到那里 ⇒
+        实测 `v1 --bench --compare` 报「找不到 …/site-packages/bench/tasks/coding_small.jsonl」
+        **即便此刻就站在仓库根目录里**（先装、再从 checkout 跑是最常见的形态）。
+
+        ⇒ 先看当前目录有没有这份数据，有就用；没有才退回包目录（与修之前的行为一致）。
+
+        ⛔ 只对**默认值**生效：用户显式给的 `--suite` / `--scorer` 一律原样解析
+        （相对路径按当前目录、绝对路径按绝对路径），不进这个兜底逻辑 ——
+        否则"用户的路径找不到"会被悄悄换成别处的同名文件，那是比报错更坏的假成功。
+        """
+        cand = Path.cwd() / rel
+        return cand if cand.exists() else (root / rel)
+
     _suite_dir = getattr(args, "suite_dir", "")
     if _suite_dir and args.suite:
         print("❌ --suite 与 --suite-dir 互斥：前者指定一个套件，后者跑一整目录。")
@@ -749,12 +767,20 @@ def cmd_bench(args) -> int:
             return 2
         return _cross_domain(args, d)
     suite_path = (Path(args.suite).expanduser() if args.suite
-                  else root / "bench" / "tasks" / "coding_small.jsonl")
+                  else _data_path(Path("bench") / "tasks" / "coding_small.jsonl"))
     scorer_path = (Path(args.scorer).expanduser() if args.scorer
-                   else root / "bench" / "scorers" / "code_exec.py")
+                   else _data_path(Path("bench") / "scorers" / "code_exec.py"))
     for p in (suite_path, scorer_path):
         if not p.exists():
             print(f"❌ 找不到 {p}")
+            #: 只有**兜底到包目录**这一条路才会撞上"wheel 不带数据"这件事；
+            #: 用户显式给的路径不存在就是不存在，不该被这段解释带偏。
+            if root not in p.parents or root == Path.cwd():
+                continue
+            print("   ⇒ 这是 `pip install .` 之后的形态：wheel 只装 `mw/` 与 `run.py`，")
+            print("     不携带 `bench/` 的任务集与打分器。两种解法：")
+            print("     · clone 仓库后在**项目根目录**运行（`v1` 会优先用当前目录里的数据）；")
+            print("     · 或用绝对路径显式指定 --suite / --scorer。")
             return 2
 
     suite = Suite.load(suite_path)

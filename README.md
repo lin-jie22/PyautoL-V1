@@ -338,7 +338,14 @@ V1_LLM_MODEL=qwen2.5:7b python3 run.py --bench --solver llm-direct \
 零第三方依赖。只用 Python 3.11+ 标准库（本机实测 3.13.12 / SQLite 3.50.4 / FTS5 可用）。
 
 安装形态（可选）：`pip install .` 之后得到 `v1` 命令与 `python -m mw` 双入口
-（`dependencies = []` 由契约 AZ41 钉死——装它不会带进任何第三方包）。
+（`dependencies = []` 由契约 AZ41 钉死——装它不会带进任何第三方包；
+实测：干净 venv 里 `pip install .` 之后 `pip list` 除自身外为空）。
+
+⚠️ **wheel 只装 `mw/` 与 `run.py`，不含 `bench/` 的任务集与打分器** ——
+第五十八轮实测（`bench/evidence/knowledge_s61/install_probe.txt`）：安装后直接跑
+`v1 --bench --compare`，数据路径会解析到 `site-packages` 而不是你脚下的仓库。
+已修：默认路径**优先当前目录、兜底包目录**，并在确实找不到时给出可操作的提示。
+⇒ 要跑下面 5/6/8/9 这些命令，请在 **clone 下来的项目根目录**里执行（`v1` 或 `python3 run.py` 都行）。
 
 ```bash
 cd V1          # 换成你自己 clone 下来的目录

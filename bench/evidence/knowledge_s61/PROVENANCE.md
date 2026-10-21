@@ -74,3 +74,24 @@
 ⇒ 本轮就此收口，转去做不受此瓶颈影响的产品化工作。等用户拍板：
 换题族（①），还是先回答"选择器从哪来"（②-b，可能需要一个**真正外部**的信号渠道）。
 
+
+---
+
+## 附：产品化 D-a —— 干净环境复现的**安装形态缺陷**（同一时段顺手做的）
+
+和第二十一轮 `verify`、第五十六轮 PEP 701 是同一个教训的第三次：
+**仓库里永远看不到的缺陷**。所以这次把它做成了可重跑的脚本：
+
+    bash bench/evidence/knowledge_s61/install_probe.sh
+    （干净 clone → venv → pip install . → 跑第六节文档里的命令）
+
+| 日志 | 含义 |
+|---|---|
+| `install_probe_prefix.txt` | **修复前**（ remote 还是旧 commit）：站在 checkout 里跑 `v1 --bench --compare` ⇒ 报「找不到 `site-packages/bench/tasks/…`」，明明脚下就有 `bench/` |
+| `install_probe_postfix.txt` | **修复后**（同一脚本、同一份干净环境）：case 3 直接进入跑册（oracle 臂 mean=1.0000），case 4 空目录给出可操作提示 |
+
+同时被这份探针顺带证明的好事：`pip install .` 之后 `pip list` **除自身外零第三方包**
+（AZ41 兑现），`v1` 与 `python -m mw` 双入口都能跑、`--selftest` 通过。
+
+修法见 `run.py:_data_path()` 与 DESIGN §21.2。契约两档仍是 535/0 + 97/0
+（`tests311.log` / `tests313.log`）。

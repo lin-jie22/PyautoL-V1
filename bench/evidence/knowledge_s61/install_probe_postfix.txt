@@ -1,0 +1,24 @@
+=== 1) 干净克隆 ===
+DESIGN.md LICENSE README.md agents.example.json agents.json bench demo external mw pyproject.toml quickstart.sh run.py run_tests.sh tests 
+=== 2) 隔离环境 + pip install ===
+
+[notice] A new release of pip is available: 25.3 -> 26.2.2
+[notice] To update, run: /private/tmp/v1_probe/venv/bin/python3 -m pip install --upgrade pip
+运行时第三方依赖（除 pip 自身应为空）:
+pyautol-v1 1.0.0
+
+=== 3) 缺陷复现：站在 checkout 里，用安装出来的 v1 跑 --bench ===
+  oracle（上界参照）@1x n=1 mean=1.0000 std=0.0000 [1.0000,1.0000] 极差=0.0000
+  attempted=6 recorded=6 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=6 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+
+  ⛔ 血缘显示本轮**不是**真模型（llm_of_record=unknown） ⇒ 拒绝出分／判定／写基线。
+EXIT=2
+
+=== 4) 空目录：应给出可操作提示（不是一句裸路径） ===
+❌ 找不到 /private/tmp/v1_probe/venv/lib/python3.13/site-packages/bench/tasks/coding_small.jsonl
+   ⇒ 这是 `pip install .` 之后的形态：wheel 只装 `mw/` 与 `run.py`，
+     不携带 `bench/` 的任务集与打分器。两种解法：
+     · clone 仓库后在**项目根目录**运行（`v1` 会优先用当前目录里的数据）；
+     · 或用绝对路径显式指定 --suite / --scorer。
+EXIT=2

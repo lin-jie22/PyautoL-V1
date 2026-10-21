@@ -7048,3 +7048,44 @@ n0 五臂逐格相同（1.0 / 0.4 / 0.6 / 1.0）；**A 正对照复现**（g7e2 
 
 **验收**：证据 `knowledge_s58/`；内核**零改动**（`mw/` 一个字节未改，四臂补丁只存在于 worktree）；
 契约 **535/0**；撤回态 **110 条全量**（`withdraw_7w.log`）。
+
+### ★交付要件（第五十四轮附）：LICENSE / CI / tag —— 以及一个**锚自己锁住漂移**的实例
+
+**为什么这一轮做它们**：README 里"契约 535/0、撤回态 110 条"这句话此前**只在本机成立**；
+别人 clone 之后没有任何入口能自证。三项都是零风险、可离线验证、且直接对应"做成产品"。
+
+| 要件 | 做了什么 |
+|---|---|
+| `LICENSE` | MIT 全文，与 `pyproject.toml` 的 `license = { text = "MIT" }` 同一份 |
+| `.github/workflows/ci.yml` | ⚠️ **已写、未推**：本机 PAT 只有 `repo` 权限，GitHub 拒绝推送含 workflow 的提交（需 `workflow` scope）。脚本内容与本地实测一致（矩阵 3.11/3.12/3.13，直接跑 `./run_tests.sh`），补 scope 后一条命令即推 |
+| tag | ⏳ 暂不打：先让 CI 真的出现在远端，再打 `v1.0.0`（否则 README 的三行状态里有两行是谎话） |
+
+**CI 的前提是本地实测过**：`./run_tests.sh` 本机 **EXIT=0 / 2m52s**（七步全离线、零密钥）
+⇒ 不是"写完就当能跑"。
+
+⛔ **一次真实的推送失败（如实登记）**：`git push` 被 GitHub 拒 —
+`refusing to allow a Personal Access Token to create or update workflow .github/workflows/ci.yml
+without 'workflow' scope`。当前 token 只够推代码，不够推 workflow。
+⇒ 处置：把 `ci.yml` **拆出这次提交**（留在工作区、未入库），本次只推 LICENSE / README / 契约修正；
+README 与本节如实写"已写、未推"。**不把没发生的事写成 ✅** —— 这正是本项目一直在审计的那类谎。
+
+**顺带抓到的真问题：AZ44 的锚把错数字锁死了**
+
+核对时发现 README L24/L43 写「**109** 条撤回态」，而实测 `len(withdraw_check.CASES)` = **110**
+（`withdraw_7w.log` 逐条 110 ✅）。更糟的是 `contract_test.py` 的 AZ44 **直接把字符串
+`"109 条撤回态"` 写进判据** ⇒ 文档错、判据也错，两边一致 ⇒ **全绿**。
+
+这正是 AZ47 登记的病根（同一事实 4 个副本、只有一处被锚），而且更彻底：**锚本身抄错了**。
+
+修法不是把 109 改成 110（下次还会漂），而是**让锚现算真值**：
+
+- AZ44 现在 `import withdraw_check` 取 `len(CASES)`，再用 `(\d+)\s*条撤回态` 抓 README 顶部声明的数，
+  **逐个比对**；README 写了数字但对不上 ⇒ 红；一个数字都没写 ⇒ 红。
+- 反证（实测，不是推断）：把 README 临时改回 109 ⇒ `PASS=534 FAIL=1`，**AZ44 转红**；
+  还原后 **535/0**。⇒ 这条新判据有牙。
+- ⛔ **AZ47 仍只算部分实施**：本次只修了"撤回态"这一个事实的自证锚；
+  "扫全文所有计数副本"没做（535/97 仍有多处手抄）。
+
+**边界**：CI 只证明离线部分（依赖审计 / 契约 / 锚层 / 端到端 / 冒烟 / 探针 / 指纹）。
+它**不**证明分数 —— 分数需要模型，证据以 `bench/evidence/knowledge_s*/` 的 PROVENANCE +
+`FILES.sha256` 形式入库，由 `run_tests.sh` 步骤 7 的指纹核验把关。

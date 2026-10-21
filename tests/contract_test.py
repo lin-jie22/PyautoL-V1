@@ -6845,21 +6845,33 @@ check(RS, "AZ43 ★R-c demo 三臂结构：demo/run_demo.sh 必须存在且引�
 _az44_rd = _az_Path(__file__).resolve().parent.parent / "README.md"
 _az44_src = _az44_rd.read_text(encoding="utf-8") if _az44_rd.exists() else ""
 _az44_head = _az44_src[:6000]
+# ★第五十四轮（AZ47 部分实施）：计数**不许再手抄进判据**。
+#   旧版把 "109 条撤回态" 写死 ⇒ 真值涨到 110 之后，**锚自己把漂移锁住了**：
+#   README 两处写 109、契约也断言 109 ⇒ 全绿，而实测是 110。
+#   同一事实只留一个来源 —— 真值从撤回态驱动器数出来，README 只许照抄。
+#   ⚠️ 这里 import 的是**锚层**（bench/），不是内核；成本实测 0.05s、无副作用。
+_az44_bn = _az_Path(__file__).resolve().parent.parent / "bench"
+if str(_az44_bn) not in sys.path:
+    sys.path.insert(0, str(_az44_bn))
+import withdraw_check as _az44_wc                              # noqa: E402
+_az44_n = len(_az44_wc.CASES)
+_az44_claim = re.findall(r"(\d+)\s*条撤回态", _az44_head)
 check(RS, "AZ44 ★R-d 产品摘要块：README 顶部必须含 ①「产品摘要」节、\n"
           "          ②三个实测入口命令（quickstart / run_demo / run_tests）、\n"
           "          ③Inspect AI 差异表（测量有效性定位）、④诚实边界句\n"
           "          （⛔ 不许出现 AGI 声称）。计数必须与实测一致\n"
-          "          （535 契约 / 97 锚层 / 109 撤回态）。",
+          "          （535 契约 / 97 锚层 / 撤回态条目数由 len(withdraw_check.CASES) 现算）。",
       "产品摘要" in _az44_head
       and "./quickstart.sh" in _az44_head
       and "run_demo.sh" in _az44_head
       and "./run_tests.sh" in _az44_head
       and "Inspect AI" in _az44_head and "测量有效性" in _az44_head
       and "不是 AGI" in _az44_head
-      and "535" in _az44_head and "109 条撤回态" in _az44_head,
+      and "535" in _az44_head
+      and bool(_az44_claim) and all(int(x) == _az44_n for x in _az44_claim),
       f"摘要={'产品摘要' in _az44_head} 三入口={all(x in _az44_head for x in ('./quickstart.sh', 'run_demo.sh', './run_tests.sh'))} "
       f"差异表={'Inspect AI' in _az44_head} 边界={'不是 AGI' in _az44_head} "
-      f"计数={'535' in _az44_head and '109 条撤回态' in _az44_head}")
+      f"计数=535:{'535' in _az44_head} 撤回态声明={_az44_claim} 真值={_az44_n}")
 
 # ── AZ46（§17-7v-b/c/d，第五十轮）：补救通道加的那一句中文 ───────────────────
 _az46_pl = _az_Path(__file__).resolve().parent.parent / "mw" / "planner.py"

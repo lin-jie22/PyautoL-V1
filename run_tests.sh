@@ -6,8 +6,21 @@
 # 不依赖任何第三方包。只用系统/托管的 Python 3。
 set -uo pipefail
 
-PY="${PY:-/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/bin/python3}"
-if [ ! -x "$PY" ]; then PY="$(command -v python3)"; fi
+# Python 解析：优先 $PY，其次 PATH 上第一个版本 ≥3.11 的解释器。
+# ⛔ 不写死任何本机路径（别人的机器上没有那条路径），
+#    也不静默降级到 3.9（契约用了 tomllib，3.11 起才有 ⇒ 降级只会给一句看不懂的 ImportError）。
+if [ -z "${PY:-}" ]; then
+  for _c in python3 python3.13 python3.12 python3.11; do
+    command -v "$_c" >/dev/null 2>&1 || continue
+    if "$_c" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null; then
+      PY="$_c"; break
+    fi
+  done
+fi
+if [ -z "${PY:-}" ] || ! command -v "$PY" >/dev/null 2>&1; then
+  echo "❌ 找不到 Python 3.11+。装一个，或显式指定：PY=/path/to/python3.11 ./run_tests.sh"
+  exit 2
+fi
 cd "$(dirname "$0")"
 
 FAIL=0

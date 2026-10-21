@@ -19,7 +19,7 @@ bash demo/run_demo.sh  # 三臂参照点：1.0000 / 0.0000 / 0.6194，读数逐�
 | 要件 | 状态 | 说明 |
 |---|---|---|
 | `LICENSE` | ✅ MIT | 与 `pyproject.toml` 的 `license = { text = "MIT" }` 同一份 |
-| `.github/workflows/ci.yml` | ⚠️ **已写、未推** | 本机 PAT 只有 `repo` 权限，GitHub 拒绝推送含 workflow 的提交（需要 `workflow` scope）。脚本已本地跑通（`./run_tests.sh` EXIT=0 / 2m52s，矩阵 3.11/3.12/3.13）；给 token 补上 scope 后一条命令即可推 |
+| `.github/workflows/ci.yml` | ⚠️ **已写好，未能入库** | 两把 token 都被 GitHub 拒：①旧 PAT 只有 `repo`、缺 `workflow` scope；②换的 fine-grained token 是**只读**的（实测：建一个临时分支 ref 都 `403`）。需在 fine-grained token 上把该仓库权限设为 **Contents: Read and write + Workflows: Read and write**，随后一条 `git push` 即成 |
 | 发布 tag | ⏳ 待 CI 落地后一并打 | 与 `pyproject.toml` 的 `version = 1.0.0` 对应 |
 | CI 覆盖到哪 | ⚠️ **只到离线部分** | 七步全离线、零密钥；**bench 不跑**（需要本机 Ollama + qwen2.5:7b），分数证据以 `bench/evidence/knowledge_s*/`（PROVENANCE + FILES.sha256）入库 |
 
@@ -341,7 +341,7 @@ V1_LLM_MODEL=qwen2.5:7b python3 run.py --bench --solver llm-direct \
 （`dependencies = []` 由契约 AZ41 钉死——装它不会带进任何第三方包）。
 
 ```bash
-cd /Users/linshaojie/V1
+cd V1          # 换成你自己 clone 下来的目录
 
 # 0) 一键快速上手（下面 1-3 步 + 噪声下限读数，约 1 分钟）
 ./quickstart.sh

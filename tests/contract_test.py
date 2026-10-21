@@ -5632,14 +5632,15 @@ _AZ17_VIEW = _AZ17_MEM.working_view()
 _AZ17_MEM.close()
 _AZ17_AT = _AZ17_CODE.find("reset_working()")
 _AZ17_GOAL = _AZ17_CODE.find('record("goal"')
+_AZ17_STATS_OK = '"working_cross_task": self.working_cross_task' in _AZ17_CODE
 check(RS, "AZ17 ★7h 题边界清空：`reset_working()` 必须在 `record(\"goal\")` **之前**，\n"
           "          且清掉的条数必须进 stats（否则\"清干净了\"与\"没接线\"完全同形）\n"
           "          —— `working` 是**进程级** deque，bench 复用同一个 Core 连跑多题；\n"
           "             清空点若落在读侧（`_state()` 过滤），泄漏会**隐身**：计数恒 0、泄漏照旧。",
       0 <= _AZ17_AT < _AZ17_GOAL and _AZ17_N == 2 and _AZ17_VIEW == []
-      and '"working_cross_task": self.working_cross_task' in _AZ17_CODE,
+      and _AZ17_STATS_OK,
       f"顺序 reset@{_AZ17_AT} < goal@{_AZ17_GOAL}；清掉={_AZ17_N} 剩={_AZ17_VIEW}；"
-      f"stats 消费者={'有' if '\"working_cross_task\": self.working_cross_task' in _AZ17_CODE else '无'}")
+      f"stats 消费者={'有' if _AZ17_STATS_OK else '无'}")
 
 # ── AZ18：端到端 —— 第 2 题的**第 1 步** state 里不许有第 1 题的残留 ─────────
 # 走**真实路径**：第 1 题由内核自己调 `recall`（StubLLM 的首选动作），
@@ -6000,11 +6001,13 @@ check(RS, "AE5 ★外部 agent 交付空答案/带 error 时必须 raise，不�
       f"raise 处={_AE_TOOLS.count('raise RuntimeError')}")
 
 # ── AE6：读数必须四列分开（调/成/败/采用），且必须落盘到 runs.jsonl ─────────
+_AE6_IN_RUN = '"kernel_external": _kex' in _AE_RUN
+_AE6_ABSORB = '_kex_absorb(_kex, out.stats.get("external") or {})'
 check(RS, "AE6 ★外部能力读数必须落盘（`kernel_external`），且**两个 solver 分支都并**\n"
           "          —— 只接一个分支 = 一半的题没有读数，而汇总行看起来正常。",
-      '"kernel_external": _kex' in _AE_RUN
-      and _AE_RUN.count('_kex_absorb(_kex, out.stats.get("external") or {})') == 2,
-      f"落盘={'"kernel_external": _kex' in _AE_RUN} "
+      _AE6_IN_RUN
+      and _AE_RUN.count(_AE6_ABSORB) == 2,
+      f"落盘={_AE6_IN_RUN} "
       f"并入点={_AE_RUN.count('_kex_absorb(_kex, out.stats.get(chr(34)+chr(34)) or {})')}")
 
 # ── AE7：外部 agent 是**外部进程**，不许 import 内核，也不许读尺子 ──────────
@@ -6780,17 +6783,20 @@ check(RS, "AZ39 ★7q catalog sha 转发保真：catalog_sha()（默认）必须
       f"手工={_az39_sha} catalog_sha()={_az_cat_sha()}")
 
 # ── AZ40：--max-tokens 必须是**一个**真相（CLI 覆盖内核，caliber 记生效值）──
+_AZ40_ENV = 'os.environ["V1_LLM_MAX_TOKENS"] = str(int(args.max_tokens))' in _AE_RUN
+_AZ40_SETTLED = "max_tokens=int(s.limits.llm_max_tokens)" in _AE_RUN
+_AZ40_DEFNONE = '"--max-tokens", type=int, default=None' in _AE_RUN
 check(RS, "AZ40 ★7q --max-tokens 单一真相：run.py 必须在 settings() 之前把 CLI\n"
           "          显式值写进 env（唯一配置入口；Limits frozen，首版直接赋值\n"
           "          实测 FrozenInstanceError），且 caliber / llm-direct 读**生效值**\n"
           "          `s.limits.llm_max_tokens`（7n 实锤：caliber 记 1024、内核实际\n"
           "          2048 = 两套真相）。",
-      'os.environ["V1_LLM_MAX_TOKENS"] = str(int(args.max_tokens))' in _AE_RUN
-      and "max_tokens=int(s.limits.llm_max_tokens)" in _AE_RUN
-      and '"--max-tokens", type=int, default=None' in _AE_RUN,
-      f"env覆盖行={'os.environ[\"V1_LLM_MAX_TOKENS\"] = str(int(args.max_tokens))' in _AE_RUN} "
-      f"生效值={'max_tokens=int(s.limits.llm_max_tokens)' in _AE_RUN} "
-      f"defaultNone={'\"--max-tokens\", type=int, default=None' in _AE_RUN}")
+      _AZ40_ENV
+      and _AZ40_SETTLED
+      and _AZ40_DEFNONE,
+      f"env覆盖行={_AZ40_ENV} "
+      f"生效值={_AZ40_SETTLED} "
+      f"defaultNone={_AZ40_DEFNONE}")
 
 
 # ── AZ41/AZ42（§19 R-b，第四十五轮）：安装形态 —— 零第三方运行依赖的双入口 ──

@@ -1,0 +1,61 @@
+臂 A : n4 mean=0.7000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [1.0, 1.0, 1.0]
+臂 P1: n4 mean=0.7000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [1.0, 1.0, 1.0]
+臂 P2: n4 mean=0.5000 rep逐位=True 极差=0.0000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.4, 0.4, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+臂 B : n4 mean=0.5333 rep逐位=False 极差=0.2000
+    g7d2_dedupe_keep: [1.0, 1.0, 1.0]
+    g7d3_fmt_amount: [0.6, 0.6, 0.4]
+    g7e1_parse_flag: [0.4, 0.4, 0.4]
+    g7e2_truncate_tail: [0.2, 0.2, 0.2]
+
+n0 邻域（前置：三处理臂的 g7d2/g7d3 不低于 B）:
+  A : g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  P1: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  P2: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+  B : g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.4, g7e1_parse_flag=0.6, g7e2_truncate_tail=1.0
+
+装置自检（补救/收尾请求里**只**带自己那一句）:
+  A : 18/18 ✅
+  P1: 18/18 ✅
+  P2: 21/21 ✅
+  B : 24/24 ✅
+
+复现判定（复现 = g7e2 3/3 全 1.0 且 mean ≥ 0.65）:
+  A : 复现    g7e2=[1.0, 1.0, 1.0]  mean=0.7000
+  P1: 复现    g7e2=[1.0, 1.0, 1.0]  mean=0.7000
+  P2: 未复现   g7e2=[0.2, 0.2, 0.2]  mean=0.5000
+  B : 未复现   g7e2=[0.2, 0.2, 0.2]  mean=0.5333
+
+前置条件: 装置=True rep逐位全一致=False 总极差=0.2000 邻域不回归=True
+
+★7v-c【按字面登记的前置】: 作废 —— 前置不成立（装置/稳定性/邻域）
+
+逐格极差（>0 即为窗内不稳）:
+  B/g7d3_fmt_amount: [0.6, 0.6, 0.4]
+
+★7v-c【隔离受污染格后】: 闸门='逐条'（P1 复现、P2 不复现）⇒ 承载成分是含『逐条』的句子
+  说明：受污染格 = B/g7d3_fmt_amount，**不在**判定变量 g7e2 上；g7e2 四臂全部 3/3 逐位一致（1.0 vs 0.2）。
+
+B 臂复现检查（新窗 3 rep，run_B2_*.log）:
+  B2_r1: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.6, g7e1_parse_flag=0.4, g7e2_truncate_tail=0.2
+  B2_r2: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.6, g7e1_parse_flag=0.4, g7e2_truncate_tail=0.2
+  B2_r3: g7d2_dedupe_keep=1.0, g7d3_fmt_amount=0.6, g7e1_parse_flag=0.4, g7e2_truncate_tail=0.2
+  3 rep 逐位一致=True  g7d3=[0.6, 0.6, 0.6]  ⇒ 翻转未复发（低频 flaky，登记不掩盖）
+
+2×2 分解（'加了一句' × '含逐条'）:
+  B  含逐条=False g7e2=[0.2, 0.2, 0.2] g7d3=[0.6, 0.6, 0.4]
+  P2 含逐条=False g7e2=[0.2, 0.2, 0.2] g7d3=[0.4, 0.4, 0.4]
+  P1 含逐条=True  g7e2=[1.0, 1.0, 1.0] g7d3=[0.4, 0.4, 0.4]
+  A  含逐条=True  g7e2=[1.0, 1.0, 1.0] g7d3=[0.4, 0.4, 0.4]
+  ⇒ 读法：g7e2 只跟『逐条』走（True→1.0 / False→0.2）；g7d3 只跟『加了一句』走（加→0.4 / 不加→0.6，与是否含逐条无关）。

@@ -1,0 +1,42 @@
+cap 文件 99 个；去重后语料 28 份答案（合计 354 次交付）
+
+题                             现行闸    满分n             误伤(满分被判未过)   低分n             有牙(低分被判未过)
+==================================================================================================================================
+g7d2_dedupe_keep           79过/0未     70                      零     9                      零
+g7d3_fmt_amount            79过/0未      0                      零    79 F2:int 或 float 都要能处理+4, F2:结果是字符串+4
+g7e1_parse_flag            98过/0未      0                      零    98                      零
+g7e2_truncate_tail         98过/0未     40      F2:截短到最多 n 个字符+40    58      F2:截短到最多 n 个字符+56
+
+=== 附：答案多样性（十六个窗口在这四道题上到底产出过几种不同的最终答案）===
+  g7d2_dedupe_keep       互异答案  6 份 /  79 次交付
+  g7d3_fmt_amount        互异答案  7 份 /  79 次交付
+  g7e1_parse_flag        互异答案  6 份 /  98 次交付
+  g7e2_truncate_tail     互异答案  9 份 /  98 次交付
+  合计                     互异答案 28 份 / 354 次交付（99 个 cap / 25 类臂）
+
+=== 现行闸**逐条**承重读数（每份互异答案 × 该条判据单独跑；数字 = 被判未过的交付次数）===
+  g7d2_dedupe_keep       总数  79  compiles 未过0, defines 未过0, fence_lang 未过0, nonempty 未过0
+  g7d3_fmt_amount        总数  79  compiles 未过0, defines 未过0, fence_lang 未过0, nonempty 未过0
+  g7e1_parse_flag        总数  98  compiles 未过0, defines 未过0, fence_lang 未过0, nonempty 未过0
+  g7e2_truncate_tail     总数  98  compiles 未过0, defines 未过0, fence_lang 未过0, nonempty 未过0
+  ------------------------------------------------------------
+  全语料                    总数 354  compiles 未过0, defines 未过0, fence_lang 未过0, nonempty 未过0
+
+=== 明细：现行闸 + 候选判据在各题各分数档的命中（按去重分数列出） ===
+--- g7d2_dedupe_keep ---
+  真分 1.0  份数 70  F1未过=False  F2未过=无
+  真分 0.2  份数  9  F1未过=False  F2未过=无
+--- g7d3_fmt_amount ---
+  真分 0.6  份数 27  F1未过=False  F2未过=无
+  真分 0.4  份数 36  F1未过=False  F2未过=无
+  真分 0.2  份数  8  F1未过=False  F2未过=无
+  真分 0.0  份数  4  F1未过=False  F2未过=['结果是字符串', 'int 或 float 都要能处理']
+  真分 0.0  份数  4  F1未过=False  F2未过=无
+--- g7e1_parse_flag ---
+  真分 0.6  份数 17  F1未过=False  F2未过=无
+  真分 0.4  份数 73  F1未过=False  F2未过=无
+  真分 0.2  份数  8  F1未过=False  F2未过=无
+--- g7e2_truncate_tail ---
+  真分 1.0  份数 40  F1未过=False  F2未过=['截短到最多 n 个字符']
+  真分 0.2  份数 56  F1未过=False  F2未过=['截短到最多 n 个字符']
+  真分 0.2  份数  2  F1未过=False  F2未过=无

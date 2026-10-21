@@ -1,0 +1,14 @@
+题面原话： 写一个函数 truncate_tail(s, n)：把过长的字符串截短到最多 n 个字符。
+  oracle('abcdef',3) = '…def'  len=4  len<=n ? False   （打分器要求 == '…def'）
+  oracle('0123456789',4) = '…6789'  len=5  len<=n ? False   （打分器要求 == '…6789'）
+  oracle('abcdefg',2) = '…fg'  len=3  len<=n ? False   （打分器要求 == '…fg'）
+
+打分器全部 5 条断言在这份 oracle 上的通过情况：
+  ✓ assert truncate_tail('abc', 5) == 'abc'
+  ✓ assert truncate_tail('abcdef', 3) == '…def'
+  ✓ assert truncate_tail('0123456789', 4) == '…6789'
+  ✓ assert truncate_tail('日志第二段现场', 4) == '…二段现场'
+  ✓ assert truncate_tail('abcdefg', 2) == '…fg'
+
+⇒ oracle 拿 5/5 满分，同时逐条违反题面里那句『最多 n 个字符』。
+  这是题面自身的不一致，不是我漏读了某个字。

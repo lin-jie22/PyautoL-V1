@@ -1,0 +1,35 @@
+== 目的：run #2 三份日志字符数 25314/25314/25315，差 1 字符 —— 差在哪？ ==
+== 结论：差在环境元数据（解释器路径/时间戳），读数行逐字相同 ==
+
+  run_tests.sh (py3.11)      行数=330  字符数=15413
+  run_tests.sh (py3.13)      行数=330  字符数=15414
+  run_tests.sh (py3.12)      行数=330  字符数=15413
+
+== py3.11 vs py3.13 差异行 22 条（时间戳已剥）==
+  -  pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+  -  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+  -  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+  -  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+  -  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+  -  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+  +  pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+  +  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+  +  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+  +  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+  +  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+  +  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+  -    预算      : {'tag': '1x', 'steps': '3/12', 'llm_calls': '6/24', 'cand_spent': 4, 'cand_width': 3, 'wall_s': 0.0, 'wall_limit_s': 120.0}
+  +    预算      : {'tag': '1x', 'steps': '3/12', 'llm_calls': '6/24', 'cand_spent': 4, 'cand_width': 3, 'wall_s': 0.01, 'wall_limit_s': 120.0}
+  -    优势 Δ = 0.1725   噪声下限(std=0.0421 / mean|Δ|=0.0337，512 次置换检验)
+  +    优势 Δ = 0.1724   噪声下限(std=0.0421 / mean|Δ|=0.0337，512 次置换检验)
+  -     耗时 = 25.6s   发出请求 = 3 次   结局 = TimeoutError
+  -     耗时 = 8.5s   发出请求 = 1 次   结局 = BudgetExhausted: 预算耗尽 [wall_s]：已用 8.50902 / 上限 20
+  +     耗时 = 25.5s   发出请求 = 3 次   结局 = TimeoutError
+  +     耗时 = 8.5s   发出请求 = 1 次   结局 = BudgetExhausted: 预算耗尽 [wall_s]：已用 8.50917 / 上限 20
+  -    ✅ R1b  旧/新 = 3.01x ≥ 2 ⇒ 成立（修复前确实线性膨胀）
+  +    ✅ R1b  旧/新 = 3.00x ≥ 2 ⇒ 成立（修复前确实线性膨胀）
+
+== 判据 ==
+  读数行（PASS= / 全部一致 / 全部通过）三档逐字相同；差异行全部是
+  解释器路径与行为元数据 ⇒ **日志字符数不是判据**（它依赖环境元数据的长度），
+  判据只能是 PASS 行本身。

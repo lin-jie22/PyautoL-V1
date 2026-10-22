@@ -1,0 +1,20 @@
+run 39730018434: ci  head=cd298b58  completed/success
+
+── run_tests.sh (py3.11) ── 日志 25314 字符
+    ✅ PASS=536  FAIL=0
+    ✅ PASS=97  FAIL=0
+    ✅ 全部一致（核对 20 处声明，0 处漂移）。
+    全部通过。
+
+── run_tests.sh (py3.12) ── 日志 25314 字符
+    ✅ PASS=536  FAIL=0
+    ✅ PASS=97  FAIL=0
+    ✅ 全部一致（核对 20 处声明，0 处漂移）。
+    全部通过。
+
+── run_tests.sh (py3.13) ── 日志 25315 字符
+    ✅ PASS=536  FAIL=0
+    ✅ PASS=97  FAIL=0
+    ✅ 全部一致（核对 20 处声明，0 处漂移）。
+    全部通过。
+

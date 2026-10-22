@@ -33,9 +33,18 @@
 
 → `ci_run1_readings.log`（抽取器 `read_ci_log.py`，可对任意 run id 重跑）。
 
-★ 三份日志**字符数完全相同**（25262）——这不是"三个绿勾"，是"同一份代码在三档解释器上
-产出同一份读数"。`bench_test.py`（锚层 97）在 Ubuntu 上也过，说明 FTS5、sqlite3、
+★ 判据是 **PASS 行逐字相同**，不是绿勾，**也不是日志字符数**：
+run #1 三份恰好都是 25262，而 run #2（`39730018434`，head `cd298b5`）是
+**25314 / 25314 / 25315**。查下去差的那点全在**环境元数据**
+（`hostedtoolcache/Python/3.11.17` vs `3.13.16`、时间戳），读数行逐字相同
+（`ci_run2_logdiff.txt`：22 条差异行全是路径/时间）。
+⇒ **字符数是脆指标**（依赖环境元数据长度），差点被当成"三档读数一致"的证据。
+
+`bench_test.py`（锚层 97）在 Ubuntu 上也过，说明 FTS5、sqlite3、
 本机慢端点（步骤 6j 绑 127.0.0.1）在 Actions 里都成立。
+
+⛔ 量具坑：第一版"剥时间戳"的正则漏了行首 BOM（`\ufeff`），于是"时间戳已剥"是假的，
+diff 里全是时间戳噪声。老账重演：**先 `print(repr())` 再下判据**。
 
 ⛔ CI **不跑 bench**：基准要本机 Ollama + qwen2.5:7b，拉模型既慢又让分数依赖第三方服务。
 分数证据仍以 `bench/evidence/knowledge_s*/`（PROVENANCE + FILES.sha256）入库。

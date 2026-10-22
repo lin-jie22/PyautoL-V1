@@ -30,11 +30,19 @@ AZ44 上一版正是这个自指结构的实证：真值涨到 110 之后，**�
 ## 扫描范围（⛔ 只扫"活文档"）
 
     README.md        demo/README.md        .github/workflows/*.yml
+    quickstart.sh    site/index.html
 
 ★ 第六十轮把 `.github/workflows/*.yml` 纳进来了，理由是同一句话：
 CI 文件里写着"让『契约 N/0』这句话别人 clone 后能自证"，
 而**它自己就是这句声明的第 N 个副本** —— 第五十八轮首次运行时它写着 535/110，
 当时实测已是 536/112。让它被自己核对，是这条规则唯一自洽的延伸。
+
+★ 第六十一轮再扩两处，都是"用户真正会看到的字"：
+ · `quickstart.sh` —— 它是**唯一会主动打印给用户看**的地方
+   （`say "2/4 契约测试（535 条断言…）"`）。文档可以没人读，上手脚本一定会被执行。
+   实测：它写着 535，而当时已是 536 —— 扩范围当场抓到（就是本轮的第一条红）。
+ · `site/index.html` —— 落地页上的读数条。它比 README 更容易被复制到别处，
+   也更容易在改代码时被忘掉。
 
 ⛔ **不扫** DESIGN.md 与 bench/evidence/**/PROVENANCE.md：
 它们是**历史台账**，每个数字记录的是**当时**的实测值（"第五十五轮：契约 535"）。
@@ -99,8 +107,11 @@ _CLAIMS = [
     # ⚠️ 数字前必须不是数字/反引号：`448 条契约` 里能匹配到的 "48 条契约"
     #    会把引用句读成声明（第二版实测踩过，报出"声明 48"这种鬼数）。
     (re.compile(r"契约\s*\**\s*(\d+)\s*(?:条|/\s*0)"), "contract"),
-    (re.compile(r"(?<![\d`])(\d+)\s*条契约"), "contract"),
-    (re.compile(r"(?<!\d)(\d+)\s*契约"), "contract"),
+    # ⚠️ 数字前必须不是数字/反引号，也**不能是 `/`**：
+    #    quickstart.sh 的步骤标记是 `2/4 契约测试（…）`，`4 契约` 会被读成"声明 4 条"
+    #    （第六十一轮扩范围时实测踩到；那是步骤号，不是计数）。
+    (re.compile(r"(?<![\d`/])(\d+)\s*条契约"), "contract"),
+    (re.compile(r"(?<![\d/])(\d+)\s*契约"), "contract"),
     (re.compile(r"contract_test\.py[`*\s]*(\d+)\s*(?:条|/\s*0)"), "contract"),
     (re.compile(r"契约[^\n]{0,6}?(\d+)\s*条断言"), "contract"),
 ]
@@ -164,14 +175,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--anchor-log", default="/tmp/v1_bench.out")
     ap.add_argument("--doc", action="append", default=None,
                     help="要扫的文档（可重复）；默认扫活文档 README.md / demo/README.md / "
-                         ".github/workflows/*.yml")
+                         ".github/workflows/*.yml / quickstart.sh / site/index.html")
     args = ap.parse_args(argv)
 
     truth = _measured(Path(args.contract_log), Path(args.anchor_log))
 
     docs = ([Path(p) for p in args.doc] if args.doc
             else [_ROOT / "README.md", _ROOT / "demo" / "README.md"]
-            + sorted((_ROOT / ".github" / "workflows").glob("*.yml")))
+            + sorted((_ROOT / ".github" / "workflows").glob("*.yml"))
+            + [_ROOT / "quickstart.sh", _ROOT / "site" / "index.html"])
 
     print("=" * 74)
     print("文档计数单源核对（AZ47）：文档声明必须等于**本次运行**的实测值")

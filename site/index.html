@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V1 —— 一个可测量的 agent 内核</title>
+<meta name="description" content="V1 是一个可被完整验证的 agent 内核：七段认知循环全部可跑、预算可对账、'变好了'有外部依据。零第三方运行依赖。它不是 AGI。">
+<!--
+  单文件、零外部请求：没有 CDN、没有 webfont、没有图片、没有 JS 依赖。
+  理由与内核的 dependencies = [] 是同一条：如果这一页要联网才能看，
+  那"零依赖"就只是仓库里的一句话。
+  ⛔ 页面上的数字必须等于实跑读数，且被 bench/check_counts.py 核对
+     （本文件在 AZ47 的扫描范围内）。⛔ 不许在本页写"核对 N 处"这类扫描计数：
+     那句话本身会成为被扫描的第 N+1 处（自指，AZ44 那种病）。
+-->
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfbfa;
+    --bg-soft: #f3f3f1;
+    --fg: #1b1b19;
+    --fg-dim: #5d5d57;
+    --fg-faint: #8b8b83;
+    --line: #dededa;
+    --accent: #b3261e;
+    --accent-soft: #fbeceb;
+    --ok: #1f6b47;
+    --ok-soft: #eaf4ee;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413;
+      --bg-soft: #1d1d1b;
+      --fg: #ececea;
+      --fg-dim: #a8a8a1;
+      --fg-faint: #76766f;
+      --line: #33332f;
+      --accent: #ff6b5e;
+      --accent-soft: #2a1c1a;
+      --ok: #7fce9f;
+      --ok-soft: #17241c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+  a:hover { opacity: .72; }
+  code, .mono { font-family: var(--mono); font-size: .88em; }
+  code {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: .08em .34em;
+  }
+
+  /* ── 页头 ─────────────────────────────────────────── */
+  header { padding: 72px 0 8px; }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    margin: 0 0 18px;
+  }
+  h1 {
+    font-size: clamp(34px, 6vw, 52px);
+    line-height: 1.14;
+    letter-spacing: -.02em;
+    margin: 0 0 18px;
+    font-weight: 640;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .lede { font-size: 19px; line-height: 1.64; color: var(--fg-dim); margin: 0 0 26px; max-width: 46em; }
+
+  /* ── 边界声明：放在卖点前面 ───────────────────────── */
+  .boundary {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    background: var(--bg-soft);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 0 0 40px;
+  }
+  .boundary strong { color: var(--accent); }
+  .boundary p { margin: 6px 0 0; font-size: 14.5px; color: var(--fg-dim); }
+
+  /* ── 读数条 ───────────────────────────────────────── */
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 0 12px;
+  }
+  .fig { background: var(--bg); padding: 18px 16px; }
+  .fig .n {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    font-variant-numeric: tabular-nums;
+    display: block;
+    white-space: nowrap;
+  }
+  .fig .n small { font-size: 13px; color: var(--fg-faint); font-weight: 400; }
+  .fig .k { font-size: 12.5px; color: var(--fg-dim); margin-top: 4px; display: block; }
+  .caption { font-size: 13px; color: var(--fg-faint); margin: 0 0 46px; }
+
+  /* ── 通用节 ───────────────────────────────────────── */
+  section { padding: 34px 0; border-top: 1px solid var(--line); }
+  h2 {
+    font-size: 13px;
+    font-family: var(--mono);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+    font-weight: 600;
+    margin: 0 0 18px;
+  }
+  h3 { font-size: 18px; margin: 26px 0 8px; font-weight: 620; }
+  p { margin: 0 0 14px; }
+  .dim { color: var(--fg-dim); }
+
+  /* ── 代码块 ───────────────────────────────────────── */
+  pre {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.85;
+    margin: 0 0 14px;
+  }
+  pre .c { color: var(--fg-faint); }
+  pre .o { color: var(--ok); font-weight: 600; }
+
+  /* ── 表格 ─────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 0 0 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12.5px; letter-spacing: .04em; color: var(--fg-faint); font-weight: 600; }
+  td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ok { color: var(--ok); font-weight: 600; }
+
+  /* ── 七段循环 ─────────────────────────────────────── */
+  .loop { margin: 0 0 8px; }
+  .step { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .step:last-child { border-bottom: 0; }
+  .step .id { font-family: var(--mono); font-size: 13px; color: var(--accent); padding-top: 2px; }
+  .step .d { font-size: 14.5px; color: var(--fg-dim); }
+  .step .d b { color: var(--fg); font-weight: 600; }
+
+  /* ── 清单 ─────────────────────────────────────────── */
+  ol.bounds { margin: 0; padding-left: 22px; }
+  ol.bounds li { margin-bottom: 11px; color: var(--fg-dim); }
+  ol.bounds li b { color: var(--fg); font-weight: 620; }
+
+  /* ── 页脚 ─────────────────────────────────────────── */
+  footer { padding: 40px 0 80px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--fg-faint); }
+  footer p { margin: 0 0 8px; }
+
+  @media (max-width: 560px) {
+    header { padding-top: 48px; }
+    .step { grid-template-columns: 1fr; gap: 2px; }
+    .lede { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <p class="kicker">agent kernel · v1.0.0</p>
+    <h1>一个<em>可测量</em>的 agent 内核</h1>
+    <p class="lede">
+      七段认知循环全部可跑，预算可以逐笔对账，记忆去重由数据库保证，
+      而「它变好了」这句话有<strong>外部</strong>依据 —— 不是自己的感觉。
+      零第三方运行依赖（<code>dependencies = []</code> 由契约钉死）。
+    </p>
+
+    <div class="boundary">
+      <strong>先读这一条：V1 不是 AGI。</strong>
+      <p>
+        它也不声称「无限接近」AGI。它只声称一件事，而且这件事可以被别人在五分钟内证伪：
+        <strong>它是一个能被完整验证的 agent 内核</strong>。
+        下面的数字全部零模型、零网络、零密钥可复现；不能复现的部分，我们标出来说不能。
+      </p>
+    </div>
+  </header>
+
+  <div class="figures">
+    <div class="fig"><span class="n">契约 537/0</span><span class="k">每条断言都配一条撤回态</span></div>
+    <div class="fig"><span class="n">锚层 97 条</span><span class="k">外部判定，含五把假尺子的反证组</span></div>
+    <div class="fig"><span class="n">114 条撤回态</span><span class="k">逐条精确转红，无多红、无异常</span></div>
+    <div class="fig"><span class="n">CI 三档</span><span class="k">3.11 / 3.12 / 3.13，读数行逐字相同</span></div>
+  </div>
+  <p class="caption">
+    口径：契约条数 = <code>check()</code> 的调用次数；「撤回态」= 把实现改坏后，
+    对应断言必须恰好变红 —— 它证明断言不是恒真的。数字的<strong>唯一来源</strong>是
+    一次真实运行的日志，任何文档副本都被脚本核对，手抄不算数。
+  </p>
+
+  <section>
+    <h2>30 秒验证</h2>
+    <pre><span class="c"># 全量门：契约 + 锚层 + 撤回态（零网络、零密钥）</span>
+./run_tests.sh
+
+<span class="c"># 三臂参照点：尺子先在三个已知位置读出三个不同的数</span>
+bash demo/run_demo.sh</pre>
+    <p class="dim">
+      三臂读数：<code>oracle mean=1.0000</code> / <code>null mean=0.0000</code> /
+      <code>partial mean=0.6194</code>，极差全部 <code>0.0000</code>。
+      「变好了」这句话要有立足点，先得让尺子在上界、下界和中段都读出稳定且互不相同的数。
+    </p>
+  </section>
+
+  <section>
+    <h2>七段循环</h2>
+    <div class="loop">
+      <div class="step"><span class="id">perceive</span><span class="d">组装状态：目标 + 工作记忆 + 检索到的语义记忆 + 上一步观测</span></div>
+      <div class="step"><span class="id">think</span><span class="d">判复杂度 → 快通道（1 候选）/ 深通道（≤N 候选）</span></div>
+      <div class="step"><span class="id">plan</span><span class="d"><b>失败必带错误原文重规划，绝不原地重试</b></span></div>
+      <div class="step"><span class="id">gate</span><span class="d">四道运行时守卫：目标劫持 / 工具滥用 / 记忆投毒 / 级联熔断</span></div>
+      <div class="step"><span class="id">foresee</span><span class="d">动作后果预演；低置信预测不进决策链</span></div>
+      <div class="step"><span class="id">act</span><span class="d"><b>分派永不抛异常</b> —— 失败变成一个可记账的结果对象</span></div>
+      <div class="step"><span class="id">observe</span><span class="d">失配沉淀为情景案例 + 语义启发式，而不是被静默吞掉</span></div>
+      <div class="step"><span class="id">persist</span><span class="d">工作 / 情景 / 语义三层记忆各自落位</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>内核做什么 / 不做什么</h2>
+    <table>
+      <thead><tr><th>内核做（这是它的全部）</th><th>内核不做（一律外部）</th></tr></thead>
+      <tbody>
+        <tr><td>预算分配与对账</td><td>写代码、改仓库</td></tr>
+        <tr><td>三层记忆读写与去重</td><td>查资料、爬网页</td></tr>
+        <tr><td>动作预演与失配沉淀</td><td>调用别的 agent / skill / MCP</td></tr>
+        <tr><td>规划、重规划、候选生成</td><td>任何领域知识</td></tr>
+        <tr><td>四道运行时守卫</td><td>任何具体业务逻辑</td></tr>
+        <tr><td>能力注册与分派</td><td class="dim">——</td></tr>
+        <tr><td>交付前自检（判据只从题面派生）</td><td class="dim">——</td></tr>
+        <tr><td><span class="ok">测量与判定</span></td><td class="dim">——</td></tr>
+      </tbody>
+    </table>
+    <p class="dim">
+      外部能力通过 <code>agents.json</code> 接入；<strong>文件不存在时内核照常运行</strong>（外部能力数 = 0）。
+      这是刻意的：内核的可验证性不依赖任何外部系统、网络或密钥。
+    </p>
+    <p class="dim">
+      还有一条刻意的分裂：内核里的测量模块只做<strong>统计</strong>，判定留给外部锚层
+      —— 因为只有外部拿得到真值。<strong>内核不许给自己发分数</strong>，这正是上一代系统栽掉的地方。
+    </p>
+  </section>
+
+  <section>
+    <h2>没做到的事（记录在案）</h2>
+    <ol class="bounds">
+      <li><b>没有持续学习。</b>参数冻结；所谓「学习」全部发生在记忆层（改上下文，不改权重）
+        —— 它只能把已有能力用得更准，<b>不能产生新能力</b>。</li>
+      <li><b>没有真正的世界模型。</b>只有文本层面的动作后果预演，不是物理或因果模型。</li>
+      <li><b>外部判定的适用范围很窄。</b>只覆盖 4 个领域、共 21 道纯函数题，全都是
+        「写一个 Python 函数、结果可被确定性 assert 判定」。多轮交互、有状态环境、
+        需要人类判断、开放式任务 —— <b>一个都没测</b>。说它是「通用 Agent」就是越界。</li>
+      <li><b>相近分数不可分。</b>已证明的只是「好 / 中 / 坏」三档有序；
+        0.60 与 0.65 这种差距是否可分，<b>未证明</b>，且这一点写在证据结构里，不靠声明兜着。</li>
+      <li><b>预算还不等于能力。</b>4 倍预算下逐题分数与 1 倍<b>一字不差</b>
+        —— 预算目前是<b>上限</b>而不是<b>资源</b>。</li>
+      <li><b>没有概念层。</b>记忆指纹是规范化文本的哈希 ⇒ 同一意思、不同说法会被算成两条。</li>
+      <li><b>在小规模题集上，真模型仍有天花板。</b>我们自己那套 4 道难题上，
+        最好的臂稳定在 <b>0.70</b>，四轮负结果之后我们停止在那套题上继续加提示词 /
+        检索臂 —— 因为找不到一个<b>不靠自评</b>的选择器，再多候选也挑不出来。</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>这个仓库凭什么可信</h2>
+    <h3>许撤不许藏</h3>
+    <p class="dim">
+      每条断言都要配一条「撤回态」：把实现改坏，它必须<b>恰好</b>变红。
+      114 条撤回态逐条跑过，全部精确转红、无多红、无异常，改回来仍是全绿。
+      一条不能变红的断言只是装饰。
+    </p>
+    <h3>负结果也入库</h3>
+    <p class="dim">
+      连续多轮实验没有拿到更好读数的，就直接写「本轮作废 / 不认领」，并留下证据目录
+      （探针脚本 + 原始日志 + 指纹清单）。被否证的假设留在文档里，不删。
+    </p>
+    <h3>数字只有一处来源</h3>
+    <p class="dim">
+      文档里的每个总数都由脚本拿<b>本次运行</b>的日志核对；对不上就让整条流水线变红。
+      这类声明曾经漂过三处 —— 手抄失败是结构性的，不是记性问题。
+    </p>
+    <h3>绿勾不是读数</h3>
+    <p class="dim">
+      CI 的「通过」只说明没崩。三档解释器的读数行必须逐字相同才算数 ——
+      我们曾差点把「日志字符数相同」当成证据，而它随环境元数据在变（实测差 1 个字符）。
+    </p>
+  </section>
+
+  <section>
+    <h2>继续读</h2>
+    <p>
+      仓库：<a href="https://github.com/lin-jie22/PyautoL-V1">lin-jie22/PyautoL-V1</a><br>
+      发布：<a href="https://github.com/lin-jie22/PyautoL-V1/releases/tag/v1.0.0">v1.0.0</a>
+      —— 附完整读数与本条 tag 上的 CI 结果<br>
+      设计台账：仓库内 <code>DESIGN.md</code>（含每一轮的负结果与自我修正）<br>
+      运行方式与全部边界：仓库内 <code>README.md</code> 第六、七节
+    </p>
+  </section>
+
+  <footer>
+    <p>MIT License。零第三方运行依赖；本页自身也是零外部请求（无 CDN、无 webfont、无图片）。</p>
+    <p>页面上的每一个数字都由仓库内的脚本核对，不靠这份文案自证。</p>
+  </footer>
+
+</div>
+
+</body>
+</html>

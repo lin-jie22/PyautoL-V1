@@ -701,6 +701,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '                  else _data_path(Path("bench") / "tasks" / "coding_small.jsonl"))',
      '    suite_path = (_data_path(Path(args.suite).expanduser()) if args.suite\n'
      '                  else _data_path(Path("bench") / "tasks" / "coding_small.jsonl"))'),
+    # ── AZ49（落地页零外部请求，第六十一轮）：页面上的承诺必须能被撤掉 ─────────
+    # 一条断言里束了三件事（页面存在 + 边界句在 + 没有任何会发请求的标签），
+    # 所以两条撤回态：一条证明"外链检测"有牙，一条证明"边界句"是被锚的。
+    # ① 往页面里塞一个外部图片 ⇒ 只有 AZ49 红。
+    ("AZ49", "site/index.html",
+     "\n  <footer>",
+     "\n  <img src=\"https://cdn.example/x.png\" alt=\"\">\n  <footer>"),
+    # ② 把「不是 AGI」改成一句吹的 ⇒ 边界句判据假 ⇒ 只有 AZ49 红。
+    #    ⚠️ 这条锚的不是"页面好看"，是这个仓库最不许丢的一句话。
+    ("AZ49", "site/index.html",
+     "<strong>先读这一条：V1 不是 AGI。</strong>",
+     "<strong>先读这一条：V1 很强。</strong>"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

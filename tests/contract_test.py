@@ -6990,6 +6990,53 @@ check(RS, "AZ48 ★D-a 默认数据路径：`run.py:data_path()` 必须**当前�
       f"两处都有={_az48_both} 仅包目录={_az48_pkgonly} 都没有={_az48_none} "
       f"默认站点={_az48_def_sites} 显式站点={_az48_expl} 实测={_az48_seen}")
 
+# ── AZ49（第六十一轮）：落地页必须真的**零外部请求** ────────────────────────
+# 为什么这需要一条断言：`site/index.html` 上写着"本页自身也是零外部请求"。
+# 一个声称 `dependencies = []` 的项目，落地页如果去拉 CDN 字体，那句话就只是文案。
+# ⛔ 而"我看过一眼没有外链"不是判据 —— 正是这个仓库反复吃亏的那类判断
+#    （"仓库里永远看不到的缺陷"：PEP 701 / 安装形态 / unzip 中文名）。
+# ⚠️ 检测器**自己也要被反证**：拿一个故意坏掉的片段喂给它，它必须报出来
+#    —— 否则这就是一段死代码，永远不会红（第五十四轮"五把假尺子"的同一条纪律）。
+_az49_page = _az_Path(__file__).resolve().parent.parent / "site" / "index.html"
+_az49_txt = _az49_page.read_text(encoding="utf-8") if _az49_page.exists() else ""
+
+# 会让浏览器**发起网络请求**的东西（<a href> 不算：点了才走，且是人的动作）。
+_az49_fetch = [
+    ("<script src>", r"<script[^>]*\bsrc\s*="),
+    ("<link href>", r"<link\b[^>]*\bhref\s*="),
+    ("<img>", r"<img\b"),
+    ("<iframe>", r"<iframe\b"),
+    ("srcset", r"\bsrcset\s*="),
+    ("<source>", r"<source\b"),
+    ("<video>/<audio>", r"<(?:video|audio)\b"),
+    ("<embed>/<object>", r"<(?:embed|object)\b"),
+    ("@import", r"@import\b"),
+    ("css url()", r"\burl\(\s*['\"]?(?:https?:)?//"),
+]
+_az49_hits = [name for name, rx in _az49_fetch if re.search(rx, _az49_txt, re.I)]
+
+# 反证：同一套规则喂一个**故意坏掉**的片段，必须命中至少三种形态。
+_az49_bad = ('<link rel="stylesheet" href="https://cdn.example/x.css">'
+             '<img src="//cdn.example/a.png">'
+             '<script src="https://cdn.example/x.js"></script>')
+_az49_bad_hits = [name for name, rx in _az49_fetch if re.search(rx, _az49_bad, re.I)]
+
+check(RS, "AZ49 落地页 `site/index.html` 必须存在、且**零外部请求**（无 CDN / webfont /\n"
+          "          图片 / 外部脚本；<a href> 不算 —— 那要人点了才走）。\n"
+          "          页面上写着这条承诺，所以它必须是被断言的，不是被声明的。\n"
+          "          ⚠️ 检测器自带反证：同一套规则喂一个坏片段，必须命中 ≥3 种形态\n"
+          "          （否则规则是死代码，永远不会红）。\n"
+          "          ⚠️ 边界句锚的是**边界块本身**（`先读这一条：V1 不是 AGI`），\n"
+          "          不是裸的 `不是 AGI`：后者在 meta 描述里也有一份，\n"
+          "          只改边界块那处时判据仍为真 ⇒ 撤回态不会红（当场发现并收紧）。\n"
+          "          撤回语义：页面里加一个 `<img src=...>` / 去掉边界块 ⇒ 必须红。",
+      bool(_az49_txt)
+      and "先读这一条：V1 不是 AGI" in _az49_txt
+      and not _az49_hits
+      and len(_az49_bad_hits) >= 3,
+      f"页面={bool(_az49_txt)} 边界块={'先读这一条：V1 不是 AGI' in _az49_txt} "
+      f"外链命中={_az49_hits or '无'} 反证命中={_az49_bad_hits}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

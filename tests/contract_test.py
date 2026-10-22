@@ -6862,22 +6862,29 @@ if str(_az44_bn) not in sys.path:
 import withdraw_check as _az44_wc                              # noqa: E402
 _az44_n = len(_az44_wc.CASES)
 _az44_claim = re.findall(r"(\d+)\s*条撤回态", _az44_head)
+# ★第五十九轮（AZ47 落地）：**契约条数的副本也从判据里撤掉**。
+#   上一版留着 `and "535" in _az44_head` —— 那是本契约亲手留下的最后一处手抄：
+#   加一条断言就把 535 变成 536，于是"必须改判据里那个数"，而判据是判据，
+#   改判据来迎合实现正是这个项目最不许做的事（AZ44 的自锁漂移同型复发）。
+#   ⇒ 数值核对整体下移到 runner（`bench/check_counts.py`），因为只有**被测集合之外**
+#     的位置能同时看见"文档声明"与"本次运行实测"（契约条数自己也在被核对之列）。
+#   本契约从此只管**结构**：节在、三入口在、差异表在、边界句在、撤回态数一致。
 check(RS, "AZ44 ★R-d 产品摘要块：README 顶部必须含 ①「产品摘要」节、\n"
           "          ②三个实测入口命令（quickstart / run_demo / run_tests）、\n"
           "          ③Inspect AI 差异表（测量有效性定位）、④诚实边界句\n"
-          "          （⛔ 不许出现 AGI 声称）。计数必须与实测一致\n"
-          "          （535 契约 / 97 锚层 / 撤回态条目数由 len(withdraw_check.CASES) 现算）。",
+          "          （⛔ 不许出现 AGI 声称）。撤回态条数必须与实测一致\n"
+          "          （由 len(withdraw_check.CASES) 现算；契约/锚层条数的副本\n"
+          "          不在本断言里 —— 见 `bench/check_counts.py`，AZ47）。",
       "产品摘要" in _az44_head
       and "./quickstart.sh" in _az44_head
       and "run_demo.sh" in _az44_head
       and "./run_tests.sh" in _az44_head
       and "Inspect AI" in _az44_head and "测量有效性" in _az44_head
       and "不是 AGI" in _az44_head
-      and "535" in _az44_head
       and bool(_az44_claim) and all(int(x) == _az44_n for x in _az44_claim),
       f"摘要={'产品摘要' in _az44_head} 三入口={all(x in _az44_head for x in ('./quickstart.sh', 'run_demo.sh', './run_tests.sh'))} "
       f"差异表={'Inspect AI' in _az44_head} 边界={'不是 AGI' in _az44_head} "
-      f"计数=535:{'535' in _az44_head} 撤回态声明={_az44_claim} 真值={_az44_n}")
+      f"撤回态声明={_az44_claim} 真值={_az44_n}")
 
 # ── AZ46（§17-7v-b/c/d，第五十轮）：补救通道加的那一句中文 ───────────────────
 _az46_pl = _az_Path(__file__).resolve().parent.parent / "mw" / "planner.py"
@@ -6910,6 +6917,78 @@ check(RS, "AZ46 ★7v-b/c/d 补救通道：mw/planner.py 必须定义唯一常�
       f"体内拼接={_az46_body.count('prompt += _ANSWER_FIDELITY')} "
       f"定义={_az46_src.count('_ANSWER_FIDELITY =')} 字数={len(_az46_val)} "
       f"序位={_az46_dis}<{_az46_end}")
+
+# ── AZ48（§19 D-a 的回归锚，第五十九轮）：默认数据路径**当前目录优先** ────────
+# 为什么补这条：第五十八轮修了"装进 site-packages 之后，站在 checkout 里跑
+# `v1 --bench` 却报找不到 bench/"这个真缺陷，但当时**没有锚**（DESIGN §21.2 自认）。
+# 没有锚的修复等于没有防线：下次谁把 `_data_path` 改回"包目录优先"，一切都还是绿的
+# —— 而这个缺陷在仓库里跑测试**永远复现不了**（只有安装形态才会出现）。
+# ⚠️ 提取到模块级才测得了：原先是 `main()` 里的闭包（这正是它当初补不上锚的原因）。
+import os as _az48_os                                                  # noqa: E402
+import tempfile as _az48_tf                                            # noqa: E402
+import run as _az48_run                                                # noqa: E402
+
+_az48_rel = _az_Path("bench") / "tasks" / "t.jsonl"
+_az48_both = _az48_pkgonly = _az48_none = False
+_az48_seen = []
+_az48_saved = _az48_os.getcwd()
+try:
+    # 形态 A：当前目录**与**包目录都有 ⇒ 必须取当前目录那份（判别性所在：
+    #         兜底优先的实现会返回包目录那份 ⇒ 这条当场红）。
+    with _az48_tf.TemporaryDirectory() as _td:
+        _t = _az_Path(_td)
+        _pkg = _t / "pkg"; (_pkg / "bench" / "tasks").mkdir(parents=True)
+        (_pkg / _az48_rel).write_text("pkg", encoding="utf-8")
+        _cwd = _t / "cwd"; (_cwd / "bench" / "tasks").mkdir(parents=True)
+        (_cwd / _az48_rel).write_text("cwd", encoding="utf-8")
+        _az48_os.chdir(_cwd)
+        _got = _az48_run.data_path(_az48_rel, root=_pkg)
+        _az48_both = (_got.resolve() == (_az_Path.cwd() / _az48_rel).resolve()
+                      and _got.read_text(encoding="utf-8") == "cwd")
+        _az48_seen.append(f"两处都有⇒读到{_got.read_text(encoding='utf-8')}")
+    # 形态 B：只有包目录有 ⇒ 必须退回包目录（修之前的行为不许丢）。
+    with _az48_tf.TemporaryDirectory() as _td:
+        _t = _az_Path(_td)
+        _pkg = _t / "pkg"; (_pkg / "bench" / "tasks").mkdir(parents=True)
+        (_pkg / _az48_rel).write_text("pkg", encoding="utf-8")
+        _cwd = _t / "cwd"; _cwd.mkdir()
+        _az48_os.chdir(_cwd)
+        _got = _az48_run.data_path(_az48_rel, root=_pkg)
+        _az48_pkgonly = (_got.resolve() == (_pkg / _az48_rel).resolve()
+                         and _got.read_text(encoding="utf-8") == "pkg")
+        _az48_seen.append(f"仅包目录⇒读到{_got.read_text(encoding='utf-8')}")
+    # 形态 C：两处都没有 ⇒ 返回**包目录**下那个不存在的路径（不造假文件、
+    #         也不返回当前目录的假路径 —— 否则调用方的"找不到"会指错地方）。
+    with _az48_tf.TemporaryDirectory() as _td:
+        _t = _az_Path(_td)
+        _pkg = _t / "pkg"; _pkg.mkdir()
+        _cwd = _t / "cwd"; _cwd.mkdir()
+        _az48_os.chdir(_cwd)
+        _got = _az48_run.data_path(_az48_rel, root=_pkg)
+        _az48_none = (_got.resolve() == (_pkg / _az48_rel).resolve() and not _got.exists())
+        _az48_seen.append(f"都没有⇒exists={_got.exists()}")
+finally:
+    _az48_os.chdir(_az48_saved)
+
+# 显式路径**不进兜底**：用户给的 `--suite` / `--scorer` 一律原样解析 ——
+# 找不到就是找不到。悄悄换成别处的同名文件是比报错更坏的假成功（D-a 的边界）。
+_az48_def_sites = re.findall(
+    r'else _data_path\(Path\("bench"\) / "(\w+)" / "([\w.]+)"\)\)', _AE_RUN)
+_az48_expl = re.findall(
+    r'(suite|scorer)_path = \(Path\(args\.\1\)\.expanduser\(\) if args\.\1', _AE_RUN)
+check(RS, "AZ48 ★D-a 默认数据路径：`run.py:data_path()` 必须**当前目录优先、包目录兜底**\n"
+          "          （安装形态实测：`pip install .` 后包目录落在 site-packages，\n"
+          "          只按包目录找会「明明脚下有 bench/ 却报找不到」）。\n"
+          "          ⚠️ 判别性来自**两处都有**那种形态：兜底优先的实现会取包目录那份；\n"
+          "          只有一处有的两种形态，两个实现都一样 —— 只测它们等于没测。\n"
+          "          ⛔ `--suite` / `--scorer` 显式值**不许**走兜底（悄悄换文件 = 假成功）。\n"
+          "          撤回语义：把优先序倒过来 / 删掉兜底 / 让显式值也进兜底 ⇒ 必须红。",
+      _az48_both and _az48_pkgonly and _az48_none
+      and _az48_def_sites == [("tasks", "coding_small.jsonl"),
+                              ("scorers", "code_exec.py")]
+      and _az48_expl == ["suite", "scorer"],
+      f"两处都有={_az48_both} 仅包目录={_az48_pkgonly} 都没有={_az48_none} "
+      f"默认站点={_az48_def_sites} 显式站点={_az48_expl} 实测={_az48_seen}")
 
 print()
 print("=" * 74)

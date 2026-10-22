@@ -1,0 +1,1486 @@
+==========================================================================
+A. 配置单一源（V5 的'同一事实多处声明'正面修复）
+==========================================================================
+  ✅ A1 代码里出现的 V1_* 环境变量全部在 ENV_KEYS 登记  (未登记=[] 多余=[])
+  ✅ A2 ENV_KEYS 无重复
+  ✅ A3 隔离目录生效（测试不碰生产）  (/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_contract_c_536rwe/state)
+  ✅ A4 三个状态目录均来自 env 覆盖
+
+==========================================================================
+B. 预算与账本（2026: 能力 = 预算的函数；算完就停，如实报告）
+==========================================================================
+  ✅ B1 Budget 不可变（scaled 返回新对象）
+  ✅ B2 scaled 非法倍数被拒
+  ✅ B3 步数耗尽抛 BudgetExhausted
+  ✅ B4 异常带 kind 字段（可分类统计）
+  ✅ B5 llm 配额独立计数
+  ✅ B6 snapshot 是对账唯一口径  ({'tag': '1x', 'steps': '1/5', 'llm_calls': '0/5', 'cand_spent': 3, 'cand_width': 1, 'wall_s': 0.0, 'wall_limit_s': 9})
+  ✅ B7 candidates 语义明确：累计花费与单次宽度分开，不给假分母  (['cand_spent', 'cand_width', 'llm_calls', 'steps', 'tag', 'wall_limit_s', 'wall_s'])
+
+==========================================================================
+C. 三层记忆（V5 的 39× 重复 ⇒ DB 层去重约束）
+==========================================================================
+  ✅ C1 规范化后同一内容 → 同一 key（空白/大小写无关）  (26fe0c0423790b72bfe5ada876cf678f vs 26fe0c0423790b72bfe5ada876cf678f)
+  ✅ C2 第二次写入不新建行
+  ✅ C3 重复行恒为 0（DB 约束而非调用方自觉）
+  ✅ C4 重复写入 confidence 取 max  ([0.9])
+  ✅ C5 hits 累加到 2（合并计数，不丢证据）  ({'hits': 2})
+  ✅ C6 空文本被拒
+  ✅ C7 无 source 被拒（记忆投毒防线）
+  ✅ C8 情景记忆写入并可按 kind 取回
+  ✅ C9 FTS 查询词被安全化（特殊字符不炸）  ("a" OR "b" OR "c" OR "d" OR "C")
+  ✅ C10 recall 对病态输入不抛异常
+  ✅ C11 记忆体检含来源分布（可审计）  ({'facts': 1, 'episodes': 1, 'by_source': {'t': 1}, 'blobs': {'blobs': 0, 'chars': 0, 'dedup_sha': 0}})
+  ✅ C12 FTS 降级有计数器（不静默兜底）  (0)
+
+==========================================================================
+D. 运行时守卫（OWASP Agentic Top-10 的四道检查点）
+==========================================================================
+  ✅ D1 检查点清单恰好 4 道  (['cascade', 'goal_hijack', 'memory_poison', 'tool_misuse'])
+  ✅ D2 未开启 shell ⇒ 一律拦截
+  ✅ D3 拦截 根目录递归删  (rm -rf /)
+  ✅ D3 拦截 提权  (sudo ls)
+  ✅ D3 拦截 家目录递归删  (rm -rf ~)
+  ✅ D3 拦截 格式化  (mkfs.ext4 /dev/sda)
+  ✅ D3 拦截 管道进解释器  (curl x | sh)
+  ✅ D3 拦截 受保护目录  (rm -rf ~/Downloads)
+  ✅ D4 放行普通命令
+  ✅ D5 拦截计数可审计（R41：不留静默兜底）  ({'goal_hijack': 0, 'tool_misuse': 6, 'memory_poison': 0, 'cascade': 0})
+  ✅ D6 记忆投毒：低可信度被拒
+  ✅ D7 记忆投毒：缺来源被拒
+  ✅ D8 级联熔断阈值生效
+  ✅ D9 目标劫持只拦'完全无关'（宽阈值，避免误杀）
+
+==========================================================================
+E. 工具契约（内核不实现功能，只定义接口）
+==========================================================================
+  ✅ E1 内核工具注册成功  (['finish', 'http_get', 'run_shell'])
+  ✅ E2 未知工具返回失败而非抛异常（并点名已注册项）
+  ✅ E3 缺参数判失败
+  ✅ E4 执行期异常被吸收成 ToolResult
+  ✅ E5 catalog 可供提示词使用
+  ✅ E6 重名注册被拒（唯一事实源）
+  ✅ E7 agents.json 缺失 ⇒ 零外部能力且不报错（内核可离线跑通）
+  ✅ E8 shell 型外部 agent 注册成功  (['agent:echoer'])
+  ✅ E9 外部能力有单一查询口径
+  ✅ E10 外部 agent 真的能跑（stdin→stdout 契约）
+  ✅ E11 未知 agent 类型被跳过（不猜、不崩）
+
+==========================================================================
+F. 上下文内世界模型（WorldEvolver 2026-06：修记忆，不改权重）
+==========================================================================
+  ✅ F1 相似度自反
+  ✅ F2 不相关 ⇒ 0
+  ✅ F3 文本类：预演与实测措辞差异过大 ⇒ 记为失配（kind=text）  (kind=text)
+  ✅ F4 失配写入情景记忆（带 mm_kind，事后能分辨是哪一种失配）  (['mismatch'])
+  ✅ F5 ★纪律：文本类失配**不**写语义记忆 —— 措辞差异不是「哪里容易看错」，把它写成持久规则是从测量噪声里造知识（缺陷 #12 的 9/10 条噪声就是这么来的）  ({})
+  ✅ F5b 成败类失配 ⇒ 提炼成规则并进语义记忆（这一条才可迁移）  (kind=outcome facts=['动作 [写文件]：我预演「会成功」，实际失败。实测：[工具失败] OSError 权限不足'])
+  ✅ F5c 规则文本落在**动作层**（「我预演 X，实际 Y」），而不是「不可假设其结果等同于「某段话」」这种字面描述 —— 后者下一轮读到无法据以改变任何动作  (['动作 [写文件]：我预演「会成功」，实际失败。实测：[工具失败] OSError 权限不足'])
+  ✅ F6 一致的预测不沉淀（不制造噪声）
+  ✅ F7 选择性前瞻的**唯一**门槛是 `Prediction.trustworthy`（单一声明）：曾有一个 `foresight_filter()` 批量封装，生产路径零调用、只有测试在调，已按「装饰 API」删除  (0.9→True 0.1→False)
+  ✅ F8 抑制计数可对账（初值 0；只由内核在**真正跳过**时累加，不是由某个没人调用的过滤器累加）  ({'predictions': 0, 'scored': 1, 'hits': 0, 'hit_rate': 0.0, 'confusion': {'ok_ok': 0, 'ok_fail': 1, 'fail_ok': 0, 'fail_fail': 0}, 'unscored': 0, 'mismatches': 2, 'mismatches_outcome': 1, 'mismatches_text': 1, 'text_compared': 2, 'suppressed': 0, 'suppress_rate': 0.0, 'rewards_recorded': 0, 'rewards_rejected_source': 0, 'rewards_rejected_missing': 0, 'rewards_seen': 0, 'rewards_skipped_self': 0})
+  ✅ F9 零 LLM 成本也能预演（检索式复用）
+
+==========================================================================
+G. 动态规划（失败必带错误原文重规划，不原地重试）
+==========================================================================
+  ✅ G1 规划器拒绝发明工具（白名单硬约束）  (degraded=1)
+  ✅ G2 降级**仍然产出合法动作**（降级≠瘫痪）  (['finish'])
+  ✅ G3 不可解析 ⇒ 显式标记 degraded（不许静默）
+  ✅ G4 候选去重（同工具同参数只留一个）
+  ✅ G5 ACT：长目标判为复杂
+  ✅ G6 ACT：有失败历史判为复杂
+  ✅ G7 ACT：简单目标走快通道
+  ✅ G8 replan 把失败原因写进 note（不原地打转）  (因「finish」失败而重规划)
+  ✅ G9 「模型不会写 JSON」计入 json_fail，且**不计入** no_tool_fit（两种病分开）  (json_fail=1 no_tool_fit=0 empty=0)
+  ✅ G10 「工具目录缺能力」被单独计数，且坏工具名被留下（失败可归因）  (no_tool_fit=1 bad=['不存在的工具'])
+  ✅ G11 分项之和 == degraded（否则说明有降级走了旁路、漏记）  ({'calls': 1, 'degraded': 1, 'max_tokens': 2048, 'degrade_rate': 1.0, 'json_fail': 0, 'truncated': 0, 'no_tool_fit': 1, 'empty_plan': 0, 'answer_retry_ok': 0, 'answer_retry_fail': 0, 'last_bad_tools': ['不存在的工具'], 'cause_balances': True})
+  ✅ G12 finish 的工具描述必须说清「答案放进 answer」（模型只看得到这段文字 —— 实测就因为它太含糊而填了 tool=None）  (**把完整答案原文放进 answer** 并结束本次任务（目标只是要一段代码/一个结论时，就用它，不要为用工具而用工具）)
+  ✅ G13 「响应被截断」单独计入 truncated（不与「不会写 JSON」混同，两者一个调 max_tokens 一个改提示词）  (truncated=1 json_fail=0 balances=True)
+  ✅ G14 规划器的 max_tokens 从 config 注入（不许在调用点写死）  (2048)
+
+==========================================================================
+H. 测量基座（V1 存在的第一理由）
+==========================================================================
+  ✅ H1 repeat 需要 n≥2（单次无法估噪声）
+  ✅ H2 确定性函数 ⇒ 极差 0
+  ✅ H3 summarize 给出 mean/std/lo/hi  (base@1x n=3 mean=0.7000 std=0.0163 [0.6800,0.7200] 极差=0.0400)
+  ✅ H4 显著超过噪声带 ⇒ 判定成立  (成立：候选最差 0.9000 > 门槛 0.7500（增益 +0.2233，噪声下限 0.0500）)
+  ✅ H5 落在噪声带内 ⇒ 判定不成立（V5 的核心病灶）  (不成立：候选最差 0.7000 ≤ 基线 0.7000 + 噪声 0.0400 = 0.7400 ⇒ 落在噪声带内)
+  ✅ H6 跨预算档比较被拒（2026: 能力是预算的曲线）  (预算档不同（1x vs 4x） ⇒ 不可比，需在同一档重测)
+  ✅ H7 噪声下限取最保守口径（最大极差）
+  ✅ H8 汇总行可被外部 runner 正则解析（V5 §134/§135 的坑）  (PASS=7  FAIL=0)
+  ✅ H9 ci95 在小样本下不越界
+
+==========================================================================
+I. 内核端到端（离线、确定性、可重复）
+==========================================================================
+11:55:28 ▶ 任务开始: 分析并清理 python 截断问题的临时文件，然后总结根因与修复方案，最后把结论写回记忆
+11:55:28   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=local | 外部能力 1 个
+11:55:28   [1] 通道=深 候选=2
+11:55:28       ✋ [guard:tool_misuse] 拦截 —— shell 未开启（需显式 --allow-shell）
+11:55:28       ↳ recall ok=True 先在记忆里找已有的 python 截断相关结论
+11:55:28   [2] 通道=深 候选=1
+11:55:28       ↳ note ok=True 把本轮发现写回语义记忆
+11:55:28       🔁 失配[outcome] note({'text': 'python 写文件时应显式指定 encoding=utf-8，否则默认编码会在非 ASC 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+11:55:28       📎 回看 b#2 因由=mismatch 窗=whole 48/48 字
+11:55:28   [3] 通道=深 候选=1
+11:55:28       ↳ finish ok=True 给出结论并收尾
+11:55:28   ✅ 收尾: 根因是未指定 encoding 导致默认编码静默截断；修复：所有 open() 显式 encoding='utf-8'。
+11:55:28 ■ done | steps=3 | guard_blocked=1 | 预演=3 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) | 价值判定=3 否决=0(-) | 通量[perceive>memory=1.57 memory>reason=0.8 reason>act=0.75] 回流=1.0 | 语义记忆=2 | 回看=1次/48字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=1项(非空)
+11:55:28 ▶ 任务开始: 分析并清理 python 截断问题的临时文件，然后总结根因与修复方案，最后把结论写回记忆
+11:55:28   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=local | 外部能力 1 个
+11:55:28   [1] 通道=深 候选=2
+11:55:28       ✋ [guard:tool_misuse] 拦截 —— shell 未开启（需显式 --allow-shell）
+11:55:28       ↳ recall ok=True 先在记忆里找已有的 python 截断相关结论
+11:55:28   [2] 通道=深 候选=1
+11:55:28       ↳ note ok=True 把本轮发现写回语义记忆
+11:55:28       🔁 失配[outcome] note({'text': 'python 写文件时应显式指定 encoding=utf-8，否则默认编码会在非 ASC 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+11:55:28       📎 回看 b#5 因由=mismatch 窗=whole 56/56 字
+11:55:28   [3] 通道=深 候选=1
+11:55:28       ↳ finish ok=True 给出结论并收尾
+11:55:28   ✅ 收尾: 根因是未指定 encoding 导致默认编码静默截断；修复：所有 open() 显式 encoding='utf-8'。
+11:55:28 ■ done | steps=3 | guard_blocked=1 | 预演=3 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) | 价值判定=3 否决=0(-) | 通量[perceive>memory=1.382 memory>reason=0.6 reason>act=0.75] 回流=1.0 | 语义记忆=3 | 回看=1次/56字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=1项(非空)
+  ✅ I1 端到端达成 done  (done)
+  ✅ I2 守卫真的拦下了破坏性动作（不是摆设）  ({'blocks': {'goal_hijack': 0, 'tool_misuse': 1, 'memory_poison': 0, 'cascade': 0}, 'total': 1})
+  ✅ I3 拦截有正向信号进日志（R41）
+  ✅ I4 记忆零重复行
+  ✅ I5 预算账本落在上限内  ({'tag': '1x', 'steps': '3/12', 'llm_calls': '6/24', 'cand_spent': 4, 'cand_width': 3, 'wall_s': 0.07, 'wall_limit_s': 120.0})
+  ✅ I5b candidates 维度被真实消费（不是装饰字段）  (4)
+  ✅ I6 世界模型产出了失配沉淀  ({'predictions': 3, 'scored': 3, 'hits': 2, 'hit_rate': 0.667, 'confusion': {'ok_ok': 2, 'ok_fail': 0, 'fail_ok': 1, 'fail_fail': 0}, 'unscored': 0, 'mismatches': 1, 'mismatches_outcome': 1, 'mismatches_text': 0, 'text_compared': 0, 'suppressed': 0, 'suppress_rate': 0.0, 'rewards_recorded': 0, 'rewards_rejected_source': 0, 'rewards_rejected_missing': 0, 'rewards_seen': 0, 'rewards_skipped_self': 0})
+  ✅ I7 结论写回语义记忆  ({'facts': 2, 'episodes': 4, 'by_source': {'selftest': 1, 'worldmodel': 1}, 'blobs': {'blobs': 3, 'chars': 142, 'dedup_sha': 0}})
+  ✅ I8 确定性：同一输入两次跑读数一致（无 flaky）  (3/12 vs 3/12 | wall 0.07 vs 0.07 (墙钟不计入 —— 它天然不确定，拿它比确定性是测试自己的错))
+  ✅ I9 内核不依赖网络与密钥（离线跑通）
+11:55:28 ▶ 任务开始: 分析并清理 python 截断问题的临时文件，然后总结根因与修复方案，最后把结论写回记忆
+11:55:28   budget[tight] steps=0/1 llm=0/1 cand=0(宽1) wall=0.01s/1.2s | llm_kind=local | 外部能力 1 个
+11:55:28   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:28   📦 收尾交付 247 字符（来源=收尾调用）
+11:55:28 ■ closed | steps=0 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=0 否决=0(-) | 通量[perceive>memory=n/a memory>reason=0.333 reason>act=n/a] 回流=n/a | 语义记忆=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空) | 收尾=1次(步1/时0 来源收尾调用:1 247字)
+  ✅ I10 预算将尽 ⇒ 状态如实（非 done）且说明是预算切断，不假装完成  (closed / closing_reserve：预算不足，交付已有材料)
+  ✅ I11 预算耗尽带有可读原因  (closing_reserve：预算不足，交付已有材料)
+11:55:28 ▶ 任务开始: 分析并清理 python 截断问题的临时文件，然后总结根因与修复方案，最后把结论写回记忆
+11:55:28   budget[noreserve] steps=0/1 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=local | 外部能力 1 个
+11:55:28   [1] 通道=深 候选=2
+11:55:28       ✋ [guard:tool_misuse] 拦截 —— shell 未开启（需显式 --allow-shell）
+11:55:28       ↳ recall ok=True 先在记忆里找已有的 python 截断相关结论
+11:55:28   ⏳ 预算耗尽 [steps]：已用 1 / 上限 1
+11:55:28 ■ budget_exhausted | steps=1 | guard_blocked=1 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=2.174 memory>reason=n/a reason>act=0.5] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空)
+  ✅ I10b 关掉收尾余量 ⇒ 纯预算耗尽路径仍可达（budget_exhausted 未被藏起来）  (status=budget_exhausted)
+
+==========================================================================
+J. 结构反证（撤掉实现 ⇒ 这些断言必然判红）
+==========================================================================
+  ✅ J1 去重由 SQL 约束保证（ON CONFLICT 存在）
+  ✅ J2 去重键来自规范化指纹（fingerprint 被真正使用）
+  ✅ J3 LLM 计数只有一处（_LedgeredLLM；AST 计真实调用，不被 docstring 骗）  ([225])
+  ✅ J4 每个被拦候选都 continue（不会带着被拒动作继续执行）
+  ✅ J5 熔断在循环顶部检查（AST 行号先于任何 dispatch）  (cascade@[555] dispatch@[720])
+  ✅ J6 主循环只有一个 while（不叠多套循环）  ([543])
+  ✅ J6b 那唯一的 while 确实在 run() 里（不是挪到别处凑数）
+  ✅ J7 guard 的四道检查点在内核里全部被调用
+  ✅ J8 预算耗尽被显式捕获成状态（不是靠异常崩掉）
+  ✅ J9 内核无裸 except:（必须指明异常类型）  ([])
+  ✅ J10 没有任何 except 处理体是单独的 pass（静默兜底 = 缺陷）  ([])
+  ✅ J11 内核异常处理数量 > 0（否则 J9/J10 是空判据、零判别力）  (handlers=43)
+
+==========================================================================
+K. LLM 构造路径（★实测事故：静默降级为桩 + 假绿）
+==========================================================================
+  ✅ K1 配置了真模型 ⇒ 内核实际通道必须是 http（不许静默降级为桩）  (llm_kind='http'（撤回 llm or StubLLM() 的修复即判红）)
+  ✅ K2 Core 确实走了 build_llm 这个唯一构造入口（spy 被调用 ≥1 次）  (build_llm 调用次数=1)
+  ✅ K3 反证：显式传桩 ⇒ llm_kind=stub（证明 K1 的探针不是恒真）  (llm_kind='stub')
+  ✅ K6 认不出的模型对象 ⇒ llm_kind='local'（二值化会把它谎报成 http）  (local)
+11:55:28 ▶ 任务开始: 一个很短的离线目标
+11:55:28   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=stub | 外部能力 1 个
+11:55:28   ⚠️ 配置了真模型（V1_LLM_API_KEY 已设）但内核使用离线桩 ⇒ 本次读数**不得**当作模型能力
+11:55:28   ⚠️ 合法 JSON 但没有可用候选（⇒ 改提示词）
+11:55:28   [1] 通道=快 候选=1
+11:55:28       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+11:55:28   ⚠️ 合法 JSON 但没有可用候选（⇒ 改提示词）
+11:55:28   [2] 通道=快 候选=1
+11:55:28       ↳ finish ok=True 信息不足，直接给出当前最优答复
+11:55:28   ✅ 收尾: （规划降级：模型输出不可解析，未能形成有效计划）
+11:55:28 ■ done | steps=2 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.931 memory>reason=0.143 reason>act=1.0] 回流=1.0 | 语义记忆=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=1项(非空)
+  ✅ K4 「配置了真模型却用桩」必须在运行日志里**显式**喊出来（静默降级=缺陷）  (告警行数=1)
+  ✅ K5 内核没有「只 import 不使用」的死导入（★实测：build_llm 曾被导入却从不调用，直接导致内核全程走桩）  ([])
+
+==========================================================================
+L. 外部能力通道（用户要求的核心形态：能力一律外部接入）
+==========================================================================
+  ✅ L1 agents.json 里的外部能力被注册为 agent:<name>  (['agent:echo'])
+  ✅ L2 外部 agent **端到端**可调用（stdin 进 / stdout 出），结果可读  ({"agent": "echo", "seen": 5}
+)
+  ✅ L3 external_agent_names 与注册表一致（外部能力只有一个查询口径）  (['agent:echo'])
+  ✅ L4 agents.json 不存在 ⇒ 空列表而非报错（内核零外部能力也能跑通）
+  ✅ L5 外部 agent 起不来 ⇒ 被 dispatch 吸收成 ToolResult（永不抛异常）  (agent:ghost 执行异常 FileNotFoundError: [Errno 2] No such file or directory: '/nonex)
+  ✅ L6 内核的 external_agents 与**注册表**一致（以注册表为准，不是声明）  (['agent:code_agent', 'agent:echo'] vs ['agent:code_agent', 'agent:echo'])
+  ✅ L7 核心工具重复注册不崩（「保证在册」语义 ⇒ Core(tools=…) 这个注入点可用）
+  ✅ L8 同名**不同定义**仍然必须炸（放松「保证在册」没有削弱唯一事实源）
+  ✅ L9 外部 agent 的相对路径以 agents.json 为锚（不随调用方 cwd 漂移、不静默失效）  (REL_OK:hi
+)
+
+==========================================================================
+M. 线上协议（模型输出 → 解析）：用 JSON 传代码的固有毛病
+==========================================================================
+  ✅ M1 ★真实事故样本：代码里的裸换行塞进 JSON 字符串 ⇒ 仍必须解析出来  ({'candidates': [{'intent': '直接编写代码实现解析逻辑', 'tool': 'finish', 'args': {'answer': "def parse)
+  ✅ M2 解析出的代码**原文完整**（换行没被吃掉 —— 那会静默改坏候选）  ("{'candidates': [{'intent': '直接编写代码实现解析逻辑', 'tool': 'finish',")
+  ✅ M3 放宽解析必须留痕：本次计入 lenient（不许静默兜底）  ({'exact': 19, 'lenient': 1, 'failed': 3})
+  ✅ M4 真的坏输入仍然判 failed（宽松 ≠ 什么都收）  ({'exact': 19, 'lenient': 1, 'failed': 4})
+  ✅ M5 干净 JSON 必须走 exact 路径（先严后宽，顺序不能反）  ({'exact': 20, 'lenient': 1, 'failed': 4})
+
+==========================================================================
+N. 双通道协议（内容不进 JSON）—— 一个下午三种坏法的根治
+==========================================================================
+  ✅ N1 无分隔符 ⇒ 载荷为空串（老格式不报错，向后兼容）
+  ✅ N2 载荷**逐字**保留：裸换行 / 单引号 / 反斜杠正则一律不动  ("def parse_duration(s):\n    units = {'s':")
+  ✅ N3 结构部分单独可解析（内容不进 JSON ⇒ 解析不再被代码弄坏）
+  ✅ N4 载荷原样注入 finish.answer（代码从模型直达 dispatch，中途无有损变换）  ("def parse_duration(s):\n    units = {'s': 1, 'm': 6")
+  ✅ N5 双通道下规划器**不再降级**（这正是它相对老格式的全部意义）  ({'calls': 1, 'degraded': 0, 'max_tokens': 2048, 'degrade_rate': 0.0, 'json_fail': 0, 'truncated': 0, 'no_tool_fit': 0, 'empty_plan': 0, 'answer_retry_ok': 0, 'answer_retry_fail': 0, 'last_bad_tools': [], 'cause_balances': True})
+  ✅ N6 向后兼容：老格式（答案塞在 JSON 字符串里）在双通道下仍然可用（strict=False 兜）  (def parse_duration(s):
+    if not s:
+   )
+
+==========================================================================
+O. 停滞闸（重复的「成功」不是进展）—— V5「同一假设无限重派」的同构体
+==========================================================================
+11:55:28 ▶ 任务开始: 读一下这个文件
+11:55:28   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=stub | 外部能力 1 个
+11:55:28   [1] 通道=快 候选=1
+11:55:28       ↳ recall ok=True 再查一次
+11:55:28   [2] 通道=快 候选=1
+11:55:28       ⏭ 重复动作已跳过（不产生新信息）: recall
+11:55:28   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+11:55:28   [3] 通道=快 候选=1
+11:55:28       ⏭ 重复动作已跳过（不产生新信息）: recall
+11:55:28   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 2/2
+11:55:28 ■ stalled | steps=3 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.333] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空)
+  ✅ O1 重复动作被**跳过**而非重新执行（不产生新信息的动作不许再跑）  ({'repeats_skipped': 2, 'stalled': 2, 'attempted_actions': 1})
+  ✅ O2 真的只执行了一次（用情景记忆对账，不是看日志）  (outcome 条数=1)
+  ✅ O3 停滞达阈值 ⇒ 状态是 stalled，**不是 done**（如实报告没有进展）  (status=stalled reason=拒绝原地打转：连续 2 轮没有任何新动作（已跳过 2 次重复）)
+  ✅ O4 停滞计数达标（真的走到阈值，不是第一轮就草草收场）  ({'repeats_skipped': 2, 'stalled': 2, 'attempted_actions': 1})
+  ✅ O5 停滞出口也带全套读数（loop 计数任何状态都带得走）  (['budget', 'closeout', 'critique', 'expand', 'external', 'external_agents', 'flow', 'guard', 'llm', 'llm_kind', 'loop', 'memory', 'planner', 'score_ledger', 'selfmodel', 'transport', 'values', 'verify', 'working_cross_task', 'worldmodel'])
+  ✅ O6 已尝试的动作签名被**精确**写进提示词（机器生成，不靠自然语言提醒）  (recall|[('query', 'goal')])
+
+==========================================================================
+P. 定向补救（选了 finish 却没给答案）—— 重试要换路径，不是重发
+==========================================================================
+  ✅ P1 选了 finish 却没给答案 ⇒ 补救拿到了答案（换提问形态，不是重发同一请求）  ('def f():\n    return 1')
+  ✅ P2 补救**有界**：至多一次额外调用（不是无限重试）  (调用次数=2)
+  ✅ P3 补救成功被计数（补了多少次、成了多少次，都要能读出来）  (ok=1 fail=0)
+  ✅ P4 补救失败也计数（不许静默：失败要说出来，别假装计划是完整的）  (ok=0 fail=1)
+  ✅ P5 已有载荷时**不**触发补救（不浪费一次调用）  (调用次数=1)
+
+==========================================================================
+Q. 收尾余量（探索不许吃掉交付的配额）
+==========================================================================
+11:55:28 ▶ 任务开始: 读一下这个文件
+11:55:28   budget[1x] steps=0/1 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=stub | 外部能力 1 个
+11:55:28   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:28   📦 收尾交付 7 字符（来源=收尾调用）
+11:55:28 ■ closed | steps=0 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=0 否决=0(-) | 通量[perceive>memory=n/a memory>reason=n/a reason>act=n/a] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空) | 收尾=1次(步1/时0 来源收尾调用:1 7字)
+  ✅ Q1 进入收尾余量 ⇒ 转向交付（把答案交出去，而不是继续探索）  (status=closed answer='最终答案：42')
+  ✅ Q2 没有等到预算烧光才停（没把 12 步全花在探索上）  (iterations=0)
+  ✅ Q3 收尾也是「如实报告」：状态是 closed 而非 done（不假装完成）  (closing_reserve：预算不足，交付已有材料)
+  ✅ Q4 收尾是第一步就触发（日志里收尾信号排在第一条动作之前）  (日志行数=5)
+11:55:28 ▶ 任务开始: 读一下这个文件
+11:55:28   budget[1x] steps=0/1 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=stub | 外部能力 1 个
+11:55:28   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:28       收尾调用失败 RuntimeError: 收尾调用炸了
+11:55:28   📦 收尾交付 0 字符（来源=空）
+11:55:28 ■ closed | steps=0 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=0 否决=0(-) | 通量[perceive>memory=n/a memory>reason=n/a reason>act=n/a] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空) | 收尾=1次(步1/时0 来源空:1 0字) ⚠️交了空=1
+  ✅ Q5 收尾调用自己炸了也不许带走整轮（内核韧性）  (status=closed)
+  ✅ Q6 收尾拿不到答案 ⇒ 交付已收集的材料，并留痕（不静默报空）  (status=closed 日志行数=6)
+11:55:28 ▶ 任务开始: 随便一个目标
+11:55:28   budget[1x] steps=0/3 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=stub | 外部能力 1 个
+11:55:28   [1] 通道=快 候选=1
+11:55:28       ✋ [guard:goal_hijack] 拦截 —— 动作与目标无公共词：['cmd', 'echo', 'hi', 'run_shell']
+11:55:28   ⛔ 全部候选被拦 (1 次连续失败)
+11:55:28   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:28       收尾调用失败 RuntimeError: 答案调用炸了
+11:55:28   📦 收尾交付 15 字符（来源=history）
+11:55:28 ■ closed | steps=1 | guard_blocked=1 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=0 否决=0(-) | 通量[perceive>memory=n/a memory>reason=n/a reason>act=0.0] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空) | 收尾=1次(步1/时0 来源history:1 15字)
+  ✅ Q7 兜底链最后一环：退到轨迹也**不返回空**（history 有真实消费者）  (status=closed answer='[step 1] 全部候选被拦' 来源行=['11:55:28   📦 收尾交付 15 字符（来源=history）'])
+
+==========================================================================
+R. 传输层抖动 vs 模型侧失败（重试的边界）
+==========================================================================
+  ✅ R1 传输层抖动被重试并最终成功（不把抖动记成「模型答不出来」）  (ok=True out='ok' err=None retries=2)
+  ✅ R2 每次**尝试**都花账本（账本记「实际发了几次」，不是「成功几次」）  (llm_calls_used=3)
+  ✅ R3 模型侧失败**不重试**（重发同样的请求只会得到同样的错 ⇒ 该换路径）  (ok=False attempts=1 retries=0)
+  ✅ R4 重试耗尽后**仍然抛出**（不静默兜底），并记下「重试后仍失败」  (ok=False attempts=3 exhausted=1)
+  ✅ R5 重试取 0 = 完全关闭（离线 / 严控场景可关掉它）  (ok=False attempts=1)
+  ✅ R6 HTTPLLM 把超时/5xx/429 标为 transient，把 4xx 标为不可重试  (直接验证 HTTPLLM 对「传输层」与「模型侧」失败的分类，而不是靠读源码。
+
+做法：把 `urllib.request.urlopen` 换成抛指定异常的桩，然后看抛出的
+`LLMError.transient` 是否符合预期 —— 期望 [超时=True, 400=False, 503=True]。
+)
+  ✅ R7 分隔符容忍空白（`---\n ANSWER---` 也认；意图零歧义）  (payload='```python\ndef f():\n    return ')
+  ✅ R8 容忍的边界只在分隔符：载荷仍**逐字**不动（一个字符都没改）  ('```python\ndef f():\n    return 1\n```')
+  ✅ R9 老规范 `---ANSWER---` 照旧工作（容忍不是替换）
+
+==========================================================================
+T. 温度必须真的到达线上（★实测事故：口径写 0.0，实际跑 0.2）
+==========================================================================
+  ✅ T1 不传 temperature ⇒ 取配置值，而不是写死的默认值  (线上 temperature=0.0)
+  ✅ T2 显式传 temperature ⇒ 用显式值（配置不覆盖调用方）  (线上 temperature=0.9)
+  ✅ T3 内核路径（planner）也遵守配置温度 —— 这正是事故点  (线上 temperature=0.0)
+  ✅ T4 温度只在 LLMConfig 声明一次（内核其它模块不许写死默认值）  ([])
+  ✅ T5 声明的「允许 0」键**实测**都真的取到 0（配置的 0 不许被静默改写）  ({'V1_LLM_TEMPERATURE': True, 'V1_CLOSE_RESERVE_S': True, 'V1_CLOSE_RESERVE_STEPS': True, 'V1_LLM_RETRIES': True, 'V1_LLM_RETRY_BACKOFF_S': True, 'V1_VERIFY_RETRIES': True})
+  ✅ T6 「允许 0」的键全部登记在 ENV_KEYS 里（两处清单不许漂移）  ([])
+
+==========================================================================
+U. 通用性（跨领域）—— 『通用』是一个三元计数，不是一个平均分
+==========================================================================
+  ✅ U1 run.py 真的把 limits / llm_cond / max_tokens 传进了 Caliber（A12–A14 只证明 Caliber 认这三个字段，这条证明**调用点**没漏）  (['budget_tag', 'fresh', 'limits', 'llm_cond', 'max_tokens', 'memory_scope', 'memory_seed', 'repeat', 'scorer_sha', 'suite_sha', 'temperature', 'tool_catalog_sha'])
+  ✅ U2 _read_run_after 读的是**新增的那一行**（不是永远读最后一行）  ({'n': 1} / {'n': 2})
+  ✅ U3 本轮没写盘（cmd_bench 早退）⇒ 返回 None，**不**返回上一轮的读数  (None)
+  ✅ U4 账平且无早退 ⇒ trust=True，mean 如实读出来  ({'domain': 'd', 'n': 5, 'mean': 0.6, 'trust': True, 'llm': 'http', 'note': ''})
+  ✅ U5 有早退（skipped>0）⇒ trust=False（该读数不得用于判定）  ({'domain': 'd', 'n': 4, 'mean': 0.75, 'trust': False, 'llm': '-', 'note': 'skipped_no_answer=1 failed_scorer=0'})
+  ✅ U6 本轮无读数 ⇒ trust=False；**不**把它变成 mean=0（'没量到' ≠ '零分'）  ({'domain': 'd', 'n': 0, 'mean': 0.0, 'trust': False, 'llm': '-', 'note': '无读数（rc=2）'})
+  ✅ U7 每个领域都可信且非零 ⇒ ok=True，三个计数一致  ({'n_domains': 2, 'n_trust': 2, 'n_nonzero': 2, 'ok': True})
+  ✅ U8 有一个领域 0 分 ⇒ ok=False（平均分会把这件事藏起来，所以不平均）  ({'n_domains': 2, 'n_trust': 2, 'n_nonzero': 1, 'ok': False})
+  ✅ U9 「没量到」的领域两头都不算：既不算非零，也**不**算 0  ({'n_domains': 2, 'n_trust': 1, 'n_nonzero': 1, 'ok': False})
+  ✅ U10 跨领域模式强制 --fresh（否则后一个领域带着前一个的记忆起跑，测到的就不是独立领域）
+  ✅ U11 --suite-dir 与 --memory-dir 互斥（跨领域要**独立**、显式目录要**共享**，两者语义冲突；静默让谁赢都会产出标签与事实不符的读数）  (--suite-dir 与 --memory-dir 互斥：跨领域要求每个领域**独立**记忆（否则后一个领域继承前一个的经验，测到的就不是独立领域），而显式记忆目录意味着**共享**。两者语义冲突。)
+  ✅ U12 --suite-dir 与 --save-baseline 互斥（N 把尺子写不进一个基线文件 —— 会互相覆盖、最后只剩最后一个领域）  (--suite-dir 与 --save-baseline 互斥：跨领域有 N 把尺子（N 个 suite_sha），单一基线文件装不下 —— 每个领域都会写同一个 bench_baseline.json 并互相覆盖，最后只剩最后一个领域。 请去掉 --save-baseline，或逐领域单独跑（--suite 一个一个来）。)
+  ✅ U13 单独用 --suite-dir / --memory-dir 都不算冲突（别把正常用法也挡住）
+
+==========================================================================
+V. 因果闭环（世界模型）—— 失配必须能改变**下一次**的决策输入
+==========================================================================
+  ✅ V1 预演说「会成功」、实际失败 ⇒ 记为失配，并沉淀成语义记忆（不是只记一笔日志就完事）  (mismatch=True by_source={'worldmodel': 1})
+  ✅ V2 一致时不沉淀（两个方向都对：成败吻合、文本重合）  ({'predictions': 0, 'scored': 3, 'hits': 2, 'hit_rate': 0.667, 'confusion': {'ok_ok': 1, 'ok_fail': 1, 'fail_ok': 0, 'fail_fail': 1}, 'unscored': 0, 'mismatches': 1, 'mismatches_outcome': 1, 'mismatches_text': 0, 'text_compared': 1, 'suppressed': 0, 'suppress_rate': 0.0, 'rewards_recorded': 0, 'rewards_rejected_source': 0, 'rewards_rejected_missing': 0, 'rewards_seen': 0, 'rewards_skipped_self': 0})
+  ✅ V3 失配能按动作被检索回来（沉淀了却检索不到 = 装饰）  (已知易错点：
+- 动作 [parse_duration]：我预演「会成功」，实际失败。实测：[工具失败] AttributeError: 'str' object has no attribute 'split')
+11:55:28 ▶ 任务开始: parse_duration 这个函数怎么写
+11:55:28   budget[1x] steps=0/3 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=stub | 外部能力 1 个
+11:55:28   [1] 通道=快 候选=1
+11:55:28       ⊘ [values:answer] 否决 — 目标要求展开（22 字），答案只有 1 字
+11:55:29   ⛔ 全部候选被拦 (1 次连续失败)
+11:55:29   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:29   📦 收尾交付 76 字符（来源=收尾调用）
+11:55:29 ■ closed | steps=2 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=1 否决=1(answer:1) | 通量[perceive>memory=n/a memory>reason=1.0 reason>act=0.0] 回流=n/a | 语义记忆=1 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空) | 收尾=1次(步1/时0 来源收尾调用:1 76字)
+  ✅ V4 失配沉淀的启发式**真的进了规划器提示词**（DB 里有 ≠ 决策链看得见）  (你是一个 agent 的规划器。只输出 JSON，不要解释。
+JSON 结构：{"candidates": [{"intent": "...", "tool": "工具名", "args": {...}, "rationale": "..."}]}
+规则：
+  · 候选之间必须是**不同**的做法，不是同一动作的措辞变化
+  · tool 必须是**下面列出的工具名之一** —— 不得发明，不得写 null / None / ""（实测)
+11:55:29 ▶ 任务开始: parse_duration 这个函数怎么写
+11:55:29   budget[1x] steps=0/3 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=stub | 外部能力 1 个
+11:55:29   [1] 通道=快 候选=1
+11:55:29       ⊘ [values:answer] 否决 — 目标要求展开（22 字），答案只有 1 字
+11:55:29   ⛔ 全部候选被拦 (1 次连续失败)
+11:55:29   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:29   📦 收尾交付 76 字符（来源=收尾调用）
+11:55:29 ■ closed | steps=2 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=1 否决=1(answer:1) | 通量[perceive>memory=n/a memory>reason=n/a reason>act=0.0] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空) | 收尾=1次(步1/时0 来源收尾调用:1 76字)
+  ✅ V5 反证：空记忆时提示词里**没有**这段（证明 V4 不是恒真）  (你是一个 agent 的规划器。只输出 JSON，不要解释。
+JSON 结构：{"candidates": [{"intent": "...", "tool": "工具名", "args": {...}, "rationale": "..."}]}
+规则：
+  · 候选之间必须是**不同**的做法，不是同一动作的措辞变化
+  · tool 必须是**下面列出的工具名之一** —— 不得发明，不得写 null / None / ""（实测)
+  ✅ V6 ★失配沉淀后，**下一次预演**的提示词里必须带上它（worldmodel 自己的声明：因为预演错了而改变下一次预测）  (你是严谨的预测器，宁可说不确定也不要编。
+你在为一个 agent 做动作前的预演。只输出 JSON。
+当前状态：正在实现 parse_duration
+准备执行的动作：parse_duration
+已知易错点：
+- 动作 [parse_duration]：我预演「会成功」，实际失败。实测：[工具失败] AttributeError: 'str' object has no attribute 'split'
+输出格式：{"expect_ok": true, "expected": "你预期会发生什么（一句话）", )
+  ✅ V7 反证：没有失配记忆时，预演提示词里**没有**这段（V6 不是恒真）  (你是严谨的预测器，宁可说不确定也不要编。
+你在为一个 agent 做动作前的预演。只输出 JSON。
+当前状态：正在实现 parse_duration
+准备执行的动作：parse_duration
+
+输出格式：{"expect_ok": true, "expected": "你预期会发生什么（一句话）", "confidence": 0.0~1.0}
+expect_ok = 这一步**会不会成功**（true 会成功 / false 会失败）。这是唯一会被事后检验的字段，别乱填。
+expected 是一句话描述，给)
+
+==========================================================================
+W. 抽象 —— 把「抽象思考」变成一个可读的数（当前是 0，如实登记）
+==========================================================================
+  ✅ W1 读数函数本身算得对：给一个**真会抽象**的 key_of ⇒ 1.0
+  ✅ W2 空输入 ⇒ 1.0（没有反例就不诬告：'没测到' ≠ '做不到'）
+  ✅ W3 非空但全不等价 ⇒ 0.0（证明 W1 不是恒真）
+  ✅ W4 ★读数锚：当前记忆层的抽象率 = 0.0（fingerprint 是字面 sha256，没有概念层）—— 改抽象层时请同步更新此断言与 DESIGN §14.4  (abstraction_collapse=0.0)
+
+==========================================================================
+X. 血缘完整性 —— 读数必须带「实际用了什么」（★实测事故：一个分支漏了 model）
+==========================================================================
+  ✅ X1 血缘字段集合只声明在一处（`run.PROV_KEYS`），且构造函数精确匹配它  (['external_agents', 'llm_kind', 'model', 'temperature'])
+  ✅ X2 必带字段含 `model` 与 `temperature`（★本轮缺陷：`--fresh` 分支漏的正是 `model`）  (['external_agents', 'llm_kind', 'model', 'temperature'])
+  ✅ X3 `_kernel_prov` 的键集合与 `PROV_KEYS` 一致（三条路径共用同一集合）  (['external_agents', 'llm_kind', 'model', 'temperature'])
+  ✅ X4 血缘**从内核读**，不是外面抄一个字符串：model/temperature/llm_kind 三项都等于内核自己的值  ({'llm_kind': 'stub', 'external_agents': ['agent:code_agent'], 'model': 'gpt-4o-mini', 'temperature': 0.2} vs core.s.llm.model='gpt-4o-mini')
+  ✅ X5 血缘**不含密钥**（`api_key` 绝不外泄到读数里）  ({"llm_kind": "stub", "external_agents": ["agent:code_agent"], "model": "gpt-4o-mini", "temperature": 0.2})
+  ✅ X6 ★结构锚：`run.py` 里含 `llm_kind` 键的 dict 字面量**有且只有一处**（手拼血缘 dict ⇒ 立刻判红）  (出现行号=[203])
+  ✅ X7 反证：把一段手拼血缘塞给同一探针 ⇒ 数出 2 处（证明 X6 不是恒等于 1 的死断言）  ([2])
+  ✅ X8 ★结构锚：`run.py` 里**没有**逐键拼血缘的下标赋值（★本轮缺陷的真实形态：`_seen["llm_kind"]=…` 逐键写，漏了 model）  (出现行号=[])
+  ✅ X9 反证：把本轮那个缺陷原样喂给同一探针 ⇒ 必须数得出来（证明 X8 不是恒真的死断言）  ([2, 3])
+
+==========================================================================
+Y. 失配信号的分辨力 —— 一个永远不可能「好」的信号等于没有信号
+==========================================================================
+  ✅ Y1 预演说「会成功」+ 实际成功 ⇒ 判**一致**、不沉淀（旧实现下这个分支结构上不可达）  ({'scored': 1, 'hits': 1, 'mismatches': 0})
+  ✅ Y2 ★分辨力：同一预演，做对 ⇒ 不沉淀 ／ 做错 ⇒ 沉淀。**两者判定不同** —— 这才叫分辨力（旧实现两次都判失配）  (做对=None 做错=Mismatch(action='finish', expected='将输出一段实现了 int_to_roman 的代码', actual='```python\ndef int_to_roman(n):\n    return str(n)\n```', agreement=0.0, kind='outcome', predicted_ok=True, actual_ok=False))
+  ✅ Y2b 反证：探针对「恒判一致」与「恒判失配」两种坏实现都判**无分辨力**，对正确实现判有分辨力 —— 证明 Y2 不是恒真的死断言  (恒一致→False 恒失配→False 真判→True)
+  ✅ Y3 ★读数锚：文本类比对**仍然**分不出对错（两者都判失配，且错误解一致度 ≥ 正确解）  (正确=0.0714 错误=0.1429（门槛 0.34）)
+  ✅ Y3b ★纪律：因此文本类失配**只进情景、不进语义**（分不出对错的信号不许生产知识）  (text_mismatches=2 by_source={})
+  ✅ Y4 ★结构锚：`core.py` 调 `wm.observe` 时**必须**传入成败（`result.ok`）—— 不传，世界模型就只能退回去比措辞，而那结构上必错  (observe 实参=['pred', '?', 'ok'])
+  ✅ Y5 反证：同一探针对**位置**与**关键字**两种写法都能发现 `ok`（证明 Y4 不是恒真的死断言）  (['pred', 'obs', 'ok'])
+  ✅ Y6 `scored==0` ⇒ `hit_rate` 是 `None` 而不是 `0.0`（契约③：缺失 ≠ 否定）  (None)
+  ✅ Y7 对账：`scored == Σ混淆矩阵`、`mismatches == 成败失配 + 文本失配`、`hits == ok_ok + fail_fail`  ({'predictions': 0, 'scored': 5, 'hits': 3, 'hit_rate': 0.6, 'confusion': {'ok_ok': 3, 'ok_fail': 2, 'fail_ok': 0, 'fail_fail': 0}, 'unscored': 0, 'mismatches': 2, 'mismatches_outcome': 2, 'mismatches_text': 0, 'text_compared': 0, 'suppressed': 0, 'suppress_rate': 0.0, 'rewards_recorded': 0, 'rewards_rejected_source': 0, 'rewards_rejected_missing': 0, 'rewards_seen': 0, 'rewards_skipped_self': 0})
+  ✅ Y8 ★读数抗退化：恒说「会成功」的预测器 —— 命中率 0.6 看似正常，但混淆矩阵里 `预测失败` 的两格全为 0 ⇒ 它的「分辨力」是假的，读数看得见  ({'predictions': 0, 'scored': 5, 'hits': 3, 'hit_rate': 0.6, 'confusion': {'ok_ok': 3, 'ok_fail': 2, 'fail_ok': 0, 'fail_fail': 0}, 'unscored': 0, 'mismatches': 2, 'mismatches_outcome': 2, 'mismatches_text': 0, 'text_compared': 0, 'suppressed': 0, 'suppress_rate': 0.0, 'rewards_recorded': 0, 'rewards_rejected_source': 0, 'rewards_rejected_missing': 0, 'rewards_seen': 0, 'rewards_skipped_self': 0})
+  ✅ Y9 预演可检验但没给 `ok` ⇒ 计入 `unscored`，且**不**降级成文本比对（text_compared 必须为 0）  ({'unscored': 1, 'text_compared': 0, 'scored': 0, 'hit_rate': None})
+
+==========================================================================
+Z. 内核读数落盘 —— 累加是加法，比值不是
+==========================================================================
+  ✅ Z1 多次运行按**加法**并：计数与混淆矩阵逐格相加  ({'predictions': 11, 'scored': 101, 'hits': 100, 'unscored': 0, 'mismatches': 1, 'mismatches_outcome': 1, 'mismatches_text': 0, 'text_compared': 0, 'suppressed': 0, 'rewards_recorded': 0, 'rewards_seen': 0, 'rewards_skipped_self': 0, 'rewards_rejected_source': 0, 'rewards_rejected_missing': 0, 'layer_recalled': 0, 'layer_abstract': 0, 'confusion': {'ok_ok': 100, 'ok_fail': 1, 'fail_ok': 0, 'fail_fail': 0}, 'hit_rate': 0.99})
+  ✅ Z2 ★比值不可平均：100 次全对 + 1 次全错 ⇒ 命中率必须是 100/101=0.990，不是逐轮平均的 0.5  (0.99)
+  ✅ Z3 空累加器 ⇒ `hit_rate` 为 `None`（没量到，不是 0.0）  (None)
+  ✅ Z4 旧读数里缺 `scored`/`confusion` 等键 ⇒ 按 0 并、不抛异常（兼容旧 runs.jsonl，而不是让整个读数炸掉）  ({'predictions': 3, 'scored': 0, 'hits': 0, 'unscored': 0, 'mismatches': 0, 'mismatches_outcome': 0, 'mismatches_text': 0, 'text_compared': 0, 'suppressed': 0, 'rewards_recorded': 0, 'rewards_seen': 0, 'rewards_skipped_self': 0, 'rewards_rejected_source': 0, 'rewards_rejected_missing': 0, 'layer_recalled': 0, 'layer_abstract': 0, 'confusion': {'ok_ok': 0, 'ok_fail': 0, 'fail_ok': 0, 'fail_fail': 0}})
+  ✅ Z5 累加器是纯函数：不改入参（否则同一个 dict 被复用两处会互相污染）  (100)
+
+==========================================================================
+AA. 模块之间的**接线**（import 通了 ≠ 协同通了）
+==========================================================================
+  ✅ AA1 ★结构锚：`memory.think()` 在**内核主循环**里有生产调用者（缺陷：全项目 0 调用点 ⇒ working 层只读不写、`[工作记忆]` 段永不出现）  (调用行号=[800])
+  ✅ AA2 反证：同一探针对「只定义不调用」的源码数出 0（证明 AA1 不是恒真的死断言）  ([])
+  ✅ AA3 ★结构锚：`replan()` 调 `propose()` 时**必须转发** `guidance`（缺陷：原来不传 ⇒ 刚栽过一次的重规划拿不到易错点）  (propose 关键字=['goal', 'state', 'history', 'n', 'blocked', 'guidance'])
+  ✅ AA4 反证：同一探针对「不转发 guidance」的 replan 判红（证明 AA3 不是恒真的死断言）  (['goal', 'n'])
+11:55:29 ▶ 任务开始: 写一个函数 add(a, b)，返回两数之和
+11:55:29   budget[1x] steps=0/3 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=local | 外部能力 1 个
+11:55:29   [1] 通道=深 候选=2
+11:55:29       ✋ [guard:goal_hijack] 拦截 —— 动作与目标无公共词：['cmd', 'python', 'rf', 'rm']
+11:55:29       ↳ recall ok=True 先在记忆里找已有的 python 截断相关结论
+11:55:29   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:29   📦 收尾交付 196 字符（来源=收尾调用）
+11:55:29 ■ closed | steps=1 | guard_blocked=1 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=1项(非空) | 收尾=1次(步1/时0 来源收尾调用:1 196字)
+  ✅ AA5 ★行为锚：跑过一次内核后**工作记忆非空**、且写进去的是**观测**（不是空串）—— `think()` 接到的是 `result.as_observation()`  (1 条，首条=[b#1 23字 sha=34ea10ccd32e] recall ⇒ ✔ (语义记忆中无相关条目))
+  ✅ AA6 ★结构锚：working 与 episodic 在内核路径上**读写成对**（working: think/working_view；episodic: record/episodes）  (内核里出现的记忆调用=['episodes', 'recall', 'record', 'think', 'working_view'])
+  ✅ AA7 semantic 层写侧在世界模型（`commit_fact`），内核侧读侧是 `recall()`—— 责任分明，但两侧都必须存在  (worldmodel 写=True core 读=True)
+  ✅ AA8 ★墓碑：`foresight_filter()` 不得复活（它曾只有测试在用、生产零调用 —— 「装饰 API」比没有更糟）  (hasattr=False)
+  ✅ AB1 通量计的产出与消费**分开记账**（4 个候选只做了 1 个 ⇒ 0.25，不是「我规划了 4 个」就记 4）  (coverage={'perceive>memory': 0.06, 'memory>reason': None, 'reason>act': 0.25})
+  ✅ AB2 ★量纲单一事实源：`perceive>memory` 按**字符**算（5000 字只存 300 ⇒ 0.06），`reason>act` 按**条数**算 —— 两条边若都用条数，截断就会被算成 1.0（恒满分）  (unit={'perceive>memory': 'chars', 'memory>reason': 'items', 'reason>act': 'items'} cov=0.06)
+  ✅ AB3 ★`None` ≠ `0.0`：从没产出的边说「没量到」，产出了没人读的边说「量到 0」—— 两种断法修法不同（前者是没接线，后者是没人读）  (cov=None dead=['perceive>memory', 'memory>reason', 'reason>act'])
+  ✅ AB3b 反证：**产出了但没人读**必须落进 `starved_edges`，不能和「从未产出」混成一格  (cov={'perceive>memory': None, 'memory>reason': None, 'reason>act': 0.0} starved=['reason>act'] dead=['perceive>memory', 'memory>reason'])
+  ✅ AB4 ★回流率用 **token 覆盖率**（1/2=0.5），不是字符比（18/21≈0.857）—— 后者会被长 token 稀释，把「只活下来一个词」读成「几乎全在」  (reuse=0.5)
+  ✅ AB5 未知边名必须**报错**，不许静默忽略（静默忽略 = 少了一条边永远不被发现）  (ValueError 已按预期抛出)
+  ✅ AB6 ★行为锚：跑完一次内核后，三条边的**产出与消费都 > 0**（只查产出会漏掉「装了产出、忘了消费」—— 那种边 coverage 恒为 None，而一个恒为 None 的读数看起来像「这条线断了」，实际是我忘了装表）  (produced={'perceive>memory': 3, 'memory>reason': 5, 'reason>act': 4} consumed={'perceive>memory': 3, 'memory>reason': 4, 'reason>act': 3} coverage={'perceive>memory': 1.57, 'memory>reason': 0.8, 'reason>act': 0.75})
+  ✅ AB8 ★结构锚：`core.py` 里**有** `values.judge(` 的生产调用点（价值层若只在测试里被调用，它就是个装饰模块 —— 这是 AA1 同一把尺子）  (出现=1 次)
+  ✅ AB7 ★读数锚（可被实现推翻）：**关掉工作记忆写入 ⇒ 回流率归零**—— 回边（行动结果回到下一回合感知）唯一的物理载体就是 working；它断了，环就成了「感知→记忆→推理→行动」的一条直链  (正常=1.0 关掉think=0.0)
+  ✅ AC1 否定式**不构成授权**：目标说「不要删除」时，删除动作必须被拒  ([values:irreversible] 否决 — 删除类动作，但目标未授权该方向 ⇒ 改成可预览的等价动作)
+  ✅ AC2 ★范围授权：目标授权了「清理」，但 `rm -rf ~` 的作用对象 `~` 不在目标里 ⇒ 必须拒（方向对、范围错是真实破坏的主要形态）  ([values:irreversible] 否决 — 目标授权了删除，但作用对象 ['~'] 不在目标里 ⇒ 范围越界)
+  ✅ AC3 反证：目标**点名**了作用对象 ⇒ 同一个动作必须放行（证明 AC2 不是「一律拒绝删除」的恒真断言）  ([values:irreversible] 允许 — 不可逆动作，方向与范围均已授权)
+  ✅ AC4 只读动作不做不可逆审查（recall/note/finish 不改变外部世界）—— 误杀合法动作比漏检更糟，因为它让内核什么都不敢做  (可撤销性={'recall': 0, 'note': 0, 'finish': 0})
+  ✅ AC5 收尾敷衍：目标要求展开（含「写」）而答案只有 1 字 ⇒ 拒  ([values:answer] 否决 — 目标要求展开（25 字），答案只有 1 字)
+  ✅ AC6 ★反证：`1+1 → 2` 必须放行（第一版判据把「答案未含目标实体」当错，正确答案 `2` 被误杀 —— 字面重合判语义相关，与缺陷 #12 同构）  ([values:-] 允许)
+  ✅ AC7 空答案必拒（这是唯一不需要解释的判据）  (空答案已被拒绝)
+  ✅ AC8 价值层不产生分数：`Judgement` 只有 allow/kind/reason/rank，没有 `score` 字段 —— 自评分是 V5 的死因，这条是接口级防线  (字段=['allow', 'kind', 'rank', 'reason'])
+  ✅ AD1 ★接口级防线：`SelfModel.advise` 的形参里**没有 goal**—— 只要它读得到当前题目，就一定有人会去读，然后就变成自评分  (形参=['self', 'family', 'max_candidates'])
+  ✅ AD2 无证据 ⇒ `confident=False`（不装懂：认不出族就给默认值，且这个默认值**不允许**覆盖内核判断）  ([self] 候选=1 深通道=否 先验证=否 — 族 never_seen 样本 0 < 3 ⇒ 不足以判断)
+  ✅ AD3 样本 < 3 ⇒ `confident=False`（两个样本的通过率只是噪声，拿它调资源就是在放大抖动）  ([self] 候选=1 深通道=否 先验证=否 — 族 x 样本 2 < 3 ⇒ 不足以判断)
+  ✅ AD4a ★前提：这份账本上「分族」必须真的测得**出**预测力（否则 AD4/AD5 就是在测一个闸关着的自我模型）  ([power] Δ=+0.5000（模型 0.0 vs 基线 0.5）阈值=0.1957 噪声(std=0.0979/mean=0.0726，512 个反证组） snr=2.555 ⇒ PRESENT)
+  ✅ AD4 弱族（历史通过率 0.0）⇒ 加宽候选 + 先验证，并**点名最常败在哪一步**  ([self] 候选=3 深通道=是 先验证=是 — 族 w 历史通过率 0.00（n=24），最常败在 plan)
+  ✅ AD5 强族（历史通过率 1.0）⇒ 快通道单候选（省预算，而不是炫技）  ([self] 候选=1 深通道=否 先验证=否 — 族 s 历史通过率 1.00（n=24）⇒ 走快通道)
+  ✅ AD6 ★反证：同一族、同样 4 个样本，只翻 `passed` 就会翻转建议—— 证明 n（样本量）真的是判据，不是装饰字段  (弱=3/True 强=1/False)
+  ✅ AD7 ★「没记」≠「失败」：`load_evidence` 必须丢掉缺 `passed` 的行（把缺失当零会让自我模型凭空觉得「我很差」，进而做错误的资源调整）  (保留=2 条)
+  ✅ AEb1 ★实验工具的危险性不许超过被测系统：`coherence.py` 必须在**施加变体之前**装 `run_shell` 干跑保险（关掉守卫后 `rm -rf ~` 会真的执行 —— 第一次跑靠宿主沙箱兜住，那不是我的代码在工作）  (dry@5823 patch@5912)
+  ✅ AEb2 消融必须为每个变体隔离记忆目录（`facts` 跨轮累积，共用目录量到的是「记忆多少」而不是「这个部件有没有用」）  (TemporaryDirectory=True V1_STATE_DIR=True)
+  ✅ AEb3 消融报告必须同时给「声明」与「实测」分类，且不一致时以实测为准（先验与实测分歧本身就是最有信息量的一行）  (declared=True actual=True classify=True)
+  ✅ AF1 判定必须**三态**：成立 / 反证 / 不可判。两态会把「没量到」直接读成「不需要」—— 那是这张表唯一要防的事  ({['present', 'absent', 'unknown']})
+  ✅ AF2 每条签名必须有 `source`（读数出口）—— 没有出口的签名是自我描述，和「人脑有所以要有」是同一种不可证伪  (签数=10 有出口=10)
+  ✅ AF3 ★反证组必须非空：全表恒真 = 一份自我实现的清单，与「人脑有所以要有」同类，什么都没证明  (成立=2 反证=8 不可判=0)
+  ✅ AF4 至少一条成立 —— 全表反证同样没有信息量（那等于宣称自己什么都做好了，这是另一种不可证伪）  (成立=2 明细=['自我模型', '记忆'])
+  ✅ AF5 ★`UNKNOWN` 必须单列进 `undecidable`，**不许**落进 `contradicted`—— 并进去的那一刻，「我没量」就变成了「不需要」  (undecidable=['X'] contradicted=[])
+  ✅ AF6 ★转态锚：`rm -rf ~` 在「清理临时文件」目标下必须被拒，而目标点名 `/tmp/v1_tmp` 时必须放行（这条**曾经相反** —— 消融现场 `rm -rf ~` 通过了方向审查，是本表唯一一次抓到真实缺陷）  (越界放行=False 点名放行=True)
+  ✅ AF7 ★行为锚（已随实现转态一次）：外部评审必须真的进内核上下文，
+          且**当前题与异口径的评审必须被挡住**（只数 AST 访问点只能证明「代码提到了 why」，证明不了它流进了决策输入）  (进上下文={'n_states': 3, 'hits': 3} 自评泄漏=False 异口径泄漏=False)
+  ✅ AF8 读数锚：自我模型**被咨询过但从未影响决策**（未通电）⇒ 判成立  (咨询=3 影响=0（问了但从不改变决策 ⇒ 未通电）)
+  ✅ AF9 ★单一事实源：`core.py` 的写入截断必须引用 `WORKING_CHAR_CAP`，不许再出现 `full[:300]`（探针与实现各抄一份 300 就会漂成两套真相）
+          ⚠️ 判定**必须去注释**：注释里提到旧写法不算违规 ——这正是一条断言自己转红才暴露出来的口径问题。  (常量声明=True 引用=True 残留字面量=False（不去注释时=True）)
+  ✅ AF10 感知→记忆的硬瓶颈**仍**判成立：长观测 5000 字只存 300 字（6%）—— ⚠️ 第二十轮**没有**加宽这个瓶颈（那会让一步吃掉整个上下文），只是把被截掉的那部分变成**可寻址**的（见 AR 组）  (长观测 5000 字只存 300 字 ⇒ 0.060)
+  ✅ AF11 判定必须带**翻转条件**（`note`）：没有它，一个「反证」会被当成永久结论（本表就有两条会翻转：真模型下学习面转成立、范围授权那条修复前是成立）  (带 note 的签名=4 条)
+  ✅ AG1 ★接口级防线：`Critique` 必须 **frozen** —— 内核能读评审，不能改评审。（改得了的评审就是可以被内核美化的尺子）  (why 仍为 'w1')
+  ✅ AG2 缺口径签名 ⇒ `add` 必须**抛错**，不许静默接受一条无法归因的评审（静默接受 = 又一处「缺失被读作别的」）  (ValueError 已按预期抛出)
+  ✅ AG3 ★防自评：当前题（t1）**自己的**评审必须被挡住 —— 放行它，内核就是在照着自己的答案改答案（自评分，V5 的死因）  (放行=['t2'] rejected={'self': 1, 'cross_scorer': 0, 'cross_suite': 0})
+  ✅ AG4 ★防跨口径：scorer / suite 任一不同都不得放行，且**分项计数**（一个总拒绝数无法归因 —— 分不清是防自评在起作用，还是口径对不上）  (放行=0 rejected={'self': 0, 'cross_scorer': 1, 'cross_suite': 1})
+  ✅ AG5 空理由 ⇒ `from_scored` 返回 **None**，不许造一条空 critique 凑数（没有理由的 critique 只是又一个标量，那正是它要补的缺口的形状）  (None 与实例各一，符合预期)
+  ✅ AG6 去重必须靠**键覆盖**，不能靠事后清理（V5 的 39× 重复就是后者的下场：写入时没人管，清理时两套逻辑对不上）  (stored=1 superseded=1)
+  ✅ AG7 ★静态锚：`core.py` 里**不得**出现 `Critique(` 的构造 —— 内核一旦能自己造评审，这条通道就退化成自评分  (出现=0 次)
+  ✅ AG8 行为锚：跑完一次内核后 `stats['critique']` 的 `served > 0`（不是「代码里接了线」，是「评审真的被送进去过」）  (critique={'stored': 1, 'added': 1, 'superseded': 0, 'calls': 3, 'served': 3, 'rejected': {'self': 0, 'cross_scorer': 0, 'cross_suite': 0}})
+  ✅ AG9 落盘 / 读回无损耗，且坏行**跳过并计数**（静默吞掉 = 数据悄悄少了一半，没人知道）  (读回=1 坏行=1)
+  ✅ AG10 被拒原因必须走**受控词表** `REJECT_KINDS` —— 新增一种拒绝方式要先登记，否则 `rejected` 里会冒出一个没有归属的键（同一事实多处声明的入口）  (rejected 键=['cross_scorer', 'cross_suite', 'self'])
+  ✅ AH1 ★静态锚：受控词表 `KINDS` **只在打分器里声明一处**；`mw/bench.py` 不得另立一份
+          —— 判定合法性由裁判决定。任务层若也校验 kind，两处迟早漂成
+          「任务层认为合法、打分器不认」的第二套真相  (打分器有=True bench.py 有=False)
+  ✅ AH2 任务集必须真的带 `assertions`，且每条都有 `id` 与 `why`（没有 why 的断言只能说「你错了」，说不出「错在哪」——
+         那正是这一格要补的东西）  (题数=4 断言数=[6, 6, 6, 6])
+  ✅ AH3 ★`assertions` 必须进 `fingerprint()` —— 改掉一条「该说清什么」
+         就等于换了尺子（校准结论会变），不进哈希则 suite_sha 察觉不到  (fingerprint 键=['assertions', 'id', 'meta', 'null', 'oracle', 'partial', 'prompt', 'tests'])
+  ✅ AH4 缺 `why` 的断言在**装载时**就必须报错（不是等到判分才发现）  (ValueError 已按预期抛出)
+  ✅ AH5 `Scored.detail` 默认空元组 —— 老打分器（code_exec）不给明细是合法的，
+         不许因为「没明细」就把一条合法分数判为失效  (detail=())
+  ✅ AH6 ★行为锚（**把旧判据证伪**）：长空话必须比短精确**分低**
+         （166 字空话 vs 86 字精确答案 —— 若判据是字数，前者赢；
+          ⇒ 这一条红了就说明判据退化回了长度代理量）  (长=166字/0.3333 短=86字/1.0)
+  ✅ AH7 ★逐条明细必须**非空、且确实有未满足项、且每条都带 why** ——
+         「未满足 a4」没有信息量，「未满足 a4（必须说清生效条件）」才有。
+         ⚠️ `failed_count >= 1` 这一半不能省：用满分答案验归因 ⇒ 未满足项
+         集合为空 ⇒ `all([])` 恒真 ⇒ 又一条永远绿的假防线  (明细=6 未满足=3 可归因=True)
+  ✅ AH8 读数锚：签名表里「语言与沟通」当前判**反证**（判据已换成可复核性 ⇒ 可复核的答案通过了；
+         若它转红，说明答案又说不出可核对的东西了）  (长空话 166字=0.3333 < 短精确 86字=1.0；逐条明细 6 条，未满足项可归因)
+  ✅ AH9 ★缺 `assertions` ⇒ 退出码 **2（不可判）**，绝不是 0 分
+         —— 把『这道题没说清该说什么』记成『答案 0 分』，
+         就是把尺子的缺陷记到被测系统头上（契约③）  (rc=2)
+  ✅ AH10 未知 kind ⇒ 同样判不可判（rc=2），不许静默当不满足/当满足  (rc 已按预期为 2)
+  ✅ AH12 ★`detail` 是列表但**元素不是对象** ⇒ 必须报错，不许静默丢掉
+         （静默丢掉 = 一句「我不对」又变回没有理由，这一格就白补了）  (ScoreError 已按预期抛出)
+  ✅ AH13 `detail` **整体不是列表**（如字符串）⇒ 同样必须报错
+         （两条路径分属两个 `isinstance` 检查，只钉一条会漏掉另一条）  (ScoreError 已按预期抛出)
+  ✅ AH11 ★三档有序（分辨力）：oracle > partial > null，且**中段可达**
+         （只证明满分/零分可分太弱 —— 那与 V5 那把五天不动的尺子没区别）  (partial=[0.5, 0.5, 0.5, 0.5])
+  ✅ AI1 ★静态锚：口径签名的实现**只有一处** —— `bench.Caliber.signature`
+         必须委托 `mw.ledger.signature_of`
+         （两边各写一份 `dumps` ⇒ 哪天 `separators` 差一点，同一个 caliber
+         算出两个签名，'同口径'当场变假，而**没有任何测试会红**）  (signature 源码='def signature(self) -> str:\n        # 走 `mw.ledger.signature_of`：**唯一**的签名实现。\n  ')
+  ✅ AI2 ★缺 `caliber_sig` 的行**必须被拒**，不并入、不默认同口径
+         （缺签名 ≠ 同口径。默认放行 = 把两种东西当一种 = V5 的跨口径比较）  (采纳=1 无签名拒=1)
+  ✅ AI3 ★异口径被拒且**分项计数** —— 只报一个总数无法归因：
+         你分不清挡下来的是'没签名'还是'口径不对'（与 critique 同构）  ({'total': 3, 'admitted': 1, 'rejected': {'missing_fields': 0, 'no_caliber_sig': 1, 'diff_caliber_sig': 1, 'duplicate': 0}, 'deduped_on_read': 0, 'legacy_no_caliber': 1, 'bad_lines': 1})
+  ✅ AI4 写入侧也要挡：缺必需字段的行**不进文件**
+         （先全记下来、读时再筛 ⇒ 文件里堆积无从归属的行，
+          那就是下一次跨口径比较的入口）  (append={'added': 1, 'rejected': 1, 'duplicate': 0, 'no_caliber': 0, 'caliber_mismatch': 0} 行数=1)
+11:55:30 ▶ 任务开始: 分析并清理 python 截断问题的临时文件，然后总结根因与修复方案，最后把结论写回记忆
+11:55:30   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=local | 外部能力 1 个
+11:55:30   [1] 通道=深 候选=2
+11:55:30       ✋ [guard:tool_misuse] 拦截 —— shell 未开启（需显式 --allow-shell）
+11:55:31       ↳ recall ok=True 先在记忆里找已有的 python 截断相关结论
+11:55:31   [2] 通道=深 候选=1
+11:55:31       ↳ note ok=True 把本轮发现写回语义记忆
+11:55:31       🔁 失配[outcome] note({'text': 'python 写文件时应显式指定 encoding=utf-8，否则默认编码会在非 ASC 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+11:55:31       📎 回看 b#13 因由=mismatch 窗=whole 56/56 字
+11:55:31   [3] 通道=深 候选=1
+11:55:31       ↳ finish ok=True 给出结论并收尾
+11:55:31   ✅ 收尾: 根因是未指定 encoding 导致默认编码静默截断；修复：所有 open() 显式 encoding='utf-8'。
+11:55:31 ■ done | steps=3 | guard_blocked=1 | 预演=3 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) | 价值判定=3 否决=0(-) | 通量[perceive>memory=1.396 memory>reason=0.5 reason>act=0.75] 回流=1.0 | 语义记忆=3 | 账本采纳=3 拒(缺字段=0/无签名=0/异口径=0) | 自我[闸=关 Δ=n/a 阈值=0.02 UNKNOWN 影响=0/3] | 回看=1次/56字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=1项(非空)
+  ✅ AI5 ★行为锚：Core 起跑时**真的**读到了历史证据（不是空着起跑）
+         —— 之前 `Core()` 里写的是 `SelfModel()`，于是自我模型的
+         判据只能退到代理量（被咨询过几次）  (证据=3 条 全局率=1.0)
+  ✅ AI6 ★跨会话纪律：`Core.run()` **不写**账本（行数前后不变）
+         —— 轮内写入会让第 N 题读到第 N-1 题的分数，`repeat` 的意义当场消失  (前=3 后=4（测试追加 1 行）)
+  ✅ AI7 ★起跑快照：跑完之后，本轮看到的证据**仍是起跑那 3 条**
+         （外部在 run 期间追加的行不许被本轮看见 —— 否则又是轮内污染）  (证据=3 条（期望 3）)
+  ✅ AI8 账本读数必须进 `Outcome.stats` —— 没出口的计数是进程内内存态
+         （重启清零、跨进程不可见，拿它做诊断只能看个热闹）  (stats.score_ledger={'total': 3, 'admitted': 3, 'rejected': {'missing_fields': 0, 'no_caliber_sig': 0, 'diff_caliber_sig': 0, 'duplicate': 0}, 'deduped_on_read': 0, 'legacy_no_caliber': 0, 'bad_lines': 0, 'path': '/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_contract_c_536rwe/ai_ledger2.jsonl', 'caliber_sig': '29f8588f208a4454'})
+  ✅ AI9 ★判据本体：用历史预测未来，误差必须**优于**不区分族的对照基线
+         —— 这才回答'自我模型有没有用'，而不是'它有没有被咨询过'  (模型 MAE=0.325 基线 MAE=0.4975 Δ=0.1724 阈值=0.0842)
+  ✅ AI10 ★反证组（各族真实通过率**完全相同**，族间本无差异）：
+          判据**不许**绿，否则 AI9 是一条恒真断言
+          （一个怎么都能赢的判据，和 V5 那个恒为 0 的适应度是同一种东西）
+          ⚠️ 旧版用的是『轮转族标签』，那只给族改名 —— 未来行若跟着
+             改名则信号毫发无损，改历史则恒等于完全错配，都不是零假设  (无差异账本 Δ=0.0167 阈值=0.0522 ⇒ ABSENT)
+  ✅ AI11 ★口径闸是不是**承重的**：混入异口径 ⇒ 预测必须变差
+          （撤了闸误差也不变 ⇒ 那道闸是装饰；装饰的闸就是 V5 的死法）  (同口径 MAE=0.3625 混入后 MAE=0.502 劣化=0.1395)
+  ✅ AI12 样本不足 ⇒ `predict` 退回**全局率**且 `advise().confident` 为假
+         —— 看过 2 道题就给建议的自我模型，与桩的区别只在于它更有说服力  (predict=0.5 全局率=0.5)
+  ✅ AI13 空账本 ⇒ 不崩、不装懂（predict=None / confident=False），且账本读数全零  (空账本路径已跑通)
+  ✅ AI14 ★内核边界清单必须**完整**：`core.py` 直接 import 的每个内核模块
+         都必须在 `mw.CORE_MODULES` 里
+         （漏登记的模块不受 H1「不许 import bench」检查 ⇒ 那条最硬
+         的边界纪律只覆盖了 10/15 个模块，而'验证了'三个字是假的）  (core.py 引入=['abstractor', 'budget', 'critique', 'flow', 'guard', 'ledger', 'llm', 'memory', 'metacog', 'planner', 'tools', 'values', 'worldmodel'] 漏登记=[])
+  ✅ AJ1 ★闸在**有真实族信号**的账本上（5 族、族率 0.10~0.90）必须**开**
+         （有族信号却不行动 ⇒ 自我模型是装饰模块）  ([power] Δ=+0.1724（模型 0.325 vs 基线 0.4975）阈值=0.0842 噪声(std=0.0421/mean=0.0337，512 个反证组） snr=2.048 ⇒ PRESENT)
+  ✅ AJ2 ★★真模型账本（qwen2.5:7b / T=0.8 / 4 会话 × 2 族 × 40 行）上闸必须**关**
+         —— 这是本轮的核心断言，用**真数据**而不是合成数据：
+            在此之前 `advise()` 只看样本数，于是在这份账本上
+            （样本 20 条，完全够）它会笃定地按族调整预算，
+            而实测 Δ=−0.015 说明那些族率只是噪声  ([power] Δ=-0.0150（模型 0.41 vs 基线 0.395）阈值=0.02 噪声(std=0.0081/mean=0.0071，512 个反证组） snr=-0.75 ⇒ ABSENT)
+  ✅ AJ3 ★真账本上的状态必须是 **ABSENT**（测出来了，结论为负），
+         不许是 UNKNOWN
+         （§16.7 第二层判据：没量到 ≠ 没有。若这里读成 UNKNOWN，
+          就会有人去'再多跑几个会话'—— 而真相是跑了也没用）  (state=ABSENT 历史=20 未来=20 原因=族内漂移 ≥ 族间差异（Δ=-0.015 ≤ 0.02） ⇒ 分族只是把噪声写成规律)
+  ✅ AJ4 闸关着时 `predict()` 必须退回**全局率**，不是族率
+         （继续报族率 = 嘴上说不知道、手上还在按族行动）  (predict=0.75 全局率=0.75)
+  ✅ AJ5 ★UNKNOWN 也必须 fail-closed（`confident=False`），但**不许**并入 ABSENT
+         —— 结论层面：没量到 ≠ 没有（两个词不许合成一个）
+         —— 行动层面：不知道就不许动（两者都关）  (state=UNKNOWN 会话=1 原因=)
+  ✅ AJ6 ★★2 族**极端可分**（0.0 vs 1.0）必须能判 PRESENT
+         —— 第一版用『轮转族名』当反证组，2 族时只有恒等/交换两种结果，
+            噪声恒等于正组 Δ ⇒ margin=2Δ>Δ ⇒ **判据在数学上不可能成立**。
+            这一条就是那个缺陷的墓碑：它当时会让最强的信号也判不出来。
+            ⚠️ 与 AJ1 不重复：AJ1 是 5 族，这一条是**只有 2 族**的极限情形  ([power] Δ=+0.5000（模型 0.0 vs 基线 0.5）阈值=0.1957 噪声(std=0.0979/mean=0.0726，512 个反证组） snr=2.555 ⇒ PRESENT)
+  ✅ AJ7 读数出口：`report()` 必须暴露 `family_power`，且闸关时
+         `confident_families` 必为空（`eligible_families` 仍可非空）
+         —— 两个列表分开，是因为「样本够但闸关着」与「样本不够」
+            的修法完全不同：前者要换族的定义，后者只要继续跑  (闸开: ['numeric_logic', 'text_ops', 'struct_convert', 'coding_small', 'explain'] / 闸关: [])
+  ✅ AJ8 ★`load_evidence` 必须把 `session` 带过去
+         —— 丢掉它 ⇒ 时序切分做不了 ⇒ 闸永远关着，而日志只显示
+            「样本够、Δ=n/a」，看不出真正的原因（本轮最易漏的一处）  ({'family': 'a', 'passed': True, 'score': None, 'failed_step': '', 'session': 7})
+  ✅ AJ9 非数字 `session` ⇒ 留正向信号（`session_bad`），**不许**填 0、不许静默丢
+         （填 0 = 让这一行假装属于会话 0，于是被算进切分；V5 的『缺失当零』）  ({'family': 'a', 'passed': True, 'score': None, 'failed_step': '', 'session_bad': 'abc'})
+  ✅ AJ10 ★噪声下限必须用**行级置换检验**，不许回到『给族改名』
+         （改名版：2 族时恒等于完全错配；5 族时噪声随族列表的排列
+           顺序变化 —— 字母序恰好把 0.90 与 0.10 排相邻 ⇒ 噪声翻倍）  (含 _permuted_labels=True 残留 _rotated=False)
+  ✅ AJ11 ★闸的四个常数**不可调**：`metacog.py` 不许读环境变量
+         （能调阈值 = 能把结论调好看的旋钮 ⇒ V5 的尺子下移）  (可疑节点=0 含 os.=False)
+  ✅ AJ12 ★`advise()` 必须真的消费 `family_power()`（不是只在文档里说）
+         —— 闸写在别处、advise 不看它，就是一条装饰性防线  (advise 内引用 family_power=True)
+  ✅ AJ13 闸关着时**不许**自增 `influenced`
+         （给一条从未生效的建议记功，正是旧判据 consulted×influenced 的病）  (咨询=2 影响=0)
+  ✅ AJ14 闸的读数必须有**内核侧消费者**：汇总行念出闸开没开 + Δ + 影响次数
+         （只在 report() 里躺着的字段 = 进程内内存态，重启清零）  (core.py 汇总行含 闸= / family_power)
+  ✅ AJ15 ★反证：撤掉闸（`usable` 恒为 True）⇒ AJ2 必须转红
+         —— 由 R13 撤回态脚本验证，此处钉住**撤回点存在且唯一**  (usable 定义数=1)
+  ✅ AJ16 ★账本**幂等**：同一会话的同一题写两次 ⇒ 第二次被拒
+         —— 本轮自踩：后台实验被 kill 后重启，`next_session` 算出同一个
+            会话号 ⇒ 那一轮成绩被写两遍（14 行变 27 行）。账本当时**静默
+            接受**，于是通过率被两份数据加权，而日志上看不出来。
+            长跑服务被 kill 后重启是常态，这不是理论风险  (第二次写入 {'added': 0, 'rejected': 0, 'duplicate': 1, 'no_caliber': 0, 'caliber_mismatch': 0}  文件行数=1)
+  ✅ AJ17 判重**只按 (会话, 题)**：同一 task_id 在**不同**会话里必须照收
+         （同一套题每个会话都要跑一遍，把它当重复 ⇒ 第二次起账本全空）  (新会话写入 {'added': 1, 'rejected': 0, 'duplicate': 0, 'no_caliber': 0, 'caliber_mismatch': 0}  文件行数=2)
+  ✅ AJ18 `duplicate` 必须进受控词表与被拒读数（可归因，不许混进总拒绝数）  (REJECT_KINDS=('missing_fields', 'no_caliber_sig', 'diff_caliber_sig', 'duplicate', 'no_caliber', 'caliber_mismatch'))
+  ✅ AJ19 ★★读侧去重：已经躺在文件里的重复行，读出来不许被加权
+         —— 写侧判重（AJ16）只保护**未来**，保护不了**历史**。
+            本轮实测抓到一个我自己的错误结论：从这份脏账本读出
+            『T=0 下 struct_convert 0.56→0.36，说明 T=0 也有漂移』；
+            去重后真相是 2/5=0.400，与前四会话**逐题完全一致**。
+            ⇒ 写侧判重会让未来干净；读侧不去重，历史永远在说谎  (原始=118 采纳=89 读侧去重=29)
+  ✅ AJ20 ★去重后 T=0 的**族内漂移必须为零**（六个会话逐题一致）
+         —— 这条同时是 AJ19 的因果检验：若去重是对的，被污染的
+            『漂移』就应当随之消失。它没消失 ⇒ 去重去错了东西  (3 个族 × 6 个会话 ⇒ 3 个不同的通过率（应等于族数 3）  实测=[0.4, 0.6, 0.75])
+  ✅ AJ21 去重**不许误伤**干净账本：无重复 ⇒ deduped=0 且一行不少
+         （去重是手术刀，不是筛子；误伤会让账本悄悄变小）  (总=56 采纳=56 去重=0)
+  ✅ AJ22 判重键的构造**只有一处**（`_key`），写侧与读侧共用
+         —— 两处各写一遍 = 同一事实两处声明 ⇒ 一边改了另一边没改，
+            账本会**静默**地一半去重一半不去重，两份读数都长得合理  (_key 定义数=1)
+  ✅ AJ23 ★★置换检验次数必须让 σ 收敛（≥256）
+         —— 上一版是 8，注释还写着『超过 8 次收益递减』。实测推翻：
+            4 会话 n=8 σ=0.0217 / n=512 σ=0.0257 / n=2048 σ=0.0264
+            6 会话 n=8 σ=0.0279 / n=512 σ=0.0223 / n=2048 σ=0.0215
+            ⇒ 8 次时两行**大小关系是反的**（判据在掷骰子）  (N_CONTROL_PERMS=512)
+  ✅ AJ24 真实账本上 σ 必须**已经在收敛区**：σ(4N) 与 σ(N) 相差 < 0.002
+         （这是 AJ23 取 512 而非 2048 的实证依据，不是拍脑袋）  (σ(512)=0.0257 σ(2048)=0.0264 差=0.0006)
+  ✅ AJ25 ★★真实 8 会话账本上，族预测力闸必须**开**
+         （qwen2.5:7b / T=0 / 8 会话 × 3 族 × 114 行）
+         —— 这是「自我模型在**真实数据**上说得算」的第一个证据。
+            4 会话 ABSENT / 6 会话 ABSENT / 8 会话 PRESENT：
+            不是结论在漂，是**统计功效**随会话数增长（σ ∝ 1/√N）  ([power] Δ=+0.0447（模型 0.4431 vs 基线 0.4878）阈值=0.0421 噪声(std=0.0211/mean=0.0168，512 个反证组） snr=1.062 ⇒ PRESENT)
+  ✅ AJ26 ★『开得多稳』必须进读数：snr = Δ/阈值 不许缺席
+         —— 只念『闸=开』会把 1.05（刚过线）和 3.0（稳固）说成同一件事。
+            实测这份账本 snr≈1.06：**临界**，换一批数据就可能翻回去  (snr=1.062（Δ=0.0447 阈值=0.0421）)
+  ✅ AK1 ★★特征抽取**不许看答案**：代码里不得出现 `oracle`
+         —— 用标准答案定义族 = 用答案定义难度 ⇒ 族变成难度的同义词，
+            断言「知道族能预测成败」退化成「知道难度能预测难度」  (命中=False)
+  ✅ AK2 ★★特征抽取**不许看得失**：代码里不得出现 `passed` / `score`
+         —— 那是**被预测的量**。用它定义族就是彻底的循环论证  (passed=False score=False)
+  ✅ AK3 特征抽取是**纯函数**：同输入两次结果逐位相同，且不修改入参  (特征数=21)
+  ✅ AK4 ★特征定义必须**版本化**：改一条规则 ⇒ 指纹必须变
+         —— 否则旧账本上的族标签会静默漂移；也挡住「悄悄改规则」  (原=55ce4bdae4f161ad 改后=a5aa70a1a5c5dde9)
+  ✅ AK5 聚类必须**确定性**：打乱输入顺序 ⇒ 族标签映射逐位相同  (族=['f1c0', 'f1c1', 'f1c2'])
+  ✅ AK6 ★★结构族必须真的**切断文件名边界**（否则只是换了个名字）
+         —— 至少一个套件的题被分到 ≥2 个结构族  (coding_small:['f1c0', 'f1c1'] ｜ g7:['f1c0', 'f1c1'] ｜ g7_family_train:['f1c0', 'f1c1'] ｜ g7_numeric:['f1c0', 'f1c1'] ｜ g7_struct:['f1c1'] ｜ g7d_spec_incomplete:['f1c0', 'f1c1'] ｜ g7j_n4:['f1c0'] ｜ g7m_g7d2_pad15:['f1c1'] ｜ numeric_logic:['f1c0', 'f1c1'] ｜ struct_convert:['f1c1', 'f1c2'] ｜ text_ops:['f1c0', 'f1c1', 'f1c2'])
+  ✅ AK7 ★★★【本轮核心负面发现】结构族的预测力必须**弱于**文件名族
+         实测（qwen2.5:7b / T=0 / 8 会话 / 114 行，同一批行）：
+             文件名族 Δ=+0.0447 阈值=0.0421 snr=1.062 → PRESENT
+             结构族   Δ=+0.0051 阈值=0.0200 snr=0.255 → ABSENT
+         ⇒ 现有族预测力里**有相当一部分来自「套件里挑了哪些题」**，
+           不是题面结构规律。8 会话「闸转绿」必须**降级解读**。
+         ⛔ 这条断言同时是防「尺子购物」的闸：
+            谁回头调特征把结构族刷绿，这条就判红 ⇒ 必须显式承认动了尺子。  (文件名 snr=1.062 / 结构 snr=0.255)
+  ✅ AK8 ★负面结论不许被读成全面否定：结构特征对**检索**仍然有效
+         —— AK7 否定的只是「按族预测通过率」。而「按特征检索相似题」
+            是另一个任务（外部奖励检索要用的正是后者），必须单独测：
+            同结构族内的题面相似度必须**显著高于**跨族的。  (族内均值=0.365(n=970) 跨族均值=0.220(n=1192) 差=0.145)
+  ✅ AK9 对照探针必须存在、且**声明了事前冻结**（不许回头调特征）
+         —— 一个没有『写定在读数之前』声明的对照实验，
+            等于允许自己试十种定义挑最好看的那个  (探针=True)
+  ✅ AL1 ★★内核**自评**一律拒收：source 不是外部打分器 ⇒ 不写、且计数
+         —— 自评分是整个项目立论的掘穿点：外部锚层存在的理由就是
+            『变好』必须有外部依据，自己给自己打分正好绕开它  (拒自评=1 已写=0)
+  ✅ AL2 缺题号或缺特征 ⇒ 拒收（无法归属或检索不到 ⇒ 不写）
+         —— 没有题号就挡不住「读到自己的分数」；没有特征就找不到同类题  (拒缺失=2)
+  ✅ AL3 合法外部奖励必须写进去（三条 ⇒ 计数=3）  (已写=3)
+  ✅ AL4 ★★★检索必须**排除当前题号**：自己的历史得分绝不能进上下文
+         —— 读到自己上一次在这道题上的分数 = 开卷考同一道题。
+            那不是学习，那是把测试集答案抄进提示词。  (跳过自己=1 命中=2)
+  ✅ AL5 ★★提示必须是**可执行**的：给出『先检查什么』，不是『不可假设…』
+         —— 后者是 V1 之前 9/10 条 facts 的形态（读了也改不了任何动作），
+            正是 §15.2 里『学到的知识不可执行』那一层  (历史同类题的外部得分： ｜ - 同类题（结构重合 1.00）：历史通过，得分 1.00 ⇒ 无记录的失败模式 ｜ - 同类题（结构重合 1.00）：历史未通过，得分 0.33 ⇒ 先检查：减法规则没处理)
+  ✅ AL6 结构不重合 ⇒ 不给提示（避免把不相干题的分数塞进决策链）  (min_sim=0.3)
+  ✅ AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励
+         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）  (默认不参与)
+  ✅ AL8 ★内核**不许自己造特征**：`core.py` 不得 import `mw.features`
+         —— 一旦内核能从目标文本里给自己算特征，它就能给自己挑
+            『看起来像』的先例 ⇒ 检索退化成又一次自证。
+            特征必须由外部锚层提供（`run.py` 算好传进来）。  (core.py 未引 features（docstring 里讨论它不算 —— 静态锚必须剥注释）)
+  ✅ AL11 ★★世界模型的**每个**数值读数都必须被累加器搬运
+         （键名单必须由零点派生，不许另写一份）
+         —— 本轮自踩：奖励的三个新字段没进名单 ⇒ 日志上写=5 / 读=0，
+            一个你看不出有没有被用过的通道 = 装饰（V5 的同名病灶）  (未被搬运=[])
+  ✅ AL12 「读了几条」必须**有消费者**：`rewards_seen` 必须出现在打印里
+         —— 只报『写入几条』不报『读到几条』，等于给通道发了一张
+            永远不检票的票。本轮实测靠它才第一次看见 读=14。  (打印侧已消费)
+  ✅ AL10 ★`run.py` 里引用的 `paths.*` 属性必须**真实存在**
+         —— 本轮自踩：写成 `paths.memory_db`（真名 `paths.db`）⇒ 跑完
+            才崩，奖励一条没写，而下游考试照常跑完（拿到空记忆）。
+            一个拼错的属性名会让整条实验链**静默地答错问题**。  (引用=['bench', 'db', 'root', 'score_ledger', 'workspace'] 不存在=[])
+  ✅ AL9 奖励必须写在**整轮跑完之后**：`record_reward` 的调用点
+        必须在 `run_suite(` 之后（轮内写 ⇒ 第 N 题读到第 N-1 题）  (record_reward@45602 > run_suite@42513)
+
+──────────────────────────────────────────────────────────────────────────
+AM 组：★证据必须自描述（2026-10-17 第十五轮实测逼出）
+
+      起因：同一套 struct_convert 在 --max-tokens 1024 与 1536 下给出
+      0.400 与 0.7600 两个相差近一倍的读数。想追查哪一行是哪个预算，
+      却发现**四份真实账本里一行都不带可读的口径字段** —— 只有 16 位
+      哈希，且生成它们的实验脚本也没入库。那是六个月后打不开的证据。
+  ✅ AM1 ★写侧必须挡下「只有哈希、没有可读口径」的行（`no_caliber`）
+         —— 看得到分数、看不到预算/温度/记忆口径 ⇒ 无法复核、无法
+            复用、无法判断两个读数能不能比。第十六轮之前这四份真实
+            账本就是这样的（全部 114 行），现在它们必须被标红。  (append={'added': 0, 'rejected': 0, 'duplicate': 0, 'no_caliber': 1, 'caliber_mismatch': 0})
+  ✅ AM2 ★`caliber` 与 `caliber_sig` 不自洽 ⇒ 拒（`caliber_mismatch`）
+         —— 不自洽比缺失**更糟**：缺失你会知道自己不知道，
+            不自洽会让你以为自己能复核，然后复错。  (append={'added': 0, 'rejected': 0, 'duplicate': 0, 'no_caliber': 0, 'caliber_mismatch': 1})
+  ✅ AM3 自洽的行照收 —— 闸只挡缺证据的，不挡正常使用  (append={'added': 1, 'rejected': 0, 'duplicate': 0, 'no_caliber': 0, 'caliber_mismatch': 0})
+  ✅ AM4 两种新拒绝进**受控词表**：又一个总拒绝数 ⇒ 分不清是没写口径
+         还是口径自相矛盾（与 critique / ledger 已有两组同构）  (REJECT_KINDS=('missing_fields', 'no_caliber_sig', 'diff_caliber_sig', 'duplicate', 'no_caliber', 'caliber_mismatch'))
+  ✅ AM5 ★历史行**照样受理**（那是真证据），但必须记账
+         `legacy_no_caliber` —— 八会话真账本 114 行
+         全部没有可读口径。删掉它们会让之前三轮的结论当场失去证据，
+         假装它们可复核则是把不能复核的东西当能复核 ⇒ 只能标红。  (受理=114 不可复核=114)
+  ✅ AM6 `legacy_no_caliber` 必须有**消费者**：必须出现在 `as_line()` 里
+         —— 一个只在内部计、永远没人念的数，等于没有（V5 装饰字段的同型）  (账本 总=114 采纳=114 拒(缺字段=0/无签名=0/异口径=0/重复=0) 读侧去重=0 坏行=0 ⚠️不可复核(无可读口径)=114)
+  ✅ AM7 去掉哪些字段只剩**一处**说了算：`ledger_sig_of` 必须委托
+         `ledger_caliber_of` —— 两边各删一份，迟早有一天 caliber 变了
+         而落下的一边没变 ⇒ 行内 caliber 与签名不再自洽（AM2 的成因）  (剥注释后=' -> str:\n    return signature_of(ledger_caliber_of(caliber))')
+  ✅ AM8 run.py 写账本时必须同时写 `caliber`（静态锚，剥 docstring 后查）
+         —— 只写 `caliber_sig` 不写 `caliber`，等于把"证据要自描述"
+            这条要求托付给记性；第十五轮就是这么丢掉的。  (run.py 未同时写 caliber)
+  ✅ AM9 撤回点必须**唯一**：`no_caliber` 与 `caliber_mismatch` 各一处
+         （R13：分散的撤回点 ⇒ 撤回时断一处另一处还在，读数不转红）  (no_caliber=1 mismatch=1)
+  ✅ AM10 产生证据的**脚本必须有可被锁定的指纹**：CI 每跑一次都要念出
+         bench 脚本的 sha256 与账本"不可复核"行数 —— 四份旧账本之所以
+         哑掉，一半是因为连产生它们的脚本都没进仓库，改没改过无从得知。
+         ⛔ 这里不断言脚本内容，只断言"它被审计了"：
+            锁内容会逼得人为了过闸而冻结脚本，那是假的可复现。  (脚本存在=True 指纹步已接=True)
+  ✅ AM11 ★语义冲突必须**报错**，不许静默兜底（本轮自踩）
+         —— `--fresh`（记忆隔离）与 `--memory-dir`（记忆跨题累积）同时给，
+            旧代码把 fresh 悄悄改成 False ⇒ 我跑的『隔离 vs 累积』2×2
+            四格全同（mean=0.7600 一字不差），还以为是结论太稳。
+            **对照组被静默折叠成同一格**，是比没有对照组更糟的事 ——
+            它长得像对照，实际一次都没对照。  (声明处数=1 在 _option_conflict 内=True)
+  ✅ AM12 这条规则必须**真的会挡人**（可观测行为，不是文档里的一句话）  (冲突说明='--fresh 与 --memory-dir 互斥：--fresh 要求每题**记忆隔离**（一把尺子量孤立的一次），而')
+  ✅ AN1 读写两侧必须**同源**：`ABSTRACT_SOURCE`（写）与 `ABSTRACT_MODE`（读）
+         必须同时存在且取同一个值。两边分开声明 ⇒ 某次改动只改一边后，
+         抽象臂会**静默地读到一个空层**，而实验会被读成『抽象没用』。  (source='abstract' mode='abstract')
+  ✅ AN2 抽象器属于内核 ⇒ 不许依赖外部锚层（`mw.abstractor` 不 import bench）
+         —— 依赖方向反向的那一天，内核就能拿打分结果去挑自己要记的经验。  (abstractor 引了 bench)
+  ✅ AN3 `looks_like_code` 必须挡住**所有**可执行形态
+         —— 一条漏网的代码就让整场对照作废（'抽象臂'抄的是答案）  (形态判定不全)   已清理半成品目录：/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmpl2p13qyp/ao_len
+   已清理半成品目录：/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmpzq_t0f0t/ao_same
+   已清理半成品目录：/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmp4e3pxrq8/ao_empty_out
+
+  ✅ AN4 `strip_code` 必须是**删除**而不是'标注为代码'
+         —— 留下『[代码已省略]』等于告诉读者'这里原本有一段有用的东西'，
+           那也会被当成信号 ⇒ 抽象层里仍然藏着答案的影子。  (结果='先做 A 然后 B')
+  ✅ AN5 abstract 模式下**工作记忆整块不进上下文**
+         —— 工作记忆存的是工具输出原文，而 finish 的输出就是答案原文。
+           留着它，'抽象臂'就不成为对照：同一段答案换了条路走进来。  (raw含=True abstract含=False)
+  ✅ AN6 abstract 模式下只有 `source==abstract` 的事实留得下
+         —— 且过滤必须**只看 source**：'长得像经验'是由运气决定的判据，
+           source 才是写侧承诺的事实。  (经验块='[经验] 做 X 之前先检查 Y')
+  ✅ AN7 层读数必须有消费者：`memory_layer_view` 要被 `_kwm_absorb` **主动取走**
+         —— 第三次踩'新建字段没人搬运'的根因就是要求每个调用点**记着传**。
+           现在由 absorb 自己去 core 上取，调用点传不传都有。  (view={'recalled': 2, 'abstract': 1})
+  ✅ AN8 ★模型给回代码 ⇒ 蒸馏**必须拒收并且计数**，不许悄悄写进记忆
+         —— 一个看得见的可归因拒收（dropped_code），远胜一次静默的成功。
+           而且样例本身必须留痕：没有样例，'到底漏掉了什么'永远查不出来。  (蒸馏 输入=1 采纳=0 （含代码=1 点名=0 空=0 其它=0 LLM失败=0）)
+  ✅ AN9 `DistillStats` 的**每种**拒收都要有名字且能进读数
+         —— 只有一个 kept 数字的蒸馏器 = '我把不重要的东西删掉了'的资格证。  (蒸馏 输入=0 采纳=0 （含代码=0 点名=0 空=0 其它=0 LLM失败=0）)
+  ✅ AN10 run.py 必须把「读了几条 / 其中几条是抽象层」念出来
+         —— 否则 abstract 臂读到一个空层时会**看起来跟满分处置一样**，
+           而那其实是一个退化的对照（第十五轮同型：对照组被折叠成同一格）。  (run.py 未打印层读数)
+  ✅ AN11 ★任务集生成器必须有自检，且 **SyntaxError 不许被当成'没答对'**
+         —— 本轮实测：一道题的 assert 里写了真换行符 ⇒ 5 条全是
+           SyntaxError，若被 `except Exception` 吞掉就会读成
+           'oracle 只过 1/5'，把**工具的失败**记成了被测对象的失败。  (gen_tasks 自检不完整)
+  ✅ AN12 ★抽象里不许**点名某道题**（本轮实测抓到的泄漏）\n         —— 蒸馏出的第一条是「调用 deep_get 时，先确认路径字符串格式正确」，\n           而 `deep_get` 就是训练题 z04 的函数名。那不是经验，那是记题：\n           换一批函数名就叫不动它了。⇒ 含下划线标识符的句子一律拒收，\n           逼它写成「按路径逐段下探时，先确认路径字符串的格式」。  (蒸馏 输入=1 采纳=0 （含代码=0 点名=1 空=0 其它=0 LLM失败=0）)
+  ✅ AO1 bench 层的 `ABSTRACT_SOURCE` 必须与内核**同源**
+         —— 两边分开声明，某次改动只改一边之后，安慰剂会把**没有**经验
+           的记忆当成有 ⇒ 第四臂悄悄变成空臂，而且不报错。  (placebo='abstract' mw.abstractor='abstract')
+  ✅ AO2 ★打乱必须是原文的**字符排列**（等长 + 同字多重集）且不得等于原文
+         —— 打乱之所以是合格的安慰剂，正因为它保留了全部表层统计量
+           （长度、字集、字频），只摧毁语序承载的语义。
+           若 C 仍优于打乱臂，差别只能来自『那句话说了什么』。  (全部通过)
+  ✅ AO3 打乱必须**确定性**（同一输入同一输出）⇒ 实验可复核
+         —— 不确定的安慰剂等于每次跑都在换自变量，
+           而它的随机性会被误读成『被测对象不稳定』。  (17='空处先字符理项查解析询前串' 18='字析解符串查空理询前先项处')
+❌ 长度不等（原文 13 字，替换文 2 字，差 -11，允许 ±0）
+   原文：解析查询字符串前先处理空项
+   替换：短句
+   ⛔ 不补空格、不截断 —— 补出来的那几个字会成为第二个自变量，下场实验就得同时解释它。
+  ✅ AO4 ★长度不等必须**拒绝**，且不补空格、不截断、不留半成品目录
+         —— 补出来的那几个字会成为第二个自变量，下场实验就得同时解释它；
+           留下半成品则更坏：下次运行会死在『目录已存在』上，把真因藏起来。
+         ⛔ rc==2 表示**压根没跑到替换**就退了 ⇒ 那是一次假成功。  (rc=1 半成品留着=False)
+❌ 替换后与原文相同（'解析查询字符串前先处理空项'）—— 那是实验组本人，不是安慰剂。
+  ✅ AO5 ★替换文本等于原文必须拒绝 —— 那是 **C 臂本人**，不是安慰剂。
+         这条最容易漏：调参时忘记改文本，实验就变成'自己和自己比'，
+         然后产出一个精确到小数点后四位的 Δ=+0.0000。  (rc=1)
+❌ `source=abstract` 这一层 0 条 ⇒ 安慰剂比对退化成'空 vs 空'。
+   这种读数最危险：它逐题全 0、看起来极其干净，
+   而它证明的只有'这一段什么都没发生'。不跑。
+  ✅ AO6 ★抽象层为 0 条必须拒绝 —— 在空层上做安慰剂 = 拿空臂跟空臂比。
+         这种读数最危险：它逐题全 0、看起来**极其干净**，
+         而它证明的只有'这一段什么都没发生'。  (rc=1)
+  ✅ AO7 目标目录已存在必须拒绝
+         —— 每个臂都必须是一份**全新**的复制；复用目录等于承认
+           '我不确定它里面到底跑过什么'（这正是第十六轮的真实缺陷：
+           B/C 共用同一个目录，跑完后库里多了一条 B 臂沉淀的事实）。  (rc=1)
+源：/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmpr3qebxq_/ao_src
+产：/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmpz5gis99x/ao_ok
+变体：text（目标层 source='abstract'）
+替换 1 条（等长约束 ±0）：
+    13字  解析查询字符串前先处理空项
+    13字  编译报错时先读最底层栈信息   md5 8733353db60f → 1ce37e7380a2
+总字符差 +0（必然为 0 —— 它是上面那条**逐条**闸的推论，不是第二把锁）
+  ✅ AO8 ★FTS5 索引必须同步更新：替换后**索引里不再是旧文本**，且**有的是新文本**
+         —— 只 UPDATE `facts` 不改 `facts_fts` 的话，检索到的还是旧话，
+           而且**不会报错** ⇒ 安慰剂臂读的仍然是真经验，
+           产出一个人畜无害的 Δ=0，然后被读成'存在性效应成立'。  (rc=0 索引=['编译报错时先读最底层栈信息', 'worldmodel 的老事实'] 库=['abstract:编译报错时先读最底层栈信息', 'worldmodel:worldmodel 的老事实'])
+  ✅ AO9 去重键（facts.key）必须跟着文本一起重算，且全库去重约束不许破
+         —— 键是坐在**旧文本**上的指纹偷懒不动它 ⇒ 两条不同安慰剂会撞同一行，
+           `ON CONFLICT` 把后一条静默吃掉，第二、第三个安慰剂臂凭空消失。  (dups=0 rows=['abstract:编译报错时先读最底层栈信息', 'worldmodel:worldmodel 的老事实'])
+  ✅ AO10 ★源记忆库必须**原封不动**（只读）
+         —— 安慰剂工具碰了源，'各臂同源'这个前提就没了，
+           而且污染是**顺着实验顺序**累积的：先跑的臂改得最多。  (源库现状=['解析查询字符串前先处理空项', 'worldmodel 的老事实'])
+  ✅ AO11 ★内核不许知道'安慰剂'的存在（`mw/*.py` 里连这个词都不许出现）
+         —— 安慰剂是**测量仪器**，不是能力。
+           一旦内核里有了 '我被告知这是一条安慰剂' 的分支，
+           测到的就不再是这个系统，而是这个系统的应试技巧。  (含 placebo 的内核模块=[])
+  ✅ AO12 ★每个臂必须有**自己的一份**记忆副本，且能在跑之前自证同源
+         —— 解析实验脚本：**冻结之后**（第 2 步之后）
+           任何命令都不许再把 base 当 `--memory-dir` 传；
+           必须有 `mem_base → mem_${arm}` 的复制动作；
+           并且要打印 sha256 —— 不打印就等于要求读者相信我没有搞混。  (冻结后 base 直传次数=0 含复制=True)
+  ✅ AO13 等长容差默认值必须是 **0**（严格等长）
+         —— `--allow-len-delta` 存在只是为了诊断。默认一放宽，
+           '多写或少写几个字'就会被当成同一个变量，实验当场失去归因能力。  (默认值不是 0)
+  ✅ AO14 三个安慰剂文本必须在脚本里**逐字可见**（可复核）
+         —— '我和安慰剂比过'这句话本身没有信息；
+           读者要能当场看到那句安慰剂到底是什么话。
+           （D1 是打乱 ⇒ 可见的是它的生成方式而非结果。）  (脚本里看不到安慰剂原文)
+  ✅ AO15 ★安慰剂的**结论**必须可重算，不能只是散文里的一个数
+         —— `bench/evidence/placebo_s17/` 里冻着两轮共 9 份原始 runs.jsonl，
+           `bench/probe_placebo.py` 每次跑都把它们从头算一遍：
+           数字改一个字词就可能不易察觉，而换数据探针会自己转红。
+           ⛔ 它锁的是『按这些数据、按事前规则，结论必须是什么』，不锁结论本身。  (探针=True 证据份数=9)
+  ✅ AO16 ★探针读不到证据时必须是**带理由的失败**，不许悄悄算成 0 分
+         —— 缺行 ⟶ 返回 0.0 是本项目最容易复发的错误之一：
+           '某道题没跑'会被读成'某道题得 0 分'，这是两种完全不同的事实。  (rc=2 末行='❌ 证据读不出来：证据文件不存在：/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmpic38mnir/no')
+  ✅ AP1 ★假记忆的 patch **不许出现在内核里**
+         —— 一旦 `mw/` 下有人把方法挂上去，'这个数是被改过的还是没改过的'
+           就再也没法从外部证明，E3 正对照当场失去意义。
+           同时 bench/fake_mem.py 必须真的在做 patch，否则这把锁是空的。  (被污染的内核模块=[] patch 处数=4 壳里 patch 处数=0)
+  ✅ AP2 ★假文本必须**严格等长**，而且**逐行**长度都不能变
+         —— 被替换的是前面几道题的**答案代码**，缩进与换行是它的结构。
+           连只差一个字符，'多出来的那一个字'就成了第二个自变量。  (逐行长度一致数=5/5)
+  ✅ AP3 ★**有内容**的字符串替换后必须与原不同（等原文就不是安慰剂）
+         —— 这条只在 `strip()` 为空时放行：空串本身没有内容可替换，
+           拿它去卡'必须相异'只会让整个臂因为一条空记录崩掉。
+           ⛔ 这个口子必须**看得见**（AP4 盯着它的计数）。  (有内容者全不相同=True 相同内容已拒=True)
+  ✅ AP4 ★放行恒等必须**计数**，不许静默
+         —— 看不见的例外会长大：今天只放过空串，明天就有人往里塞条件，
+           而 AP3 只抽样，看不出来覆盖面缩了多少。  (计数出现次数=1)
+  ✅ AP5 ★mapper 必须是**双射**：不同字符不得映射到同一个字符
+         —— 一旦碰撞，假文本的信息量就不再与原文本可比：
+           长度虽然一样，'删掉了多少信息'却随原文内容浮动 ⇒ 第二个自变量。  (测试字符数=74)
+  ✅ AP6 ★mapper 必须**确定性**：同一段原文两次映射结果逐位相同
+         —— mapper 里只要掺一点时间/随机数，两道题看到的就不是同一个
+           '假记忆'，而那正是本实验要排除的那个变量。  (两次一致=True)
+  ✅ AP7 ★T 只读探针必须真的**一个字都不改**，并且逐条记账
+         —— T 是'装上测量会不会改变被测对象'的答案：
+           它一旦偷偷变换，' |E3−T| ≤ 0.05 '这条闸门就成了自我安慰。  (identity_ok=1)
+  ✅ AP8 ★E0（空）与 E3（真原文）必须被 runner **明确拒绝**
+         —— 它们只能跑**未被 patch** 的进程。让它们也从这里出去，
+           就等于承认我分不清这个进程有没有被改过。  (ARMS=('E1', 'E2', 'F', 'T'))
+  ✅ AP9 ★工作记忆的处理必须**精确到条**：
+         prev 档只替换上一题残留，**本题自己的草稿纸一个字都不许动**
+         —— 把本题草稿纸也改掉，就不是安慰剂而是把这个系统弄瞎，
+           Δ 里会混进'看不见自己刚写的东西'，再也拆不开。
+         三档语义必须两两不同，否则'这条通道有多大'就没法问。  (prev 保住了本题草稿纸、all 全改、none 全不改)
+  ✅ AP10 ★等长被违反时必须是**带理由的失败**，不许返回原文悄悄继续
+          —— 静默兜底（except: pass / return old）等于把有效数据
+            和污染数据混在一起，事后没有任何办法把它们分开。  (违反已记录数=1)
+  ✅ AP11 ★事前规则必须在**开跑之前**打印出来，事后再看结果才许判读
+         —— 判据要是能改，'Δ ≥ 0.15 才算数'这种话就没有约束力：
+           拿到 0.14 时把它放宽到 0.10 只需要动一个字符。  (规则块在跑之前=True（规则@1512 首跑@3878 关键词=True）)
+  ✅ AP12 ★基线 E0 与正对照 E3 必须跑**未被 patch** 的进程，T 探针臂必须在
+         —— E3 是唯一能证明'假记忆这套装置没有把被测对象改坏'的参照；
+           T 是唯一能量出'装测量这个动作本身有多大影响'的臂。
+           两条缺一条，整套对照都可以被一句话质疑掉。  (E0/E3/T 齐备=True)
+  ✅ AP13 ★每一臂必须有**自己的一份**记忆目录，不许共用
+         —— 第十七轮就是因为 B/C 共用同一个 `--memory-dir`：
+           C 的起跑库里躺着 B 跑出来的 episode，同一个 C 从 0.8500
+           变成 0.7500，一个 +0.40 的单题涨幅整个消失。  (memory-dir 出现次数=1)
+  ✅ AP14 ★五臂的原始读数必须**冻结成文件**，结论不许只躺在散文里
+         —— 写在文档里的数字改一个字词就可能不易察觉；
+           冻成一堆 jsonl 之后，改数字探针会自己转红。  (证据份数=5)
+  ✅ AP15 ★判读规则**只许存在一份实现**：脚本必须委托给探针，不许自己再算一遍
+         —— 第十八轮的真实教训：两份实现各写一遍，其中一份多了 `**`，
+           落盘的判定与探针重算立刻不等。抄一遍就会漂，与抄得对不对无关。
+         ⇒ 修法是把脚本里那份**删掉**，而不是把它改对。  (脚本自带判读=False 探针定义=True)
+  ✅ AQ1 ★安慰剂必须是**一个包**、且旧脚本必须已经消失
+         —— 两套实现并存的后果不是报错，是『我改的那一套没被跑到』：
+           改 `placebo.py` 而实验走 `fake_mem.py`，两边都自洽，读数是假的。  (旧脚本还在=False 缺文件=[])
+  ✅ AQ2 ★并包之后 mapper 必须**逐字节**复现冻结证据
+         —— 重构时我一度把 scramble 的种子派生多拼了一段 `:len`，
+           于是同一个输入的排列变了：**不报错**，只是"重跑一次"和"当年那次"悄悄不是同一个臂。
+           这类事故只能靠逐字节比对冻结证据发现。  (E1 密文回归=True（不符条数=0） D1 打乱回归=True)
+  ✅ AQ3 ★F 臂（reshape）必须**只动几何**：等长、等行数、字符序列不变，行宽必变
+         —— 若它顺手把字符也换了，它就和 E1 混成一个变量；
+           若行宽没变，那它什么都没做，却会产出一个人畜无害的 Δ=0，
+           然后被读成『形状无贡献』（那正是本项目最贵的一种假阴性）。  (序列不变=True 等长=True 等行数=True 行宽变=True 与原文不同=True)
+  ✅ AQ4 ★F 的盲区（既无换行又无空白的行）必须**开一个可核对的窄口**，
+         而不是让整臂崩掉、也不是静默放过
+         —— 中文短句整句没有可挪的结构，`reshape` 对它**无定义**。
+           静默返回原文 = 假装这一条也被操纵了；抛异常终止 = 整臂数据作废。
+           ⇒ 唯一诚实的做法：mapper 自己声明『没有自由度』，
+             调用方据此放行**并计数**，读数里明示有多少条没被操纵。  (有口子=True 无理由时仍拒绝=True 单行中文原样=True)
+  ✅ AQ5 ★全仓只许 `bench.placebo.*` 这一种导入写法
+         —— 若有地方把 `bench/` 自己塞进 sys.path 再 `import placebo`，
+           同一个模块会被加载成**两个对象**：两份 STATS、两份 install，
+           而**不会报任何错**。计数器记在 A 上、读数读的是 B。  (用了裸导入的文件=[])
+  ✅ AQ6 ★合并的只能是**机制**：三个探针必须各有一份自己的判读，且互不引用
+         —— 第十八轮的真实教训是『判读实现有两份 ⇒ 立刻漂』，
+           但修法不是把三份并成一份：它们回答的是**三个不同的问题**
+           （抽象层有没有用 / 存在性有没有贡献 / 形状有没有贡献）。
+           并成一份 = 把三个问题的答案硬塞进一个阈值。  (各有 verdict_of=True 互相 import=[])
+  ✅ AQ7 ★事前规则必须**只声明一处**，且必须在**开跑之前**念出来
+         —— 判据要是能改，拿到 0.14 时把它放宽到 0.10 只需动一个字符；
+           而『两处声明同一个阈值』的结果不是报错，是**打印的那份和判读的那份
+           悄悄不一样**（第十八轮真实复发过一次）。  (调用@1971 首跑@4611 探针有规则=True 脚本无副本=True)
+  ✅ AQ8 ★六臂必须齐备：E0 / E3 / T / E1 / E2 / **F**
+         —— 少 E0 就没有基线；少 E3 就没有正对照；少 T 就不知道装测量
+           本身有多大影响；少 E1 就不知道语义贡献；少 E2 就不知道
+           '一起毁掉'有多大；少 F 就问不出**形状**。  (六臂齐备=True)
+  ✅ AQ9 ★形状对照的六份原始读数与判定必须**冻结成文件**，且 CI 每次重算
+         —— 写在文档里的数字改一个字词就可能不易察觉；
+           冻成 jsonl 之后，改数字探针会自己转红。  (证据份数=6)
+  ✅ AQ10 ★三条 mapper 的分工必须与设计表一致（这是整轮实验的**自变量定义**）
+          —— E1 保几何/换字符（语义）；F 保字符/毁几何（形状）；
+             E2 两个都毁（所以它的 Δ 无法单独归因）。
+          分工一旦漂，`E3 − F` 就不再是「形状」的读数，而是一个混合物。  ({'E1_保行几何': True, 'E1_换字符': True, 'E2_毁语序': True, 'F_保字符序列': True, 'F_毁行几何': True})
+  ✅ AR1 ★感知写侧必须**整段**存下原文，且句柄的 `chars`/`sha` 不得撒谎
+         —— 存的是截断版却报全文长度，就是又一个『标签撒谎』：
+           读数上 100% 可回溯，实际取回来是残的。  (进=4034 出=4034 sha=d8d7adae2d8d)
+  ✅ AR2 ★三种窗口必须逐字节落在原文里，且**都**报『已截断』
+         —— `whole` 头尾各取一半是为了不让『决定性信息在结尾』这种情况
+           被整段丢光；三者都不许把『截断了』说成『这是全文』。  (head='traceback...' tail="yError 'z02'" whole 头尾='traceback.'/"rror 'z02'")
+  ✅ AR3 ★句柄不存在 ⇒ `KeyError`；原文与写侧承诺不符 ⇒ `BlobIntegrityError`
+         —— 静默返回空串/原文会让『取回失败』长得和『取回成功』一样。
+           这与 V5 的 `.txt 被误判成功`是同一类事故。  (异常=True 漏网=[])
+  ✅ AR4 ★触发必须**可证伪**：该动的两个情形要动，不该动的两个**一个字都不许动**
+         —— 只有『会触发』没有『不该触发时不触发』，那就是一个恒真的机制；
+           而恒真的机制在读数上与『没装』完全一样（都是 0 次或都是天天触发）。  (长报错→tail 短报错→不回看 失配→whole 平静→不回看)
+  ✅ AR5 ★触发函数只许收 `ok` / `error` / `mismatched` —— **不许**收模型输出
+         —— 让模型自己决定『要不要回头看原文』，它会在 100% 的情况下
+           自信地说不用；于是机制恒为 0 次，而读数上只显示『没触发』。  (形参=['ok', 'error', 'mismatched'])
+  ✅ AR6 ★结构锚：`core.py` 必须真的在感知相位调 `memory.capture(`
+         —— 只把 `blobs` 与 `expand()` 造出来而内核不调用，那是一个『库里的能力』，不是闭环里的能力。  (生产调用点=1（必须恰好 1 处：两处就意味着有两条写入路径）)
+  ✅ AR7 ★`WORKING_CHAR_CAP` 必须**仍然是 300**
+         —— 本轮的修法是『存索引 + 按需取回』，不是『把宽度调大』：
+           调大是拿上下文换细节，会让一步吃掉整个预算。
+           这条断言同时防『顺手放宽』和『顺手收紧』两种漂移。  (宽度=300 回看窗=600 状态预算=1600)
+  ✅ AR8 ★回看必须**替换**工作记忆的最后一条，不许追加
+         —— 追加会让同一条观测在上下文里出现两次（截断版 + 回看版），
+           而那正是『同一事实只声明一处』的反面；
+           第一次实现就是追加，AB7 当场转红：关掉工作记忆写入后
+           回流率仍有 0.5，因为回看块成了第二条回边。
+         ⚠️ 没有条目时必须返回 False（调用方据此计数），不许静默成功。  (替换后条数=1 无条目时=False)
+  ✅ AR9 ★状态预算只能有**一处**声明：`planner` 里不许再出现 `state[:1200]` 这种字面量
+         —— 第二十轮实测踩到：内核把回看正文拼进状态，规划器在最后一米
+           又按 1200 字剪一刀，正文一个字都没进模型，而读数写着『取回成功』。
+           两个漏斗里**下面那个**从来不会报错。  (用常量=True 残留字面量=False 预算=1600 vs 回看+两条工作记忆=1200)
+  ✅ AR10 ★`replan` 必须收下并转发 `state`，不许用占位串把它顶掉
+         —— 第二十轮实测：失败之后的下一轮**恰恰走 replan**，
+           而它原来传的是 `state="(上一步失败，见下)"` ⇒ 整个状态被扔掉。
+           于是『最需要上下文的那一次』刚好是『上下文被丢的那一次』，
+           与本函数 docstring 里那条 guidance 断点同宗。  (replan 收 state=True 转发给 propose=True)
+  ✅ AR11 ★`_recall_for` **函数体**内必须在 abstract 模式下拒绝取回并计数
+          —— abstract 臂的语义是『只读蒸馏层』（§16.15）。
+            允许它回看工具输出原文，两个臂就都读得到原文，
+            差值当场变成噪声，而读数上仍然显示『两个臂都跑完了』。
+          ⚠️ 判定范围必须是**这个函数的体**，不是整个文件 ——
+            否则同一句话在别处还有一份时，撤掉这里也不转红（实测踩过）。  (函数体内模式闸=True 计数=True 函数体长度=1487)
+  ✅ AR12 ★结论必须**冻结**成文件，CI 每次重算并与落盘判定对账
+          —— 文档里的数字改一个字符不容易被发现；
+            冻成 json 之后，改数据探针会自己转红。
+          ⚠️ 判定必须是 `R4` 而不是『成立』：R4 明确写着**只主张结构**。  (tag='R4' CI 里有探针=True)
+  ✅ AS1 ★`mw/verify.py` 的代码里不许出现 `bench` —— 判据模块属于内核
+         —— 一旦它 import 了锚层，判据就有了一条通往参考解/断言集的
+           物理通道；而『不许读尺子』这句话靠注释是守不住的。  (代码里出现 bench=False)
+  ✅ AS2 ★`verify.extract_code` 与打分器 `extract_code` 必须**逐字节一致**
+         —— 自检比尺子更严就会把正确答案判死，那时分数下降会被
+           读成『自检有害』，而真正坏掉的是判据的口径。  (7 个样本（含 ```c / 空 / 无围栏）逐字节比对)
+  ✅ AS3 ★`derive()` 只许收 `goal` 一个输入，且不同题面必须派生出不同判据
+         —— 若它还能收 answer 或分数，就给了『答案反过来影响判据』的入口，
+           那正是自评分的形态（V5 的死因）。  (形参=['goal'] 代码题=['nonempty', 'defines', 'fence_lang', 'compiles'] 散文题=['nonempty'])
+  ✅ AS4 ★散文题只许派生 `nonempty` —— 对一段解释文本做 `compile()`
+         —— 会把它 100% 判死。判据必须跟着题面走，不能跟着『我想要
+           一条更硬的判据』走；那与『把门槛调松让分数变好看』是同一类动作，
+           只是方向相反。  (散文题判据=['nonempty'])
+  ✅ AS5 ★判据为空 ⇒ `ok=False`（报『没检查』，不报『通过』）
+         —— 两者在读数上必须分开：否则『自检通过率 100%』可以靠在
+           配置里关掉全部判据刷出来，那不是读数，那是作文。  (ok=False report='本轮没有派生到任何判据')
+  ✅ AS6 ★未知判据类型 ⇒ 判红，**不许**静默放行
+         —— 一个静默放行的判据比没有判据更坏：它让『检查过了』
+           变成一句谎话，而读数上看不出差别。  (ok=False failed=('神秘',))
+  ✅ AS7 ★第一次交**语法坏**的代码必须被打回
+         —— 这是本轮唯一的新机制。它必须由**内核规则**触发，
+           不能交给模型自己决定要不要检查（否则恒为 0 次）。  (runs=2 passed=1 failed=1)
+  ✅ AS8 ★第二版交对 ⇒ 交付它，状态 done
+         —— 只拦不修的话，这一轮等于给系统加了一个'永远失败'的闸，
+           那是把 V5 的『一个永远不可能好的信号』又造了一遍。  (status=done 答案是否第二版=True)
+  ✅ AS9 ★一直交坏答案 ⇒ 打回 `verify_retries` 次后放弃，并标 `done_unverified`
+         —— 没有上限的重写会烧掉**交付**的配额（收尾余量的同一条教训）；
+           而把它报成 `done` 就是 V5 那种『每轮全绿而目标数字不动』。  (failed=2 exhausted=1 status=done_unverified)
+  ✅ AS10 ★重写失败（重复动作 ⇒ 停滞）时，答案必须被 `_salvage` 保住
+          —— 否则一个本来能拿分的答案会被装置变成 0 分，
+            而分数下降会被读成『自检有害』。**装置不许吃掉效应。**  (status=closed 答案641字 salvaged=True)
+  ✅ AS11 ★`verify_retries=0` ⇒ **0 条判据、0 次运行**
+          —— 开/关自检是两个不同的候选。关不掉就没有对照组，
+            那时任何 Δ 都无法归因（第十六轮共用记忆目录的同类事故）。  (checks=[] runs=0)
+  ✅ AS12 ★`verify_retries` 必须在 `Limits.as_dict()` 里，且允许取 0
+          —— `Limits.as_dict()` 是口径签名的输入。不进制口径的话，
+            开/关自检的两轮会被 `paired_compare` 判成『同口径可比』，
+            那是把尺子又往下挪了一次（V5 的死因）。
+          ⚠️ 还必须进 `ZERO_OK_KEYS`：`_env_int` 默认把 0 当『没填』
+            回落到默认值 —— 那样『关掉』会被**静默改成 2**。  (在 as_dict=True 登记=True 允许0=True)
+  ✅ AS13 ★`_gate_finish` 只许有**一处**调用，且必须被「答案来源」守住
+          —— 本轮只加一条腿，不加一个相位：主循环仍然只有一个 `while`（J6），
+            校验是答案出口上的一道闸，不是第二次推理。
+          ⚠️ 外部能力的答案走同一道闸（第二十三轮）⇒ 守卫换成 `_produces`，
+            但 `_produces` 的定义里必须仍含 `finish` —— 否则闸会变成外部专用。  (调用点=1 被 _produces 守住=True 含 finish=True)
+  ✅ AS14 ★`_finish` 里 salvage 的条件必须是 `not answer and self._salvage`
+          —— 写成只看 `self._salvage` 就会把**正常交付**的答案替换成
+            上一版被打回的坏答案：一个静默的降级，而日志上一切正常。  (函数体命中=True)
+  ✅ AS15 ★`■` 汇总行必须念 `校验=`，并**把判据念出来**
+          —— 只念通过率的数可以靠关掉判据刷上去；
+            而『机制装了但一次没触发』与『机制没装』在只念 calls 时长得一样。  (汇总行含校验=True 含判据=True)
+  ✅ AS16 ★判读必须冻成文件，CI 每次重算并与落盘判定对账
+          —— 数字写在散文里改一个字符不容易被发现；冻成 json 之后，
+            换数据/松判据探针会自己转红。
+          ⚠️ 判定必须是 `R5`：它明确写着**不主张真模型分数**。  (tag='R5' CI 里有探针=True)
+  ✅ AS17 ★真模型三臂读数必须冻结，且判定必须是**负面**的 `Q3`
+          —— `ON == PL（去掉 elapsed_s 后逐字相同）`意味着：
+            收益来自『打回重写』这个动作，**不是**判据的诊断信息。
+          ⇒ 『知识必须可执行』（§17-6）这一轮**仍是 0**，不许读成正的。
+          ⚠️ 同时钉住 heldout 那 7 题**逐题相同**（效应没有跨题集复现）。  (tag='Q3' ON==PL=True heldout 位移=[])
+  ✅ AS18 ★收尾必须留下**结构化读数**（触发数 / 触发原因 / 答案来源 / 字数）
+          —— 只留日志 = 只能证明『走到过』；
+            『走到过几次、几次真改了交付物』是它能不能被评估的前提。  (triggered=1 origin={'收尾调用': 1} by_reason={'steps': 1, 'wall': 0} chars=7)
+  ✅ AS19 ★汇总行必须把收尾读数念出来（触发时带原因与来源）
+          —— 否则『收尾改变了交付物』这件事在日志上只剩一句散文，
+            而散文里的数字没法被重算。  (日志含收尾读数=True)
+11:55:35   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:35   📦 收尾交付 7 字符（来源=收尾调用）
+11:55:35   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:35   📦 收尾交付 7 字符（来源=收尾调用）
+  ✅ AS20 ★`overrode_rejected` 只主张**不同**，且必须两种情况都分得开
+          —— 只报『改了多少次』而不报『其中多少次其实和被打回那版一样』，
+            等于把『收尾救回了答案』这句没被验证的话写进读数。  (A(不同):改=1/同=0 B(逐字同):改=0/同=1)
+  ✅ AS21 ★收尾读数只在 `_reset_closeout()` 里声明一次，`__init__` 与 `run()` 各调一次
+          —— 两处各写一份字典 = 迟早漂移（`run` 加了字段而 `__init__` 没加）；
+            只建在 `run()` 里 = `_close_out` 无法被单独验证。  (调用点=2 声明处=1)
+  ✅ AS22 ★R13 驱动器只许还原「当前内容 == 当初写进去的变异」的备份
+          —— 无条件还原会把**本轮合法的修改**整个覆盖掉：
+            本轮真实事故——上一轮的 core.py 备份在新一轮启动时被照着还原，
+            `closeout_stats` 当场消失、契约从 444 条掉到 AS20 的 AttributeError，
+            而日志写着『启动先还原 5 个残留变异文件』，读起来像在修，实际在删。  (只还原真变异=True 过期就跳过=True)
+  ✅ AS23 ★基线判读的汇总行必须**锚在整句上**，且**唯一**
+          —— 本轮真实事故：`PASS=(\d+)\s+FAIL=(\d+)` 会在任何地方命中，
+            契约测试中途崩了之后它抓到的是 H8 断言自己打印的『PASS=7 FAIL=0』，
+            于是『基线 7/0』这个假读数把它带过了基线闸。
+          ⚠️ 所以这条不只查字面量，还把那条假汇总**喂回给正则**看它认不认。  (字面量='V1 契约测试汇总\\s+PASS=(\\d+)\\s+FAIL=(\\d+)' 样本命中=[('446', '0')])
+  ✅ AS24 ★收尾读数必须落盘，且**两个 solver 分支都并进去**
+          —— 不落盘的读数不可审计；只接一个分支 = 一半的题没有读数，
+            而汇总行看起来一切正常。  (落盘键=True 并入点=2（须为 2）)
+  ✅ AS25 ★收尾读数必须冻成证据，且**触发次数 ≠ 改掉交付物的次数**
+          —— 只报『收尾触发了 N 次』会让人把它读成『救回了 N 道题』。
+            实测：5 题触发 2 次，其中只有 1 次与『被闸打回的那一版』不同。
+          ⚠️ 两次都是 `wall` 触发（步数触发 0 次）⇒ 这个题集上收尾兜的是
+            『模型慢』，不是『想太多』；换题集必须重新登记。  (OFF 触发=0 mean=0.56 | ON 触发=2 原因={'steps': 0, 'wall': 2} 改交付=1 mean=0.76)
+  ✅ AV1 ★打回落盘的 failure 行，content 必须带着**错误原文**（不只动作行）
+          —— meta 里的 error 蒸馏器看不见；content 没有诊断原文，
+            『失败 → 经验』这条链在第一步就断了（§17-6 的断点①）。  (failure行数=2 首行content=自检超限未过（2次）— 3/4 项未过：缺少 def flatten(...)；代码块语言标签是 'c'（本题要 Pyt)
+  ✅ AV2 ★**超限交付**（打回次数用尽后如实交付）也必须落 failure 行
+          —— 超限那次 result.ok=True ⇒ 不走主循环的失败分支，
+            不补一行的话『这题最终为什么没过闸』在情景记忆里零痕迹，
+            而它恰恰是这题最该被蒸馏成经验的信息（断点②）。  (failure行数=2 含超限=True)
+  ✅ AV3 ★蒸馏器必须**收到**失败原料，且 failure 排在**第一批**
+          —— 成功记录本来就没东西可提（真模型实测 13 进 1 出、11 条 NONE），
+            失败记录才是『怎么避免坑』的原料；混在堆里 = 注意力最低处 = 白给。
+          ⚠️ 这是行为锚：假 LLM 记下收到的 prompt，撤掉排序立刻转红。  (蒸馏条数=3 第一条=执行记录（kind=failure）：
+finish({'answer': '...'})
+  ✅ AW1 ★默认（allow_note=True）⇒ `note` **在册**且 mutating=True
+          —— 开关的默认值必须保持历史行为逐位不变（只做加法不做偷换）。  (note在册=True mutating=True)
+  ✅ AW2 ★allow_note=False ⇒ `note` **不在册**（不是'注册了但拒绝执行'）
+          —— 工具目录进口径签名：不在册 ⇒ 目录变 ⇒ 口径变，
+            是声明出来的不同候选；在册但拒绝 = 同标签藏两种行为 = 标签撒谎。  (note在册=False)
+  ✅ AW3 ★关写入**不关读**：`recall`（只读）与 `finish` 仍在册
+          —— 6c 三臂要的是'种子是唯一写入口'，检索通道必须照常。  (recall在册=True finish在册=True)
+  ✅ AW4 ★V1_ALLOW_NOTE=0 ⇒ `Limits.allow_note` 为 False（env 真的生效）
+          —— '每次调用都重新读 env'的承诺（settings() 文档）必须对布尔也成立；
+            另外 as_dict() 自动包含本字段（fields(self) 派生）⇒ 进口径签名。  (env关闭读数=False as_dict含字段=True)
+  ✅ AW5 ★V1_ALLOW_NOTE=0 时构造的 Core，其工具注册表里**没有** `note`
+          —— Limits → Core → register_core_tools 的透传线；
+            config 与 tools 各自正确但中间断线 = 实验照样被混杂。  (core.note在册=False core.recall在册=True)
+  ✅ AX1 ★默认（allow_learn=True）⇒ 可教学失配**沉淀为语义事实**
+          —— 开关默认值必须保持历史行为逐位不变（worldmodel 的学习是主线功能）。  (沉淀后 facts=1)
+  ✅ AX2 ★allow_learn=False ⇒ 同一个可教学失配**不进语义层**，
+          但情景里的 mismatch 行**照记**（案例不丢，只是不上架）
+          —— 6c 三臂要的是'种子是唯一 facts 来源'，而情景层不进检索，
+            关它不影响送达；但学习案例照记，关掉不是销毁证据。  (facts=0 mismatch情景行=2)
+  ✅ AX3 ★V1_ALLOW_LEARN=0 ⇒ `Limits.allow_learn` 为 False，
+          且 as_dict() 自动包含本字段（fields(self) 派生 ⇒ 进口径签名）。  (env关闭读数=False as_dict含字段=True)
+  ✅ AX4 ★V1_ALLOW_LEARN=0 时构造的 Core，其世界模型 `allow_learn` 为 False
+          —— Limits → Core → WorldModel 的透传线；6c 首跑证明
+            这条线断了实验就会被混杂，而它断的时候每一层单看都是'对的'。  (core.wm.allow_learn=False)
+  ✅ AY1 ★`history_counts` 只数 reward 通道，且「未通过」单独计数
+          —— 装置修正⑦：训练史的闸必须来自内容，不来自 rc。
+             rc 的语义是「本轮有没有没量到的条目」，答不了
+             『蒸馏有没有原料』这个问题（★7b 实测撞出来的判据错位）。  (reward=2 未通过=1（期望 2/1；outcome 不计入）)
+  ✅ AY2 ★全通过的训练史 ⇒ 「未通过」为 0 ⇒ 闸必须判作废
+          —— 反面用例：没有它，把 LIKE 写成恒真也测不出来。  (reward=1 未通过=0（期望 1/0）)
+  ✅ AY3 ★注入诊断：48 格全扫、每格都有 `[语义记忆]`、模型零调用
+          —— 结论「不是被 STATE_CHAR_CAP 挤掉」必须可复算。  (格数=48 全含块=True 模型调用=0)
+  ✅ AZ1 骨架安慰剂逐字等长
+          —— 差一个字就不是同一把尺子；⑨a/⑨c 两次修的都是这件事。  ([])
+  ✅ AZ2 骨架安慰剂保留全部 ASCII token
+          —— FTS 是 OR+精确 token：改掉它，两臂检索行为就不再等价。  ([])
+  ✅ AZ3 骨架安慰剂不等于原句（汉字必须真被打散，否则 P ≡ H）  ([])
+  ✅ AZ4 已有种子库的目录必须拒绝重建（旧 facts 混入 = 处理不纯）  (rc=1 memP_exists=False)
+  ✅ AZ5 全部惯例文本 ≤120 字（否则 core.py 注入时静默截断到 120）  ([])
+  ✅ AZ6 ★hint suite 除题面外**逐字段不动**（7e 只改『指向』这一件事）
+          —— 手抄的 suite 只要顺手改顺一句，7d/7e 就不是同一把尺子了。  (n=4/4/4 漂移=[])
+  ✅ AZ7 ★题面**只差这一处**且真的指向记忆（长度差 +2、反向替换逐字节可逆）
+          —— 这是 7e 唯一的自变量；它不干净，整组读数就没有归因力。  ([])
+  ✅ AZ8 ★7f 只改**未被采用的三条**，且每条真的带上了「例：」
+          —— 已采用的 `g7d2` 一个字节都不许动，否则分不清「例子起作用」
+             与「把已经会的那条改坏了」。  ([])
+  ✅ AZ9 7f 惯例：键集与 7d **完全相同**、每条仍 ≤120 字（core.py 会静默截断）  ([])
+  ✅ AZ10 ★7f 惯例与题面的 **token 交集**必须与 7d 逐题完全相同
+          —— 交集一变，FTS 命中就变、注入条数就变（7e 实测 4/4/1/1），
+             于是「文本形式」与「注入量/检索精度」两个变量同时动，读数无法归因。  ([])
+  ✅ AZ11 ★7f 惯例必须已是**规范形式**：`normalize(v) == v`
+          —— `MemoryStore.commit_fact` 写入时折叠连续空白并 strip，
+             原文一变，R1 的 own-fact 就**永远**判不过（实测：例子里的
+             `'  1 '` 让 102 字存成 101 字，四题里只它一条报「未送达」）。  ([])
+  ✅ AZ12 ★7g 观察对象的惯例必须**逐字节冻结**，其余三条必须**真的**被改
+          —— 观察对象一动，「邻域长度 → 它的分数」就不再是单变量；
+             邻域没动，这一档等于把上一档又跑了一遍。  ([])
+  ✅ AZ13 ★7g 邻域三条必须**逐条**等于档位长度、≤120、且已是规范形式
+          —— 长度不等 ⇒「档位」不是那个档位；>120 ⇒ `f.text[:120]`
+             静默截断，档位 120 与 120 以上在上下文里是同一个值；
+             不规范 ⇒ `commit_fact` 一改写法，R1 就报「未送达」。  ([])
+  ✅ AZ14 ★7g 填充段**不许含 ASCII**，且观察对象题面的 token 交集与 7d 逐题相同
+          —— `recall()` 的两条路径是**质变**：FTS 无命中 ⇒ fallback 4 条；
+             一旦命中 ⇒ 1 条。交集一变，「邻域长度」与「注入条数」两个
+             变量同时动，曲线就不再是那条曲线。  ([])
+  ✅ AZ15 ★7g 档位名 == 档位值、轴严格递增、变体集合 = 2 观察对象 × 4 档
+          —— 名字说 120 实际 84，是最典型的「读数与装置不一致」；
+             只跑一档就宣布曲线，等于用两个点画一条线。  (名字/值不符=[] 轴=[40, 60, 84, 120] 缺档=[])
+  ✅ AZ16 ★7g「同一份事实有两条注入路径」的**渲染规则**：工作记忆只保留**尾 200 字**
+          —— 跨题那半已由 AZ17/AZ18 修掉（进题先清空），但**同一题内**
+             `recall` 返回全部 facts 时仍走这条路 ⇒ 泄漏的永远是"最后 200 字"，
+             这决定了改长度时漏出去的内容**非单调**地变。
+          ⚠️ 本断言用 `_state()` 直接构造（不经 `run()`），所以不受清空点影响。  (块=True 尾在=True 头不在=True state=228字)
+  ✅ AZ17 ★7h 题边界清空：`reset_working()` 必须在 `record("goal")` **之前**，
+          且清掉的条数必须进 stats（否则"清干净了"与"没接线"完全同形）
+          —— `working` 是**进程级** deque，bench 复用同一个 Core 连跑多题；
+             清空点若落在读侧（`_state()` 过滤），泄漏会**隐身**：计数恒 0、泄漏照旧。  (顺序 reset@10957 < goal@11128；清掉=2 剩=[]；stats 消费者=有)
+11:55:35 ▶ 任务开始: 写一个函数 truncate_tail(s, n)：把过长的字符串截短到最多 n 个字符。超长时保留哪一头、加什么标记，按记忆里记着的项目截断惯例处理（惯例不在题面里）；不超长时原样返回。只输出代码，函数名必须是 truncate_tail
+11:55:35   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=stub | 外部能力 1 个
+11:55:35   ⚠️ 合法 JSON 但没有可用候选（⇒ 改提示词）
+11:55:35   [1] 通道=深 候选=1
+11:55:35       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+11:55:35       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+11:55:35   ⚠️ 合法 JSON 但没有可用候选（⇒ 改提示词）
+11:55:35   [2] 通道=深 候选=1
+11:55:35       ⊘ [values:answer] 否决 — 目标要求展开（121 字），答案只有 24 字
+11:55:35   ⛔ 全部候选被拦 (1 次连续失败)
+11:55:35   ⚠️ 因「?」失败而重规划
+11:55:35   [3] 通道=深 候选=1
+11:55:35       ⏭ 重复动作已跳过（不产生新信息）: finish
+11:55:35   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+11:55:35   ⚠️ 因「?」失败而重规划
+11:55:35   [4] 通道=深 候选=1
+11:55:35       ⏭ 重复动作已跳过（不产生新信息）: finish
+11:55:35   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 2/2
+11:55:35 ■ stalled | steps=5 | guard_blocked=0 | 预演=1 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=1.325 memory>reason=0.368 reason>act=0.25] 回流=1.0 | 语义记忆=4 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 truncate_tail/语言标签/可编译)
+11:55:35 ▶ 任务开始: 写一个函数 parse_flag(s)：把配置里的开关值转成 True / False / None（无法识别）。哪些写法算真、哪些算假、空串算什么，按记忆里记着的项目开关解析惯例处理（惯例不在题面里）；入参大小写不敏感、首尾空白忽略。只输
+11:55:35   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=stub | 外部能力 1 个
+11:55:35   🧹 题边界：清掉上一题残留的工作记忆 1 条
+11:55:35   ⚠️ 合法 JSON 但没有可用候选（⇒ 改提示词）
+11:55:35   [1] 通道=深 候选=1
+11:55:35       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+11:55:35       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+11:55:35   ⚠️ 合法 JSON 但没有可用候选（⇒ 改提示词）
+11:55:35   [2] 通道=深 候选=1
+11:55:35       ⊘ [values:answer] 否决 — 目标要求展开（142 字），答案只有 24 字
+11:55:35   ⛔ 全部候选被拦 (1 次连续失败)
+11:55:35   ⚠️ 因「?」失败而重规划
+11:55:35   [3] 通道=深 候选=1
+11:55:35       ⏭ 重复动作已跳过（不产生新信息）: finish
+11:55:35   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+11:55:35   ⚠️ 因「?」失败而重规划
+11:55:35   [4] 通道=深 候选=1
+11:55:35       ⏭ 重复动作已跳过（不产生新信息）: finish
+11:55:35   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 2/2
+11:55:35 ■ stalled | steps=5 | guard_blocked=0 | 预演=2 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=1.3 memory>reason=0.368 reason>act=0.25] 回流=1.0 | 语义记忆=4 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 parse_flag/语言标签/可编译)
+  ✅ AZ18 ★7h 端到端：第 1 题由内核自己 `recall`（工作记忆确实被写满），
+          第 2 题**第 1 步**的 state 里**不许**有 fact 出现在 `[语义记忆]` 之外
+          —— 此前实测：非本题惯例 2/3 条经 `[工作记忆]` 进了第 4 题的 state，
+             而 R1 只查 `recall()` 完全看不见 ⇒ 那条轴从来不是单变量。  (第1题留下=1条；第2题清掉=1条；第2题第1步审计=✅ 语义块本条=True 其它块有=[] state=224字)
+  ✅ AZ19 ★7h R1 第二层：`audit_state` 必须把"在语义块里"与"在别的块里"**分开报**
+          —— 旧写法 `want[:120] in state`（整段）会把经 `[工作记忆]` 漏进来的
+             也算成送达；7g 实测那条路真的存在 ⇒ 旧判据看不见它。
+          ⛔ 不许合并成一个布尔：一合并，泄漏就又变成不可见的了。  (干净=True 泄漏=False outside=['t2'] own语义块(泄漏态)=True)
+  ✅ AZ20 ★7h 运输层路径进读数：同格两次 repeat 路径不同 ⇒ **该格作废**
+          —— 必须在 s35 冻结证据上**恰好**标出 3 格，且翻掉的那格在内；
+             这是"规则能复现 7g 的实测"的反证组（多标/少标都说明签名取错了）。
+          ⚠️ `wall_shortened` **不进签名**：它 ≡ 调用次数，会把每一格都标成不同。  (被标作废的格=[('ev_o1_l120', 'H'), ('ev_o1_l40', 'H'), ('ev_o2_l120', 'H')]（期望 o1_l120/H、o1_l40/H、o2_l120/H）)
+  ✅ AZ21 ★7h 每一行 `per_task` 都必须带 `elapsed_s`，且各题之和 ≤ 整轮耗时
+          —— 此前只有整轮 `elapsed_s`，单题耗时只能 `÷题数` 估
+             （s35：38–65 s/题，**最坏值未知**）；而"预算余量够不够"
+             恰恰是一个最坏值问题。⛔ 本轮只补读数，不动 `V1_MAX_WALL_S`。  (行数=4 缺字段=[] 逐题之和=0.12s 整轮=0.13s)
+  ✅ AZ22 ★7i 零命中必须返回**空**，不许静默给全表（装置修正⑮）
+          —— 第三级兜底 `ORDER BY hits DESC, updated_ts DESC` 与 query
+             完全无关：模型问'如何截断'，拿到'金额格式惯例'。
+          ⚠️ 必须带正向对照：库里有东西时仍能召回，且不靠 `OperationalError`。  (正向命中=1 零命中=0 fallback=0->0)
+  ✅ AZ23 ★7i 删兜底暴露了装置的真实身份："4 条族"那 4 条**从来不是检索到的**
+          —— 前两题题面与四条 facts FTS 零命中，7d–7g 记的 4/4/1/1 里
+             两个『4』全部来自被删的第三级全表兜底。删掉之后实测
+             **0/0/1/1** ⇒ 那个族应改名为『零命中族』。
+          ⚠️ 反证：四条惯例分两批拼接后必须召回 **4 条**（8/19 token，
+             都低于 `fts_query` 的 24-token 上限）。否则红的是 FTS，不是兜底。  (题面条数=[0, 0, 1, 1]（实测；7d 记为 4/4/1/1 全来自兜底） 两批拼接召回=4（期望 4）)
+  ✅ AZ24 ★7i 另一个入口：空/纯空白 query 也必须返回**空**
+          —— `normalize(query)` 为空白时 `LIKE '%%'` 命中全表，
+             与第三级兜底是同一条缺陷的两个入口。  (空串=0 空白=0)
+  ✅ AZ25 ★7i 降级兜底的 `recall` query 必须是**目标文本**，不是字面量 "goal"
+          —— 字面量与任何 fact 零交集 ⇒ 每次降级 recall 都落到全表兜底
+             （7d–7g 实测 **33 次全部返回 4 条**）；兜底删掉后它变成
+             "永远空"，而日志仍写 `recall ok=True` —— 比失败更难发现。
+          ⚠️ goal 为空时仍要给出**合法**参数：降级不等于瘫痪。  (goal 非空→query='把列表去重，保留首次出现的那条原文'；goal 为空→query='goal')
+  ✅ AZ26 ★7j 钥匙必须**可控**：题面提 N 把就命中 N 条，且不多不少
+          —— n0 提 1 把 ⇒ 1 条；n4 提 4 把 ⇒ 4 条；两次都必须含『本条』。
+          ⚠️ 必须带**正向对照**：原题面（没有钥匙）仍是 0/0/1/1 ——
+             没有这一格，『命中来自钥匙』就只是推断（也可能是惯例正文里
+             的中文恰好又撞上了，7e 的 `g7e2` 就是这么偶然命中的）。  (n0=[1, 1, 1, 1] n4=[4, 4, 4, 4] 原题面=[0, 0, 1, 1] 本条在n0=True 本条在n4=True)
+  ✅ AZ27 ★7j 四把钥匙必须**全部**落在 `fts_query` 的 24-token 窗口内
+          —— `fts_query` 只取前 24 个；窗口外等于没提，而现象只是
+             『命中少了几条』，与『FTS 坏了』长得一模一样。  (题面token→窗口=g7d2_dedupe_keep:17→17/g7d3_fmt_amount:21→21/g7e1_parse_flag:23→23/g7e2_truncate_tail:20→20 违规=无)
+  ✅ AZ28 ★7j 骨架安慰剂之后 P 臂必须**等条数**（否则 R7 的等长在注入层就破）
+          —— 钥匙用 ASCII 的唯一理由：`build_placebo` 只打散汉字、
+             原位保留 ASCII。钥匙若是汉字，P 臂的钥匙被打散 ⇒
+             两臂检索行为不同 ⇒ 条数/字符数不等，Δ 无法归因。  (P臂条数=[4, 4, 4, 4]（H 臂=[4, 4, 4, 4]）等价性违规=无)
+11:55:35 ▶ 任务开始: 写一个函数 dedupe_keep(xs)：对字符串列表去重，返回列表保持原顺序。比较之前怎么归一化、遇到重复时保留第几次出现的那条原文，按记忆里记着的（ZK1）（ZK2）（ZK3）（ZK4）惯例处理（惯例不在题面里）。只输出代码，函数名必
+11:55:35   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=stub | 外部能力 1 个
+11:55:35   ⚠️ 合法 JSON 但没有可用候选（⇒ 改提示词）
+11:55:35   [1] 通道=深 候选=1
+11:55:36       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+11:55:36       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+11:55:36   ⚠️ 合法 JSON 但没有可用候选（⇒ 改提示词）
+11:55:36   [2] 通道=深 候选=1
+11:55:36       ⊘ [values:answer] 否决 — 目标要求展开（135 字），答案只有 24 字
+11:55:36   ⛔ 全部候选被拦 (1 次连续失败)
+11:55:36   ⚠️ 因「?」失败而重规划
+11:55:36   [3] 通道=深 候选=1
+11:55:36       ⏭ 重复动作已跳过（不产生新信息）: finish
+11:55:36   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+11:55:36   ⚠️ 因「?」失败而重规划
+11:55:36   [4] 通道=深 候选=1
+11:55:36       ⏭ 重复动作已跳过（不产生新信息）: finish
+11:55:36   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 2/2
+11:55:36 ■ stalled | steps=5 | guard_blocked=0 | 预演=1 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.25] 回流=1.0 | 语义记忆=4 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 dedupe_keep/语言标签/可编译)
+  ✅ AZ29 ★7j 第 1 步的 `[语义记忆]` 块必须**真的存在**且含恰好 4 条
+          —— `_state()` 的 cap 会把低优先级块**整块丢掉**；
+             若语义块被丢掉，『没送达』会被读成『模型不用』。
+          ⚠️ 走真实路径（Core + StubLLM），不许手工塞 state。  (state=370字 语义块=有空 条数=4（期望 4）)
+  ✅ AZ30 ★7j 同一个 R1 预检必须**有分辨力**：7j 通过、7d 仍失败
+          —— 前两题的题面与四条 facts FTS 零交集 ⇒ 7d/7f 在拔掉兜底后
+             **不可重建**。这不许被『为了让预检过而放宽』抹平：
+             零命中就是处理未送达，该修的是题面（7j），不是预检。  (7j rc=0（期望 0） 7d rc=2（期望 2）)
+  ✅ AE1 ★`produces_answer` 默认必须是 False，且**内建工具一个都不许带**
+          —— 若它变成默认，`recall`/`note` 的输出都会成为候选答案：
+            那是一次静默的语义升级，而读数上完全看不出来。  (内建里声明产出答案的=无)
+  ✅ AE2 ★`external_answer_tool` 必须进 `Limits.as_dict()`（口径签名）并登记 ENV_KEYS
+          —— 开/关外部能力的分数不是同一个候选；不进制就会被判成『可比』，
+            那是与 temperature 那次同源的尺子事故。  (在 as_dict=True 登记=True)
+  ✅ AE3 ★外部能力只许有**一处**注入点，且必须守在第 1 步
+          —— 每步都注入 = 把规划器整个挤掉（那就不是『能力外部化』，
+            是『内核只剩一个转发器』）。  (注入点=1 守在第1步=True)
+  ✅ AE4 ★外部能力的答案走 `_gate_finish`，且 `used_as_answer` 与 `ok` 分列
+          —— 『调用成功』≠『答案被采用』：前者可能被自检打回或被改写。
+            混成一列，就会把『接了但没用上』读成『接上了』。  (采用点=1)
+  ✅ AE5 ★外部 agent 交付空答案/带 error 时必须 raise，不许当成『成功的答案』
+          —— 把 `(rc=0)` 或空串当答案是静默降级：读数看起来正常，
+            实际什么都没交（V5 的病）。  (raise 处=6)
+  ✅ AE6 ★外部能力读数必须落盘（`kernel_external`），且**两个 solver 分支都并**
+          —— 只接一个分支 = 一半的题没有读数，而汇总行看起来正常。  (落盘=True 并入点=0)
+  ✅ AE7 ★`external/code_agent.py` 不许 import 内核或 bench，也不许读 tests/oracle
+          —— 它一旦 import `mw.*` 就不是外部能力而是内核的一部分，
+            『能力来自外部』这句话当场失去证据。
+          ⚠️ 检查必须**注释感知**：docstring 里那句『不许读 oracle』
+            本身含 oracle，整文件 `in` 会把否定句判成违规（本轮踩到）。  (越界 import=无 代码里触及尺子=无)
+  ✅ AE8 ★`--no-external` 必须在**两个** `_build` 分支都传进 `wire_external`
+          —— 只在一个分支生效，OFF 臂就有一半的题带着外部能力跑，
+            而两臂的标签长得一模一样（那是第十六轮 B/C 共用记忆目录的同构）。  (透传处(_build 里)=2 / 全部出现=3)
+  ✅ AE9 ★端到端：外部能力被调用 **1 次**，其答案走同一条交付路径被采用
+          —— 静态检查抓不到接线错误（位置写对、标记没传到 dispatch 分支，
+            照样『看不见』）。所以这一条必须真跑。  (调用=1 stats=1/1/1 交付含代码=True)
+  ✅ AT1 ★工具目录指纹必须**等于真实 Core 的目录哈希**（OFF 与 ON 各一次）
+          —— 指纹一旦与真实提示词脱节，『同口径』就还是散文；
+            这条把 `catalog_sha()` 与 `Core.tools.catalog()` 直接对撞。  (off=8decb60895d4a972/8decb60895d4a972 on=2cc3b0225ee03223/2cc3b0225ee03223)
+  ✅ AT2 ★`tool_catalog_sha` 必须**进口径签名**，且 run.py 真的把它填进去
+          —— 只加字段不填值 = 装饰字段（V5 的『只声明上限却不截断』）。  (在 CALIBER_KEYS=True 在 run.py 构造处=True)
+  ✅ AT3 ★只改 `agents.json` 里的**一句描述**，指纹必须变
+          —— 因为 `catalog_line()` 把描述拼进提示词（planner.py:182）。
+            指纹不变 ⇒ 提示词变了而签名说没变（标签撒谎）。  (be05af7053074080 vs e5cb34b81063c053)
+  ✅ AT4 ★『声明的变量豁免』必须**只**放行声明过的字段
+          —— 两臂只差外部能力这件事，从此是可核验的断言而不是散文：
+            声明命中的进 `declared`，没声明的一律进 `unexpected`。  (声明命中⇒unexpected=[] declared=['limits', 'tool_catalog_sha']；未声明⇒unexpected=['temperature'])
+  ✅ AT5 ★账本签名必须**排除** `tool_catalog_sha`（已声明的取舍）
+          —— 不排除 ⇒ 历史 8 个会话的行全部失效（admissible 归零），
+            而它们的目录指纹已不可追溯，补算就是伪造血缘。
+            代价（账本行读不到指纹）写在 DESIGN §16.23 ⑦ 边界里。  (排除=('suite_sha', 'repeat', 'tool_catalog_sha') 旧签名=b0e4e4c65788a7df 新签名=b0e4e4c65788a7df)
+  ✅ AT6 ★探针的 `_kex` 必须**把全部记录加总**（不是只读最后一条）
+          —— `--suite-dir` 每个领域一条记录，累加器在每条里各自从零开始。
+            第三次踩同一个坑：冻结的 verdict 把『跑了 7 次』写成『跑了 4 次』。  (calls=7 ok=2 records=2 reasons=['原因甲', '原因乙'])
+  ✅ AT7 ★口径核验必须三态：`pass` / `fail` / `unverifiable`
+          —— 把『没核验到』读成『核验通过』是契约③的同一种病
+            （缺失不得被读作肯定）。旧证据缺字段 ⇒ unverifiable。  (pass=pass fail=fail unk=unverifiable unexpected=["struct_convert: ['temperature']"])
+  ✅ AT8 ★外部能力失败时，**原因原文**必须进 `err_reasons`（不只是 last_error）
+          —— 只留最后一条时，`ho_on` 的『7 调 5 败』在证据里退化成
+            一句笼统的话，而三种病（超时/空返回/解析失败）修法完全不同。  (calls=1 err=1 reasons=['agent:af 执行异常 ValueError: boom-AT8'])
+  ✅ AU1 ★`Ledger.check_wall()` 必须**只**查墙钟：steps/llm_calls 都用尽、
+          墙钟未尽时**不许**抛；墙钟尽时必须抛且 `kind == 'wall_s'`。
+          —— 拿 `check()` 去守重试，会把「步数刚好用完的最后一次重试」
+            误判成「步数耗尽」，归因直接错掉（错误的原因比错误本身更贵）。  (check()⇒steps  check_wall()抛=False  墙钟尽⇒wall_s)
+  ✅ AU2 ★单次尝试的上限 = `min(端点默认上限, 剩余 − 收尾余量)`，
+          且**永不超过**端点默认上限（预算宽裕时不许把它放大）；
+          端点自称无上限(inf)时，上限回落为**剩余预算**（不是无穷）。
+          —— 这是 361s 的正面修复：单次尝试再也吃不满整题预算。  (紧=25.00 宽=100.00 inf端点=1000.00)
+  ✅ AU3 ★剩余 ≤ `MIN_ATTEMPT_S` ⇒ `_attempt_timeout()` 返回 **0**（拒绝发起），
+          而不是返回一个注定超时的正数（那只是把收尾预算也烧掉）。  (不够⇒0.0 刚好够⇒7.00)
+  ✅ AU4 ★『上限被裁短**且真的发出去**』必须单独计数（`wall_shortened ≥ 1`），
+          且**不能**被并进『放弃』类计数（那两类的修法与它相反）。
+          —— 自踩：我最初只在『放弃』时计数 ⇒ 「裁到 75s 照发并超时」与
+            「用满 120s 后超时」在读数上完全一样，证据看不见要证明的事。  (shortened=3 refused_first=0 refused_retry=0 实发上限=[74.99999787495472, 74.49495024979115, 73.48987979185767] 出口=llm)
+  ✅ AU5 ★墙钟**已不够再试**时：抛出的是 `BudgetExhausted`（可归因），
+          计数落在 `wall_refused_retry`（放弃的是重试），
+          而 `wall_refused_first` **仍为 0**（首发确实发出去了）。
+          —— 这两个数的修法不同：前者减工作量，后者预算档位就不对。  (出口=budget refused_retry=1 refused_first=0 实发=[54.99998416611925])
+  ✅ AU6 ★没有 `timeout_s` 属性的端点（离线桩）⇒ `_attempt_timeout()` 返回 inf，
+          **不裁剪**。⇒ 全部离线契约与自检路径的耗时行为一个字没变。
+          —— 这条是 R2『正常路径不受影响』的结构证据（离线侧）。  (桩上限=inf)
+  ✅ AU8 ★墙钟被裁到底、但总剩余仍够收尾 ⇒ 出口是 `closed`（转向交付），
+          不是 `budget_exhausted`（交付零东西）。且 `closeout.triggered ≥ 1`。
+          —— 第二十四轮 `h01`/`k01` 就是死在『交付零』上：`steps=0`。  (status=closed triggered=1 by_reason={'steps': 0, 'wall': 0, 'wall_retry': 1} transport={'retries': 2, 'exhausted': 1, 'wall_shortened': 3, 'wall_refused_first': 1, 'wall_refused_retry': 0})
+  ✅ AU7 ★触发收尾后 `_counted.wall_reserve_s` 必须变成 **0.0**
+          —— 探索阶段扣下余量是对的，收尾阶段还扣着就等于「留了不用」，
+            那份 45s 就是装饰字段。
+          ⛔ 自踩：第一版锚的是 `_close_out` 的 AST 里**有没有**
+            `reserve_release()` 这个调用。撤回态把那一行改成死代码后，
+            AST 里**仍然有**它 ⇒ 断言照旧全绿（`红=无`，当场抓到）。
+            ——「代码里有这个词」与「运行时发生过这件事」是两件事。  (收尾后 wall_reserve_s=0.0)
+  ✅ AU10 ★`收尾=N次` 的括号里必须出现**每一个**非零触发原因（含 `wall_retry`）。
+          —— 实测：加 `wall_retry` 之后日志写着「收尾=1次(步0/时0)」：
+            总数 1，分项 0+0。自相矛盾的那一位恰好就是**这次修好的那条路径**，
+            而它恰恰是在日志里看不见的那一个。
+          ⇒ 触发原因可以自由增加，打印必须按 `by_reason` **自动**跟上。  (缺=[] 行='■ closed | steps=0 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=0 否决=0(-) | 通量[perceive>memory=n/a me')
+  ✅ AU9 ★传输层五个计数必须**都有消费者**：进 `stats.transport`、
+          进 `runs.jsonl`（`kernel_transport`）、且累加器真的**加总**。
+          —— 只声明不消费 = 装饰字段（V5『只声明上限却不截断』的同构体）；
+            而『加总』必须是行为测出来的：静态看一眼 for 循环分不清
+            `acc[k] = v` 与 `acc[k] += v`。  (缺键=[] 落盘=True 累加={'tasks': 2, 'retries': 3, 'exhausted': 0, 'wall_shortened': 3, 'wall_refused_first': 1, 'wall_refused_retry': 4})
+  ✅ AZ31 ★7p 沙箱：墙钟炸弹与 CPU 炸弹都必须**只判 fail**（score=0.0），
+          打分器进程本身 rc=0 活着出 JSON。撤掉 TimeoutExpired 分支
+          （改 raise）⇒ 墙钟炸弹把打分器炸死（rc!=0）⇒ 此判据红。
+          ⚠️ 实测校准：while True 被 RLIMIT_CPU=6s 先杀（SIGXCPU），
+          走不到 TimeoutExpired 分支 —— 第一版撤回态红=无，当场抓到。  (墙钟={'rc': 0, 'score': 0.0, 'why': '通过 0/1；失败: assert True ⇒ 超时 >8s'} CPU={'rc': 0, 'score': 0.0, 'why': '通过 0/1；失败: assert True ⇒ rc=-24'})
+  ✅ AZ32 ★7p 沙箱：2MB 落盘必须被 RLIMIT_FSIZE=1MB 截成 fail
+          （write() 抛 OSError ⇒ 该条判 fail，打分器继续）。
+          撤掉 rlimits ⇒ 2MB 落盘成功 ⇒ 该条转绿 ⇒ 此判据红。  (ok=False why='OSError: [Errno 27] File too large')
+  ✅ AZ33 ★7p 沙箱：候选代码写 cwd 的文件必须落进打分器临时目录，
+          **不出现在调用方工作目录**。撤掉 cwd=workdir ⇒ 标记文件
+          落进调用方目录 ⇒ 此判据红。  (ok=True 调用方有标记=False)
+  ✅ AZ34 ★7p 考题完整性：heldout/*.jsonl 与 suites.manifest.json
+          逐文件 sha 一致，且**每一份**考题都被 manifest 覆盖。
+          改考题不重新 build ⇒ sha 不一致 ⇒ 红；新增考题不登记 ⇒ 红。
+          刻意的摩擦 = 功能本身。  (verify=True 覆盖=9/9)
+  ✅ AZ35 ★7p 合并 eval log：consolidate() 的每行 schema 必须逐字段在
+          （arm/rep/model/…/transport），且 str(dict) 形态的
+          kernel_transport 必须被解析成 dict（7m-β 的坑，不解析 =
+          transport 又变回不可 grep 的字符串）。  (缺键=[] arm=H model='qwen2.5:7b' transport={'wall_refused_first': 0, 'wall_refused_retry': 0, 'retries': 0, 'exhausted': 0})
+  ✅ AZ36 ★7q 补救 prompt 必须带 state：propose 手里的记忆不许在补救时被扔掉
+          （7o 定律：K=0 格确定性走补救；记忆盲补救 = 基线交付的根因）。
+          撤掉 `self.answer(goal, state=state)` 的 state 参数 ⇒ 红。  (补救user含标记=True 调用数=2)
+11:55:53   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+11:55:53   📦 收尾交付 4 字符（来源=收尾调用）
+  ✅ AZ37 ★7q 收尾调用必须带 state：`_close_out` 现算 `_state()` 传入，
+          已 commit 的语义记忆**正文**（goal 里没有的那段）必须出现在
+          补救请求里。撤掉 `_close_out` 的 `_state` 接线 ⇒ 红。  (收尾user含fact正文=True 调用数=1)
+  ✅ AZ38 ★7q catalog sha 两真相：allow_note=False 的指纹必须与 True 不同
+          （note 注册与否改变目录文本 = 改变提示词）。
+          撤掉 forwarding（恒 True）⇒ 两者相等 ⇒ 红。  (on=8decb60895d4a972 off=c89aa901bfb1d09c)
+  ✅ AZ39 ★7q catalog sha 转发保真：catalog_sha()（默认）必须与
+          `register_core_tools(memory=占位, allow_note=True)` 的注册表哈希
+          逐字一致（脱节 = 指纹描述的不是真实提示词，两真相换方向复活）。  (手工=8decb60895d4a972 catalog_sha()=8decb60895d4a972)
+  ✅ AZ40 ★7q --max-tokens 单一真相：run.py 必须在 settings() 之前把 CLI
+          显式值写进 env（唯一配置入口；Limits frozen，首版直接赋值
+          实测 FrozenInstanceError），且 caliber / llm-direct 读**生效值**
+          `s.limits.llm_max_tokens`（7n 实锤：caliber 记 1024、内核实际
+          2048 = 两套真相）。  (env覆盖行=True 生效值=True defaultNone=True)
+  ✅ AZ41 ★R-b pyproject 零依赖安装形态：pyproject.toml 必须存在且
+          dependencies 为空（零第三方运行依赖是内核的硬边界）、
+          requires-python>=3.11、[project.scripts] v1 指向 run:main
+          （单一 CLI 真相仍是 run.main，脚本入口只准转发）。  (存在=True deps=[] requires-python='>=3.11' scripts.v1='run:main')
+  ✅ AZ42 ★R-b `python -m mw` 入口必须真跑通：子进程 rc=0 且含自检
+          通过标记。入口文件只准 `from run import main` 转发 ——
+          复制逻辑 = 两套 CLI 真相（撤掉转发 ⇒ 红）。  (rc=0 尾部=" 1048, 'dedup_sha': 3}}\n  重复行    : 0  (去重约束的自证)\n\n自检结论: ✅ 通过\n")
+  ✅ AZ43 ★R-c demo 三臂结构：demo/run_demo.sh 必须存在且引用
+          oracle/null/partial 三个参照臂，并对每臂做**写死读数**的
+          校验（1.0000/0.0000/0.6194，demo/README.md 同源）——
+          演示读数漂移 = 演示红，不许'差不多就行'。  (存在=True 三臂=3 读数锚=True)
+  ✅ AZ44 ★R-d 产品摘要块：README 顶部必须含 ①「产品摘要」节、
+          ②三个实测入口命令（quickstart / run_demo / run_tests）、
+          ③Inspect AI 差异表（测量有效性定位）、④诚实边界句
+          （⛔ 不许出现 AGI 声称）。撤回态条数必须与实测一致
+          （由 len(withdraw_check.CASES) 现算；契约/锚层条数的副本
+          不在本断言里 —— 见 `bench/check_counts.py`，AZ47）。  (摘要=True 三入口=True 差异表=True 边界=True 撤回态声明=['110', '110'] 真值=110)
+  ✅ AZ46 ★7v-b/c/d 补救通道：mw/planner.py 必须定义唯一常量
+          `_ANSWER_FIDELITY`（当前是 ≥20 字的一句中文），并由
+          `answer()` 拼在状态块之后、「请直接给出最终答案」之前。
+          ⛔ 本契约**只断言**『拼了一句 ≥20 字的话、且只有一处拼接』——
+          它不锚任何具体字词，因为证据不支持：s54 Δ(A−B)=+0.15 且 A 与
+          等长异义指令 C1 逐位相同 ⇒ 不是「忠实引用」；s55 曾判「承载是
+          『逐条』」；**s56 把这条也推翻** —— S1（同义替换、无「逐条」）、
+          S2（含「逐条」但明说「不构成要求」）、S3（「逐条」×16 纯重复）
+          三臂**全部 0.2**，只有原句 1.0（A 正对照 3/3 复现）⇒ 7v-d 的
+          登记结论是**未定位**：字面单独不够、语义单独也不够。
+          ⛔ 所以措辞一个字都不许改（没有证据表明换说法更好，7v-d 反而
+          证明换说法掉回 0.2）；也不许把「逐条」或「指令性」写成机制。
+          撤回语义：删掉拼接 ⇒ 补救退回无指令 ⇒ 必须红。  (体内拼接=1 定义=1 字数=34 序位=605<647)
+  ❌ AZ48 ★D-a 默认数据路径：`run.py:data_path()` 必须**当前目录优先、包目录兜底**
+          （安装形态实测：`pip install .` 后包目录落在 site-packages，
+          只按包目录找会「明明脚下有 bench/ 却报找不到」）。
+          ⚠️ 判别性来自**两处都有**那种形态：兜底优先的实现会取包目录那份；
+          只有一处有的两种形态，两个实现都一样 —— 只测它们等于没测。
+          ⛔ `--suite` / `--scorer` 显式值**不许**走兜底（悄悄换文件 = 假成功）。
+          撤回语义：把优先序倒过来 / 删掉兜底 / 让显式值也进兜底 ⇒ 必须红。  (两处都有=False 仅包目录=True 都没有=False 默认站点=[('tasks', 'coding_small.jsonl'), ('scorers', 'code_exec.py')] 显式站点=['suite', 'scorer'] 实测=['两处都有⇒读到pkg', '仅包目录⇒读到pkg', '都没有⇒exists=False'])
+
+==========================================================================
+V1 契约测试汇总  PASS=535  FAIL=1
+==========================================================================
+失败断言数 = 1

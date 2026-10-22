@@ -40,6 +40,33 @@ from mw.measure import (Measurement, budget_curve, noise_floor,  # noqa: E402
 #: 工具目录指纹的**唯一**实现（契约 AF1 拿它与真实 `Core.tools.catalog()` 对撞）。
 from mw.tools import catalog_sha as tools_catalog_sha     # noqa: E402
 
+#: 包所在目录 = "装在哪儿"。⛔ 它**不是**仓库根：`pip install .` 之后这里是
+#: site-packages（第五十八轮实测，见 `data_path()` 的说明）。
+_PKG_DIR = Path(__file__).resolve().parent
+
+
+def data_path(rel: Path, root: Path | None = None) -> Path:
+    """仓库里的**数据文件**（任务集 / 打分器）放哪儿：**当前目录优先，包目录兜底**。
+
+    ★ 第五十八轮（产品化 D-a，实测证据 `bench/evidence/knowledge_s61/install_probe_*.txt`）：
+    `pip install .` 之后 `run.py` 落在 `site-packages`，包目录随之落到那里 ⇒
+    实测 `v1 --bench --compare` 报「找不到 …/site-packages/bench/tasks/coding_small.jsonl」
+    **即便此刻就站在仓库根目录里**（先装、再从 checkout 跑是最常见的形态）。
+
+    ⇒ 先看当前目录有没有这份数据，有就用；没有才退回包目录（与修之前的行为一致）。
+
+    ⛔ 只对**默认值**生效：用户显式给的 `--suite` / `--scorer` 一律原样解析
+    （相对路径按当前目录、绝对路径按绝对路径），不进这个兜底逻辑 ——
+    否则"用户的路径找不到"会被悄悄换成别处的同名文件，那是比报错更坏的假成功。
+
+    ⚠️ 第五十九轮把它从 `main()` 里提到模块级：嵌在函数里的闭包**测不了**，
+    这正是它曾经"改了但没有回归锚"的原因（AZ48 现在钉它）。`root` 显式传入
+    只为让契约能在临时目录里造两种形态，生产路径一步不变。
+    """
+    base = _PKG_DIR if root is None else root
+    cand = Path.cwd() / rel
+    return cand if cand.exists() else (base / rel)
+
 
 # ---------------------------------------------------------------------------
 # 离线演示模型：让 loop 真的从 start 走到 finish，并且**故意撞一次守卫**
@@ -740,21 +767,12 @@ def cmd_bench(args) -> int:
     root = Path(__file__).resolve().parent
 
     def _data_path(rel: Path) -> Path:
-        """仓库里的**数据文件**（任务集 / 打分器）放哪儿：**当前目录优先，包目录兜底**。
+        """默认数据路径：实现见模块级 `data_path()`（第五十九轮提出去 —— 闭包测不了）。
 
-        ★ 第五十八轮（产品化 D-a，实测证据 `bench/evidence/knowledge_s61/install_probe.txt`）：
-        `pip install .` 之后 `run.py` 落在 `site-packages`，`root` 随之落到那里 ⇒
-        实测 `v1 --bench --compare` 报「找不到 …/site-packages/bench/tasks/coding_small.jsonl」
-        **即便此刻就站在仓库根目录里**（先装、再从 checkout 跑是最常见的形态）。
-
-        ⇒ 先看当前目录有没有这份数据，有就用；没有才退回包目录（与修之前的行为一致）。
-
-        ⛔ 只对**默认值**生效：用户显式给的 `--suite` / `--scorer` 一律原样解析
-        （相对路径按当前目录、绝对路径按绝对路径），不进这个兜底逻辑 ——
-        否则"用户的路径找不到"会被悄悄换成别处的同名文件，那是比报错更坏的假成功。
+        ★ 第五十八轮（产品化 D-a）：`pip install .` 之后包目录落在 `site-packages`，
+          只按包目录找就会「明明脚下有 bench/ 却报找不到」。规则与实测见 `data_path()`。
         """
-        cand = Path.cwd() / rel
-        return cand if cand.exists() else (root / rel)
+        return data_path(rel, root=root)
 
     _suite_dir = getattr(args, "suite_dir", "")
     if _suite_dir and args.suite:

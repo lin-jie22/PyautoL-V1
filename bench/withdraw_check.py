@@ -684,6 +684,23 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ46", "mw/planner.py",
      '            prompt += _ANSWER_FIDELITY + "\\n"',
      '            pass  # 撤回态'),
+    # ── AZ48（§19 D-a 回归锚，第五十九轮）：默认数据路径的优先序 ───────────
+    # AZ48 一条断言里束了四件事（两种形态的返回值 + 判别性的那条 + 显式值不进兜底），
+    # 所以它需要**两条**撤回态：一条证明行为分支有牙，一条证明静态条件有牙。
+    # ① 把优先序倒过来（包目录优先）⇒ "两处都有"那格读到 pkg ⇒ AZ48 红。
+    #    ⛔ 这条是判别性所在：只测"只有一处有"的两种形态，两个实现都一样绿。
+    ("AZ48", "run.py",
+     "    cand = Path.cwd() / rel\n"
+     "    return cand if cand.exists() else (base / rel)",
+     "    cand = Path.cwd() / rel\n"
+     "    return (base / rel) if (base / rel).exists() else cand"),
+    # ② 让显式 `--suite` 也走兜底 ⇒ 静态判据（显式站点不许出现 _data_path）假 ⇒ 红。
+    #    这锚的是 D-a 的**边界**：悄悄换掉用户给的路径是比报错更坏的假成功。
+    ("AZ48", "run.py",
+     '    suite_path = (Path(args.suite).expanduser() if args.suite\n'
+     '                  else _data_path(Path("bench") / "tasks" / "coding_small.jsonl"))',
+     '    suite_path = (_data_path(Path(args.suite).expanduser()) if args.suite\n'
+     '                  else _data_path(Path("bench") / "tasks" / "coding_small.jsonl"))'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

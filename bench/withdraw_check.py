@@ -713,6 +713,22 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ49", "site/index.html",
      "<strong>先读这一条：V1 不是 AGI。</strong>",
      "<strong>先读这一条：V1 很强。</strong>"),
+    # ── AZ50–AZ52（能力曲线装置）：每条判据各配一条变异 ─────────────────
+    # 为什么这三条必须存在：曲线装置的全部价值就是"不让人用噪声骗自己"，
+    # 而它自己最容易被改松的地方恰好是这三处 —— 断线、噪声、换尺子。
+    # ① 断线条件放宽成"只要已有段就接上去" ⇒ 异口径点连成一条线 ⇒ 只有 AZ50 红。
+    ("AZ50", "mw/loop.py",
+     "            if out and p.trustworthy and out[-1][-1].calib == p.calib and out[-1][-1].trustworthy:",
+     "            if out:"),
+    # ② "每一轮都要超过基线+噪声"放宽成"最低一轮不低于基线" ⇒ 噪声与浮点容差
+    #    双双被忽略 ⇒ 只有 AZ51 红。
+    ("AZ51", "mw/loop.py",
+     "        if worst > base + noise_floor + _tol:",
+     "        if worst >= base:"),
+    # ③ 撤掉每轮开头的尺子校验 ⇒ 运行中换尺子不再被拦 ⇒ 只有 AZ52 红。
+    ("AZ52", "mw/loop.py",
+     "        if scorer.sha() != s0:",
+     "        if False:"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

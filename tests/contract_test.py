@@ -7037,6 +7037,93 @@ check(RS, "AZ49 落地页 `site/index.html` 必须存在、且**零外部请求*
       f"页面={bool(_az49_txt)} 边界块={'先读这一条：V1 不是 AGI' in _az49_txt} "
       f"外链命中={_az49_hits or '无'} 反证命中={_az49_bad_hits}")
 
+# ══════════════════════════════════════════════════════════════════════
+# AZ50–AZ52：能力曲线装置（常驻循环的外层判据）
+#
+# 为什么这三条进契约、而不是只留在 `bench/loop_probe.py`：
+#   probe 是"装置自检"——开发时跑，靠自觉；
+#   契约是"改坏了会被退出码拦住"——只有它能被撤回态覆盖。
+#   一个只存在于 probe 里的判据，撤掉实现后没人知道它还在不在。
+# ══════════════════════════════════════════════════════════════════════
+from mw import bench as _b50                                        # noqa: E402
+from mw import loop as _loop50                                      # noqa: E402
+import shutil as _sh50                                             # noqa: E402
+
+
+def _lp50(r: int, calib: str, mean: float, ok: bool = True) -> object:
+    return _loop50.CurvePoint(round=r, ts=0.0, calib=calib, mean=mean,
+                              n=1, spread=0.0, trustworthy=ok)
+
+
+# 口径变了必须**断线开新段**（不是把异口径点过滤掉 —— 过滤会把"换过尺子"这件事删掉）；
+# 不可信的点独占一段（既不许接到前一段污染趋势，也不许被丢掉）。
+_c50a = _loop50.Curve([_lp50(1, "A", 0.5), _lp50(2, "A", 0.5),
+                       _lp50(3, "B", 0.9), _lp50(4, "B", 0.9)])
+_c50b = _loop50.Curve([_lp50(1, "A", 0.5), _lp50(2, "A", 0.5, ok=False),
+                       _lp50(3, "A", 0.9), _lp50(4, "A", 0.9)])
+check(RS, "AZ50 能力曲线必须按**口径断线**：异口径的点开新段，不许连成一条线；\n"
+          "          不可信的点独占一段（不接前段、也不被丢弃）。\n"
+          "          理由：把换过尺子的点接上去，曲线会变成没人看得出的谎；\n"
+          "          把不可信点过滤掉，就再也看不到「这一轮没量准」。\n"
+          "          撤回语义：把 segments() 的条件放宽成 `if out:` ⇒ 必须红。",
+      [len(s) for s in _c50a.segments()] == [2, 2]
+      and [len(s) for s in _c50b.segments()] == [1, 1, 2],
+      f"口径断线={[len(s) for s in _c50a.segments()]} "
+      f"不可信切断={[len(s) for s in _c50b.segments()]}")
+
+# 趋势判据只许三种结论，且必须**很难**给 IMPROVED：
+# 之后每一轮都要超过「首轮 + 噪声下限」，不是"末轮比首轮高"（后者一句话就能被抖动造出来）。
+_c51_flat = _loop50.Curve([_lp50(i, "A", 0.5) for i in (1, 2, 3)])
+_c51_up = _loop50.Curve([_lp50(1, "A", 0.5), _lp50(2, "A", 0.9), _lp50(3, "A", 0.9)])
+_c51_dip = _loop50.Curve([_lp50(1, "A", 0.5), _lp50(2, "A", 0.9), _lp50(3, "A", 0.4)])
+check(RS, "AZ51 趋势判据不许宽松：恒值必须 FLAT；涨上去又跌回基线以下必须 UNKNOWN；\n"
+          "          同一组数据把噪声调大就**不许**再判 IMPROVED；噪声下限缺省是\n"
+          "          `None`（⇒ UNKNOWN），**不是 0** —— 默认 0 等于「任何微小差值都算改进」。\n"
+          "          撤回语义：把 `worst > base + noise_floor` 放宽成 `worst >= base` ⇒ 必须红。",
+      _c51_flat.trend(0.0)[0] == _loop50.FLAT
+      and _c51_up.trend(0.0)[0] == _loop50.IMPROVED
+      and _c51_up.trend(0.5)[0] != _loop50.IMPROVED
+      and _c51_dip.trend(0.0)[0] == _loop50.UNKNOWN
+      and _c51_up.trend(None)[0] == _loop50.UNKNOWN,
+      f"flat={_c51_flat.trend(0.0)[0]} up={_c51_up.trend(0.0)[0]} "
+      f"up+噪声={_c51_up.trend(0.5)[0]} dip={_c51_dip.trend(0.0)[0]} "
+      f"noise=None→{_c51_up.trend(None)[0]}")
+
+# 约束 1 的撤回态：循环运行中尺子被换掉，必须**立即停**，不许把新尺子的点接到旧曲线上。
+_az52_cal = _b50.Caliber(scorer_sha="az52", suite_sha="az52", repeat=1,
+                         budget_tag="1x", temperature=0.0, fresh=True,
+                         memory_scope="per_task_fresh", memory_seed="",
+                         limits={}, llm_cond={}, max_tokens=1024,
+                         tool_catalog_sha="az52")
+_az52_raised = False
+with tempfile.TemporaryDirectory(prefix="v1_az52_") as _td52:
+    _d52 = Path(_td52)
+    _sc52 = _d52 / "scorer.py"
+    _sh50.copy(V1 / "bench" / "scorers" / "code_exec.py", _sc52)
+    _sj52 = _d52 / "suite.jsonl"
+    _one52 = json.loads((V1 / "bench" / "tasks" / "coding_small.jsonl")
+                        .read_text(encoding="utf-8").splitlines()[0])
+    _sj52.write_text(json.dumps(_one52, ensure_ascii=False) + "\n", encoding="utf-8")
+    try:
+        _loop50.run_loop(
+            solver=lambda t: t.oracle,
+            scorer=_b50.ExternalScorer([sys.executable, str(_sc52)], source=_sc52),
+            suite=_b50.Suite.load(_sj52),
+            caliber_factory=lambda: _az52_cal,
+            rounds=3, log=lambda s: None,
+            # 第一轮结束后改尺子 ⇒ 第二轮开头必须发现
+            on_round=lambda p: _sc52.write_text(
+                _sc52.read_text(encoding="utf-8") + "\n# az52 mutate\n", encoding="utf-8"),
+        )
+    except RuntimeError as _e52:
+        _az52_raised = "打分器文件在运行中被改动" in str(_e52)
+check(RS, "AZ52 循环**运行中换尺子**必须立即停止（不是悄悄继续）。\n"
+          "          一轮之内尺子被改动，第二轮的读数就已经与第一轮不同口径，\n"
+          "          接在同一条曲线上等于伪造趋势。\n"
+          "          撤回语义：把 `if scorer.sha() != s0:` 改成 `if False:` ⇒ 必须红。",
+      _az52_raised,
+      f"运行中改打分器 ⇒ {'已停止' if _az52_raised else '未拦截（危险）'}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

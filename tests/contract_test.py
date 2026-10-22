@@ -7124,6 +7124,119 @@ check(RS, "AZ52 循环**运行中换尺子**必须立即停止（不是悄悄继
       _az52_raised,
       f"运行中改打分器 ⇒ {'已停止' if _az52_raised else '未拦截（危险）'}")
 
+
+# ── AZ53（第六十三轮）：循环模式的准入闸 ────────────────────────────────────
+# 这一条钉的是"**什么情况下不许出曲线**"，而不是曲线本身算得对不对。
+#
+# 两个拒绝理由都不是洁癖：
+#   ① 记忆跨轮累积 —— 默认 `shared_db` 下第 2 轮的记忆比第 1 轮多，而点上的
+#      口径签名仍是开跑前拍的快照 ⇒ **签名描述的不是这一轮的条件**。
+#      曲线会拿"记忆更多"冒充"能力更强"，且在线上一格都看不出来。
+#   ② 少于 3 轮 —— `trend()` 一律 UNKNOWN，产出的是一个点；写进曲线文件
+#      会让后来的人以为量过趋势。
+class _NS53:                                          # noqa: N801 — 契约内小工具
+    """`curve_guard` / `_option_conflict` 只用 `getattr`，所以有个扁平对象就够。"""
+
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
+
+
+_az53_cg = _az48_run.curve_guard
+_az53_refuse_short = _az53_cg(_NS53(solver="oracle", fresh=False), 2) != ""
+_az53_allow_ref = _az53_cg(_NS53(solver="oracle", fresh=False), 3) == ""
+_az53_refuse_model = _az53_cg(_NS53(solver="llm", fresh=False), 3) != ""
+_az53_allow_model = _az53_cg(_NS53(solver="llm", fresh=True), 3) == ""
+_oc53 = _az48_run._option_conflict
+_az53_c_sd = _oc53(_NS53(loop=3, suite_dir="bench/tasks")) != ""
+_az53_c_bl = _oc53(_NS53(loop=3, save_baseline=True)) != ""
+_az53_c_cmp = _oc53(_NS53(loop=3, compare=True)) != ""
+# ⚠️ 反例：**不许误伤**正常组合 —— 少了这半句，判据可以退化成"一律拒绝"而全绿。
+_az53_clean = _oc53(_NS53(loop=3)) == ""
+check(RS, "AZ53 循环模式必须有准入闸，且闸要有两个方向（该拒的拒、该放的放）：\n"
+          "          ① 轮数 <3 ⇒ 拒（少于 3 轮 trend() 恒 UNKNOWN，产出的是点不是曲线）；\n"
+          "          ② 真模型/内核 solver 未 `--fresh` ⇒ 拒（记忆跨轮累积会让签名说谎）；\n"
+          "          ③ 参照 solver（oracle/null/partial）不碰记忆 ⇒ 放行；\n"
+          "          ④ `--loop` 与 `--suite-dir` / `--save-baseline` / `--compare` 互斥\n"
+          "             （N 把尺子 / 一次读数 vs N 个点），否则 --loop 会被**静默忽略**。\n"
+          "          撤回语义：把 `if not getattr(args, \"fresh\", False):` 改成 `if False:`\n"
+          "          ⇒ 必须红。",
+      _az53_refuse_short and _az53_allow_ref and _az53_refuse_model
+      and _az53_allow_model and _az53_c_sd and _az53_c_bl and _az53_c_cmp
+      and _az53_clean,
+      f"<3轮={_az53_refuse_short} 参照放行={_az53_allow_ref} "
+      f"模型无fresh={_az53_refuse_model} 模型有fresh={_az53_allow_model} "
+      f"互斥(suite-dir/baseline/compare)={(_az53_c_sd, _az53_c_bl, _az53_c_cmp)} "
+      f"正常组合不误伤={_az53_clean}")
+
+
+# ── AZ54（第六十三轮）：循环模式**不许**长出第二套口径构造 ──────────────────
+# ⛔ 判据必须是 AST，不是源码字符串：本文件与 run.py 的注释里都出现过
+#    "`Caliber(` 构造点"这句话 ⇒ 裸 `find("Caliber(")` 会命中注释（本项目为此
+#    假红过多次）。数的是**真的调用节点**。
+_az54_tree = ast.parse((V1 / "run.py").read_text(encoding="utf-8"))
+_az54_calls = [n for n in ast.walk(_az54_tree)
+               if isinstance(n, ast.Call) and getattr(n.func, "id", None) == "Caliber"]
+# 反例：确认这个数法**真的能看见**那个构造点（数法失效时下面恒为 0 而断言全绿）
+_az54_sees = len(_az54_calls) >= 1
+# ⚠️ `_curve_mode(args, *, solver, …)` 是 keyword-only ⇒ `caliber` 在 kwonlyargs 里，
+#    只看 `args.args` 会得到 `['args']` 而误判"没有形参"。第一版就是这么写的，当场改。
+_az54_fn = next((n for n in ast.walk(_az54_tree)
+                 if isinstance(n, ast.FunctionDef) and n.name == "_curve_mode"), None)
+_az54_sig = ([] if _az54_fn is None
+             else [a.arg for a in (*_az54_fn.args.args, *_az54_fn.args.kwonlyargs)])
+check(RS, "AZ54 真模型口径只允许**一处**构造（`run.py` 里 `Caliber(...)` 调用节点恰为 1 个），\n"
+          "          且循环模式只能**接收**已建好的口径（`_curve_mode` 形参里必须有 `caliber`）。\n"
+          "          理由：两处各构造一遍，迟早一处改了另一处没改 —— 这是「同一事实两份声明」\n"
+          "          在口径层的形态，比计数漂移更隐蔽（两边都自洽，只是不是同一个实验）。\n"
+          "          撤回语义：把 `caliber_factory=lambda: caliber` 改成\n"
+          "          `caliber_factory=lambda: Caliber(**caliber.as_dict())` ⇒ 必须红。",
+      _az54_sees and len(_az54_calls) == 1 and "caliber" in _az54_sig,
+      f"Caliber 调用节点={len(_az54_calls)} _curve_mode 形参={_az54_sig}")
+
+# ── AZ55（第六十四轮）：不可信的点必须**自带理由** ─────────────────────────
+# 起因是第一次真跑（`bench/evidence/loop_s64/`）：三格全是 ⛔，而曲线文件里
+# **一个字的理由都没有** —— 想知道"为什么不可信"只能回终端翻日志。
+# 那是本项目的核心纪律被违反：证据必须自描述。
+#
+# ⛔ 判据必须是**真的跑**（null / oracle 各跑一轮），不是自己 new 一个 CurvePoint：
+#    自己构造的话，即使 run_loop 根本没把 rep 的计数接上去，断言照样绿 ——
+#    "灯是绿的，因为只有一盏灯"。
+_az55_sc = _b50.ExternalScorer(
+    [sys.executable, str(V1 / "bench" / "scorers" / "code_exec.py")],
+    source=V1 / "bench" / "scorers" / "code_exec.py")
+_az55_suite = _b50.Suite.load(V1 / "bench" / "tasks" / "coding_small.jsonl")
+_az55_n = len(_az55_suite.tasks)
+_az55_c_curve = _loop50.run_loop(solver=lambda t: "", scorer=_az55_sc,
+                                 suite=_az55_suite, caliber_factory=lambda: _az52_cal,
+                                 rounds=1, log=lambda s: None)
+_az55_ok_curve = _loop50.run_loop(solver=lambda t: t.oracle, scorer=_az55_sc,
+                                  suite=_az55_suite, caliber_factory=lambda: _az52_cal,
+                                  rounds=1, log=lambda s: None)
+_az55_bad = _az55_c_curve.points[0]
+_az55_ok = _az55_ok_curve.points[0]
+_az55_rt = _loop50.CurvePoint.from_dict(_az55_bad.as_dict())
+_az55_old = _loop50.CurvePoint.from_dict({                     # 旧 schema（无这三个键）
+    "round": 1, "ts": 0.0, "calib": "x", "mean": 0.5, "n": 1,
+    "spread": 0.0, "trustworthy": False, "per_task": {}})
+check(RS, "AZ55 不可信的点必须**自带理由**（`skipped` / `failed` / `errors` 三个字段）：\n"
+          "          ① 全空答案跑一轮 ⇒ `skipped == 题数`、`failed == 0`、`errors` 非空、不可信；\n"
+          "          ② oracle 跑一轮 ⇒ 三个计数全 0、可信（**反例**：不许把一切都记成不可信）；\n"
+          "          ③ 落盘/读回不许丢字段；旧 schema（没有这三个键）要能读成 0，不许报错。\n"
+          "          理由：`trustworthy=False` 只是一个**没有主语的形容词** ——\n"
+          "          「没交答案」与「打分器自己失败」修法完全不同，合并成一个『缺失』就再也分不清。\n"
+          "          撤回语义：把 `skipped=int(rep.skipped_no_answer)` 改成 `skipped=0` ⇒ 必须红。",
+      _az55_bad.skipped == _az55_n and _az55_bad.failed == 0
+      and bool(_az55_bad.errors) and _az55_bad.trustworthy is False
+      and _az55_ok.skipped == 0 and _az55_ok.failed == 0
+      and _az55_ok.errors == () and _az55_ok.trustworthy is True
+      and _az55_rt.skipped == _az55_bad.skipped
+      and _az55_rt.errors == _az55_bad.errors
+      and _az55_old.skipped == 0 and _az55_old.failed == 0,
+      f"空答案 skipped={_az55_bad.skipped}/{_az55_n} failed={_az55_bad.failed} "
+      f"errors={len(_az55_bad.errors)} 可信={_az55_bad.trustworthy} | "
+      f"oracle skipped={_az55_ok.skipped} failed={_az55_ok.failed} "
+      f"可信={_az55_ok.trustworthy} | 读回={_az55_rt.skipped} 旧schema={_az55_old.skipped}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

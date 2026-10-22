@@ -60,6 +60,14 @@ class CurvePoint:
     spread: float
     trustworthy: bool
     per_task: dict[str, float] = field(default_factory=dict)
+    #: 早退计数与理由。**不可信的点必须能自证"为什么不可信"** ——
+    #: 第六十四轮第一次真跑就撞上了这件事：三个点全是 ⛔，而证据文件里
+    #: 一个字的理由都没有，只能回终端翻日志。那是"证据不自描述"。
+    #: `skipped` = 没产出答案（`skipped_no_answer`），`failed` = 打分器自己失败
+    #: （`failed_scorer`）。两者修法完全不同，所以分开记、不许合并成一个"缺失"。
+    skipped: int = 0
+    failed: int = 0
+    errors: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -71,19 +79,34 @@ class CurvePoint:
             "spread": self.spread,
             "trustworthy": self.trustworthy,
             "per_task": dict(self.per_task),
+            "skipped": self.skipped,
+            "failed": self.failed,
+            "errors": list(self.errors),
         }
 
     def as_line(self) -> str:
-        flag = "" if self.trustworthy else "  ⛔不可信（不参与趋势）"
+        if self.trustworthy:
+            flag = ""
+        else:
+            why = []
+            if self.skipped:
+                why.append(f"未交答案 {self.skipped}")
+            if self.failed:
+                why.append(f"打分失败 {self.failed}")
+            flag = "  ⛔不可信（不参与趋势" + ("：" + "、".join(why) if why else "") + "）"
         return (f"第 {self.round} 轮  mean={self.mean:.4f}  n={self.n}  "
                 f"极差={self.spread:.4f}  口径={self.calib[:12]}{flag}")
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "CurvePoint":
+        # 旧文件（第六十三轮那三格）没有这三个键 ⇒ 默认 0/空，不许因为缺键就丢掉整点。
         return cls(round=int(d["round"]), ts=float(d["ts"]), calib=str(d["calib"]),
                    mean=float(d["mean"]), n=int(d["n"]), spread=float(d["spread"]),
                    trustworthy=bool(d.get("trustworthy", False)),
-                   per_task={str(k): float(v) for k, v in (d.get("per_task") or {}).items()})
+                   per_task={str(k): float(v) for k, v in (d.get("per_task") or {}).items()},
+                   skipped=int(d.get("skipped", 0) or 0),
+                   failed=int(d.get("failed", 0) or 0),
+                   errors=tuple(str(x) for x in (d.get("errors") or ())))
 
 
 @dataclass
@@ -208,7 +231,12 @@ def run_loop(
         per = {str(r.get("id")): float(r.get("score") or 0.0) for r in rep.per_task}
         p = CurvePoint(round=rnd, ts=time.time(), calib=cal.signature(),
                        mean=float(m.mean), n=int(m.n), spread=float(m.spread),
-                       trustworthy=bool(rep.trustworthy()), per_task=per)
+                       trustworthy=bool(rep.trustworthy()), per_task=per,
+                       # 早退原因必须跟着点一起落盘：否则"不可信"只是一个没有主语的形容词
+                       skipped=int(rep.skipped_no_answer),
+                       failed=int(rep.failed_scorer),
+                       # 只留前 3 条：够看出"缺了哪几题、为什么"，又不把 JSONL 撑成日志
+                       errors=tuple(list(rep.errors)[:3]))
         curve.add(p)
         log("  " + p.as_line())
         if on_round is not None:

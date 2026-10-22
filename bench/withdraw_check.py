@@ -729,6 +729,22 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ52", "mw/loop.py",
      "        if scorer.sha() != s0:",
      "        if False:"),
+    # ── AZ53–AZ54（循环模式的接线）：接线层同样要能被撤回 ─────────────────
+    # ④ 撤掉"真模型必须 --fresh"这一格 ⇒ 记忆跨轮累积也能出曲线 ⇒ 只有 AZ53 红。
+    ("AZ53", "run.py",
+     "    if not getattr(args, \"fresh\", False):",
+     "    if False:"),
+    # ⑤ 让循环模式在本文件里**再构造一个** Caliber（改成按轮重建）⇒
+    #    `run.py` 里的 Caliber 调用节点变 2 个 ⇒ 只有 AZ54 红。
+    #    ⚠️ 这条变异是"看起来更严谨"的方向（每轮现算口径），正是它危险的地方：
+    #    多一处构造 = 多一套可能漂移的口径，而两边都自洽。
+    ("AZ54", "run.py",
+     "                   caliber_factory=lambda: caliber, rounds=rounds,",
+     "                   caliber_factory=lambda: Caliber(**caliber.as_dict()), rounds=rounds,"),
+    # ⑥ 把早退计数写死成 0 ⇒ "不可信"又变成没有主语的形容词 ⇒ 只有 AZ55 红。
+    ("AZ55", "mw/loop.py",
+     "                       skipped=int(rep.skipped_no_answer),",
+     "                       skipped=0,"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

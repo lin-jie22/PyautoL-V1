@@ -1,0 +1,3 @@
+{"calib": "cbbfb69c7d757ca6", "mean": 0.5277666666666666, "n": 1, "per_task": {"t01_parse_duration": 0.8333, "t04_merge_ranges": 0.3333, "t05_top_k": 1.0, "t06_rle": 1.0}, "round": 1, "spread": 0.0, "trustworthy": false, "ts": 1792666665.4434528}
+{"calib": "cbbfb69c7d757ca6", "mean": 0.6944333333333333, "n": 1, "per_task": {"t01_parse_duration": 0.8333, "t03_commas": 1.0, "t04_merge_ranges": 0.3333, "t05_top_k": 1.0, "t06_rle": 1.0}, "round": 2, "spread": 0.0, "trustworthy": false, "ts": 1792667089.483058}
+{"calib": "cbbfb69c7d757ca6", "mean": 0.6944333333333333, "n": 1, "per_task": {"t01_parse_duration": 0.8333, "t03_commas": 1.0, "t04_merge_ranges": 0.3333, "t05_top_k": 1.0, "t06_rle": 1.0}, "round": 3, "spread": 0.0, "trustworthy": false, "ts": 1792667526.658877}

@@ -7673,9 +7673,33 @@ README 是给要读的人准备的；`site/index.html` 是给**只打算看一�
    已改为 `林少杰 / 89998228@qq.com`。**只影响今后提交**；历史 89 个提交与 `v1.0.0` 快照
    （其 `LICENSE` 仍是 `jianglin`）一律不改写 —— 改写要 force-push 一个 public 仓库，收益不抵风险。
 
-### 25.4 ⚠️ 一条只有本人能做完的尾巴
+### 25.4 ⛔ 一条差点被写死的误判：邮箱关联（先写"无法核验"，随后被实测推翻）
 
-GitHub 是按**邮箱**把提交关联到账号的：`89998228@qq.com` 必须加进账号邮箱列表，否则新提交在
-仓库页只显示「林少杰」这三个字，**不链头像、不算进贡献图**。`GET /user/emails` 用现有细粒度 token
-返回 404（缺 `user:email` 权限）⇒ **这一项无法由脚本核验**，只能本人在 Settings → Emails 里确认；
-同一处可顺手把 Profile 的 Name 也从空值填上（`GET /user` 读到 `name: None`）。
+提交信息里我写了「`89998228@qq.com` 需加入 GitHub 账号邮箱，否则不链头像、不计贡献图」，
+依据是 `GET /user/emails` 返回 404（细粒度 token 缺 `user:email` 权限）⇒ 当时**无法核验**。
+但"无法核验"不等于"不成立"。推送后换一条通道复核：
+
+```
+GET /repos/lin-jie22/PyautoL-V1/commits/333ed59
+→ commit.author.name / email = 林少杰 / 89998228@qq.com
+→ author.login = lin-jie22        # 非 null ⇒ 邮箱**已**关联，提交会链到账号
+```
+
+⇒ 该邮箱**本来就在账号里**，不需要任何人工操作。原判断作废，**以本节为准**；
+已推送的提交信息不改写（force-push 一个 public 仓库不划算），台账更正优先于事后美化。
+
+★ 教训：`user:email` 权限缺的是**接口**，不是**事实**。换通道即可验——`commits` API 的
+`author.login` 是否为 null 就是判据。不要用一个接口的 404 去断言一件事实。
+
+### 25.5 本轮自踩：`TOKEN` 没 `export`，git 报了假的"token 无效"
+
+| 现象 | 当时的归因（错） | 真相 |
+|---|---|---|
+| `git push` 报 `remote: Invalid username or token.` | 疑心 PAT 过期/被撤 | 同一 token 打 `GET /user` 得 **HTTP 200 / login lin-jie22** ⇒ token 有效 |
+
+根因：`credential.helper='!f() { … "password=$TOKEN" … }'` 里的函数是 **git 起的子 shell** 在执行，
+而 `TOKEN=…` 只是当前 shell 的**非导出**变量 ⇒ 子 shell 里为空 ⇒ 送出的 password 是空串。
+修法：先 `export TOKEN=…` 再 push（一次即成，`9b85eb5..333ed59`）。
+
+★ 这是「环境伪装成结论」的第 7 例：**报错文本指向 token，实际根因是变量作用域**。
+判据只能是"换通道验 token 本身"（API 200），不是"报错说什么就信什么"。

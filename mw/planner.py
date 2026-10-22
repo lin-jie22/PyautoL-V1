@@ -8,7 +8,7 @@ V1 的实现刻意轻：不做完整 HTN，不改写整张图。只做两件在�
     1. 每步产出 N 个**候选动作**（这就是 test-time compute 的落点：
        不是一个想法，而是几个想法，然后用 guard + 世界模型筛）。
     2. 失败后带着**错误原文与已试过的动作**重规划，而不是原地重试同一个动作
-       —— 这正是 V5 的 hyp_exp "同一假设无限重派" 的反面。
+       —— 这正是"同一假设无限重派"的反面。
 
 规划器**必须**能降级：LLM 输出不可解析时，回退到确定性单步计划，
 而不是抛异常把整轮打断。但降级会被计数（degraded），不许静默。
@@ -171,7 +171,7 @@ class Planner:
         self.calls = 0
         self.degraded = 0
         # ── 降级原因**分项计数**，不许合并成一个 degraded ──────────────────
-        # 理由（V5 换来的通则）：修法不同的分支合并，就再也分不清该修哪里。
+        # 理由（一条通则）：修法不同的分支合并，就再也分不清该修哪里。
         #   json_fail      没产出合法 JSON（也不是截断形状）⇒ 改提示词/解析器
         #   truncated      开了头但括号不闭合          ⇒ ★调大 max_tokens
         #   no_tool_fit    想要的能力不在工具目录里     ⇒ 加工具/改工具描述（★实测命中）
@@ -432,7 +432,7 @@ class Planner:
             "calls": self.calls, "degraded": self.degraded,
             "max_tokens": self.max_tokens,
             "degrade_rate": round(self.degraded / self.calls, 3) if self.calls else 0.0,
-            # 分项：修法不同的分支必须分开报（V5 通则）
+            # 分项：修法不同的分支必须分开报
             "json_fail": self.json_fail, "truncated": self.truncated,
             "no_tool_fit": self.no_tool_fit, "empty_plan": self.empty_plan,
             "answer_retry_ok": self.answer_retry_ok,

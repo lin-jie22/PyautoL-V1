@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """V1 契约测试 —— 离线、零依赖、可独立运行。
 
-设计遵循 V5 用 136 轮换来的三条硬纪律：
-  ① **测试绝不碰生产目录**：所有状态目录由 env 指向临时目录（V5 的 R4/R8）
-  ② **不许对可能不存在的属性做算术**（V5 的 R13 硬坑：撤回态下 `int(None)` 抛异常，
+设计遵循三条用事故换来的硬纪律：
+  ① **测试绝不碰生产目录**：所有状态目录由 env 指向临时目录
+  ② **不许对可能不存在的属性做算术**（撤回态下 `int(None)` 抛异常，
      打断汇总行）⇒ 本文件全部用 `.get()` + 类型前置
   ③ **汇总行必须能被外部 runner 的正则解析**：`PASS=n  FAIL=m`
-     （V5 的 §134/§135 连续两轮把 `SUM_PASS=` 写进汇总行，
+     （连续两轮把 `SUM_PASS=` 写进汇总行，
       `FAIL` 前是下划线 ⇒ runner 记 0 条断言，违反 R79 可对账）
 
 判据全部**与实现同源可撤**：撤掉实现里的对应代码，相应断言必然判红。
@@ -88,7 +88,7 @@ def _ci95_ok(scores) -> bool:
 
 # ===========================================================================
 print("=" * 74)
-print("A. 配置单一源（V5 的'同一事实多处声明'正面修复）")
+print("A. 配置单一源（'同一事实多处声明'的正面修复）")
 print("=" * 74)
 _all_src = "\n".join(_src(p.name) for p in MW_DIR.glob("*.py"))
 _found = set(re.findall(r'"(V1_[A-Z0-9_]+)"', _all_src))
@@ -135,7 +135,7 @@ check(RS, "B7 candidates 语义明确：累计花费与单次宽度分开，不�
 # ===========================================================================
 print()
 print("=" * 74)
-print("C. 三层记忆（V5 的 39× 重复 ⇒ DB 层去重约束）")
+print("C. 三层记忆（39× 重复 ⇒ DB 层去重约束）")
 print("=" * 74)
 mem = MemoryStore(_TMP / "m1.db")
 k1, new1 = mem.commit_fact("Python 写文件需显式 encoding", source="t", confidence=0.5)
@@ -379,13 +379,13 @@ ok, why = paired_compare(m_a, m_hi)
 check(RS, "H4 显著超过噪声带 ⇒ 判定成立", ok, why)
 m_noise = summarize([0.71, 0.70, 0.705], candidate="cand", budget_tag="1x")
 ok2, why2 = paired_compare(m_a, m_noise)
-check(RS, "H5 落在噪声带内 ⇒ 判定不成立（V5 的核心病灶）", not ok2, why2)
+check(RS, "H5 落在噪声带内 ⇒ 判定不成立（核心病灶）", not ok2, why2)
 ok3, why3 = paired_compare(m_a, summarize([0.99, 1.0], candidate="c", budget_tag="4x"))
 check(RS, "H6 跨预算档比较被拒（2026: 能力是预算的曲线）", not ok3, why3)
 check(RS, "H7 噪声下限取最保守口径（最大极差）",
       abs(noise_floor(m_a, summarize([0.5, 0.9], candidate="z", budget_tag="1x")) - 0.4) < 1e-9)
 r2 = Report(); r2.pass_n = 7; r2.fail_n = 0
-check(RS, "H8 汇总行可被外部 runner 正则解析（V5 §134/§135 的坑）",
+check(RS, "H8 汇总行可被外部 runner 正则解析（§134/§135 的坑）",
       bool(re.search(r"PASS\s*=\s*(\d+)\s+FAIL\s*=\s*(\d+)", r2.summary_line())),
       r2.summary_line())
 check(RS, "H9 ci95 在小样本下不越界",
@@ -484,7 +484,7 @@ def _call_lines(src: str, attr: str) -> list[int]:
     """用 AST 取**真实调用**的行号。
 
     ⚠️ 必须走 AST：直接 `src.index(name)` 会命中模块 docstring 里的同名文字
-    —— V5 的 R60 就是这么骗过我的（静态锚必须注释/文档感知）。
+    —— 静态锚必须注释/文档感知，否则就是这样骗过我的。
     本文件 J5 第一次跑就是这个错，此处是修复。
 
     又：J3 第一次写的是 `core_src.count("spend_llm()")`，本轮**同样被骗了一次** ——
@@ -836,7 +836,7 @@ check(RS, "N6 向后兼容：老格式（答案塞在 JSON 字符串里）在双
 # ===========================================================================
 print()
 print("=" * 74)
-print("O. 停滞闸（重复的「成功」不是进展）—— V5「同一假设无限重派」的同构体")
+print("O. 停滞闸（重复的「成功」不是进展）—— 「同一假设无限重派」的同构体")
 print("=" * 74)
 # 实测（2026-10-17）：内核把同一个 recall(同一个 query) 重派了 5 次，
 # 每次 **ok=True**，于是 `consecutive_failures` 一次都没涨 ——
@@ -1028,7 +1028,7 @@ print("R. 传输层抖动 vs 模型侧失败（重试的边界）")
 print("=" * 74)
 # 实测背景（2026-10-17 4x 预算跑内核）：6 题里 **3 题**死于 `TimeoutError`，
 # 被记成 `solver 未产出答案` —— 那一刻的读数里混着**基础设施**的锅，
-# 而报错文本读起来像模型的锅。这正是 V5 的老毛病：不可归因的失败一起进读数。
+# 而报错文本读起来像模型的锅。这正是老毛病：不可归因的失败一起进读数。
 # 判据（与 llm.py 的 LLMError 同源）：
 #   · 传输层失败（超时/连接断/5xx/429）⇒ 重试（幂等的只读调用，重试不改变语义）
 #   · 模型侧失败（4xx / 响应结构不符）⇒ **不许重试**，换路径
@@ -1392,7 +1392,7 @@ from mw.worldmodel import Prediction, WorldModel                     # noqa: E40
 # 这条链子在代码里是通的（core.py 的 guidance=self.wm.guidance(action=goal)），
 # 但"通了"≠"有效" —— 所以这里逐步钉：沉淀了吗？检索得到吗？**真的进了提示词吗**？
 # 最后一条最重要：DB 里有 ≠ 决策链看得见。一个只写进 DB 却没人读的记忆，
-# 正是 V5 "字段无消费者" 的同构体。
+# 正是 "字段无消费者" 的同构体。
 _v_mem = MemoryStore(_TMP / "v_causal.db")
 _v_wm = WorldModel(_v_mem, StubLLM())
 # ⚠️ 这里必须走**成败类**（`expect_ok` + `ok=`）：那是生产路径
@@ -1560,7 +1560,7 @@ check(RS, "X5 血缘**不含密钥**（`api_key` 绝不外泄到读数里）",
 
 # ★结构锚：run.py 里**只准有一处**带 `"llm_kind"` 键的 dict 字面量（就是 `_prov`）。
 #   谁再手拼一个血缘 dict，这里立刻转红 —— 这正是"让缺陷写不出来"的那一步。
-#   ⚠️ 走 AST，不走字符串搜索（V5 的 R60：全文 `index()` 会命中注释里的同名文字）。
+#   ⚠️ 走 AST，不走字符串搜索（全文 `index()` 会命中注释里的同名文字）。
 def _prov_dict_lines(src: str) -> list[int]:
     """数出源码里含 `llm_kind` 键的 dict 字面量行号。"""
     return [n.lineno for n in ast.walk(ast.parse(src))
@@ -1616,8 +1616,8 @@ print("=" * 74)
 #       `observe` 比对的是**整段答案**（候选代码）。
 #   Jaccard 门槛 0.34 ⇒ 这两者**跨种类** ⇒ **结构上不可能**相似 ⇒ 每次必判失配。
 #   实测三轮共 9 次失配，一致度全部 ≤ 0.09：`0.00 0.00 0.05 0.09 0.00 0.02 0.00 0.05 0.07`。
-#   ⚠️ 这与 V5 的死因**同构**：一个**永远不可能"好"**的信号。
-#      把 `失配=3` 读成"因果闭环在工作"，就是 V5 把 `gain≡0` 读成"每轮全绿"。
+#   ⚠️ 这是同一种失效形态：一个**永远不可能"好"**的信号。
+#      把 `失配=3` 读成"因果闭环在工作"，就是把 `gain≡0` 读成"每轮全绿"。
 #
 # 修法（不是调门槛 —— 那是把尺子下移）：**按种类比，绝不跨种类比。**
 #   预测的对象改成"这一步**会不会成功**"（`expect_ok`），由 `result.ok` 检验 ——
@@ -1752,7 +1752,7 @@ _y6 = WorldModel(MemoryStore(_TMP / "y6.db"), _Y_LLM(_Y_PRED))
 check(RS, "Y6 `scored==0` ⇒ `hit_rate` 是 `None` 而不是 `0.0`（契约③：缺失 ≠ 否定）",
       _y6.stats()["hit_rate"] is None, str(_y6.stats()["hit_rate"]))
 
-# Y7 对账：三个派生量必须自洽，否则读数会互相打架（V5 的四五处声明就是这个病）。
+# Y7 对账：三个派生量必须自洽，否则读数会互相打架（四五处声明就是这个病）。
 _y7 = WorldModel(MemoryStore(_TMP / "y7.db"), _Y_LLM(_Y_PRED))
 for _ok in (True, True, False, False, True):
     _y7.observe(Prediction("x", "e", 0.9, expect_ok=True), "o", ok=_ok)
@@ -2097,7 +2097,7 @@ check(RS, "AC7 空答案必拒（这是唯一不需要解释的判据）",
       "空答案已被拒绝")
 
 check(RS, "AC8 价值层不产生分数：`Judgement` 只有 allow/kind/reason/rank，"
-          "没有 `score` 字段 —— 自评分是 V5 的死因，这条是接口级防线",
+          "没有 `score` 字段 —— 自评分会让判据失去独立性，这条是接口级防线",
       set(getattr(type(_v_ans), "__dataclass_fields__", {})) ==
       {"allow", "kind", "reason", "rank"},
       f"字段={sorted(getattr(type(_v_ans), '__dataclass_fields__', {}))}")
@@ -2226,7 +2226,7 @@ check(RS, "AEb3 消融报告必须同时给「声明」与「实测」分类，�
 #
 # 第一层（AE / bench/coherence.py）问"拆了环还转吗"。它**没有"缺席"这一格**：
 # 拆一个不存在的模块，读数当然不变 ⇒ Δ=0 被读成"不必要"，而真相是"未实现"。
-# 那是把**没做的事**判成**不需要做的事** —— 与 V5 的病同构，只是方向相反。
+# 那是把**没做的事**判成**不需要做的事** —— 同一种病，只是方向相反。
 #
 # AF 组钉的是第二层：每条能力绑一个**失败现象**，三态判定，
 # 且 `UNKNOWN` 不许并进 `ABSENT`（那一格就是"没量到 ≠ 不需要"的物理位置）。
@@ -2309,7 +2309,7 @@ def _code_only(text: str) -> str:
     ⚠️ 第二十轮实测踩到：AF9 原先直接写 `"full[:300]" not in src`，
     而我在同一行旁边加了一句注释解释"以前这里写的是 `full[:300]`"，
     断言当场转红 —— 尺子看见的是**注释**，不是代码。
-    这不是实现的问题，是尺子的问题（V5 规则第 7 条）。
+    这不是实现的问题，是尺子的问题。
     """
     text = re.sub('"""[\\s\\S]*?"""', "", text)
     text = re.sub("'''[\\s\\S]*?'''", "", text)
@@ -2350,7 +2350,7 @@ check(RS, "AF11 判定必须带**翻转条件**（`note`）：没有它，一个
 # 它补的是「社会与情感」那一格的判据（DESIGN §16.7 的第 1 条下一步）。
 # 三条硬纪律，每条都能被撤掉实现后转红：
 #   ① 只读：内核能读，不能写、不能改、不能自己造
-#   ② 不许用当前题：用了就是照着自己的答案改答案（自评分 = V5 死因）
+#   ② 不许用当前题：用了就是照着自己的答案改答案（自评分）
 #   ③ 必须与分数同源：两把尺子的理由混用 ⇒ 教训变成噪声
 # ===========================================================================
 from mw.critique import REJECT_KINDS, Critique, CritiqueLedger, from_scored  # noqa: E402
@@ -2373,7 +2373,7 @@ _ag_led.add(Critique(scorer_sha="S", suite_sha="U", task_id="t2", why="w2"))
 _ag_got = [c.task_id for c in _ag_led.admissible(
     scorer_sha="S", suite_sha="U", exclude_task_id="t1")]
 check(RS, "AG3 ★防自评：当前题（t1）**自己的**评审必须被挡住 —— "
-          "放行它，内核就是在照着自己的答案改答案（自评分，V5 的死因）",
+          "放行它，内核就是在照着自己的答案改答案（自评分）",
       _ag_got == ["t2"] and _ag_led.rejected["self"] >= 1,
       f"放行={_ag_got} rejected={_ag_led.rejected}")
 
@@ -2399,7 +2399,7 @@ _ag_led3 = CritiqueLedger()
 _ag_led3.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="v1"))
 _ag_led3.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="v2"))
 check(RS, "AG6 去重必须靠**键覆盖**，不能靠事后清理"
-          "（V5 的 39× 重复就是后者的下场：写入时没人管，清理时两套逻辑对不上）",
+          "（同一内容存 39 次就是后者的下场：写入时没人管，清理时两套逻辑对不上）",
       len(_ag_led3.admissible(scorer_sha="S", suite_sha="U", exclude_task_id="x")) == 1
       and _ag_led3.superseded == 1 and _ag_led3.stats()["stored"] == 1,
       f"stored={_ag_led3.stats()['stored']} superseded={_ag_led3.superseded}")
@@ -2453,7 +2453,7 @@ check(RS, "AG10 被拒原因必须走**受控词表** `REJECT_KINDS` —— 新�
 # 真正的位移不在"判得更准"，而在**判据从哪来**：
 #   旧 = 尺子自己发明的规则（字数 / 长度的 1/5）
 #   新 = 任务自带的 ground truth
-# 判据不由测量者发明，就没人能通过调松判据让分数变好看 —— V5 的死法。
+# 判据不由测量者发明，就没人能通过调松判据让分数变好看。
 # ===========================================================================
 from mw.bench import (Assertion, ExternalScorer, ScoreError,  # noqa: E402
                       Scored, Suite)
@@ -2580,7 +2580,7 @@ check(RS, "AH13 `detail` **整体不是列表**（如字符串）⇒ 同样必�
 
 _AH_t0 = _AH_s.tasks[0]
 check(RS, "AH11 ★三档有序（分辨力）：oracle > partial > null，且**中段可达**\n"
-          "         （只证明满分/零分可分太弱 —— 那与 V5 那把五天不动的尺子没区别）",
+          "         （只证明满分/零分可分太弱 —— 那与一把五天不动的尺子没区别）",
       all(_ah_score(t, t.oracle) > _ah_score(t, t.partial) > _ah_score(t, t.null)
           for t in _AH_s.tasks)
       and all(0.0 < _ah_score(t, t.partial) < 1.0 for t in _AH_s.tasks),
@@ -2639,7 +2639,7 @@ _AI_led.write_text("\n".join([
 _AI_L = ScoreLedger(_AI_led, caliber_sig=_AI_sig)
 _AI_adm = _AI_L.admissible()
 check(RS, "AI2 ★缺 `caliber_sig` 的行**必须被拒**，不并入、不默认同口径\n"
-          "         （缺签名 ≠ 同口径。默认放行 = 把两种东西当一种 = V5 的跨口径比较）",
+          "         （缺签名 ≠ 同口径。默认放行 = 把两种东西当一种 = 跨口径比较）",
       len(_AI_adm) == 1 and _AI_L.stats.rejected_no_sig == 1,
       f"采纳={len(_AI_adm)} 无签名拒={_AI_L.stats.rejected_no_sig}")
 
@@ -2713,7 +2713,7 @@ check(RS, "AI9 ★判据本体：用历史预测未来，误差必须**优于**�
 
 check(RS, "AI10 ★反证组（各族真实通过率**完全相同**，族间本无差异）：\n"
           "          判据**不许**绿，否则 AI9 是一条恒真断言\n"
-          "          （一个怎么都能赢的判据，和 V5 那个恒为 0 的适应度是同一种东西）\n"
+          "          （一个怎么都能赢的判据，和一个恒为 0 的适应度是同一种东西）\n"
           "          ⚠️ 旧版用的是『轮转族标签』，那只给族改名 —— 未来行若跟着\n"
           "             改名则信号毫发无损，改历史则恒等于完全错配，都不是零假设",
       _AI_null["state"] != "PRESENT",
@@ -2722,7 +2722,7 @@ check(RS, "AI10 ★反证组（各族真实通过率**完全相同**，族间本
 
 _AI_gate = _smp.probe_caliber_gate()
 check(RS, "AI11 ★口径闸是不是**承重的**：混入异口径 ⇒ 预测必须变差\n"
-          "          （撤了闸误差也不变 ⇒ 那道闸是装饰；装饰的闸就是 V5 的死法）",
+          "          （撤了闸误差也不变 ⇒ 那道闸是装饰；装饰的闸就是失效的起点）",
       _AI_gate["state"] == "PRESENT" and _AI_gate["loss"] > 0,
       f"同口径 MAE={_AI_gate['gated']['mae_model']} "
       f"混入后 MAE={_AI_gate['mixed']['mae_model']} 劣化={_AI_gate['loss']}")
@@ -2856,7 +2856,7 @@ check(RS, "AJ8 ★`load_evidence` 必须把 `session` 带过去\n"
 
 _AJ_bad = load_evidence([{"family": "a", "passed": True, "session": "abc"}])
 check(RS, "AJ9 非数字 `session` ⇒ 留正向信号（`session_bad`），**不许**填 0、不许静默丢\n"
-          "         （填 0 = 让这一行假装属于会话 0，于是被算进切分；V5 的『缺失当零』）",
+          "         （填 0 = 让这一行假装属于会话 0，于是被算进切分；『缺失当零』）",
       _AJ_bad and _AJ_bad[0].get("session") is None
       and _AJ_bad[0].get("session_bad") == "abc",
       str(_AJ_bad[0] if _AJ_bad else "空"))
@@ -2879,7 +2879,7 @@ _AJ_env = [n for n in ast.walk(_AJ_tree)
            or (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
                and n.func.id in ("getenv", "environ"))]
 check(RS, "AJ11 ★闸的四个常数**不可调**：`metacog.py` 不许读环境变量\n"
-          "         （能调阈值 = 能把结论调好看的旋钮 ⇒ V5 的尺子下移）",
+          "         （能调阈值 = 能把结论调好看的旋钮 ⇒ 尺子下移）",
       not _AJ_env and "os." not in _AJ_mc and "getenv" not in _AJ_mc,
       f"可疑节点={len(_AJ_env)} 含 os.={'os.' in _AJ_mc}")
 
@@ -3058,7 +3058,7 @@ check(RS, "AJ26 ★『开得多稳』必须进读数：snr = Δ/阈值 不许缺
 def _strip_docstrings(src: str) -> str:
     """去掉 docstring 与注释后的代码文本。
 
-    ⚠️ V5 的 R7 硬坑：全文件 `index()`/`find()` 会命中**注释和 docstring 里
+    ⚠️ 硬坑：全文件 `index()`/`find()` 会命中**注释和 docstring 里
     的同名文字** ⇒ 静态锚变成恒真断言。本模块的 docstring 里必须能自由地
     讨论 `oracle`（那是纪律本身），所以这里用 AST 剥掉字符串字面量。
     """
@@ -3176,7 +3176,7 @@ for _a in _AK_tasks:
         _sa, _sb = _AK_fs[_a["id"]], _AK_fs[_b["id"]]
         _sim = len(_sa & _sb) / len(_sa | _sb) if (_sa | _sb) else 0.0
         (_AK_in if _AK_c1[_a["id"]] == _AK_c1[_b["id"]] else _AK_out).append(_sim)
-# ⚠️ V5 的 R13 硬坑：契约**不许对可能不存在的东西做算术**。
+# ⚠️ 硬坑：契约**不许对可能不存在的东西做算术**。
 #    撤回态（聚类退化成单一族）下跨族对数为 0 ⇒ 这里除零会让汇总行整条消失，
 #    于是"AK8 崩了"看起来像"AK8 没跑"，撤回态验证直接失效。
 _AK_ok = bool(_AK_in) and bool(_AK_out)
@@ -3300,7 +3300,7 @@ _AL_num = {k for k, v in _AL_wm_stats.items()
 check(RS, "AL11 ★★世界模型的**每个**数值读数都必须被累加器搬运\n"
           "         （键名单必须由零点派生，不许另写一份）\n"
           "         —— 本轮自踩：奖励的三个新字段没进名单 ⇒ 日志上写=5 / 读=0，\n"
-          "            一个你看不出有没有被用过的通道 = 装饰（V5 的同名病灶）",
+          "            一个你看不出有没有被用过的通道 = 装饰（同名病灶）",
       _AL_num <= set(_KWM_NUM_KEYS),
       f"未被搬运={sorted(_AL_num - set(_KWM_NUM_KEYS))}")
 
@@ -3416,7 +3416,7 @@ check(RS, "AM5 ★历史行**照样受理**（那是真证据），但必须记�
 _AM_hl2 = ScoreLedger(_AM_hist)
 _AM_hl2.admissible(_AM_hsig)
 check(RS, "AM6 `legacy_no_caliber` 必须有**消费者**：必须出现在 `as_line()` 里\n"
-          "         —— 一个只在内部计、永远没人念的数，等于没有（V5 装饰字段的同型）",
+          "         —— 一个只在内部计、永远没人念的数，等于没有（装饰字段的同型）",
       "legacy_no_caliber" in LedgerStats().as_dict()
       and "不可复核" in _AM_hl2.stats.as_line(),
       _AM_hl2.stats.as_line()[:96])
@@ -3457,7 +3457,7 @@ check(RS, "AM10 产生证据的**脚本必须有可被锁定的指纹**：CI 每
 _AM_oc = _strip_docstrings(inspect.getsource(_option_conflict))
 _AM_body = _strip_docstrings(_RUN_SRC)
 #: 同一事实只声明一处：冲突规则要么在 `_option_conflict` 里，要么散在主流程里。
-#: 两处在 ⇒ 改一处另一处仍在，AM12 测得通过而实际行为没变（V5 的老病）。
+#: 两处在 ⇒ 改一处另一处仍在，AM12 测得通过而实际行为没变。
 _AM_decl = _AM_body.count("--fresh 与 --memory-dir")
 check(RS, "AM11 ★语义冲突必须**报错**，不许静默兜底（本轮自踩）\n"
           "         —— `--fresh`（记忆隔离）与 `--memory-dir`（记忆跨题累积）同时给，\n"
@@ -4191,7 +4191,7 @@ check(RS, "AP14 ★五臂的原始读数必须**冻结成文件**，结论不许
 # 在 `probe_fakemem.py` 里又写了一份。两份"内容相同"的字符串并不同 ——
 # 脚本那份没有 markdown 粗体标记，探针那份有 ⇒ verdict.json 与探针重算
 # 当场不等 ⇒ P5 转红。
-# 这不是"抄错了"，这是**同一样东西有两处声明**的必然结果（V5 规则第 2 条）。
+# 这不是"抄错了"，这是**同一样东西有两处声明**的必然结果。
 # ⇒ 修法不是把两处改一致，而是**删掉一处**：脚本收尾直接调探针的 --write。
 _AP_PROBE = (V1 / "bench" / "probe_fakemem.py").read_text(encoding="utf-8")
 # --- AP15 的三个判定值先算好，f-string 表达式里不再出现反斜杠 ---
@@ -4495,7 +4495,7 @@ except BlobIntegrityError:
     pass
 check(RS, "AR3 ★句柄不存在 ⇒ `KeyError`；原文与写侧承诺不符 ⇒ `BlobIntegrityError`\n"
           "         —— 静默返回空串/原文会让『取回失败』长得和『取回成功』一样。\n"
-          "           这与 V5 的 `.txt 被误判成功`是同一类事故。",
+          "           这与 `.txt 被误判成功`是同一类事故。",
       not _AR_err, f"异常={(not _AR_err)} 漏网={_AR_err}")
 _AR_MEM.close()
 
@@ -4692,7 +4692,7 @@ _AS_D1 = [c.kind for c in _AS_V.derive("写一个函数 foo(x)。只输出代码
 _AS_D2 = [c.kind for c in _AS_V.derive("解释一下为什么 CSV 里的引号要双写。")]
 check(RS, "AS3 ★`derive()` 只许收 `goal` 一个输入，且不同题面必须派生出不同判据\n"
           "         —— 若它还能收 answer 或分数，就给了『答案反过来影响判据』的入口，\n"
-          "           那正是自评分的形态（V5 的死因）。",
+          "           那正是自评分的形态。",
       _AS_DERIVE_ARGS == ["goal"] and _AS_D1 != _AS_D2,
       f"形参={_AS_DERIVE_ARGS} 代码题={_AS_D1} 散文题={_AS_D2}")
 
@@ -4776,7 +4776,7 @@ check(RS, "AS7 ★第一次交**语法坏**的代码必须被打回\n"
 # ── AS8：打回之后必须真修好，且**交付的是修好的那一版** ─────────────────
 check(RS, "AS8 ★第二版交对 ⇒ 交付它，状态 done\n"
           "         —— 只拦不修的话，这一轮等于给系统加了一个'永远失败'的闸，\n"
-          "           那是把 V5 的『一个永远不可能好的信号』又造了一遍。",
+          "           那是把『一个永远不可能好的信号』又造了一遍。",
       _AS_OUT.status == "done" and _AS_OUT.answer.strip() == _AS_GOOD.strip(),
       f"status={_AS_OUT.status} 答案是否第二版={_AS_OUT.answer.strip() == _AS_GOOD.strip()}")
 
@@ -4786,7 +4786,7 @@ _AS_C2, _AS_OUT2, _ = _as_run(_AS_BADS, retries=1)
 _AS_VS2 = (_AS_OUT2.stats or {}).get("verify") or {}
 check(RS, "AS9 ★一直交坏答案 ⇒ 打回 `verify_retries` 次后放弃，并标 `done_unverified`\n"
           "         —— 没有上限的重写会烧掉**交付**的配额（收尾余量的同一条教训）；\n"
-          "           而把它报成 `done` 就是 V5 那种『每轮全绿而目标数字不动』。",
+          "           而把它报成 `done` 就是『每轮全绿而目标数字不动』。",
       int(_AS_VS2.get("failed") or 0) == 2
       and int(_AS_VS2.get("exhausted") or 0) == 1
       and _AS_OUT2.status == "done_unverified",
@@ -4816,7 +4816,7 @@ _AS_LIM = cfg.Limits()
 check(RS, "AS12 ★`verify_retries` 必须在 `Limits.as_dict()` 里，且允许取 0\n"
           "          —— `Limits.as_dict()` 是口径签名的输入。不进制口径的话，\n"
           "            开/关自检的两轮会被 `paired_compare` 判成『同口径可比』，\n"
-          "            那是把尺子又往下挪了一次（V5 的死因）。\n"
+          "            那是把尺子又往下挪了一次。\n"
           "          ⚠️ 还必须进 `ZERO_OK_KEYS`：`_env_int` 默认把 0 当『没填』\n"
           "            回落到默认值 —— 那样『关掉』会被**静默改成 2**。",
       "verify_retries" in _AS_LIM.as_dict()
@@ -5017,7 +5017,7 @@ check(RS, "AS23 ★基线判读的汇总行必须**锚在整句上**，且**唯�
 
 
 # ── AS24（第二十二轮）：收尾读数必须**落盘**（有消费者），否则等于装饰字段 ────
-#: ⛔ V5 的死因之一就是"字段必须有消费者"这条被违反：日志上有数、没人读得到。
+#: ⛔ 一条硬纪律就是"字段必须有消费者"：日志上有数、没人读得到就是没有。
 #:   所以收尾读数不能只活在 `stats` 里 —— 它必须进 `runs.jsonl`，
 #:   而且**两个 solver 分支（每题新建内核 / 复用内核）都要并进去**，
 #:   只接一个分支就是"一半的题没有读数"，而汇总行看起来完全正常。
@@ -5994,7 +5994,7 @@ check(RS, "AE4 ★外部能力的答案走 `_gate_finish`，且 `used_as_answer`
 # ── AE5：外部 agent 的失败**不许冒充答案** ────────────────────────────────
 check(RS, "AE5 ★外部 agent 交付空答案/带 error 时必须 raise，不许当成『成功的答案』\n"
           "          —— 把 `(rc=0)` 或空串当答案是静默降级：读数看起来正常，\n"
-          "            实际什么都没交（V5 的病）。",
+          "            实际什么都没交。",
       _AE_TOOLS.count("raise RuntimeError") >= 2
       and "answer 为空（不是 0 分，是没答案）" in _AE_TOOLS
       and "外部 agent 未交付" in _AE_TOOLS,
@@ -6135,7 +6135,7 @@ check(RS, "AT1 ★工具目录指纹必须**等于真实 Core 的目录哈希**�
       f"on={_af_pairs_t['on'][0]}/{_af_pairs_t['on'][1]}")
 
 check(RS, "AT2 ★`tool_catalog_sha` 必须**进口径签名**，且 run.py 真的把它填进去\n"
-          "          —— 只加字段不填值 = 装饰字段（V5 的『只声明上限却不截断』）。",
+          "          —— 只加字段不填值 = 装饰字段（『只声明上限却不截断』）。",
       "tool_catalog_sha" in _af_ck
       and "tool_catalog_sha=tools_catalog_sha(" in _AE_RUN,
       f"在 CALIBER_KEYS={'tool_catalog_sha' in _af_ck} "
@@ -6571,7 +6571,7 @@ _au_run_mod._ktx_absorb(_au_acc, {"retries": 1, "wall_refused_retry": 4})
 
 check(RS, "AU9 ★传输层五个计数必须**都有消费者**：进 `stats.transport`、\n"
           "          进 `runs.jsonl`（`kernel_transport`）、且累加器真的**加总**。\n"
-          "          —— 只声明不消费 = 装饰字段（V5『只声明上限却不截断』的同构体）；\n"
+          "          —— 只声明不消费 = 装饰字段（『只声明上限却不截断』的同构体）；\n"
           "            而『加总』必须是行为测出来的：静态看一眼 for 循环分不清\n"
           "            `acc[k] = v` 与 `acc[k] += v`。",
       not _au_tx_missing and _au_landed

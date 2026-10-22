@@ -10,7 +10,7 @@
 这条理论对内核有两条**强制的**后果：
   1. 内核不许有「无界循环」。任何一步都要花预算，花完就停并显式报告。
   2. **测量必须带预算维度**。因为同一候选在 1x 预算和 4x 预算下是两个不同的东西，
-     拿「1x 的我」比「4x 的基线」得到的"提升"是假的 —— 这是 V5 尺子问题的
+     拿「1x 的我」比「4x 的基线」得到的"提升"是假的 —— 这是尺子问题的
      推理期版本，measure.py 会把它钉死。
 """
 
@@ -22,7 +22,7 @@ from dataclasses import dataclass, field, replace
 
 class BudgetExhausted(RuntimeError):
     """预算耗尽。**这是一等公民**，不是异常路径 —— 它必须向上传播并留下读数，
-    绝不能被 `except Exception: pass` 吞掉（V5 的 R41：守卫拦下必须留正向信号）。
+    绝不能被 `except Exception: pass` 吞掉（守卫拦下必须留正向信号）。
     """
 
     def __init__(self, kind: str, spent: float, limit: float) -> None:
@@ -60,7 +60,7 @@ class Budget:
 class Ledger:
     """预算账本：**唯一的**消费记录处，用于对账。
 
-    V5 的教训（R79）是"分母必须能对账"。所以这里既提供 `left()` 给控制流，
+    一条硬纪律是"分母必须能对账"。所以这里既提供 `left()` 给控制流，
     也提供 `snapshot()` 给日志与测试 —— 二者读同一个源，不许各算各的。
     """
 

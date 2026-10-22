@@ -55,7 +55,7 @@ def isolated_state(tmp: Path):
 
     ⚠️ 必须隔离：`facts` 是**跨轮累积**的，共用一套目录会让第 7 个变体
     继承前 6 个变体的记忆 —— 那时量到的差异是"记忆多少"，不是"这个部件有没有用"。
-    （V5 的对照实验反复栽在这上面。）
+        （对照实验反复栽在这上面。）
     """
     old = {k: os.environ.get(k) for k in _ENV}
     os.environ["V1_STATE_DIR"] = str(tmp / "state")

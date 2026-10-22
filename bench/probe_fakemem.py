@@ -53,7 +53,7 @@ def verdict_of(gain_repro: float, content_gap: float, instr_gap: float):
        不再自己算一遍 —— 因为第十八轮的真实教训就是：
        两份实现各写一遍，其中一份多了两个 `**`，`verdict.json` 与
        探针重算立刻不等 ⇒ 冻结证据与判据当场打架。
-       （这正是 V5 迁移规则第 2 条：同一事实只声明**一处**。）
+              （这正是规则第 2 条：同一事实只声明**一处**。）
     """
     ok_instr = instr_gap <= THRESH_INSTRUMENT + EPS
     ok_repro = gain_repro >= THRESH_REPRODUCE - EPS

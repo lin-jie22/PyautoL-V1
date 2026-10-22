@@ -73,7 +73,7 @@ N_SESSIONS = 20          # 每个族 20 个历史会话
 
 def _u01(seed: str) -> float:
     """确定性伪随机 [0,1)。**不用 `random`**：探针的结论必须逐次可复现，
-    否则"这次通过了"和"上次数值不同"会混成同一件事（V5 的老病）。"""
+        否则"这次通过了"和"上次数值不同"会混成同一件事。"""
     h = hashlib.sha256(seed.encode("utf-8")).digest()
     return int.from_bytes(h[:8], "big") / float(1 << 64)
 
@@ -140,7 +140,7 @@ def probe_caliber_gate() -> dict:
     构造：两个口径下同一批族的通过率**正好相反**。
       · 闸在（只收同口径历史）⇒ 预测准；
       · 闸撤（两个口径一起收）⇒ 每个族的率都被拉回 0.5 ⇒ 预测塌回基线。
-    若撤了闸误差不变，说明那道闸是装饰 —— 而装饰的闸就是 V5 的死法。
+        若撤了闸误差不变，说明那道闸是装饰 —— 而装饰的闸就是典型的失效形态。
     """
     sig_a = signature_of({"scorer_sha": "A", "suite_sha": "A"})
     sig_b = signature_of({"scorer_sha": "B", "suite_sha": "B"})
@@ -358,7 +358,7 @@ def main() -> int:
         r_real = probe_real(p)
         out["real"] = r_real
         # ⚠️ 真实账本判 UNKNOWN / ABSENT **都不算失败** —— 那是诚实结论。
-        #    把"没量到"或"测出来没有"记成"失败"，会逼着下一轮去凑数据（V5 的病）。
+                #    把"没量到"或"测出来没有"记成"失败"，会逼着下一轮去凑数据。
 
     if args.json:
         print(json.dumps(out, ensure_ascii=False, indent=2))

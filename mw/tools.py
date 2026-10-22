@@ -7,7 +7,7 @@
 所以这个文件的价值不在"提供了多少工具"，而在**接口的形状**：
     · 能力必须显式注册（ToolSpec），不许隐式全局函数
     · 调用结果永远返回 ToolResult，**永不抛异常**（异常是内核崩的来源）
-    · 缺能力 = 显式报错并留痕，不是静默返回空串（V5 的经典病灶）
+    · 缺能力 = 显式报错并留痕，不是静默返回空串
 
 外部能力的登记处是 `agents.json`（见 agents.example.json）：
     {"agents": {"<name>": {"type":"shell"|"http", "description":"...", ...}}}
@@ -272,7 +272,7 @@ def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
                 # ⛔ 解析失败 / answer 为空 / 带 error ⇒ **raise**，让 dispatch
                 #    把它变成一次 `ok=False` 的失败。：
                 #    绝不能把 "(rc=0)" 或空串当成"成功的答案" —— 那是静默降级，
-                #    而静默降级正是 V5 的病（读数看起来正常，实际什么都没交）。
+                #    而静默降级正是最常见的病（读数看起来正常，实际什么都没交）。
                 try:
                     data = json.loads(raw)
                 except json.JSONDecodeError as e:

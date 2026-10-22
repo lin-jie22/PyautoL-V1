@@ -12,7 +12,7 @@
    那是**形态假设**的结论，不是能力本身的性质。用形态的局限去否定能力，
    等于用"我现在看不见"证明"它不存在"。
 3. **它拿当前尺子当取舍标准**，于是系统只会朝"能被当前尺子量到的东西"生长。
-   这是路灯下找钥匙：V5 的死法是**系统迎合尺子**（适应度恒 0，54/54 gain=0），
+   这是路灯下找钥匙：一种典型死法是**系统迎合尺子**（适应度恒 0，gain 恒等于 0），
    反向的死法是**尺子裁剪系统**。两者是同一个病的两个方向 ——
    测量决定了本体论。
 
@@ -246,7 +246,7 @@ def _s_dup(ev: Evidence) -> tuple[str, str]:
     if n is None:
         return UNKNOWN, "未提供 duplicate_rows 探针"
     return ((PRESENT if n > 0 else ABSENT),
-            f"重复事实行={n}（V5 曾达 39×）")
+                        f"重复事实行={n}（曾达 39×）")
 
 
 def _s_decompose(ev: Evidence) -> tuple[str, str]:
@@ -378,7 +378,7 @@ def _s_no_critique(ev: Evidence) -> tuple[str, str]:
     if "served" not in p:
         return UNKNOWN, "未提供评审通道探针"
     # ⚠️ 自评泄漏**优先于**通道是否接通：一个会泄漏当前题理由的通道
-    #    比没有通道更糟 —— 它是自评分的入口，而自评分是 V5 的死因。
+        #    比没有通道更糟 —— 它是自评分的入口，而自评分会让判据失去独立性。
     if p.get("leaked"):
         return PRESENT, ("当前题自己的理由进了上下文 ⇒ **自评通道**"
                          f"（{p['leak_detail']}）")

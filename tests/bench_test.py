@@ -2,13 +2,13 @@
 """外部锚层契约测试 —— 离线、零依赖、可独立运行。
 
 这一套测试只关心一件事：**我们能不能相信一个分数。**
-（V5 的 136 轮、99 轮故障全部集中在"反馈能不能被相信"，没有一条出自引擎。）
+（历史故障全部集中在"反馈能不能被相信"，没有一条出自引擎。）
 
 因此它的重心不是"功能对不对"，而是**反证组**：
    D 组用一个**没有分辨力的假打分器**去打真任务集，要求 calibrate **必须判红**。
    如果 D 组不红，说明"判别力检查"是死代码 —— 那么 C 组的绿也是假的。
 
-三条从 V5 换来的纪律照旧：
+三条用事故换来的纪律照旧：
   ① 测试绝不碰生产目录（env 全部指向临时目录）
   ② 不许对可能不存在的属性做算术（一律 getattr / .get + 类型前置）
   ③ 汇总行格式 `PASS=n  FAIL=m`（可被外部 runner 正则解析）
@@ -104,7 +104,7 @@ check(RS, "A5 一个字段不同 ⇒ same_as 为假，且 diff **点名**该字�
 # 实测事实：同尺子同模型同任务集，仅改温度
 #     T=0.0 ⇒ 各次总分极差 0.0000（逐题逐次完全一致）
 #     T=0.8 ⇒ 各次总分极差 0.1111（6 题中 2 题剧烈抖动）
-# 0.1111 > V5 的死亡数字 0.0862。温度不进闸 ⇒ 采样抖动会被读成"改进"。
+# 0.1111 已超过登记的噪声上限。温度不进闸 ⇒ 采样抖动会被读成"改进"。
 _c_t0 = B.Caliber(scorer_sha="aaa", suite_sha="bbb", repeat=5,
                   budget_tag="1x", temperature=0.0, fresh=True)
 _c_t8 = B.Caliber(scorer_sha="aaa", suite_sha="bbb", repeat=5,
@@ -120,7 +120,7 @@ check(RS, "A7 缺省温度是哨兵而非 0.0（否则'没记温度'会被读成
 # 实测事实：两轮"同口径"（1x / T=0 / --fresh）读数一次 0.8611、一次 0.7222。
 # 原因：`--fresh` 只换 Core、不换 DB ⇒ 记忆跨运行累积，第二轮起跑时已有 27 条
 # 语义记忆 ⇒ 召回不同 ⇒ 提示词不同 ⇒ **即使 T=0 输出也不同**。
-# 记忆基线不进闸 ⇒ 会把"记忆多少"读成"候选好坏"。这是 V5「尺子下移」的同类。
+# 记忆基线不进闸 ⇒ 会把"记忆多少"读成"候选好坏"。这是「尺子下移」的同类。
 _c_mem_a = B.Caliber(scorer_sha="a", suite_sha="b", repeat=5, budget_tag="1x",
                      temperature=0.0, fresh=False,
                      memory_scope="shared_db", memory_seed=(0, 0))
@@ -243,7 +243,7 @@ _ok, _why = _raises(lambda: B.ExternalScorer([sys.executable, str(_nokey)],
 check(RS, "B7 缺 score 字段 ⇒ ScoreError", _ok, _why)
 
 # ⛔ 契约③的关键分界：**0.0 是一个合法分数**，不是"没量到"。
-#    V5 的病灶之一就是"缺失被读成否定"，这条钉住反面。
+#    病灶之一是"缺失被读成否定"，这条钉住反面。
 try:
     _z = B.ExternalScorer([sys.executable, str(_zero)], source=_zero).score(_t, "x")
     check(RS, "B8 score=0.0 是**合法结果**，不抛异常（缺失≠否定的反面）",
@@ -317,7 +317,7 @@ print("=" * 74)
 print("D 组  反证组（契约⑥ 核心）—— 假尺子必须被判红")
 print("=" * 74)
 
-# D1 恒定打分器：无论输入什么都给 0.5 —— 这就是 V5 那把"恒等于 0"的尺子的同构体
+# D1 恒定打分器：无论输入什么都给 0.5 —— 这就是一把"恒等于 0"的尺子的同构体
 _const = _write_scorer("const.py",
                        "import sys, json\n"
                        "json.loads(sys.stdin.read())\n"

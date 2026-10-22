@@ -2,7 +2,7 @@
 
 不用 openai SDK、不用 requests、不用 httpx。只用 stdlib 的 urllib + json。
 理由不是清教徒式的洁癖，是**可验证性**：任何一个第三方依赖都是一块
-"它坏了我不知道为什么"的黑区，而 V5 的 136 轮里大量时间花在追黑区。
+"它坏了我不知道为什么"的黑区，而大量工程时间都会花在追黑区上。
 
 两种实现：
   · HTTPLLM  —— OpenAI 兼容端点，走 urllib。
@@ -33,7 +33,7 @@ class LLMError(RuntimeError):
 
     `transient=True` 表示前者。这个判据不是修辞：2026-10-17 的 4x 预算实测里
     有 3/6 题死于 `TimeoutError`，被记成 `solver 未产出答案` —— 那一刻读数里
-    混着**基础设施**的锅，而报错文本让人以为是模型的锅。这正是 V5 的老毛病：
+    混着**基础设施**的锅，而报错文本让人以为是模型的锅。这是一种常见的归因错误：
     把不可归因的失败一起算进"能力读数"。
     """
 
@@ -165,7 +165,7 @@ def build_llm(cfg: LLMConfig, ledger: Ledger | None = None,
               stub: StubLLM | None = None) -> LLM:
     """唯一构造入口。offline 或缺 key ⇒ StubLLM（**显式**，不静默降级）。
 
-    静默降级是 V5 的经典病灶：看起来在跑，实际什么也没测。
+    静默降级是经典病灶：看起来在跑，实际什么也没测。
     所以这里降级一定会被 core 记进日志。
     """
     if stub is not None:
@@ -243,7 +243,7 @@ def parse_json(text: str, fallback: Any = None) -> Any:
 
     解析失败**返回 fallback 而不是抛异常**，但调用方必须能把这次失败计入读数。
     理由：模型输出脏是常态，不该让内核崩；但"解析失败率"是高价值信号，
-    绝不能悄悄吞掉（V5 的 R41）。
+    绝不能悄悄吞掉。
 
     实现上刻意**不写 `except: pass`** —— 静默兜底在本项目里等同缺陷
     （契约测试 J10 会结构性地钉死这一点）。这里用 `continue` 表达

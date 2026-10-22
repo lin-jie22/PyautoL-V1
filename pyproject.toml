@@ -8,6 +8,10 @@ version = "1.0.0"
 description = "V1 —— 一个可测量的 agent 内核（零第三方运行依赖；先有测量基座，再有能力）"
 readme = "README.md"
 requires-python = ">=3.11"
+# 署名：与 LICENSE 的 Copyright 行同一人（作者本人确认）。
+# ⚠️ 这一个字段只影响包元数据（pip show 的 Author），不参与任何计数，
+#    AZ41 只校验 dependencies / requires-python / scripts 三项。
+authors = [{ name = "林少杰", email = "89998228@qq.com" }]
 # ⛔ 硬约束：零第三方运行依赖。run_tests.sh 步骤 1 的 AST 审计与
 #    tests/contract_test.py 的契约把守这条线；这里加任何 dependencies
 #    都会被 AZ41 判红。

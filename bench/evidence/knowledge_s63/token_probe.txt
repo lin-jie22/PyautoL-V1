@@ -1,0 +1,14 @@
+=== 1) 写权限：POST /git/refs（201 = 可写；403 = 只读）===
+  HTTP=201  HEAD=e1428bc834d8257f201c30e92ca55edc3a7b5590
+=== 2) 清理探针分支 ===
+  DELETE HTTP=204（204 = 已删）
+=== 3) Actions 可读性 ===
+  total_count=1
+  id=39728371572  ci  head=e1428bc8  completed/success  2026-10-22T05:30:04Z
+=== 4) 最近一次运行的逐 job 结论 ===
+  run_tests.sh (py3.11)            completed success
+  run_tests.sh (py3.12)            completed success
+  run_tests.sh (py3.13)            completed success
+
+⛔ 绿勾不是读数：要证明'三档读数相同'，请抓日志里的 PASS= 行
+   curl -sL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/lin-jie22/PyautoL-V1/actions/runs/39728371572/logs -o /tmp/ci.zip

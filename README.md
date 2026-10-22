@@ -1,5 +1,7 @@
 # V1 —— 一个**可测量**的 agent 内核
 
+[![ci](https://github.com/lin-jie22/PyautoL-V1/actions/workflows/ci.yml/badge.svg)](https://github.com/lin-jie22/PyautoL-V1/actions/workflows/ci.yml)
+
 ## 产品摘要（30 秒读完）
 
 **是什么**：一个能被完整验证的 agent 内核 —— 七段认知循环全部可跑、
@@ -19,8 +21,8 @@ bash demo/run_demo.sh  # 三臂参照点：1.0000 / 0.0000 / 0.6194，读数逐�
 | 要件 | 状态 | 说明 |
 |---|---|---|
 | `LICENSE` | ✅ MIT | 与 `pyproject.toml` 的 `license = { text = "MIT" }` 同一份 |
-| `.github/workflows/ci.yml` | ⚠️ **已写好，未能入库** | 两把 token 都被 GitHub 拒：①旧 PAT 只有 `repo`、缺 `workflow` scope；②换的 fine-grained token 是**只读**的（实测：建一个临时分支 ref 都 `403`）。需在 fine-grained token 上把该仓库权限设为 **Contents: Read and write + Workflows: Read and write**，随后一条 `git push` 即成 |
-| 发布 tag | ⏳ 待 CI 落地后一并打 | 与 `pyproject.toml` 的 `version = 1.0.0` 对应 |
+| `.github/workflows/ci.yml` | ✅ **已上线**（第六十轮） | 首跑 [run 39728371572](https://github.com/lin-jie22/PyautoL-V1/actions/runs/39728371572)：py3.11 / 3.12 / 3.13 三个 job 全绿，且**读数逐位相同**（契约 536/0、锚层 97/0、文档计数 0 漂移，三份日志同为 25262 字符）。绿勾不算读数，所以日志抽取器也入库：`bench/evidence/knowledge_s63/read_ci_log.py` |
+| 发布 tag | ✅ `v1.0.0` | 打在**本文档所在的提交**（= CI 首次全绿的那一提交），与 `pyproject.toml` 的 `version = 1.0.0` 对应 |
 | CI 覆盖到哪 | ⚠️ **只到离线部分** | 七步全离线、零密钥；**bench 不跑**（需要本机 Ollama + qwen2.5:7b），分数证据以 `bench/evidence/knowledge_s*/`（PROVENANCE + FILES.sha256）入库 |
 
 **与 Inspect AI（评测 harness）的差异** —— V1 不和它比能力规模，比的是

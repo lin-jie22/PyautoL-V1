@@ -7482,3 +7482,72 @@ AZ44 上一版正是这个自指结构的实证（`and "535" in _az44_head`：�
 - 契约：**536/0**（+1 = AZ48）；锚层 **97/0**；撤回态 **112 条**。
 - 双档 `./run_tests.sh`：`python3.11` / `python3.13` 均 EXIT=0，读数逐位相同。
 - 证据 `bench/evidence/knowledge_s62/`（PROVENANCE + 两个反证日志 + 双档日志 + 全量撤回态日志）。
+
+---
+
+## 23. ★第六十轮（产品交付轨，2026-10-22 13:2x）—— CI 上线，tag `v1.0.0`
+
+证据 `bench/evidence/knowledge_s63/`。零模型调用、`mw/` 零 diff。
+
+### 23.1 卡了四轮的权限，这次用"真写一次"确认
+
+第五十六轮写好 `ci.yml`，第五十八、五十九轮复测仍是只读。本轮用户补齐
+**Contents: Read and write + Workflows: Read and write**。实测（`token_probe.txt`）：
+
+    POST /git/refs 201   DELETE 204   GET /actions/runs 200 (total_count=0)
+
+⛔ 仍守第四十八轮那条：`GET /repos` 的 `permissions.admin=true` **不是**写权限的证据
+（当时实测 admin:true 而 `POST /git/refs` 403）。唯一可信的是真去写一次。
+
+### 23.2 ★绿勾不是读数（这条纪律对 CI 同样成立）
+
+    run 39728371572   head=e1428bc8   completed/success
+    py3.11 / py3.12 / py3.13 三 job 全绿，日志各 25262 字符：
+        PASS=536 FAIL=0 / PASS=97 FAIL=0 / 核对 19 处声明 0 漂移 / 全部通过
+
+（那时 README 还没写入首跑读数，所以是 19；写入之后变 20 —— 见 23.3 的自指。）
+
+★ 三份日志**字符数相同**才是"三档读数一致"的证据；只看三个绿勾只能说"都没崩"。
+抽取器 `read_ci_log.py` 入库（可在任意 run id 上重跑），并把
+"macOS `unzip` 撞中文文件名 ⇒ `write error (disk full?)`"这个**误导性报错**写在文件头。
+
+⛔ CI 不跑 bench：需要本机 Ollama + qwen2.5:7b，拉模型既慢又让分数依赖第三方服务。
+
+### 23.3 AZ47 扩覆盖：CI 文件自己是第 N 个"数字副本"
+
+`ci.yml` 开头写着"让『契约 535/0、撤回态 110 条』这句话别人 clone 后能自证"——
+而它自己就是那句声明的副本，且**已经过期**（实测 536/112）。
+⇒ `check_counts.py` 默认扫描范围加 `.github/workflows/*.yml`，扩覆盖首跑当场抓到 2 处红。
+
+反证：把 `ci.yml` 改回 535/110 ⇒ 核对器 `EXIT=1` 且**只点名 `ci.yml:3`**，其余 17 处仍绿；
+还原后逐字节一致（`neg_ci_counts.log`）。覆盖 17 → **19**。
+
+★ 接着又撞上**同一个自指病的第二次实证**：README 补首跑读数时我写了
+"契约 536/0、锚层 97/0、**核对 19 处声明** 0 漂移" —— 这句话里含 `契约 536/0`，
+于是它自己成了第 20 处，README 里的"19"当场变假。核对器**不会**报（没有规则去认
+"核对 N 处"，也不该加：加了它就把自己算进去，写 N 得 N+1）。
+⇒ 规则是**一句话**：**扫描计数不许写进被扫描的文档**。这正是 AZ44 的 N/N+1 自指
+（`and "535" in _az44_head`）在文档层的复现。README 改成"文档计数 0 漂移"，N 落在 **20**
+（README 16 + demo 2 + ci.yml 2），且这个数只出现在 DESIGN/PROVENANCE（不被扫）。
+
+⛔ 仍只扫活文档（README / demo / workflows）。DESIGN 与 PROVENANCE 是历史台账：
+按今天真值去改历史 = 伪造记录。这条边界在第四节那次"扩覆盖"时就定了，本轮没动。
+
+### 23.4 本轮自踩三处（都当场修好并写进证据）
+
+| 坑 | 表现 | 真因 | 判据 |
+|---|---|---|---|
+| `git -c credential.helper='!f()…'` | push 被拒，报 `without 'workflow' scope` | helper 是**追加**不是覆盖 ⇒ 系统级 `osxkeychain` 先被问到并给了**旧 `ghp_`** | 报错文本会指向 classic token 的 scope，把人带偏；正确写法是 `-c credential.helper=`（空值清空）再给 `!f()` |
+| bash 3.2 + 全角括号 | `DEL（: unbound variable`，`set -u` 直接退出 | 变量名把紧跟的 `（` 并进去了 | 中文紧贴变量名一律 `${VAR}`；静态自查 `\$[A-Za-z_]\w*[^\x00-\x7f]` |
+| macOS `unzip` + 中文文件名 | `write error (disk full?)` 并交互卡住 | CP437 解码 ⇒ 文件名非法 | **不是磁盘满**；改在内存里读 zip |
+
+⇒ 归到已经出现过三次的那一类（第五十六轮 PEP 701、第五十八轮安装形态）：
+**"我本机这套环境"本身是会骗人的仪器**。三处都不是逻辑错，是环境差异伪装成结论。
+
+### 23.5 交付状态
+
+- `.github/workflows/ci.yml` 入库并**首跑绿**；tag `v1.0.0` 打在本文档所在提交。
+- README 的"⚠️ 已写好，未能入库"改为"✅ 已上线"并附首跑 run 链接与读数；
+  顶部加 CI badge（仓库 `private=false`，badge 对他人可见）。
+- 读数：契约 **536/0**、锚层 **97/0**、撤回态 **112 条**、文档核对 **20 处 0 漂移**；
+  本机（3.11 / 3.13）与 CI（3.11 / 3.12 / 3.13）**逐位相同**。

@@ -29,7 +29,12 @@ AZ44 上一版正是这个自指结构的实证：真值涨到 110 之后，**�
 
 ## 扫描范围（⛔ 只扫"活文档"）
 
-    README.md        demo/README.md
+    README.md        demo/README.md        .github/workflows/*.yml
+
+★ 第六十轮把 `.github/workflows/*.yml` 纳进来了，理由是同一句话：
+CI 文件里写着"让『契约 N/0』这句话别人 clone 后能自证"，
+而**它自己就是这句声明的第 N 个副本** —— 第五十八轮首次运行时它写着 535/110，
+当时实测已是 536/112。让它被自己核对，是这条规则唯一自洽的延伸。
 
 ⛔ **不扫** DESIGN.md 与 bench/evidence/**/PROVENANCE.md：
 它们是**历史台账**，每个数字记录的是**当时**的实测值（"第五十五轮：契约 535"）。
@@ -158,13 +163,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--contract-log", default="/tmp/v1_contract.out")
     ap.add_argument("--anchor-log", default="/tmp/v1_bench.out")
     ap.add_argument("--doc", action="append", default=None,
-                    help="要扫的文档（可重复）；默认只扫活文档 README.md / demo/README.md")
+                    help="要扫的文档（可重复）；默认扫活文档 README.md / demo/README.md / "
+                         ".github/workflows/*.yml")
     args = ap.parse_args(argv)
 
     truth = _measured(Path(args.contract_log), Path(args.anchor_log))
 
     docs = ([Path(p) for p in args.doc] if args.doc
-            else [_ROOT / "README.md", _ROOT / "demo" / "README.md"])
+            else [_ROOT / "README.md", _ROOT / "demo" / "README.md"]
+            + sorted((_ROOT / ".github" / "workflows").glob("*.yml")))
 
     print("=" * 74)
     print("文档计数单源核对（AZ47）：文档声明必须等于**本次运行**的实测值")

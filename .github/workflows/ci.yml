@@ -1,0 +1,63 @@
+name: ci
+
+# 这套 CI 只做一件事：让"契约 536/0、撤回态 112 条"这句话**别人 clone 后能自证**。
+# ⚠️ 本文件里这两个数字也在 `run_tests.sh` 步骤 3b 的核对范围里（AZ47）——
+#    它们和 README 一样是**副本**，改了一处没改这里，CI 会自己红。这不是装饰：
+#    第六十轮首次把它纳入扫描时，它写着 535/110 而实测 536/112。
+#
+# ⛔ 它不跑 bench。基准需要本机 Ollama + qwen2.5:7b，CI 里没有也不该有
+#    （拉模型既慢又让"分数"依赖第三方服务）。bench 的证据以
+#    `bench/evidence/knowledge_s*/`（PROVENANCE + FILES.sha256）形式入库，
+#    由 run_tests.sh 步骤 7 的指纹核验把关。
+#
+# run_tests.sh 七步全离线、零第三方依赖、零密钥 ⇒ 这里直接跑它，不重写一套。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 同一分支连推时只保留最新一次：CI 的用处是"当前 HEAD 是不是绿的"，
+# 排队重跑旧提交只会让"最新那次绿了没有"更难读。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: run_tests.sh (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 版本与依赖自述（零第三方依赖必须是事实，不是声明）
+        run: |
+          python3 -VV
+          python3 -c "import sys; print('implementations:', sys.implementation.name)"
+          python3 -c "import sqlite3; c=sqlite3.connect(':memory:'); c.execute('create virtual table t using fts5(x)'); print('FTS5: ok')"
+
+      - name: 七步验证（依赖审计 / 契约 / 锚层 / 端到端 / 冒烟 / 探针 / 指纹）
+        run: |
+          chmod +x ./run_tests.sh
+          ./run_tests.sh
+
+      # ⚠️ 这里**不**再跑一遍契约。run_tests.sh 成功时已打印 `PASS=536 FAIL=0`，
+      #    失败时已 `grep "❌" | head -20` —— 再跑一遍只是把最贵的一步（约 50s）翻倍。
+      #    只有"当年那步根本没跑到"（依赖审计先挂）时，才需要这份诊断输出。
+      - name: 契约红点诊断（仅在七步失败时）
+        if: failure()
+        run: |
+          python3 tests/contract_test.py 2>&1 | grep -E "^(  )?❌|汇总" | head -30 || true

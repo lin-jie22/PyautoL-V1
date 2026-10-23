@@ -7774,6 +7774,203 @@ check(RS, "AZ68 ★停滞的判据只许有**一处**声明（阈值比较不许
       f"_STALL_ANSWER_MIN_S={_az68_core.count('_STALL_ANSWER_MIN_S')} "
       f"内联阈值={_az68_core.count('stalled >= self.s.limits.max_stall')}")
 
+# ===========================================================================
+# AZ69–AZ74（第七十轮，§32.8）：变异有界 —— 界是**声明**出来的，不是筛出来的
+#   §32.8 的原话是「改内核**过程**（预算分配、收尾时机、守卫阈值），不换模型」。
+#   这句话可以一行写完，但「界在哪里」必须被声明，否则"有界"只是形容词。
+#   最坏的一种坏法不是「越界被放过」，而是**钳制**：账本写着 500、实跑的是 90。
+# ===========================================================================
+from dataclasses import replace as _s70_replace                  # noqa: E402
+
+from mw import mutate as MU                                      # noqa: E402
+#: 裁决在内核**之外**（AO11）—— 这里导入的是尺子那一侧。
+from bench.mutation_check import (KEEP as MV_KEEP, NO_EVIDENCE as MV_NO_EV,  # noqa: E402
+                                  REVERT as MV_REVERT, UNKNOWN as MV_UNKNOWN,
+                                  limits_diff as MV_limits_diff,
+                                  mutation_verdict as MV_verdict,
+                                  should_keep as MV_should_keep)
+
+_S70 = cfg.Settings()
+_S70_FIELDS = list(cfg.Limits.__dataclass_fields__)
+
+_az69_gaps = MU.coverage_gaps()
+_az69_basis = [k.name for k in MU.KNOBS if k.basis not in MU.BASES or not k.why]
+_az69_frozen = [f.name for f in MU.FROZEN if not f.why]
+_az69_int = [k.name for k in MU.KNOBS
+             if k.kind == "int" and not (isinstance(k.lo, int) and isinstance(k.hi, int)
+                                         and k.step >= 1)]
+_az69_bounds = [k.name for k in MU.KNOBS if not (k.lo < k.hi and k.step > 0)]
+check(RS, "AZ69 ★「界」必须被**声明**出来，且覆盖 `Limits` 的每一个字段\n"
+          "          ① 可动表（`KNOBS`）+ 冻结表（`FROZEN`）无重叠、无遗漏；\n"
+          "          ② 每个条目都写了自己的**依据**，依据的种类只能是\n"
+          "             `mechanical`（代码里一条能指到行的事实）或 `policy`（策略选择）；\n"
+          "             ⛔ 两者被推翻的方式不同，混成一句就等于用策略冒充定理；\n"
+          "          ③ int 旋钮的界必须是整数、step≥1（`3.7` 截成 `3` 是替调用方做决定）；\n"
+          "          ④ lo<hi、step>0。\n"
+          "          ★ 为什么「全覆盖」是界的一部分：一个既不在 KNOBS 也不在 FROZEN\n"
+          "             的字段，就是一个**默认可动**的字段 —— 界上开着一扇没人检查的门。",
+      _az69_gaps == ([], []) and not _az69_basis and not _az69_frozen
+      and not _az69_int and not _az69_bounds
+      and len(MU.KNOBS) + len(MU.FROZEN) == len(_S70_FIELDS),
+      f"缺口={_az69_gaps} 依据缺={_az69_basis} 冻结理由缺={_az69_frozen} "
+      f"int界={_az69_int} 区间={_az69_bounds} "
+      f"可动{len(MU.KNOBS)}+冻结{len(MU.FROZEN)} vs 字段{len(_S70_FIELDS)}")
+
+_az70 = {
+    "下界-1": MU.apply_mutation(_S70, "max_stall", 0),
+    "上界+1": MU.apply_mutation(_S70, "max_stall", 7),
+    "float给int": MU.apply_mutation(_S70, "max_stall", 3.0),
+    "bool": MU.apply_mutation(_S70, "max_stall", True),
+    "NaN": MU.apply_mutation(_S70, "close_reserve_s", float("nan")),
+    "冻结": MU.apply_mutation(_S70, "max_wall_s", 240.0),
+    "未知": MU.apply_mutation(_S70, "nope", 1),
+    "方法名": MU.apply_mutation(_S70, "as_dict", 1),
+    "空变异": MU.apply_mutation(_S70, "max_stall", _S70.limits.max_stall),
+}
+_az70_lo = MU.apply_mutation(_S70, "max_stall", 1)
+_az70_hi = MU.apply_mutation(_S70, "max_stall", 6)
+check(RS, "AZ70 ★越界与类型错必须**拒绝**，不许钳制\n"
+          "          ① 上下界各越一步都拒绝，理由里点名允许区间（不许只说「非法」）；\n"
+          "          ② 拒绝时**没有**新配置（`settings is None`），原配置逐字不变 ——\n"
+          "             钳制是最坏的一种成功：账本写着 500、实跑的是 90，\n"
+          "             从此「我改过什么」与「我跑的是什么」是两个事实；\n"
+          "          ③ 类型不隐式转换：int 旋钮收到 `3.0` / `True` 都拒绝\n"
+          "             （`isinstance(True, int)` 是 True —— 不单独挡，`True` 会被记成 1）；\n"
+          "          ④ 冻结项拒绝（理由含「冻结」）、未知项拒绝、空变异拒绝；\n"
+          "          ⑤ 边界**含**端点：恰好 lo / hi 是合法值（闭区间，不是开区间）。\n"
+          "          撤回语义：把范围判断改成 `if False`（或去掉 bool 前置）⇒ 必须红。",
+      all((not m.ok) and m.settings is None for m in _az70.values())
+      and "[1, 6]" in _az70["下界-1"].why and "[1, 6]" in _az70["上界+1"].why
+      and "bool" in _az70["bool"].why and "冻结" in _az70["冻结"].why
+      and "空变异" in _az70["空变异"].why
+      and _S70.limits == cfg.Settings().limits
+      and _az70_lo.ok and _az70_hi.ok,
+      "拒绝=" + " ".join(f"{k}:{'✅接受' if m.ok else '⛔拒绝'}"
+                         for k, m in _az70.items())
+      + f" 端点接受 lo={_az70_lo.ok} hi={_az70_hi.ok}")
+
+_az71_sick = _s70_replace(
+    _S70, limits=_s70_replace(_S70.limits, max_wall_s=30.0, close_reserve_s=40.0))
+_az71_fix = MU.apply_mutation(_az71_sick, "close_reserve_s", 29.0)
+_az71_touch = MU.apply_mutation(_az71_sick, "working_memory_items", 16)
+_az71_health = _s70_replace(
+    _S70, limits=_s70_replace(_S70.limits, max_wall_s=30.0, close_reserve_s=29.0))
+_az71_break = MU.apply_mutation(_az71_health, "close_reserve_s", 30.0)
+_az71_steps = MU.apply_mutation(
+    _s70_replace(_S70, limits=_s70_replace(_S70.limits, max_steps=4)),
+    "max_stall", 6)
+check(RS, "AZ71 ★跨字段不变式：只拒绝**这次变异引入的**违规，不惩罚既有违规\n"
+          "          ① `close_reserve_s >= max_wall_s` 必须拒绝 —— `core.py` 的余量判据是\n"
+          "             `wall_left <= lim.close_reserve_s`，相等即从第 0 秒起就在余量里，\n"
+          "             探索一次都不会发生（每个字段都在界内，组合起来仍然无意义）；\n"
+          "          ② `max_stall > max_steps` 必须拒绝 —— 每次停滞都吃掉一个 step，\n"
+          "             阈值大于总步数 ⇒ 它永远到不了，是装饰；\n"
+          "          ③ ★ 若配置里**本来**就有病（如 `max_wall_s=30` 配余量 40），\n"
+          "             那么改无关旋钮仍须允许、把它修好也须允许：\n"
+          "             否则拒绝理由会全写在这条变异头上 —— 那是**假归因**。",
+      MU.violations(_az71_sick.limits) == ["close_reserve_s < max_wall_s"]
+      and (not _az71_break.ok) and "close_reserve_s < max_wall_s" in _az71_break.why
+      and (not _az71_steps.ok) and "max_stall <= max_steps" in _az71_steps.why
+      and _az71_touch.ok and _az71_fix.ok,
+      f"既有违规={MU.violations(_az71_sick.limits)} 破坏={_az71_break.ok} "
+      f"步数={_az71_steps.ok} 无关旋钮={_az71_touch.ok} 修好={_az71_fix.ok}")
+
+
+def _s70_v(**kw):
+    base = dict(knob="max_stall", diff=["max_stall"], base_mean=0.60,
+                cand_mean=0.85, placebo_delta=0.05, noise_floor=0.10)
+    base.update(kw)
+    return MV_verdict(**base)[0]
+
+
+check(RS, "AZ72 ★变异能否保留由**四个前提**裁决，缺一个就 UNKNOWN\n"
+          "          ① 单变量：两臂 `Limits` 只差被声明的那个旋钮（差两项 ⇒ 不可归因）；\n"
+          "          ② 噪声下限：`None` ⇒ 不判定（不默认 0，理由同 `Curve.trend`）；\n"
+          "          ③ **等长安慰剂臂**：`placebo_delta=None` ⇒ 即使 Δ 大到 +0.39 也 UNKNOWN ——\n"
+          "             没有它，Δ 分不清是旋钮还是这一跑的运气（7u 实测：一条自认为\n"
+          "             中性的指令被模型读成处理臂，Δ+0.15）；\n"
+          "          ④ 净增益（Δ 扣掉安慰剂）与噪声比：>噪声 ⇒ KEEP，<-噪声 ⇒ REVERT，\n"
+          "             落在噪声内 ⇒ NO_EVIDENCE（「没证据说更好 = 不改」）；\n"
+          "          ⑤ 只有 KEEP 才保留。\n"
+          "          ★ 反证自检：㉓ 那一格把「恒 KEEP」的假判定喂进来，检测必须判它坏 ——\n"
+          "             没有反证的检测器是死代码。",
+      _s70_v() == MV_KEEP
+      and _s70_v(noise_floor=None) == MV_UNKNOWN
+      and _s70_v(placebo_delta=None, cand_mean=0.99) == MV_UNKNOWN
+      and _s70_v(diff=["max_stall", "recall_k"]) == MV_UNKNOWN
+      and _s70_v(placebo_delta=0.25) == MV_NO_EV
+      and _s70_v(cand_mean=0.30, placebo_delta=0.0) == MV_REVERT
+      and MV_should_keep(MV_KEEP)
+      and not any(MV_should_keep(v) for v in
+                  (MV_REVERT, MV_NO_EV, MV_UNKNOWN)),
+      f"齐={_s70_v()} 无噪声={_s70_v(noise_floor=None)} "
+      f"无安慰剂={_s70_v(placebo_delta=None, cand_mean=0.99)} "
+      f"双变量={_s70_v(diff=['max_stall', 'recall_k'])} "
+      f"安慰剂吃掉={_s70_v(placebo_delta=0.25)} "
+      f"变差={_s70_v(cand_mean=0.30, placebo_delta=0.0)}")
+
+_az73_src = _code_only(_src("mutate.py"))
+_az73_chk = _code_only((V1 / "bench" / "mutation_check.py").read_text(encoding="utf-8"))
+_az73_led = _TMP / "s70_mutations.jsonl"
+# ⚠️ 这一条拒绝**不许**用"越界"来造：AZ70 的撤回（范围检查改恒假）会把它变成
+#    接受 ⇒ 台账两行都是 True ⇒ AZ73 连带红（实测 `红=['AZ70','AZ73']`）。
+#    换成一个**别的分支**的拒绝（冻结项），两条断言就各自独立。
+MU.apply_mutation(_S70, "max_wall_s", 240.0, ledger=_az73_led)      # 拒绝（冻结）
+_az73_acc = MU.apply_mutation(_S70, "working_memory_items", 32, ledger=_az73_led)
+_az73_rows = [json.loads(x) for x in _az73_led.read_text(encoding="utf-8").splitlines()]
+_az73_need = {"ts", "ok", "knob", "frm", "to", "why",
+              "calib_before", "calib_after", "harness"}
+check(RS, "AZ73 ★配置只许在**一处**构造，且拒绝也要落台账\n"
+          "          ① `mutate.py` 里 `Limits(` 出现 **0** 次 —— 手拼配置漏一个字段，\n"
+          "             就是**悄悄改了别的旋钮**（而读数只会说「这次变异没用」）；\n"
+          "          ② `replace(settings.limits` 恰好 **1** 处 —— 唯一构造点；\n"
+          "          ③ 净增益的两个比较（`net >` / `net <`）在 `bench/mutation_check.py`\n"
+          "             各只出现 1 次：判定阈值散在别处就是两个未来；\n"
+          "          ④ 裁决**不在内核里**：`mw/mutate.py` 不含 `net >`（内核不判自己好不好）；\n"
+          "          ⑤ 台账：接受与拒绝**各一行**，字段齐全（拒绝不记账 ⇒\n"
+          "             「我试过但被拒」从证据里消失，而拒绝本来占绝大多数）。\n"
+          "          撤回语义：把构造改成手拼 ⇒ 必须红；拒绝时不写台账 ⇒ 必须红。",
+      _az73_src.count("Limits(") == 0
+      and _az73_src.count("replace(settings.limits") == 1
+      and _az73_chk.count("net >") == 1 and _az73_chk.count("net <") == 1
+      and _az73_src.count("net >") == 0
+      and len(_az73_rows) == 2 and [r["ok"] for r in _az73_rows] == [False, True]
+      and all(set(r) >= _az73_need for r in _az73_rows)
+      and _az73_acc.ok and _az73_acc.settings is not None,
+      f"Limits(={_az73_src.count('Limits(')} "
+      f"replace={_az73_src.count('replace(settings.limits')} "
+      f"net>=检查器{_az73_chk.count('net >')} 内核{_az73_src.count('net >')} "
+      f"net<=检查器{_az73_chk.count('net <')} "
+      f"台账={[r['ok'] for r in _az73_rows]}")
+
+from mw.loop import Curve as _s70_Curve, CurvePoint as _s70_Point   # noqa: E402
+
+_az74_m = MU.apply_mutation(_S70, "max_stall", 3)
+_az74_diff = MV_limits_diff(_S70.limits.as_dict(), _az74_m.settings.limits.as_dict())
+_az74_cb = _af_Cal(limits=_S70.limits.as_dict())
+_az74_ca = _af_Cal(limits=_az74_m.settings.limits.as_dict())
+_az74_cv = _s70_Curve(points=[
+    _s70_Point(round=i, ts=float(i), calib=_az74_cb.signature(), mean=0.60,
+               n=4, spread=0.0, trustworthy=True, harness="h")
+    for i in (1, 2, 3)] + [
+    _s70_Point(round=i, ts=float(i), calib=_az74_ca.signature(), mean=0.70,
+               n=4, spread=0.0, trustworthy=True, harness="h")
+    for i in (4, 5, 6)])
+check(RS, "AZ74 ★变异**不改源码**但**换口径** ⇒ 曲线必然断段\n"
+          "          ① 两臂 `Limits` 只差被声明的那个旋钮（单变量，可归因）；\n"
+          "          ② 但 `limits` 在 `CALIBER_KEYS` 里 ⇒ 口径签名变了，`diff()` 点名 `limits`；\n"
+          "          ③ 于是 `Curve.segments()` 把 6 个可信点切成 **3+3** 两段 ——\n"
+          "             所以「变异有没有变好」**不能**用曲线连着看，只能用\n"
+          "             单变量两臂 + 安慰剂（AZ72）。这条同时是「别把 `limits` 从\n"
+          "             口径里删掉」的理由：删了就会允许跨变异比趋势，那是尺子下移。",
+      _az74_diff == ["max_stall"]
+      and _az74_cb.signature() != _az74_ca.signature()
+      and _az74_cb.diff(_az74_ca) == ["limits"]
+      and [len(s) for s in _az74_cv.segments()] == [3, 3],
+      f"limits差={_az74_diff} 签名不同="
+      f"{_az74_cb.signature() != _az74_ca.signature()} "
+      f"diff={_az74_cb.diff(_az74_ca)} 分段={[len(s) for s in _az74_cv.segments()]}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

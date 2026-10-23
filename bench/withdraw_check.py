@@ -850,6 +850,37 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      "                               and (budget.wall_s - self.ledger.elapsed()) >= 20.0\n"
      "                               else (\"continue\" if stalled < self.s.limits.max_stall\n"
      "                                     else \"give_up\"))"),
+    # ── AZ69–AZ74（第七十轮）：变异有界 ────────────────────────────────
+    # ㉑ 范围检查改成恒假 ⇒ 越界值被**接受**（AZ70 的 lo/hi 两格）。
+    #    ⚠️ 这条撤的正是"拒绝还是钳制/放行"这条线：一旦放行，
+    #       数据里的 `max_stall=0` 会真的跑起来，而账本上写着它合规。
+    ("AZ70", "mw/mutate.py",
+     "    if not (k.lo <= to <= k.hi):",
+     "    if False:"),
+    # ㉒ 去掉 bool 前置 ⇒ `max_stall=True` 被当成 1 接受
+    #    （`isinstance(True, int)` 是 True ⇒ 后面那道 `isinstance(to, int)` 挡不住）。
+    ("AZ70", "mw/mutate.py",
+     "    if isinstance(to, bool):",
+     "    if False:"),
+    # ㉓ 对照臂缺省按 0 处理 ⇒ 缺它也给 KEEP（AZ72 的 `placebo_delta=None` 那格）
+    #    ⚠️ 撤的是"能不能只拿处理臂的数字下结论"这一条。
+    ("AZ72", "bench/mutation_check.py",
+     "    if placebo_delta is None:\n"
+     "        return UNKNOWN, (\"缺等长安慰剂臂 ⇒ 分不清是旋钮还是这一跑的运气\"\n"
+     "                         \"（7u：自认为中性的指令被读成处理臂，Δ+0.15）\")",
+     "    if placebo_delta is None:\n"
+     "        placebo_delta = 0.0"),
+    # ㉔ 把唯一构造点换成**手拼** `Limits(**)`（语义等价，但构造点有了第二处）
+    #    ⇒ 只有 AZ73 红：行为一个字没变，变的是"漏一个字段就会悄悄改别的旋钮"。
+    ("AZ73", "mw/mutate.py",
+     "    new_limits = replace(settings.limits, **{name: to})",
+     "    new_limits = Limits(**{**settings.limits.as_dict(), name: to})"),
+    # ㉕ 拒绝**不落台账**（只记成功）⇒ 只有 AZ73 红。
+    #    ⚠️ 这条撤的是一条记账纪律：拒绝占绝大多数，不记就等于
+    #       "我试过什么"只剩成功的那几条 —— 而失败的经验才是下一轮的输入。
+    ("AZ73", "mw/mutate.py",
+     "        if ledger is not None:",
+     "        if ledger is not None and m.ok:"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

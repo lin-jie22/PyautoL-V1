@@ -7,6 +7,7 @@
 | `gen_spec_tasks.log` | `bench/gen_spec_tasks.py` 的完整输出：6 道题的逐题准入结果 + 8 道按种子铸的题全过 |
 | `run_probe.log` | `bench/probe_taskspec.py` 的完整输出（10 项全绿，含四条反证与两条读数） |
 | `withdraw_AZ75_AZ77.log` | 4 条新撤回态（㉖–㉙）逐条结果：各**单红**，基线 `565/0` 还原后仍是 `565/0`，R13 通过 |
+| `withdraw_ALL_143.log` | **全量** 143 条撤回态（145 次完整契约，约 91 分钟）：`R13 通过：逐条撤回都精确转红`，还原后基线 `565/0` |
 | `taskspec.py` / `gen_spec_tasks.py` / `probe_taskspec.py` | 产生上面三个读数时的源码快照 |
 
 `FILES.sha256` 是这批文件的指纹。核验：`shasum -a 256 -c FILES.sha256`。

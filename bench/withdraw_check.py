@@ -756,6 +756,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ57", "mw/loop.py",
      "                    and out[-1][-1].harness == p.harness):",
      "                    and True):"),
+    # ── AZ58–AZ59（第六十六轮）：失败归因 ────────────────────────────────
+    # ⑨ 工具没给理由时不再写 `(无错误信息)` ⇒ 日志里那一行变成
+    #    `ok=False 原因=`（看起来像"没有原因"而不是"工具不给理由"）⇒ 只有 AZ58 红。
+    ("AZ58", "mw/core.py",
+     "原因={(why[:cap] or '(无错误信息)')}{tail}",
+     "原因={why[:cap]}{tail}"),
+    # ⑩ 外部读数段退回"只看配置项"（= 第六十四/六十五轮那 21 次失败隐形的根因）
+    #    ⇒ 未配置但被规划器调用时整段消失 ⇒ 只有 AZ59 红。
+    ("AZ59", "mw/core.py",
+     "    if not cfg and not seen:\n        return \"\"",
+     "    if not cfg:\n        return \"\""),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

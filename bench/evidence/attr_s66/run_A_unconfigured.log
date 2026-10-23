@@ -1,0 +1,53 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  one_t05  n=1  suite_sha=75d537b98d7bd46d96c5feb9b845a013
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=1/1
+  t05_top_k: oracle=1.0000 partial=0.2500 null=0.0000 ✅
+  理由: 全部 1 条两极可分，其中 1 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=a8c5e223f2783907
+  [观察]
+    - t05_top_k: oracle=1.0000 partial=0.2500 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 1 条任务上两极可分
+    - 中段有序检查 1 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=75d537b98d7b；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 204 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=1x  repeat=1 ---
+13:32:17 ▶ 任务开始: 写一个函数 top_k(words, k)，输入一个字符串列表，返回出现次数最多的前 k 个 (词, 次数) 元组，按次数从高到低排列；次数相同时按词升序排列。例如 top_k(['a','b','a'], 1) == [('a', 2)]
+13:32:17   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+13:32:33   [1] 通道=深 候选=2
+13:32:35       ↳ agent:code_agent ok=False 原因=agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：题面里没有『函数名必须是 X』⇒ 本 agent 不适用（不猜） 使用 collections.Counter 统计词频，然后排序处理
+13:32:35       🔁 失配[outcome] agent:code_agent({'task': '实现 top_k 函数，输入一个字符串列表，返回出现次数最多的前  预演=成功 实际=失败 ⇒ 已沉淀为启发式
+13:32:35       📎 回看 b#1 因由=mismatch 窗=whole 109/109 字
+13:32:43   [2] 通道=深 候选=1
+13:32:43       ⏭ 重复动作已跳过（不产生新信息）: agent:code_agent
+13:32:43   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+13:32:52   [3] 通道=深 候选=1
+13:32:52       ⏭ 重复动作已跳过（不产生新信息）: agent:code_agent
+13:32:52   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 2/2
+13:32:52 ■ stalled | steps=3 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.257 memory>reason=1.0 reason>act=0.25] 回流=1.0 | 语义记忆=1 | 上限被裁短=5 | 回看=1次/109字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=4项(非空/函数名 top_k/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=0 败=1 采用=0 0字 (规划器自选，未配置) ⚠️1败/1种: agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：题面里没有『函数名必须
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@1x n=1 mean=0.0000 std=0.0000 [0.0000,0.0000] 极差=0.0000
+  attempted=1 recorded=0 skipped_no_answer=1 failed_scorer=0 对账=✅ 可信=❌
+  评审     落盘=204 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=1 个
+  世界模型  预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) 混淆={'ok_ok': 0, 'ok_fail': 1, 'fail_ok': 0, 'fail_fail': 0}
+  传输层    抖动重试=0 重试后仍失败=0 上限被裁短=5 墙钟放弃首发=0/重试=0 （共 1 题）
+  ⚠️ 本轮存在早退（没量到的条目）⇒ 这个读数**不得**用于判定。
+     · [r1] t05_top_k: solver 未产出答案
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=08e3a62ea48575ac scorer=d4b1cbbfd7f1 suite=75d537b98d7b repeat=1 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=8d07861d18 llm_cond=dfd788fefb max_tokens=2048 tool_catalog_sha=2cc3b0225ee0
+  读数已落盘 /Users/linshaojie/V1/bench_out/runs.jsonl
+EXIT_A=1

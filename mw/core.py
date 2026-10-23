@@ -253,6 +253,75 @@ class _LedgeredLLM:
 _ERR_REASON_CAP = 6
 
 
+def tool_result_line(tool: str, ok: bool, intent: str = "", error: str = "",
+                     *, cap: int = 160) -> str:
+    """一行 `↳` 日志：成功说干了什么，**失败必须说为什么**。
+
+    ⛔ 这条函数存在的理由是一次实测代价（第六十四/六十五轮）：两批真实曲线里
+       `agent:code_agent` 共 **21 次 `ok=False`**，日志每一行只有 `ok=False` + 意图
+       —— **零条原因**。为了知道 t04/t05 为什么死，我只能手工把题面喂给
+       `external/code_agent.py` 复现两遍（20.8s / 23.9s）。
+       **不可归因的失败等于没测**：它既不能指导修法，也不能被下一次读数推翻。
+
+    ⚠️ `error` 为空时写 `(无错误信息)`，**不留空**：留空与"没失败"在 grep 结果里
+       完全同形，而它们是两种病（工具不给理由 vs 工具没坏）。
+    ⚠️ 成功时**不许**带原因字段：`ok=True 原因=…` 是自相矛盾的行，比不写更坏。
+    ⚠️ 换行必须压成一行：日志被 `grep`/`awk` 按行切，一条折行的错误会把它下面
+       那几行挤成"同一条记录"，读数就串了。
+    """
+    tail = f" {intent[:60]}" if intent else ""
+    if ok:
+        return f"      ↳ {tool} ok=True{tail}"
+    why = " ".join((error or "").split())
+    return f"      ↳ {tool} ok=False 原因={(why[:cap] or '(无错误信息)')}{tail}"
+
+
+def external_summary(stats: dict) -> str:
+    """`■` 汇总行里的外部能力段。空串 ⇒ 这一段不印。
+
+    ⛔ 判据是**"实际调用过"**，不是**"配置了"**（第六十六轮修正）。
+       旧条件是 `if ex.get("tool")` —— 只看配置项。于是第六十四/六十五轮两批真实
+       日志里，规划器自己挑了 `agent:code_agent`、21 次全部 `ok=False`，
+       而汇总行**一个字都没印**（`grep -c "外部["` = 0）：没配外部能力 ⇒ 整段消失
+       ⇒ 21 次失败在证据里看起来像"没发生过"。
+       这与「配了却没调用 = 接线断了」是同一件事的两面，两边都得能看见。
+
+    ⚠️ 配置项与实际调用**不一致**时必须显式说出来：只印配置名会让读者以为
+       失败来自那个被配置的能力，而它可能一次都没被调用。
+    """
+    ex = (stats or {}).get("external") or {}
+    cfg = str(ex.get("tool") or "")
+    seen = [str(x) for x in (ex.get("tools_seen") or [])]
+    if not cfg and not seen:
+        return ""
+    if seen and cfg and cfg not in seen:
+        label = f"配置={cfg} 实际={','.join(seen)}"
+    else:
+        label = cfg or ",".join(seen)
+    line = (f" | 外部[{label}] 调={ex.get('calls', 0)}"
+            f" 成={ex.get('ok', 0)} 败={ex.get('err', 0)}"
+            f" 采用={ex.get('used_as_answer', 0)} {ex.get('chars', 0)}字")
+    if seen and not cfg:
+        line += " (规划器自选，未配置)"
+    # ★ `份=k→n` 是**配置 vs 实际**：只印 `k` 会让人以为采样齐了。
+    #   第二十三轮实测：`k=3` 但时间不够只生成 1 份，读数却写着 samples=3。
+    _m = ex.get("meta") or {}
+    if _m:
+        line += (f" 份={_m.get('k')}→{len(_m.get('pass_counts') or [])}"
+                 f" 用例={_m.get('tests')}")
+        if _m.get("exec_skipped"):
+            line += f" ⚠️筛选跳过({_m['exec_skipped']})"
+        if _m.get("gen_stopped_early"):
+            line += " 生成提前停"
+    if int(ex.get("skipped_no_budget") or 0):
+        line += f" ⛔额度不足未注入={ex['skipped_no_budget']}次"
+    if ex.get("err"):
+        _rs = ex.get("err_reasons") or []
+        _head = (_rs[0] if _rs else str(ex.get("last_error") or ""))[:60]
+        line += f" ⚠️{ex['err']}败/{len(_rs)}种: {_head}"
+    return line
+
+
 @dataclass
 class Outcome:
     status: str                      # done | budget_exhausted | cascade | blocked
@@ -718,7 +787,8 @@ class Core:
                             self.log(f"      🔮 预演置信度 {pred.confidence:.2f} 过低 ⇒ 不进决策链")
 
                     result = self.tools.dispatch(cand.tool, cand.args)
-                    self.log(f"      ↳ {cand.tool} ok={result.ok} {cand.intent[:60]}")
+                    self.log(tool_result_line(cand.tool, result.ok,
+                                              cand.intent, result.error))
 
                     # ── ⑦ 校验闸（第二十一轮）：`finish` 的唯一出口 ─────────
                     # 位置是**写死**的，不交给规划器选：交给它 = 它永远不选自检
@@ -735,6 +805,10 @@ class Core:
                         # 只记成功会让"它一直在失败"看起来像"它没被调用"。
                         _es = self.external_stats
                         _es["calls"] += 1
+                        # ⚠️ 记在**调用**处而不是配置处：这一行回答的是
+                        #    "这次到底是谁在跑"，而 `tool` 只回答"配了谁"。
+                        if cand.tool not in _es["tools_seen"]:
+                            _es["tools_seen"].append(cand.tool)
                         if result.ok:
                             _es["ok"] += 1
                             _es["chars"] += len(result.output or "")
@@ -743,6 +817,12 @@ class Core:
                             _es["err"] += 1
                             _es["last_error"] = (result.error or "")[:200]
                             # 原文进证据（去重、限量）：一条都留不下来 = 不可归因。
+                            # ⚠️ **不再**加 `<tool>: ` 前缀：`tools.dispatch` 的三条失败
+                            #   路径已经全部以工具名开头（`{name} 缺参数` / `{name} 执行异常` /
+                            #   `未知工具 {name!r}`）。实测第一版加上前缀后变成
+                            #   `agent:code_agent: agent:code_agent 执行异常 …` —— 同一个名字
+                            #   印两遍，而 `err_reasons` 是按 240 字截断的字段，重复等于
+                            #   挤掉真正有用的后半句。
                             _why = (result.error or "（无错误信息）")[:240]
                             _rs = _es["err_reasons"]
                             if _why not in _rs and len(_rs) < _ERR_REASON_CAP:
@@ -1136,6 +1216,14 @@ class Core:
             "tool": self.s.limits.external_answer_tool,
             "calls": 0, "ok": 0, "err": 0, "chars": 0,
             "used_as_answer": 0,
+            #: **实际被调用过**的答案型外部工具名（按首次出现排序、去重）。
+            #:
+            #: ⛔ 为什么不能只有 `tool`（配置项）：第六十四/六十五轮两批真实日志里，
+            #:    规划器自己挑了 `agent:code_agent`、21 次全部失败，而汇总行按
+            #:    `if ex.get("tool")` 判"印不印这一段" ⇒ 没配置 ⇒ 整段消失
+            #:    ⇒ **21 次失败在证据里一个字都没有**。
+            #:    "配置了"与"用上了"是两件事，读数必须分开记（见 `external_summary`）。
+            "tools_seen": [],
             #: 因为**额度不够**而根本没被注入的次数（不是失败，是没试）：
             #: 与 `err` 分开计 —— "没试"和"试了失败"的修法完全不同。
             "skipped_no_budget": 0,
@@ -1313,6 +1401,8 @@ class Core:
             # ⛔ `used_as_answer` 必须与 `ok` 分列：调用成功但答案没被采用
             #    （例如被自检打回、或被规划器改写）是完全不同的一件事。
             "external": {**dict(self.external_stats),
+                         "tools_seen": list(self.external_stats.get("tools_seen") or []),
+                         "err_reasons": list(self.external_stats.get("err_reasons") or []),
                          "meta": dict(self.external_stats.get("meta") or {})},
             "llm": "stub" if self._llm_is_stub else "http",
             "llm_kind": self.llm_kind,   # 与 "llm" 同源；保留两个键是为了兼容旧读法
@@ -1440,31 +1530,10 @@ class Core:
                              f"(与被闸打回那版同={_co['same_as_rejected']})")
             if _co["empty"]:
                 _co_line += f" ⚠️交了空={_co['empty']}"
-        # 外部能力读数（第二十三轮）：只在**配了**外部能力时念。
-        # 为什么 `calls=0` 也必须被看见：配了却没调用 = 接线断了，
-        # 而"没配"和"配了没接上"在别的读数上完全同形。
-        _ex = stats["external"]
-        _ex2_line = ""
-        if _ex.get("tool"):
-            _ex2_line = (f" | 外部[{_ex['tool']}] 调={_ex['calls']}"
-                         f" 成={_ex['ok']} 败={_ex['err']}"
-                         f" 采用={_ex['used_as_answer']} {_ex['chars']}字")
-            # ★ `份=k→n` 是**配置 vs 实际**：只印 `k` 会让人以为采样齐了。
-            #   第二十三轮实测：`k=3` 但时间不够只生成 1 份，读数却写着 samples=3。
-            _m = _ex.get("meta") or {}
-            if _m:
-                _ex2_line += (f" 份={_m.get('k')}→{len(_m.get('pass_counts') or [])}"
-                              f" 用例={_m.get('tests')}")
-                if _m.get("exec_skipped"):
-                    _ex2_line += f" ⚠️筛选跳过({_m['exec_skipped']})"
-                if _m.get("gen_stopped_early"):
-                    _ex2_line += " 生成提前停"
-            if int(_ex.get("skipped_no_budget") or 0):
-                _ex2_line += f" ⛔额度不足未注入={_ex['skipped_no_budget']}次"
-            if _ex["err"]:
-                _rs = _ex.get("err_reasons") or []
-                _head = (_rs[0] if _rs else str(_ex.get("last_error") or ""))[:60]
-                _ex2_line += f" ⚠️{_ex['err']}败/{len(_rs)}种: {_head}"
+        # 外部能力读数（第二十三轮；第六十六轮改为按「实际调用过」判）：
+        # 判据搬进 `external_summary()` 是为了**能被契约直接钉住** ——
+        # 放在 `_finish` 的函数体里只能靠读源码，读源码的断言恒真。
+        _ex2_line = external_summary(stats)
         self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}{_ex2_line}")

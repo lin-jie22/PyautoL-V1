@@ -7359,6 +7359,76 @@ check(RS, "AZ57 曲线必须记「被测对象」的版本（`harness`），且�
       f"敏感={_h1 != _h2 and _h2 != _h3} 稳定={_h1 == _h1b} "
       f"真跑harness={_az57_real[:8]}({len(_az57_real)})")
 
+# ── AZ58（第六十六轮）：每一次 `ok=False` 必须在日志里留下**原因** ──────────
+# 实测背景（两次真实曲线的代价）：`agent:code_agent` 共 **21 次 `ok=False`**，
+# 日志每一行只有 `ok=False` + 意图 —— **零条原因**。为了知道 t04/t05 为什么死，
+# 我只能手工把题面喂给 `external/code_agent.py` 复现两遍（20.8s / 23.9s）。
+# **不可归因的失败等于没测**：它既不能指导修法，也不能被下一次读数推翻。
+#
+# ⛔ 所以判据必须做成**纯函数**：写在 `_finish` 的函数体里就只能靠读源码去钉，
+#    而"读源码"的断言是恒真的（本文件已有 AS15 的先例：断言写在构造语句上）。
+from mw.core import tool_result_line as _az58_line              # noqa: E402
+
+_az58_ok = _az58_line("finish", True, "提交答案", "")
+_az58_bad = _az58_line("agent:code_agent", False, "整题交给外部能力",
+                       "外部 agent 未交付：题面里没有『函数名必须是 X』")
+_az58_empty = _az58_line("run_shell", False, "", "")
+_az58_multi = _az58_line("note", False, "", "第一行\n第二行\n第三行")
+_az58_long = _az58_line("x", False, "", "长" * 500)
+check(RS, "AZ58 ★工具失败必须在日志里**带原因**（`↳ tool ok=False 原因=…`）\n"
+          "          ① 成功行不许出现『原因』（`ok=True 原因=…` 是自相矛盾的行）；\n"
+          "          ② 失败行必须含错误原文；\n"
+          "          ③ 工具没给理由时必须显式写 `(无错误信息)` —— 留空与『没失败』在\n"
+          "             grep 结果里完全同形，而它们是两种病（不给理由 / 没坏）；\n"
+          "          ④ 多行错误必须压成**一行**：日志被按行切，折行会把下一条记录\n"
+          "             挤成同一条，读数就串了；\n"
+          "          ⑤ 超长错误必须截断（不能把整段 traceback 塞进一行）。\n"
+          "          撤回语义：把 `(why[:cap] or '(无错误信息)')` 改成 `why[:cap]` ⇒ 必须红。",
+      ("原因" not in _az58_ok) and "ok=True" in _az58_ok
+      and "题面里没有" in _az58_bad and "ok=False" in _az58_bad
+      and "(无错误信息)" in _az58_empty
+      and "\n" not in _az58_multi and "第三行" in _az58_multi
+      and len(_az58_long) < 200,
+      f"成功行={_az58_ok.strip()[:40]!r} 空错={_az58_empty.strip()[:36]!r} "
+      f"多行={len(_az58_multi)}字 超长={len(_az58_long)}字")
+
+# ── AZ59（第六十六轮）：汇总行的外部段按「**实际调用过**」印，不只按「配置了」──
+# 实测背景：`■` 行旧条件是 `if ex.get("tool")`（只看配置项）。于是 s64/s65 两批
+# 真实日志里，规划器自选 `agent:code_agent`、21 次全部失败，而汇总行一个字都没印
+# （`grep -c "外部["` = 0）⇒ **21 次失败在证据里看起来像"没发生过"**。
+# 这与「配了却没调用 = 接线断了」是同一件事的两面，两边都得能看见。
+from mw.core import external_summary as _az59_sum               # noqa: E402
+
+
+def _az59_stats(**kw) -> dict:
+    base = dict(tool="", calls=0, ok=0, err=0, chars=0, used_as_answer=0,
+                tools_seen=[], err_reasons=[], last_error="", meta={},
+                skipped_no_budget=0)
+    base.update(kw)
+    return {"external": base}
+
+
+_az59_unset = _az59_sum(_az59_stats(tool="", calls=2, err=2,
+                                    tools_seen=["agent:code_agent"],
+                                    err_reasons=["agent:code_agent: 未交付"]))
+_az59_cfg = _az59_sum(_az59_stats(tool="agent:code_agent", calls=1, ok=1, chars=9,
+                                  used_as_answer=1, tools_seen=["agent:code_agent"]))
+_az59_swap = _az59_sum(_az59_stats(tool="agent:a", calls=1, err=1,
+                                   tools_seen=["agent:b"]))
+_az59_none = _az59_sum(_az59_stats())
+check(RS, "AZ59 ★`■` 汇总行的外部段必须按「实际调用过」印，且配置与实际不一致要并排说\n"
+          "          ① 未配置但被规划器调用 ⇒ 仍必须印出工具名与失败数（**本轮修的正是这条**）；\n"
+          "          ② 配了且用上 ⇒ 印配置名，成/采用都可见；\n"
+          "          ③ 配置与实际不是同一个 ⇒ 两个名字都要出现（否则读者会把失败归错对象）；\n"
+          "          ④ **反例**：一次都没用到 ⇒ 必须返回空串（不许每行都印『外部=0次』噪声）。\n"
+          "          撤回语义：把 `if not cfg and not seen:` 改成 `if not cfg:` ⇒ 必须红。",
+      "agent:code_agent" in _az59_unset and "败=2" in _az59_unset
+      and "规划器自选" in _az59_unset and "未交付" in _az59_unset
+      and "成=1" in _az59_cfg and "采用=1" in _az59_cfg
+      and "配置=agent:a" in _az59_swap and "实际=agent:b" in _az59_swap
+      and _az59_none == "",
+      f"未配置={_az59_unset.strip()[:52]!r} 都没用={_az59_none!r}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

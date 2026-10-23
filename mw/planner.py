@@ -35,6 +35,23 @@ class Step:
         return f"{self.tool}({self.args}) — {self.intent}"
 
 
+#: **不进签名**的参数：它们不是"这个动作是什么"的一部分，而是"这一次给了它多少预算"。
+#:
+#: ⛔ 这份集合是第六十八轮用真跑逼出来的（证据 `bench/evidence/reseek_s68/`）。
+#:    第六十七轮把答案型外部能力的入参统一成 `answer_task(goal, deadline)` 之后，
+#:    `deadline_s` 里是**现算的剩余墙钟** ⇒ 同一件事每次的签名都不一样
+#:    ⇒ `attempted_sigs` 再也认不出重复。实测后果：`agent:code_agent` 被同一个
+#:    （已被外部拒绝的）任务**连续执行 3 次**，`repeats_skipped=0`、`attempted=2`，
+#:    最后撞上级联熔断 `cascade`，交付为空。
+#:    这是"防打转的闸被一个预算字段悄悄拆掉"——**闸还在，判据被污染了**。
+#:
+#: 入集的条件必须同时满足三条（缺一条就说明它其实是动作的一部分）：
+#:   ① 由**内核**写进去（不是模型想干什么）；
+#:   ② 会随时间/环境变（所以天生不能当身份）；
+#:   ③ 改了它不改变"动作对世界做了什么"。
+_NON_IDENTITY_ARGS: frozenset[str] = frozenset({"deadline_s"})
+
+
 def action_signature(tool: str, args: Any) -> str:
     """动作签名 —— 判断"是不是同一个动作"的**唯一**判据。
 
@@ -46,11 +63,20 @@ def action_signature(tool: str, args: Any) -> str:
     烧掉 120s 预算直到 `budget_exhausted`。`consecutive_failures` 拦不住它 ——
     因为那几次 `recall` **全都 ok=True**。**重复的"成功"不是进展**，
     而当时内核里没有任何机制表达这句话。
+
+    ⚠️ 第二课（第六十八轮）：**签名里只许放身份字段**。`deadline_s` 是内核现算的
+    剩余墙钟，把它算进身份 ⇒ 同一件事每次都被判成新动作 ⇒ 防打转的闸形同虚设。
+    详见 `_NON_IDENTITY_ARGS`。
     """
     try:
-        items = sorted(dict(args).items())
+        pairs = dict(args).items()
+    except (TypeError, ValueError):       # args 不是映射（模型偶尔给字符串/列表）
+        pairs = ()
+    pairs = [(k, v) for k, v in pairs if k not in _NON_IDENTITY_ARGS]
+    try:
+        items = sorted(pairs)
     except TypeError:                     # 值之间有不可比较类型时按 key 排
-        items = sorted(dict(args).items(), key=lambda kv: str(kv[0]))
+        items = sorted(pairs, key=lambda kv: str(kv[0]))
     return f"{tool}|{items}"
 
 
@@ -161,6 +187,43 @@ _ANSWER_FIDELITY = "上方状态按原文顺序依次阅读，逐条都保持其
 #: finish / 收尾 / wall 三条不同的路）⇒ 先修量具，再谈 prompt 调优。
 
 
+#: 被拒动作在提示词里的条数上限。为什么不随轮数增长：这是"证据"，不是"台账"；
+#: 三条足够让模型认出"我上一次提的就是这几个"，再长只是挤掉状态与工具目录。
+_REJECTED_SHOWN = 3
+
+
+def reseek_block(rejected: Sequence[str], untried: Sequence[str]) -> str:
+    """「本轮全部候选都被拒」之后，下一次提问必须**换成另一句话**。
+
+    ## 为什么这是一个函数，而不是提示词里再加一段
+
+    `blocked` 现在的形态是一段静态清单（`tool|[(...)]` 的 repr）。要求模型
+    "别重复它自己将要说的话"是一种**自比对**：它得先把自己脑子里还没写出来的
+    候选序列化成同一个 repr 才能比。实测（`attr_s66` A 臂）它没这么干 ——
+    第 2、3 步又把同一个 `agent:code_agent` 提了一遍，被内核的硬闸连续丢掉两次。
+
+    ⇒ 所以这里不做"更仔细的提醒"，而是**换提问形态**：把上一轮**实际被丢掉的动作原文**
+    摆出来（不是签名，是 `tool({args}) — intent` 这行），并给出一个模型此前
+    **拿不到的信息** —— 哪些工具到现在一次都没试过。
+
+    ⚠️ 这是"负约束 → 正约束"的转换：只说"不要重复"不给出口，模型最容易的
+    合规动作就是再提一次同样的东西（它至少是合法的 JSON）；给了"这些还没试过"
+    与"做不完就 finish 交出已知内容"，它才有第二条路可走。
+    """
+    if not rejected:
+        return ""
+    shown = list(rejected)[-_REJECTED_SHOWN:]
+    lines = "\n".join(f"  · {str(r)[:160]}" for r in shown)
+    out = ("\n⛔ 你上一次的回答被**拒绝**了：下面这些动作已经执行过，"
+           "再提一次只会被内核丢弃（那不是新尝试）：\n"
+           f"{lines}\n")
+    if untried:
+        out += ("**到目前为止一次都没试过的工具**：" + " / ".join(untried) + "\n")
+    out += ("请给出与上面那些动作**不同**的候选；"
+            "若确实无法再推进，就直接调用 finish，把已知内容作为答案交出来。\n")
+    return out
+
+
 class Planner:
     def __init__(self, llm: LLM, tools: Any, *, max_tokens: int = 2048) -> None:
         self.llm = llm
@@ -176,13 +239,20 @@ class Planner:
         #   truncated      开了头但括号不闭合          ⇒ ★调大 max_tokens
         #   no_tool_fit    想要的能力不在工具目录里     ⇒ 加工具/改工具描述（★实测命中）
         #   empty_plan     合法 JSON 但没有可用候选     ⇒ 改提示词
-        # ⚠️ 刻意**没有** "all_duplicate" 这个计数器：同一次响应里第一个候选永远
-        #    不是重复，所以"全是重复"不可达 ⇒ 那会是一个永不增长的装饰字段。
-        #    重复只在响应内部被消掉（G4），不足以构成一次降级。
+        # ⚠️ 刻意**没有** "all_duplicate" 这个降级计数器：它不改变"这次回答能不能用"，
+        #    只改变"下一次提问长什么样"，所以它不属于 `degraded` 的分支。
+        # ⛔ 但原来这里写的是"全是重复不可达"—— 那句话是**错的**，而且错得很安静：
+        #    它把**同一响应内部**的去重（G4：响应里第一个候选永不重复，成立）
+        #    当成了**跨轮**的事实。跨轮完全可以全灭：`attr_s66` A 臂第 2、3 步
+        #    规划器连续两次只给同一个 `agent:code_agent`，两次都被硬闸丢掉
+        #    ⇒ `🧊 停滞 1/2`、`2/2`。这个错误判断正是"不留计数器"的借口。
+        # ⇒ 现在有了 `reseek`（换形态再问的次数）：它**不是**降级，是可归因读数。
         self.json_fail = 0
         self.truncated = 0
         self.no_tool_fit = 0
         self.empty_plan = 0
+        #: 「本轮全灭」之后换形态再问的次数。有界：≤ 停滞轮数（内核只在那一支填 rejected）。
+        self.reseek = 0
         #: 定向补救（"选了 finish 却没给答案"）：成功 / 失败分开计。
         #: 它**不算降级**（计划本身是合法的，只是缺一块载荷），所以不进 cause_balances。
         self.answer_retry_ok = 0
@@ -192,16 +262,41 @@ class Planner:
         self.last_bad_tools: list[str] = []
 
     # ------------------------------------------------------------------
+    def _untried_tools(self, blocked: Sequence[str]) -> list[str]:
+        """目录里**一次都没试过**的工具名。
+
+        签名格式（`tool|[(...)]`）由本模块的 `action_signature()` 定义，
+        所以在这里按 `|` 取工具名不是"第二处实现"，而是同一处事实的另一种读法。
+        ⚠️ 别把它改成"再问一次模型哪些试过" —— 那是把机器已知的事实交回给猜测。
+        """
+        if not blocked:
+            return []
+        tried = {str(b).split("|", 1)[0] for b in blocked}
+        names = getattr(self.tools, "names", None)
+        if not callable(names):
+            return []
+        return [n for n in names() if n not in tried]
+
     def propose(self, *, goal: str, state: str, history: Sequence[str],
                 n: int = 1, guidance: str = "",
-                blocked: Sequence[str] = ()) -> Plan:
+                blocked: Sequence[str] = (),
+                rejected: Sequence[str] = ()) -> Plan:
         """产出 n 个候选步骤（各不相同）。n>1 就是 test-time compute 的落点。
 
         `blocked` 是**机器生成**的"已尝试过的动作签名"清单。为什么不只靠
         `history` 里的自然语言：实测里模型会无视"已失败/已试过：…"那几行，
         然后把同一个 `recall` 再提一遍。给签名是精确的 —— 它可以直接比对。
+
+        `rejected` 是**内核刚刚丢掉的那几个动作的原文行**（不是签名）。
+        两者的分工：`blocked` 是"档案"（全部历史，给模型做约束）；
+        `rejected` 是"刚刚发生的事"（本轮全灭 ⇒ 下一次提问必须换形态）。
+        只在"本轮一个候选都没能执行"时由内核填，且**只喂一次**
+        （见 `reseek_block` 的说明与 `core` 的 `_rejected_once`）。
         """
         self.calls += 1
+        reseek = reseek_block(rejected, self._untried_tools(blocked))
+        if reseek:
+            self.reseek += 1
         avoid = "\n".join(f"  · 已失败/已试过：{h}" for h in list(history)[-6:])
         banned = ("\n已执行过、**禁止**再提出的动作（tool|args）：\n"
                   + "\n".join(f"  · {b}" for b in list(blocked)[-12:])
@@ -213,7 +308,7 @@ class Planner:
             #    而被剪掉的东西不会有任何报错（第二十轮实测栽过一次）。
             f"当前状态：\n{state[:cfg.STATE_CHAR_CAP]}\n"
             f"{('已知易错点：' + guidance) if guidance else ''}\n"
-            f"{avoid}{banned}\n"
+            f"{avoid}{banned}{reseek}\n"
             f"可用工具：\n{self.tools.catalog()}\n\n"
             f"请给出 {max(1, n)} 个**互不相同**的候选项。"
             f"{' 若没有新的做法，就直接 finish。' if blocked else ''}"
@@ -308,7 +403,7 @@ class Planner:
     def replan(self, *, goal: str, failed: Step, error: str,
                history: Sequence[str], n: int = 1,
                blocked: Sequence[str] = (), guidance: str = "",
-               state: str = "") -> Plan:
+               state: str = "", rejected: Sequence[str] = ()) -> Plan:
         """失败后重规划。**必须带上错误原文**，否则等于原地打转。
 
         ⚠️ `guidance` 必须一起转发（2026-10-17 接线审计抓到的断点）：
@@ -328,7 +423,7 @@ class Planner:
         #    状态是**额外**的信息，不是它的替代品。
         plan = self.propose(goal=goal, state=(state or "(上一步失败，见下)"),
                             history=augmented, n=n, blocked=blocked,
-                            guidance=guidance)
+                            guidance=guidance, rejected=rejected)
         if plan:
             plan.note = f"因「{failed.tool}」失败而重规划"
         return plan
@@ -435,6 +530,9 @@ class Planner:
             # 分项：修法不同的分支必须分开报
             "json_fail": self.json_fail, "truncated": self.truncated,
             "no_tool_fit": self.no_tool_fit, "empty_plan": self.empty_plan,
+            # 「本轮全灭 ⇒ 换形态再问」的次数。**不是降级**：它不改这次回答能不能用，
+            # 只改下一次提问长什么样。放进 stats 才算有消费者（否则又一个装饰字段）。
+            "reseek": self.reseek,
             "answer_retry_ok": self.answer_retry_ok,
             "answer_retry_fail": self.answer_retry_fail,
             "last_bad_tools": list(self.last_bad_tools)[:5],

@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import tempfile
+import time
 import urllib.request
 from pathlib import Path
 
@@ -7536,6 +7537,165 @@ check(RS, "AZ61 ★`core.py` 里构造 `\"task\"` 的地方必须**只有一处*
       f"answer_task(={_az61_code.count('answer_task(')} "
       f"answer_deadline(={_az61_code.count('answer_deadline(')} "
       f"_ANSWER_CAP_S={_az61_code.count('_ANSWER_CAP_S')}")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AZ62–AZ65（第六十八轮）：让「别重复」真的起作用
+#
+# 第六十六轮的 A 臂量出了病：第 2、3 步规划器**连续两次**只给同一个
+# `agent:code_agent`，两次都被内核的硬闸丢掉 ⇒ `🧊 停滞 1/2`、`2/2` ⇒ 交出零。
+# `propose(blocked=…)` 一直在**请求**它别重复，而"请求"不是机制：
+# 那要求模型把还没写出来的候选自己序列化成同一个 repr 才能比对。
+#
+# 第六十八轮的探针（`bench/probe_reseek.py`，真模型 + 确定性拒绝的外部能力）
+# 又抓到**第二处**、也更硬：把入参统一成 `answer_task(goal, deadline)` 之后，
+# `deadline_s` 是现算的剩余墙钟 ⇒ 同一件事每次签名都不同 ⇒ 防打转的闸被
+# 一个预算字段悄悄拆掉。实测：同一个（已被拒绝的）任务**被执行了两次**，
+# `repeats_skipped=0`、`attempted=2`，最后撞级联熔断 `cascade`，交付为空。
+#
+# ⇒ 两条修法，各配一条行为断言：
+#   · 签名只许放**身份字段**（`_NON_IDENTITY_ARGS`）—— 闸还在，判据被污染了
+#   · 本轮全灭 ⇒ 下一次提问**换形态**（给被拒动作原文 + 还没试过的工具）
+# ═══════════════════════════════════════════════════════════════════════════
+_S68_GOAL = "写一个函数 flatten(d)，把嵌套 dict 展平。只输出代码。"
+#: 「换形态」那一段的**稳定开头**。⛔ 只认这一段出现过，不认具体措辞 ——
+#: 措辞会改（§17-7 已撤回过多条措辞臂），而"这一段被渲染出来"是结构事实。
+_S68_MARK = "你上一次的回答被"
+#: 只会说同一句话的规划器 —— 与真实 A 臂同形（T=0 下确实连续两轮给同一个动作）。
+_S68_SAME = ('{"candidates": [{"intent": "交给外部代码能力", "tool": "agent:s68", '
+             '"args": {"task": "把嵌套字典展平"}}]}')
+#: 看到「换形态」那一段之后才换做法（模拟"输入变了，输出才可能变"）。
+#: ⚠️ 答案必须**够长**：价值层会拦"目标要求展开、答案只有几个字"的收尾
+#:    （第一版给了 `"answer": "flat"` ⇒ `⊘ [values:answer] 否决` ⇒ 断言假红）。
+#:    这不是测试为了过关而妥协：它正是真实约束，短答案在真跑里也会被拦。
+_S68_ANS = ("def flatten(d, prefix=''):\n"
+            "    out = {}\n"
+            "    for k, v in d.items():\n"
+            "        key = f'{prefix}{k}'\n"
+            "        if isinstance(v, dict):\n"
+            "            out.update(flatten(v, key + '.'))\n"
+            "        else:\n"
+            "            out[key] = v\n"
+            "    return out\n")
+_S68_DONE = ('{"candidates": [{"intent": "给出答案", "tool": "finish", '
+             '"args": {"answer": ' + json.dumps(_S68_ANS) + '}}]}')
+
+
+def _s68_run(*, scripts, wall_s: float = 120.0, slow_first: bool = False):
+    """跑一次 Core，返回 `(outcome, 外部能力实际收到的 args 列表, 提示词列表)`。"""
+    calls: list[dict] = []
+    prompts: list[str] = []
+    reg = ToolRegistry()
+
+    def _h(args: dict) -> str:
+        calls.append(dict(args))
+        if slow_first and len(calls) == 1:
+            # 让**第二次**算出的剩余墙钟与第一次不同 —— 这正是被污染的判据。
+            time.sleep(0.6)
+        raise RuntimeError("外部 agent 未交付：题面里没有『函数名必须是 X』⇒ 不适用（不猜）")
+
+    reg.register(ToolSpec("agent:s68", "契约用假外部能力：描述得像能用，实际只会失败",
+                          {"task": "任务"}, _h, external=True, produces_answer=True))
+
+    class _Tap(StubLLM):
+        def complete(self, messages, **kw):                     # noqa: ANN001, ANN003
+            prompts.append("\n".join(m.content for m in messages))
+            return super().complete(messages, **kw)
+
+    keys = ("V1_LLM_OFFLINE", "V1_STATE_DIR", "V1_MAX_WALL_S",
+            "V1_EXTERNAL_ANSWER_TOOL")
+    old = {k: os.environ.get(k) for k in keys}
+    os.environ["V1_LLM_OFFLINE"] = "1"
+    os.environ["V1_STATE_DIR"] = str(Path(tempfile.mkdtemp(prefix="v1_s68_")) / "s")
+    os.environ["V1_MAX_WALL_S"] = str(wall_s)
+    os.environ.pop("V1_EXTERNAL_ANSWER_TOOL", None)
+    try:
+        _c = Core(cfg.Settings(), llm=_Tap(scripts=scripts), tools=reg,
+                  wire_external=False, log=lambda *_: None)
+        out = _c.run(_S68_GOAL)
+        return out, calls, prompts
+    finally:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+# ── AZ62：本轮全灭 ⇒ 下一次提问必须换形态，且**真的**换出了新动作 ──────────
+_s68_out, _s68_calls, _s68_prompts = _s68_run(
+    scripts=[(_S68_MARK, _S68_DONE), ("可用工具", _S68_SAME)])
+_s68_marked = [p for p in _s68_prompts if _S68_MARK in p]
+_s68_first = _s68_prompts[0] if _s68_prompts else ""
+_s68_loop = _s68_out.stats.get("loop", {})
+_s68_reseek = _s68_out.stats.get("planner", {}).get("reseek")
+check(RS, "AZ62 ★本轮全灭之后，下一次提问必须**换形态**（不是把同一个问题再发一遍）\n"
+          "          ① 第一段提问里**没有**「你上一次的回答被…」—— 否则那不是「新形态」；\n"
+          "          ② 出现的那一段里必须带着**被丢掉动作的原文**（`agent:s68(` + 题面），\n"
+          "             以及**还没试过的工具**（`finish` 一次都没用过）；\n"
+          "          ③ 效果：模型据此换了做法 ⇒ `status=done`、`reseek=1`；\n"
+          "          ④ 重复只被丢**一次**（改用同一个问题问第二遍，就会是两次）。\n"
+          "          撤回语义：摘掉 `propose(..., rejected=reseek_lines)` ⇒ 必须红。",
+      bool(_s68_marked) and _S68_MARK not in _s68_first
+      and "agent:s68(" in _s68_marked[0] and _S68_GOAL in _s68_marked[0]
+      and "一次都没试过的工具" in _s68_marked[0] and "finish" in _s68_marked[0]
+      and _s68_out.status == "done" and _s68_reseek == 1
+      and _s68_loop.get("repeats_skipped") == 1,
+      f"status={_s68_out.status} reseek={_s68_reseek} "
+      f"跳过={_s68_loop.get('repeats_skipped')} 换形态段={len(_s68_marked)}次 "
+      f"首段含标记={_S68_MARK in _s68_first}")
+
+# ── AZ63：换形态那一段只允许**一处渲染** ─────────────────────────────────
+_az63_planner = _code_only(_src("planner.py"))
+check(RS, "AZ63 ★「换形态」的文本只允许一处渲染（`reseek_block()`），两处调用各喂各的\n"
+          "          —— 两处各写一遍 = 两个未来：改了 A 忘了 B，读数只在那一题掉下去时才知道\n"
+          "             （§30 的 `answer_task` 教训同宗）。\n"
+          "          ⚠️ 判定去注释/去 docstring：本函数说明里就引用着那段话。",
+      _az63_planner.count("reseek_block(") == 2        # 1 处定义 + 1 处调用
+      and _az63_planner.count("_REJECTED_SHOWN") == 2  # 定义 + 唯一使用点
+      and _code_only(_core_src).count("rejected=reseek_lines") == 2,
+      f"reseek_block(={_az63_planner.count('reseek_block(')} "
+      f"_REJECTED_SHOWN={_az63_planner.count('_REJECTED_SHOWN')} "
+      f"喂入点={_code_only(_core_src).count('rejected=reseek_lines')}")
+
+# ── AZ64：动作签名只许放**身份字段**（`deadline_s` 不是身份） ──────────────
+# 实测病：`answer_task(goal, deadline)` 让同一件事每轮签名都不同 ⇒ 防打转的闸失效。
+# ⚠️ 两轮之间的**唯一**差别就是剩余墙钟（`slow_first` 让第一次多花 0.6s），
+#    所以"只调用了一次"这件事只能是"签名把 deadline 排除了"的结果。
+_s68b_out, _s68b_calls, _ = _s68_run(scripts=[("可用工具", _S68_SAME)], slow_first=True)
+_s68b_loop = _s68b_out.stats.get("loop", {})
+_s68b_dl = float((_s68b_calls[0] if _s68b_calls else {}).get("deadline_s") or 0)
+check(RS, "AZ64 ★「同一个动作」的判据里不许有时钟：`deadline_s` 必须**不进签名**\n"
+          "          ① 同一个 `task`、不同剩余墙钟 ⇒ 判成**同一个动作**，只执行一次；\n"
+          "             旧口径（`.item()` 全量排序）会让它每轮都是「新动作」，\n"
+          "             实测把一个已被拒绝的任务连续执行两次，然后撞 `cascade` 交零；\n"
+          "          ② 反例：`task` 不同 ⇒ 仍是两个动作（不许为了去重把身份也丢掉）；\n"
+          "          ③ 而且**不许靠「不传 deadline」来绕过** —— `deadline_s` 仍必须传进外部\n"
+          "             能力（§30：那是预算，不是上限）。\n"
+          "          撤回语义：去掉 `k not in _NON_IDENTITY_ARGS` 过滤 ⇒ 必须红（调用 2 次）。",
+      len(_s68b_calls) == 1 and _s68b_dl > 0
+      and (_s68b_loop.get("repeats_skipped") or 0) >= 1
+      and action_signature("t", {"task": "a", "deadline_s": 10.0})
+      == action_signature("t", {"task": "a", "deadline_s": 99.9})
+      and action_signature("t", {"task": "a", "deadline_s": 10.0})
+      != action_signature("t", {"task": "b", "deadline_s": 10.0}),
+      f"外部调用次数={len(_s68b_calls)} deadline_s={_s68b_dl} "
+      f"跳过={_s68b_loop.get('repeats_skipped')}")
+
+# ── AZ65：「一个候选都没跑起来」必须记成**没试**，不许记成连续失败 ──────────
+# 实测病：重规划一次花掉 29s ⇒ 剩余额度 < 20s ⇒ 外部能力不注入 ⇒
+# 日志却印 `⛔ 全部候选被拦 (3 次连续失败)` ⇒ 级联熔断 `cascade`。
+# 那一条 `cascade` 把"预算不足"写成了"连续做错"，而一次都没做。
+_s68c_out, _s68c_calls, _s68c_logs = _s68_run(
+    scripts=[("可用工具", _S68_SAME)], wall_s=60.0)
+_s68c_skip = _s68c_out.stats.get("external", {}).get("skipped_no_budget")
+check(RS, "AZ65 ★额度不够 ⇒ 是「没试」，不是「失败」：不许把它记成连续失败并撞级联熔断\n"
+          "          ① 状态不能是 `cascade`（语义是「连续做错」，而这里一次都没做）；\n"
+          "          ② `skipped_no_budget` 必须留痕（「没试」也要有读数，否则与「没发生」同形）；\n"
+          "          ③ 日志必须说出来（引号里的那句「不是失败」）。",
+      _s68c_out.status != "cascade" and (_s68c_skip or 0) >= 1
+      and not _s68c_calls,
+      f"status={_s68c_out.status} skipped_no_budget={_s68c_skip} "
+      f"外部调用={len(_s68c_calls)}")
 
 print()
 print("=" * 74)

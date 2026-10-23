@@ -782,6 +782,37 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      "                        cand.args = answer_task(goal, _dl2)",
      "                        cand.args = {\"task\": str(goal), "
      "\"deadline_s\": round(float(_dl2), 1)}"),
+    # ── AZ62–AZ65（第六十八轮）：让「别重复」真的起作用 ──────────────────
+    # ⑬ 不再把"刚被丢掉的动作"喂给下一次提问（只留静态 `blocked` 清单）
+    #    ⇒ 模型在同一个问题上重复同一个答案（实测：连续两轮）⇒ 只有 AZ62 红。
+    #    ⚠️ 锚点打在**载荷**上（`reseek_lines = [...]`），不打在 `rejected=` 上 ——
+    #       打在 `rejected=` 上会让 AZ63 的"喂入点 == 2"一起红（实测多红）。
+    #       而同一条载荷同时喂两个调用点，所以清空它就等于把整个装置关掉。
+    ("AZ62", "mw/core.py",
+     "                        reseek_lines = [c.as_line() for c in cands]",
+     "                        reseek_lines = []"),
+    # ⑭ 把「换形态」的渲染**内联成第二处字面量**（语义等价，两个字面量）
+    #    ⇒ `reseek_block(` 只剩定义那一处 ⇒ 只有 AZ63 红（AZ62 照样绿：
+    #      标记语与"还没试过的工具"都还在，装置行为没变 —— 变的是"有几个未来"）。
+    ("AZ63", "mw/planner.py",
+     "        reseek = reseek_block(rejected, self._untried_tools(blocked))",
+     "        reseek = (\"\\n⛔ 你上一次的回答被**拒绝**了：这些动作已经执行过，\"\n"
+     "                  f\"再提一次只会被内核丢弃：\\n  · {str(list(rejected)[-1])[:160]}\\n\"\n"
+     "                  \"**到目前为止一次都没试过的工具**：\"\n"
+     "                  + \" / \".join(self._untried_tools(blocked))\n"
+     "                  + \"\\n请给出与上面那些动作**不同**的候选；\"\n"
+     "                    \"若确实无法再推进，就直接调用 finish。\") if rejected else \"\""),
+    # ⑮ 签名退回"所有参数都算身份"（`deadline_s` 一起进签名）
+    #    ⇒ 同一件事每轮都是"新动作" ⇒ 外部能力被重复执行两次 ⇒ 只有 AZ64 红。
+    #    ⚠️ 这条变异**就是第六十八轮真跑里量到的那个 bug 本身**。
+    ("AZ64", "mw/planner.py",
+     "    pairs = [(k, v) for k, v in pairs if k not in _NON_IDENTITY_ARGS]",
+     "    pairs = list(pairs)"),
+    # ⑯ "全部候选因额度不足未执行"退回"记成连续失败"⇒ 三轮撞级联熔断
+    #    ⇒ `cascade`（语义是"连续做错"，而一次都没做）⇒ 只有 AZ65 红。
+    ("AZ65", "mw/core.py",
+     "                    if skipped_now and skipped_now == len(cands):",
+     "                    if False:"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

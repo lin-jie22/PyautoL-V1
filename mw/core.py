@@ -647,6 +647,18 @@ class Core:
         attempted_sigs: set[str] = set()
         repeats_skipped = 0
         stalled = 0
+        #: 「本轮全灭」之后要**换形态**再问的载荷：被内核丢掉的那几个动作的原文行。
+        #: 只活一轮（喂给下一次提问就清空）—— 不留着，否则它会变成又一段
+        #: 永久提示词噪声，而噪声里没有一个字是"刚刚发生的事"。
+        #: ⛔ 为什么需要它：`blocked` 是一段静态清单，要求模型"别重复它自己将要说的话"
+        #:    是一种**自比对**（实测：`attr_s66` A 臂连续两轮照提不误）。
+        #:    换形态不是把话说重，是给模型一个它此前拿不到的信息：哪些工具还没试过。
+        reseek_lines: list[str] = []
+        #: 本轮"因为额度不足而根本没试"的候选数。它**不是失败**（§17-6 同宗）：
+        #: "没试"与"试了失败"必须分开记账，否则读数会把预算不足算成能力不足。
+        #: ⚠️ 与 `external_stats["skipped_no_budget"]` 分工不同：那个是全局台账，
+        #:    这个是**本轮**的判定依据（"一个都没试"⇒ 该收尾，不该继续问）。
+        skipped_now = 0
 
         def _done(status: str, ans: str, why: str) -> Outcome:
             """所有出口都从这里走 —— 保证"停滞/重复"这类计数**任何状态都带得走**。
@@ -708,6 +720,7 @@ class Core:
                         goal=goal, failed=Step("(上一步)", "?", {}),
                         error=last_error, history=history, n=n,
                         blocked=sorted(attempted_sigs),
+                        rejected=reseek_lines,
                         # ⚠️ 重规划**更**需要易错点：它正是"刚栽了"的那一次。
                         #    原来这里不传 ⇒ guidance 只在首次尝试时有效。
                         guidance=self.wm.guidance(
@@ -720,7 +733,13 @@ class Core:
                         goal=goal, state=state, history=history, n=n,
                         guidance=self.wm.guidance(
                             action=goal, features=features, task_id=task_id),
-                        blocked=sorted(attempted_sigs))
+                        blocked=sorted(attempted_sigs),
+                        rejected=reseek_lines)
+                # 「刚刚发生的事」只喂一次：下一次提问若还是全灭，会重新填。
+                # ⛔ 不清空就等于把"上一轮被拒"变成永久背景，那正是 `blocked`
+                #    已经犯过的错（静态清单被无视），只是换个位置再犯一遍。
+                reseek_lines = []
+                skipped_now = 0
                 if plan.degraded:
                     self.log(f"  ⚠️ {plan.note}")
                 if not plan:
@@ -797,6 +816,7 @@ class Core:
                             # 额度不够 ≠ 失败。记一笔就跳过，让后面的候选照跑；
                             # ⛔ 绝不能"不带 deadline 照发" —— 那会退回 spec 的
                             #    `timeout_s`（上限，不是预算），跑穿整个预算。
+                            skipped_now += 1
                             self.external_stats["skipped_no_budget"] = (
                                 self.external_stats.get("skipped_no_budget", 0) + 1)
                             self.log(f"      ⛔ {cand.tool} 剩余额度 < "
@@ -1009,6 +1029,19 @@ class Core:
                     break
 
                 if not executed:
+                    if skipped_now and skipped_now == len(cands):
+                        # 一个候选都没跑起来，原因**不是**"失败"而是"没额度"。
+                        # ⛔ 记成失败会做两件坏事：①把预算不足算进能力读数；
+                        #   ②连续 3 轮就撞级联熔断 —— 第六十八轮的基线真跑正是这样：
+                        #   `⛔ 全部候选被拦 (3 次连续失败)` ⇒ `cascade` ⇒ 交付为空，
+                        #   而事实是"重规划一次就花掉 29s，把剩下的额度吃光了"。
+                        #   级联熔断的语义是"连续做错"，这里一次都没做。
+                        # ⇒ 不计失败、不假装有进展：如实说"没试"，然后继续
+                        #   （下一轮的收尾余量判断会接管；它不看这一步的记账）。
+                        self.log(f"  ⛔ 本轮 {skipped_now} 个候选都因额度不足未执行"
+                                 f"（不是失败，是没试）")
+                        history.append(f"[step {it}] 全部候选因额度不足未执行（不是失败）")
+                        continue
                     if repeats and repeats == len(cands):
                         # 本轮**全部**候选都是已试过的动作 ⇒ 停滞。
                         # 不停在原地继续烧预算，而是计数并按阈值收尾 ——
@@ -1021,6 +1054,12 @@ class Core:
                                 "stalled", "",
                                 f"拒绝原地打转：连续 {stalled} 轮没有任何新动作"
                                 f"（已跳过 {repeats_skipped} 次重复）")
+                        # ★ 第六十八轮：**换形态再问**，而不是把同一个问题再发一遍。
+                        #   同一个问题 + 同一个模型（T=0）得到同一个答案，这不是
+                        #   猜想，是第六十六轮的实测（A 臂连续两轮只给同一个动作）。
+                        #   要它变，就得让**输入**变：把刚被丢掉的动作**原文**摆出来，
+                        #   再告诉它哪些工具一次都没试过（它此前拿不到这个信息）。
+                        reseek_lines = [c.as_line() for c in cands]
                         continue
                     consecutive_failures += 1
                     last_error = "全部候选均被 guard 拦截"

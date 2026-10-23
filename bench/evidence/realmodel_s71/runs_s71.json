@@ -1,0 +1,1141 @@
+[
+ {
+  "budget_tag": "1x",
+  "caliber": {
+   "budget_tag": "1x",
+   "fresh": false,
+   "limits": {
+    "allow_learn": true,
+    "allow_note": true,
+    "close_reserve_s": 45.0,
+    "close_reserve_steps": 1,
+    "external_answer_tool": "",
+    "llm_max_tokens": 2048,
+    "llm_retries": 2,
+    "llm_retry_backoff_s": 0.5,
+    "max_candidates": 3,
+    "max_consecutive_failures": 3,
+    "max_llm_calls": 24,
+    "max_stall": 2,
+    "max_steps": 12,
+    "max_wall_s": 120.0,
+    "recall_k": 6,
+    "verify_retries": 2,
+    "working_memory_items": 24
+   },
+   "llm_cond": {
+    "endpoint": "localhost:11434",
+    "model": "qwen2.5:7b",
+    "offline": false,
+    "timeout_s": 120.0
+   },
+   "max_tokens": 2048,
+   "memory_scope": "shared_db",
+   "memory_seed": [
+    39,
+    1763
+   ],
+   "repeat": 2,
+   "scorer_sha": "d4b1cbbfd7f1ef50d1e1a2a4cd95371ec7a82c05f6cb6d277e079814ea021076",
+   "suite_sha": "2cd880d764e993c15bcb2e7b152ac5a9",
+   "temperature": 0.0,
+   "tool_catalog_sha": "2cc3b0225ee03223"
+  },
+  "caliber_sig": "50d32f4f5d6b3699",
+  "calibration": {
+   "evidence_id": "3c47ceefcf7498e3",
+   "margin": 1.0,
+   "middle_n": 6,
+   "ok": true
+  },
+  "kernel_closeout": {
+   "by_reason": {
+    "steps": 0,
+    "wall": 0
+   },
+   "chars": 0,
+   "empty": 0,
+   "origin": {},
+   "overrode_rejected": 0,
+   "same_as_rejected": 0,
+   "triggered": 0
+  },
+  "kernel_external": {
+   "calls": 0,
+   "chars": 0,
+   "discriminated": 0,
+   "err": 0,
+   "err_reasons": [],
+   "exec_skipped": 0,
+   "fallback": 0,
+   "last_error": "",
+   "ok": 0,
+   "samples": 0,
+   "skipped_no_budget": 0,
+   "tasks": 0,
+   "tests": 0,
+   "tool": "",
+   "used_as_answer": 0
+  },
+  "kernel_transport": {
+   "exhausted": 0,
+   "retries": 0,
+   "tasks": 0,
+   "wall_refused_first": 0,
+   "wall_refused_retry": 0,
+   "wall_shortened": 0
+  },
+  "kernel_worldmodel": {
+   "confusion": {
+    "fail_fail": 0,
+    "fail_ok": 0,
+    "ok_fail": 0,
+    "ok_ok": 0
+   },
+   "hit_rate": null,
+   "hits": 0,
+   "layer_abstract": 0,
+   "layer_recalled": 0,
+   "mismatches": 0,
+   "mismatches_outcome": 0,
+   "mismatches_text": 0,
+   "predictions": 0,
+   "rewards_recorded": 0,
+   "rewards_rejected_missing": 0,
+   "rewards_rejected_source": 0,
+   "rewards_seen": 0,
+   "rewards_skipped_self": 0,
+   "scored": 0,
+   "suppressed": 0,
+   "text_compared": 0,
+   "unscored": 0
+  },
+  "measurement": {
+   "budget_tag": "1x",
+   "candidate": "真模型直连 qwen2.5:7b T=0",
+   "hi": 0.28573333333333334,
+   "lo": 0.28573333333333334,
+   "mean": 0.28573333333333334,
+   "n": 2,
+   "std": 0.0
+  },
+  "repeat": 2,
+  "report": {
+   "attempted": 12,
+   "budget_tag": "1x",
+   "candidate": "真模型直连 qwen2.5:7b T=0",
+   "elapsed_s": 90.245,
+   "errors": [],
+   "failed_scorer": 0,
+   "llm_of_record": "http-direct",
+   "per_task": [
+    {
+     "elapsed_s": 8.48,
+     "id": "sg01",
+     "rep": 1,
+     "score": 0.2857,
+     "why": "通过 2/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg01(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 10.37,
+     "id": "sg02",
+     "rep": 1,
+     "score": 0.0,
+     "why": "通过 0/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AttributeError: 'odict_values' object has no attribute 'sort' | assert norm_sg02(['one two  three', 'One Two Three',"
+    },
+    {
+     "elapsed_s": 7.53,
+     "id": "sg03",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg03(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg03(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 4.96,
+     "id": "sg04",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 7.2,
+     "id": "sg05",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg05(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg05(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 7.68,
+     "id": "sg06",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg06(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg06(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 7.64,
+     "id": "sg01",
+     "rep": 2,
+     "score": 0.2857,
+     "why": "通过 2/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg01(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 10.18,
+     "id": "sg02",
+     "rep": 2,
+     "score": 0.0,
+     "why": "通过 0/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AttributeError: 'odict_values' object has no attribute 'sort' | assert norm_sg02(['one two  three', 'One Two Three',"
+    },
+    {
+     "elapsed_s": 7.18,
+     "id": "sg03",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg03(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg03(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 4.58,
+     "id": "sg04",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 6.91,
+     "id": "sg05",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg05(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg05(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 7.49,
+     "id": "sg06",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg06(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg06(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    }
+   ],
+   "provenance": {
+    "external_agents": [],
+    "llm_kind": "http-direct",
+    "model": "qwen2.5:7b",
+    "temperature": 0.0
+   },
+   "recorded": 12,
+   "skipped_no_answer": 0
+  },
+  "solver": "真模型直连 qwen2.5:7b T=0"
+ },
+ {
+  "budget_tag": "1x",
+  "caliber": {
+   "budget_tag": "1x",
+   "fresh": true,
+   "limits": {
+    "allow_learn": true,
+    "allow_note": true,
+    "close_reserve_s": 45.0,
+    "close_reserve_steps": 1,
+    "external_answer_tool": "",
+    "llm_max_tokens": 2048,
+    "llm_retries": 2,
+    "llm_retry_backoff_s": 0.5,
+    "max_candidates": 3,
+    "max_consecutive_failures": 3,
+    "max_llm_calls": 24,
+    "max_stall": 2,
+    "max_steps": 12,
+    "max_wall_s": 120.0,
+    "recall_k": 6,
+    "verify_retries": 2,
+    "working_memory_items": 24
+   },
+   "llm_cond": {
+    "endpoint": "localhost:11434",
+    "model": "qwen2.5:7b",
+    "offline": false,
+    "timeout_s": 120.0
+   },
+   "max_tokens": 2048,
+   "memory_scope": "per_task_fresh",
+   "memory_seed": [
+    0,
+    0
+   ],
+   "repeat": 2,
+   "scorer_sha": "d4b1cbbfd7f1ef50d1e1a2a4cd95371ec7a82c05f6cb6d277e079814ea021076",
+   "suite_sha": "2cd880d764e993c15bcb2e7b152ac5a9",
+   "temperature": 0.0,
+   "tool_catalog_sha": "2cc3b0225ee03223"
+  },
+  "caliber_sig": "8b911be9a13c00ec",
+  "calibration": {
+   "evidence_id": "3c47ceefcf7498e3",
+   "margin": 1.0,
+   "middle_n": 6,
+   "ok": true
+  },
+  "kernel_closeout": {
+   "by_reason": {
+    "steps": 0,
+    "wall": 1,
+    "wall_retry": 1
+   },
+   "chars": 917,
+   "empty": 0,
+   "origin": {
+    "收尾调用": 2
+   },
+   "overrode_rejected": 0,
+   "same_as_rejected": 0,
+   "triggered": 2
+  },
+  "kernel_external": {
+   "calls": 10,
+   "chars": 4180,
+   "discriminated": 0,
+   "err": 1,
+   "err_reasons": [
+    "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码 ⇒ 直接: 模型调用失败 http://localhost:11434/v1: TimeoutError: timed out"
+   ],
+   "exec_skipped": 6,
+   "fallback": 9,
+   "last_error": "agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码 ⇒ 直接: 模型调用失败 http://localhost:11434/v1: TimeoutError: timed out",
+   "ok": 9,
+   "samples": 12,
+   "skipped_no_budget": 2,
+   "tasks": 12,
+   "tests": 15,
+   "tool": "",
+   "used_as_answer": 9
+  },
+  "kernel_transport": {
+   "exhausted": 0,
+   "retries": 1,
+   "tasks": 12,
+   "wall_refused_first": 0,
+   "wall_refused_retry": 1,
+   "wall_shortened": 32
+  },
+  "kernel_worldmodel": {
+   "confusion": {
+    "fail_fail": 0,
+    "fail_ok": 1,
+    "ok_fail": 1,
+    "ok_ok": 11
+   },
+   "hit_rate": 0.846,
+   "hits": 11,
+   "layer_abstract": 0,
+   "layer_recalled": 0,
+   "mismatches": 2,
+   "mismatches_outcome": 2,
+   "mismatches_text": 0,
+   "predictions": 14,
+   "rewards_recorded": 0,
+   "rewards_rejected_missing": 0,
+   "rewards_rejected_source": 0,
+   "rewards_seen": 0,
+   "rewards_skipped_self": 0,
+   "scored": 13,
+   "suppressed": 0,
+   "text_compared": 0,
+   "unscored": 0
+  },
+  "measurement": {
+   "budget_tag": "1x",
+   "candidate": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）",
+   "hi": 0.7619166666666667,
+   "lo": 0.5000166666666667,
+   "mean": 0.6309666666666667,
+   "n": 2,
+   "std": 0.13095
+  },
+  "repeat": 2,
+  "report": {
+   "attempted": 12,
+   "budget_tag": "1x",
+   "candidate": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）",
+   "elapsed_s": 927.904,
+   "errors": [],
+   "failed_scorer": 0,
+   "llm_of_record": "http",
+   "per_task": [
+    {
+     "elapsed_s": 56.43,
+     "id": "sg01",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ NameError: name 're' is not defined. Did you forget to import 're'? | assert norm_sg01(['one two  three', 'One Two T"
+    },
+    {
+     "elapsed_s": 61.44,
+     "id": "sg02",
+     "rep": 1,
+     "score": 0.4286,
+     "why": "通过 3/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg02(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 81.12,
+     "id": "sg03",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 69.79,
+     "id": "sg04",
+     "rep": 1,
+     "score": 0.2857,
+     "why": "通过 2/7；失败: assert norm_sg04(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg04(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 73.22,
+     "id": "sg05",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 110.66,
+     "id": "sg06",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg06(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg06(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 67.94,
+     "id": "sg01",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ NameError: name 're' is not defined. Did you forget to import 're'? | assert norm_sg01(['one two  three', 'One Two T"
+    },
+    {
+     "elapsed_s": 65.8,
+     "id": "sg02",
+     "rep": 2,
+     "score": 0.4286,
+     "why": "通过 3/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg02(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 89.54,
+     "id": "sg03",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 95.04,
+     "id": "sg04",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 77.54,
+     "id": "sg05",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 79.35,
+     "id": "sg06",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    }
+   ],
+   "provenance": {
+    "external_agents": [
+     "agent:code_agent"
+    ],
+    "llm_kind": "http",
+    "model": "qwen2.5:7b",
+    "temperature": 0.0
+   },
+   "recorded": 12,
+   "skipped_no_answer": 0
+  },
+  "solver": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）"
+ },
+ {
+  "budget_tag": "1x",
+  "caliber": {
+   "budget_tag": "1x",
+   "fresh": true,
+   "limits": {
+    "allow_learn": true,
+    "allow_note": true,
+    "close_reserve_s": 45.0,
+    "close_reserve_steps": 1,
+    "external_answer_tool": "",
+    "llm_max_tokens": 2048,
+    "llm_retries": 2,
+    "llm_retry_backoff_s": 0.5,
+    "max_candidates": 3,
+    "max_consecutive_failures": 3,
+    "max_llm_calls": 24,
+    "max_stall": 2,
+    "max_steps": 12,
+    "max_wall_s": 120.0,
+    "recall_k": 6,
+    "verify_retries": 2,
+    "working_memory_items": 24
+   },
+   "llm_cond": {
+    "endpoint": "localhost:11434",
+    "model": "qwen2.5:7b",
+    "offline": false,
+    "timeout_s": 300.0
+   },
+   "max_tokens": 2048,
+   "memory_scope": "per_task_fresh",
+   "memory_seed": [
+    0,
+    0
+   ],
+   "repeat": 2,
+   "scorer_sha": "d4b1cbbfd7f1ef50d1e1a2a4cd95371ec7a82c05f6cb6d277e079814ea021076",
+   "suite_sha": "2cd880d764e993c15bcb2e7b152ac5a9",
+   "temperature": 0.0,
+   "tool_catalog_sha": "8decb60895d4a972"
+  },
+  "caliber_sig": "368175163097a3b6",
+  "calibration": {
+   "evidence_id": "3c47ceefcf7498e3",
+   "margin": 1.0,
+   "middle_n": 6,
+   "ok": true
+  },
+  "kernel_closeout": {
+   "by_reason": {
+    "steps": 0,
+    "wall": 0
+   },
+   "chars": 0,
+   "empty": 0,
+   "origin": {},
+   "overrode_rejected": 0,
+   "same_as_rejected": 0,
+   "triggered": 0
+  },
+  "kernel_external": {
+   "calls": 0,
+   "chars": 0,
+   "discriminated": 0,
+   "err": 0,
+   "err_reasons": [],
+   "exec_skipped": 0,
+   "fallback": 0,
+   "last_error": "",
+   "ok": 0,
+   "samples": 0,
+   "skipped_no_budget": 0,
+   "tasks": 0,
+   "tests": 0,
+   "tool": "",
+   "used_as_answer": 0
+  },
+  "kernel_transport": {
+   "exhausted": 0,
+   "retries": 0,
+   "tasks": 0,
+   "wall_refused_first": 0,
+   "wall_refused_retry": 0,
+   "wall_shortened": 0
+  },
+  "kernel_worldmodel": {
+   "confusion": {
+    "fail_fail": 0,
+    "fail_ok": 0,
+    "ok_fail": 0,
+    "ok_ok": 0
+   },
+   "hit_rate": null,
+   "hits": 0,
+   "layer_abstract": 0,
+   "layer_recalled": 0,
+   "mismatches": 0,
+   "mismatches_outcome": 0,
+   "mismatches_text": 0,
+   "predictions": 0,
+   "rewards_recorded": 0,
+   "rewards_rejected_missing": 0,
+   "rewards_rejected_source": 0,
+   "rewards_seen": 0,
+   "rewards_skipped_self": 0,
+   "scored": 0,
+   "suppressed": 0,
+   "text_compared": 0,
+   "unscored": 0
+  },
+  "measurement": {
+   "budget_tag": "1x",
+   "candidate": "真模型直连 qwen2.5:7b T=0",
+   "hi": 0.28573333333333334,
+   "lo": 0.28573333333333334,
+   "mean": 0.28573333333333334,
+   "n": 2,
+   "std": 0.0
+  },
+  "repeat": 2,
+  "report": {
+   "attempted": 12,
+   "budget_tag": "1x",
+   "candidate": "真模型直连 qwen2.5:7b T=0",
+   "elapsed_s": 79.267,
+   "errors": [],
+   "failed_scorer": 0,
+   "llm_of_record": "http-direct",
+   "per_task": [
+    {
+     "elapsed_s": 6.78,
+     "id": "sg01",
+     "rep": 1,
+     "score": 0.2857,
+     "why": "通过 2/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg01(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 8.97,
+     "id": "sg02",
+     "rep": 1,
+     "score": 0.0,
+     "why": "通过 0/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AttributeError: 'odict_values' object has no attribute 'sort' | assert norm_sg02(['one two  three', 'One Two Three',"
+    },
+    {
+     "elapsed_s": 6.32,
+     "id": "sg03",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg03(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg03(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 4.03,
+     "id": "sg04",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 5.99,
+     "id": "sg05",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg05(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg05(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 6.57,
+     "id": "sg06",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg06(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg06(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 6.73,
+     "id": "sg01",
+     "rep": 2,
+     "score": 0.2857,
+     "why": "通过 2/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg01(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 9.05,
+     "id": "sg02",
+     "rep": 2,
+     "score": 0.0,
+     "why": "通过 0/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AttributeError: 'odict_values' object has no attribute 'sort' | assert norm_sg02(['one two  three', 'One Two Three',"
+    },
+    {
+     "elapsed_s": 6.33,
+     "id": "sg03",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg03(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg03(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 4.19,
+     "id": "sg04",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 6.5,
+     "id": "sg05",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg05(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg05(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 7.77,
+     "id": "sg06",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg06(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg06(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    }
+   ],
+   "provenance": {
+    "external_agents": [],
+    "llm_kind": "http-direct",
+    "model": "qwen2.5:7b",
+    "temperature": 0.0
+   },
+   "recorded": 12,
+   "skipped_no_answer": 0
+  },
+  "solver": "真模型直连 qwen2.5:7b T=0"
+ },
+ {
+  "budget_tag": "1x",
+  "caliber": {
+   "budget_tag": "1x",
+   "fresh": true,
+   "limits": {
+    "allow_learn": true,
+    "allow_note": true,
+    "close_reserve_s": 45.0,
+    "close_reserve_steps": 1,
+    "external_answer_tool": "",
+    "llm_max_tokens": 2048,
+    "llm_retries": 2,
+    "llm_retry_backoff_s": 0.5,
+    "max_candidates": 3,
+    "max_consecutive_failures": 3,
+    "max_llm_calls": 24,
+    "max_stall": 2,
+    "max_steps": 12,
+    "max_wall_s": 120.0,
+    "recall_k": 6,
+    "verify_retries": 2,
+    "working_memory_items": 24
+   },
+   "llm_cond": {
+    "endpoint": "localhost:11434",
+    "model": "qwen2.5:7b",
+    "offline": false,
+    "timeout_s": 300.0
+   },
+   "max_tokens": 2048,
+   "memory_scope": "per_task_fresh",
+   "memory_seed": [
+    0,
+    0
+   ],
+   "repeat": 2,
+   "scorer_sha": "d4b1cbbfd7f1ef50d1e1a2a4cd95371ec7a82c05f6cb6d277e079814ea021076",
+   "suite_sha": "2cd880d764e993c15bcb2e7b152ac5a9",
+   "temperature": 0.0,
+   "tool_catalog_sha": "8decb60895d4a972"
+  },
+  "caliber_sig": "368175163097a3b6",
+  "calibration": {
+   "evidence_id": "3c47ceefcf7498e3",
+   "margin": 1.0,
+   "middle_n": 6,
+   "ok": true
+  },
+  "kernel_closeout": {
+   "by_reason": {
+    "steps": 0,
+    "wall": 0
+   },
+   "chars": 0,
+   "empty": 0,
+   "origin": {},
+   "overrode_rejected": 0,
+   "same_as_rejected": 0,
+   "triggered": 0
+  },
+  "kernel_external": {
+   "calls": 0,
+   "chars": 0,
+   "discriminated": 0,
+   "err": 0,
+   "err_reasons": [],
+   "exec_skipped": 0,
+   "fallback": 0,
+   "last_error": "",
+   "ok": 0,
+   "samples": 0,
+   "skipped_no_budget": 0,
+   "tasks": 12,
+   "tests": 0,
+   "tool": "",
+   "used_as_answer": 0
+  },
+  "kernel_transport": {
+   "exhausted": 0,
+   "retries": 0,
+   "tasks": 12,
+   "wall_refused_first": 0,
+   "wall_refused_retry": 0,
+   "wall_shortened": 38
+  },
+  "kernel_worldmodel": {
+   "confusion": {
+    "fail_fail": 0,
+    "fail_ok": 0,
+    "ok_fail": 0,
+    "ok_ok": 14
+   },
+   "hit_rate": 1.0,
+   "hits": 14,
+   "layer_abstract": 0,
+   "layer_recalled": 0,
+   "mismatches": 0,
+   "mismatches_outcome": 0,
+   "mismatches_text": 0,
+   "predictions": 14,
+   "rewards_recorded": 0,
+   "rewards_rejected_missing": 0,
+   "rewards_rejected_source": 0,
+   "rewards_seen": 0,
+   "rewards_skipped_self": 0,
+   "scored": 14,
+   "suppressed": 0,
+   "text_compared": 0,
+   "unscored": 0
+  },
+  "measurement": {
+   "budget_tag": "1x",
+   "candidate": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）",
+   "hi": 0.5952333333333334,
+   "lo": 0.5952333333333334,
+   "mean": 0.5952333333333334,
+   "n": 2,
+   "std": 0.0
+  },
+  "repeat": 2,
+  "report": {
+   "attempted": 12,
+   "budget_tag": "1x",
+   "candidate": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）",
+   "elapsed_s": 370.911,
+   "errors": [],
+   "failed_scorer": 0,
+   "llm_of_record": "http",
+   "per_task": [
+    {
+     "elapsed_s": 42.62,
+     "id": "sg01",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ NameError: name 're' is not defined. Did you forget to import 're'? | assert norm_sg01(['one two  three', 'One Two T"
+    },
+    {
+     "elapsed_s": 26.42,
+     "id": "sg02",
+     "rep": 1,
+     "score": 0.5714,
+     "why": "通过 4/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg02(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 30.56,
+     "id": "sg03",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 19.77,
+     "id": "sg04",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 58.66,
+     "id": "sg05",
+     "rep": 1,
+     "score": 0.0,
+     "why": "通过 0/7；失败: assert norm_sg05(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AttributeError: 'odict_values' object has no attribute 'sort' | assert norm_sg05(['one two  three', 'One Two Three',"
+    },
+    {
+     "elapsed_s": 25.29,
+     "id": "sg06",
+     "rep": 1,
+     "score": 0.8571,
+     "why": "通过 6/7；失败: assert norm_sg06(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError"
+    },
+    {
+     "elapsed_s": 29.27,
+     "id": "sg01",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ NameError: name 're' is not defined. Did you forget to import 're'? | assert norm_sg01(['one two  three', 'One Two T"
+    },
+    {
+     "elapsed_s": 18.36,
+     "id": "sg02",
+     "rep": 2,
+     "score": 0.5714,
+     "why": "通过 4/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg02(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 24.6,
+     "id": "sg03",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 20.64,
+     "id": "sg04",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 54.12,
+     "id": "sg05",
+     "rep": 2,
+     "score": 0.0,
+     "why": "通过 0/7；失败: assert norm_sg05(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AttributeError: 'odict_values' object has no attribute 'sort' | assert norm_sg05(['one two  three', 'One Two Three',"
+    },
+    {
+     "elapsed_s": 20.55,
+     "id": "sg06",
+     "rep": 2,
+     "score": 0.8571,
+     "why": "通过 6/7；失败: assert norm_sg06(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError"
+    }
+   ],
+   "provenance": {
+    "external_agents": [],
+    "llm_kind": "http",
+    "model": "qwen2.5:7b",
+    "temperature": 0.0
+   },
+   "recorded": 12,
+   "skipped_no_answer": 0
+  },
+  "solver": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）"
+ },
+ {
+  "budget_tag": "1x",
+  "caliber": {
+   "budget_tag": "1x",
+   "fresh": true,
+   "limits": {
+    "allow_learn": true,
+    "allow_note": true,
+    "close_reserve_s": 45.0,
+    "close_reserve_steps": 1,
+    "external_answer_tool": "",
+    "llm_max_tokens": 2048,
+    "llm_retries": 2,
+    "llm_retry_backoff_s": 0.5,
+    "max_candidates": 3,
+    "max_consecutive_failures": 3,
+    "max_llm_calls": 24,
+    "max_stall": 2,
+    "max_steps": 12,
+    "max_wall_s": 120.0,
+    "recall_k": 6,
+    "verify_retries": 2,
+    "working_memory_items": 24
+   },
+   "llm_cond": {
+    "endpoint": "localhost:11434",
+    "model": "qwen2.5:7b",
+    "offline": false,
+    "timeout_s": 300.0
+   },
+   "max_tokens": 2048,
+   "memory_scope": "per_task_fresh",
+   "memory_seed": [
+    0,
+    0
+   ],
+   "repeat": 2,
+   "scorer_sha": "d4b1cbbfd7f1ef50d1e1a2a4cd95371ec7a82c05f6cb6d277e079814ea021076",
+   "suite_sha": "2cd880d764e993c15bcb2e7b152ac5a9",
+   "temperature": 0.0,
+   "tool_catalog_sha": "2cc3b0225ee03223"
+  },
+  "caliber_sig": "341c1eecd9c3b660",
+  "calibration": {
+   "evidence_id": "3c47ceefcf7498e3",
+   "margin": 1.0,
+   "middle_n": 6,
+   "ok": true
+  },
+  "kernel_closeout": {
+   "by_reason": {
+    "steps": 0,
+    "wall": 0
+   },
+   "chars": 0,
+   "empty": 0,
+   "origin": {},
+   "overrode_rejected": 0,
+   "same_as_rejected": 0,
+   "triggered": 0
+  },
+  "kernel_external": {
+   "calls": 10,
+   "chars": 4626,
+   "discriminated": 0,
+   "err": 0,
+   "err_reasons": [],
+   "exec_skipped": 8,
+   "fallback": 10,
+   "last_error": "",
+   "ok": 10,
+   "samples": 14,
+   "skipped_no_budget": 2,
+   "tasks": 12,
+   "tests": 10,
+   "tool": "",
+   "used_as_answer": 10
+  },
+  "kernel_transport": {
+   "exhausted": 0,
+   "retries": 0,
+   "tasks": 12,
+   "wall_refused_first": 0,
+   "wall_refused_retry": 0,
+   "wall_shortened": 30
+  },
+  "kernel_worldmodel": {
+   "confusion": {
+    "fail_fail": 0,
+    "fail_ok": 2,
+    "ok_fail": 0,
+    "ok_ok": 12
+   },
+   "hit_rate": 0.857,
+   "hits": 12,
+   "layer_abstract": 0,
+   "layer_recalled": 0,
+   "mismatches": 2,
+   "mismatches_outcome": 2,
+   "mismatches_text": 0,
+   "predictions": 14,
+   "rewards_recorded": 0,
+   "rewards_rejected_missing": 0,
+   "rewards_rejected_source": 0,
+   "rewards_seen": 0,
+   "rewards_skipped_self": 0,
+   "scored": 14,
+   "suppressed": 0,
+   "text_compared": 0,
+   "unscored": 0
+  },
+  "measurement": {
+   "budget_tag": "1x",
+   "candidate": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）",
+   "hi": 0.6428666666666666,
+   "lo": 0.6428666666666666,
+   "mean": 0.6428666666666666,
+   "n": 2,
+   "std": 0.0
+  },
+  "repeat": 2,
+  "report": {
+   "attempted": 12,
+   "budget_tag": "1x",
+   "candidate": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）",
+   "elapsed_s": 851.814,
+   "errors": [],
+   "failed_scorer": 0,
+   "llm_of_record": "http",
+   "per_task": [
+    {
+     "elapsed_s": 58.55,
+     "id": "sg01",
+     "rep": 1,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ NameError: name 're' is not defined. Did you forget to import 're'? | assert norm_sg01(['one two  three', 'One Two T"
+    },
+    {
+     "elapsed_s": 61.12,
+     "id": "sg02",
+     "rep": 1,
+     "score": 0.4286,
+     "why": "通过 3/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg02(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 82.02,
+     "id": "sg03",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 64.18,
+     "id": "sg04",
+     "rep": 1,
+     "score": 0.2857,
+     "why": "通过 2/7；失败: assert norm_sg04(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg04(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 69.74,
+     "id": "sg05",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 87.56,
+     "id": "sg06",
+     "rep": 1,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 63.34,
+     "id": "sg01",
+     "rep": 2,
+     "score": 0.1429,
+     "why": "通过 1/7；失败: assert norm_sg01(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ NameError: name 're' is not defined. Did you forget to import 're'? | assert norm_sg01(['one two  three', 'One Two T"
+    },
+    {
+     "elapsed_s": 60.53,
+     "id": "sg02",
+     "rep": 2,
+     "score": 0.4286,
+     "why": "通过 3/7；失败: assert norm_sg02(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg02(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 81.22,
+     "id": "sg03",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 64.83,
+     "id": "sg04",
+     "rep": 2,
+     "score": 0.2857,
+     "why": "通过 2/7；失败: assert norm_sg04(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\\tepsi ⇒ AssertionError | assert norm_sg04(['one two  three', 'One Two Three', 'FOUR', 'five fiv ⇒ AssertionError | assert no"
+    },
+    {
+     "elapsed_s": 72.48,
+     "id": "sg05",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    },
+    {
+     "elapsed_s": 86.19,
+     "id": "sg06",
+     "rep": 2,
+     "score": 1.0,
+     "why": "通过 7/7"
+    }
+   ],
+   "provenance": {
+    "external_agents": [
+     "agent:code_agent"
+    ],
+    "llm_kind": "http",
+    "model": "qwen2.5:7b",
+    "temperature": 0.0
+   },
+   "recorded": 12,
+   "skipped_no_answer": 0
+  },
+  "solver": "内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）"
+ }
+]

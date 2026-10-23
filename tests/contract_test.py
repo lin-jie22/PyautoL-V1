@@ -7066,7 +7066,10 @@ check(RS, "AZ50 能力曲线必须按**口径断线**：异口径的点开新段
           "          不可信的点独占一段（不接前段、也不被丢弃）。\n"
           "          理由：把换过尺子的点接上去，曲线会变成没人看得出的谎；\n"
           "          把不可信点过滤掉，就再也看不到「这一轮没量准」。\n"
-          "          撤回语义：把 segments() 的条件放宽成 `if out:` ⇒ 必须红。",
+          "          撤回语义：让不可信的点也接到上一段（撤掉 `p.trustworthy`）⇒ 必须红。\n"
+          "          ⚠️ 第七十一轮更新：旧锚点（把整行条件放宽成 `if out:`）会**连带**\n"
+          "             AZ74 红（它依赖 calib 分段是 3+3）⇒ 那不是单红。新锚点只撤\n"
+          "             「不可信也接上去」这一半，calib/harness 断线保留 ⇒ 单红。",
       [len(s) for s in _c50a.segments()] == [2, 2]
       and [len(s) for s in _c50b.segments()] == [1, 1, 2],
       f"口径断线={[len(s) for s in _c50a.segments()]} "
@@ -7970,6 +7973,113 @@ check(RS, "AZ74 ★变异**不改源码**但**换口径** ⇒ 曲线必然断段
       f"limits差={_az74_diff} 签名不同="
       f"{_az74_cb.signature() != _az74_ca.signature()} "
       f"diff={_az74_cb.diff(_az74_ca)} 分段={[len(s) for s in _az74_cv.segments()]}")
+
+# ===========================================================================
+# AZ75–AZ77（第七十一轮，§34）：题面与 oracle **同源**
+#
+# 7y 关掉判据层的那条读数不是"题难"，而是**题面与 oracle 是两份手写产物**：
+#   题面写「最多 n 个字符」，该题自己的 oracle 交的答案是 `'...def'`（长 4 > n=3），
+#   而 5/5 评分要求就是这个答案。
+# ⇒ 「来源贴着题面」不等于「来源满足题面」。只要两者是两份手写产物，它们之间
+#   就没有约束，只能靠人逐条读；读过这批，下一批又从零开始。
+#
+# 所以第七十一轮把两者都做成 spec 的函数，并在**四条互不依赖的证据**上验。
+# 这组契约钉的不是"题好"，而是**准入器有牙**：每条证据都配一个坏样本，
+# 坏样本必须被指名打红。⛔ 只写断言不写反证的检测器是死代码（纪律 ⑩）。
+# ===========================================================================
+from bench import gen_spec_tasks as GS                              # noqa: E402
+from bench import taskspec as TS                                   # noqa: E402
+
+_AZ75_SPECS = {s["id"]: s for s in GS.SPECS}
+_AZ75_RP = TS.reverse_proofs(_AZ75_SPECS["sg05"], GS.CASES)
+_AZ75_GOOD = {sid: TS.admit(sp, GS.CASES) for sid, sp in _AZ75_SPECS.items()}
+
+check(RS, "AZ75 ★准入器有四条证据，且**每条都被自己的坏样本打红过**\n"
+          "          ① A0 结构禁令：`lower` 与 `dedupe` 同现 ⇒ 拒绝。\n"
+          "             理由不是「不好看」：「比较是否忽略大小写」在这条流水线上\n"
+          "             **永远不可判定**（lower 在前 ⇒ 键已全小写；lower 在后 ⇒\n"
+          "             两种保留选择被压成同一行）⇒ 写进题面就是一句无法被检验的话；\n"
+          "          ② A3 后置条件：题面承诺的，**生成的源码**在每一步之后必须满足。\n"
+          "             坏样本把截断写成 n+1 ⇒ 必须点名「truncate 长度上限」（7y 的实形）；\n"
+          "          ③ A4 三方对撞：生成的源码 == 独立解释器（两条实现，逐条用例对拍）。\n"
+          "             坏样本多打一次前缀 ⇒ 必须红，且 **A3 不许替它背锅**\n"
+          "             （后置条件那时仍然成立 —— 这正是两条证据要分开的理由）；\n"
+          "          ④ A5 同源双射：改一个参数 ⇒ 题面**必变** ∧ 行为**必变**。\n"
+          "             只查一个方向不够：只查题面 ⇒ 代码没用它（题面在说谎）；\n"
+          "             只查行为 ⇒ 代码读了题面没写的东西（答案不可从题面推出）。\n"
+          "          ⑤ 六道题本身必须全部通过（否则上面的反证只是在测一条恒假的路）。",
+      not any(_AZ75_GOOD.values())
+      and any("A0" in f for f in _AZ75_RP["A0"])
+      and any("A3" in f and "truncate" in f for f in _AZ75_RP["A3"])
+      and any("A4" in f for f in _AZ75_RP["A4"])
+      and not any("A3" in f for f in _AZ75_RP["A4"])
+      and any("A5" in f and "题面不变" in f for f in _AZ75_RP["A5题面"])
+      and any("A5" in f and "行为不变" in f for f in _AZ75_RP["A5代码"]),
+      "反证=" + " ｜ ".join(f"{k}:{len(v)}" for k, v in _AZ75_RP.items())
+      + " ｜ 合格题=" + str(sum(1 for v in _AZ75_GOOD.values() if not v)))
+
+# ── AZ76：落盘的题必须**自己解释自己**（防手改 jsonl）─────────────────────
+_AZ76_PATH = V1 / "bench" / "specgen" / "tasks_v1.jsonl"
+_AZ76_ROWS = ([json.loads(x) for x in _AZ76_PATH.read_text(encoding="utf-8").splitlines()]
+              if _AZ76_PATH.exists() else [])
+_AZ76_BAD: list[str] = []
+_AZ76_IDS: list[str] = []
+for _r in _AZ76_ROWS:
+    _sp = _r.get("meta", {}).get("spec")
+    _AZ76_IDS.append(_r.get("id"))
+    if not _sp:
+        _AZ76_BAD.append(f"{_r.get('id')} 缺 meta.spec")
+        continue
+    if _r.get("prompt") != TS.render_prompt(_sp):
+        _AZ76_BAD.append(f"{_r['id']} 题面与 spec 渲染不一致")
+    if _r.get("tests") != TS.tests_of(_sp, GS.CASES):
+        _AZ76_BAD.append(f"{_r['id']} 测试期望与 spec 不一致")
+    if _r.get("oracle") != TS.compile_oracle(_sp):
+        _AZ76_BAD.append(f"{_r['id']} oracle 与 spec 不一致")
+    if TS.admit(_sp, GS.CASES):
+        _AZ76_BAD.append(f"{_r['id']} 不过准入")
+check(RS, "AZ76 ★落盘题目必须**自己解释自己**：题面/测试/oracle 都能由题内 `meta.spec` 重算出来\n"
+          "          —— 手改一行期望值，这里当场红。为什么要这一条：\n"
+          "             `bench/specgen/*.jsonl` **不进** `suites.manifest.json`（它只管 heldout），\n"
+          "             没有这道闸，它就是一份可以被无声改写的考题。\n"
+          "          ⚠️ 刻意**不**校验 `partial`：那是读数用的常识参照，由 AZ77 从 spec 现算；\n"
+          "             文件里那份只是快照 —— 但整份文件与现算的逐字相等由探针 P9 另测\n"
+          "             （分工：契约管「题内自洽」，探针管「生成器是唯一来源」）。",
+      bool(_AZ76_ROWS) and not _AZ76_BAD
+      and len(set(_AZ76_IDS)) == len(_AZ76_IDS)
+      and set(_AZ76_IDS) == set(_AZ75_SPECS),
+      f"题数={len(_AZ76_ROWS)} 唯一的id={len(set(_AZ76_IDS))} 问题={_AZ76_BAD[:3]}")
+
+# ── AZ77：【读数锚】常识实现必须被扣分，而"长度合格"挡不住它 ────────────────
+_AZ77_SCORE = {sid: TS.naive_hits(sp, GS.CASES) for sid, sp in _AZ75_SPECS.items()}
+_AZ77_CENTERED = all(0 < k < n for k, n in _AZ77_SCORE.values())
+# "长度合格、内容不合格"：常识版截断（留 n-1 个字符再补省略号）长度也 ≤ n，
+# 后置条件全过，内容却是错的 ⇒ 只有"与 oracle 逐条比对"才发现得了。
+_AZ77_LEAK = set()
+for _sid, _sp in _AZ75_SPECS.items():
+    _tr = [r for r in _sp["rules"] if r["op"] == "truncate"]
+    if not _tr:
+        continue
+    _n = _tr[0]["n"]
+    _nsrc = TS.compile_oracle(_sp, naive=True)
+    _osrc = TS.compile_oracle(_sp)
+    for _case in GS.CASES:
+        _out = TS.run_source(_nsrc, _sp["fn"], _case)
+        if all(len(_x) <= _n for _x in _out) and \
+                _out != TS.run_source(_osrc, _sp["fn"], _case):
+            _AZ77_LEAK.add(_sid)
+            break
+check(RS, "AZ77 ★【读数锚】常识实现必须**严格居中**，且「长度合格但内容错」这一格必须存在\n"
+          "          ① 常识 = 参数取默认值（保第一次、精确比较、按文本升序、截断补省略号）。\n"
+          "             全过 ⇒ 这题用常识就能做，没有分辨点；全不过 ⇒ 只是「和常识完全不同」，\n"
+          "             任何写法都错，同样没有分辨点。**严格居中**才是分辨点；\n"
+          "          ② 截断的常识写法长度也 ≤ n ⇒ **后置条件（A3）挡不住它**。\n"
+          "             这一格是本轮最硬的读数：题面承诺能被检查，不等于承诺能被满足。\n"
+          "             谁把 A4（逐条比对）删掉，这里就红。\n"
+          "          ★ 这是**读数锚**：题集变了它就该红，改完必须回来登记为什么变。",
+      _AZ77_CENTERED and _AZ77_LEAK == {"sg01", "sg02", "sg03"},
+      "常识分=" + " ｜ ".join(f"{k}={a}/{b}" for k, (a, b) in _AZ77_SCORE.items())
+      + " ｜ 长度合格却答错=" + str(sorted(_AZ77_LEAK)))
 
 print()
 print("=" * 74)

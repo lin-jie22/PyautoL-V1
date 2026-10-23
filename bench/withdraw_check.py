@@ -717,9 +717,15 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # 为什么这三条必须存在：曲线装置的全部价值就是"不让人用噪声骗自己"，
     # 而它自己最容易被改松的地方恰好是这三处 —— 断线、噪声、换尺子。
     # ① 断线条件放宽成"只要已有段就接上去" ⇒ 异口径点连成一条线 ⇒ 只有 AZ50 红。
+    # ⚠️ 第七十一轮全量复跑时发现这条**锚点已经失效**（「变异锚点出现 0 次」）：
+    #    `mw/loop.py` 后来把那一行长条件重排成多行（加入 `harness` 比较时），
+    #    而全量撤回自第六十七轮起**没再跑过**（每轮只跑新增的那几条）
+    #    ⇒ 陈旧锚点一直是坏的，只是没人看见。
+    #    新锚点只撤「不可信点也接上去」这一半：仍保留 calib/harness 断线，
+    #    所以 AZ74（它的 3+3 分段依赖 calib）**不会**被连带 —— 单红。
     ("AZ50", "mw/loop.py",
-     "            if out and p.trustworthy and out[-1][-1].calib == p.calib and out[-1][-1].trustworthy:",
-     "            if out:"),
+     "            if (out and p.trustworthy and out[-1][-1].trustworthy",
+     "            if (out and True"),
     # ② "每一轮都要超过基线+噪声"放宽成"最低一轮不低于基线" ⇒ 噪声与浮点容差
     #    双双被忽略 ⇒ 只有 AZ51 红。
     ("AZ51", "mw/loop.py",
@@ -881,6 +887,30 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ73", "mw/mutate.py",
      "        if ledger is not None:",
      "        if ledger is not None and m.ok:"),
+    # ── 第七十一轮（§34）：题面与 oracle 同源 ─────────────────────────────
+    # ㉖ 撤掉 A0 结构禁令（lower + dedupe 同现不再拒绝）
+    #    ⇒ 只有 AZ75 红：反证组里那一项从"点名"变成空清单 = 这条证据是死的。
+    ("AZ75", "bench/taskspec.py",
+     '    if "lower" in ops and "dedupe" in ops:',
+     '    if False:  # 撤回态'),
+    # ㉗ 撤掉 A5 的"题面必变"那一半（只留"行为必变"）
+    #    ⇒ 只有 AZ75 红：题面漏写参数这种洞再也抓不到。
+    ("AZ75", "bench/taskspec.py",
+     "            if render_prompt(alt_spec) == base_prompt:",
+     "            if False:  # 撤回态"),
+    # ㉘ 手改落盘题目里的一个期望值（一位字符）
+    #    ⇒ 只有 AZ76 红：题内 `meta.spec` 重算出来的期望与文件不再一致。
+    ("AZ76", "bench/specgen/tasks_v1.jsonl",
+     "'ALPHA BE'", "'ALPHA BX'"),
+    # ㉙ 让"常识分"不再**真的比对**（恒记成功）
+    #    ⇒ 只有 AZ77 红：常识分变满分 ⇒「严格居中」不再成立。
+    #    ⚠️ 第一版撤的是"省略号那半"（`if naive else` → `if False else`），
+    #       实测**不转红**：sg01/sg02/sg03 的常识版还会因为去重/排序不同而错，
+    #       `长度合格却答错` 这一格照样成立 ⇒ 那条读数不依赖省略号这一处实现。
+    #       ⇒ 撤的应该是"分数从比对里来"这件事本身。
+    ("AZ77", "bench/taskspec.py",
+     '            hit += int(list(ns[spec["fn"]](list(case))) == exp)',
+     '            hit += 1'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1019,7 +1049,13 @@ COUPLED: dict[str, frozenset[str]] = {
     #: AE9 把注入开关读成空串 ⇒ **所有**外部能力的题都不再注入，而 AT8 的夹具
     #: 正是"让一个必然失败的 agent 被调用一次"⇒ 一次都不会被调用 ⇒ AT8 必然红。
     #: 这是**合理的连带**：AT8 测的是"失败原因落盘"，而它需要失败真的发生。
-    "AE9": frozenset({"AT8"}),
+    #: ★ 第七十一轮补登 **AZ60**：同一变异下 A 臂（靠 `V1_EXTERNAL_ANSWER_TOOL`
+    #:   注入才走到"两扇门"那条路）退化成 B 臂 ⇒ AZ60 判"两臂没有差别"。
+    #:   三条断言锚在同一行实现上：AT8 问"失败有没有理由"、AZ60 问"从哪扇门进来"、
+    #:   AE9 问"答案真的被用了吗"。⛔ 不是锚定跑偏，是真耦合。
+    #:   ⚠️ 它自第六十七轮 `ca4477b` 起就存在，但全量撤回一直没复跑（只跑新增的几条）
+    #:      ⇒ 陈旧读数藏了两周；第七十一轮补跑全量才暴露（同时暴露出 AZ50 的死锚点）。
+    "AE9": frozenset({"AT8", "AZ60"}),
     #: AS4 把 `if _CODE_ONLY.search(goal)` 改成 `if True` ⇒ **散文题也派生
     #: `compiles` 判据** ⇒ 那些题被自检错误打回 ⇒ 交付路径整个变了。
     #: 于是两条端到端读数自然不成立：

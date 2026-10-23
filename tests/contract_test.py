@@ -7697,6 +7697,83 @@ check(RS, "AZ65 ★额度不够 ⇒ 是「没试」，不是「失败」：不�
       f"status={_s68c_out.status} skipped_no_budget={_s68c_skip} "
       f"外部调用={len(_s68c_calls)}")
 
+# ===========================================================================
+# AZ66–AZ68（第六十九轮，§31.7）：停滞 ≠ 交零
+#   「到阈值」只说明**探索**停了，不说明**交付**停了。
+# ===========================================================================
+# 实测病（`bench/evidence/attr_s66` 的 A 臂）：`■ stalled | steps=3`、`mean=0.0000`，
+# 而那一刻墙钟还剩 **85s** —— 那 85s 里一次答案调用都没发生过。
+# 与 `_closing_reserve_hit` 那次事故是**同一个形状**：手段（探索）吃掉了目的（交付）。
+#
+# ⚠️ 这个场景必须让**动作通道真的堵死**（同一个 `recall` 反复提），
+#    否则根本走不到停滞分支 —— 而"走不到"的断言比"走错了"更容易骗人。
+from mw.core import _STALL_ANSWER_MIN_S, stall_verdict           # noqa: E402
+
+_S69_GOAL = "读一下这个文件"
+_S69_SAME = ('{"candidates": [{"intent": "再查一次", "tool": "recall", '
+             '"args": {"query": "goal"}, "rationale": "查记忆"}]}')
+#: 判据不是"有输出"，而是**答案通道真的被单独问过**：
+#: `planner.answer()` 的提示词结尾是这句，`propose()` 的提示词里没有它。
+_S69_ANSWER_MARK = "请直接给出最终答案"
+_S69_ANSWER = "停滞之后仍然交付的答案（来自答案通道）"
+
+_s69_llm = StubLLM(scripts=[(_S69_ANSWER_MARK, _S69_ANSWER)], default=_S69_SAME)
+_s69_mem = MemoryStore(_TMP / "s69_mem.db")   # 独立库：别与 O 组的账混在一起
+_s69_logs: list[str] = []
+_s69_core = Core(llm=_s69_llm, memory=_s69_mem, wire_external=False,
+                 log=lambda *a: _s69_logs.append(str(a[0]) if a else ""))
+_s69_out = _s69_core.run(_S69_GOAL)
+_s69_co = _s69_out.stats.get("closeout") or {}
+_s69_loop = _s69_out.stats.get("loop") or {}
+_s69_line = next((ln for ln in _s69_logs if "■ stalled" in ln), "")
+
+check(RS, "AZ66 ★停滞但**还有额度** ⇒ 必须走答案通道交付，不许直接交零\n"
+          "          ① 状态仍是 `stalled`（O3 的语义：如实报告没有进展，不许改成 done）；\n"
+          "          ② 但 `answer` 必须**逐字**等于答案通道的产出 —— 不是 `history` 兜底、\n"
+          "             也不是情景记忆：那两条是「连话都没问」的结果，用来证明「交付了」是自欺；\n"
+          "          ③ 原因必须写「不是预算不足」：把停滞说成预算不足是**假归因**，\n"
+          "             而本项目关掉的那条线（§29.7）正是从一句假归因开始的；\n"
+          "          ④ 读数留痕：`by_reason.stalled == 1`，`origin` 记「收尾调用」。\n"
+          "          撤回语义：把 `if _sv == 「deliver」` 改成 `if False` ⇒ 必须红。",
+      _s69_out.status == "stalled"
+      and _s69_out.answer == _S69_ANSWER
+      and (_s69_co.get("by_reason") or {}).get("stalled") == 1
+      and "不是预算不足" in _s69_out.reason
+      and "收尾调用" in (_s69_co.get("origin") or {}),
+      f"status={_s69_out.status} answer={_s69_out.answer[:24]!r} "
+      f"by_reason={_s69_co.get('by_reason')} origin={_s69_co.get('origin')} "
+      f"reason={_s69_out.reason[:48]!r}")
+
+check(RS, "AZ67 ★「停滞之后做什么」只许有**一处**判定：`stall_verdict()` 三分支 + 边界\n"
+          "          ① 不到阈值 ⇒ `continue`（换形态再问一次）；\n"
+          "          ② 到阈值但额度 ≥ 一次答案调用 ⇒ `deliver`（探索停、交付不停）；\n"
+          "          ③ 到阈值且额度不够 ⇒ `give_up`（如实交零，不许拿 5s 换个垃圾）；\n"
+          "          ④ 边界取 `>=`：恰好等于下限时**够**（差 0.1s 才不够）；\n"
+          "          ⑤ `max_stall <= 0` 按 1 处理（0 不是「永不收尾」，那会是死循环）。",
+      stall_verdict(stalled=1, max_stall=3, wall_left=100.0) == "continue"
+      and stall_verdict(stalled=3, max_stall=3, wall_left=100.0) == "deliver"
+      and stall_verdict(stalled=3, max_stall=3,
+                        wall_left=_STALL_ANSWER_MIN_S) == "deliver"
+      and stall_verdict(stalled=3, max_stall=3,
+                        wall_left=_STALL_ANSWER_MIN_S - 0.1) == "give_up"
+      and stall_verdict(stalled=1, max_stall=0, wall_left=100.0) == "deliver",
+      f"continue={stall_verdict(stalled=1, max_stall=3, wall_left=100.0)} "
+      f"deliver={stall_verdict(stalled=3, max_stall=3, wall_left=100.0)} "
+      f"边界={stall_verdict(stalled=3, max_stall=3, wall_left=_STALL_ANSWER_MIN_S)} "
+      f"差0.1={stall_verdict(stalled=3, max_stall=3, wall_left=_STALL_ANSWER_MIN_S - 0.1)}")
+
+_az68_core = _code_only(_core_src)
+check(RS, "AZ68 ★停滞的判据只许有**一处**声明（阈值比较不许在分支里再写一遍）\n"
+          "          —— 两处写 = 两个未来：改 `max_stall`/下限的语义时只改一处，\n"
+          "             另一处继续按旧阈值行事，而读数只在那一题掉下去时才知道。\n"
+          "          ⚠️ 判定去注释/去 docstring：`stall_verdict` 的说明里就引用着这两处。",
+      _az68_core.count("stall_verdict(") == 2          # 1 处定义 + 1 处调用
+      and _az68_core.count("_STALL_ANSWER_MIN_S") == 2  # 定义 + 唯一引用（默认参数）
+      and _az68_core.count("stalled >= self.s.limits.max_stall") == 0,
+      f"stall_verdict(={_az68_core.count('stall_verdict(')} "
+      f"_STALL_ANSWER_MIN_S={_az68_core.count('_STALL_ANSWER_MIN_S')} "
+      f"内联阈值={_az68_core.count('stalled >= self.s.limits.max_stall')}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

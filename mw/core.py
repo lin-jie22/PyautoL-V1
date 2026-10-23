@@ -372,6 +372,39 @@ def answer_deadline(*, wall_s: float, elapsed: float, max_wall_s: float,
     return dl if dl >= _ANSWER_MIN_S else None
 
 
+#: 停滞之后还要不要试着交付：一次专门的答案调用大约要多少秒。
+#: 本机实测生成 ≈ 25 字符/秒，一道题最低可用的答案 ≈ 500 字 ⇒ ≈ 20s。
+#: ⛔ 刻意**不复用** `_ANSWER_MIN_S`：那个数是**外部能力**的下限。
+#:    两个数一旦共用一个常量，改一个会悄悄改掉另一件事的语义
+#:    （本项目反复踩的"同一事实两处声明"的镜像：不同事实被迫一处声明）。
+_STALL_ANSWER_MIN_S = 20.0
+
+
+def stall_verdict(*, stalled: int, max_stall: int, wall_left: float,
+                  min_answer_s: float = _STALL_ANSWER_MIN_S) -> str:
+    """停滞到这个份上，下一步做什么 —— **唯一**的判定点。
+
+    返回三选一：
+
+    | 值 | 含义 |
+    |---|---|
+    | `"continue"` | 还没到阈值 ⇒ 换形态再问一次 |
+    | `"deliver"`  | 到阈值，但**还剩额度够一次答案调用** ⇒ 停止探索、转向交付 |
+    | `"give_up"`  | 到阈值且额度不够 ⇒ 如实交零 |
+
+    ⚠️ 为什么"到阈值"不等于"交零"：`stalled` 的语义是**探索到此为止**
+    （不再向规划器要动作），它和**交付**是两件事。第六十六轮的 A 臂实测：
+    `■ stalled | steps=3`、`mean=0.0000`，而那一刻墙钟还剩 **85s** ——
+    那 85s 里一次答案调用都没发生过。**手段停了，目的也跟着停了。**
+
+    ⚠️ 这个判定必须在**一处**声明：它是"停滞之后还能不能救"的唯一答案。
+       分散在分支里写两遍，两遍迟早不一致，而读数只在那一题掉下去时才知道。
+    """
+    if stalled < max(1, int(max_stall)):
+        return "continue"
+    return "deliver" if float(wall_left) >= max(0.0, float(min_answer_s)) else "give_up"
+
+
 @dataclass
 class Outcome:
     status: str                      # done | budget_exhausted | cascade | blocked
@@ -1049,11 +1082,27 @@ class Core:
                         stalled += 1
                         self.log(f"  🧊 本轮 {repeats} 个候选全部是已试过的动作"
                                  f" ⇒ 停滞 {stalled}/{self.s.limits.max_stall}")
-                        if stalled >= self.s.limits.max_stall:
+                        # ★ 第六十九轮（§31.7）：**停滞 ≠ 交零**。
+                        #   旧代码到这里就 `return _done("stalled", "", …)`，
+                        #   而第六十六轮的 A 臂实测那一刻还剩 85s —— 那 85s
+                        #   一次答案调用都没发生过。探索是手段、交付是目的，
+                        #   手段停了不该把目的也停掉（与 `_closing_reserve_hit`
+                        #   那次事故同一个形状：手段吃掉了目的）。
+                        #   判定只在 `stall_verdict()` 一处声明。
+                        _sv = stall_verdict(
+                            stalled=stalled, max_stall=self.s.limits.max_stall,
+                            wall_left=(budget.wall_s - self.ledger.elapsed()))
+                        if _sv == "deliver":
+                            return self._close_out(
+                                goal, history, _done, reason="stalled",
+                                detail=f"连续 {stalled} 轮没有新动作，"
+                                       f"已跳过 {repeats_skipped} 次重复")
+                        if _sv == "give_up":
                             return _done(
                                 "stalled", "",
                                 f"拒绝原地打转：连续 {stalled} 轮没有任何新动作"
-                                f"（已跳过 {repeats_skipped} 次重复）")
+                                f"（已跳过 {repeats_skipped} 次重复；"
+                                f"剩余额度不足一次答案调用）")
                         # ★ 第六十八轮：**换形态再问**，而不是把同一个问题再发一遍。
                         #   同一个问题 + 同一个模型（T=0）得到同一个答案，这不是
                         #   猜想，是第六十六轮的实测（A 臂连续两轮只给同一个动作）。
@@ -1392,18 +1441,30 @@ class Core:
         return False
 
     def _close_out(self, goal: str, history: Sequence[str],
-                   done: Callable[[str, str, str], "Outcome"]) -> Outcome:
-        """进入收尾余量后的交付 —— 尽力把答案交出去，并**如实说明**是被预算切断的。
+                   done: Callable[[str, str, str], "Outcome"],
+                   *, reason: str = "closing_reserve",
+                   detail: str = "") -> Outcome:
+        """进入收尾（预算只够交付，或**停滞**）后的交付 —— 尽力把答案交出去。
 
         不是"假装完成"：答案要么来自一次专门索要答案的调用（余量就是留给它的），
         要么来自已收集到的材料；两者都拿不到就如实报空。
+
+        ★ 第六十九轮：多了一个入口 `reason="stalled"`（探索停滞，但**还有额度**）。
+        两者共用同一条交付通道，但**原因必须分开说**：
+        · `closing_reserve` ⇒ "预算不足"是实话；
+        · `stalled` ⇒ 预算并不不足，说成"预算不足"就是**假归因**
+          （§29.7 第 2 条的病根就是它：`stalled` 时还剩 85s 却直接交零）。
 
         ⚠️ `done` 必须由调用方显式传入，**不能**在这里引用 `run()` 里的局部闭包：
         本方法曾是 `run()` 内的嵌套函数写法搬到类上时漏改的一处（Q 组实测抓到的
         `NameError: _done is not defined`）—— 收尾路径一旦炸，交付就退回零。
         收尾是"最后一道网"，它自己的作用域绝不能再依赖调用栈。
         """
-        self.log("  ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）")
+        _stalled_entry = (reason == "stalled")
+        if _stalled_entry:
+            self.log("  🧊 停滞 ⇒ 探索到此为止，但**还有额度** ⇒ 转向交付（不是预算不足）")
+        else:
+            self.log("  ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）")
         # ★ 把留给收尾的时间**放出来**（第二十五轮）：探索阶段扣下它是对的，
         #   收尾阶段还扣着就等于「留了余量但不用」。契约 AU7 钉住本条。
         if self._counted is not None:
@@ -1417,7 +1478,10 @@ class Core:
         #    交付零东西。而这个方法存在的唯一目的就是"别交付零"。
         #    ⇒ 「新增一个原因值」与「新增一个字典键」是两处声明，必须解耦：
         #      原因值可以自由增加，读数统计按出现即计数。契约 AU8 钉住本条。
-        _why = self._reserve_reason or "steps"
+        # ★ 第六十九轮：`stalled` 这个原因**来自调用方**，不来自 `_reserve_reason`
+        #   —— 停滞时预算并没有进收尾区间，`_reserve_reason` 是空串，
+        #   落到 `or "steps"` 就会把"停滞"记成"步数用尽"（假归因）。
+        _why = reason if _stalled_entry else (self._reserve_reason or "steps")
         co["by_reason"][_why] = int(co["by_reason"].get(_why, 0)) + 1
         best = ""
         origin = ""
@@ -1461,6 +1525,16 @@ class Core:
                    else "overrode_rejected")
             co[key] += 1
         self.log(f"  📦 收尾交付 {len(best)} 字符（来源={origin}）")
+        if _stalled_entry:
+            # ⛔ 不许说"预算不足"：这条路上的额度是**够**的（判据见 `stall_verdict`）。
+            #    状态仍是 `stalled`（O3 的语义：如实报告没有进展），
+            #    但"没进展"与"交零"是两件事 —— 后者是旧代码的额外损失。
+            _left_s = (self.ledger.budget.wall_s - self.ledger.elapsed()
+                       if self.ledger is not None else 0.0)
+            return done("stalled", best,
+                        f"拒绝原地打转{('（' + detail + '）') if detail else ''}"
+                        f"，但仍有 {_left_s:.0f}s 额度 ⇒ 走答案通道交付"
+                        f"（不是预算不足）")
         return done("closed", best, "closing_reserve：预算不足，交付已有材料")
 
     # ------------------------------------------------------------------

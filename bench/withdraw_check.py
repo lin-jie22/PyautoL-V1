@@ -813,6 +813,43 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ65", "mw/core.py",
      "                    if skipped_now and skipped_now == len(cands):",
      "                    if False:"),
+    # ── AZ66–AZ68（第六十九轮）：停滞 ≠ 交零 ─────────────────────────────
+    # ⑰ 停滞到阈值就**退回交零**（第六十八轮之前的行为）
+    #    ⇒ 状态仍是 `stalled`（O3 的语义没变），但答案是空、`by_reason` 里
+    #      也没有 `stalled` ⇒ 只有 AZ66 红。
+    #    ⚠️ 这条变异**就是本轮修的那个 bug 本身**，不是它的近似。
+    ("AZ66", "mw/core.py",
+     "                        if _sv == \"deliver\":\n"
+     "                            return self._close_out(\n"
+     "                                goal, history, _done, reason=\"stalled\",\n"
+     "                                detail=f\"连续 {stalled} 轮没有新动作，\"\n"
+     "                                       f\"已跳过 {repeats_skipped} 次重复\")",
+     "                        if _sv == \"deliver\":\n"
+     "                            return _done(\"stalled\", \"\", \"拒绝原地打转（旧行为：交零）\")"),
+    # ⑱ **半修**：状态与读数都对了，但交付物还是空的
+    #    ⇒ 只有 AZ66 红（O3 只锚 `status`，而 status 仍是 `stalled` ⇒ 不连带）。
+    #    ⚠️ 第一版撤的是 `reason="stalled"` ⇒ 状态变 `closed` ⇒ **连带 O3 红**
+    #       （实测 `红=['AZ66','O3']`）。那不是锚定跑偏：O3 与 AZ66 确实
+    #       锚在同一行的两个面上（一个看 status、一个看交付）。这里换成
+    #       "只掏空交付物"，让这条撤回仍然单红、仍然证的是同一件事。
+    ("AZ66", "mw/core.py",
+     "            return done(\"stalled\", best,",
+     "            return done(\"stalled\", \"\","),
+    # ⑲ 边界从 `>=` 改成 `>`：恰好等于下限就走 `give_up`
+    #    ⇒ 只有 AZ67 红（AZ66 那一刻还剩 120s，两种写法都是 deliver）。
+    ("AZ67", "mw/core.py",
+     "    return \"deliver\" if float(wall_left) >= max(0.0, float(min_answer_s)) else \"give_up\"",
+     "    return \"deliver\" if float(wall_left) > max(0.0, float(min_answer_s)) else \"give_up\""),
+    # ⑳ 把判定**内联回分支**（语义等价，但阈值比较有了第二处）
+    #    ⇒ 只有 AZ68 红：行为一个字没变，变的是"有几个未来"。
+    ("AZ68", "mw/core.py",
+     "                        _sv = stall_verdict(\n"
+     "                            stalled=stalled, max_stall=self.s.limits.max_stall,\n"
+     "                            wall_left=(budget.wall_s - self.ledger.elapsed()))",
+     "                        _sv = (\"deliver\" if stalled >= self.s.limits.max_stall\n"
+     "                               and (budget.wall_s - self.ledger.elapsed()) >= 20.0\n"
+     "                               else (\"continue\" if stalled < self.s.limits.max_stall\n"
+     "                                     else \"give_up\"))"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

@@ -767,6 +767,21 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ59", "mw/core.py",
      "    if not cfg and not seen:\n        return \"\"",
      "    if not cfg:\n        return \"\""),
+    # ── AZ60–AZ61（第六十七轮）：答案型外部能力只允许一扇门 ────────────────
+    # ⑪ 执行点**保留规划器改写的内容**（只把 deadline 归一化）⇒ 门 A 交给外部
+    #    能力的还是那句改写 ⇒ 与门 B 不同源 ⇒ 只有 AZ60 红
+    #    （`answer_task(` 的计数没变，AZ61 不受影响 —— 已实测单红）。
+    ("AZ60", "mw/core.py",
+     "                        cand.args = answer_task(goal, _dl2)",
+     "                        cand.args = answer_task("
+     "cand.args.get('task') or goal, _dl2)"),
+    # ⑫ 把归一化**内联成一个新的字典字面量** ⇒ `"task"` 的构造从 1 处变 2 处
+    #    ⇒ 只有 AZ61 红（task 仍是原文、deadline 仍在，AZ60 的判据全部成立）。
+    #    ⚠️ 这条撤的正是"一扇门"本身：两个构造点 = 两个未来。
+    ("AZ61", "mw/core.py",
+     "                        cand.args = answer_task(goal, _dl2)",
+     "                        cand.args = {\"task\": str(goal), "
+     "\"deadline_s\": round(float(_dl2), 1)}"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

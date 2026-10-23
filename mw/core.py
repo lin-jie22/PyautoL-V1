@@ -322,6 +322,56 @@ def external_summary(stats: dict) -> str:
     return line
 
 
+# ── 答案型外部能力：入参与额度的**唯一**构造处（第六十七轮）──────────────
+#:
+#: ⛔ 为什么必须收成一处：第六十六轮的 A/B 证明同一个能力**有两扇门**。
+#:    · 门 B（`limits.external_answer_tool`，内核写死在第 1 步注入）
+#:      传 `{"task": goal}` —— 题面**原文**；
+#:    · 门 A（规划器自己在工具目录里挑中了它）传的是规划器**改写过的**话。
+#:    同一道题、同一模型、同一把尺子：门 B `1.0000`，门 A `0.0000`。
+#:    原因不是能力，是交接：`external/code_agent.py` 的契约是"从原文里抽
+#:    『函数名必须是 X』，抽不到就拒绝"——**拒绝得对**。
+#:    修法不是"在提示词里教规划器把原文抄过去"（那仍然两处实现、两个未来），
+#:    而是让答案型外部能力的 **`task` 只有一个来源：题面原文**。
+#:
+#: ⚠️ `deadline_s` 与 `task` 必须同时归一化。旧门 A 不带 `deadline_s`，
+#:    于是 `tools.py` 那条注入路径不会设 `AGENT_DEADLINE_S`、超时退回 spec 的
+#:    `timeout_s`（上限，不是预算）⇒ 一个**可能跑穿整个预算**的外部进程。
+#:    "谁把任务交过去"与"给它多少时间"是同一件事的两面，不能只修一半。
+_ANSWER_CAP_S = 85.0
+_ANSWER_MIN_S = 20.0
+
+
+def answer_task(goal: str, deadline_s: float | None = None) -> dict:
+    """答案型外部能力的**唯一**入参构造器。
+
+    ⚠️ `deadline_s` 为 `None` 时**不写这个键**，而不是写 0：
+       `tools.py` 的判据是 `if args.get("deadline_s") is not None`，
+       而 `0.0` 是**假值但不是 None** —— 它会设出 `AGENT_DEADLINE_S=0.0`
+       并让 `_to = max(5.0, min(_to, 15.0))`，即"给外部能力 5 秒"。
+       那是最坏的一种"准时失败"。
+    """
+    out: dict = {"task": str(goal)}
+    if deadline_s is not None:
+        out["deadline_s"] = round(float(deadline_s), 1)
+    return out
+
+
+def answer_deadline(*, wall_s: float, elapsed: float, max_wall_s: float,
+                    close_reserve_s: float) -> float | None:
+    """本次外部能力能拿多少秒；`None` ⇒ **连注入都不要**。
+
+    ⚠️ 上限随预算档缩放（不是写死 85）：1x 档恰好 85，与第二十四轮逐字相同；
+       2x 档的外部件才真的是 2x 的大小，否则 2x 实验测的还是"1x 的外部能力"。
+    ⚠️ 余量 `< _ANSWER_MIN_S` 时返回 `None`：给 5s 的外部能力只会**准时地失败**
+       并白吃 5s，宁可让内核自己解（至少会交个答案）。
+    """
+    cap = _ANSWER_CAP_S * max(1.0, wall_s / max(1.0, max_wall_s))
+    left = wall_s - elapsed
+    dl = max(5.0, min(cap, left - close_reserve_s))
+    return dl if dl >= _ANSWER_MIN_S else None
+
+
 @dataclass
 class Outcome:
     status: str                      # done | budget_exhausted | cascade | blocked
@@ -703,14 +753,18 @@ class Core:
                     #   写死等于"2x 档的外部件仍然是 1x 的大小" —— 那样 2x 实验
                     #   测的还是"1x 下的外部能力"，只不过内核自己多想了想。
                     #   缩放基准取 `wall_s / max_wall_s`（1x ⇒ 恰好 85，与上一轮逐字相同）。
-                    _cap = 85.0 * max(1.0, budget.wall_s / max(1.0, self.s.limits.max_wall_s))
-                    _wall_left = budget.wall_s - self.ledger.elapsed()
-                    _dl = max(5.0, min(_cap, _wall_left - self.s.limits.close_reserve_s))
+                    # ★ 第六十七轮：额度与入参都挪进 `answer_deadline()` /
+                    #   `answer_task()` —— 与下面"执行处"共用同一对函数，
+                    #   否则这里改一个数、那里没改，就是又一次两处实现。
+                    _dl = answer_deadline(
+                        wall_s=budget.wall_s, elapsed=self.ledger.elapsed(),
+                        max_wall_s=self.s.limits.max_wall_s,
+                        close_reserve_s=self.s.limits.close_reserve_s)
                     # ⛔ 额度不够时**根本不注入**：给 5s 的外部能力只会
                     #    "准时地失败"并且白吃 5s。宁可让内核自己解（至少会交个答案）。
-                    if _dl >= 20.0:
+                    if _dl is not None:
                         cands = [Step("整题交给外部能力", _ext,
-                                      {"task": goal, "deadline_s": round(_dl, 1)})] + list(cands)
+                                      answer_task(goal, _dl))] + list(cands)
                     else:
                         self.external_stats["skipped_no_budget"] = (
                             self.external_stats.get("skipped_no_budget", 0) + 1)
@@ -724,6 +778,31 @@ class Core:
                 repeats = 0
                 for cand in cands:
                     spec = self.tools.get(cand.tool)
+
+                    # ── 同一扇门（第六十七轮）──────────────────────────────
+                    # 上面那条"内核注入"是门 B；规划器**自己**从工具目录里挑中
+                    # 答案型外部能力，是门 A。两扇门的选择可以不同，
+                    # **但交过去的东西必须逐字相同** —— 否则同一道题会因为
+                    # "谁去交"而拿不同分数（§29.2 实测：1.0000 vs 0.0000）。
+                    # ⇒ 在执行点无条件覆写：`task` = 题面原文，`deadline_s` = 现算。
+                    # ⚠️ 覆写必须发生在 `action_signature()` **之前**：签名是
+                    #   "已试过的动作"的判据，若它算的是改写文本，同一件事会被
+                    #   当成两件不同的事反复执行（那正是停滞闸没拦住 A 臂的原因之一）。
+                    if spec is not None and spec.produces_answer:
+                        _dl2 = answer_deadline(
+                            wall_s=budget.wall_s, elapsed=self.ledger.elapsed(),
+                            max_wall_s=self.s.limits.max_wall_s,
+                            close_reserve_s=self.s.limits.close_reserve_s)
+                        if _dl2 is None:
+                            # 额度不够 ≠ 失败。记一笔就跳过，让后面的候选照跑；
+                            # ⛔ 绝不能"不带 deadline 照发" —— 那会退回 spec 的
+                            #    `timeout_s`（上限，不是预算），跑穿整个预算。
+                            self.external_stats["skipped_no_budget"] = (
+                                self.external_stats.get("skipped_no_budget", 0) + 1)
+                            self.log(f"      ⛔ {cand.tool} 剩余额度 < "
+                                     f"{_ANSWER_MIN_S:g}s ⇒ 不注入（不是失败，是没试）")
+                            continue
+                        cand.args = answer_task(goal, _dl2)
                     sig = action_signature(cand.tool, cand.args)
 
                     # ── 停滞闸：这个动作已经尝试过了 ────────────────────────

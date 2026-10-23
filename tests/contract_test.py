@@ -7429,6 +7429,114 @@ check(RS, "AZ59 ★`■` 汇总行的外部段必须按「实际调用过」印�
       and _az59_none == "",
       f"未配置={_az59_unset.strip()[:52]!r} 都没用={_az59_none!r}")
 
+# ═══════════════════════════════════════════════════════════════════════════
+# AZ60–AZ61（第六十七轮）：答案型外部能力只允许**一扇门**
+#
+# 第六十六轮的 A/B 抓到：同一个 `agent:code_agent`、同一道题、同一把尺子 ——
+#   门 B（`limits.external_answer_tool`，内核写死注入）交**题面原文** ⇒ `1.0000`；
+#   门 A（规划器自己从目录里挑中）交**改写过的**任务 ⇒ `0.0000`。
+# 后者的死因写在日志里："题面里没有『函数名必须是 X』⇒ 本 agent 不适用（不猜）"
+# —— **它拒绝得对**。所以病不在能力、不在预算，在"谁把任务交过去"。
+#
+# ⇒ 修法不是"在提示词里教规划器抄原文"（那仍然两处实现、两个未来），
+#   而是让答案型外部能力的 `task` 只有一个来源：`answer_task()`。
+# ═══════════════════════════════════════════════════════════════════════════
+_AZ60_GOAL = ("写一个函数 flatten(d)，把嵌套 dict 展平。只输出代码，"
+              "函数名必须是 flatten。")
+#: 规划器"改写过的"任务 —— **故意**丢掉"函数名必须是"，因为真实 A 臂就是这么丢的。
+_AZ60_PARAPHRASE = "把嵌套字典展平成单层"
+_AZ60_PLAN_PICK = ('{"candidates": [{"intent": "让外部代码能力处理", '
+                   '"tool": "agent:az60", "args": {"task": "'
+                   + _AZ60_PARAPHRASE + '"}, "rationale": "改写版"}]}')
+_AZ60_PLAN_OTHER = ('{"candidates": [{"intent": "先查一下记忆", '
+                    '"tool": "recall", "args": {"query": "flatten"}}]}')
+_AZ60_TMP = Path(tempfile.mkdtemp(prefix="v1_az60_"))
+
+
+def _az60_run(plan_json: str, *, configured: bool) -> list[dict]:
+    """跑一次 Core，返回假外部能力**实际收到**的 args（每次调用一条）。
+
+    ⚠️ 两臂**只差一个环境变量**（`V1_EXTERNAL_ANSWER_TOOL`），与真实 A/B 同构：
+       它决定"外部能力是被内核注入的，还是被规划器挑中的"。
+    ⚠️ `wire_external=False`：本测试自带注册表，接 `agents.json` 只会把真实
+       外部能力也加进目录，让"规划器挑了谁"变成不确定事件。
+    """
+    got: list[dict] = []
+    reg = ToolRegistry()
+
+    def _h(args: dict) -> str:
+        got.append(dict(args))
+        return "```python\ndef flatten(d):\n    return {}\n```"
+
+    reg.register(ToolSpec("agent:az60", "契约用假外部能力", {"task": "任务"},
+                          _h, external=True, mutating=True,
+                          produces_answer=True))
+    keys = ("V1_EXTERNAL_ANSWER_TOOL", "V1_LLM_OFFLINE", "V1_STATE_DIR")
+    old = {k: os.environ.get(k) for k in keys}
+    os.environ["V1_LLM_OFFLINE"] = "1"
+    os.environ["V1_STATE_DIR"] = str(_AZ60_TMP / ("cfg" if configured else "pick"))
+    if configured:
+        os.environ["V1_EXTERNAL_ANSWER_TOOL"] = "agent:az60"
+    else:
+        os.environ.pop("V1_EXTERNAL_ANSWER_TOOL", None)
+    try:
+        _c = Core(cfg.Settings(),
+                  llm=StubLLM(scripts=[("可用工具",
+                                        plan_json if not configured else _AZ60_PLAN_OTHER)]),
+                  tools=reg, wire_external=False, log=lambda *_: None)
+        _c.run(_AZ60_GOAL)
+    finally:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+    return got
+
+
+_az60_pick_args = _az60_run(_AZ60_PLAN_PICK, configured=False)
+_az60_cfg_args = _az60_run(_AZ60_PLAN_OTHER, configured=True)
+_az60_pick = _az60_pick_args[0] if _az60_pick_args else {}
+_az60_cfg = _az60_cfg_args[0] if _az60_cfg_args else {}
+check(RS, "AZ60 ★两扇门交过去的必须是**同一份东西**：`task` = 题面原文，且带 `deadline_s`\n"
+          "          ① 规划器自选（门 A）时，它在 args 里写的是**改写版** ——\n"
+          "             内核必须在执行点把它覆写成题面原文，否则同一道题会因为\n"
+          "             『谁去交』而拿不同分数（实测 0.0000 vs 1.0000）；\n"
+          "          ② 内核注入（门 B）那条路径与①**逐字同源**（同一个 `answer_task()`）；\n"
+          "          ③ 两臂的 args **键集合相同**、`deadline_s` 都 > 0\n"
+          "             —— 只修 task 不修 deadline，等于留一个能跑穿预算的外部进程；\n"
+          "          ④ 反例：门 A 收到的 task **不许**还是那句改写。\n"
+          "          撤回语义：把 `cand.args = answer_task(goal, _dl2)` 改成\n"
+          "             `answer_task(cand.args.get(\"task\") or goal, _dl2)` ⇒ 必须红。",
+      _az60_pick.get("task") == _AZ60_GOAL
+      and _az60_pick.get("task") != _AZ60_PARAPHRASE
+      and _az60_cfg.get("task") == _AZ60_GOAL
+      and set(_az60_pick) == set(_az60_cfg)
+      and float(_az60_pick.get("deadline_s") or 0) > 0
+      and float(_az60_cfg.get("deadline_s") or 0) > 0,
+      f"门A task={str(_az60_pick.get('task'))[:26]!r} keys={sorted(_az60_pick)} "
+      f"门B task={str(_az60_cfg.get('task'))[:26]!r} keys={sorted(_az60_cfg)}")
+
+#: ⚠️ 结构与行为是**同一处代码的两个面**：删掉归一化，AZ60 与 AZ61 会一起红。
+#:    这不是"隐藏耦合"，是"一扇门"这件事本身。撤回态分两条，各自单红：
+#:      · 保留改写内容 ⇒ 只 AZ60 红（`answer_task(` 计数不变）
+#:      · 内联字典重写 ⇒ 只 AZ61 红（task 仍是原文）
+_az61_code = _code_only(_core_src)
+check(RS, "AZ61 ★`core.py` 里构造 `\"task\"` 的地方必须**只有一处**（`answer_task()`）\n"
+          "          —— 两处构造 = 两个未来：一处改了、另一处没改，而读数只会在\n"
+          "             真实跑分时才暴露成『同一题分数不一样』。\n"
+          "          ⚠️ 判定必须去注释/去 docstring：本函数上面的 `#` 段里就写着\n"
+          "             `{\"task\": goal}` 这个旧写法（说明它为什么被取代），\n"
+          "             整文件 `in` 会把说明判成违规。",
+      _az61_code.count('"task"') == 1
+      and _az61_code.count("answer_task(") == 3      # 1 处定义 + 2 处调用
+      and _az61_code.count("answer_deadline(") == 3  # 同上
+      and _az61_code.count("_ANSWER_CAP_S") == 2,    # 定义 + 唯一使用点
+      f'"task"={_az61_code.count(chr(34) + "task" + chr(34))} '
+      f"answer_task(={_az61_code.count('answer_task(')} "
+      f"answer_deadline(={_az61_code.count('answer_deadline(')} "
+      f"_ANSWER_CAP_S={_az61_code.count('_ANSWER_CAP_S')}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

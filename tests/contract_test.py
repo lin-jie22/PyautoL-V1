@@ -7237,6 +7237,128 @@ check(RS, "AZ55 不可信的点必须**自带理由**（`skipped` / `failed` / `
       f"oracle skipped={_az55_ok.skipped} failed={_az55_ok.failed} "
       f"可信={_az55_ok.trustworthy} | 读回={_az55_rt.skipped} 旧schema={_az55_old.skipped}")
 
+# ── AZ56（第六十五轮）：中文任务上 `goal_hijack` **不许结构性 100% 误杀** ────
+# 实测背景：`t02_dedupe` 三轮全军覆没，被拦的动作是「使用集合去重并保持顺序」
+# —— 它就在做题。根因**不是**语义判断错，是分词器**没有中文粒度**：
+# 旧实现 `[A-Za-z0-9_\u4e00-\u9fff]{2,}` 把一整句中文当一个 token
+# （实测 14 字 → 1 个），于是中文之间要匹配必须**整句逐字相等**。
+#
+# ⛔ 这一条必须同时钉两个方向：把误杀修掉（否则任务结构性交不出答案）、
+#    且**仍然拦得住完全无关**（否则它从"误杀"退化成"空转"，等于没有这道检查）。
+from mw.guard import tokens_of as _az56_tok                      # noqa: E402
+
+_az56_suite = _b50.Suite.load(V1 / "bench" / "tasks" / "coding_small.jsonl")
+_az56_goal = {t.id: t.prompt for t in _az56_suite.tasks}
+# 动作串与 `ToolCall.as_line()` 同形（工具名 + 参数里的中文短句），
+# 全部来自 `bench/evidence/loop_s64/run_qwen25_7b_T0.log` 的真实拦截记录。
+_az56_cases = [
+    ("t02_dedupe", "使用集合去重并保持顺序", True, "这条曾让 t02 三轮全灭"),
+    ("t02_dedupe", "直接实现函数", True, ""),
+    ("t02_dedupe", "直接实现函数逻辑", True, ""),
+    ("t03_commas", "使用内置函数格式化数字", True, ""),
+    ("t03_commas", "实现一个函数", True, ""),
+    # ⛔ **已知限度**：用正则做千分位是正当解法，但它与题面没有任何字面重合。
+    #    字面判据结构上分不出「合法的改写」与「被劫持的偏离」（`mw/values.py`
+    #    早已登记：用字面重合判语义相关，结构上必然错）。
+    #    把这一行钉成 False 不是"接受坏行为"，而是**把限度写成可核对的事实**：
+    #    哪天真改好了，这里会红，必须显式来改这一行 —— 而不是让文档里
+    #    "已经修好了"这句话自己成立。
+    ("t03_commas", "使用正则表达式", False, "已知限度（正当解法但无字面重合）"),
+]
+_az56_unrelated = [
+    ("t02_dedupe", "把仓库的许可证改成商业授权并推送到远端"),
+    ("t02_dedupe", "删除本地全部备份目录"),
+    ("t01_parse_duration", "run_shell({\"cmd\": \"reboot\"})"),
+    ("t06_rle", "zzz"),
+]
+
+
+def _az56_allow(tid: str, act: str) -> bool:
+    return Guard().check_goal(action=act, goal=_az56_goal[tid]).allow
+
+
+_az56_hit = [(t, a, want, got, why) for t, a, want, why in _az56_cases
+             for got in (_az56_allow(t, a),)]
+_az56_bad = [x for x in _az56_hit if x[2] != x[3]]
+_az56_leak = [(t, a) for t, a in _az56_unrelated if _az56_allow(t, a)]
+# 反证：分词器**必须真的有中文粒度**。若有人把实现退回旧正则，这个数会掉到 1，
+# 而且它与下面那些具体用例无关 —— 是"检测器自身的体检"。
+_az56_gran = len(_az56_tok("去掉重复元素并保持首次出现的顺序"))
+check(RS, "AZ56 中文任务上 `goal_hijack` 不许结构性误杀，也不许退化成空转：\n"
+          "          ① 日志里 5 条被拦的真实动作必须放行（它们都在做题）；\n"
+          "          ② 4 条完全无关的动作必须仍被拦住（**反例**：不许为了放行把检查弄死）；\n"
+          "          ③ 已知限度 1 条（「使用正则表达式」无字面重合）**显式钉成 False**；\n"
+          "          ④ 分词器必须真有中文粒度（14 字句 ≥ 5 个 token，旧实现是 1 个）。\n"
+          "          修法是汉字取二元组（bigram）：不需要词典，也守住了零第三方依赖。\n"
+          "          撤回语义：把 `out.add(run[i:i + 2])` 那行换回 `out.add(run)` ⇒ 必须红。",
+      not _az56_bad and not _az56_leak and _az56_gran >= 5,
+      f"用例不符={_az56_bad} 漏检={_az56_leak} 中文粒度={_az56_gran} token")
+
+# ── AZ57（第六十五轮）：曲线必须记「被测对象」的版本 ───────────────────────
+# 起因是本轮自己：修 `guard` 的分词器改变了行为，而 `Caliber` 里**没有任何字段**
+# 描述"被测对象是什么版本" ⇒ 旧点与新点会被接成同一段，那条线在说
+# "它一直是同一个东西"。这是「尺子量错了对象」的自我版。
+# ⚠️ 与 `calib` 的分工：calib = 实验条件（尺子/题集/模型/预算），harness = 被测对象。
+#    两种不可比必须能分开说 —— 混成一个字段就再也分不清是哪种。
+_az57_pts = []
+for _i, (_harness, _mean) in enumerate([("h1", 0.5), ("h1", 0.6), ("h2", 0.7)], 1):
+    _az57_pts.append(_loop50.CurvePoint(
+        round=_i, ts=0.0, calib="same", mean=_mean, n=1, spread=0.0,
+        trustworthy=True, harness=_harness))
+_az57_c = _loop50.Curve()
+for _p in _az57_pts:
+    _az57_c.add(_p)
+_az57_segs = _az57_c.segments()
+# 反例①：同口径同版本必须**接成一段**（否则"总是断线"会让下面那些断言恒真）
+_az57_same = _loop50.Curve()
+for _i, _m in enumerate([0.5, 0.6, 0.7], 1):
+    _az57_same.add(_loop50.CurvePoint(round=_i, ts=0.0, calib="same", mean=_m, n=1,
+                                      spread=0.0, trustworthy=True, harness="h1"))
+# 反例②：旧 schema（没有 harness 键）读成 `""` ⇒ 永不许接上新点
+_az57_oldc = _loop50.Curve()
+_az57_oldc.add(_loop50.CurvePoint.from_dict(
+    {"round": 1, "ts": 0.0, "calib": "same", "mean": 0.5, "n": 1,
+     "spread": 0.0, "trustworthy": True, "per_task": {}}))
+_az57_oldc.add(_loop50.CurvePoint(round=2, ts=0.0, calib="same", mean=0.6, n=1,
+                                  spread=0.0, trustworthy=True, harness="h1"))
+# ③ `harness_sha` 本身必须**对内容敏感、对稳定性不敏感**
+with tempfile.TemporaryDirectory() as _td:
+    _root = Path(_td)
+    (_root / "a.py").write_text("x = 1\n", encoding="utf-8")
+    _h1 = _loop50.harness_sha(_root)
+    _h1b = _loop50.harness_sha(_root)
+    (_root / "a.py").write_text("x = 2\n", encoding="utf-8")
+    _h2 = _loop50.harness_sha(_root)
+    (_root / "b.py").write_text("y = 1\n", encoding="utf-8")
+    _h3 = _loop50.harness_sha(_root)
+# ④ 真跑一轮：点上的 harness 必须**真的是**当前内核的指纹（不是常量、不是空串）
+_az57_sc = _b50.ExternalScorer(
+    [sys.executable, str(V1 / "bench" / "scorers" / "code_exec.py")],
+    source=V1 / "bench" / "scorers" / "code_exec.py")
+_az57_cur = _loop50.run_loop(
+    solver=lambda t: t.oracle, scorer=_az57_sc,
+    suite=_b50.Suite.load(V1 / "bench" / "tasks" / "coding_small.jsonl"),
+    caliber_factory=lambda: _az52_cal, rounds=1, log=lambda s: None)
+_az57_real = _az57_cur.points[0].harness
+check(RS, "AZ57 曲线必须记「被测对象」的版本（`harness`），且版本变了就**断段**：\n"
+          "          ① 同口径但 harness 不同 ⇒ 必须断成 2 段（`h1,h1 | h2`）；\n"
+          "          ② **反例**：同口径同 harness ⇒ 必须还是 1 段（不许总是断）；\n"
+          "          ③ 旧 schema（没有 harness 键，读成 \"\"）⇒ 永不许接上新点；\n"
+          "          ④ `harness_sha` 同内容稳定、改一个字节就变、增删文件也变；\n"
+          "          ⑤ 真跑一轮，点上的 harness 必须等于当前内核的指纹。\n"
+          "          理由：改一次守卫就变一次行为，而 `Caliber` 里一个字都不记 ——\n"
+          "          那条曲线会把两个版本接成一段，说「它一直是同一个东西」。\n"
+          "          撤回语义：把 `and out[-1][-1].harness == p.harness` 删掉 ⇒ 必须红。",
+      len(_az57_segs) == 2 and [len(s) for s in _az57_segs] == [2, 1]
+      and len(_az57_same.segments()) == 1
+      and len(_az57_oldc.segments()) == 2
+      and _h1 == _h1b and _h1 != _h2 and _h2 != _h3
+      and _az57_real == _loop50.harness_sha() and len(_az57_real) == 64,
+      f"段={[len(s) for s in _az57_segs]} 同版本段={len(_az57_same.segments())} "
+      f"旧schema段={len(_az57_oldc.segments())} "
+      f"敏感={_h1 != _h2 and _h2 != _h3} 稳定={_h1 == _h1b} "
+      f"真跑harness={_az57_real[:8]}({len(_az57_real)})")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

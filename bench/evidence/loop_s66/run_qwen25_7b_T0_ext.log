@@ -1,0 +1,257 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  coding_small  n=6  suite_sha=618a18cafd2f0da54a5ec4232d319941
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=6/6
+  t01_parse_duration: oracle=1.0000 partial=0.8333 null=0.0000 ✅
+  t02_dedupe: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  t03_commas: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  t04_merge_ranges: oracle=1.0000 partial=0.8333 null=0.0000 ✅
+  t05_top_k: oracle=1.0000 partial=0.2500 null=0.0000 ✅
+  t06_rle: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  理由: 全部 6 条两极可分，其中 6 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=c6d3a8dd5da4732e
+  [观察]
+    - t01_parse_duration: oracle=1.0000 partial=0.8333 null=0.0000
+    - t02_dedupe: oracle=1.0000 partial=0.6000 null=0.0000
+    - t03_commas: oracle=1.0000 partial=0.6000 null=0.0000
+    - t04_merge_ranges: oracle=1.0000 partial=0.8333 null=0.0000
+    - t05_top_k: oracle=1.0000 partial=0.2500 null=0.0000
+    - t06_rle: oracle=1.0000 partial=0.6000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 6 条任务上两极可分
+    - 中段有序检查 6 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=618a18cafd2f；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 204 条  投喂=关（默认：保住测量一致性）
+  分数账本  score_ledger.jsonl  载入 18 行  同口径采纳 0 行  （自我模型据此起跑）
+
+--- 第 2 步（循环模式）  连跑 3 轮  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=1x ---
+  曲线落盘  bench/evidence/loop_s66/curve_qwen25_7b_T0_ext.jsonl（**追加**写：同一个文件横跨多次运行）
+  口径签名  87e0c23ae4223bc7
+  ⚠️ 每轮开头都会重算打分器与题集的 sha；**文件变了立即停机**，不把换尺子之后的点接到旧曲线上。
+12:35:28 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+12:35:28   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:35:40   [1] 通道=深 候选=4
+12:36:08       ↳ agent:code_agent ok=True 整题交给外部能力
+12:36:08   ✅ 收尾: ```python
+def parse_duration(s):
+    if not s:
+        return None
+    try:
+        parts = s.lower().split('h')
+       
+12:36:08 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.781 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 parse_duration/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 399字 份=2→2 用例=5
+12:36:08 ▶ 任务开始: 写一个函数 dedupe(seq)，返回一个新列表：去掉重复元素并保持首次出现的顺序。元素可能是数字或字符串。只输出代码，函数名必须是 dedupe。
+12:36:08   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:36:18   [1] 通道=深 候选=2
+12:36:34       ↳ agent:code_agent ok=True 整题交给外部能力
+12:36:34   ✅ 收尾: ```python
+def dedupe(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen
+12:36:34 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.182 memory>reason=n/a reason>act=0.5] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 dedupe/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 133字 份=2→2 用例=5
+12:36:34 ▶ 任务开始: 写一个函数 commas(n)，把非负整数转成带千分位逗号的字符串：commas(1234567) == '1,234,567'，commas(0) == '0'，commas(999) == '999'。只输出代码，函数名必须是 comm
+12:36:34   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:36:47   [1] 通道=深 候选=4
+12:37:05       ↳ agent:code_agent ok=True 整题交给外部能力
+12:37:05   ✅ 收尾: ```python
+def commas(n):
+    return f'{n:,}'
+```
+12:37:05 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.391 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 commas/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 48字 份=2→2 用例=5
+12:37:05 ▶ 任务开始: 写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6
+12:37:05   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:37:26   [1] 通道=深 候选=4
+12:38:07       ↳ agent:code_agent ok=True 整题交给外部能力
+12:38:07   ✅ 收尾: ```python
+def merge_ranges(pairs):
+    if not pairs:
+        return []
+    
+    # 按区间起始位置排序
+    pairs.sort(key=lambda x:
+12:38:07 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.626 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 merge_ranges/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 503字 份=2→2 用例=5
+12:38:07 ▶ 任务开始: 写一个函数 top_k(words, k)，输入一个字符串列表，返回出现次数最多的前 k 个 (词, 次数) 元组，按次数从高到低排列；次数相同时按词升序排列。例如 top_k(['a','b','a'], 1) == [('a', 2)]
+12:38:07   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:38:32   [1] 通道=深 候选=3
+12:38:57       ↳ agent:code_agent ok=True 整题交给外部能力
+12:38:57   ✅ 收尾: ```python
+from collections import Counter
+
+def top_k(words, k):
+    if not words or k <= 0:
+        return []
+    if not
+12:38:57 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.566 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 top_k/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 559字 份=2→2 用例=5
+12:38:57 ▶ 任务开始: 写一个函数 rle(s)，对字符串做游程编码，返回形如 '3a2b1c' 的字符串。例如 rle('aaabbc') == '3a2b1c'，rle('') == ''。只输出代码，函数名必须是 rle。
+12:38:57   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:39:19   [1] 通道=深 候选=2
+12:39:41       ↳ agent:code_agent ok=True 整题交给外部能力
+12:39:41   ✅ 收尾: ```python
+def rle(s: str) -> str:
+    if not s:
+        return ''
+    result = []
+    count = 1
+    for i in range(1, le
+12:39:41 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.985 memory>reason=n/a reason>act=0.5] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 rle/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 312字 份=2→2 用例=5
+  第 1 轮  mean=0.9167  n=1  极差=0.0000  口径=87e0c23ae422  内核=676ea76c
+12:39:42 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+12:39:42   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:39:55   [1] 通道=深 候选=4
+12:40:29       ↳ agent:code_agent ok=True 整题交给外部能力
+12:40:29   ✅ 收尾: ```python
+def parse_duration(s):
+    if not s:
+        return None
+    try:
+        parts = s.lower().split('h')
+       
+12:40:29 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.781 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 parse_duration/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 399字 份=2→2 用例=5
+12:40:29 ▶ 任务开始: 写一个函数 dedupe(seq)，返回一个新列表：去掉重复元素并保持首次出现的顺序。元素可能是数字或字符串。只输出代码，函数名必须是 dedupe。
+12:40:30   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 1 个
+12:40:41   [1] 通道=深 候选=2
+12:40:59       ↳ agent:code_agent ok=True 整题交给外部能力
+12:40:59   ✅ 收尾: ```python
+def dedupe(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen
+12:40:59 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.182 memory>reason=n/a reason>act=0.5] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 dedupe/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 133字 份=2→2 用例=5
+12:41:00 ▶ 任务开始: 写一个函数 commas(n)，把非负整数转成带千分位逗号的字符串：commas(1234567) == '1,234,567'，commas(0) == '0'，commas(999) == '999'。只输出代码，函数名必须是 comm
+12:41:00   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:41:15   [1] 通道=深 候选=4
+12:41:33       ↳ agent:code_agent ok=True 整题交给外部能力
+12:41:33   ✅ 收尾: ```python
+def commas(n):
+    return f'{n:,}'
+```
+12:41:33 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.391 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 commas/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 48字 份=2→2 用例=5
+12:41:33 ▶ 任务开始: 写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6
+12:41:33   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:41:49   [1] 通道=深 候选=4
+12:42:15       ↳ agent:code_agent ok=True 整题交给外部能力
+12:42:15   ✅ 收尾: ```python
+def merge_ranges(pairs):
+    if not pairs:
+        return []
+    
+    # 按区间起始位置排序
+    pairs.sort(key=lambda x:
+12:42:15 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.626 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 merge_ranges/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 503字 份=2→2 用例=5
+12:42:16 ▶ 任务开始: 写一个函数 top_k(words, k)，输入一个字符串列表，返回出现次数最多的前 k 个 (词, 次数) 元组，按次数从高到低排列；次数相同时按词升序排列。例如 top_k(['a','b','a'], 1) == [('a', 2)]
+12:42:16   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:42:35   [1] 通道=深 候选=3
+12:42:59       ↳ agent:code_agent ok=True 整题交给外部能力
+12:42:59   ✅ 收尾: ```python
+from collections import Counter
+
+def top_k(words, k):
+    if not words or k <= 0:
+        return []
+    if not
+12:42:59 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.566 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 top_k/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 559字 份=2→2 用例=5
+12:42:59 ▶ 任务开始: 写一个函数 rle(s)，对字符串做游程编码，返回形如 '3a2b1c' 的字符串。例如 rle('aaabbc') == '3a2b1c'，rle('') == ''。只输出代码，函数名必须是 rle。
+12:42:59   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:43:23   [1] 通道=深 候选=2
+12:43:44       ↳ agent:code_agent ok=True 整题交给外部能力
+12:43:44   ✅ 收尾: ```python
+def rle(s: str) -> str:
+    if not s:
+        return ''
+    result = []
+    count = 1
+    for i in range(1, le
+12:43:44 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.985 memory>reason=n/a reason>act=0.5] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 rle/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 312字 份=2→2 用例=5
+  第 2 轮  mean=0.9167  n=1  极差=0.0000  口径=87e0c23ae422  内核=676ea76c
+12:43:44 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+12:43:44   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 1 个
+12:43:59   [1] 通道=深 候选=4
+12:44:32       ↳ agent:code_agent ok=True 整题交给外部能力
+12:44:32   ✅ 收尾: ```python
+def parse_duration(s):
+    if not s:
+        return None
+    try:
+        parts = s.lower().split('h')
+       
+12:44:32 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.781 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 parse_duration/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 399字 份=2→2 用例=5
+12:44:32 ▶ 任务开始: 写一个函数 dedupe(seq)，返回一个新列表：去掉重复元素并保持首次出现的顺序。元素可能是数字或字符串。只输出代码，函数名必须是 dedupe。
+12:44:32   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:44:43   [1] 通道=深 候选=2
+12:45:01       ↳ agent:code_agent ok=True 整题交给外部能力
+12:45:01   ✅ 收尾: ```python
+def dedupe(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen
+12:45:01 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.182 memory>reason=n/a reason>act=0.5] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 dedupe/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 133字 份=2→2 用例=5
+12:45:01 ▶ 任务开始: 写一个函数 commas(n)，把非负整数转成带千分位逗号的字符串：commas(1234567) == '1,234,567'，commas(0) == '0'，commas(999) == '999'。只输出代码，函数名必须是 comm
+12:45:01   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:45:16   [1] 通道=深 候选=4
+12:45:34       ↳ agent:code_agent ok=True 整题交给外部能力
+12:45:34   ✅ 收尾: ```python
+def commas(n):
+    return f'{n:,}'
+```
+12:45:34 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.391 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 commas/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 48字 份=2→2 用例=5
+12:45:34 ▶ 任务开始: 写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6
+12:45:34   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:45:52   [1] 通道=深 候选=4
+12:46:22       ↳ agent:code_agent ok=True 整题交给外部能力
+12:46:22   ✅ 收尾: ```python
+def merge_ranges(pairs):
+    if not pairs:
+        return []
+    
+    # 按区间起始位置排序
+    pairs.sort(key=lambda x:
+12:46:22 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.626 memory>reason=n/a reason>act=0.25] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 merge_ranges/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 503字 份=2→2 用例=5
+12:46:23 ▶ 任务开始: 写一个函数 top_k(words, k)，输入一个字符串列表，返回出现次数最多的前 k 个 (词, 次数) 元组，按次数从高到低排列；次数相同时按词升序排列。例如 top_k(['a','b','a'], 1) == [('a', 2)]
+12:46:23   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:46:43   [1] 通道=深 候选=3
+12:47:09       ↳ agent:code_agent ok=True 整题交给外部能力
+12:47:09   ✅ 收尾: ```python
+from collections import Counter
+
+def top_k(words, k):
+    if not words or k <= 0:
+        return []
+    if not
+12:47:09 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.566 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 top_k/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 559字 份=2→2 用例=5
+12:47:09 ▶ 任务开始: 写一个函数 rle(s)，对字符串做游程编码，返回形如 '3a2b1c' 的字符串。例如 rle('aaabbc') == '3a2b1c'，rle('') == ''。只输出代码，函数名必须是 rle。
+12:47:09   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 1 个
+12:47:35   [1] 通道=深 候选=2
+12:47:56       ↳ agent:code_agent ok=True 整题交给外部能力
+12:47:56   ✅ 收尾: ```python
+def rle(s: str) -> str:
+    if not s:
+        return ''
+    result = []
+    count = 1
+    for i in range(1, le
+12:47:56 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.985 memory>reason=n/a reason>act=0.5] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=18) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=4项(非空/函数名 rle/语言标签/可编译) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 312字 份=2→2 用例=5
+  第 3 轮  mean=0.9167  n=1  极差=0.0000  口径=87e0c23ae422  内核=676ea76c
+
+==========================================================================
+── 第 1 段（3 轮，口径 87e0c23ae422，内核 676ea76c）
+   第 1 轮  mean=0.9167  n=1  极差=0.0000  口径=87e0c23ae422  内核=676ea76c
+   第 2 轮  mean=0.9167  n=1  极差=0.0000  口径=87e0c23ae422  内核=676ea76c
+   第 3 轮  mean=0.9167  n=1  极差=0.0000  口径=87e0c23ae422  内核=676ea76c
+==========================================================================
+趋势：FLAT —— 后续各轮与首轮 0.9167 的差都 ≤ 噪声 0.1111
+本次 3 个点已追加到 bench/evidence/loop_s66/curve_qwen25_7b_T0_ext.jsonl
+
+ℹ️ 循环模式**不写**跨会话账本：多轮 = 多个会话，而账本的语义是『一次完整评测 = 一个会话』。要账本请用单轮 `--bench`。
+EXIT=0

@@ -32,6 +32,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -46,6 +47,45 @@ from . import bench
 IMPROVED = "IMPROVED"
 FLAT = "FLAT"
 UNKNOWN = "UNKNOWN"
+
+
+def harness_sha(root: Path | None = None) -> str:
+    """被测对象（内核源码 `mw/*.py`）的指纹。**唯一**实现。
+
+    ## 为什么它必须存在（第六十五轮）
+
+    `Caliber` 记的是"实验条件"：尺子（scorer）、题集、模型、温度、预算、记忆……
+    它**不记被测对象是什么版本**。于是第六十五轮修掉 `guard` 的中文分词之后，
+    行为变了、口径签名一个字没变 ⇒ 旧点和新点会被曲线接成**同一段**，
+    而那条线在说"它一直是同一个东西"。
+
+    这正是本文件开头三条约束想拦的那种谎：**不是尺子坏了，是尺子量错了对象。**
+    区别只在于，这次对象是**自己**。
+
+    ## 为什么是"断线"而不是"停机"
+
+    打分器变了要 `raise`（同一次运行里用两把尺子量出来的数没有意义）；
+    被测对象变了**不能** raise —— 第六步要做的事恰恰是让它改自己，
+    改完还得继续跑。所以这里只让段断开：`segments()` 不把两个版本接在一起。
+    一个变化被**看见**，比一个变化被**禁止**更有用。
+
+    ## 保守方向
+
+    `mw/loop.py` 自己也在里面。改一个注释都会让段断开 —— 这是刻意的：
+    **分不清某处改动会不会影响行为时，一律当作会影响。**
+    """
+    base = Path(root) if root is not None else Path(__file__).resolve().parent
+    h = hashlib.sha256()
+    files = sorted(p for p in base.glob("*.py") if p.is_file())
+    for p in files:
+        # 文件名也进哈希：重命名/新增/删除文件都算换了一个被测对象，
+        # 只哈希内容的话，把 a.py 的内容搬到 b.py 会被判成"没变"。
+        h.update(p.name.encode("utf-8"))
+        h.update(b"\0")
+        h.update(p.read_bytes())
+        h.update(b"\0")
+    return h.hexdigest()
+
 
 
 @dataclass(frozen=True)
@@ -68,6 +108,12 @@ class CurvePoint:
     skipped: int = 0
     failed: int = 0
     errors: tuple[str, ...] = ()
+    #: 被测对象（内核源码）的指纹。**不是**实验条件 —— 实验条件是 `calib`。
+    #: 两者都在，是因为"同一把尺子量了不同版本的东西"与"不同尺子量了同一个东西"
+    #: 是两种不同的不可比，混成一个字段就再也分不清是哪一种。
+    #: ⚠️ 旧 schema（第六十三/六十四轮的点）没有这个键 ⇒ 读成 `""`，
+    #: 而 `""` 不等于任何真实 sha ⇒ 旧点**永远不会**接上新点。这是刻意的。
+    harness: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -82,6 +128,7 @@ class CurvePoint:
             "skipped": self.skipped,
             "failed": self.failed,
             "errors": list(self.errors),
+            "harness": self.harness,
         }
 
     def as_line(self) -> str:
@@ -95,7 +142,8 @@ class CurvePoint:
                 why.append(f"打分失败 {self.failed}")
             flag = "  ⛔不可信（不参与趋势" + ("：" + "、".join(why) if why else "") + "）"
         return (f"第 {self.round} 轮  mean={self.mean:.4f}  n={self.n}  "
-                f"极差={self.spread:.4f}  口径={self.calib[:12]}{flag}")
+                f"极差={self.spread:.4f}  口径={self.calib[:12]}"
+                f"  内核={(self.harness or '?')[:8]}{flag}")
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "CurvePoint":
@@ -106,7 +154,8 @@ class CurvePoint:
                    per_task={str(k): float(v) for k, v in (d.get("per_task") or {}).items()},
                    skipped=int(d.get("skipped", 0) or 0),
                    failed=int(d.get("failed", 0) or 0),
-                   errors=tuple(str(x) for x in (d.get("errors") or ())))
+                   errors=tuple(str(x) for x in (d.get("errors") or ())),
+                   harness=str(d.get("harness", "") or ""))
 
 
 @dataclass
@@ -122,14 +171,20 @@ class Curve:
         return len(self.points)
 
     def segments(self) -> list[list[CurvePoint]]:
-        """按「口径相同 且 上一个点可信」切段。
+        """按「口径相同 且 被测对象版本相同 且 上一个点可信」切段。
 
         不可信的点**独占一段**：它既不能被接到前一段上（会污染趋势），
         也不该被丢掉（那样就看不到"这一轮没量准"这个事实）。
+
+        ⚠️ `harness` 与 `calib` 是**两种不同的不可比**：
+        前者是"同一把尺子量了不同版本的东西"，后者是"不同尺子量了同一个东西"。
+        任一不同都断线 —— 因为两种情况下"这两轮之间变强了多少"都没有意义。
         """
         out: list[list[CurvePoint]] = []
         for p in self.points:
-            if out and p.trustworthy and out[-1][-1].calib == p.calib and out[-1][-1].trustworthy:
+            if (out and p.trustworthy and out[-1][-1].trustworthy
+                    and out[-1][-1].calib == p.calib
+                    and out[-1][-1].harness == p.harness):
                 out[-1].append(p)
             else:
                 out.append([p])
@@ -170,7 +225,8 @@ class Curve:
     def as_lines(self) -> list[str]:
         out: list[str] = []
         for i, seg in enumerate(self.segments(), 1):
-            out.append(f"── 第 {i} 段（{len(seg)} 轮，口径 {seg[0].calib[:12]}）")
+            out.append(f"── 第 {i} 段（{len(seg)} 轮，口径 {seg[0].calib[:12]}，"
+                       f"内核 {(seg[0].harness or '?')[:8]}）")
             for p in seg:
                 out.append("   " + p.as_line())
         return out
@@ -217,6 +273,7 @@ def run_loop(
         raise ValueError("rounds 必须 ≥ 1")
     curve = Curve()
     s0, q0 = scorer.sha(), suite.sha()
+    h0 = harness_sha()
     for rnd in range(1, rounds + 1):
         # ── 每轮校验判据未被改动。这是约束 1 的落点，不是可选的体检 ──
         if scorer.sha() != s0:
@@ -225,6 +282,14 @@ def run_loop(
                 "换尺子之后的点不许接到旧曲线上（那条线会变成没人看得出的谎）。")
         if suite.sha() != q0:
             raise RuntimeError(f"第 {rnd} 轮：题集文件在运行中被改动 ⇒ 立即停止。")
+        # ── 被测对象变了：**不断机，但必须说话** ──────────────────────
+        # 与上面两条的关键区别：尺子变了两把尺子不能混用；对象变了，
+        # 每一轮自身仍然是自洽的一次测量，只是它属于另一个版本。
+        # 第六步要做的正是"改自己" ⇒ 这里若 raise，那一步永远做不成。
+        h_now = harness_sha()
+        if h_now != h0:
+            log(f"  ⚠️ 第 {rnd} 轮：内核源码在运行中改变（{h0[:8]} → {h_now[:8]}）"
+                f" ⇒ 曲线在此**断段**，不接前一段")
         cal = caliber_factory()
         m, rep = bench.run_suite(solver, scorer, suite, repeat_n=repeat_n,
                                  budget_tag=budget_tag, candidate=candidate)
@@ -236,7 +301,8 @@ def run_loop(
                        skipped=int(rep.skipped_no_answer),
                        failed=int(rep.failed_scorer),
                        # 只留前 3 条：够看出"缺了哪几题、为什么"，又不把 JSONL 撑成日志
-                       errors=tuple(list(rep.errors)[:3]))
+                       errors=tuple(list(rep.errors)[:3]),
+                       harness=h_now)
         curve.add(p)
         log("  " + p.as_line())
         if on_round is not None:

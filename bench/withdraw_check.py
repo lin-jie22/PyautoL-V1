@@ -745,6 +745,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ55", "mw/loop.py",
      "                       skipped=int(rep.skipped_no_answer),",
      "                       skipped=0,"),
+    # ── AZ56–AZ57（第六十五轮）：从"量参照臂"走到"量真模型"才暴露的两处 ────
+    # ⑦ 中文分词退回"整句一个 token"（= 第一版实现）⇒ 中文任务上 goal_hijack
+    #    结构性 100% 误杀 ⇒ 只有 AZ56 红。
+    #    ⚠️ 这条变异**就是本轮修掉的那个 bug 本身**，不是人造的边界。
+    ("AZ56", "mw/guard.py",
+     "        for i in range(len(run) - 1):\n            out.add(run[i:i + 2])",
+     "        out.add(run)"),
+    # ⑧ 切段时不再看被测对象版本 ⇒ 改一次内核就把新旧版本接成一条线 ⇒ 只有 AZ57 红。
+    ("AZ57", "mw/loop.py",
+     "                    and out[-1][-1].harness == p.harness):",
+     "                    and True):"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

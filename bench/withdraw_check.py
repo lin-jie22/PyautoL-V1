@@ -956,6 +956,52 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ82", "bench/casepower.py",
      '        "② 抄一遍不涨": dupall == full,',
      '        "② 抄一遍不涨": dupall == len(cases) + len(extra),'),
+
+    # ── 第七十六轮（§38）：进化闭环的第一圈 ─────────────────────────────
+    # ㊳ 守门员把「期望的旋钮」重新变成**猜的**：`base` 臂（期望为空）也被
+    #    要求差一个 `max_stall` ⇒ 合法的基线记录被拒。
+    #    ⇒ 只有 AZ83 红：这正是本轮那个 bug 的实形 —— base 臂的期望为空时，
+    #      「该差哪个旋钮」若无来源，就只能靠猜，而猜错了在 base 上恒不暴露。
+    ("AZ83", "bench/mutate_driver.py",
+     '    want = sorted(arm.expect)\n    if len(want) > 1:',
+     '    want = sorted(arm.expect) or ["max_stall"]\n    if len(want) > 1:'),
+
+    # ㊴ 池子去掉 **solver** 过滤（口径与 limits 都还在）⇒ 同口径下另一个系统混进来。
+    #    ⇒ 只有 AZ84 红：`Caliber` 不含 solver，所以"同口径"不等于"同系统"；
+    #      这也是第七十三轮那个 0.3095 假噪声的成因。
+    ("AZ84", "bench/mutate_driver.py",
+     '        if solver is not None and str(rec.get("solver") or "") != solver:',
+     '        if False and str(rec.get("solver") or "") != solver:'),
+
+    # ㊵ 把 base 池里那条「第一次运行」的读数抹平成其余四条的值
+    #    ⇒ 轮间极差变 0 ⇒ 「噪声来自冷启动」这个读数锚当场失效。
+    #    ⇒ 只有 AZ85 红：它证明那条断言**真的在算**，不是把结论写死。
+    ("AZ85", "bench/evidence/evolve_s76/pool_base.jsonl",
+     '"mean": 0.5238, "n": 1, "std": 0.0}',
+     '"mean": 0.5595, "n": 1, "std": 0.0}'),
+
+    # ── 第七十七轮（§39）：两道闸 ───────────────────────────────────────
+    # ㊶ 交叠闸把「**相等**」重新读成「分开」：`lo_c > hi_k + _TOL` 去掉容差
+    #    改成 `lo_c >= hi_k`。这是那道闸最关键的一条子句 —— 实测真值就是相等
+    #    （cand 0.5595 与对照组 0.5595 撞在同一个数上），一旦相等算分开，
+    #    闸就形同虚设，理由会从「交叠」变成别的。
+    #    ⚠️ 第一版写成 `>= hi_k + _TOL` 是**空操作**（相等时仍为假，实测红=无）；
+    #       撤回态自己必须先手跑一次，否则它只是看起来在撤。
+    #    ⇒ 只有 AZ86 红：它的 `_AZ86_REAL` 期望理由里出现「交叠」。
+    ("AZ86", "bench/mutation_check.py",
+     "    up = lo_c > hi_k + _TOL",
+     "    up = lo_c >= hi_k"),
+
+    # ── 第七十八轮：容差必须盖住读数量化 ────────────────────────────────
+    # ㊷ `_TOL` 从 `1e-3` 改回 `1e-9`。实测：`cand = 50/84`（+3 格）时
+    #    `net - 噪声 = +4.8e-6`，`1e-9` 够不着它 ⇒ 这个「恰好等于噪声」的读数
+    #    会被判 `KEEP`（而政策要求严格大于）。
+    #    ⇒ 只有 AZ87 红：它同时守「>1e-4」「+3 格必须 NO_EVIDENCE」与
+    #      「把 `_TOL` 调紧后同一读数必须变 KEEP」这条反证 —— 容差一松一紧
+    #      两个方向都被钉住，改数字就红。
+    ("AZ87", "bench/mutation_check.py",
+     "_TOL = 1e-3",
+     "_TOL = 1e-9"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

@@ -8258,6 +8258,321 @@ check(RS, "AZ82 ★这把尺子**不是条数计数器**（四条反证，就地
       f"复制一条={_AZ81_RP['复制一条']} ｜ 抄一遍={_AZ81_RP['追加重抄一遍']} ｜ "
       f"天花板={_AZ81_RP['ceiling']}")
 
+# ===========================================================================
+# AZ83–AZ85（第七十六轮，§38）：**进化闭环的第一段驱动器**
+#
+# 第七十五轮体检的结论是「不能进化」，三条断线：变异器在内核里零引用、
+# `mutation_verdict` 没吃过真数、变异台账从未被写过。
+# 本轮的驱动器 `bench/mutate_driver.py` 把三块拼图连起来，并**真跑了一次**。
+#
+# 这一节的断言全部盯着一件事：**「我以为我改了什么」与「跑的时候是什么」
+# 必须是同一件事**。`run_tests.sh:470` 早就写着这个病：
+#   `apply_mutation` 返回 ok=True 只证明配置对象换了，不证明内核读了它。
+# ===========================================================================
+from bench import mutate_driver as MD                              # noqa: E402
+from mw.config import Settings as _MD_Settings                     # noqa: E402
+
+_MD_S = _MD_Settings()
+_MD_BASE = _MD_S.limits.as_dict()
+_MD_CAND = MD.Arm("cand", {"V1_MAX_STALL": "3"}, {"max_stall": 3})
+_MD_PLAC = MD.Arm("placebo", {"V1_WORKING_MEMORY_ITEMS": "32"},
+                  {"working_memory_items": 32})
+_MD_BASEARM = MD.Arm("base", {}, {})
+
+
+def _md_rec(**over):
+    lim = dict(_MD_BASE)
+    lim["max_stall"] = 3
+    lim.update(over)
+    return {"caliber": {"limits": lim}, "run_id": "4242@1792844000"}
+
+
+def _md_rejects(rec, arm=None):
+    """守门员**拒绝**了这条记录吗？返回 True = 拒绝（=断言生效）。"""
+    try:
+        MD.check_record(rec, arm if arm is not None else _MD_CAND, _MD_BASE)
+    except RuntimeError:
+        return True
+    return False
+
+
+_AZ83_OK = not _md_rejects(_md_rec())               # 正路：合法记录必须**通过**
+_AZ83_DEAD = _md_rejects(_md_rec(max_stall=2))      # 没生效（值还是 2）
+_AZ83_MULTI = _md_rejects(_md_rec(recall_k=8))      # 两个旋钮一起动
+_AZ83_NORID = _md_rejects({**_md_rec(), "run_id": ""})
+_AZ83_NOLIM = _md_rejects({"caliber": {}, "run_id": "4242@1"})
+_AZ83_BASE = _md_rejects({"caliber": {"limits": {**_MD_BASE, "max_stall": 3}},
+                          "run_id": "4242@1"}, _MD_BASEARM)
+_AZ83_2KNOB = _md_rejects(_md_rec(), MD.Arm("x", {}, {"max_stall": 3, "recall_k": 8}))
+# 安慰剂臂必须用它**自己**的旋钮判 —— 第一版把期望值当参数传，
+# 于是安慰剂被自己的守门员判红（而 base 臂因为期望为空，那个参数恒不被读）。
+_AZ83_PLAC_OK = not _md_rejects(_md_rec(working_memory_items=32, max_stall=2), _MD_PLAC)
+
+check(RS, "AZ83 ★驱动器守门员：**生效**与**单变量**必须当场验，不许等裁决（六条反证）\n"
+          "          ① 合法记录通过（否则这是个恒红的死断言）；\n"
+          "          ② 旋钮**没生效**（值还是旧值）⇒ 拒 —— 这就是"
+          "「环境变量没进内核」的实形；\n"
+          "          ③ 两个旋钮一起动 ⇒ 拒（Δ 不可归因）；\n"
+          "          ④ 缺 `run_id` ⇒ 拒（无法证明是独立的一次运行）；\n"
+          "          ⑤ 没有 `caliber.limits` ⇒ 拒（无法验证变异生效）；\n"
+          "          ⑥ base 臂（期望为空）遇到任何差异 ⇒ 拒；声明多个旋钮 ⇒ 拒。\n"
+          "          ⛔ 期望「该差哪个旋钮」**只能从 `arm.expect` 推**，不许当参数传：\n"
+          "             第一版写成 `check_record(..., knob)`，主流程传的是处理臂的旋钮，\n"
+          "             安慰剂臂（改的是另一个）被自己的守门员判红 —— 而 base 臂\n"
+          "             因为期望为空，那个参数**恒不被读**，bug 一直藏到安慰剂才露头。",
+      _AZ83_OK and _AZ83_DEAD and _AZ83_MULTI and _AZ83_NORID
+      and _AZ83_NOLIM and _AZ83_BASE and _AZ83_2KNOB and _AZ83_PLAC_OK,
+      f"通过={_AZ83_OK} ｜ 没生效={_AZ83_DEAD} ｜ 多变量={_AZ83_MULTI} ｜ "
+      f"缺run_id={_AZ83_NORID} ｜ 缺limits={_AZ83_NOLIM} ｜ "
+      f"base有差异={_AZ83_BASE} ｜ 声明多旋钮={_AZ83_2KNOB} ｜ 安慰剂自判={_AZ83_PLAC_OK}")
+
+# ── AZ84：池子必须按 (臂, 口径, solver, limits) **四重**过滤 ────────────────
+# `Caliber` 里**没有** solver ⇒ 裸模型直连与内核可以是同一个 sig
+# （第七十三轮实测：只按 sig 分组会把 0.2857 与 0.5952 放进一池，造出 0.3095 假噪声）。
+# 这里用**临时台账**构造那个陷阱，证明少一条过滤就被污染。
+import json as _md_json                                            # noqa: E402
+
+_MD_DIR = Path(tempfile.mkdtemp(prefix="v1_md_")) / "runs.jsonl"
+
+
+def _md_row(sig, solver, lim, rid, mean=0.5):
+    return _md_json.dumps({"run_id": rid, "caliber_sig": sig, "solver": solver,
+                           "caliber": {"limits": dict(lim)},
+                           "measurement": {"mean": mean}})
+
+
+_MD_K_LIM = dict(_MD_BASE, max_stall=3)          # 处理臂的 limits
+_MD_OTHER = dict(_MD_BASE, max_stall=4)          # 另一个变异（不该被挑中）
+_MD_DIR.write_text("\n".join([
+    _md_row("AA", "内核", _MD_K_LIM, "1@1"),      # 3 条要的
+    _md_row("AA", "内核", _MD_K_LIM, "2@2"),
+    _md_row("AA", "内核", _MD_K_LIM, "3@3"),
+    _md_row("AA", "裸模型", _MD_K_LIM, "4@4"),    # 同口径、同 limits，但**另一个系统**
+    _md_row("AA", "裸模型", _MD_K_LIM, "5@5"),
+    _md_row("BB", "内核", _MD_K_LIM, "6@6"),      # 异口径
+    _md_row("AA", "内核", _MD_OTHER, "7@7"),      # 异配置
+    _md_json.dumps({"caliber_sig": "AA", "solver": "内核",
+                    "caliber": {"limits": _MD_K_LIM},
+                    "measurement": {"mean": 0.5}}),   # 无 run_id
+]) + "\n", encoding="utf-8")
+
+_AZ84_KEEP, _AZ84_DROP = MD.pool_from_ledger(_MD_DIR, arm=_MD_CAND,
+                                             base_limits=_MD_BASE,
+                                             sig="AA", solver="内核")
+_AZ84_NO_SOLVER, _ = MD.pool_from_ledger(_MD_DIR, arm=_MD_CAND,
+                                         base_limits=_MD_BASE,
+                                         sig="AA", solver=None)
+_AZ84_IDS = sorted(r["run_id"] for r in _AZ84_KEEP)
+
+check(RS, "AZ84 ★池子四重过滤：口径 / solver / limits / run_id，少一条就污染\n"
+          "          构造 8 条：3 条正品 + 2 条**同口径同 limits 的另一个系统**\n"
+          "          + 1 条异口径 + 1 条异配置 + 1 条无 run_id。\n"
+          "          ① 四重全开 ⇒ 只挑到 3 条，且 `run_id` 恰是那 3 个；\n"
+          "          ② 反证：**去掉 solver 过滤** ⇒ 挑到 5 条（两个系统混一池）；\n"
+          "          ③ 无 `run_id` 的被**数出来**（拒收统计里见到 1），不是静默消失。\n"
+          "          ⛔ ②是这一条存在的理由：`Caliber` 不含 solver，所以"
+          "「同口径」不等于「同系统」。",
+      len(_AZ84_KEEP) == 3 and _AZ84_IDS == ["1@1", "2@2", "3@3"]
+      and len(_AZ84_NO_SOLVER) == 5 and _AZ84_DROP["no_run_id"] == 1,
+      f"四重={len(_AZ84_KEEP)} 条 {_AZ84_IDS} ｜ 去掉solver={len(_AZ84_NO_SOLVER)} 条 ｜ "
+      f"拒收 {_AZ84_DROP}")
+
+# ── AZ85：进化闭环的**第一圈读数锚** ──────────────────────────────────────
+# 三臂各 5 次独立进程（`--fresh --no-external`，T=0，新尺子 14 条用例）。
+# 从冻结的三个池子**重算**噪声与裁决 —— 断言「同一输入同一结论」，不是"JSON 里写着 NO_EVIDENCE"。
+_MD_EV = V1 / "bench" / "evidence" / "evolve_s76"
+
+
+def _md_obs(name):
+    p = _MD_EV / f"pool_{name}.jsonl"
+    rows = [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
+    return [_NF.from_record(r) for r in rows]
+
+
+_MD_OB = {k: _md_obs(k) for k in ("base", "cand", "placebo")}
+_MD_FL = {k: _NF.noise_for_verdict(v) for k, v in _MD_OB.items()}
+_MD_MEAN = {k: sum(o.mean for o in v) / len(v) for k, v in _MD_OB.items()}
+#: 台账 `mean` 的**量化模拟**：逐题分数先 `round(…, 4)`，再按题数平均。
+#: 这不是「从池子里抄一个数」，是**从机制重算**：`47 格 = 1+10+14+14+0+8`
+#: ⇒ 每题 `round(n/14, 4)` 再平均 = `0.55951666…`，与台账逐位相同（AZ85 里断言）。
+#: ⛔ AZ87 用它而**不读池子** —— 读池子会让它和 AZ85 的撤回态耦合：
+#:    实测抹平 `base` 那条 0.5238 之后噪声从 `3/84` 掉到 `1.7e-05`，
+#:    于是 AZ87 的「+3 格」判据翻成 `KEEP`，AZ85 的撤回态当场多红一条。
+_QZ_CASES = 6            # 题数
+_QZ_PER_TASK = 14        # 每题用例数
+
+
+def _qz_mean(cells: list[int]) -> float:
+    """给定每题命中的格数，按台账的**量化规则**算出 `mean`。"""
+    return sum(round(c / _QZ_PER_TASK, 4) for c in cells) / _QZ_CASES
+
+
+_QZ_47 = _qz_mean([1, 10, 14, 14, 0, 8])     # 常态：47/84 格
+_QZ_44 = _qz_mean([1, 7, 14, 14, 0, 8])      # 冷启动那次：44 格（sg02 只过 7 条）
+_MD_NF = max(v for v in _MD_FL.values())
+_MD_DLT = _MD_MEAN["cand"] - _MD_MEAN["base"]
+_MD_PDL = _MD_MEAN["placebo"] - _MD_MEAN["base"]
+_MD_V, _MD_WHY = MV_verdict(knob="max_stall", diff=["max_stall"],
+                            base_mean=_MD_MEAN["base"], cand_mean=_MD_MEAN["cand"],
+                            placebo_delta=_MD_PDL, noise_floor=_MD_NF)
+# 结论**不靠噪声口径撑着**：即使把噪声当 0，净变化仍是 0 ⇒ 结论不变。
+_MD_V0, _ = MV_verdict(knob="max_stall", diff=["max_stall"],
+                       base_mean=_MD_MEAN["base"], cand_mean=_MD_MEAN["cand"],
+                       placebo_delta=_MD_PDL, noise_floor=0.0)
+
+check(RS, "AZ85 ★进化闭环第一圈：变异 → 跑 → 量 → 判，结论是 **NO_EVIDENCE**\n"
+          "          三个臂各 5 次独立进程，`--fresh --no-external`，T=0，新尺子 14 条用例。\n"
+          "          ① 三臂的 `sig` **互不相同** —— 因为 `limits` 进 `Caliber`，\n"
+          "             改旋钮必然换口径（这就是「两臂同口径」在变异场景下不成立的结构原因）；\n"
+          "          ② base 的轮间极差 ≥ 0.03，而 cand / placebo 都是 0：\n"
+          "             那 0.0357 = 3/84（新尺子 84 格里 3 格）**全部来自"
+          "「整个实验的第一次运行」**，\n"
+          "             逐题全落在 `sg02`（7/14 ↔ 10/14）；⛔ 原因**未定**\n"
+          "             （冷启动 / T=0 残余抖动 / 旧尺子测不到，三条都容得下）；\n"
+          "             ⚠️ 这里刻意写成 `>= 0.03` 而**不是** `> 0`：撤回态 ㊵ 把那条\n"
+          "                读数抹成 0.5595 之后，剩下的差还有 **1.67e-05** —— `> 0`\n"
+          "                照样成立，那它就不是读数锚，只是个恒真的装饰。\n"
+          "          ③ **Δ(cand) 与 Δ(placebo) 逐位相同** ⇒ 安慰剂把全部「收益」吃掉了。\n"
+          "             这是安慰剂臂存在的唯一理由：没有它，+0.0071 会被读成「改进」；\n"
+          "          ④ 净变化 = 0.0000 ⇒ **NO_EVIDENCE**（「没证据说更好 = 不改」）；\n"
+          "          ⑤ 把噪声改写成 0 结论不变 ⇒ 这个判决不是靠「噪声大」撑住的；\n"
+          "          ⑥ **量化模拟必须与台账逐位相同**（`round(n/14, 4)` 再平均\n"
+          "             = `0.55951666…`）—— 这条把「机制」与「读数」钉在一起；\n"
+          "             AZ87 用模拟值、**不读池子**，所以这边被撤回时不会连带它变红。\n"
+          "          ⛔ 这是**读数锚**：换模型 / 题集 / 温度 / 旋钮它就该红，改完必须回来登记。\n"
+          "          ⚠️ 边界：它只说「这一次、这套题、这个模型下，`max_stall 2→3` 没有证据更好」。\n"
+          "             不许读成「这个旋钮永远没用」，更不许读成「内核不会进化」。",
+      all(len(v) == 5 for v in _MD_OB.values())
+      and len({next(iter({o.sig for o in v})) for v in _MD_OB.values()}) == 3
+      and _MD_FL["base"] >= 0.03 and _MD_FL["cand"] == 0.0 and _MD_FL["placebo"] == 0.0
+      and abs(_MD_DLT - _MD_PDL) < 1e-12
+      and abs(_QZ_47 - _MD_MEAN["placebo"]) < 1e-9      # ⑥ 模拟 = 台账
+      and _MD_V == MV_NO_EV and _MD_V0 == MV_NO_EV,
+      f"各 {len(_MD_OB['base'])} 次 ｜ base {_MD_MEAN['base']:.4f} "
+      f"cand {_MD_MEAN['cand']:.4f} 安慰剂 {_MD_MEAN['placebo']:.4f} ｜ "
+      f"Δ={_MD_DLT:+.4f} 安慰剂Δ={_MD_PDL:+.4f} ｜ 噪声={_MD_NF:.4f}"
+      f"（base={_MD_FL['base']:.4f} cand={_NF_fmt(_MD_FL['cand'])} "
+      f"plac={_NF_fmt(_MD_FL['placebo'])}）｜ 裁决={_MD_V} ｜ 噪声置0仍={_MD_V0} ｜ "
+      f"量化模拟={_QZ_47:.10f}")
+
+# ── AZ86：两道闸（交叠 / 量级）—— 而且它们必须**承重** ────────────────────
+# 为什么要有这两道：第七十六轮实测驱动器自己那 12 次运行轮间极差 **恰好 0.0000**
+# ⇒ 噪声下限 = 0 ⇒ 旧判据 `net > 0` 会把「1 格运气」判成 KEEP。
+# 这里用**合成读数**测闸本身，并各配一条反证（把闸关掉，结论必须变）。
+_AZ86_RUNS = {k: [o.mean for o in v] for k, v in _MD_OB.items()}
+_AZ86_F0 = {"base": 0.0, "cand": 0.0, "placebo": 0.0}
+_AZ86_M = {"base": 0.5595, "placebo": 0.5595}
+_AZ86_CTL = {"base": [0.5595] * 5, "placebo": [0.5595] * 5}
+
+
+def _az86(means, runs, cells=3, floors=None):
+    return MD.judge(knob="max_stall", means=means,
+                    floors=_AZ86_F0 if floors is None else floors,
+                    runs=runs, min_effect_cells=cells)
+
+
+_AZ86_REAL = _az86(_MD_MEAN, _AZ86_RUNS, floors=_MD_FL)
+_AZ86_UP = _az86({**_AZ86_M, "cand": 0.60}, {**_AZ86_CTL, "cand": [0.60] * 5})
+_AZ86_CELL = _az86({**_AZ86_M, "cand": 0.5714}, {**_AZ86_CTL, "cand": [0.5714] * 5})
+_AZ86_OVL = _az86({**_AZ86_M, "cand": 0.5714},
+                  {**_AZ86_CTL, "cand": [0.5595] + [0.5714] * 4})
+_AZ86_DN = _az86({**_AZ86_M, "cand": 0.50}, {**_AZ86_CTL, "cand": [0.50] * 5})
+# 反证：闸**关掉**之后，同样的读数必须变成 KEEP —— 否则那道闸是装饰。
+_AZ86_OVL_OFF = _az86({**_AZ86_M, "cand": 0.5714}, {})
+_AZ86_CELL_OFF = _az86({**_AZ86_M, "cand": 0.5714},
+                       {**_AZ86_CTL, "cand": [0.5714] * 5}, cells=0)
+
+check(RS, "AZ86 ★两道闸：交叠（不要常数）+ 量级（政策，用分数不用小数字面量）\n"
+          "          第七十六轮的实测把旧判据的洞照出来了：驱动器自己那 12 次运行\n"
+          "          轮间极差**恰好 0.0000** ⇒ 噪声 = 0 ⇒ `net > 0` 就够判 KEEP，\n"
+          "          于是「1 格运气」= 「变强了」。补两道闸：\n"
+          "          ① **交叠闸**：处理臂**每一次**都要严格好过对照组（base ∪ 安慰剂）\n"
+          "             **每一次**。它不需要任何常数 —— 问的是「两个分布分不分得开」；\n"
+          "             相等算交叠，不算分开；\n"
+          "          ② **量级闸**：低于最小效应量的差不算变强。它是**政策**，\n"
+          "             所以由调用方显式传入；⛔ 必须用 `格数/总格数` 算\n"
+          "             （`3/84 = 0.035714`），**不许**写 `0.0357` —— 那个字面量\n"
+          "             比真值小 1.4e-5，而容差是 1e-9，于是「恰好等于」会被判成「大于」；\n"
+          "          ③ 真实池子过闸：结论仍是 NO_EVIDENCE，但理由从「净变化恰好 0」\n"
+          "             升级成「**交叠**」—— 结论不再依赖噪声口径撑不撑得住；\n"
+          "          ④ 两条反证：关掉交叠闸 / 关掉量级闸，同一个读数都变成 KEEP。\n"
+          "          ⛔ 这是判据锚：换题集 / 换旋钮它不该红；改闸的语义它必须红。",
+      _AZ86_REAL[0] == MV_NO_EV and "交叠" in _AZ86_REAL[1]
+      and _AZ86_UP[0] == MV_KEEP
+      and _AZ86_CELL[0] == MV_NO_EV and "未达最小效应量" in _AZ86_CELL[1]
+      and _AZ86_OVL[0] == MV_NO_EV and "交叠" in _AZ86_OVL[1]
+      and _AZ86_DN[0] == MV_REVERT
+      and _AZ86_OVL_OFF[0] == MV_KEEP and _AZ86_CELL_OFF[0] == MV_KEEP
+      and MD.total_cells() == 84
+      and abs(_AZ86_UP[2]["min_effect"] - 3 / 84) < 1e-12
+      and _AZ86_UP[2]["min_effect"] > 0.0357,
+      f"真实={_AZ86_REAL[0]} ｜ 分开+够量级={_AZ86_UP[0]} ｜ 1格={_AZ86_CELL[0]} ｜ "
+      f"交叠={_AZ86_OVL[0]} ｜ 向下={_AZ86_DN[0]} ｜ "
+      f"关交叠闸={_AZ86_OVL_OFF[0]} 关量级闸={_AZ86_CELL_OFF[0]} ｜ "
+      f"总格数={MD.total_cells()} 最小效应量={_AZ86_UP[2]['min_effect']:.6f}")
+
+# ── AZ87：容差必须盖住**读数量化**，否则边界由舍入决定 ──────────────────
+# 第七十八轮实测：`report.per_task[].score` 存的是 **4 位小数**（`1/14` → `0.0714`），
+# 逐题平均后台账 `mean = 0.55951666…`，而真值 `47/84 = 0.55952380…` ⇒ 差 **7.1e-6**。
+# 噪声下限由这些 mean 相减得到，于是 `3/84` 被算成 `0.03571667`。
+# ⇒ 用 `_TOL = 1e-9` 判「净增益恰好等于噪声」时，边界由最后几位小数决定：
+#    实测 `cand = 50/84`（+3 格）时 `net - 噪声 = +4.8e-6` ⇒ 旧容差判 `KEEP`（错），
+#    按政策必须是 `NO_EVIDENCE`（净增益要**严格大于**噪声）。
+# ⛔ 这里的三个输入**全部由 `_qz_mean` 重算，不读池子**：
+#    第一版读的是 `_MD_MEAN` / `_MD_FL` / `_AZ86_RUNS`，于是 AZ85 的撤回态
+#    （把 base 那条 0.5238 抹成 0.5595）把噪声从 `3/84` 打到 `1.7e-05`，
+#    「+3 格」立刻翻成 `KEEP` ⇒ AZ87 连带变红。实测 156 条撤回里唯一的多红就是它。
+#    语义上也该改：AZ87 测的是**容差与量化的关系**，不是台账内容。
+_AZ87_Q = abs(_QZ_47 - 47 / 84)                              # 量化偏差（机制重算）
+_AZ87_FLOOR = _QZ_47 - _QZ_44                                # 台账里 base 的轮间极差
+_AZ87_M = {"base": _QZ_47, "placebo": _QZ_47}
+_AZ87_R = {"base": [_QZ_47] * 5, "placebo": [_QZ_47] * 5}
+_AZ87_F = {"base": _AZ87_FLOOR, "cand": 0.0, "placebo": 0.0}
+_AZ87_C50 = _az86({**_AZ87_M, "cand": 50 / 84},
+                  {**_AZ87_R, "cand": [50 / 84] * 5}, floors=_AZ87_F)
+_AZ87_C51 = _az86({**_AZ87_M, "cand": 51 / 84},
+                  {**_AZ87_R, "cand": [51 / 84] * 5}, floors=_AZ87_F)
+
+# 反证：把容差换回 1e-9，**同一条读数**必须变 KEEP —— 证明 `_TOL` 是承重的
+_MC_TOL = _NF_MC._TOL
+try:
+    _NF_MC._TOL = 1e-9
+    _AZ87_TIGHT = MV_verdict(
+        knob="max_stall", diff=["max_stall"],
+        base_mean=_QZ_47, cand_mean=50 / 84,
+        placebo_delta=0.0,
+        noise_floor=_AZ87_FLOOR, min_effect=3 / 84,
+        cand_runs=[50 / 84] * 5,
+        control_runs=[_QZ_47] * 10)[0]
+finally:
+    _NF_MC._TOL = _MC_TOL
+
+check(RS, "AZ87 ★容差必须盖住读数量化（`_TOL` 太小 ⇒ 边界由舍入决定）\n"
+          "          背景：台账 `mean` 由**四舍五入到 4 位小数**的逐题分数再平均而来\n"
+          "          （实测 `0.55951666…` vs 真值 `47/84 = 0.55952380…`，差 7.1e-6）；\n"
+          "          于是「净增益恰好等于噪声」这个边界是 1e-5 量级的差在裁决。\n"
+          "          ① `_TOL` 必须 > 1e-4（盖住量化）且 < 半格 `0.5/84`（不吃掉真实格差）；\n"
+          "          ② 实测那个 +3 格读数（`net - 噪声 = +4.8e-6`）⇒ `NO_EVIDENCE`；\n"
+          "          ③ +4 格 ⇒ `KEEP`（一格都不能少）；\n"
+          "          ④ 反证：把 `_TOL` 临时换回 `1e-9`，同一条读数变 `KEEP`；\n"
+          "          ⑤ 跑完必须把 `_TOL` 还原（否则后面每一条判据都被污染）；\n"
+          "          ⑥ **自带输入**：三个数（`_QZ_47` / `_QZ_44` / 二者之差）由\n"
+          "             `round(n/14, 4)` 重算，**不读冻结池子** —— 第一版读池子，\n"
+          "             于是 AZ85 的撤回态把这边的噪声打掉，连带判红（耦合）。\n"
+          "             现在 AZ85 那边撤回，这条仍然绿。\n"
+          "          撤回语义：`_TOL` 改回 `1e-9` ⇒ 必须红。",
+      _NF_MC._TOL > 1e-4 and _NF_MC._TOL < 0.5 / 84
+      and 1e-6 < _AZ87_Q < 1e-4
+      and _AZ87_C50[0] == MV_NO_EV
+      and _AZ87_C51[0] == MV_KEEP
+      and _AZ87_TIGHT == MV_KEEP
+      and _NF_MC._TOL == _MC_TOL,
+      f"量化偏差={_AZ87_Q:.2e} ｜ _TOL={_NF_MC._TOL:.0e}"
+      f"（需 >1e-4 且 <{0.5 / 84:.4f}）｜ 噪声={_AZ87_FLOOR:.8f}"
+      f"（{_QZ_47:.10f} - {_QZ_44:.4f}）｜ "
+      f"+3格={_AZ87_C50[0]} +4格={_AZ87_C51[0]} ｜ 容差调紧后同一读数={_AZ87_TIGHT} ｜ "
+      f"已还原={_NF_MC._TOL == _MC_TOL}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

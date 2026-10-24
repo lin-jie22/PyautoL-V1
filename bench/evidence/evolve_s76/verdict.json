@@ -1,0 +1,60 @@
+{
+  "knob": "max_stall",
+  "to": 3,
+  "placebo_knob": "working_memory_items",
+  "placebo_to": 32,
+  "n_per_arm": 4,
+  "suite": "bench/specgen/tasks_v1.jsonl",
+  "means": {
+    "base": 0.5523733333333334,
+    "cand": 0.5595166666666668,
+    "placebo": 0.5595166666666668
+  },
+  "floors": {
+    "base": 0.03571666666666673,
+    "cand": 0.0,
+    "placebo": 0.0
+  },
+  "noise_used": 0.03571666666666673,
+  "placebo_delta": 0.00714333333333339,
+  "placebo_inert": true,
+  "verdict": "NO_EVIDENCE",
+  "why": "净变化 +0.0000 落在噪声 0.0357 内 ⇒ 没证据说更好（那就别改）",
+  "sigs": {
+    "base": [
+      "73ff79361402ac6b"
+    ],
+    "cand": [
+      "a5ff8c337d1c89c3"
+    ],
+    "placebo": [
+      "1b6aa50fdc975607"
+    ]
+  },
+  "arms": [
+    {
+      "name": "base",
+      "env": {},
+      "expect": {}
+    },
+    {
+      "name": "cand",
+      "env": {
+        "V1_MAX_STALL": "3"
+      },
+      "expect": {
+        "max_stall": 3
+      }
+    },
+    {
+      "name": "placebo",
+      "env": {
+        "V1_WORKING_MEMORY_ITEMS": "32"
+      },
+      "expect": {
+        "working_memory_items": 32
+      }
+    }
+  ],
+  "ts": 1792847399.873565
+}

@@ -1,0 +1,21 @@
+  ✅ ✅ 接受 max_stall: 2 → 3  （界内合法，依据=mechanical）
+  ✅ ✅ 接受 working_memory_items: 24 → 32  （界内合法，依据=policy）
+
+==========================================================================
+变异驱动器：max_stall 2 → 3（安慰剂：working_memory_items 24 → 32）
+每臂 1 次独立进程 · 题集 bench/specgen/tasks_v1.jsonl · T=0 · --fresh --no-external
+==========================================================================
+  base 第 1/1 次 … 175.7s  sig=73ff79361402ac6b  mean=0.5238
+  cand 第 1/1 次 … 172.7s  sig=a5ff8c337d1c89c3  mean=0.5595
+  placebo 第 1/1 次 …Traceback (most recent call last):
+  File "/Users/linshaojie/V1/bench/mutate_driver.py", line 390, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/linshaojie/V1/bench/mutate_driver.py", line 292, in main
+    check_record(rec, arm, base_limits, a.knob)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/linshaojie/V1/bench/mutate_driver.py", line 210, in check_record
+    raise RuntimeError(
+        f"⛔ {arm.name}: 与 base 的 limits 差异是 {sorted(diff)}，"
+        f"期望 {[knob] if arm.expect else []} ⇒ 不止一个变量，Δ 不可归因")
+RuntimeError: ⛔ placebo: 与 base 的 limits 差异是 ['working_memory_items']，期望 ['max_stall'] ⇒ 不止一个变量，Δ 不可归因

@@ -911,6 +911,30 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ77", "bench/taskspec.py",
      '            hit += int(list(ns[spec["fn"]](list(case))) == exp)',
      '            hit += 1'),
+    # ── 第七十三轮（§36）：噪声下限必须在**进程之间**量 ─────────────────
+    # ㉚ 把下限从 5 次放到 1 次
+    #    ⇒ 只有 AZ78 红：一次运行的 5 次重复、以及 4 次运行的池子都会被放行。
+    ("AZ78", "bench/noise_floor.py",
+     "MIN_RUNS = 5\n", "MIN_RUNS = 1\n"),
+    # ㉛ 独立次数按"条数"算而不是按 `run_id` 去重
+    #    ⇒ 只有 AZ78 红：**这正是当初那个错误的实形** —— 一次运行 repeat 5 次
+    #      在数据里长得像 5 次运行。撤掉去重，"5 次"里可以有 4 次是同一个进程。
+    ("AZ78", "bench/noise_floor.py",
+     "    ids = {o.run_id for o in obs}", "    ids = [o.run_id for o in obs]"),
+    # ㉜ 逐题极差取 min 而不是 max
+    #    ⇒ 只有 AZ79 红：不变量当场不成立（min 会低于聚合极差）。
+    ("AZ79", "bench/noise_floor.py",
+     "    worst = max(tf.values()) if tf else 0.0",
+     "    worst = min(tf.values()) if tf else 0.0"),
+    # ㉝ 混口径不再拒判
+    #    ⇒ 只有 AZ78 红：两个口径的读数放进一个池子，极差没有意义。
+    ("AZ78", "bench/noise_floor.py",
+     "    if len(sigs) > 1:", "    if False:  # 撤回态"),
+    # ㉞ 池子里让两条记录共用同一个 `run_id`（把第 5 次伪装成第 4 次的重复）
+    #    ⇒ 只有 AZ80 红：**这正是当初那个错误的实形** —— 数据里"5 条"，
+    #      实际只有 4 次独立运行。旧实现按条数算，会给它一个 0.0000。
+    ("AZ80", "bench/evidence/noise_s72/pool_direct_r1.jsonl",
+     '\"run_id\": \"65070@1792816977\"', '\"run_id\": \"64832@1792816915\"'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

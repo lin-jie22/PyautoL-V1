@@ -8081,6 +8081,121 @@ check(RS, "AZ77 ★【读数锚】常识实现必须**严格居中**，且「长
       "常识分=" + " ｜ ".join(f"{k}={a}/{b}" for k, (a, b) in _AZ77_SCORE.items())
       + " ｜ 长度合格却答错=" + str(sorted(_AZ77_LEAK)))
 
+# ===========================================================================
+# AZ78–AZ80（第七十三轮，§36）：噪声下限必须在**进程之间**量
+#
+# §35 曾把「一轮 `--repeat` 的极差」当成噪声下限，并据此断言「下限被系统性
+# 低估 0.26 量级」。本轮实测把那个断言**推翻了一半，也立住了一半**：
+#
+#   · 推翻：§35.3③ 那张「同一配置四次观测」的表跨了 **3 个口径**
+#     （`8b911be9` / `341c1eec` / `36817516`）。而 `repeat` 本身就是 `Caliber`
+#     的一个字段（与 repeat=2 相比，12 个口径字段里唯一的差异就是它）
+#     ⇒ 「轮内极差」与「轮间极差」**永远不同口径**：
+#        拿轮内当轮间下限，在本项目自己的口径闸下是**违规**，不只是"统计上可疑"。
+#
+#   · 立住：按 `(臂, sig)` 分池、每池 **5 个独立进程**、`repeat=1` 重测之后，
+#     两条臂的轮间极差都是 **0.0000**（逐位相同）。
+#     ⇒「0」于是有两层意思：**测到的确定** 与 **没测成**（运行次数不够）。
+#        旧实现在这两种情况下都给 0（`max(spread)`，spread 缺省 0），
+#        而后者会让 `mutation_verdict` 把噪声读成改进。
+#
+# 这组契约钉的不是「某个函数写得对」，是**这件事不可能再错回去**：
+#   ① 同一个 run_id 的多次重复**不许**当多次运行（这是当初那个错误的实形）；
+#   ② 不够 5 次就拒判（返回 None，上层 UNKNOWN），⛔ 不默认 0；
+#   ③ 混口径、混臂一律拒判；
+#   ④ 旧记录没有 run_id ⇒ 抛错，不静默收下。
+# 每条都配一个坏样本（实现在 `bench/noise_floor.reverse_proofs`，只有一份）。
+# ===========================================================================
+from bench import mutation_check as _NF_MC                        # noqa: E402
+from bench import noise_floor as _NF                              # noqa: E402
+
+_NF_RP = _NF.reverse_proofs()
+_NF_BR = _NF_RP["轮内为 0"]
+
+# 同一个 Δ，只换噪声下限这一个输入 ⇒ 结论翻转。裁决逻辑一个字没改。
+_NF_DELTA = 0.02
+_NF_OLD = _NF_MC.mutation_verdict(knob="max_stall", diff=["max_stall"],
+                                  base_mean=0.2857, cand_mean=0.2857 + _NF_DELTA,
+                                  placebo_delta=0.0, noise_floor=0.0)[0]
+_NF_NEW = _NF_MC.mutation_verdict(knob="max_stall", diff=["max_stall"],
+                                  base_mean=0.2857, cand_mean=0.2857 + _NF_DELTA,
+                                  placebo_delta=0.0, noise_floor=_NF_BR["floor_agg"])[0]
+
+check(RS, "AZ78 ★噪声下限 = **独立运行之间**的极差；四条纪律各有一个坏样本\n"
+          "          ① 同一个 `run_id` 的五条记录 = 一次运行内部 repeat 5 次，\n"
+          "             **不是** 5 次运行 ⇒ 必须拒判（旧做法在这里会得到一个数）；\n"
+          "          ② 只有 4 次独立运行 ⇒ 拒判、返回 `None`（⛔ 不默认 0：\n"
+          "             默认 0 等于「任何抖动都算改进」，而 `mutation_verdict`\n"
+          "             对 `noise_floor=None` 的处置正是 `UNKNOWN`）；\n"
+          "          ③ 混口径 ⇒ 拒判（跨口径的极差没有意义）；\n"
+          "          ④ 本轮之前的记录没有 `run_id` ⇒ **抛错**，\n"
+          "             不静默跳过 —— 静默跳过会让「3 次运行」看起来像「5 次」。\n"
+          "          ⑤ 端到端：同一个 Δ 只换噪声下限这一个输入 ⇒ 结论从 KEEP\n"
+          "             翻成 NO_EVIDENCE。裁决逻辑没动，动的是喂进去的数。",
+      _NF_RP["同一次运行五次重复"][0] is None
+      and _NF_RP["只有四次运行"][0] is None
+      and _NF_RP["混口径"][0] is None
+      and str(_NF_RP["缺 run_id"]).startswith("ValueError")
+      and _NF_OLD == "KEEP" and _NF_NEW == "NO_EVIDENCE",
+      f"Δ={_NF_DELTA:+.2f} ｜ 旧口径 {_NF_OLD} → 新口径 {_NF_NEW}"
+      f"（轮间 {_NF_BR['floor_agg']:.4f}）")
+
+# ── AZ79：逐题极差取 max 而不是 min，且不变量是**定理** ────────────────────
+_NF_LO, _NF_AGG = _NF_RP["逐题最小当聚合下限"]
+_NF_HI, _ = _NF_RP["逐题最大当聚合下限"]
+_NF_INV, _NF_INV_WHY = _NF_RP["不变量"]
+check(RS, "AZ79 ★逐题极差只能取 **max**，不能取 min；`max ≥ 聚合` 是定理不是经验\n"
+          "          构造：两题各 5 次运行，t1 稳定（恒 1.0）、t2 在 1/0 之间摆。\n"
+          "          取 min ⇒ 0.0000（比聚合 0.5000 还小）⇒ **系统性低估**，\n"
+          "          而它看起来更「严谨」（「用最干净那一题量链路噪声」很顺，但是错的）。\n"
+          "          定理：聚合是逐题的凸组合 ⇒ |Δmean| ≤ mean_i|Δx_i| ≤ max_i range_i。\n"
+          "          所以「逐题最大」只会更保守，不会漏判。",
+      _NF_LO < _NF_AGG - 1e-9 <= _NF_HI + 1e-9 and _NF_INV,
+      f"min={_NF_LO:.4f} ｜ max={_NF_HI:.4f} ｜ 聚合={_NF_AGG:.4f} ｜ {_NF_INV_WHY}")
+
+def _NF_fmt(v: float | None) -> str:
+    """`None` 也要能打印 —— 详情串不许抛异常（见下面 AZ80 的注释）。"""
+    return "None" if v is None else f"{v:.4f}"
+
+
+# ── AZ80：【读数锚】两个池子：0.0000 是**测到的确定**，不是「没量到」 ─────────
+# 本轮两次跑批（各 5 个独立进程、同口径 sig=39e815e1、repeat=1）：
+#     裸模型 5 次全 0.2857 ｜ 内核 5 次全 0.5952 —— 逐题极差全 0。
+_ev = V1 / "bench" / "evidence" / "noise_s72"
+_NF_D, _NF_DK = _NF.pool_from_jsonl(_ev / "pool_direct_r1.jsonl")
+_NF_K, _NF_KK = _NF.pool_from_jsonl(_ev / "pool_kernel_r1.jsonl")
+_NF_BD, _NF_BK = _NF.bracket(_NF_D), _NF.bracket(_NF_K)
+_NF_F5, _ = _NF.floor(_NF_D, min_runs=5)       # 5 次独立运行 ⇒ 测到 0.0000
+# ⚠️ 这里**写死 5** 而不是引用 `_NF.MIN_RUNS`：本条测的是"少一次就只能是 None"
+#    这个**语义**，而"阈值该是几"由 AZ78 的坏样本管。写死才能让两条断言分开转红
+#    （实测：引用常量时，把 MIN_RUNS 改成 1 会同时打红 AZ78 与 AZ80）。
+_NF_F4, _ = _NF.floor(_NF_D[:4], min_runs=5)  # 只给 4 次 ⇒ None（⛔ 不是 0）
+_NF_MIX, _ = _NF_RP["同口径不同臂"]
+_NF_FAKE = _NF_RP["只按 sig 分组的假极差"]
+check(RS, "AZ80 ★【读数锚】两个池子各自 5 次独立运行，轮间极差 **0.0000**；\n"
+          "          但「0」必须是**测出来的**：少一次运行就只能是 `None`。\n"
+          "          ① 5 次 ⇒ 0.0000（确定），4 次 ⇒ None（没测成）——\n"
+          "             这两件事在旧实现里长得一模一样（`max(spread)`，缺省 0），\n"
+          "             而后者会让 `mutation_verdict` 把噪声读成改进；\n"
+          "          ② 两条臂的 `sig` **完全相同**（`Caliber` 里没有 solver）⇒\n"
+          "             只按 sig 分组会把「裸模型 0.2857 + 内核 0.5952」放进一个池子，\n"
+          "             造出一个 0.3095 的**假噪声**（那是两个系统的差，不是抖动）\n"
+          "             ⇒ 必须按 `(臂, sig)` 分组，混臂拒判；\n"
+          "          ③ 池子里每条 `run_id` 必须互不相同（否则「5 次」里可以有\n"
+          "             4 次是同一个进程 —— 这正是当初那个错误的实形）。\n"
+          "          ⛔ 这是**读数锚**：换模型/题集/温度/臂它就该红，改完必须回来登记。",
+      _NF_F5 == 0.0 and _NF_F4 is None
+      and _NF_BD["n_runs"] >= 5 and _NF_BK["n_runs"] >= 5
+      and _NF_BD["floor_agg"] == 0.0 and _NF_BK["floor_agg"] == 0.0
+      and all(len({o.run_id for o in p}) == len(p) for p in (_NF_D, _NF_K))
+      and _NF_MIX is None and _NF_FAKE > 0.3,
+      # ⛔ 详情串**不许因为读到 None 就抛异常**：断言失败时要打印理由，
+      #    不是变成一条 Traceback（实测：`{None:.4f}` 会让整份契约崩掉，
+      #    汇总行都不打印 —— 那样"哪个断言红了"这个信息本身也没了）。
+      f"裸模型 {_NF_fmt(_NF_BD['floor_agg'])}（{_NF_BD['n_runs']} 次）｜ "
+      f"内核 {_NF_fmt(_NF_BK['floor_agg'])}（{_NF_BK['n_runs']} 次）｜ "
+      f"只给 4 次 ⇒ {_NF_fmt(_NF_F4)} ｜ 混臂 ⇒ {_NF_MIX} ｜ 假极差 {_NF_FAKE:.4f}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

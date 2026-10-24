@@ -1350,6 +1350,13 @@ def cmd_bench(args) -> int:
         print(f"  {'✅' if ok else '⛔'} {why}")
 
     append_jsonl(s.paths.bench / "runs.jsonl", {
+        # ── 独立运行的身份证（第七十二轮，§36）────────────────────────────
+        # 为什么必须落盘：噪声下限得在**独立进程之间**量，而"这次运行是不是
+        # 另一次运行"在这之前**在数据里不存在** —— 只能靠人记"我跑了几次"。
+        # 于是 `--repeat 2` 的两次重复与"跑了两个进程"在证据里长得一模一样，
+        # 而前者系统性低估噪声（DESIGN §35 实测 0.2619 vs 0.0000）。
+        # ⛔ pid 会重用，所以加上写盘时刻：`run_id` 才是判据，pid 只是它的一半。
+        "run_id": f"{os.getpid()}@{int(time.time())}",
         "solver": label, "budget_tag": tag, "repeat": repeat_n,
         "caliber_sig": caliber.signature(), "caliber": caliber.as_dict(),
         "measurement": measurement_to_dict(m), "report": rep.as_dict(),

@@ -1177,6 +1177,30 @@ def cmd_bench(args) -> int:
 
     print()
     print(f"--- 第 2 步  跑任务集  solver={label}  预算档={tag}  repeat={repeat_n} ---")
+
+    # ── 答案本体落盘（第七十九轮 §42）────────────────────────────────────
+    #
+    # ⚠️ 为什么不在 `run_suite` 里写：那会改 `mw/*.py` ⇒ `harness_sha()` 断段。
+    #    而这一轮是**量具**变更，不是能力变更 —— 断段会把旧曲线点全部作废，
+    #    代价远大于收益。所以包在 solver 外面：`run_suite` 一行都不用动。
+    #
+    # ⚠️ 为什么在 `--loop` 之后：循环模式有自己的逐轮落盘，语义不同
+    #    （一轮一条曲线点，不是一次运行）。**本版只覆盖单轮 bench 路径** ——
+    #    这是缺口，明写在这里，不当成"已经全覆盖"。
+    #
+    # ⛔ 三条边界见 `bench/answer_store.py` 模块头：只写答案文本、跑完才写、
+    #    任何判据都不读它。
+    _ans_log = None
+    if not getattr(args, "no_answers", False):
+        from bench.answer_store import AnswerLog, make_run_id, records_path
+        _ans_log = AnswerLog(records_path(s.paths.bench))
+        _solver_raw = solver
+
+        def solver(t):                                             # type: ignore[misc]
+            a = _solver_raw(t)
+            _ans_log.add(t.id, a)
+            return a
+
     m, rep = run_suite(solver, scorer, suite, repeat_n=repeat_n,
                        budget_tag=tag, candidate=label, provenance=prov,
                        critique_ledger=_crit)
@@ -1349,14 +1373,19 @@ def cmd_bench(args) -> int:
         ok, why = store.save(m, caliber, allow_supersede=args.allow_supersede)
         print(f"  {'✅' if ok else '⛔'} {why}")
 
+    # ── 这一轮的身份证：**先算一次，两处共用** ───────────────────────────
+    # 第七十九轮：`answers.jsonl` 要能与 `runs.jsonl` 靠 `run_id` 直接 join。
+    # 两处各造一次 = 两份 id 对不上，而"这次答案属于哪次运行"就又只能靠人记。
+    # ⛔ pid 会重用，所以加上写盘时刻：`run_id` 才是判据，pid 只是它的一半。
+    _run_id = make_run_id() if _ans_log is not None else f"{os.getpid()}@{int(time.time())}"
+
     append_jsonl(s.paths.bench / "runs.jsonl", {
         # ── 独立运行的身份证（第七十二轮，§36）────────────────────────────
         # 为什么必须落盘：噪声下限得在**独立进程之间**量，而"这次运行是不是
         # 另一次运行"在这之前**在数据里不存在** —— 只能靠人记"我跑了几次"。
         # 于是 `--repeat 2` 的两次重复与"跑了两个进程"在证据里长得一模一样，
         # 而前者系统性低估噪声（DESIGN §35 实测 0.2619 vs 0.0000）。
-        # ⛔ pid 会重用，所以加上写盘时刻：`run_id` 才是判据，pid 只是它的一半。
-        "run_id": f"{os.getpid()}@{int(time.time())}",
+        "run_id": _run_id,
         "solver": label, "budget_tag": tag, "repeat": repeat_n,
         "caliber_sig": caliber.signature(), "caliber": caliber.as_dict(),
         "measurement": measurement_to_dict(m), "report": rep.as_dict(),
@@ -1373,6 +1402,18 @@ def cmd_bench(args) -> int:
                                         if cal.evidence is not None else None)},
     })
     print(f"  读数已落盘 {s.paths.bench / 'runs.jsonl'}")
+
+    # ── 答案本体：跑完之后写一次（与账本同理，轮内写会污染下一题）────────
+    if _ans_log is not None:
+        _w = _ans_log.save(
+            run_id=_run_id,
+            meta={"solver": label, "suite": suite.name, "repeat": repeat_n,
+                  "caliber_sig": caliber.signature(), "budget_tag": tag})
+        # ⚠️ 一句必须念出来的是 `max_chars`：它一旦停在 200 附近，
+        #    就说明某处又偷偷截断了（DESIGN §42 四处截断的共同形态）。
+        print(f"  答案已落盘 {_w['path']}  {_w['n_answers']} 条  "
+              f"共 {_w['chars']} 字符  最长 {_w['max_chars']} 字符  "
+              f"截断 {_w['truncated']} 条")
     return 0 if rep.trustworthy() else 1
 
 
@@ -1398,6 +1439,10 @@ def main() -> int:
                    help="跨会话分数账本路径（默认 $V1_STATE_DIR/score_ledger.jsonl）")
     p.add_argument("--no-ledger", action="store_true",
                    help="本轮不读写分数账本（自我模型空着起跑，用于对照）")
+    p.add_argument("--no-answers", action="store_true",
+                   help="不落答案本体（默认落 `bench_out/answers.jsonl`）。"
+                        "⛔ 关掉它就等于放弃「错在哪一行」的复核能力 —— 见 "
+                        "DESIGN §42 与 bench/answer_store.py 的表")
     p.add_argument("--critique-file", default="",
                    help="评审账本路径（默认 state/critique.jsonl）。"
                         "打分器给的理由会落盘到这里，供**下一轮**读取")

@@ -8573,6 +8573,112 @@ check(RS, "AZ87 ★容差必须盖住读数量化（`_TOL` 太小 ⇒ 边界由�
       f"+3格={_AZ87_C50[0]} +4格={_AZ87_C51[0]} ｜ 容差调紧后同一读数={_AZ87_TIGHT} ｜ "
       f"已还原={_NF_MC._TOL == _MC_TOL}")
 
+# ═══════════════════════════════════════════════════════════════════════════
+# AZ88 ★答案本体落盘（第七十九轮，§42）
+#
+# 为什么要这条：同一形态的截断在四处出现过（`mw/bench.py:801` 的 `why[:200]`、
+# `mw/critique.py:42` 的 `_MAX_ANSWER=200`、日志只印答案 5 行、`runs.jsonl`
+# 只存 `report`）。后果是**量到一个 `AttributeError` 却看不到它写的那行代码**，
+# 只能拿合成样本做反证 —— 「能证明自检看不见这类错」与「能证明模型就是这么写的」
+# 是两件事，而后者才决定下一轮该改什么。
+#
+# 这条钉三件事：
+#   ① **默认不截断**（5500 字符写读逐字相同，`chars`/`sha256` 自洽）；
+#   ② **截断必须自陈**（设了 cap 就在记录里写 `truncated: true`）；
+#   ③ **它不是分数通道**（落盘键里没有分数/判据；`mw/` 零引用）。
+#
+# ⛔ 全部输入**自带**（临时目录里现造），不读冻结池子、不读 `bench_out/`
+#    —— 否则就重演「一个断言依赖另一个断言所检验的那份读数」那个耦合（§41.7）。
+# 行为侧的「真的接通了」由 `bench/probe_answer_store.py` P6/P7 证明，
+# 这里只加一条**静态锚**说明接线点在 `run.py`（静态锚比行为锚弱，明写）。
+# ═══════════════════════════════════════════════════════════════════════════
+import tempfile as _AZ88_tf
+
+from bench import answer_store
+
+#: 5500 字符 ≈ 11 倍于那四处历史截断的长度。用「约 11 倍」而不是「恰好 5500」，
+#: 是为了让判据的意图可读：它要证明的是**量级**上不可能被 200 切掉。
+_AZ88_LONG = "".join(f"第{i:04d}行：def norm_sg05(rows): return rows  # 填充\n"
+                     for i in range(120))
+with _AZ88_tf.TemporaryDirectory(prefix="v1_az88_") as _az88_td:
+    _AZ88_P = Path(_az88_td) / "answers.jsonl"
+    _AZ88_LOG = answer_store.AnswerLog(_AZ88_P)
+    _AZ88_LOG.add("sg05", _AZ88_LONG)
+    _AZ88_W = _AZ88_LOG.save(run_id="4242@1792844000", meta={"solver": "test"})
+    _AZ88_ROWS = answer_store.AnswerLog.read(_AZ88_P)
+    _AZ88_GOT = _AZ88_ROWS[0]["answer"] if _AZ88_ROWS else ""
+    # ⛔ 「按轮取答案」是这个文件的主要用法。第一版只在 header 上写 `run_id`，
+    #    于是 `read(run_id=...)` 过滤出**空列表**（真跑当场 KeyError）。
+    _AZ88_BYRUN = answer_store.AnswerLog.read(_AZ88_P, run_id="4242@1792844000")
+
+    # ── 反证装置：`verify_rows` 必须能抓出**撒谎的行**（否则它是死代码）──
+    _AZ88_LIE_LEN = answer_store.verify_rows([{**_AZ88_ROWS[0], "chars": 7}])
+    _AZ88_LIE_SHA = answer_store.verify_rows([{**_AZ88_ROWS[0], "sha256": "0" * 64}])
+
+    # ── cap 一侧：设了就必须截断，且**自己说出来** ──────────────────────
+    _AZ88_P2 = Path(_az88_td) / "capped.jsonl"
+    _AZ88_L2 = answer_store.AnswerLog(_AZ88_P2, cap=200)
+    _AZ88_L2.add("sg05", _AZ88_LONG)
+    _AZ88_W2 = _AZ88_L2.save(run_id="4243@1792844001")
+    _AZ88_R2 = answer_store.AnswerLog.read(_AZ88_P2)[0]
+
+    # ── 空缓冲：必须仍写 header（「没答案」≠「没写过」）──────────────────
+    _AZ88_P3 = Path(_az88_td) / "empty.jsonl"
+    answer_store.AnswerLog(_AZ88_P3).save(run_id="4244@1792844002")
+    _AZ88_HDR = [json.loads(x) for x in _AZ88_P3.read_text().splitlines() if x.strip()]
+
+    # ── 空 run_id：必须抛错（否则「答案属于哪次运行」不可判定）───────────
+    try:
+        answer_store.AnswerLog(Path(_az88_td) / "bad.jsonl").save(run_id=" ")
+        _AZ88_EMPTY_ID = "没有抛错"
+    except ValueError as _e:
+        _AZ88_EMPTY_ID = f"ValueError: {str(_e)[:24]}"
+
+    # ── 边界：它不是分数通道 ─────────────────────────────────────────────
+    _AZ88_KEYS = set(_AZ88_ROWS[0].keys()) if _AZ88_ROWS else set()
+    _AZ88_BANNED = {"score", "passed", "verdict"} & _AZ88_KEYS
+    _AZ88_MW_HITS = [p.name for p in (Path(__file__).resolve().parent.parent / "mw").glob("*.py")
+                     if "answer_store" in p.read_text(encoding="utf-8")]
+    _AZ88_RUNPY = (Path(__file__).resolve().parent.parent / "run.py").read_text(encoding="utf-8")
+
+check(RS, "AZ88 ★答案本体落盘：默认不截断 / 截断必须自陈 / 它不是分数通道\n"
+          "          ① 5500 字符写读**逐字相同**，`chars` 与 `max_chars` 都是 5500\n"
+          "             —— 那四处历史截断都切在 200，这里必须差一个量级；\n"
+          "          ② 设 `cap=200` ⇒ 截到 200 **且记录里写 `truncated: true`**\n"
+          "             （四处历史截断真正的毛病不是「截了」，是**截了不说**）；\n"
+          "          ③ 空缓冲仍写 header（`n_answers=0`）：\n"
+          "             「这次一条答案都没有」与「这个文件根本没被写过」是两件事；\n"
+          "          ④ 空 `run_id` ⇒ 抛 ValueError（没有它就 join 不到 `runs.jsonl`）；\n"
+          "          ⑤ 落盘键里**没有** score / passed / verdict ⇒ 它不是分数通道；\n"
+          "          ⑥ `mw/` 里零引用（判据侧不许读答案本体，AO11 同一条边界）；\n"
+          "          ⑦ 反证：`verify_rows` 对「chars 撒谎」与「sha 撒谎」各命中一次\n"
+          "             —— 否则那两道自洽检查是死代码；\n"
+          "          ⑧ 静态锚：`run.py` 里有接线点与 `--no-answers` 开关\n"
+          "             （⛔ 静态锚比行为锚弱：「真的接通了」由探针 P6/P7 证明）。\n"
+          "          ⑨ **逐行**写 `run_id`，且 `read(run_id=...)` 能按轮取到\n"
+          "             —— 第一版只写在 header 上，按轮取是空列表（真跑当场 KeyError）。\n"
+          "          撤回语义：把 `stored = text if ...` 改成 `text[:200]` ⇒ 必须红。",
+      _AZ88_GOT == _AZ88_LONG and len(_AZ88_LONG) > 2000
+      and _AZ88_W["max_chars"] == len(_AZ88_LONG)
+      and len(_AZ88_BYRUN) == 1
+      and _AZ88_ROWS[0].get("run_id") == "4242@1792844000"
+      and answer_store.verify_rows(_AZ88_ROWS) == {"n": 1, "bad_len": 0, "bad_sha": 0}
+      and _AZ88_R2["chars"] == 200 and _AZ88_R2["truncated"] is True
+      and _AZ88_W2["truncated"] == 1
+      and len(_AZ88_HDR) == 1 and _AZ88_HDR[0]["kind"] == "header"
+      and _AZ88_HDR[0]["n_answers"] == 0
+      and _AZ88_EMPTY_ID.startswith("ValueError")
+      and _AZ88_BANNED == set()
+      and _AZ88_MW_HITS == []
+      and _AZ88_LIE_LEN["bad_len"] == 1 and _AZ88_LIE_SHA["bad_sha"] == 1
+      and "answer_store" in _AZ88_RUNPY and "--no-answers" in _AZ88_RUNPY
+      and answer_store.NO_CAP == 0,
+      f"写入 {len(_AZ88_LONG)} 字符 ｜ 读回 {len(_AZ88_GOT)} 字符 ｜ "
+      f"落盘 max={_AZ88_W['max_chars']} ｜ cap 后 chars={_AZ88_R2['chars']} "
+      f"truncated={_AZ88_R2['truncated']} ｜ 空 run_id ⇒ {_AZ88_EMPTY_ID} ｜ "
+      f"键={sorted(_AZ88_KEYS)} ｜ mw 命中={_AZ88_MW_HITS} ｜ "
+      f"反证 坏chars={_AZ88_LIE_LEN['bad_len']} 坏sha={_AZ88_LIE_SHA['bad_sha']}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

@@ -30,12 +30,21 @@ echo "步骤 1/7  依赖审计（必须零第三方依赖）"
 echo "=============================================================="
 if "$PY" - <<'EOF'
 import ast, sys, pathlib
+#: 本地一等公民：`run` 是本文件、`mw` 是内核、`bench` 是量具与分析脚本
+#: （第七十九轮起 `run.py` 要 import `bench.answer_store` 才落答案本体）。
+#: ⛔ 允许它们的同时**必须验证它确实是本仓库的目录** —— `pip install bench`
+#:    是真实存在的第三方包，只把名字写进白名单等于给同名包开后门。
+LOCAL = {"run", "mw", "bench"}
 ALLOWED = {
     "argparse","ast","collections","copy","dataclasses","hashlib","json","math","os","re",
     "shlex","sqlite3","statistics","subprocess","sys","tempfile","time","tokenize",
-    "typing","urllib","pathlib","__future__","run","mw",
-}
+    "typing","urllib","pathlib","__future__",
+} | LOCAL
 bad = []
+for _local in sorted(LOCAL):
+    # 本地模块必须**在本仓库里真实存在**：同名目录（`mw/`、`bench/`）或同名文件（`run`）。
+    if not (pathlib.Path(_local).is_dir() or pathlib.Path(_local + ".py").is_file()):
+        bad.append(f"白名单 {_local!r}: 仓库里既没有同名目录也没有同名 .py ⇒ 可能是第三方同名包")
 for p in list(pathlib.Path("mw").glob("*.py")) + [pathlib.Path("run.py")]:
     for n in ast.walk(ast.parse(p.read_text(encoding="utf-8"))):
         mods = []
@@ -552,6 +561,30 @@ if "$PY" bench/probe_mutate_driver.py > /tmp/v1_mutate_driver.out 2>&1; then
 else
   echo "  ❌ 变异驱动器自检失败（有一条纪律没牙，或冻结证据不合格）："
   tail -20 /tmp/v1_mutate_driver.out | sed 's/^/  /'
+  FAIL=1
+fi
+
+echo
+echo "=============================================================="
+echo "步骤 7h  答案本体落盘自检（全文 / 指纹 / 截断自陈 / 真跑接线）"
+echo "=============================================================="
+# 第七十九轮（§42）：同一形态的截断在四处出现过（`why[:200]`、
+# `critique._MAX_ANSWER=200`、日志印 5 行、`runs.jsonl` 不存答案），
+# 于是量到一个 `AttributeError` 却看不到它写的那行代码。
+# 这一步钉的是**量具**，不是能力：
+#   ① 默认不截断（5500 字符写读逐字相同）＋ `chars`/`sha256` 自洽；
+#   ② 设了 cap 就必须在记录里写 `truncated: true`（不许静默切）；
+#   ③ 空缓冲仍写 header（「没答案」≠「没写过」）；空 run_id 直接拒；
+#   ④ 边界：落盘键里没有分数/判据字段，且 `mw/` 零引用；
+#   ⑤ 反证：模拟历史缺陷（默认 cap=200）⇒ 「逐字相同」这条判据必须变假；
+#   ⑥ **接线证明**：真起一个 `run.py --solver oracle` 子进程（离线、零模型调用），
+#      要求 `answers.jsonl` 的 run_id 能在 `runs.jsonl` 里找到、最长答案 > 200 字符。
+if "$PY" bench/probe_answer_store.py > /tmp/v1_answer_store.out 2>&1; then
+  grep -E "^  (✅|❌) P" /tmp/v1_answer_store.out | sed 's/^/  /'
+  echo "  ✅ 答案落盘自检 11 项全过"
+else
+  echo "  ❌ 答案落盘自检失败（量具坏了，结论会变假）："
+  tail -20 /tmp/v1_answer_store.out | sed 's/^/  /'
   FAIL=1
 fi
 

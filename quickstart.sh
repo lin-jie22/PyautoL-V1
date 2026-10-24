@@ -11,7 +11,7 @@ say() { printf '\n\033[1m== %s ==\033[0m\n' "$1"; }
 say "1/4 离线端到端自检（零网络，数秒）"
 "$PY" run.py --selftest || { echo "❌ selftest 失败"; exit 1; }
 
-say "2/4 契约测试（575 条断言；每条都有配套撤回态证明不是恒真）"
+say "2/4 契约测试（576 条断言；每条都有配套撤回态证明不是恒真）"
 "$PY" tests/contract_test.py | tail -3 || { echo "❌ 契约红"; exit 1; }
 
 say "3/4 锚层（bench_test：五把假尺子的反证组 —— 尺子先自证有分辨力）"

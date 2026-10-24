@@ -1002,6 +1002,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ87", "bench/mutation_check.py",
      "_TOL = 1e-3",
      "_TOL = 1e-9"),
+
+    # ── 第七十九轮：答案本体落盘（§42）─────────────────────────────────
+    # ㊸ 把「默认全文」退回成「静默截 200」—— 这正是那四处历史缺陷的形态
+    #    （`why[:200]` / `_MAX_ANSWER=200` / 日志 5 行 / runs.jsonl 不存答案）。
+    #    ⇒ 只有 AZ88 红：它守的是「5500 字符写读逐字相同」，
+    #      一旦被切成 200，那一条必然为假。
+    #    ⚠️ 关键在「**静默**」：如果只是把 cap 默认值改掉，`truncated` 仍会自陈，
+    #      AZ88 的第②条照样绿 —— 所以这里撤的是**存储那一行**，不是参数。
+    ("AZ88", "bench/answer_store.py",
+     "        stored = text if self.cap <= NO_CAP else text[: self.cap]",
+     "        stored = text[:200]"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

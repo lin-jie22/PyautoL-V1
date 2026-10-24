@@ -935,6 +935,27 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #      实际只有 4 次独立运行。旧实现按条数算，会给它一个 0.0000。
     ("AZ80", "bench/evidence/noise_s72/pool_direct_r1.jsonl",
      '\"run_id\": \"65070@1792816977\"', '\"run_id\": \"64832@1792816915\"'),
+    # ── 第七十四轮（§37）：用例数不是刻度 ─────────────────────────────────
+    # ㉟ 天花板算**虚高**（定义空间之外多算 10 种）
+    #    ⇒ 只有 AZ81 红：`species(CASES) == ceiling` 永远不成立 ⇒ **饱和判不出来**，
+    #      于是"再加用例"这件事永远有理 —— 这正是当初拍板 21 条的推理方式。
+    #    ⚠️ 第一版用的是"删掉一条追加用例"，结果 AZ76 连带红（落盘 jsonl 的期望
+    #      是按 14 条算的）⇒ 那是"用例与产物两处锚定"的耦合，不是本条的意图，
+    #      换成"天花板偏大"这条单红版本（许撤不许藏：能单红的不许登记 COUPLED）。
+    ("AZ81", "bench/casepower.py",
+     "        return self.species([list(c) for c in self.space])[0]",
+     "        return self.species([list(c) for c in self.space])[0] + 10"),
+    # ㊱ 反证里把「当前全集」当 base 传（参数含义错）
+    #    ⇒ 只有 AZ82 红：`③ 去掉追加就掉` 退化成 `full < full`（恒假）。
+    #    ⚠️ 这条不是编的：本轮第一版就是这么写的，实测当场红。
+    ("AZ82", "bench/casepower.py",
+     "    bare = pw.species(base)[0]", "    bare = pw.species(list(base) + list(extra))[0]"),
+    # ㊲ 反证②的判据偷偷换成**条数**（"抄一遍"之后条数变了，所以"没变"不成立）
+    #    ⇒ 只有 AZ82 红：这条撤的正是"用条数冒充刻度"本身 ——
+    #      尺子若按条数比，抄一遍就会被读成"区分力提升了"。
+    ("AZ82", "bench/casepower.py",
+     '        "② 抄一遍不涨": dupall == full,',
+     '        "② 抄一遍不涨": dupall == len(cases) + len(extra),'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

@@ -1,0 +1,50 @@
+  [  1/12] c 臂 69666 sg01 真FAIL SEMANTIC  丢 2格 断言 0 → 没牙
+Traceback (most recent call last):
+  File "/Users/linshaojie/V1/mw/llm.py", line 107, in complete
+    with urllib.request.urlopen(req, timeout=_to) as resp:
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/urllib/request.py", line 189, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/urllib/request.py", line 489, in open
+    response = self._open(req, data)
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/urllib/request.py", line 506, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/urllib/request.py", line 466, in _call_chain
+    result = func(*args)
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/urllib/request.py", line 1348, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/urllib/request.py", line 1323, in do_open
+    r = h.getresponse()
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/http/client.py", line 1450, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/http/client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/socket.py", line 719, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/linshaojie/V1/bench/probe_selftest.py", line 779, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/linshaojie/V1/bench/probe_selftest.py", line 552, in main
+    rec = one(arm, pr)
+  File "/Users/linshaojie/V1/bench/probe_selftest.py", line 521, in one
+    text = llm.complete(
+        [Message("system", SYSTEM), Message("user", prompt)],
+        max_tokens=a.max_tokens, temperature=0.0, timeout_s=240.0)
+  File "/Users/linshaojie/V1/mw/llm.py", line 116, in complete
+    raise LLMError(f"请求失败: {type(e).__name__}: {e}",
+                   transient=True) from e
+mw.llm.LLMError: 请求失败: TimeoutError: timed out

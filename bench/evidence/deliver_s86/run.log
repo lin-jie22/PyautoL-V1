@@ -1,0 +1,63 @@
+[1] sg05 × base …
+     ok=False attempts=7 170.4s finish=- len=0 cells=0/14
+[2] sg05 × off …
+     ok=True attempts=1 43.6s finish=stop len=705 cells=14/14
+[3] sg05 × base8k …
+     ok=True attempts=4 81.4s finish=stop len=474 cells=14/14
+[4] sg06 × base …
+     ok=True attempts=1 22.3s finish=stop len=568 cells=8/14
+[5] sg06 × off …
+     ok=True attempts=2 16.2s finish=stop len=631 cells=14/14
+[6] sg06 × base8k …
+     ok=True attempts=1 33.7s finish=stop len=576 cells=8/14
+[7] sg07 × base …
+     ok=True attempts=1 129.3s finish=stop len=599 cells=14/14
+[8] sg07 × off …
+     ok=True attempts=6 132.2s finish=stop len=752 cells=1/14
+[9] sg07 × base8k …
+     ok=True attempts=1 40.9s finish=stop len=574 cells=14/14
+[10] sg10 × base …
+     ok=True attempts=1 27.8s finish=stop len=426 cells=14/14
+[11] sg10 × off …
+     ok=True attempts=3 49.2s finish=stop len=628 cells=14/14
+[12] sg10 × base8k …
+     ok=True attempts=4 81.5s finish=stop len=429 cells=14/14
+[13] sg02 × base …
+     ok=True attempts=2 69.1s finish=length len=0 cells=0/14
+[14] sg02 × off …
+     ok=True attempts=1 6.8s finish=stop len=675 cells=1/14
+[15] sg02 × base8k …
+     ok=True attempts=1 108.0s finish=length len=0 cells=0/14
+
+  一、逐格读数
+  题      臂            墙钟   试  finish     截断   空     字数    思考       格
+  sg05   base      170.4   7  -           -   -      0     -    0/14
+  sg05   off        43.6   1  stop        -   -    705     0   14/14
+  sg05   base8k     81.4   4  stop        -   -    474  1177   14/14
+  sg06   base       22.3   1  stop        -   -    568  1241    8/14
+  sg06   off        16.2   2  stop        -   -    631     0   14/14
+  sg06   base8k     33.7   1  stop        -   -    576  2328    8/14
+  sg07   base      129.3   1  stop        -   -    599  1521   14/14
+  sg07   off       132.2   6  stop        -   -    752     0    1/14
+  sg07   base8k     40.9   1  stop        -   -    574  1711   14/14
+  sg10   base       27.8   1  stop        -   -    426  1341   14/14
+  sg10   off        49.2   3  stop        -   -    628     0   14/14
+  sg10   base8k     81.5   4  stop        -   -    429  1185   14/14
+  sg02   base       69.1   2  length      是   是      0  4050    0/14
+  sg02   off         6.8   1  stop        -   -    675     0    1/14
+  sg02   base8k    108.0   1  length      是   是      0  8129    0/14
+
+  二、按臂汇总（分母 = 该臂跑了几题）
+  臂            交付     可打分    截断   空    429/失败      墙钟中位      输出中位      思考中位       格
+  base        3/5     3/5     1   1         8      69.1       568      1521   36/70
+  off         5/5     5/5     0   0         8      43.6       675         0   44/70
+  base8k      4/5     4/5     1   1         6      81.4       574      1711   50/70
+
+  三、假设裁决（预注册三条，先看它们）
+    · P1 若 H1 成立：`off` 的 length 次数 < `base`，且 completion_tokens 中位数明显下降
+    · P2 若 H2 成立：`base8k` 的 length 次数同样下降（与 `off` 同向）
+    · P3 若两者都不成立：length 不降 ⇒ 截断既不是思考也不是预算，本轮的三个假设全错
+    ⇒ H1(思考吃预算) 支持：截断 1 → 0
+    ⇒ H2(话多撞上限) 不支持：截断 1 → 1
+
+  墙钟合计 1016.9s｜记录 15 条 ⇒ bench/evidence/deliver_s86/raw.jsonl

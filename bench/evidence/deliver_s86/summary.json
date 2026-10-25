@@ -1,0 +1,324 @@
+{
+ "model": "glm-4.7-flash",
+ "n_records": 15,
+ "tasks": [
+  "sg02",
+  "sg05",
+  "sg06",
+  "sg07",
+  "sg10"
+ ],
+ "arms": [
+  "base",
+  "base8k",
+  "off"
+ ],
+ "control": {
+  "ts": "2026-10-25T23:43:39",
+  "kind": "control",
+  "model": "glm-4.7-flash",
+  "max_tokens": 8,
+  "body_sha": "de7c6a3e2ed56b23",
+  "ok": true,
+  "finish_reason": "length",
+  "content": "",
+  "content_len": 0,
+  "usage": {
+   "completion_tokens": 8,
+   "completion_tokens_details": {
+    "reasoning_tokens": 8
+   },
+   "prompt_tokens": 8,
+   "prompt_tokens_details": {
+    "cached_tokens": 2
+   },
+   "total_tokens": 16
+  },
+  "reasoning_tokens": 8,
+  "elapsed_s": 15.4,
+  "errors": [
+   "HTTP 429: {\"error\":{\"code\":\"1305\",\"message\":\"该模型当前访问量过大，请您稍后再试\"}}"
+  ]
+ },
+ "per_arm": {
+  "base": {
+   "delivered": 3,
+   "n": 5,
+   "truncated": 1,
+   "empty": 1,
+   "retries": 7,
+   "cells": 36,
+   "cells_total": 70,
+   "completion_tokens": [
+    1461,
+    1530,
+    1759,
+    4096
+   ],
+   "reasoning_tokens": [
+    1241,
+    1341,
+    1521,
+    4050
+   ]
+  },
+  "base8k": {
+   "delivered": 4,
+   "n": 5,
+   "truncated": 1,
+   "empty": 1,
+   "retries": 6,
+   "cells": 50,
+   "cells_total": 70,
+   "completion_tokens": [
+    1379,
+    1386,
+    1965,
+    2555,
+    8192
+   ],
+   "reasoning_tokens": [
+    1177,
+    1185,
+    1711,
+    2328,
+    8129
+   ]
+  },
+  "off": {
+   "delivered": 5,
+   "n": 5,
+   "truncated": 0,
+   "empty": 0,
+   "retries": 8,
+   "cells": 44,
+   "cells_total": 70,
+   "completion_tokens": [
+    225,
+    243,
+    244,
+    280,
+    294
+   ],
+   "reasoning_tokens": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ "per_task": [
+  {
+   "task_id": "sg05",
+   "arm": "base",
+   "finish_reason": "",
+   "truncated": null,
+   "empty": null,
+   "content_len": 0,
+   "cells": 0,
+   "cells_total": 14,
+   "attempts": 7,
+   "elapsed_s": 170.4,
+   "reasoning_tokens": null,
+   "completion_tokens": null
+  },
+  {
+   "task_id": "sg05",
+   "arm": "off",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 705,
+   "cells": 14,
+   "cells_total": 14,
+   "attempts": 1,
+   "elapsed_s": 43.6,
+   "reasoning_tokens": 0,
+   "completion_tokens": 280
+  },
+  {
+   "task_id": "sg05",
+   "arm": "base8k",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 474,
+   "cells": 14,
+   "cells_total": 14,
+   "attempts": 4,
+   "elapsed_s": 81.4,
+   "reasoning_tokens": 1177,
+   "completion_tokens": 1386
+  },
+  {
+   "task_id": "sg06",
+   "arm": "base",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 568,
+   "cells": 8,
+   "cells_total": 14,
+   "attempts": 1,
+   "elapsed_s": 22.3,
+   "reasoning_tokens": 1241,
+   "completion_tokens": 1461
+  },
+  {
+   "task_id": "sg06",
+   "arm": "off",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 631,
+   "cells": 14,
+   "cells_total": 14,
+   "attempts": 2,
+   "elapsed_s": 16.2,
+   "reasoning_tokens": 0,
+   "completion_tokens": 225
+  },
+  {
+   "task_id": "sg06",
+   "arm": "base8k",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 576,
+   "cells": 8,
+   "cells_total": 14,
+   "attempts": 1,
+   "elapsed_s": 33.7,
+   "reasoning_tokens": 2328,
+   "completion_tokens": 2555
+  },
+  {
+   "task_id": "sg07",
+   "arm": "base",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 599,
+   "cells": 14,
+   "cells_total": 14,
+   "attempts": 1,
+   "elapsed_s": 129.3,
+   "reasoning_tokens": 1521,
+   "completion_tokens": 1759
+  },
+  {
+   "task_id": "sg07",
+   "arm": "off",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 752,
+   "cells": 1,
+   "cells_total": 14,
+   "attempts": 6,
+   "elapsed_s": 132.2,
+   "reasoning_tokens": 0,
+   "completion_tokens": 294
+  },
+  {
+   "task_id": "sg07",
+   "arm": "base8k",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 574,
+   "cells": 14,
+   "cells_total": 14,
+   "attempts": 1,
+   "elapsed_s": 40.9,
+   "reasoning_tokens": 1711,
+   "completion_tokens": 1965
+  },
+  {
+   "task_id": "sg10",
+   "arm": "base",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 426,
+   "cells": 14,
+   "cells_total": 14,
+   "attempts": 1,
+   "elapsed_s": 27.8,
+   "reasoning_tokens": 1341,
+   "completion_tokens": 1530
+  },
+  {
+   "task_id": "sg10",
+   "arm": "off",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 628,
+   "cells": 14,
+   "cells_total": 14,
+   "attempts": 3,
+   "elapsed_s": 49.2,
+   "reasoning_tokens": 0,
+   "completion_tokens": 244
+  },
+  {
+   "task_id": "sg10",
+   "arm": "base8k",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 429,
+   "cells": 14,
+   "cells_total": 14,
+   "attempts": 4,
+   "elapsed_s": 81.5,
+   "reasoning_tokens": 1185,
+   "completion_tokens": 1379
+  },
+  {
+   "task_id": "sg02",
+   "arm": "base",
+   "finish_reason": "length",
+   "truncated": true,
+   "empty": true,
+   "content_len": 0,
+   "cells": 0,
+   "cells_total": 14,
+   "attempts": 2,
+   "elapsed_s": 69.1,
+   "reasoning_tokens": 4050,
+   "completion_tokens": 4096
+  },
+  {
+   "task_id": "sg02",
+   "arm": "off",
+   "finish_reason": "stop",
+   "truncated": false,
+   "empty": false,
+   "content_len": 675,
+   "cells": 1,
+   "cells_total": 14,
+   "attempts": 1,
+   "elapsed_s": 6.8,
+   "reasoning_tokens": 0,
+   "completion_tokens": 243
+  },
+  {
+   "task_id": "sg02",
+   "arm": "base8k",
+   "finish_reason": "length",
+   "truncated": true,
+   "empty": true,
+   "content_len": 0,
+   "cells": 0,
+   "cells_total": 14,
+   "attempts": 1,
+   "elapsed_s": 108.0,
+   "reasoning_tokens": 8129,
+   "completion_tokens": 8192
+  }
+ ]
+}

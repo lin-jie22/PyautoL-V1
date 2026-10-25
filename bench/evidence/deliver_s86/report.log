@@ -1,0 +1,15 @@
+sg05	base	170.4	7		0	0/14
+sg05	off	43.6	1	stop	705	14/14
+sg05	base8k	81.4	4	stop	474	14/14
+sg06	base	22.3	1	stop	568	8/14
+sg06	off	16.2	2	stop	631	14/14
+sg06	base8k	33.7	1	stop	576	8/14
+sg07	base	129.3	1	stop	599	14/14
+sg07	off	132.2	6	stop	752	1/14
+sg07	base8k	40.9	1	stop	574	14/14
+sg10	base	27.8	1	stop	426	14/14
+sg10	off	49.2	3	stop	628	14/14
+sg10	base8k	81.5	4	stop	429	14/14
+sg02	base	69.1	2	length	0	0/14
+sg02	off	6.8	1	stop	675	1/14
+sg02	base8k	108.0	1	length	0	0/14

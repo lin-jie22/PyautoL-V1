@@ -609,10 +609,16 @@ echo
 #     **`derive()` 在 10 题 oracle 上必须一条都不响**（这是"不变量"唯一能拿到的证明）、
 #     题面解析器三处变异 + 「认不出的行必须抛」。第三件同样是否定性/积极性混合读数，
 #     而且它给了本轮**正面**结论（结构约束可抽），正面结论更容易由"不变量推松了"伪造。
+#   · `probe_delivery.py --self-check`（第八十六轮）：八组反证 —— 三条臂**只差一个车身
+#     字段**（否则不是单变量）、截断/空交付检测器有牙、429 重试而 400 不重试、
+#     body 级错误（HTTP 200 + error）按码分流、reasoning token 缺字段时返回 `None`
+#     而不是 0、`DIRECT_SYSTEM` 从 `run.py` 用 AST 取（不抄字面量 ⇒ 不漂移）、
+#     以及**打分口径对账**（用本探针的打分器重算 §49 的冻结答案，6 题必须逐格相同）。
+#     最后一条最要紧：探针自己另写一套判分就等于换尺子（§45.9 混口径）。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束探针，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'
@@ -656,6 +662,25 @@ echo "=============================================================="
 "$PY" bench/probe_select.py --report --pool v1 > /tmp/v1_probe_select.out 2>&1
 echo "  退出码 $?（=1 是「有害」这条读数的正常取值，不是失败）"
 sed -n '/二、机会/,$p' /tmp/v1_probe_select.out | sed 's/^/     /'
+
+# ── 步骤 7l：交付面探针的**打分口径对账**（第八十六轮）──────────────────────
+# 为什么这步判红、而 7k 不判红：7k 印的是**结论**（"闸当选择器有害"），结论可以被
+# 更好的实验推翻，所以只印不判；7l 查的是**尺子对不对** —— 探针用自己的 `score_of`
+# 重算 §49 冻结答案，只要有一格与台账记的不同，就说明探针在换尺子（§45.9）。
+# 尺子错了，后面所有交付读数全废 ⇒ 必须红。
+# ⚠️ `--run` 永不进收口：它要 key、要花钱、要联网，且结果是**通道读数**不是回归项。
+echo
+echo "=============================================================="
+echo "步骤 7l  交付面探针口径对账（重算 §49 冻结答案，零模型、零网络）"
+echo "=============================================================="
+if "$PY" bench/probe_delivery.py --replay > /tmp/v1_deliver_replay.out 2>&1; then
+  echo "  ✅ probe_delivery --replay"
+  sed 's/^/     /' /tmp/v1_deliver_replay.out
+else
+  echo "  ❌ 重算与台账不一致（探针在换尺子，交付读数一律作废）："
+  sed 's/^/     /' /tmp/v1_deliver_replay.out
+  FAIL=1
+fi
 
 echo
 if [ "$FAIL" -eq 0 ]; then

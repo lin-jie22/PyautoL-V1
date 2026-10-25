@@ -612,7 +612,7 @@ echo
 echo "=============================================================="
 echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束探针，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'
@@ -639,6 +639,23 @@ else
   sed 's/^/     /' /tmp/v1_pin.out
   FAIL=1
 fi
+
+# ── 步骤 7k：选择器读数（第八十五轮）─────────────────────────────────────────
+# 为什么它不是"再跑一个探针"，而是一步**读数**：
+#   §48 的结论是**否定性**的（闸当选择器在 v1 上 −12 格 ⇒ 有害）。否定性结论最容易被
+#   两种方式弄成假绿：① 探针坏了（⇒ 已挂在 7i 的 `--self-check` 里）；
+#   ② 有人把"有害"当成待修的 bug，改权重/改判据把它"修绿"。
+#   ⇒ 这里只**印**读数，退出码不判红（`--report` 返回 1 是它的正常输出之一）。
+# ⛔ 只跑 `--pool v1`：那个池子的两条链都冻结在 `bench/evidence/select_s85/` 里，
+#   新克隆的仓库也能跑。`--pool v2` 读 `bench_out/`（gitignore 的本地台账）
+#   ⇒ 不放进收口脚本，否则会在别人的机器上假红。
+echo
+echo "=============================================================="
+echo "步骤 7k  选择器读数（v1 池，零模型、零网络，**不判红**）"
+echo "=============================================================="
+"$PY" bench/probe_select.py --report --pool v1 > /tmp/v1_probe_select.out 2>&1
+echo "  退出码 $?（=1 是「有害」这条读数的正常取值，不是失败）"
+sed -n '/二、机会/,$p' /tmp/v1_probe_select.out | sed 's/^/     /'
 
 echo
 if [ "$FAIL" -eq 0 ]; then

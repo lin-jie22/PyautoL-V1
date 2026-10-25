@@ -1,0 +1,140 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  tasks_v1  n=6  suite_sha=cee95582ab2510350c01b1ebcfca97a0
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=6/6
+  sg01: oracle=1.0000 partial=0.2857 null=0.0000 ✅
+  sg02: oracle=1.0000 partial=0.1429 null=0.0000 ✅
+  sg03: oracle=1.0000 partial=0.2143 null=0.0000 ✅
+  sg04: oracle=1.0000 partial=0.2857 null=0.0000 ✅
+  sg05: oracle=1.0000 partial=0.2857 null=0.0000 ✅
+  sg06: oracle=1.0000 partial=0.1429 null=0.0000 ✅
+  理由: 全部 6 条两极可分，其中 6 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=d08fa26b74100ea0
+  [观察]
+    - sg01: oracle=1.0000 partial=0.2857 null=0.0000
+    - sg02: oracle=1.0000 partial=0.1429 null=0.0000
+    - sg03: oracle=1.0000 partial=0.2143 null=0.0000
+    - sg04: oracle=1.0000 partial=0.2857 null=0.0000
+    - sg05: oracle=1.0000 partial=0.2857 null=0.0000
+    - sg06: oracle=1.0000 partial=0.1429 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 6 条任务上两极可分
+    - 中段有序检查 6 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=cee95582ab25；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 217 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=1x  repeat=1 ---
+09:34:42 ▶ 任务开始: 写一个函数 norm_sg01(rows)，参数是字符串列表。按**下面列出的先后顺序**依次处理，返回处理完的列表：
+① 去掉每行首尾的空白字符
+② 按去掉首尾空白并转成小写后相同的键去重，保留最后一次出现的那一行（输出仍按原来的先后顺序
+09:34:42   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+09:35:02   [1] 通道=深 候选=1
+09:35:05       ↳ finish ok=True 直接实现规范要求的函数
+09:35:05       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 're'（在 norm_sg01 内被引用，模块里既没有 import 也没有赋值）
+09:35:05       🔁 失配[outcome] finish({'answer': "```python\ndef norm_sg01(rows):\n    # ①  预演=成功 实际=失败 ⇒ 已沉淀为启发式
+09:35:05       📎 回看 b#1 因由=mismatch 窗=whole 81/81 字
+09:35:36   [2] 通道=深 候选=2
+09:35:36       ⏭ 重复动作已跳过（不产生新信息）: finish
+09:35:36       ✋ [guard:tool_misuse] 拦截 —— shell 未开启（需显式 --allow-shell）
+09:35:37   ⛔ 全部候选被拦 (2 次连续失败)
+09:35:57   [3] 通道=深 候选=1
+09:35:57       ⊘ [values:answer] 否决 — 空答案
+09:35:57   ⛔ 全部候选被拦 (3 次连续失败)
+09:35:57   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+09:36:06   📦 收尾交付 350 字符（来源=收尾调用）
+09:36:06 ■ closed | steps=5 | guard_blocked=1 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=1.333 memory>reason=1.0 reason>act=0.25] 回流=1.0 | 语义记忆=1 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=7 | 墙钟放弃首发=0/重试=1 | 回看=1次/81字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/0过/1打回/0放弃 判据=5项(非空/函数名 norm_sg01/语言标签/可编译/未定义名) | 收尾=1次(步0/时1 来源收尾调用:1 350字) 改交付=1(与被闸打回那版同=0)
+09:36:08 ▶ 任务开始: 写一个函数 norm_sg02(rows)，参数是字符串列表。按**下面列出的先后顺序**依次处理，返回处理完的列表：
+① 把每行内部连续的空白压成一个空格（制表符也算空白）
+② 去掉每行首尾的空白字符
+③ 每行前面加上固定前缀「[v2] 
+09:36:08   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+09:36:21   [1] 通道=深 候选=1
+09:36:25       ↳ finish ok=True 直接实现规范要求的函数
+09:36:25   ✅ 收尾: ```python
+def norm_sg02(rows):
+    from collections import OrderedDict
+    import re
+
+    def clean(row):
+        row = 
+09:36:25 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.832 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 norm_sg02/语言标签/可编译/未定义名)
+09:36:27 ▶ 任务开始: 写一个函数 norm_sg03(rows)，参数是字符串列表。按**下面列出的先后顺序**依次处理，返回处理完的列表：
+① 去掉每行首尾的空白字符
+② 按去掉首尾空白并转成小写后相同的键去重，保留第一次出现的那一行（输出仍按原来的先后顺序，
+09:36:28   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+09:36:51   [1] 通道=深 候选=1
+09:36:54       ↳ finish ok=True 直接实现规范要求的函数
+09:36:54   ✅ 收尾: ```python
+def norm_sg03(rows):
+    # ① 去掉每行首尾的空白字符
+    rows = [row.strip() for row in rows]
+    # ② 按去掉首尾空白并转成小写后相同的键去重，
+09:36:54 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.686 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 norm_sg03/语言标签/可编译/未定义名)
+09:36:56 ▶ 任务开始: 写一个函数 norm_sg04(rows)，参数是字符串列表。按**下面列出的先后顺序**依次处理，返回处理完的列表：
+① 每行统一转成小写
+② 把每行内部连续的空白压成一个空格（制表符也算空白）
+③ 按文本字典序降序排列
+④ 每行只保留前
+09:36:56   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+09:37:12   [1] 通道=深 候选=1
+09:37:14       ↳ finish ok=True 直接实现规范要求的函数
+09:37:14   ✅ 收尾: def norm_sg04(rows):
+    # 每行统一转成小写
+    rows = [row.lower() for row in rows]
+    
+    # 把每行内部连续的空白压成一个空格（制表符也算空白）
+    ro
+09:37:14 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.85 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 norm_sg04/语言标签/可编译/未定义名)
+09:37:16 ▶ 任务开始: 写一个函数 norm_sg05(rows)，参数是字符串列表。按**下面列出的先后顺序**依次处理，返回处理完的列表：
+① 去掉每行首尾的空白字符
+② 每行只保留前 9 个字符（超出的直接截掉，**不加省略号**）
+③ 按去掉首尾空白并转成
+09:37:16   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+09:37:35   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 'lambda x: (-len(x), x))\\n    # 每行前面加上固定前缀「· 」\\n    result = [\'· \' + row for row in sorted_rows]\\n    return result\\n"}}}'
+09:37:35   [1] 通道=深 候选=1
+09:37:38       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+09:38:06   [2] 通道=深 候选=1
+09:38:11       ↳ finish ok=True 直接完成任务
+09:38:11   ✅ 收尾: ```python
+def norm_sg05(rows):
+    from collections import OrderedDict
+    from operator import itemgetter
+
+    def prep
+09:38:11 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.791 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 上限被裁短=5 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 norm_sg05/语言标签/可编译/未定义名)
+09:38:13 ▶ 任务开始: 写一个函数 norm_sg06(rows)，参数是字符串列表。按**下面列出的先后顺序**依次处理，返回处理完的列表：
+① 把每行内部连续的空白压成一个空格（制表符也算空白）
+② 按去掉首尾空白并转成小写后相同的键去重，保留第一次出现的那一
+09:38:13   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+09:38:26   [1] 通道=深 候选=1
+09:38:30       ↳ finish ok=True 直接实现规范要求的函数
+09:38:30   ✅ 收尾: ```python
+def norm_sg06(rows):
+    from collections import OrderedDict
+    import re
+
+    def compress_spaces(s):
+      
+09:38:30 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.578 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 norm_sg06/语言标签/可编译/未定义名)
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@1x n=1 mean=0.6190 std=0.0000 [0.6190,0.6190] 极差=0.0000
+  attempted=6 recorded=6 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=217 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=7 检验=7 命中=6 命中率=0.857 失配=1(成败1/文本0) 混淆={'ok_ok': 6, 'ok_fail': 1, 'fail_ok': 0, 'fail_fail': 0}
+  传输层    抖动重试=1 重试后仍失败=0 上限被裁短=23 墙钟放弃首发=0/重试=1 （共 6 题）
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=909490bb9b6be36c scorer=d4b1cbbfd7f1 suite=cee95582ab25 repeat=1 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=031b4a5acd llm_cond=dfd788fefb max_tokens=2048 tool_catalog_sha=8decb60895d4
+  读数已落盘 /Users/linshaojie/V1/bench_out/runs.jsonl
+  答案已落盘 /Users/linshaojie/V1/bench_out/answers.jsonl  6 条  共 2575 字符  最长 556 字符  截断 0 条

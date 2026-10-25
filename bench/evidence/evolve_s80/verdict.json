@@ -1,0 +1,88 @@
+{
+  "knob": "verify_static",
+  "to": 1,
+  "placebo_knob": "verify_static",
+  "placebo_to": 2,
+  "n_per_arm": 5,
+  "suite": "bench/specgen/tasks_v1.jsonl",
+  "means": {
+    "base": 0.553563888888889,
+    "cand": 0.61905,
+    "placebo": 0.6904666666666667
+  },
+  "floors": {
+    "base": 0.03571666666666673,
+    "cand": 0.0,
+    "placebo": 0.0
+  },
+  "noise_used": 0.03571666666666673,
+  "placebo_delta": 0.1369027777777777,
+  "placebo_inert": false,
+  "min_effect": 0.03571428571428571,
+  "min_effect_cells": 3,
+  "cells": 84,
+  "runs": {
+    "base": [
+      0.5238,
+      0.5595166666666668,
+      0.5595166666666668,
+      0.5595166666666668,
+      0.5595166666666668,
+      0.5595166666666668
+    ],
+    "cand": [
+      0.61905,
+      0.61905,
+      0.61905,
+      0.61905,
+      0.61905,
+      0.61905
+    ],
+    "placebo": [
+      0.6904666666666667,
+      0.6904666666666667,
+      0.6904666666666667,
+      0.6904666666666667,
+      0.6904666666666667
+    ]
+  },
+  "verdict": "NO_EVIDENCE",
+  "why": "交叠：cand 最差 0.6190 没有严格好过对照组最好 0.6905（cand 0.6190~0.6190 ｜ 对照 0.5238~0.6905） ⇒ 两个分布分不开，涨的那点落在抖动里",
+  "sigs": {
+    "base": [
+      "80bdefeea59eb276"
+    ],
+    "cand": [
+      "909490bb9b6be36c"
+    ],
+    "placebo": [
+      "50fc5523de300ca2"
+    ]
+  },
+  "arms": [
+    {
+      "name": "base",
+      "env": {},
+      "expect": {}
+    },
+    {
+      "name": "cand",
+      "env": {
+        "V1_VERIFY_STATIC": "1"
+      },
+      "expect": {
+        "verify_static": 1
+      }
+    },
+    {
+      "name": "placebo",
+      "env": {
+        "V1_VERIFY_STATIC": "2"
+      },
+      "expect": {
+        "verify_static": 2
+      }
+    }
+  ],
+  "ts": 1792893819.9935591
+}

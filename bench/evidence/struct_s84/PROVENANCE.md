@@ -56,3 +56,4 @@ V1_LLM_BASE_URL=http://127.0.0.1:11434/v1 V1_LLM_API_KEY=ollama \
 
 在 `bench/probe_structcheck.py` 的 `_SYSTEM` 与 `_MODEL_TMPL`（**未截断**）。
 `raw_model.jsonl` 里每条记录都带模型**原样输出**，任何一条读数都能逐字复核。
+| `withdraw_ALL_161.log` | 全量 **161 条**撤回态一次跑完（第八十四轮补的债）：逐条「目标✔ / 多红=无」 |

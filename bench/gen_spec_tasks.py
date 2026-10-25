@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
-"""生成型题集的**产物源**：`bench/specgen/tasks_v1.jsonl`。
+"""生成型题集的**产物源**：`bench/specgen/tasks_v1.jsonl` 与 `tasks_v2.jsonl`。
+
+第八十二轮起有两份（§45）：
+
+    tasks_v1.jsonl   6 题 × 14 断言 =  84 格   旧读数（0.6905）都在这把尺子上
+    tasks_v2.jsonl  10 题 × 14 断言 = 140 格   旧 6 题 + 新 4 题（sg07~sg10）
+
+⛔ 旧文件**逐字节不改**：它是历史读数的尺子。加题只发生在 v2。
+⛔ 难度**不许**用内核分数来筛，只能用 `oracle/partial/null` 三条自检标定
+   （见 `taskspec.WHY_NEW_OPS`）。
 
 为什么产物不进 `bench/tasks/`：那个目录被三处 glob 吃（AK 组的族聚类、
 跨领域冒烟、指标索引）。本轮要证的是**准入器**本身，不是把新题混进旧读数 ——
 混进去会静默改变既有断言的输入，而那种改变正是本项目一直在防的"顺手换尺子"。
-要跑这批题：`python run.py --suite bench/specgen/tasks_v1.jsonl`。
+要跑这批题：`python run.py --suite bench/specgen/tasks_v2.jsonl`。
 
-⚠️ 「这 6 道题能被造出来且合格」≠「这 6 道题能分辨强弱」。
-   后者要真模型读数，本轮**没有**（见 DESIGN §34 的边界）。
+⚠️ 「这 10 道题能被造出来且合格」≠「这 10 道题能分辨强弱」。
+   后者要真模型读数，见 DESIGN §45 的读数表与边界。
 """
 
 from __future__ import annotations
@@ -124,11 +133,61 @@ def _line(spec: T.Spec) -> str:
     }, ensure_ascii=False)
 
 
-def main() -> int:
+# ---------------------------------------------------------------------------
+# 第八十二轮（§45）：第二批题 —— **先定后量**，理由见 `taskspec.WHY_NEW_OPS`
+#
+# ⛔ 这四条**不是**试出来的：它们是在跑任何真模型读数**之前**按"实现面/默认语义"
+#    选定的，选完就跑，跑完不删。删哪一条都是拿内核分数筛题（严禁）。
+# ⛔ 旧 6 题一个字不改：v2 = 旧 6 + 新 4 ⇒ 逐题读数仍可与旧台账对照（聚合分不可，
+#    `suite_sha` 变了，§37 的老规矩）。
+# ---------------------------------------------------------------------------
+SPECS_V2_EXTRA: list[T.Spec] = [
+    # 实现面：要把"1 个空白"与"2 个以上"分开 ⇒ 正确写法几乎必然需要 `re`
+    {"id": "sg07", "fn": "norm_sg07", "rules": [
+        {"op": "strip"},
+        {"op": "squeeze", "min_run": 2},
+        {"op": "dedupe_adj", "fold": True},
+        {"op": "sort", "key": "len", "desc": True},
+        {"op": "truncate", "n": 8},
+    ]},
+    # 默认语义：截断从**后面**数 + 「去重」是全局去重（题面要求的是折叠去重）
+    {"id": "sg08", "fn": "norm_sg08", "rules": [
+        {"op": "collapse"},
+        {"op": "keep_tail", "n": 7},
+        {"op": "dedupe", "keep": "first", "fold": True},
+        {"op": "prefix", "text": "[v2] "},
+        {"op": "sort", "key": "text"},
+    ]},
+    # 相邻 vs 全局：`dedupe_adj(fold=False)` 与「不去重」在多数用例上同分
+    {"id": "sg09", "fn": "norm_sg09", "rules": [
+        {"op": "squeeze", "min_run": 3},
+        {"op": "strip"},
+        {"op": "dedupe_adj", "fold": False},
+        {"op": "sort", "key": "text", "desc": True},
+        {"op": "keep_tail", "n": 9},
+    ]},
+    # 转小写与 squeeze 同现（**不**带 fold 型去重 ⇒ 没有 §34 那个不可观测参数）
+    {"id": "sg10", "fn": "norm_sg10", "rules": [
+        {"op": "lower"},
+        {"op": "squeeze", "min_run": 2},
+        {"op": "sort", "key": "len"},
+        {"op": "keep_tail", "n": 6},
+        {"op": "prefix", "text": "#"},
+    ]},
+]
+
+#: 题集文件 → 该文件里的题。**唯一**的注册表：`main()` 与契约 AZ76/AZ77 都读它。
+SUITES: dict[str, list[T.Spec]] = {
+    "tasks_v1.jsonl": SPECS,
+    "tasks_v2.jsonl": SPECS + SPECS_V2_EXTRA,
+}
+
+
+def _build(specs: list[T.Spec]) -> tuple[bool, list[str]]:
     ok = True
     rows: list[str] = []
     print(f"{'题':6s} {'规则':4s} {'题面字':5s} {'常识分':7s} 准入")
-    for spec in SPECS:
+    for spec in specs:
         fails = T.admit(spec, CASES)
         hit, n = T.naive_hits(spec, CASES)
         # 常识实现必须**严格居中**：全过 ⇒ 这题用常识就能做，没有分辨点；
@@ -142,6 +201,27 @@ def main() -> int:
         for f in fails[1:]:
             print(f"       {f}")
         rows.append(_line(spec))
+    return ok, rows
+
+
+def main() -> int:
+    ok = True
+    written: dict[str, list[str]] = {}
+    for name, specs in SUITES.items():
+        print(f"── {name}（{len(specs)} 题）──")
+        ok_i, rows = _build(specs)
+        ok = ok and ok_i
+        written[name] = rows
+
+    # 新算子的坏样本（第八十二轮）：**证伪的是"两份手写实现自己跟自己对得上"**
+    new_rp = T.reverse_proofs_new_ops(SPECS_V2_EXTRA, CASES)
+    for k, want in T.NEW_OP_PROOF_EXPECT.items():
+        got = new_rp.get(k) or []
+        if not any(want in f for f in got):
+            print(f"❌ 新算子坏样本 {k} 没命中 {want} ⇒ 那条证据是死的（清单={got[:1]}）")
+            ok = False
+        else:
+            print(f"✅ 新算子坏样本 {k} ⇒ {want} 命中：{next(f for f in got if want in f)[:70]}")
     if not ok:
         return 1
 
@@ -155,10 +235,12 @@ def main() -> int:
         return 1
     print(f"✅ 按种子铸的 {len(minted)} 道新题全部通过同一条准入（A3–A6）")
 
-    out = V1 / "bench" / "specgen" / "tasks_v1.jsonl"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text("\n".join(rows) + "\n", encoding="utf-8")
-    print(f"写入 {out}  题数={len(rows)}")
+    out_dir = V1 / "bench" / "specgen"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for name, rows in written.items():
+        out = out_dir / name
+        out.write_text("\n".join(rows) + "\n", encoding="utf-8")
+        print(f"写入 {out}  题数={len(rows)}  断言={sum(len(json.loads(r)['tests']) for r in rows)}")
     return 0
 
 

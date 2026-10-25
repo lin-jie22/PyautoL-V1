@@ -8886,6 +8886,100 @@ check(RS,
       f"passed={_AZ90_V1.get('passed')} status={_AZ90_O1.status} "
       f"交付修好版={_AZ90_O1.answer.strip() == _AZ90_FIXED.strip()}")
 
+# ===========================================================================
+# AZ91（第八十二轮，§45）：第二批尺子 —— 旧尺子一个字不许动，新尺子必须自证
+#
+# 为什么不是"A76 顺手扩一下"：AZ76/AZ77 是**旧尺子**的读数锚，它们锚着
+# `tasks_v1.jsonl` 这一份具体产物。把新文件塞进同一条断言，等于让"旧尺子变没变"
+# 和"新尺子对不对"共用一个结论 —— 而这两件事的失败方式完全不同。
+#
+# 这一条钉四件事，缺一条就不是"能当尺子"：
+#   ① 落盘的 10 题**自己解释自己**（题面/期望/oracle 都由题内 `meta.spec` 重算）；
+#   ② 共享的 6 题与 v1 文件**逐字节相同**（"旧 6 题一个字不改"从散文变成事实）；
+#   ③ 三条**与内核无关**的自检标定：oracle 满分 / partial 严格居中 / null 零分。
+#      这三条是加题时唯一允许的筛选依据（⛔ 不许用内核分数筛题）；
+#   ④ 三个新算子各自的坏样本命中它该命中的那条证据（清单非空不算数）。
+# ===========================================================================
+_AZ91_PATH = V1 / "bench" / "specgen" / "tasks_v2.jsonl"
+_AZ91_ROWS = ([json.loads(x) for x in
+               _AZ91_PATH.read_text(encoding="utf-8").splitlines() if x.strip()]
+              if _AZ91_PATH.exists() else [])
+_AZ91_SPECS = GS.SUITES["tasks_v2.jsonl"]
+_AZ91_BY_ID = {str(r.get("id")): r for r in _AZ91_ROWS}
+_AZ91_V1 = {str(r.get("id")): r for r in _AZ76_ROWS}
+_AZ91_BAD: list[str] = []
+for _r in _AZ91_ROWS:
+    _sp = _r.get("meta", {}).get("spec")
+    if not _sp:
+        _AZ91_BAD.append(f"{_r.get('id')} 缺 meta.spec")
+        continue
+    if _r.get("prompt") != TS.render_prompt(_sp):
+        _AZ91_BAD.append(f"{_r['id']} 题面与 spec 渲染不一致")
+    if _r.get("tests") != TS.tests_of(_sp, GS.CASES):
+        _AZ91_BAD.append(f"{_r['id']} 测试期望与 spec 不一致")
+    if _r.get("oracle") != TS.compile_oracle(_sp):
+        _AZ91_BAD.append(f"{_r['id']} oracle 与 spec 不一致")
+    if TS.admit(_sp, GS.CASES):
+        _AZ91_BAD.append(f"{_r['id']} 不过准入")
+
+
+def _az91_score(src: str, tests: list[str]) -> int:
+    """内核无关的打分：把源码 exec 一遍，再逐条跑题面自带的断言。空源码 = 0 分。"""
+    if not src.strip():
+        return 0
+    ns: dict = {}
+    try:
+        exec(compile(src, "<az91>", "exec"), ns)      # noqa: S102
+    except Exception:                                  # noqa: BLE001
+        return 0
+    hit = 0
+    for t in tests:
+        try:
+            exec(compile(t, "<az91t>", "exec"), ns)   # noqa: S102
+            hit += 1
+        except Exception:                              # noqa: BLE001
+            pass
+    return hit
+
+
+# 三条标定（每条题都要成立）：oracle=满分 · partial 严格居中 · null=零分
+_AZ91_CAL = {str(r["id"]): (_az91_score(str(r.get("oracle") or ""), r["tests"]),
+                           _az91_score(str(r.get("partial") or ""), r["tests"]),
+                           _az91_score(str(r.get("null") or ""), r["tests"]))
+             for r in _AZ91_ROWS}
+_AZ91_CAL_OK = bool(_AZ91_CAL) and all(
+    o == len(_AZ91_BY_ID[k]["tests"]) and 0 < p < o and n == 0
+    for k, (o, p, n) in _AZ91_CAL.items())
+
+# "旧 6 题一个字不改"：同一 id 在两份文件里的整行必须逐字相同
+_AZ91_SHARED_BAD = [s["id"] for s in GS.SPECS
+                    if _AZ91_V1.get(s["id"]) != _AZ91_BY_ID.get(s["id"])]
+
+# 新算子反证：清单非空不算命中，必须命中**它该命中的那种证据**
+_AZ91_NEWRP = TS.reverse_proofs_new_ops(GS.SPECS_V2_EXTRA, GS.CASES)
+_AZ91_PROOF_BAD = [k for k, w in TS.NEW_OP_PROOF_EXPECT.items()
+                   if not any(w in f for f in (_AZ91_NEWRP.get(k) or []))]
+
+check(RS,
+      "AZ91 ★第二批尺子（v2）：落盘 10 题自证 + 旧 6 题逐字不动 + 三条内核无关标定 + 新算子反证\n"
+      "          ① `tasks_v2.jsonl` 的题面/期望/oracle 都能由题内 `meta.spec` 重算，且全部过准入；\n"
+      "             id **顺序**也钉住（换行序 = 换 `suite_sha` = 旧读数失去对照）；\n"
+      "          ② 与 v1 共享的 6 题**整行逐字相同** —— 加题不许顺手改进旧题，\n"
+      "             否则 v1 的 84 格读数会与 v2 的逐题读对对不上；\n"
+      "          ③ oracle 满分 / partial 严格居中 / null 零分。这三条与内核**无关**，\n"
+      "             是加题唯一允许的筛选依据（拿内核分数筛题 = 把尺子做成内核的镜子）；\n"
+      "          ④ 三个新算子（squeeze / dedupe_adj / keep_tail）各自的坏样本必须命中\n"
+      "             A2 / A5 / A3 / A4 —— 新算子的两份手写实现「刚好自己对得上」是个\n"
+      "             很可能为真的假设，不逼它失败，A4 就会在 sg07~sg10 上永远绿着骗人。",
+      len(_AZ91_ROWS) == len(_AZ91_SPECS)
+      and [str(r.get("id")) for r in _AZ91_ROWS] == [s["id"] for s in _AZ91_SPECS]
+      and not _AZ91_BAD and not _AZ91_SHARED_BAD
+      and _AZ91_CAL_OK and not _AZ91_PROOF_BAD,
+      f"题数={len(_AZ91_ROWS)}/{len(_AZ91_SPECS)} 问题={_AZ91_BAD[:2]} "
+      f"共享题不一致={_AZ91_SHARED_BAD} 标定="
+      + " ｜ ".join(f"{k}={o}/{p}/{n}" for k, (o, p, n) in _AZ91_CAL.items())
+      + f" ｜ 反证缺失={_AZ91_PROOF_BAD}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

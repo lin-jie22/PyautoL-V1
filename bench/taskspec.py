@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import contextlib
 import random
+from collections import deque
 from typing import Any, Callable
 
 Row = str
@@ -54,6 +55,8 @@ _NUM = "①②③④⑤⑥⑦⑧⑨⑩"
 #
 # ⛔ 一条 op 必须同时给出五样东西。**少给一样就是"题面写了却没人执行"的那类洞**，
 #    A5（同源双射）会当场拒绝它 —— 这不是我勤奋，是表格完整性检查。
+#    第八十二轮起第六样是**可选**的：`imports`（这条 op 的代码需要哪些 stdlib）。
+#    它逃得过表格检查，但逃不过 A2 —— 声明漏了就是执行时 NameError。
 # ===========================================================================
 
 
@@ -225,6 +228,160 @@ def _op_prefix(rule: Rule, naive: bool = False) -> dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# 第八十二轮新增的三个算子（§45）—— 为什么要加，见文件末 `WHY_NEW_OPS`
+# ---------------------------------------------------------------------------
+
+#: 「空白」的判定口径**只在这里写一次**：oracle 用 `\s`、解释器用这个集合。
+#: ⛔ 两处各写一份字符类，A4（三方对撞）就只是在测"两份抄得像不像"。
+_WS = " \t\n\r\x0b\x0c"
+
+
+def _op_squeeze(rule: Rule, naive: bool = False) -> dict[str, Any]:
+    """把**连续 n 个以上**的空白换成一个 `-`（不足 n 个的原样保留）。
+
+    为什么它值得单独一个算子：它的正确写法与"常识写法"（`' '.join(x.split())`）
+    **方向相反** —— 常识会把单个空白也压掉、并换成一个空格。少一个判断就全错，
+    而错的形态是"看起来对"。同时它天然把实现推向 `re`（要区分"1 个"与"2 个以上"），
+    于是「忘了 import」这类错误在这里是**任务本身带来的**，不是我们埋的。
+    """
+    n: int = int(rule.get("min_run", 2))
+    if naive:
+        # 常识实现：所有空白压成一个空格（连单个空白也压，且根本不写 "-"）。
+        # ⛔ 它**不需要** import —— 这正是"需不需要 stdlib 是题面要求推出来的"的对照。
+        return {
+            "render": f"每行里连续 {n} 个以上的空白字符都换成一个「-」"
+                      f"（不足 {n} 个的空白原样保留）",
+            "code": "    out = [' '.join(_x.split()) for _x in out]",
+            "apply": lambda rows: [" ".join(r.split()) for r in rows],
+            "post": [("squeeze 空白游程", lambda rows: _no_run(rows, n))],
+            "alts": [dict(rule, min_run=n + 1)],
+        }
+
+    def apply(rows: list[str]) -> list[str]:
+        # ⛔ 不用 `re`：两条实现必须换算法，否则 A4 是自己对自己。
+        out: list[str] = []
+        for r in rows:
+            buf: list[str] = []
+            i, L = 0, len(r)
+            while i < L:
+                if r[i] in _WS:
+                    j = i
+                    while j < L and r[j] in _WS:
+                        j += 1
+                    buf.append("-" if (j - i) >= n else r[i:j])
+                    i = j
+                else:
+                    buf.append(r[i])
+                    i += 1
+            out.append("".join(buf))
+        return out
+
+    return {
+        "render": f"每行里连续 {n} 个以上的空白字符都换成一个「-」"
+                  f"（不足 {n} 个的空白原样保留）",
+        "code": f'    out = [re.sub(r"\\s{{{n},}}", "-", _x) for _x in out]',
+        "imports": ["re"],
+        "apply": apply,
+        "post": [("squeeze 空白游程", lambda rows: _no_run(rows, n))],
+        "alts": [dict(rule, min_run=n + 1)],
+    }
+
+
+def _no_run(rows: list[str], n: int) -> bool:
+    """每行里都不存在长度 ≥ n 的连续空白（局部判定，不重跑替换）。"""
+    for r in rows:
+        run = 0
+        for ch in r:
+            if ch in _WS:
+                run += 1
+                if run >= n:
+                    return False
+            else:
+                run = 0
+    return True
+
+
+def _op_dedupe_adj(rule: Rule, naive: bool = False) -> dict[str, Any]:
+    """只去掉**紧挨着**的重复行（不相邻的重复行必须保留）。
+
+    与 `dedupe` 的差别正是"常识"与"题面"的差别：说"去重"，常识写全局去重；
+    题面写的是"紧挨着的"。所以它的常识版 = 全局去重（`_op_dedupe` 的默认参数）。
+    """
+    fold: bool = False if naive else bool(rule.get("fold", False))
+    if naive:
+        code = ("    _seen = set()\n"
+                "    _kept = []\n"
+                "    for _x in out:\n"
+                "        if _x in _seen:\n"
+                "            continue\n"
+                "        _seen.add(_x)\n"
+                "        _kept.append(_x)\n"
+                "    out = _kept")
+    else:
+        key = "_x.strip().lower()" if fold else "_x"
+        code = ("    _kept = []\n"
+                "    _prev = None\n"
+                "    for _x in out:\n"
+                f"        _k = {key}\n"
+                "        if _kept and _k == _prev:\n"
+                "            continue\n"
+                "        _prev = _k\n"
+                "        _kept.append(_x)\n"
+                "    out = _kept")
+
+    def apply(rows: list[str]) -> list[str]:
+        keys = [(r.strip().lower() if fold else r) for r in rows]
+        out: list[str] = []
+        last: str | None = None
+        for r, k in zip(rows, keys):
+            if out and k == last:
+                continue
+            out.append(r)
+            last = k
+        return out
+
+    def post(rows: list[str]) -> bool:
+        keys = [(r.strip().lower() if fold else r) for r in rows]
+        return all(keys[i] != keys[i + 1] for i in range(len(keys) - 1))
+
+    if fold:
+        render = ("去掉**紧挨着**的重复行：按去掉首尾空白并转成小写后相同的键比较，"
+                  "连续的相同行只保留第一行；**不相邻**的重复行必须保留")
+    else:
+        render = ("去掉**紧挨着**的重复行：只有内容完全相同且前后相邻的才去掉，"
+                  "**不相邻**的重复行必须保留")
+    return {
+        "render": render,
+        "code": code,
+        "apply": apply,
+        "post": [("相邻行不同键", post)],
+        "alts": [dict(rule, fold=not fold)],
+    }
+
+
+def _op_keep_tail(rule: Rule, naive: bool = False) -> dict[str, Any]:
+    """只保留每行的**末尾** n 个字符（`truncate` 是保头部，这是它的反向）。"""
+    n: int = int(rule["n"])
+    if naive:
+        # 常识实现：说到"只保留 n 个字符"，默认是从**前面**数。
+        code = f"    out = [_x[:{n}] for _x in out]"
+    else:
+        code = f"    out = [_x[-{n}:] for _x in out]"
+
+    def apply(rows: list[str]) -> list[str]:
+        # ⛔ 换算法：`deque(maxlen=n)` 从左边丢弃 —— 与切片不是同一条路径。
+        return ["".join(deque(r, maxlen=n)) for r in rows]
+
+    return {
+        "render": f"每行只保留**末尾**的 {n} 个字符（前面超出的直接截掉）",
+        "code": code,
+        "apply": apply,
+        "post": [("keep_tail 长度上限", lambda rows: all(len(r) <= n for r in rows))],
+        "alts": [dict(rule, n=n - 2)] if n - 2 >= 2 else [],
+    }
+
+
 _OPS: dict[str, Callable[..., dict[str, Any]]] = {
     "strip": _op_strip,
     "lower": _op_lower,
@@ -233,6 +390,9 @@ _OPS: dict[str, Callable[..., dict[str, Any]]] = {
     "sort": _op_sort,
     "truncate": _op_truncate,
     "prefix": _op_prefix,
+    "squeeze": _op_squeeze,
+    "dedupe_adj": _op_dedupe_adj,
+    "keep_tail": _op_keep_tail,
 }
 
 OPS = tuple(_OPS)
@@ -261,12 +421,24 @@ def compile_oracle(spec: Spec, *, naive: bool = False,
     `upto=k` 只编前 k 条规则 —— 后置条件只在它自己那一步之后成立，
     所以 A3 必须能编译"流水线的前缀"，并且**在生成的源码上**判，
     而不是只在解释器上判（在解释器上判 = 拿另一条实现替它受审）。
+
+    ★ 第八十二轮：算子可以声明 `imports`（如 `["re"]`）。**为什么不做成手工的
+      "每题自己写 import 头"**：那就等于让题面与源码在"需要哪些模块"上各说一套，
+      正是本文件要消灭的"两份手写产物"。让 op 自己声明，缺一条 `import` 就由
+      A2（执行）当场炸出来 —— 声明漏了不会静默变成"通过"。
     """
+    rules = spec["rules"][:upto if upto is not None else len(spec["rules"])]
+    heads: list[str] = []
+    for rule in rules:
+        for mod in _OPS[rule["op"]](rule, naive).get("imports") or ():
+            line = f"import {mod}"
+            if line not in heads:
+                heads.append(line)
     body = [f"def {spec['fn']}(rows):", "    out = [str(_x) for _x in rows]"]
-    for rule in spec["rules"][:upto if upto is not None else len(spec["rules"])]:
+    for rule in rules:
         body.append(_OPS[rule["op"]](rule, naive)["code"])
     body.append("    return out")
-    return "\n".join(body)
+    return "\n".join(heads + body)
 
 
 def apply_pipeline(spec: Spec, rows: list[str], upto: int | None = None) -> list[str]:
@@ -480,6 +652,58 @@ def reverse_proofs(spec: Spec, cases: list[list[str]]) -> dict[str, list[str]]:
     return out
 
 
+def reverse_proofs_new_ops(specs: "list[Spec]", cases: list[list[str]]
+                           ) -> dict[str, list[str]]:
+    """第八十二轮三个新算子各配一个坏样本，返回各自的失败清单（空 = 那条证据是死的）。
+
+    ⛔ 为什么必须做：新算子的 `apply`（独立解释器）与 `code`（oracle）是我手写的
+       两份实现。**「新加的算子刚好自己跟自己对得上」是一个很可能为真的假设** ——
+       而它一旦为真，A4 在 sg07~sg10 上就永远绿着骗人。四条坏样本做的是同一件事：
+       把这个假设**逼到必须失败**的位置。
+
+    取样规则写死在代码里（按 op 找第一道用到它的题），⛔ 不许调用方传"随便一道题"：
+       拿一道不含该算子的题跑，坏样本无处附着 ⇒ 空清单 ⇒ 看起来像"通过"。
+    """
+    def _pick(op: str) -> Spec:
+        for sp in specs:
+            if any(r["op"] == op for r in sp["rules"]):
+                return sp
+        raise ValueError(f"没有一道题用到 {op} ⇒ 这个坏样本无处附着（不是通过，是没测）")
+
+    out: dict[str, list[str]] = {}
+
+    # ① squeeze 声明的 `imports` 被删 ⇒ A2 执行时必须炸（不是 A1 编译期）
+    with _with_op("squeeze", imports=[]):
+        out["squeeze 缺 import"] = admit(_pick("squeeze"), cases)
+
+    # ② dedupe_adj 的代码不读 `fold` ⇒ A5「行为不变」必须炸
+    with _with_op("dedupe_adj",
+                  code=lambda r, d, o: o(dict(r, fold=False))["code"]):
+        out["dedupe_adj 不读 fold"] = admit(_pick("dedupe_adj"), cases)
+
+    # ③ keep_tail 多留一个字符 ⇒ 长度上限（A3）必须炸 —— 7y 的实形换个方向再来一次
+    with _with_op("keep_tail", code=lambda r, d, _o: d["code"].replace(
+            f"-{r['n']}:", f"-{r['n'] + 1}:")):
+        out["keep_tail n+1"] = admit(_pick("keep_tail"), cases)
+
+    # ④ squeeze 的解释器换成常识写法（源码不动）⇒ A4 必须炸
+    with _with_op("squeeze", apply=lambda r, d, _o: (
+            lambda rows: [" ".join(x.split()) for x in rows])):
+        out["squeeze 解释器不一致"] = admit(_pick("squeeze"), cases)
+
+    return out
+
+
+#: 每条新算子坏样本**必须**命中的那种证据（清单非空 ≠ 命中：可能是别的原因炸的）。
+#: ⛔ 只查"非空"会放过"坏样本炸在别处"——那时被证伪的不是我们以为的那条证据。
+NEW_OP_PROOF_EXPECT: dict[str, str] = {
+    "squeeze 缺 import": "A2",
+    "dedupe_adj 不读 fold": "A5",
+    "keep_tail n+1": "A3",
+    "squeeze 解释器不一致": "A4",
+}
+
+
 # ===========================================================================
 # 按种子铸新题（"无限题集"那句话的落点：新题必须过同一条准入）
 # ===========================================================================
@@ -506,3 +730,27 @@ def mint(seed: int, spec_id: str) -> Spec:
     ops.append({"op": "truncate", "n": rng.choice([6, 7, 8, 9, 10])})
     rng.shuffle(ops)
     return {"id": spec_id, "fn": f"norm_{spec_id}", "rules": ops}
+
+
+# ===========================================================================
+# WHY_NEW_OPS —— 第八十二轮加三个算子的理由（⛔ 先写下来，再去量）
+#
+# 起因不是"分不够高"，是**这套尺子有 50% 的格子不携带信息**：
+#   `sg03`/`sg04` 恒 14/14、`sg05` 恒 0/14，6 题里 3 题在三个臂上一位不动。
+# 而"再拧一个旋钮"这条路已经走到头了（§43.13：base = 自检可及的上限）。
+#
+# ⛔ 所以加题**不许**用内核分数来筛（那会让尺子变成内核的镜子）。
+#    唯一允许的筛选依据是三条与内核无关的自检标定：
+#      oracle = 1.0（题是函数）/ partial 严格居中（常识不够用）/ null = 0。
+# 下面这三个算子是**先定后量**的，理由只有两条，都写在题面上：
+#
+#  ① `squeeze` —— 让"实现面"变宽：正确写法要区分"1 个空白"与"2 个以上"，
+#     天然把实现推向 `re`。于是"忘了 import"是**任务带来的**，不是我埋的。
+#     ⚠️ 必须同时记下反面：这恰好是内核唯一能抓的那一类错（静态未定义名）。
+#        只加这一类题会把尺子做成内核的镜子 ⇒ 新题里它只占 1/4，且不按分数删题。
+#  ② `dedupe_adj` / `keep_tail` —— 让"默认语义"与"题面语义"分岔：
+#     说"去重"常识写全局去重；说"保留 n 个字符"常识从前面数。
+#     它们与 `sg05` 同类（顺序/作用域），按 §43 的读数**预判为自检不可及** ——
+#     这正是要放进来的对照：如果新题全都能被自检救，那说明我挑题挑偏了。
+# ===========================================================================
+WHY_NEW_OPS = "squeeze|dedupe_adj|keep_tail"

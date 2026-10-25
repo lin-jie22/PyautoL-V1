@@ -1242,6 +1242,75 @@ check(RS, "T4 温度只在 LLMConfig 声明一次（内核其它模块不许写�
            if "temperature: float = 0." in _src(m)]))
 
 
+# ── TH1~TH6 「思考开关」（第八十七轮，§50 的直接产物）─────────────────────
+# 为什么它配得上进契约：§50 实测 `glm-4.7-flash` 的 reasoning 吃掉输出预算
+# **85~99%**，而且会撑满任何上限（4096 ⇒ 思考 4050；8192 ⇒ 思考 8129，
+# 正文两次都只剩几十 token）。要量云端真实能力，必须先让通道不吞答案 ——
+# 而"关没关"这件事**只能从线上请求体看**。读源码正是 T1 那次被骗的方式
+# （源码写着 `temperature` 读配置，实际三个调用点全没传），所以这里同样抓包。
+from mw.ledger import signature_of as _sig_of                       # noqa: E402
+
+_TH_BODY_BASE = ["model", "messages", "max_tokens", "temperature"]
+_TH_COND_BASE = ["model", "endpoint", "timeout_s", "offline"]
+_cap_th = _CapturingURL()
+_prev_th_env = {k: os.environ.get(k) for k in ("V1_LLM_THINKING", "V1_LLM_API_KEY")}
+_th_illegal: object = "未测"
+try:
+    urllib.request.urlopen = _cap_th                                # type: ignore[assignment]
+    os.environ["V1_LLM_API_KEY"] = "contract-test-key"
+
+    # ① 默认档（未设）：请求体与口径快照都必须是**历史那个形状**
+    os.environ.pop("V1_LLM_THINKING", None)
+    _th_def_cfg = cfg.settings().llm
+    HTTPLLM(_th_def_cfg).complete([Message("user", "hi")], max_tokens=64)
+    _th_body_def = dict(_cap_th.bodies[-1])
+    _th_cond_def = _th_def_cfg.cond()
+
+    # ② 显式关：请求体必须真的多出 thinking
+    os.environ["V1_LLM_THINKING"] = "disabled"
+    _th_off_cfg = cfg.settings().llm
+    HTTPLLM(_th_off_cfg).complete([Message("user", "hi")], max_tokens=64)
+    _th_body_off = dict(_cap_th.bodies[-1])
+    _th_cond_off = _th_off_cfg.cond()
+
+    # ③ 内核路径（planner → _LedgeredLLM → HTTPLLM）也必须带上（对应 T3 的位置）
+    _th_wrapped = _LedgeredLLM(HTTPLLM(_th_off_cfg), _tiny_ledger())
+    Planner(_th_wrapped, ToolRegistry(), max_tokens=64).propose(
+        goal="g", state="", history=[], n=1)
+    _th_body_kernel = dict(_cap_th.bodies[-1])
+
+    # ④ 拼错必须**构造即抛**，不许静默忽略
+    os.environ["V1_LLM_THINKING"] = "off"
+    _th_illegal = _raises(lambda: cfg.settings().llm, ValueError)
+finally:
+    urllib.request.urlopen = _real_urlopen                         # type: ignore[assignment]
+    for _k, _v in _prev_th_env.items():
+        if _v is None:
+            os.environ.pop(_k, None)
+        else:
+            os.environ[_k] = _v
+
+check(RS, "TH1 默认档（未设）请求体**连键序**都与历史相同 —— 一个字节都不许多",
+      list(_th_body_def.keys()) == _TH_BODY_BASE,
+      f"线上键序={list(_th_body_def.keys())}")
+check(RS, "TH2 V1_LLM_THINKING=disabled ⇒ 请求体真的多出 thinking（不是标签生效）",
+      _th_body_off.get("thinking") == {"type": "disabled"},
+      str(_th_body_off.get("thinking")))
+check(RS, "TH3 内核路径（planner）也带上 thinking —— 漏传的那条路等于没关",
+      _th_body_kernel.get("thinking") == {"type": "disabled"},
+      str(_th_body_kernel.get("thinking")))
+check(RS, "TH4 默认档口径快照**逐位**还是那 4 个键（历史签名不许被新字段带偏）",
+      list(_th_cond_def.keys()) == _TH_COND_BASE,
+      str(_th_cond_def))
+check(RS, "TH5 关掉之后口径签名必须变 —— 否则又是'标签撒谎'（同口径、实际不同通道）",
+      _th_cond_off.get("thinking") == "disabled"
+      and _sig_of({"llm_cond": _th_cond_off}) != _sig_of({"llm_cond": _th_cond_def}),
+      f"thinking={_th_cond_off.get('thinking')!r} "
+      f"sig={_sig_of({'llm_cond': _th_cond_off})} vs {_sig_of({'llm_cond': _th_cond_def})}")
+check(RS, "TH6 拼错（off/false/0…）⇒ 构造即 ValueError，不许悄悄当成没设",
+      _th_illegal is True, f"抛异常={_th_illegal}")
+
+
 def _env_zero_takes_effect(key: str) -> bool:
     """把 `key` 设为 "0" 后重新构造 Settings，看它是不是真的变成 0。
 

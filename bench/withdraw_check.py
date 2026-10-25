@@ -1058,6 +1058,40 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ91", "bench/taskspec.py",
      '    out["dedupe_adj 不读 fold"] = admit(_pick("dedupe_adj"), cases)',
      '    out["dedupe_adj 不读 fold"] = []'),
+
+    # ── 第八十七轮（§51）：`thinking` 旋钮 ──────────────────────────────
+    # ㊽ 把「只在设过时才发」改成「无论如何都发一个值」
+    #    ⇒ 只有 TH1 红：默认档的请求体多出一个键，与历史不再逐字节相同。
+    #    TH2/TH3 仍绿（它们只看 disabled 档的值对不对）。
+    ("TH1", "mw/llm.py",
+     '        if self.cfg.thinking:\n'
+     '            body_obj["thinking"] = {"type": self.cfg.thinking}',
+     '        body_obj["thinking"] = {"type": self.cfg.thinking or "disabled"}'),
+    # ㊾ 把整段发字段的代码关死（`if False`）⇒ TH2 与 TH3 **必然**一起红：
+    #    它们锚的是**同一行**的两个观测点（直连路径 / 内核 planner 路径）。
+    #    ⛔ 这条不许换更巧的变异来"做成单红"：单红形状会伪造出
+    #    "两条断言各管一件事"的假象，实际它们防的是同一个漏传。
+    ("TH2", "mw/llm.py",
+     '        if self.cfg.thinking:',
+     '        if False:'),
+    # ㊿ 口径快照无条件带上该键 ⇒ 只有 TH4 红：默认档的签名被一个**没生效**的
+    #    键带偏 —— 这才是 TH4 存在的理由（不是"签名对 thinking 敏感"）。
+    ("TH4", "mw/config.py",
+     '        if self.thinking:\n            snap["thinking"] = self.thinking',
+     '        snap["thinking"] = self.thinking'),
+    # 51 反方向：口径快照**永不**带该键 ⇒ 只有 TH5 红（关了思考但签名不变
+    #    = 标签撒谎）。与 ㊿ 一起把 cond 的两个方向都钉住。
+    ("TH5", "mw/config.py",
+     '        if self.thinking:\n            snap["thinking"] = self.thinking',
+     '        if False:\n            snap["thinking"] = self.thinking'),
+    # 52 删掉合法性校验 ⇒ 只有 TH6 红：`V1_LLM_THINKING=off` 被静默当成没设
+    #    ⇒ 操作者以为关了、实际没关（而日志一切正常）。
+    ("TH6", "mw/config.py",
+     '        if self.thinking not in _THINKING_MODES:\n'
+     '            raise ValueError(\n'
+     '                f"V1_LLM_THINKING={self.thinking!r} 不认识，只认 {_THINKING_MODES}"\n'
+     '                "（空串 = 不发该字段；\'off\'/\'false\'/\'0\' 都不是合法值）")',
+     '        _ = _THINKING_MODES  # 撤回态：校验被移除'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1249,6 +1283,12 @@ COUPLED: dict[str, frozenset[str]] = {
     #:    AZ91 看"两份文件一致"），任何针对该行的变异都会同时打红两处。
     #:    反向**不成立**：㊻ 改的是 v2 独有的行，实测只红 AZ91（单红已复现）。
     "AZ76": frozenset({"AZ91"}),
+
+    #: ★第八十七轮（§51）：㊾ 把发字段那一行关死（`if False`）⇒ TH2 与 TH3
+    #: **必然**一起红 —— 它们锚的是同一行的两个观测点（直连请求体 / 内核 planner
+    #: 请求体）。⛔ 不许为了"做成单红"换更巧的变异：那会伪造出"两条断言各管
+    #: 一件事"的假象，而它们防的是同一个漏传。
+    "TH2": frozenset({"TH3"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

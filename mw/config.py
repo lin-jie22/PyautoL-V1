@@ -20,6 +20,14 @@ def _env_path(key: str, default: Path) -> Path:
     return Path(raw).expanduser().resolve() if raw else default
 
 
+#: `V1_LLM_THINKING` 的合法取值。**空串是合法值**，语义是"不发该字段"
+#: （不是"关闭思考"）：OpenAI 官方端点收到不认识的字段会 400，所以默认只能什么都不说。
+#: ⛔ 这里刻意**不接受** `off` / `false` / `0` / `true` / `on` 这些"看起来也行"的写法：
+#:    它们要么被某个端点当成非法值静默忽略（= 真的没关），要么被当成字符串真值
+#:    （= 反了）。多一个别名就多一条"拼错却看起来生效"的路。
+_THINKING_MODES: tuple[str, ...] = ("", "disabled", "enabled")
+
+
 def _env_int(key: str, default: int, *, allow_zero: bool = False) -> int:
     """读整数 env。
 
@@ -120,7 +128,7 @@ class LLMConfig:
     `offline=True` 时内核不碰网络，改用 llm.StubLLM —— 这让整个循环
     **可以在无 API key、无网络的情况下被完整跑通和验证**。
 
-    ⚠️ 这五个字段必须用 `default_factory`，**不能**写成类级默认值。
+    ⚠️ 每个读 env 的字段都必须用 `default_factory`，**不能**写成类级默认值。
     类级默认值（`api_key: str = os.environ.get(...)`）在**模块被 import 时**
     求值一次就定型了 —— 于是 `settings()` 文档里那句"每次调用都重新读 env"
     对 LLM 字段是假的：import 之后再设 `V1_LLM_API_KEY` 一律无效。
@@ -153,6 +161,34 @@ class LLMConfig:
                                          allow_zero=True))
     offline: bool = field(
         default_factory=lambda: os.environ.get("V1_LLM_OFFLINE", "") not in ("", "0", "false"))
+    #: 「思考开关」—— 只改请求体，不碰任何本地逻辑。
+    #:
+    #: ⚠️ 它必须是 **LLMConfig 字段**，不能做成 `complete(thinking=...)` 参数。
+    #:    判据与 `temperature` 逐字相同（见上）：只要有一个调用点漏传，
+    #:    那条路就悄悄回到"没关思考"，而标签上一切照旧。内核有四个调用点
+    #:    （planner ×2 / worldmodel ×1 / 收口 ×1），靠自觉传早晚会漏。
+    #:
+    #: 第八十六轮实测（§50）逼出来的需求：`glm-4.7-flash` 的 reasoning 吃掉
+    #: 输出预算的 **85~99%**，而且会撑满任何上限（4096 ⇒ 4050 思考、
+    #: 8192 ⇒ 8129 思考，正文两次都只剩几十个 token）。要量云端真实能力，
+    #: 必须先让通道不吞答案 —— 这台通道唯一的杠杆就是这个字段。
+    #:
+    #: ⛔ 空串 = **不发该字段**，不是"默认关闭"。理由有两层：
+    #:    ① OpenAI 官方端点收到不认识的字段会 **400** ⇒ 默认必须什么都不说；
+    #:    ② 默认档的请求体必须与历史**逐字节相同** ⇒ 口径签名也必须**逐位相同**，
+    #:       否则所有历史读数会因为"多了一个没生效的键"集体变成不可比。
+    thinking: str = field(
+        default_factory=lambda: os.environ.get("V1_LLM_THINKING", "").strip())
+
+    def __post_init__(self) -> None:
+        # ⛔ 拼错必须**构造即抛**，不许静默忽略：
+        #    `V1_LLM_THINKING=off` 被悄悄吞掉 ⇒ 操作者以为关了思考、实际没关
+        #    ⇒ 读数继续被思考吃掉，而日志上一切正常。这与 `mw/llm.py` 开头
+        #    那条"静默降级是经典病灶"是同一条判据，不是新规矩。
+        if self.thinking not in _THINKING_MODES:
+            raise ValueError(
+                f"V1_LLM_THINKING={self.thinking!r} 不认识，只认 {_THINKING_MODES}"
+                "（空串 = 不发该字段；'off'/'false'/'0' 都不是合法值）")
 
     def usable(self) -> bool:
         return bool(self.api_key) and not self.offline
@@ -163,13 +199,21 @@ class LLMConfig:
         ⛔ **绝不含 `api_key`**：它敏感，且改了它不该改变"这把尺子量的是什么"。
         `temperature` 也不在这里 —— 它是 `Caliber` 的独立字段（实测事故最多的一项），
         同一事实只声明一处，不放第二遍。
+
+        `thinking` 只在**真的会发出去**时才进快照（见字段注释）；这不是漏了：
+        空串 ⇒ 请求体与历史逐字节相同 ⇒ 签名若多一个键，就是**反向撒谎**
+        （标签说"口径不同"，实际同一台通道、同一个请求）。这与 A18 不是两条规矩，
+        是同一条：**签名里的每个键，都必须对应一次会改变读数的真实请求差异**。
         """
         try:
             host = urlsplit(self.base_url).netloc or self.base_url
         except ValueError:
             host = self.base_url
-        return {"model": self.model, "endpoint": host,
+        snap = {"model": self.model, "endpoint": host,
                 "timeout_s": self.timeout_s, "offline": self.offline}
+        if self.thinking:
+            snap["thinking"] = self.thinking
+        return snap
 
 
 @dataclass(frozen=True)
@@ -350,6 +394,7 @@ ENV_KEYS = (
     "V1_LLM_MODEL",
     "V1_LLM_TIMEOUT_S",
     "V1_LLM_TEMPERATURE",
+    "V1_LLM_THINKING",
     "V1_LLM_OFFLINE",
     "V1_MAX_STEPS",
     "V1_MAX_LLM_CALLS",

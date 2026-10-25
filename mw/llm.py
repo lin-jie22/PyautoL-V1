@@ -88,12 +88,20 @@ class HTTPLLM:
         # ⚠️ 同理，`timeout_s=None` ⇒ 取配置值。**不许**在这里写死一个数：
         #    写死就等于绕过调用方对剩余预算的裁剪（第二十四轮 361s 的一半原因）。
         _to = self.cfg.timeout_s if timeout_s is None else float(timeout_s)
-        body = json.dumps({
+        body_obj: dict[str, Any] = {
             "model": self.cfg.model,
             "messages": [m.as_dict() for m in messages],
             "max_tokens": max_tokens,
             "temperature": temperature,
-        }).encode("utf-8")
+        }
+        #: 「思考开关」只在这个字段**被显式设过**时才发（见 `config.LLMConfig.thinking`）。
+        #: ⛔ 空串时**一个字节都不许多**：默认档必须与历史请求逐字节相同，
+        #:    否则一台不认识该字段的端点会直接 400（而口径签名也已经被它带偏）。
+        #: ⛔ 也不许在这里做"值不合法就不发"的宽容：合法性在 `LLMConfig.__post_init__`
+        #:    已经 fail-closed 了；这里再宽容一次，就是给拼错留第二条活路。
+        if self.cfg.thinking:
+            body_obj["thinking"] = {"type": self.cfg.thinking}
+        body = json.dumps(body_obj).encode("utf-8")
         req = urllib.request.Request(
             self.cfg.base_url.rstrip("/") + "/chat/completions",
             data=body,

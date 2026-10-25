@@ -615,10 +615,15 @@ echo
 #     而不是 0、`DIRECT_SYSTEM` 从 `run.py` 用 AST 取（不抄字面量 ⇒ 不漂移）、
 #     以及**打分口径对账**（用本探针的打分器重算 §49 的冻结答案，6 题必须逐格相同）。
 #     最后一条最要紧：探针自己另写一套判分就等于换尺子（§45.9 混口径）。
+#   · `llm_proxy.py --self-check`（第八十八轮）：七组反证 —— 响应/请求**逐字节**透传、
+#     429 原样透传且 `error.code` 落盘、上游断了必须 502+记账（fail-closed）、
+#     缺字段是 `None` 不是 0，以及**反证组**：`--log` 为空时盘上不许多一行
+#     （否则"日志条数==请求数"可能只是恒真）。它存在的理由是一条老账：
+#     §49 的 10 题跑完之后，日志里**一个状态码都没有**，"为什么重试 65 次"当时不可判定。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

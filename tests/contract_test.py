@@ -1256,6 +1256,7 @@ def _env_zero_takes_effect(key: str) -> bool:
         "V1_LLM_RETRIES": ("limits", "llm_retries"),
         "V1_LLM_RETRY_BACKOFF_S": ("limits", "llm_retry_backoff_s"),
         "V1_VERIFY_RETRIES": ("limits", "verify_retries"),
+        "V1_VERIFY_STATIC": ("limits", "verify_static"),
     }
     grp, attr = _keys[key]
     _old = os.environ.get(key)
@@ -4691,11 +4692,24 @@ _AS_DERIVE_ARGS = [a.arg for n in ast.walk(ast.parse(_AS_SRC))
                    for a in list(n.args.args) + list(n.args.kwonlyargs)]
 _AS_D1 = [c.kind for c in _AS_V.derive("写一个函数 foo(x)。只输出代码，函数名必须是 foo。")]
 _AS_D2 = [c.kind for c in _AS_V.derive("解释一下为什么 CSV 里的引号要双写。")]
-check(RS, "AS3 ★`derive()` 只许收 `goal` 一个输入，且不同题面必须派生出不同判据\n"
+# ── AS3：判据只从**题面**派生；形参只许是 `goal` + 一个**配置档位** ────────
+# ⚠️ 第八十轮把 `static`（0/1/2 三档）加进了签名。这**不是放宽**，三条都在：
+#    · 档位来自 `Limits`（配置），不是答案、不是分数、不是判据输出；
+#    · 默认 0 ⇒ 那条判据根本不派生 ⇒ 行为与之前**逐位相同**；
+#    · 反证留在下面：任何形参名里带 answer/output/score/report/why/verdict
+#      都必须判红 —— 「答案反过来影响判据」那条入口仍然关着。
+_AS_BANNED_PARM = ("answer", "ans", "output", "score", "report", "why", "verdict")
+_AS_DERIVE_BAD = [n for n in _AS_DERIVE_ARGS if n.lower() in _AS_BANNED_PARM]
+_AS_STATIC_DEFAULT = inspect.signature(_AS_V.derive).parameters.get("static")
+check(RS, "AS3 ★`derive()` 只许收 `goal` 再加一个**配置档位**，且不同题面必须派生出不同判据\n"
           "         —— 若它还能收 answer 或分数，就给了『答案反过来影响判据』的入口，\n"
           "           那正是自评分的形态。",
-      _AS_DERIVE_ARGS == ["goal"] and _AS_D1 != _AS_D2,
-      f"形参={_AS_DERIVE_ARGS} 代码题={_AS_D1} 散文题={_AS_D2}")
+      _AS_DERIVE_ARGS == ["goal", "static"] and _AS_D1 != _AS_D2
+      and _AS_STATIC_DEFAULT is not None and _AS_STATIC_DEFAULT.default == 0
+      and _AS_DERIVE_BAD == [],
+      f"形参={_AS_DERIVE_ARGS} 禁用名命中={_AS_DERIVE_BAD} "
+      f"static默认={getattr(_AS_STATIC_DEFAULT, 'default', '缺')} "
+      f"代码题={_AS_D1} 散文题={_AS_D2}")
 
 # ── AS4：散文题**不许**派生 `compiles`（否则把解释文本判死）──────────────
 check(RS, "AS4 ★散文题只许派生 `nonempty` —— 对一段解释文本做 `compile()`\n"
@@ -4745,10 +4759,12 @@ _AS_SEQ = [0]
 
 
 def _as_run(answers, *, retries: int | None = None,
-            goal: str | None = None):
+            goal: str | None = None, static: int | None = None):
     """跑一次内核。每次一个**独立**记忆库 —— 否则上一轮的事实会进下一轮的 guidance。"""
     _AS_SEQ[0] += 1
     kw = {} if retries is None else {"verify_retries": retries}
+    if static is not None:
+        kw["verify_static"] = static
     lim = cfg.Limits(max_steps=8, max_llm_calls=24, max_candidates=2,
                      max_consecutive_failures=6, max_stall=6, **kw)
     llm = _AS_LLM(answers)
@@ -8678,6 +8694,197 @@ check(RS, "AZ88 ★答案本体落盘：默认不截断 / 截断必须自陈 / �
       f"truncated={_AZ88_R2['truncated']} ｜ 空 run_id ⇒ {_AZ88_EMPTY_ID} ｜ "
       f"键={sorted(_AZ88_KEYS)} ｜ mw 命中={_AZ88_MW_HITS} ｜ "
       f"反证 坏chars={_AZ88_LIE_LEN['bad_len']} 坏sha={_AZ88_LIE_SHA['bad_sha']}")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AZ89 ★静态未定义名（第八十轮，§43）
+#
+# 为什么要这条：84 格里 **27 格（73% 的失分）** 丢在两个**确定性运行时错误**上
+# （`sg01` 忘 `import re`、`sg05` 把 `dict.values()` 当 list 调 `.sort()`），
+# 而 `derive()` 派生的四条判据没有一条看代码 ⇒ 全过 ⇒ 不打回。
+#
+# 第八十轮实测把路选窄了：
+#   · 静态符号表：命中 sg01，**18 份权威实现 0 误报**；
+#   · 执行一次：多命中 sg05，但重写预演显示 sg05 只从 0/14 变 1/14 ——
+#     它剩下的 13 格是**对错**错误（处理顺序写反），自检按设计不判对错。
+#   ⇒ 执行的边际只有 1 格，代价是沙箱 + 探针输入 + 挂死风险 ⇒ **不做**。
+#
+# 这条钉五件事：
+#   ① 三档**语义真的不同**（0 不派生 / 1 报名字 / 2 同一触发集盲报）；
+#   ② **零误报**：十条语法面正确样本一条都不报（闭包 / global / 类 / 装饰器 /
+#      推导式 / lambda / try-except / with / 别名 / 前向引用）；
+#   ③ **不可判定 ≠ 通过**：星号导入与 `exec()` 返回 `None` 且**不许打回**；
+#   ④ 模式 2 的载荷**一个标识符都不许漏**（否则安慰剂臂不是安慰剂）；
+#   ⑤ 旋钮进了 `Limits.as_dict()` / `ENV_KEYS` / `ZERO_OK_KEYS` / `KNOBS`。
+#
+# ⛔ 输入全部**自带**（不读题集 jsonl —— 它自己是撤回态的变异目标，
+#    读它会让这条跟着一起红，重演 §41.7 的耦合）。
+#    sg01 的真答案读**冻结证据**（`bench/evidence/answers_s79/`，不在 CASES 里）。
+# ═══════════════════════════════════════════════════════════════════════════
+import mw.verify as _AZ89_V
+
+_AZ89_GOAL = ("写一个函数 norm_sg01(rows)，参数是字符串列表。"
+              "返回处理完的列表。只输出代码，函数名必须是 norm_sg01。")
+
+_AZ89_EV = V1 / "bench" / "evidence" / "answers_s79" / "answers.jsonl"
+_AZ89_REAL = ""
+_AZ89_EV_OK = _AZ89_EV.exists()
+if _AZ89_EV_OK:
+    for _az89_ln in _AZ89_EV.read_text(encoding="utf-8").splitlines():
+        try:
+            _az89_o = json.loads(_az89_ln)
+        except ValueError:
+            continue
+        if _az89_o.get("kind") == "answer" and _az89_o.get("task_id") == "sg01":
+            _AZ89_REAL = _az89_o.get("answer") or ""
+            break
+
+#: 语法面**正确**样本 —— 这十条一条都不许报。
+#: ⛔ 它们覆盖"名字看着没定义、其实有定义"的全部常见形态；少一条就少一个误报面
+#:    （误报 = 把正确答案判失败，比漏报更贵：那是装置吃掉了效应）。
+_AZ89_OK = {
+    "闭包": "def o():\n    v = 2\n    def i():\n        return v\n    return i\n",
+    "global": "g = 0\ndef f():\n    global g\n    g = 1\n",
+    "类与self": "class A:\n    def m(self):\n        return self.x\n",
+    "装饰器": "import functools\n@functools.lru_cache\ndef f(x):\n    return x\n",
+    "推导式": "def f(rows):\n    return [r.strip() for r in rows if r]\n",
+    "lambda": "def f(rows):\n    return sorted(rows, key=lambda s: len(s))\n",
+    "except": "def f():\n    try:\n        pass\n    except ValueError as e:\n        return str(e)\n",
+    "with": "def f(p):\n    with open(p) as fh:\n        return fh.read()\n",
+    "别名": "import collections as C\ndef f():\n    return C.OrderedDict()\n",
+    "前向引用": "def a():\n    return b()\ndef b():\n    return 1\n",
+}
+#: 坏样本 —— 检测器必须命中，否则它是死代码。
+_AZ89_BAD = {
+    "缺import": "def f(x):\n    return re.sub('a', 'b', x)\n",
+    "闭包拼错": "def a():\n    v = 2\n    def b():\n        return vv\n    return b\n",
+    "类属性拼错": "class A:\n    def m(self):\n        return selfo\n",
+    "模块级装饰器": "@lru_cached\ndef f(x):\n    return x\n",
+    "lambda捕获拼错": "def f(rows):\n    return sorted(rows, key=lambda s: len(ss))\n",
+}
+
+_AZ89_OK_MISS = {k: _AZ89_V.undefined_names(v) for k, v in _AZ89_OK.items()}
+_AZ89_OK_FALSE_POS = [k for k, v in _AZ89_OK_MISS.items() if v]
+_AZ89_BAD_MISS = [k for k, v in _AZ89_BAD.items() if not _AZ89_V.undefined_names(v)]
+
+# ── ③ 不可判定：必须 None，且**不许**因此打回 ──────────────────────────────
+# ⚠️ 样本里必须定义**题面要求的那个函数名** —— 第一版写成 def f()，
+#    结果 star 样本是被 `defines` 判死的（不是被这条），断言假红一次。
+_AZ89_STAR = ("from os.path import *\n"
+               "def norm_sg01(rows):\n    return join('a', 'b')\n")
+_AZ89_DYN = ("def norm_sg01(rows):\n"
+             "    exec('x = 1')\n    return rows\n")
+_AZ89_STAR_N = _AZ89_V.undefined_names(_AZ89_STAR)
+_AZ89_DYN_N = _AZ89_V.undefined_names(_AZ89_DYN)
+_AZ89_STAR_V = _AZ89_V.run("```python\n" + _AZ89_STAR + "```", _AZ89_V.derive(_AZ89_GOAL, 1))
+_AZ89_DYN_V = _AZ89_V.run("```python\n" + _AZ89_DYN + "```", _AZ89_V.derive(_AZ89_GOAL, 1))
+
+# ── ① 三档：派生条数与判据名 ───────────────────────────────────────────────
+_AZ89_D0 = _AZ89_V.derive(_AZ89_GOAL, 0)
+_AZ89_D1 = _AZ89_V.derive(_AZ89_GOAL, 1)
+_AZ89_D2 = _AZ89_V.derive(_AZ89_GOAL, 2)
+# 反证：模式参数必须**真的被读** —— 三档如果一样，说明传参是空转。
+_AZ89_MODE_DIFFERS = (len(_AZ89_D0) == 4 and len(_AZ89_D1) == 5
+                      and len(_AZ89_D2) == 5
+                      and _AZ89_D1[-1].name == "未定义名"
+                      and _AZ89_D2[-1].name == "结构检查"
+                      and _AZ89_D1[-1].arg == "1" and _AZ89_D2[-1].arg == "2")
+
+# ── ② 真答案上的三档行为 ───────────────────────────────────────────────────
+_AZ89_R0 = _AZ89_V.run(_AZ89_REAL, _AZ89_D0) if _AZ89_REAL else None
+_AZ89_R1 = _AZ89_V.run(_AZ89_REAL, _AZ89_D1) if _AZ89_REAL else None
+_AZ89_R2 = _AZ89_V.run(_AZ89_REAL, _AZ89_D2) if _AZ89_REAL else None
+#: 模式 2 的载荷不许出现任何标识符（`re` / 函数名都不许）。
+_AZ89_LEAK = [t for t in ("re", "norm_sg01")
+              if _AZ89_R2 is not None and t in _AZ89_R2.report]
+_AZ89_TRI = tuple(None if r is None else r.ok for r in (_AZ89_R0, _AZ89_R1, _AZ89_R2))
+_AZ89_R2_REP = _AZ89_R2.report if _AZ89_R2 else "-"
+# 细节串里**不许**对可能不存在的属性做算术（老账：抛异常会连汇总行一起吞掉）
+
+# ── ⑤ 旋钮登记 ─────────────────────────────────────────────────────────────
+_AZ89_LIM = cfg.Limits().as_dict()
+_AZ89_KNOB = [k for k in MU.KNOBS if k.name == "verify_static"]
+_AZ89_BOUNDS = ((_AZ89_KNOB[0].lo, _AZ89_KNOB[0].hi)
+                 if _AZ89_KNOB else None)
+os.environ["V1_VERIFY_STATIC"] = "0"
+_AZ89_ENV0 = int(cfg.Limits().verify_static) == 0
+os.environ["V1_VERIFY_STATIC"] = "1"
+try:
+    _AZ89_ENV1 = int(cfg.Limits().verify_static) == 1
+finally:
+    os.environ.pop("V1_VERIFY_STATIC", None)
+
+check(RS,
+      "AZ89 ★静态未定义名：三档语义真的不同 / 十条语法面样本零误报 / 五个坏样本全命中\n"
+      "          / 星号导入与 exec 是「不可判定」而**不是**通过 / 模式 2 载荷不漏标识符\n"
+      "          —— 84 格里 27 格（73% 的失分）丢在两个确定性运行时错误上，\n"
+      "          而四条旧判据没有一条看代码。\n"
+      "          撤回语义：`if bad is None or not bad:` 改成 `if True:` ⇒ 必须红。",
+      _AZ89_EV_OK and bool(_AZ89_REAL)
+      and _AZ89_MODE_DIFFERS
+      and _AZ89_OK_FALSE_POS == [] and _AZ89_BAD_MISS == []
+      and _AZ89_STAR_N is None and _AZ89_DYN_N is None
+      and _AZ89_STAR_V.ok and _AZ89_DYN_V.ok
+      and _AZ89_R0 is not None and _AZ89_R0.ok
+      and _AZ89_R1 is not None and not _AZ89_R1.ok
+      and "re" in _AZ89_R1.report
+      and _AZ89_R2 is not None and not _AZ89_R2.ok
+      and _AZ89_LEAK == []
+      and "verify_static" in _AZ89_LIM
+      and "V1_VERIFY_STATIC" in cfg.ENV_KEYS
+      and "V1_VERIFY_STATIC" in cfg.ZERO_OK_KEYS
+      and len(_AZ89_KNOB) == 1
+      and (_AZ89_KNOB[0].lo, _AZ89_KNOB[0].hi) == (0, 2)
+      and _AZ89_ENV0 and _AZ89_ENV1,
+      f"证据={_AZ89_EV_OK} 真答案={len(_AZ89_REAL)}字符 ｜ "
+      f"判据条数 0/1/2={len(_AZ89_D0)}/{len(_AZ89_D1)}/{len(_AZ89_D2)} ｜ "
+      f"三档={_AZ89_TRI} ｜ 模式2载荷={_AZ89_R2_REP!r} 泄露={_AZ89_LEAK} ｜ "
+      f"误报={_AZ89_OK_FALSE_POS} 漏报={_AZ89_BAD_MISS} ｜ "
+      f"星号={_AZ89_STAR_N} 动态={_AZ89_DYN_N} ｜ "
+      f"旋钮界={_AZ89_BOUNDS} "
+      f"env0={_AZ89_ENV0} env1={_AZ89_ENV1}")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AZ90 ★`verify_static` 的**接线**（行为锚，不是静态锚）
+#
+# 为什么单列一条：AZ89 证明的是 `mw/verify.py` **自己**对不对，
+# 它完全可能在 `core.py` 里没被传进去 —— 那样 AZ89 全绿而机制恒不触发，
+# 与「一个恒不触发的机制和一个没装的机制长得一模一样」是同一件事。
+#
+# 反证就藏在两档的对比里：同一份**带 `re` 未定义**的答案，
+#   `verify_static=0` ⇒ 0 次打回、原样交付（基线，逐位不变）；
+#   `verify_static=1` ⇒ 打回 1 次、交付修好的那一版、判据里出现「未定义名」。
+# 两档一样 ⇒ 档位没被读 ⇒ 这条红。
+# ═══════════════════════════════════════════════════════════════════════════
+_AZ90_BUGGY = ("```python\ndef norm_sg01(rows):\n"
+               "    return [re.sub(r'\\s+', ' ', r) for r in rows]\n```")
+_AZ90_FIXED = ("```python\nimport re\ndef norm_sg01(rows):\n"
+               "    return [re.sub(r'\\s+', ' ', r) for r in rows]\n```")
+_AZ90_C0, _AZ90_O0, _ = _as_run([_AZ90_BUGGY, _AZ90_FIXED],
+                                static=0, goal=_AZ89_GOAL)
+_AZ90_C1, _AZ90_O1, _ = _as_run([_AZ90_BUGGY, _AZ90_FIXED],
+                                static=1, goal=_AZ89_GOAL)
+_AZ90_V0 = (_AZ90_O0.stats or {}).get("verify") or {}
+_AZ90_V1 = (_AZ90_O1.stats or {}).get("verify") or {}
+
+check(RS,
+      "AZ90 ★`verify_static` 真的接进了内核：同一份带未定义名的答案，\n"
+      "          0 档原样交付（0 次打回）/ 1 档打回一次并交付修好的那一版\n"
+      "          —— AZ89 只证明判据模块自己对了；没接进 `derive()` 的话，\n"
+      "            它会全绿而机制恒不触发（恒不触发与没装长得一模一样）。\n"
+      "          撤回语义：`core.py` 里不传 `verify_static` ⇒ 必须红。",
+      _AZ90_V0.get("checks") == ["非空", "函数名 norm_sg01", "语言标签", "可编译"]
+      and int(_AZ90_V0.get("failed") or 0) == 0
+      and _AZ90_O0.answer.strip() == _AZ90_BUGGY.strip()
+      and "未定义名" in (_AZ90_V1.get("checks") or [])
+      and int(_AZ90_V1.get("failed") or 0) == 1
+      and int(_AZ90_V1.get("passed") or 0) == 1
+      and _AZ90_O1.status == "done"
+      and _AZ90_O1.answer.strip() == _AZ90_FIXED.strip(),
+      f"0档 判据={_AZ90_V0.get('checks')} failed={_AZ90_V0.get('failed')} "
+      f"原样交付={_AZ90_O0.answer.strip() == _AZ90_BUGGY.strip()} ｜ "
+      f"1档 判据={_AZ90_V1.get('checks')} failed={_AZ90_V1.get('failed')} "
+      f"passed={_AZ90_V1.get('passed')} status={_AZ90_O1.status} "
+      f"交付修好版={_AZ90_O1.answer.strip() == _AZ90_FIXED.strip()}")
 
 print()
 print("=" * 74)

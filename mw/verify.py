@@ -41,11 +41,29 @@
 | `fence_lang` | 代码块语言标签是 python | 题说"写一个函数" ⇒ C 代码不可能是答案 |
 | `compiles` | 抽出的代码能 `compile()` | 语法错误是**确定性**的，不需要判断对错 |
 | `defines` | 出现 `def <题面指定的名字>` | 题面点名了函数名 |
+| `undefined` | 函数体里有一个**哪儿都没绑定**的名字 | `symtable` 是确定性的；名字没绑，跑到那行必炸 |
 
-⛔ 它们**都不判断"答案对不对"**。`def f(): pass` 能过全部四项检查。
+⛔ 它们**都不判断"答案对不对"**。`def f(): pass` 能过全部五项检查。
 所以本模块**不产生任何分数**，也**不允许**被读成分数 ——
 "自检通过"这句话的全部含义是"结构上过得去"，不是"做对了"。
 把它读成后者，就是 V1 版本的"自己给自己发分"。
+
+## `undefined` 是怎么来的，为什么**不是**"跑一下看看"
+
+第八十轮实测（证据 `bench/evidence/answers_s79/`）：
+
+| 做法 | sg01（忘 `import re`） | sg05（`odict_values.sort()`） | 误报 |
+|---|---|---|---|
+| 现在这 4 条 | 判"通过" | 判"通过" | — |
+| 静态未定义名 | **命中** | 漏（是类型错，不是名字错） | 18 份权威实现 **0** |
+| 执行一次 | 命中 | 命中 | 4 题调通无炸 |
+
+把错误原文回灌给同一个模型重写：`sg01` 1/14 → **14/14**（只补一行 import）；
+`sg05` 0/14 → **1/14** —— 因为它剩下的错误是**对错**（处理顺序写反），
+而自检按设计不判对错。⇒ 执行相对静态的**边际只有 1 格**，代价却是沙箱、
+探针输入（一处新的判据来源）、挂死风险。**不做**，这是被读数否掉的。
+
+⇒ 本套题里自检可及的天花板 = +13 格，全部来自"名字没绑"这一类。
 
 ## 为什么必须是闸，不是"建议"
 
@@ -59,7 +77,9 @@
 
 from __future__ import annotations
 
+import builtins
 import re
+import symtable
 from dataclasses import dataclass
 
 #: 从 Markdown 围栏里抽代码。**必须与外部打分器同构** —— 否则自检比尺子更严，
@@ -85,6 +105,15 @@ _PY_CONTEXT = re.compile(r"写一个函数|写个函数|一个函数|python", re
 
 #: 允许出现的围栏标签。空标签（```）算合法 —— 模型常常不写语言。
 _ALLOWED_TAGS = frozenset({"", "python", "py"})
+
+#: builtins 名字集合。`symtable` 只给符号表，**不告诉你"哪些是语言自带的"** ——
+#: 少了这一步，`len` / `sorted` / `str` 会全被当成"未定义的名字"。
+_BUILTINS = frozenset(dir(builtins))
+
+#: 一旦出现这些，**静态上不可判定**"哪些名字被绑定过" ⇒ 这条判据本轮不适用。
+#: 星号导入把未知数量的名字塞进命名空间；`exec` / `eval` / `globals` / `locals` / `vars` 同理。
+#: ⚠️ 不可判定必须返回 `None`，**不许**返回"通过" —— 那两句在读数上必须分得开。
+_DYNAMIC_BIND = re.compile(r"\b(?:exec|eval|globals|locals|vars)\s*\(|\bimport\s*\*")
 
 
 @dataclass(frozen=True)
@@ -123,7 +152,57 @@ def extract_code(answer: str) -> str:
     return (answer or "").strip()
 
 
-def derive(goal: str) -> tuple[Check, ...]:
+def _walk_symbols(tab, bound_module: frozenset[str] | set[str],
+                  outer: list[set[str]], out: list[tuple[str, str]]) -> None:
+    """递归找"被引用但没有任何绑定"的名字。"""
+    for sym in tab.get_symbols():
+        # 参数 / 赋值 / 导入 ⇒ 这个作用域里"有定义"（`x += 1` 也是 assigned）
+        if sym.is_parameter() or sym.is_assigned() or sym.is_imported():
+            continue
+        name = sym.get_name()
+        if name in _BUILTINS or name in bound_module or any(name in s for s in outer):
+            continue
+        out.append((tab.get_name() or "<module>", name))
+    local = {s.get_name() for s in tab.get_symbols()}
+    for child in tab.get_children():
+        _walk_symbols(child, bound_module, outer + [local], out)
+
+
+def undefined_names(code: str) -> tuple[tuple[str, str], ...] | None:
+    """代码里"被引用、却哪儿都没有绑定"的名字。返回 `(作用域名, 名字)` 元组。
+
+    `()` = 没发现；`None` = **本轮不可判定**（语法错 / 动态绑定）。
+
+    ## 为什么是静态符号表，不是"跑一下看看"
+
+    第八十轮实测：把错误原文回灌给同一个模型，`sg01` 从 1/14 变 14/14（只补一行
+    `import re`），`sg05` 从 0/14 只变 1/14 —— 因为 `sg05` 剩下的错误是**对错**
+    （处理顺序写反），而自检按设计不判对错。⇒ 执行相对静态的边际只有 1 格，
+    却要付沙箱、探针输入（一处新的判据来源）、挂死风险三样代价。**不做**。
+
+    ## 为什么只收"绑定的"符号当已定义
+
+    ⛔ 第一版写成 `{s.get_name() for s in top.get_symbols()}`（**全部**符号）⇒
+    模块级的"引用名"把自己豁免掉 ⇒ **模块级未定义名永远抓不到**。
+    反证集当场抓出来（`@lru_cached` 漏报），读代码看不出来。
+    现在只收 `is_assigned() / is_imported() / is_namespace()`。
+    """
+    if _DYNAMIC_BIND.search(code or ""):
+        return None
+    try:
+        top = symtable.symtable(code, "<answer>", "exec")
+    except SyntaxError:
+        # 语法错交给 `compiles` 判据，这里不重复报（两处报同一件事 = 噪音）
+        return None
+    bound = frozenset(
+        s.get_name() for s in top.get_symbols()
+        if s.is_assigned() or s.is_imported() or s.is_namespace())
+    out: list[tuple[str, str]] = []
+    _walk_symbols(top, bound, [], out)
+    return tuple(out)
+
+
+def derive(goal: str, static: int = 0) -> tuple[Check, ...]:
     """从**目标文本**派生判据。派生规则只有这一处。
 
     ⚠️ `nonempty` 恒开：它不是形式主义 —— `finish` 带空答案是一个真实发生过的
@@ -140,6 +219,14 @@ def derive(goal: str) -> tuple[Check, ...]:
         if _PY_CONTEXT.search(goal or ""):
             checks.append(Check("语言标签", "fence_lang", "python"))
         checks.append(Check("可编译", "compiles"))
+        # ★ 第八十轮：静态未定义名。排在最后 —— 前面几条都是"改一下就好"的，
+        #   这条是"你忘了一个 import"，两者同时不满足时应先修前者。
+        # ⚠️ `arg` 带着模式号：1 = 报名字，2 = **同一触发集、盲报**（等长安慰剂臂）。
+        #    模式 2 连判据名字都换成"结构检查" —— 否则 `未过：未定义名` 本身就是载荷。
+        _st = int(static)
+        if _st > 0:
+            checks.append(Check("未定义名" if _st == 1 else "结构检查",
+                                "undefined", str(_st)))
     return tuple(checks)
 
 
@@ -179,6 +266,21 @@ def _check_one(c: Check, answer: str, code: str) -> str:
             return f"无法编译（{type(e).__name__}: {e}）"
         return ""
 
+    if c.kind == "undefined":
+        bad = undefined_names(code)
+        if bad is None or not bad:
+            # ⚠️ `None`（不可判定）与 `()`（没发现）在这里**走同一条出口**，
+            #    但那是刻意的：不可判定时打回 = 自造假失败（装置吃掉了效应）。
+            #    区别记在下面的说明里 —— 读数要能分开，动作不许分开。
+            return ""
+        if c.arg == "2":
+            # 等长安慰剂臂的载荷：**一个标识符都不许漏**。
+            return "自检未通过（不提供细节）"
+        fn, name = bad[0]
+        more = f"；另有 {len(bad) - 1} 个未定义名" if len(bad) > 1 else ""
+        return (f"未定义的名字 {name!r}（在 {fn} 内被引用，"
+                f"模块里既没有 import 也没有赋值）{more}")
+
     if c.kind == "defines":
         pat = re.compile(rf"\bdef\s+{re.escape(c.arg)}\s*\(")
         if pat.search(code):
@@ -198,7 +300,7 @@ def run(answer: str, checks: tuple[Check, ...] | list[Check]) -> Verdict:
         # 这两件事在读数上必须分开，否则"自检通过率 100%"可以靠关掉判据拿到。
         return Verdict(False, ("(无判据)",), "本轮没有派生到任何判据")
     code = extract_code(answer) if any(
-        c.kind in ("compiles", "defines") for c in checks) else ""
+        c.kind in ("compiles", "defines", "undefined") for c in checks) else ""
     failed: list[str] = []
     reports: list[str] = []
     for c in checks:

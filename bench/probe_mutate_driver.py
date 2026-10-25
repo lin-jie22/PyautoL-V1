@@ -68,9 +68,12 @@ def main() -> int:
     os.environ["V1_RECALL_K"] = "9"
     os.environ["V1_LLM_MODEL"] = "keep-me"
     e = MD.clean_env({"V1_MAX_STALL": "3"})
+    # ⚠️ 这个数字是**故意的硬锚**：加 `Limits` 字段时它必然红，
+    #    逼人回来确认「新字段确实进了清 env 的集合」。
+    #    17 → 18（第八十轮加 `verify_static`），不是为了让这条变绿而改的。
     ck("P5 ★`clean_env` 清掉**全部** `Limits` 字段的同名 env，但保住模型配置",
        e.get("V1_MAX_STALL") == "3" and "V1_RECALL_K" not in e
-       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 17,
+       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 18,
        f"limits 字段 {len(fields)} 个 ｜ V1_RECALL_K={'在' if 'V1_RECALL_K' in e else '已清'}")
     for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_LLM_MODEL"):
         os.environ.pop(k, None)

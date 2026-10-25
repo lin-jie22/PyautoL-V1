@@ -244,6 +244,24 @@ class Limits:
     #:    不进制口径，两轮就能被 `paired_compare` 判成"可比"，那是又一次尺子下移。
     verify_retries: int = field(
         default_factory=lambda: _env_int("V1_VERIFY_RETRIES", 2, allow_zero=True))
+    #: 静态**未定义名**检查（第八十轮，`mw/verify.py`）。三值：
+    #:
+    #:   0 = 关（默认）—— 内核行为与之前**逐位相同**
+    #:   1 = 开，报错**带名字与所在函数**
+    #:   2 = 开，**同一触发集**，报错不带任何细节（"自检未通过（不提供细节）"）
+    #:
+    #: ⚠️ 为什么要有 2 这个看着多余的档：它是**等长安慰剂臂**。
+    #:    与 1 相比，触发时机相同、多花的 LLM 调用相同，**只有载荷不同**
+    #:    ⇒ base↔2 量的是"被退回重写一次（盲发）值多少"，
+    #:      2↔1 量的是"看见名字值多少"。没有 2，`1` 的增益分不清是哪一半。
+    #:    （§17-7 7o 的那个定律"末次生成决定交付、补救是盲发的"，至此才可分离测量。）
+    #: ⚠️ 必须进 `Limits.as_dict()`（`fields()` 派生，自动）⇒ 开/关是**不同口径**，
+    #:    两臂不进同一个 sig 就不可比。
+    #: ⚠️ 为什么不做"执行一次"：第八十轮实测，执行相对静态的**边际只有 1 格**
+    #:    （sg05 0/14→1/14，因为它剩下的 13 格是"对错"错误，而自检按设计不判对错）。
+    #:    代价却是沙箱 + 探针输入派生（一处新的判据来源）+ 挂死风险。被读数否掉的，不是嫌麻烦。
+    verify_static: int = field(
+        default_factory=lambda: _env_int("V1_VERIFY_STATIC", 0, allow_zero=True))
     #: 指定一个**外部能力**作为答案的第一来源（第二十三轮，路线①）。
     #: 空字符串 = 关（默认）：内核的行为与之前**逐位相同**。
     #:
@@ -338,6 +356,7 @@ ENV_KEYS = (
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",
+    "V1_VERIFY_STATIC",
     "V1_EXTERNAL_ANSWER_TOOL",
     "V1_ALLOW_NOTE",
     "V1_ALLOW_LEARN",
@@ -353,6 +372,8 @@ ENV_KEYS = (
 #:   · `V1_LLM_RETRIES=0`           关闭传输层重试
 #:   · `V1_LLM_RETRY_BACKOFF_S=0`   不退避（测试与本地端点）
 #:   · `V1_VERIFY_RETRIES=0`        关闭自检（对照组：开/关自检必须能被分开跑）
+#:   · `V1_VERIFY_STATIC=0`         关闭静态未定义名检查（同上；而且它是**默认值** ——
+#:     这一档不会"没填就回默认"，否则候选臂与基线臂会被悄悄编成同一臂）
 #: 实测：这五个里前四个都曾被静默改写成默认值，而口径签名照样宣称理想取值。
 ZERO_OK_KEYS: tuple[str, ...] = (
     "V1_LLM_TEMPERATURE",
@@ -361,4 +382,5 @@ ZERO_OK_KEYS: tuple[str, ...] = (
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",
+    "V1_VERIFY_STATIC",
 )

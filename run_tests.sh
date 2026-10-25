@@ -36,10 +36,13 @@ import ast, sys, pathlib
 #:    是真实存在的第三方包，只把名字写进白名单等于给同名包开后门。
 LOCAL = {"run", "mw", "bench"}
 ALLOWED = {
-    "argparse","ast","collections","copy","dataclasses","hashlib","json","math","os","re",
-    "shlex","sqlite3","statistics","subprocess","sys","tempfile","time","tokenize",
-    "typing","urllib","pathlib","__future__",
+    "argparse","ast","builtins","collections","copy","dataclasses","hashlib","json","math",
+    "os","re","shlex","sqlite3","statistics","subprocess","symtable","sys","tempfile",
+    "time","tokenize","typing","urllib","pathlib","__future__",
 } | LOCAL
+#: ⚠️ `builtins` / `symtable` 是第八十轮加的，都是 **CPython 自带**（前者是内建模块，
+#:    后者在标准库里，`python -c "import symtable"` 即可）。加它们是把这个白名单
+#:    维持在"标准库 + 本仓库"的口径上，不是给它开口子：仍然**零第三方依赖**。
 bad = []
 for _local in sorted(LOCAL):
     # 本地模块必须**在本仓库里真实存在**：同名目录（`mw/`、`bench/`）或同名文件（`run`）。

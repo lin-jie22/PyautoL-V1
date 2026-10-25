@@ -609,8 +609,11 @@ class Core:
         # ⛔ 必须在这里派生、而不是每次 finish 时现算：
         #    现算就给了"答案反过来影响判据"的入口 —— 那正是自评分的形态。
         #    判据只认目标，与答案无关；`V1_VERIFY_RETRIES=0` ⇒ 判据为空 ⇒ 整条闸不存在。
+        # ⚠️ `verify_static`（第八十轮）只是**多派生一条**判据，不是一个新分叉：
+        #    0=不派生（默认，与之前逐位相同）/1=报名字/2=盲报（等长安慰剂臂）。
         self._checks: tuple[vfy.Check, ...] = (
-            vfy.derive(goal) if int(self.s.limits.verify_retries) > 0 else ())
+            vfy.derive(goal, int(self.s.limits.verify_static))
+            if int(self.s.limits.verify_retries) > 0 else ())
         self.verify_stats: dict = {
             "runs": 0, "passed": 0, "failed": 0, "exhausted": 0,
             "checks": [c.name for c in self._checks],

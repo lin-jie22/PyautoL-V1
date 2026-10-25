@@ -62,8 +62,15 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      'r"```(?:python|py)?[ \\t]*\\r?\\n(.*?)```"',
      'r"```python[ \\t]*\\r?\\n(.*?)```"'),
     # ── AS3：派生函数只许收 goal ──────────────────────────────────────
-    ("AS3", "mw/verify.py", "def derive(goal: str) -> tuple[Check, ...]:",
-     "def derive(goal: str, answer: str = \"\") -> tuple[Check, ...]:"),
+    #: ⚠️ 第八十轮：`derive()` 加了 `static` 形参（默认 0）⇒ 锚点跟着改。
+    #:   撤的语义**不变**：多收一个 `answer` 就是"答案反过来影响判据"的入口。
+    ("AS3", "mw/verify.py",
+     "def derive(goal: str, static: int = 0) -> tuple[Check, ...]:",
+     #: ⚠️ 新形参必须**追加在末尾**。第一版插在中间 ⇒ 所有位置调用
+     #:   `derive(goal, 0)` 的 `0` 绑到 `answer` 上 ⇒ AZ89/AZ90 一起红。
+     #:   那是**参数错位**，不是"答案影响判据"；换成追加就单红了。
+     "def derive(goal: str, static: int = 0, answer: str = \"\")"
+     " -> tuple[Check, ...]:"),
     # ── AS4：散文题不许派生 compiles ──────────────────────────────────
     ("AS4", "mw/verify.py", 'if _CODE_ONLY.search(goal or ""):', "if True:"),
     # ── AS5：没有判据不许报通过 ───────────────────────────────────────
@@ -84,14 +91,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # ── AS10：答案必须被保住（把 salvage 置空 ⇒ 停滞出口交付空串）──────
     ("AS10", "mw/core.py", "self._salvage = result.output", 'self._salvage = ""'),
     # ── AS11：关掉必须真的关掉 ───────────────────────────────────────
+    #: ⚠️ 第八十轮：`derive(goal)` → `derive(goal, int(...verify_static))` ⇒ 锚点跟改。
     ("AS11", "mw/core.py",
-     "vfy.derive(goal) if int(self.s.limits.verify_retries) > 0 else ())",
-     "vfy.derive(goal))"),
+     "vfy.derive(goal, int(self.s.limits.verify_static))\n"
+     "            if int(self.s.limits.verify_retries) > 0 else ())",
+     "vfy.derive(goal, int(self.s.limits.verify_static)))"),
     # ── AS12：开关必须进口径签名（从 ZERO_OK_KEYS 里拿掉）──────────────
     #: ⚠️ 锚点必须带上前面的整段元组：`ENV_KEYS` 与 `ZERO_OK_KEYS` 的**尾部逐字相同**
     #:    （都以 BACKOFF_S + VERIFY_RETRIES + `)` 收尾）。只锚尾部 ⇒ 命中 2 次，
     #:    改到的是 `ENV_KEYS`，而 AS12 恰好不会转红 —— 那时"没转红"会被误读成
     #:    "断言恒真"，实际是驱动器改错了地方。
+    #: ⚠️ 第八十轮：ZERO_OK_KEYS 多了 `V1_VERIFY_STATIC` ⇒ 锚点跟改（撤的语义不变：
+    #:   从"允许取 0"的表里拿掉 ⇒ 开关进不了口径签名）。
     ("AS12", "mw/config.py",
      'ZERO_OK_KEYS: tuple[str, ...] = (\n'
      '    "V1_LLM_TEMPERATURE",\n'
@@ -99,13 +110,15 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '    "V1_CLOSE_RESERVE_STEPS",\n'
      '    "V1_LLM_RETRIES",\n'
      '    "V1_LLM_RETRY_BACKOFF_S",\n'
-     '    "V1_VERIFY_RETRIES",\n)',
+     '    "V1_VERIFY_RETRIES",\n'
+     '    "V1_VERIFY_STATIC",\n)',
      'ZERO_OK_KEYS: tuple[str, ...] = (\n'
      '    "V1_LLM_TEMPERATURE",\n'
      '    "V1_CLOSE_RESERVE_S",\n'
      '    "V1_CLOSE_RESERVE_STEPS",\n'
      '    "V1_LLM_RETRIES",\n'
-     '    "V1_LLM_RETRY_BACKOFF_S",\n)'),
+     '    "V1_LLM_RETRY_BACKOFF_S",\n'
+     '    "V1_VERIFY_STATIC",\n)'),
     # ── AS13：闸只许挂在 finish 上（去掉 tool 守卫 ⇒ 每个动作都过闸）────
     #: ⚠️ 锚点第二十三轮改过一次：出口守卫从字面量 `cand.tool == "finish"`
     #:    升级成了 `_produces`（= finish 或 produces_answer 的外部能力），
@@ -182,8 +195,9 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #: ⚠️ 会连带 A 组的"登记 == 实际读取"（那条本来就该红：代码读了没登记的 env
     #:    就是静默漂移），见 COUPLED。
     ("AE2", "mw/config.py",
-     '    "V1_VERIFY_RETRIES",\n    "V1_EXTERNAL_ANSWER_TOOL",\n',
-     '    "V1_VERIFY_RETRIES",\n'),
+     '    "V1_VERIFY_RETRIES",\n    "V1_VERIFY_STATIC",\n'
+     '    "V1_EXTERNAL_ANSWER_TOOL",\n',
+     '    "V1_VERIFY_RETRIES",\n    "V1_VERIFY_STATIC",\n'),
     # ── AE3：注入只许守在第 1 步（把 `it == 1` 放宽成 `it >= 1`）──────────
     ("AE3", "mw/core.py",
      "if _ext and it == 1 and self.tools.get(_ext) is not None:",
@@ -1013,6 +1027,22 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ88", "bench/answer_store.py",
      "        stored = text if self.cap <= NO_CAP else text[: self.cap]",
      "        stored = text[:200]"),
+
+    # ── 第八十轮：静态未定义名（§43）───────────────────────────────────
+    # ㊹ 把「只有**真绑定**的符号才算已定义」退回成「全部符号都算」——
+    #    这正是第八十轮反证集当场抓到的那版真漏洞：模块级的**引用名**
+    #    把自己豁免掉 ⇒ `@lru_cached` 这类模块级未定义名永远抓不到。
+    #    ⇒ 只有 AZ89 红（它的坏样本里就有 `@lru_cached`）。
+    #    AZ90 不受影响：它的样本是函数体内的 `re`，那个名字在模块级
+    #    **压根没出现过**，所以放宽边界也豁免不到它。
+    ("AZ89", "mw/verify.py",
+     "        if s.is_assigned() or s.is_imported() or s.is_namespace())",
+     "        if True)"),
+    # ㊺ 把档位从 `core.py` 的调用里拿掉 ⇒ 判据模块自己仍然全对（AZ89 绿），
+    #    但机制恒不触发（AZ90 红）。这一条撤的是**接线**，不是判据。
+    ("AZ90", "mw/core.py",
+     "vfy.derive(goal, int(self.s.limits.verify_static))",
+     "vfy.derive(goal)"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1084,7 +1114,11 @@ COUPLED: dict[str, frozenset[str]] = {
     #   ★第三十三轮补登 AV1/AV2：它们读的就是 `_AS_C2.memory.episodes(kind="failure")`
     #     那几行 —— 闸永不拒 ⇒ 没有 failure 行 ⇒ 两条断言的前提整体消失。
     #     实测（第三十三轮）：AS7 撤回后 AV1/AV2 同时红，`failure行数=0`。
-    "AS7": frozenset({"AS8", "AS9", "AS10", "AV1", "AV2"}),
+    #: ★第八十轮补登 AZ90：AZ90 断言的是"`1` 档**打回一次**并交付修好的那一版"。
+    #:   闸被改成恒真 ⇒ 一次打回都不发生 ⇒ 这条的前提整体消失。
+    #:   ⛔ 这不是"能单红却登记"：任何让打回不发生的变异都会打红 AZ90，
+    #:      而"闸会不会打回"本来就只能这样测 —— 与 AS8/AS9/AS10/AV1/AV2 同源。
+    "AS7": frozenset({"AS8", "AS9", "AS10", "AV1", "AV2", "AZ90"}),
     #: AS9 撤掉 `failed > cap` ⇒ 超限分支永不可达 ⇒ AV2（超限交付要落 failure 行）
     #: 的前提消失。实测：AS9 撤回后 AV2 红，其余只 AS9 自己红。
     "AS9": frozenset({"AV2"}),
@@ -1092,7 +1126,9 @@ COUPLED: dict[str, frozenset[str]] = {
     "AY1": frozenset({"AY2"}),
     # salvage 条件去掉 `not answer and` 之后，**正常交付**也会被上一版坏答案顶掉
     # ⇒ AS8（"第二版交对就交付它"）必然红。这正是 AS14 注释里预言的那个静默降级。
-    "AS14": frozenset({"AS8"}),
+    #: ★第八十轮补登 AZ90：salvage 无条件顶替 ⇒ 交付的是上一版坏答案，
+    #:   AZ90 的"交付修好那一版"必然不成立（与 AS8 同因）。
+    "AS14": frozenset({"AS8", "AZ90"}),
     #: AW 组：env → Limits → Core 是一条**串联链**，上游断下游必红 —— 合理连带：
     #:   AW2（开关被无视）⇒ Core 注册表里 note 在册 ⇒ AW5（端到端传播）红；
     #:   AW3（整块门控）⇒ OFF 时 recall 消失 ⇒ AW5 红；

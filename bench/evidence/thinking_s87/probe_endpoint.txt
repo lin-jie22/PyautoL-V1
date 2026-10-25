@@ -1,0 +1,45 @@
+            第十二次探测（手工，1 次请求 + 1 次重试）
+================================================================
+命令（原样，未改一字）：
+
+  V1_LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4 \
+  V1_LLM_MODEL=glm-4.7-flash \
+  V1_LLM_THINKING=disabled \
+  V1_LLM_TIMEOUT_S=120 \
+  python3 - <<'PY'
+  import sys; sys.path.insert(0, '/Users/linshaojie/V1')
+  from mw.config import settings
+  from mw.llm import HTTPLLM, Message, LLMError
+  cfg = settings().llm
+  print("cfg.thinking =", repr(cfg.thinking), "| cond =", cfg.cond())
+  out = HTTPLLM(cfg).complete([Message("user", "只回答两个字：收到")], max_tokens=32)
+  print(out)
+  PY
+
+（`V1_LLM_API_KEY` 由 V5 的 vault 读出后注入，**未**落盘。）
+
+----------------------------------------------------------------
+第一次：HTTP 429（限流，K2）
+----------------------------------------------------------------
+cfg.thinking = 'disabled' | cond = {'model': 'glm-4.7-flash', 'endpoint': 'open.bigmodel.cn',
+                                   'timeout_s': 120.0, 'offline': False, 'thinking': 'disabled'}
+LLMError 0.5s transient=True
+HTTP 429: {"error":{"code":"1305","message":"该模型当前访问量过大，请您稍后再试"}}
+
+----------------------------------------------------------------
+第二次（同一脚本 + 6 次重试、间隔 10s）
+----------------------------------------------------------------
+第 1 次 ✅ 61.1s content='收到'  总耗时 61.1s
+
+================================================================
+它证明了什么（⛔ 别多读）
+================================================================
+1. 端点**接受** `"thinking": {"type": "disabled"}` —— 不是 400，请求体合法。
+   （这是本轮唯一无法用离契约证明的事实：抓包桩只证明"我们发了什么"，
+     不证明"对面收不收"。）
+2. 正文**不再被吃空**：`max_tokens=32` 下交出 `'收到'`。
+   对照 §50 的控制实验：同样小预算，`max_tokens=8` 且不关思考时
+   `content=''` / `finish_reason='length'` / `reasoning_tokens=8`。
+3. ⛔ **不是能力读数**：这是一句"收到"，不是一道题；没有格子、没有分母。
+4. 61.1s 是**通道速度**，与思考开关无关（§50 的 `off` 臂也在同量级）。
+5. 第一次就撞 429/1305 ⇒ 复现了 K2：限流与思考无关，关思考治不了它。

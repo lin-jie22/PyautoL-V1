@@ -605,10 +605,14 @@ echo
 #   · `probe_selftest.py --self-check`：2×2 四格 + 抽取器四支（含 `block` 模式
 #     的「重定义被检函数 ⇒ 判没牙」）。第二件尤其不能省：它的结论是
 #     **否定性**的（自检写不对期望值），而否定性结论最容易由"仪器坏了"伪造。
+#   · `probe_structcheck.py --self-check`（第八十四轮）：七类结构违反 + 两类类型错、
+#     **`derive()` 在 10 题 oracle 上必须一条都不响**（这是"不变量"唯一能拿到的证明）、
+#     题面解析器三处变异 + 「认不出的行必须抛」。第三件同样是否定性/积极性混合读数，
+#     而且它给了本轮**正面**结论（结构约束可抽），正面结论更容易由"不变量推松了"伪造。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束探针，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'
@@ -618,6 +622,23 @@ for _p in probe_error_taxonomy probe_selftest; do
     FAIL=1
   fi
 done
+
+# ── 步骤 7j：题面文字 ⇒ 约束 必须等于 spec ⇒ 约束（第八十四轮）─────────────
+# 这是 §47 唯一一条**正面**主张（"结构约束能从题面文字抽出来"）的守卫。
+# ⛔ 不放进契约层：`probe_structcheck` 是测量装置，把装置挂进契约就是"被测与测量混在一起"。
+# 反证已实测：把 squeeze 的 min_run 读成 n+1 ⇒ sg07/sg09/sg10 三题当场红。
+echo
+echo "=============================================================="
+echo "步骤 7j  题面→约束 == spec→约束（零模型、零网络）"
+echo "=============================================================="
+if "$PY" bench/probe_structcheck.py --pin > /tmp/v1_pin.out 2>&1; then
+  echo "  ✅ probe_structcheck --pin"
+  sed 's/^/     /' /tmp/v1_pin.out
+else
+  echo "  ❌ --pin 失败（§47 的正面主张已失效）："
+  sed 's/^/     /' /tmp/v1_pin.out
+  FAIL=1
+fi
 
 echo
 if [ "$FAIL" -eq 0 ]; then

@@ -1,0 +1,1402 @@
+{
+  "src": {
+    "G": {
+      "sg01": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "dedupe",
+            "keep": "last",
+            "fold": true
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 8
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg02": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "strip"
+          },
+          {
+            "op": "prefix",
+            "text": "[v2] "
+          },
+          {
+            "op": "dedupe",
+            "keep": "first",
+            "fold": true
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 10
+          }
+        ],
+        "c": {
+          "max_len": 10,
+          "prefix": "[v2] ",
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg03": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "dedupe",
+            "keep": "first",
+            "fold": true
+          },
+          {
+            "op": "prefix",
+            "text": "> "
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": false
+          },
+          {
+            "op": "truncate",
+            "n": 6
+          }
+        ],
+        "c": {
+          "max_len": 6,
+          "prefix": "> ",
+          "lower": false,
+          "max_ws_run": null,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg04": {
+        "rules": [
+          {
+            "op": "lower"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 7
+          },
+          {
+            "op": "prefix",
+            "text": "#"
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": "#",
+          "lower": true,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg05": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "truncate",
+            "n": 9
+          },
+          {
+            "op": "dedupe",
+            "keep": "last",
+            "fold": true
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": true
+          },
+          {
+            "op": "prefix",
+            "text": "· "
+          }
+        ],
+        "c": {
+          "max_len": 11,
+          "prefix": "· ",
+          "lower": false,
+          "max_ws_run": null,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg06": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "dedupe",
+            "keep": "first",
+            "fold": true
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 5
+          },
+          {
+            "op": "prefix",
+            "text": "· "
+          }
+        ],
+        "c": {
+          "max_len": 7,
+          "prefix": "· ",
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg07": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "squeeze",
+            "min_run": 2
+          },
+          {
+            "op": "dedupe_adj",
+            "fold": true
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 8
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg08": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "keep_tail",
+            "n": 7
+          },
+          {
+            "op": "dedupe",
+            "keep": "first",
+            "fold": true
+          },
+          {
+            "op": "prefix",
+            "text": "[v2] "
+          },
+          {
+            "op": "sort",
+            "key": "text"
+          }
+        ],
+        "c": {
+          "max_len": 12,
+          "prefix": "[v2] ",
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_asc",
+          "no_ellipsis": false
+        }
+      },
+      "sg09": {
+        "rules": [
+          {
+            "op": "squeeze",
+            "min_run": 3
+          },
+          {
+            "op": "strip"
+          },
+          {
+            "op": "dedupe_adj",
+            "fold": false
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "keep_tail",
+            "n": 9
+          }
+        ],
+        "c": {
+          "max_len": 9,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": 2,
+          "sorted": null,
+          "no_ellipsis": false
+        }
+      },
+      "sg10": {
+        "rules": [
+          {
+            "op": "lower"
+          },
+          {
+            "op": "squeeze",
+            "min_run": 2
+          },
+          {
+            "op": "sort",
+            "key": "len"
+          },
+          {
+            "op": "keep_tail",
+            "n": 6
+          },
+          {
+            "op": "prefix",
+            "text": "#"
+          }
+        ],
+        "c": {
+          "max_len": 7,
+          "prefix": "#",
+          "lower": true,
+          "max_ws_run": 1,
+          "sorted": null,
+          "no_ellipsis": false
+        }
+      }
+    },
+    "R": {
+      "sg01": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "dedupe",
+            "keep": "last"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 8
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg02": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "strip"
+          },
+          {
+            "op": "prefix",
+            "text": "[v2] "
+          },
+          {
+            "op": "dedupe",
+            "keep": "first"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 10
+          }
+        ],
+        "c": {
+          "max_len": 10,
+          "prefix": "[v2] ",
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg03": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "dedupe",
+            "keep": "first"
+          },
+          {
+            "op": "prefix",
+            "text": "> "
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": false
+          },
+          {
+            "op": "truncate",
+            "n": 6
+          }
+        ],
+        "c": {
+          "max_len": 6,
+          "prefix": "> ",
+          "lower": false,
+          "max_ws_run": null,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg04": {
+        "rules": [
+          {
+            "op": "lower"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 7
+          },
+          {
+            "op": "prefix",
+            "text": "#"
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": "#",
+          "lower": true,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg05": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "truncate",
+            "n": 9
+          },
+          {
+            "op": "dedupe",
+            "keep": "last"
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": true
+          },
+          {
+            "op": "prefix",
+            "text": "· "
+          }
+        ],
+        "c": {
+          "max_len": 11,
+          "prefix": "· ",
+          "lower": false,
+          "max_ws_run": null,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg06": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "dedupe",
+            "keep": "first"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 5
+          },
+          {
+            "op": "prefix",
+            "text": "· "
+          }
+        ],
+        "c": {
+          "max_len": 7,
+          "prefix": "· ",
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg07": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "squeeze",
+            "min_run": 2
+          },
+          {
+            "op": "dedupe_adj"
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 8
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg08": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "keep_tail",
+            "n": 7
+          },
+          {
+            "op": "dedupe",
+            "keep": "first"
+          },
+          {
+            "op": "prefix",
+            "text": "[v2] "
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": false
+          }
+        ],
+        "c": {
+          "max_len": 12,
+          "prefix": "[v2] ",
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_asc",
+          "no_ellipsis": false
+        }
+      },
+      "sg09": {
+        "rules": [
+          {
+            "op": "squeeze",
+            "min_run": 3
+          },
+          {
+            "op": "strip"
+          },
+          {
+            "op": "dedupe_adj"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "keep_tail",
+            "n": 9
+          }
+        ],
+        "c": {
+          "max_len": 9,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": 2,
+          "sorted": null,
+          "no_ellipsis": false
+        }
+      },
+      "sg10": {
+        "rules": [
+          {
+            "op": "lower"
+          },
+          {
+            "op": "squeeze",
+            "min_run": 2
+          },
+          {
+            "op": "sort",
+            "key": "len",
+            "desc": false
+          },
+          {
+            "op": "keep_tail",
+            "n": 6
+          },
+          {
+            "op": "prefix",
+            "text": "#"
+          }
+        ],
+        "c": {
+          "max_len": 7,
+          "prefix": "#",
+          "lower": true,
+          "max_ws_run": 1,
+          "sorted": null,
+          "no_ellipsis": false
+        }
+      }
+    },
+    "M→d": {
+      "sg01": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "dedupe",
+            "keep": "last"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 8
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg02": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "squeeze",
+            "min_run": -1
+          },
+          {
+            "op": "prefix",
+            "text": "[v2]  "
+          },
+          {
+            "op": "dedupe",
+            "keep": ""
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 10
+          }
+        ],
+        "c": {
+          "max_len": 10,
+          "prefix": "[v2]  ",
+          "lower": false,
+          "max_ws_run": -2,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg03": {
+        "rules": [],
+        "c": {}
+      },
+      "sg04": {
+        "rules": [
+          {
+            "op": "lower"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 7
+          },
+          {
+            "op": "prefix",
+            "text": "#"
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": "#",
+          "lower": true,
+          "max_ws_run": 1,
+          "sorted": null,
+          "no_ellipsis": true
+        }
+      },
+      "sg05": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "truncate",
+            "n": 9
+          },
+          {
+            "op": "dedupe",
+            "keep": "last"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          }
+        ],
+        "c": {
+          "max_len": 9,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": null,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg06": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "dedupe",
+            "keep": ""
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 5
+          },
+          {
+            "op": "prefix",
+            "text": "·  "
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": "·  ",
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg07": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "dedupe",
+            "keep": ""
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 8
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": 1,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg08": {
+        "rules": [],
+        "c": {}
+      },
+      "sg09": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "squeeze",
+            "min_run": -1
+          },
+          {
+            "op": "dedupe",
+            "keep": ""
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 9
+          }
+        ],
+        "c": {
+          "max_len": 9,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": -2,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg10": {
+        "rules": [
+          {
+            "op": "lower"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": false
+          },
+          {
+            "op": "truncate",
+            "n": 6
+          },
+          {
+            "op": "prefix",
+            "text": "#"
+          }
+        ],
+        "c": {
+          "max_len": 7,
+          "prefix": "#",
+          "lower": true,
+          "max_ws_run": 1,
+          "sorted": "text_asc",
+          "no_ellipsis": true
+        }
+      }
+    },
+    "M": {
+      "sg01": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "dedupe",
+            "keep": "last"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 8
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": null,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg02": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "squeeze",
+            "min_run": -1
+          },
+          {
+            "op": "prefix",
+            "text": "[v2]  "
+          },
+          {
+            "op": "dedupe",
+            "keep": ""
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 10
+          }
+        ],
+        "c": {
+          "max_len": 10,
+          "prefix": "[v2]  ",
+          "lower": true,
+          "max_ws_run": null,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg03": {
+        "rules": [],
+        "c": {
+          "max_len": null,
+          "prefix": null,
+          "lower": null,
+          "max_ws_run": null,
+          "sorted": null,
+          "no_ellipsis": null
+        }
+      },
+      "sg04": {
+        "rules": [
+          {
+            "op": "lower"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 7
+          },
+          {
+            "op": "prefix",
+            "text": "#"
+          }
+        ],
+        "c": {
+          "max_len": 7,
+          "prefix": "#",
+          "lower": true,
+          "max_ws_run": null,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg05": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "truncate",
+            "n": 9
+          },
+          {
+            "op": "dedupe",
+            "keep": "last"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          }
+        ],
+        "c": {
+          "max_len": 9,
+          "prefix": "· ",
+          "lower": true,
+          "max_ws_run": null,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg06": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "dedupe",
+            "keep": ""
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 5
+          },
+          {
+            "op": "prefix",
+            "text": "·  "
+          }
+        ],
+        "c": {
+          "max_len": 5,
+          "prefix": "·  ",
+          "lower": true,
+          "max_ws_run": null,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg07": {
+        "rules": [
+          {
+            "op": "strip"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "dedupe",
+            "keep": ""
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 8
+          }
+        ],
+        "c": {
+          "max_len": 8,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": null,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg08": {
+        "rules": [],
+        "c": {
+          "max_len": null,
+          "prefix": null,
+          "lower": null,
+          "max_ws_run": null,
+          "sorted": null,
+          "no_ellipsis": null
+        }
+      },
+      "sg09": {
+        "rules": [
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "squeeze",
+            "min_run": -1
+          },
+          {
+            "op": "dedupe",
+            "keep": ""
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": true
+          },
+          {
+            "op": "truncate",
+            "n": 9
+          }
+        ],
+        "c": {
+          "max_len": 9,
+          "prefix": null,
+          "lower": false,
+          "max_ws_run": null,
+          "sorted": "text_desc",
+          "no_ellipsis": true
+        }
+      },
+      "sg10": {
+        "rules": [
+          {
+            "op": "lower"
+          },
+          {
+            "op": "collapse"
+          },
+          {
+            "op": "sort",
+            "key": "text",
+            "desc": false
+          },
+          {
+            "op": "truncate",
+            "n": 6
+          },
+          {
+            "op": "prefix",
+            "text": "#"
+          }
+        ],
+        "c": {
+          "max_len": 6,
+          "prefix": "#",
+          "lower": true,
+          "max_ws_run": 1,
+          "sorted": "text_asc",
+          "no_ellipsis": true
+        }
+      }
+    }
+  },
+  "pairs": [
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg01",
+      "true_state": "FAIL",
+      "lost": 2,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg02",
+      "true_state": "FAIL",
+      "lost": 7,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg03",
+      "true_state": "PASS",
+      "lost": 0,
+      "class": "PASS"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg04",
+      "true_state": "PASS",
+      "lost": 0,
+      "class": "PASS"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg05",
+      "true_state": "FAIL",
+      "lost": 14,
+      "class": "CRASH"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg06",
+      "true_state": "FAIL",
+      "lost": 6,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg07",
+      "true_state": "FAIL",
+      "lost": 2,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg08",
+      "true_state": "FAIL",
+      "lost": 7,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg09",
+      "true_state": "FAIL",
+      "lost": 2,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "69666@1792912166",
+      "task_id": "sg10",
+      "true_state": "PASS",
+      "lost": 0,
+      "class": "PASS"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg01",
+      "true_state": "FAIL",
+      "lost": 13,
+      "class": "UNDEFINED"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg02",
+      "true_state": "FAIL",
+      "lost": 4,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg03",
+      "true_state": "PASS",
+      "lost": 0,
+      "class": "PASS"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg04",
+      "true_state": "PASS",
+      "lost": 0,
+      "class": "PASS"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg05",
+      "true_state": "FAIL",
+      "lost": 13,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg06",
+      "true_state": "FAIL",
+      "lost": 6,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg07",
+      "true_state": "FAIL",
+      "lost": 2,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg08",
+      "true_state": "FAIL",
+      "lost": 7,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg09",
+      "true_state": "FAIL",
+      "lost": 2,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "70620@1792912544",
+      "task_id": "sg10",
+      "true_state": "FAIL",
+      "lost": 13,
+      "class": "UNDEFINED"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg01",
+      "true_state": "FAIL",
+      "lost": 13,
+      "class": "UNDEFINED"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg02",
+      "true_state": "FAIL",
+      "lost": 7,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg03",
+      "true_state": "PASS",
+      "lost": 0,
+      "class": "PASS"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg04",
+      "true_state": "PASS",
+      "lost": 0,
+      "class": "PASS"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg05",
+      "true_state": "FAIL",
+      "lost": 14,
+      "class": "CRASH"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg06",
+      "true_state": "FAIL",
+      "lost": 6,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg07",
+      "true_state": "FAIL",
+      "lost": 2,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg08",
+      "true_state": "FAIL",
+      "lost": 7,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg09",
+      "true_state": "FAIL",
+      "lost": 2,
+      "class": "SEMANTIC"
+    },
+    {
+      "run_id": "5425@1792919669",
+      "task_id": "sg10",
+      "true_state": "FAIL",
+      "lost": 13,
+      "class": "UNDEFINED"
+    }
+  ]
+}

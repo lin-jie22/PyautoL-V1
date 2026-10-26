@@ -76,13 +76,33 @@
   后者需要看完整推理链，本证据里没有（`thinking=disabled` 那轮**没**采思维链）。
 - `sg07` 的 5/14 仍只是**这一个模型在一次采样**下的读数。`repeat=1`，噪声未估。
 
-## 7. 复现
+## 7. 换一道题也能用（`sg09`，反向验证量具不是为 `sg07` 定制的）
+
+同一命令、零改动，把 `--task` 换成 `sg09`：**13/14 = 0.9286**，
+与 s88 冻结读数逐位一致。唯一失败的一条也直接定位到字符级：
+
+```
+[ 2] ❌ assert norm_sg09(['one two  three', 'One Two Three', ...]) == ['six', 'wo  three', ...]
+       实际 = ['six', 'two three', 'five five', 'Two Three', 'FOUR']
+       期望 = ['six', 'wo  three', 'five five', 'Two Three', 'FOUR']
+       差异 = 第 1 项 'two three' != 'wo  three'
+```
+
+⚠️ **只给事实，不给根因**：`sg09` 没有 `bench/attrib/sg09.json` 注册表
+（`--ablate` 会明确降级成「只能给 as_is」），本轮也没读它的题面规则
+⇒ 这 1 例「为什么把两个空格压成一个 / 为什么少了 `t`」**未归因**，不许猜。
+
+这一条的作用是**反证量具的通用性**：若它只能对 `sg07` 出数，那 §54 的
+消融结论就可能是「为这道题量身定做的巧合」，而不是一条能动别处的读法。
+
+## 8. 复现
 
 ```bash
 PY=python3
 $PY bench/probe_task_attrib.py --self-check                 # 五组反证
 $PY bench/probe_task_attrib.py --task sg07                  # 逐条明细
 $PY bench/probe_task_attrib.py --task sg07 --ablate --full   # 消融表
+$PY bench/probe_task_attrib.py --task sg09                  # 换题（无注册表 ⇒ 只出明细）
 ```
 
-输入：`bench/specgen/tasks_v2.jsonl`（`sg07`）+ `bench/evidence/cloud_s88/answers.jsonl`。
+输入：`bench/specgen/tasks_v2.jsonl`（`sg07` / `sg09`）+ `bench/evidence/cloud_s88/answers.jsonl`。

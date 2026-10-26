@@ -11795,7 +11795,8 @@ A7 是这七组里最要紧的一条：没有它，「日志 3 行 == 3 次请�
 | 对拍 | `as_is` = 5/14、失败序号 `[1,2,5,6,7,8,9,12,13]` 与 s88 逐位相同 |
 | 窗口闸门 | oracle 14/14（`_x[:8]` → `[:9]` 后掉到 8/14，证明打分不是恒真） |
 | 归因完整性 | 「全部修完仍红」为空 ⇒ 无未登记的第三根因 |
-| 证据 | `bench/evidence/attrib_s89/`（`selfcheck.log` / `detail_sg07.log` / `ablate_sg07.log` / `PROVENANCE.md` / `FILES.sha256`） |
+| 换题反证 | `--task sg09` 同命令零改动 ⇒ **13/14 逐位复现**，1 例失败定位到第 1 项字符差异（`'two three'` vs `'wo  three'`）<br>⇒ 量具不是为 `sg07` 定制的；`sg09` 无注册表，`--ablate` 明确降级，该例**未归因** |
+| 证据 | `bench/evidence/attrib_s89/`（`selfcheck.log` / `detail_sg07.log` / `detail_sg09.log` / `ablate_sg07.log` / `PROVENANCE.md` / `FILES.sha256`） |
 | 内核 | **`mw/` 零 diff、`run.py` 零 diff**（本轮纯测量） |
 
 ⛔ 本轮**一格没涨**。它买到的是「一笔挂了十轮的 UNKNOWN 变成已知」，

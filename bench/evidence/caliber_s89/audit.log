@@ -1,0 +1,95 @@
+扫到 147 行运行记录，去重后 7 种 llm_cond
+
+── 去重后的 llm_cond 全集 ──
+[1]  38 行 | sig ['08e3a62ea48575ac', '235a9eede15666e2'] | endpoint='127.0.0.1:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      来源: bench_out/runs.jsonl
+[2]  48 行 | sig ['05dfc1f21e47f453', '3a5b5468eae83d80'] | endpoint='127.0.0.1:8399'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      来源: bench_out/runs.jsonl
+[3]   1 行 | sig ['46880d1298a57070'] | endpoint='127.0.0.1:8787'  model='glm-4.7-flash'  offline=False  thinking='disabled'  timeout_s=180.0
+      来源: bench/evidence/cloud_s88/runs.jsonl
+[4]  19 行 | sig ['030d69256d4a2533', '0c850f9ec47c638e'] | endpoint='api.openai.com'  model='gpt-4o-mini'  offline=False  timeout_s=120.0
+      来源: bench_out/runs.jsonl
+[5]  27 行 | sig ['0d3a94b4bc1436a0', '1b6aa50fdc975607'] | endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      来源: bench_out/runs.jsonl
+[6]  13 行 | sig ['341c1eecd9c3b660', '368175163097a3b6'] | endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=300.0
+      来源: bench_out/runs.jsonl
+[7]   1 行 | sig ['a13ed2cfc6178a54'] | endpoint='open.bigmodel.cn'  model='glm-4.7-flash'  offline=False  timeout_s=600.0
+      来源: bench/evidence/zhipu_s85/runs.jsonl
+
+── 两两配对（21 对）──
+
+SUBJECT_ONLY：0 对
+
+CHANNEL_ONLY：6 对
+  · 差 ['endpoint']
+      A: endpoint='127.0.0.1:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='127.0.0.1:8399'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+  · 差 ['endpoint']
+      A: endpoint='127.0.0.1:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+  · 差 ['endpoint', 'timeout_s']
+      A: endpoint='127.0.0.1:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=300.0
+  · 差 ['endpoint']
+      A: endpoint='127.0.0.1:8399'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+  · 差 ['endpoint', 'timeout_s']
+      A: endpoint='127.0.0.1:8399'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=300.0
+  · 差 ['timeout_s']
+      A: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=300.0
+
+MIXED：15 对
+  · 差 ['endpoint', 'model', 'thinking', 'timeout_s']
+      A: endpoint='127.0.0.1:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='127.0.0.1:8787'  model='glm-4.7-flash'  offline=False  thinking='disabled'  timeout_s=180.0
+  · 差 ['endpoint', 'model']
+      A: endpoint='127.0.0.1:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='api.openai.com'  model='gpt-4o-mini'  offline=False  timeout_s=120.0
+  · 差 ['endpoint', 'model', 'timeout_s']
+      A: endpoint='127.0.0.1:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='open.bigmodel.cn'  model='glm-4.7-flash'  offline=False  timeout_s=600.0
+  · 差 ['endpoint', 'model', 'thinking', 'timeout_s']
+      A: endpoint='127.0.0.1:8399'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='127.0.0.1:8787'  model='glm-4.7-flash'  offline=False  thinking='disabled'  timeout_s=180.0
+  · 差 ['endpoint', 'model']
+      A: endpoint='127.0.0.1:8399'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='api.openai.com'  model='gpt-4o-mini'  offline=False  timeout_s=120.0
+  · 差 ['endpoint', 'model', 'timeout_s']
+      A: endpoint='127.0.0.1:8399'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='open.bigmodel.cn'  model='glm-4.7-flash'  offline=False  timeout_s=600.0
+  · 差 ['endpoint', 'model', 'thinking', 'timeout_s']
+      A: endpoint='127.0.0.1:8787'  model='glm-4.7-flash'  offline=False  thinking='disabled'  timeout_s=180.0
+      B: endpoint='api.openai.com'  model='gpt-4o-mini'  offline=False  timeout_s=120.0
+  · 差 ['endpoint', 'model', 'thinking', 'timeout_s']
+      A: endpoint='127.0.0.1:8787'  model='glm-4.7-flash'  offline=False  thinking='disabled'  timeout_s=180.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+  · 差 ['endpoint', 'model', 'thinking', 'timeout_s']
+      A: endpoint='127.0.0.1:8787'  model='glm-4.7-flash'  offline=False  thinking='disabled'  timeout_s=180.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=300.0
+  · 差 ['endpoint', 'thinking', 'timeout_s']
+      A: endpoint='127.0.0.1:8787'  model='glm-4.7-flash'  offline=False  thinking='disabled'  timeout_s=180.0
+      B: endpoint='open.bigmodel.cn'  model='glm-4.7-flash'  offline=False  timeout_s=600.0
+  · 差 ['endpoint', 'model']
+      A: endpoint='api.openai.com'  model='gpt-4o-mini'  offline=False  timeout_s=120.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+  · 差 ['endpoint', 'model', 'timeout_s']
+      A: endpoint='api.openai.com'  model='gpt-4o-mini'  offline=False  timeout_s=120.0
+      B: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=300.0
+  · 差 ['endpoint', 'model', 'timeout_s']
+      A: endpoint='api.openai.com'  model='gpt-4o-mini'  offline=False  timeout_s=120.0
+      B: endpoint='open.bigmodel.cn'  model='glm-4.7-flash'  offline=False  timeout_s=600.0
+  · 差 ['endpoint', 'model', 'timeout_s']
+      A: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=120.0
+      B: endpoint='open.bigmodel.cn'  model='glm-4.7-flash'  offline=False  timeout_s=600.0
+  · 差 ['endpoint', 'model', 'timeout_s']
+      A: endpoint='localhost:11434'  model='qwen2.5:7b'  offline=False  timeout_s=300.0
+      B: endpoint='open.bigmodel.cn'  model='glm-4.7-flash'  offline=False  timeout_s=600.0
+
+SAME：0 对
+
+── 结论读数 ──
+  SUBJECT_ONLY（只差被测对象）= **0 对**  ← 非 0 才说明'换被测对象'这个比较在历史台账里真实发生过
+  CHANNEL_ONLY（只差通道）    = 6 对  ← §53 已证这类差异会让分数翻倍 ⇒ 豁免 llm_cond 会把它暗放行
+  MIXED（两类都差）           = 15 对

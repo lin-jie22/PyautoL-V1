@@ -1,0 +1,11 @@
+── 口径拆分审计自检（八条反证）──
+  ✅ S1 只改 model ⇒ SUBJECT_ONLY（仪器认得出换被测对象）
+  ✅ S1b 只加 thinking ⇒ SUBJECT_ONLY（thinking 归被测侧）
+  ✅ S2 只改 endpoint ⇒ CHANNEL_ONLY
+  ✅ S2b 只改 timeout_s ⇒ CHANNEL_ONLY
+  ✅ S3 完全相同 ⇒ SAME
+  ✅ S4 model 与 endpoint 同时改 ⇒ MIXED
+  ✅ S5 同一台 ollama 的 v4/v6 两种写法被判 CHANNEL_ONLY（同一服务、不同路径、延迟差 12 倍）
+  ✅ S6 本机台账复现冻结读数（SUBJECT_ONLY = 0）  [147 行 / 7 种 / {'SAME': 0, 'SUBJECT_ONLY': 0, 'CHANNEL_ONLY': 6, 'MIXED': 15}]
+
+结论：全部成立

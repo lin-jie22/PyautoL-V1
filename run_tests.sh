@@ -627,10 +627,15 @@ echo
 #     归因表算术自洽。它补的是第 79 轮的老账：`why` 截断在 200 字符 ⇒ "sg07 为什么 5/14"
 #     一直是 UNKNOWN。实测结论反直觉：**只修最显眼的那条根因（B2 全局去重）= 0 格**，
 #     只修另一条（B1 空白规则）= +6 格，两条一起修 = +9 格（逐项之和 ≠ 合计 ⇒ 有耦合）。
+#   · `probe_caliber_split.py --self-check`（第八十九轮）：八条反证，两两成对 ——
+#     S1 认得出「真·换被测对象」/ S2 认得出「只换通道」/ S3 同类同写 ⇒ SAME /
+#     S4 两边都改 ⇒ MIXED / S5 同一台 ollama 的 v4-v6 两种写法 ⇒ CHANNEL_ONLY /
+#     S6 本机台账复现冻结读数。**S1 与 S6 必须同时成立**：一个恒返回 MIXED 的分类器
+#     会让「SUBJECT_ONLY = 0 对」看起来像重大发现，实际是仪器瞎了。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

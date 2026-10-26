@@ -1,0 +1,2 @@
+  形态审计：suite=tasks_v2.jsonl  answers=answers_old.jsonl
+  answers_old.jsonl: n=30  [CODE=29 TRACE=1]  闸 pass=29/fail=1 ｜ 可剥=1 剥壳净增=1 格（每格 14 条断言）

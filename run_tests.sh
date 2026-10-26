@@ -652,10 +652,14 @@ echo
 #     C6 EXC/ASSERT 两个分支都真能走到（不是死代码）；C7 冻结算复算 == §59 落盘读数；
 #     C8 报告器的增益/改坏/净/噪声算术。⛔ 它量「检出之后能不能改对」，
 #     而这一轮量出来的是**负数** —— 正因为预注册要求成对臂，才没把 −2 读成「重试没用」。
+#   · `audit_form.py --self-check`（第九十五轮）：四条反证 —— R1 分类器认得出
+#     CODE/EMPTY/PROSE；R2 手造一个 `finish({...})` 壳必须被认出且**逐字还原**载荷；
+#     R3 壳那一份的分**确实低于**载荷（否则说明打分器自己能剥壳，本工具的数就没意义）；
+#     R4 只剥 `finish` —— 别的工具渲染剥出来当答案就是伪造。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

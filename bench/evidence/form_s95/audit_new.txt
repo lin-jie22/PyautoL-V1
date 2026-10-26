@@ -1,0 +1,2 @@
+  形态审计：suite=tasks_v2.jsonl  answers=answers_new.jsonl
+  answers_new.jsonl: n=30  [CODE=30]  闸 pass=26/fail=4

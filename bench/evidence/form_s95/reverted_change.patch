@@ -1,0 +1,345 @@
+diff --git a/bench/withdraw_check.py b/bench/withdraw_check.py
+index 17cb104..0efd845 100644
+--- a/bench/withdraw_check.py
++++ b/bench/withdraw_check.py
+@@ -1115,6 +1115,24 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
+     ("AZ92", "mw/core.py",
+      '        if best and self._checks:',
+      '        if best:  # 撤回态：忘了判据可能为空'),
++    # ══ 第九十五轮（§62）：预算的货币是调用，不是秒 ══════════════════════════
++    # ── AZ93 ①：装不下也照发 ⇒ 只有 AZ93 自己红（"差 1.1 秒"那一格）────────
++    #: 语义：这就是第九十四轮实测里发生的事 —— 剩 44.5s、成本 45.6s，照发 ⇒ 超时。
++    #: 撤回后 `_az93_left(30.5, call_s_max=46)` 会返回 44.5 而不是 0 ⇒ ② 方向红。
++    ("AZ93", "mw/core.py",
++     '        if self.call_s_max > 0 and left < self.call_s_max:',
++     '        if False:  # 撤回态：装不下也照发'),
++    # ── AZ93 ②：耗时根本不记 ⇒ AZ93 红（③方向：接线断了）─────────────────
++    #: ⛔ 这一条防的是"字段声明了但没人写"：手工给 `call_s_max` 的断言会绿，
++    #:    只有真跑一次 `complete()` 才照得出来（第九十一轮 `_salvage` 的教训）。
++    ("AZ93", "mw/core.py",
++     '        if dur > self.call_s_max:',
++     '        if False:  # 撤回态：不记耗时'),
++    # ── AZ93 ③：兜底跳过 `_salvage` ⇒ AZ93 红（④方向）─────────────────────
++    #: 语义：手上有代码却交轨迹（第九十四轮 6/30 份落盘答案的形状）。
++    ("AZ93", "mw/core.py",
++     '        if not best and self._salvage:',
++     '        if False:  # 撤回态：兜底跳过 _salvage'),
+ )
+ 
+ #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
+diff --git a/mw/core.py b/mw/core.py
+index f3251dd..9d90157 100644
+--- a/mw/core.py
++++ b/mw/core.py
+@@ -181,19 +181,53 @@ class _LedgeredLLM:
+         self.wall_refused_first = 0
+         #: ③ 放弃的是**重试**（第一次发出去了，但墙钟已不够再试一次）。
+         self.wall_refused_retry = 0
++        #: ④ 放弃的理由是"剩下的时间装不下**一发实测过的调用**"（第九十五轮 §62）。
++        #: ⛔ 必须与 ②③ 分开计：②③ 是"预算真的没了"，④ 是"预算还在，但按实测成本
++        #:    发出去必定超时"。两者的修法相反（升预算 vs 提前收尾），合并即不可归因。
++        self.wall_refused_doomed = 0
++        #: 本 run 内**成功**返回的调用里最长的一次（秒）。0 = 还没观测到。
++        #: ⚠️ 只收**成功**的：一次被 `timeout_s` 裁掉的超时是"下限"，不是测量值 ——
++        #:    拿它当成本估计会自我强化（越裁越短、越短越裁）。
++        self.call_s_max = 0.0
++        #: 最近一次 `_attempt_timeout()` 的拒绝理由（`""` = 没拒绝）。
++        #: 建在 `__init__` 而不是就地拼：`complete()` 要读它决定计进哪个计数。
++        self._refusal = ""
++
++    def _note_call(self, dur: float) -> None:
++        """记一次**成功**调用的真实耗时。唯一写入点（否则读数与判据各算各的）。"""
++        if dur > self.call_s_max:
++            self.call_s_max = dur
+ 
+     def _attempt_timeout(self) -> float:
+         """本次尝试许用多少秒。**唯一**的裁剪处。
+ 
+         上限 = `min(inner 的默认上限, 剩余 − 收尾余量)`。
+         剩余 ≤ `MIN_ATTEMPT_S` ⇒ 返回 0 表示"别试了"（由调用方决定抛什么）。
++        ★ 第九十五轮再加一条：剩余装不下**本 run 实测过的一整发** ⇒ 也返回 0
++          （理由见下面那一段注释 —— 差异只有 1.1 秒时，发车是纯粹的浪费）。
+         """
+         base = getattr(self.inner, "timeout_s", None)
+         if base is None:                     # 桩/无网络：不裁剪
+             return float("inf")
+         left = self.ledger.budget.wall_s - self.ledger.elapsed() - self.wall_reserve_s
+         if left <= self.MIN_ATTEMPT_S:
++            self._refusal = "none"
+             return 0.0
++        # ── ★ 第九十五轮 §62：**不发注定完不成的车** ─────────────────────
++        # 实测（`bench/evidence/repair_s94/run_v2_7b.log`，`sg01`）：
++        #   收尾在 75.5s 启动，放行 44.5s，而它自己那次调用要 **45.6s**
++        #   ⇒ 超时 1.1s ⇒ `BudgetExhausted` ⇒ 兜底交了 `[step 1] finish({...})`。
++        #   **一份答案输给了一个常数。**
++        # `MIN_ATTEMPT_S=5` 只能挡住"连握手都不够"的情况；它挡不住
++        # "剩 44.5s、成本 45.6s"这种**差一点点**的发车 —— 而那正是实测的形状。
++        # ⇒ 门槛改用**本 run 内实测成功调用的最长耗时**：装不下一整发就不发，
++        #   把时间留给收尾（`_close_out` 会走 `reserve_release()` 拿满剩余）。
++        # ⚠️ `call_s_max == 0`（还没观测过）⇒ 行为**逐位等同于旧版**：
++        #    快通道 / 首次调用上不许凭空改变既有读数。
++        if self.call_s_max > 0 and left < self.call_s_max:
++            self._refusal = "doomed"
++            return 0.0
++        self._refusal = ""
+         return min(float(base), float(left))
+ 
+     def reserve_release(self) -> None:
+@@ -216,23 +250,30 @@ class _LedgeredLLM:
+             # ② 裁剪：把本次尝试装进"剩余 − 收尾余量"。
+             _to = self._attempt_timeout()
+             if _to == 0.0:
+-                if attempt == 0:
++                if self._refusal == "doomed":
++                    self.wall_refused_doomed += 1
++                elif attempt == 0:
+                     self.wall_refused_first += 1
+                 else:
+                     self.wall_refused_retry += 1
+                 raise BudgetExhausted("wall_s", self.ledger.elapsed(),
+                                       self.ledger.budget.wall_s)
+             self.ledger.spend_llm()
++            _t_call = time.monotonic()
+             try:
+                 if _to == float("inf"):
+-                    return self.inner.complete(messages, **kw)
++                    _out = self.inner.complete(messages, **kw)
++                    self._note_call(time.monotonic() - _t_call)
++                    return _out
+                 # ⚠️ 只有真的裁短了才计数：`_to == base` 说明这一发没被预算影响，
+                 #    把它也记进 `wall_shortened` 就让这个计数失去分辨率
+                 #    （"每发都算"= 没有信息）。
+                 _base = getattr(self.inner, "timeout_s", None)
+                 if _base is not None and float(_to) < float(_base):
+                     self.wall_shortened += 1
+-                return self.inner.complete(messages, timeout_s=_to, **kw)
++                _out = self.inner.complete(messages, timeout_s=_to, **kw)
++                self._note_call(time.monotonic() - _t_call)
++                return _out
+             except LLMError as e:
+                 transient = bool(getattr(e, "transient", False))
+                 if not transient:
+@@ -1546,6 +1587,17 @@ class Core:
+             origin = "收尾调用"
+         except Exception as e:  # noqa: BLE001
+             self.log(f"      收尾调用失败 {type(e).__name__}: {e}")
++        if not best and self._salvage:
++            # ── ★ 第九十五轮 §62：兜底链里必须有 `_salvage` ────────────────
++            # 实测（`repair_s94/run_v2_7b.log`）：收尾调用被墙钟裁掉后，链条直接跳到
++            # `history[-1]`，交出去的是 `[step 1] finish({...})` —— **一段工具轨迹**。
++            # 而 `_salvage` 里躺着的那份被闸打回的答案**是代码**：
++            #   · 交轨迹：0/14；交那份代码：1/14（剥壳实测，`form_s95/`）。
++            # 分小，但性质是"手上有交付物却交了过程记录"，与 §50/§86 同宗。
++            # ⛔ 它**不改变**闸的判定：`_unverified` 照旧挂着"未过自检"，`reason` 照旧
++            #    说"未通过自检"。这一条只决定"交哪一个"，不决定"算不算过"。
++            best = self._salvage
++            origin = "salvage"
+         if not best:
+             # 兜底一：已沉淀的 outcome 情景记忆（最接近"结论"的材料）
+             eps = self.memory.episodes(kind="outcome", limit=1)
+@@ -1554,6 +1606,7 @@ class Core:
+         if not best and history:
+             # 兜底二：轨迹最后一条。这条兜底存在的意义是**绝不返回空**——
+             # 让 `history` 这个参数有真实消费者，而不是装饰参数。
++            # ⚠️ 顺序在第 95 轮改过：`_salvage` 现在排在它**前面**。
+             best = history[-1]
+             origin = "history"
+         if not best:
+@@ -1712,10 +1765,15 @@ class Core:
+                 "wall_shortened": self._counted.wall_shortened,
+                 "wall_refused_first": self._counted.wall_refused_first,
+                 "wall_refused_retry": self._counted.wall_refused_retry,
++                #: 第九十五轮 §62：因"装不下一发实测调用"而拒绝发起。
++                "wall_refused_doomed": self._counted.wall_refused_doomed,
++                #: 本 run 内实测成功调用的最长耗时（秒）。0 = 没观测到 ⇒ 判据不复用。
++                "call_s_max": round(self._counted.call_s_max, 2),
+             } if self._counted is not None else
+                 {"retries": 0, "exhausted": 0,
+                  "wall_shortened": 0, "wall_refused_first": 0,
+-                 "wall_refused_retry": 0}),
++                 "wall_refused_retry": 0, "wall_refused_doomed": 0,
++                 "call_s_max": 0.0}),
+         }
+         self.memory.record("finish", f"{status}: {answer or reason}"[:1000],
+                            status=status, stats=stats)
+@@ -1732,6 +1790,11 @@ class Core:
+         if tx.get("wall_refused_first") or tx.get("wall_refused_retry"):
+             tx_line += (f" | 墙钟放弃首发={tx['wall_refused_first']}"
+                         f"/重试={tx['wall_refused_retry']}")
++        # ★ 第九十五轮 §62：单独印"装不下"那一类，且**必须带上实测成本**——
++        #   只印次数，读者无法判断"是预算太小还是调用太慢"，而这两者的修法相反。
++        if tx.get("wall_refused_doomed"):
++            tx_line += (f" | 装不下整发={tx['wall_refused_doomed']}"
++                        f"(实测最慢={tx.get('call_s_max', 0):g}s)")
+         # ★ 题边界清空（§17-7h）：零值不印（正常单题跑恒 0），非零必须念 ——
+         #   它是"上一题的工具输出确实漏进了本题上下文"的唯一读数。
+         if stats.get("working_cross_task"):
+diff --git a/tests/contract_test.py b/tests/contract_test.py
+index 0b30ec9..c5949bd 100644
+--- a/tests/contract_test.py
++++ b/tests/contract_test.py
+@@ -9173,6 +9173,164 @@ check(RS,
+       f"③关掉零跑={_AZ92_OK_OFF}(runs={_AZ92_C3.verify_stats['runs']}) ｜"
+       f"④交付物逐字相同={_AZ92_OK_SAME} ｜ ⑤reason 措辞={_AZ92_OK_NOTE}")
+ 
++
++# ═══════════════════════════════════════════════════════════════════════════
++# AZ93（第九十五轮，§62）：预算的货币是**调用**，不是秒
++#
++# 实测事故（`bench/evidence/repair_s94/run_v2_7b.log` 的 `sg01`，逐行原文）：
++#
++#   23:44:59 ▶ 任务开始 … wall=0.01s/120s
++#   23:45:45   [1] 通道=深 候选=1                 # 第一次调用：46 秒
++#   23:45:54       🧪 自检未过（第 1/2 次打回）
++#   23:46:14   ⏳ 预算耗尽 [wall_s]：已用 75.5058 / 上限 120
++#   23:46:14   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
++#   23:46:59       收尾调用失败 BudgetExhausted: 已用 120.508 / 上限 120
++#   23:46:59   📦 收尾交付 581 字符（来源=history）
++#
++# `close_reserve_s` 是 **45.0**，而 `mw/config.py:253` 的注释自己写着
++# 「一次模型调用约 20s」。本机实测一次 **45.6s** ⇒ 收尾只拿到 `44.5s`
++# ⇒ 差 **1.1 秒**被裁掉 ⇒ 一份答案消失 ⇒ 兜底交了 `[step 1] finish({...})`。
++#
++# 两个方向缺一不可：
++#   ① **不发注定完不成的车**：`left < 实测调用耗时` ⇒ 拒绝发起（旧版照发）；
++#      而 `call_s_max == 0`（还没观测过）时行为必须**逐位等同于旧版** ——
++#      否则"只在慢通道上生效"这句话没有机制保证，快通道的旧读数也被悄悄改掉。
++#   ② **兜底链里必须有 `_salvage`**：手上有代码就不许交轨迹。
++#      `_salvage` 为空时仍退回 `history[-1]`（旧行为不许被顺手删掉）。
++#
++# 反证（第九十一轮的教训：手工赋值会顺带把"字段没人写"这个洞挡住）：
++#   ③ `call_s_max` 必须由 `complete()` **真的**写入（用一个真睡 20ms 的桩测，
++#      不靠 `c.call_s_max = 46` 手工赋值）。
++# 撤回语义：
++#   · `_attempt_timeout` 里删掉 `call_s_max` 那一段 ⇒ ② 红；
++#   · `_attempt_timeout` 里把 `if self.call_s_max > 0 and` 去掉 ⇒ ① 红；
++#   · `_note_call` 改成空操作 ⇒ ③ 红；
++#   · `_close_out` 里删掉 `_salvage` 那一段 ⇒ ④ 红。
++# ===========================================================================
++import time as _az93_time                                           # noqa: E402
++from mw.core import _LedgeredLLM as _AZ93_L                        # noqa: E402
++
++
++class _AZ93Sleeper:
++    """真睡一会儿再成功返回的假端点：用来测"耗时到底有没有被记下来"。"""
++
++    timeout_s = 100.0
++
++    def __init__(self, sleep_s: float = 0.02) -> None:
++        self.sleep_s = sleep_s
++        self.calls = 0
++
++    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
++        self.calls += 1
++        _az93_time.sleep(self.sleep_s)
++        return "ok"
++
++
++def _az93_left(elapsed: float, *, reserve: float = 45.0,
++               wall: float = 120.0, call_s_max: float = 0.0) -> float:
++    """造一个"已经用掉 `elapsed` 秒"的账本，返回 `_attempt_timeout()`。"""
++    lg = Ledger(Budget(steps=9, llm_calls=9, wall_s=wall, candidates=1),
++                t0=_az93_time.monotonic() - elapsed)
++    lm = _AZ93_L(_AZ93Sleeper(), lg, wall_reserve_s=reserve)
++    lm.call_s_max = call_s_max          # ← 只在这两条**纯函数式**方向里手工给
++    try:
++        return float(lm._attempt_timeout())
++    except Exception:                       # noqa: BLE001
++        return float("nan")                 # 撤回态：任何比较为假 ⇒ 自然转红
++
++
++#: ① 回归：还没观测到任何调用 ⇒ 与旧公式 `min(base, 剩余 − 余量)` 逐位相同。
++_AZ93_NOOBS = _az93_left(30.5)                    # 120 − 30.5 − 45 = 44.5
++#: ② 触发：实测 46s、只剩 44.5s ⇒ 拒绝（旧版会照样发 44.5s 的车）。
++_AZ93_DOOMED = _az93_left(30.5, call_s_max=46.0)
++#: ② 的另一侧：剩 74s > 46s ⇒ **必须**允许（不许把"能装下"也拒了）。
++_AZ93_ROOMY = _az93_left(1.0, call_s_max=46.0)    # 120 − 1 − 45 = 74
++
++#: ③ 接线：`complete()` 成功一次后 `call_s_max` 真的被写入（20ms 睡眠 ⇒ ≥0.015）。
++_AZ93_LG = Ledger(Budget(steps=9, llm_calls=9, wall_s=600.0, candidates=1))
++_AZ93_LM = _AZ93_L(_AZ93Sleeper(0.02), _AZ93_LG, wall_reserve_s=0.0)
++_AZ93_BEFORE = _AZ93_LM.call_s_max
++_AZ93_OUT = _AZ93_LM.complete([Message(role="user", content="x")])
++_AZ93_AFTER = _AZ93_LM.call_s_max
++
++#: ③' 被 `timeout_s` 裁掉的超时**不许**当成本估计（它只是下限）。
++class _AZ93Timeout:
++    timeout_s = 100.0
++
++    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
++        raise _au_LLMError("模拟超时", transient=True)
++
++
++_AZ93_LT = _AZ93_L(_AZ93Timeout(), Ledger(
++    Budget(steps=9, llm_calls=9, wall_s=600.0, candidates=1)), wall_reserve_s=0.0)
++try:
++    _AZ93_LT.complete([Message(role="user", content="x")])
++except _au_LLMError:
++    pass
++_AZ93_TMO_MAX = _AZ93_LT.call_s_max
++
++
++def _az93_close(salvage: str) -> tuple:
++    """收尾调用**失败**（模拟 `BudgetExhausted`）时的兜底链。"""
++    _AZ92_SEQ[0] += 1
++    lim = cfg.Limits(max_steps=1, close_reserve_steps=1, verify_retries=0)
++    c = Core(settings=cfg.Settings(limits=lim), llm=_AZ92LLM("不该被用到"),
++             memory=MemoryStore(_TMP / f"az93_{_AZ92_SEQ[0]}.db"))
++    c.log = lambda m: None                                       # noqa: ARG005
++    c._reset_verify(_AZ92_GOAL)
++    c._checks = ()                       # 本断言只测兜底链，不测闸（闸由 AZ92 钉）
++    c._salvage = salvage
++
++    def _boom(*a, **k):                                          # noqa: ANN002, ANN003
++        raise BudgetExhausted("wall_s", 120.5, 120.0)
++
++    c.planner.answer = _boom                                # type: ignore[assignment]
++    seen: dict = {}
++
++    def _done(status: str, answer: str, reason: str) -> str:      # noqa: ANN001
++        seen.update(status=status, answer=answer, reason=reason)
++        return "ok"
++
++    c._close_out(_AZ92_GOAL, ["[step 1] finish({'answer': 'x'})"], _done)
++    return c, seen
++
++
++_AZ93_SALV = "```python\ndef norm_az92(rows):\n    return list(rows)\n```"
++_AZ93_C1, _AZ93_S1 = _az93_close(_AZ93_SALV)
++_AZ93_C2, _AZ93_S2 = _az93_close("")     # `_salvage` 空 ⇒ 必须退回 history
++
++_AZ93_OK_REGRESS = abs(_AZ93_NOOBS - 44.5) < 0.5
++_AZ93_OK_DOOMED = _AZ93_DOOMED == 0.0
++_AZ93_OK_ROOMY = abs(_AZ93_ROOMY - 74.0) < 1.0
++_AZ93_OK_WIRE = (_AZ93_BEFORE == 0.0 and _AZ93_AFTER >= 0.015
++                 and _AZ93_OUT == "ok")
++_AZ93_OK_NOFAKE = _AZ93_TMO_MAX == 0.0
++_AZ93_OK_SALV = (_AZ93_S1.get("answer") == _AZ93_SALV
++                 and _AZ93_C1.closeout_stats["origin"].get("salvage") == 1)
++_AZ93_OK_HIST = (_AZ93_S2.get("answer") == "[step 1] finish({'answer': 'x'})"
++                 and _AZ93_C2.closeout_stats["origin"].get("history") == 1)
++
++check(RS,
++      "AZ93 ★预算的货币是**调用**，不是秒：装不下**一整发实测过的调用**就不发；\n"
++      "          手上真有代码时，兜底链必须先交 `_salvage`，不许交轨迹。\n"
++      "          ① `call_s_max == 0` ⇒ `_attempt_timeout()` **逐位等同旧公式**\n"
++      "             （44.5s 照发）—— 没观测过就不许凭空改快通道的行为；\n"
++      "          ② 实测 46s、只剩 44.5s ⇒ **返回 0**（旧版发 44.5s 的车 ⇒ 必超时）；\n"
++      "             剩 74s > 46s ⇒ 必须允许（不许把能装下的也拒了）；\n"
++      "          ③ `complete()` 成功一次后 `call_s_max` **真的**被写入；\n"
++      "             被裁掉的**超时**不许当成本估计（那是下限，会自我强化）；\n"
++      "          ④ 收尾调用失败 + `_salvage` 非空 ⇒ 交付 `_salvage`（origin=salvage）；\n"
++      "             `_salvage` 空 ⇒ 仍退回 `history[-1]`（旧行为不许被删）。\n"
++      "          —— 事故：`sg01` 收尾只拿到 44.5s 而它要 45.6s ⇒ 差 1.1 秒，\n"
++      "             一份答案被扔掉，交付物变成 `[step 1] finish({...})`。",
++      _AZ93_OK_REGRESS and _AZ93_OK_DOOMED and _AZ93_OK_ROOMY
++      and _AZ93_OK_WIRE and _AZ93_OK_NOFAKE and _AZ93_OK_SALV and _AZ93_OK_HIST,
++      f"①未观测={_AZ93_NOOBS:.2f}(要≈44.5) ｜ "
++      f"②装不下={_AZ93_DOOMED}(要0) 装得下={_AZ93_ROOMY:.2f}(要≈74) ｜ "
++      f"③写入={_AZ93_BEFORE}→{_AZ93_AFTER:.3f}s 超时不计={_AZ93_TMO_MAX} ｜ "
++      f"④salvage={_AZ93_S1.get('answer') == _AZ93_SALV}/"
++      f"{_AZ93_C1.closeout_stats['origin']} 空⇒history={_AZ93_OK_HIST}")
++
+ print()
+ print("=" * 74)
+ print(f"V1 契约测试汇总  {RS.summary_line()}")

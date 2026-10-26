@@ -620,10 +620,17 @@ echo
 #     缺字段是 `None` 不是 0，以及**反证组**：`--log` 为空时盘上不许多一行
 #     （否则"日志条数==请求数"可能只是恒真）。它存在的理由是一条老账：
 #     §49 的 10 题跑完之后，日志里**一个状态码都没有**，"为什么重试 65 次"当时不可判定。
+#   · `probe_task_attrib.py --self-check`（第八十九轮）：五组反证 —— oracle 满分（窗口闸门
+#     本身就是反证：装置坏了它先红）、**`as_is` 必须复现 s88 的冻结读数 5/14**（这是"不换
+#     尺子"唯一的机械保证）、把 oracle 的 `_x[:8]` 改成 `[:9]` 分数必须下降（证明打分不是
+#     恒真）、修复表的替换目标不存在时必须抛（静默跳过会让「该项 0 收益」变成伪造读数）、
+#     归因表算术自洽。它补的是第 79 轮的老账：`why` 截断在 200 字符 ⇒ "sg07 为什么 5/14"
+#     一直是 UNKNOWN。实测结论反直觉：**只修最显眼的那条根因（B2 全局去重）= 0 格**，
+#     只修另一条（B1 空白规则）= +6 格，两条一起修 = +9 格（逐项之和 ≠ 合计 ⇒ 有耦合）。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

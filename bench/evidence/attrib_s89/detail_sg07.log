@@ -1,0 +1,58 @@
+sg07：14 条断言 | 答案 541 字符 / 抽出的代码 527 字符 | truncated=False
+
+[ 1] ❌ assert norm_sg07(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\tepsilon', 'Zeta']) == ['delta\
+       实际 = ['delta\tep', 'Alpha-Be', 'gamma', 'Zeta']
+       期望 = ['delta\tep', 'ALPHA BE', 'Alpha Be', 'gamma', 'Zeta']
+       差异 = 长度 4 != 5
+
+[ 2] ❌ assert norm_sg07(['one two  three', 'One Two Three', 'FOUR', 'five five', 'six']) == ['One Two '
+       实际 = ['one-two-', 'five-fiv', 'FOUR', 'six']
+       期望 = ['One Two ', 'one two-', 'five fiv', 'FOUR', 'six']
+       差异 = 长度 4 != 5
+
+[ 3] ✅ assert norm_sg07(['x']) == ['x']
+
+[ 4] ✅ assert norm_sg07([]) == []
+
+[ 5] ❌ assert norm_sg07(['Mixed CASE line', 'mixed case line', '  Mixed   Case   LINE  ', 'tail-end tok
+       实际 = ['tail-end', 'Mixed-CA', 'T']
+       期望 = ['tail-end', 'Mixed CA', 'Mixed-Ca', 'T']
+       差异 = 长度 3 != 4
+
+[ 6] ❌ assert norm_sg07(['a b c d e f g', 'abcdefg', 'A B C D E F G', 'short', 'much longer line than t
+       实际 = ['much-lon', 'a-b-c-d-', 'abcdefg', 'short']
+       期望 = ['much lon', 'A B C D ', 'a b c d ', 'abcdefg', 'short']
+       差异 = 长度 4 != 5
+
+[ 7] ❌ assert norm_sg07(['same line', 'same line', '  same   line  ']) == ['same lin', 'same-lin']
+       实际 = ['same-lin']
+       期望 = ['same lin', 'same-lin']
+       差异 = 长度 1 != 2
+
+[ 8] ❌ assert norm_sg07(['  pad  ', 'ze ta']) == ['ze ta', 'pad']
+       实际 = ['ze-ta', 'pad']
+       期望 = ['ze ta', 'pad']
+       差异 = 第 0 项 'ze-ta' != 'ze ta'
+
+[ 9] ❌ assert norm_sg07(['ze ta', 'dup DUP']) == ['dup DUP', 'ze ta']
+       实际 = ['dup-DUP', 'ze-ta']
+       期望 = ['dup DUP', 'ze ta']
+       差异 = 第 0 项 'dup-DUP' != 'dup DUP'
+
+[10] ✅ assert norm_sg07(['  pad  ', 'DUP']) == ['DUP', 'pad']
+
+[11] ✅ assert norm_sg07(['delta', 'DELTA', 'delta']) == ['delta']
+
+[12] ❌ assert norm_sg07([' ze ta  ', 'dup', 'same line']) == ['same lin', 'ze ta', 'dup']
+       实际 = ['same-lin', 'ze-ta', 'dup']
+       期望 = ['same lin', 'ze ta', 'dup']
+       差异 = 第 0 项 'same-lin' != 'same lin'
+
+[13] ❌ assert norm_sg07(['ALPHA', 'GAMMA', 'BETA X', '  pad  ', 'GAMMA']) == ['BETA X', 'ALPHA', 'GAMMA
+       实际 = ['BETA-X', 'ALPHA', 'GAMMA', 'pad']
+       期望 = ['BETA X', 'ALPHA', 'GAMMA', 'GAMMA', 'pad']
+       差异 = 长度 4 != 5
+
+[14] ✅ assert norm_sg07([' DUP ', 'dup']) == ['DUP']
+
+=== 通过 5/14 = 0.3571 ===

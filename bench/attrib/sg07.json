@@ -1,0 +1,18 @@
+{
+  "task": "sg07",
+  "_note": "单项修复表：每项把落盘答案里的一处偏离题面改成合规。old/new 逐字节匹配，改答案文本必须同步这里。",
+  "variants": [
+    {
+      "name": "B1",
+      "root_cause": "空白规则写成 re.sub(r' +', '-', row)：下限 1 而非 2（违反「不足 2 个的空白原样保留」），且只认空格不认 \\t（题面说的是「空白字符」）",
+      "old": "rows = [re.sub(r' +', '-', row) for row in rows]",
+      "new": "rows = [re.sub(r'\\s{2,}', '-', row) for row in rows]"
+    },
+    {
+      "name": "B2",
+      "root_cause": "去重用了全局 seen 集合：题面要求只合并「紧挨着」的重复行，不相邻的重复行必须保留",
+      "old": "    seen = []\n    result = []\n    for row in rows:\n        key = row.lower()\n        if key not in seen:\n            seen.append(key)\n            result.append(row)\n",
+      "new": "    result = []\n    prev = None\n    for row in rows:\n        key = row.lower()\n        if result and key == prev:\n            continue\n        prev = key\n        result.append(row)\n"
+    }
+  ]
+}

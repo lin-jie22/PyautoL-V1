@@ -1,0 +1,42 @@
+  rep1 P ex01  kind=OK     16→16 ( +0) same=1  119字   5.6s
+  rep1 P ex02  kind=ASSERT  2→15 (+13) same=0  374字   6.8s
+  rep1 P ex03  kind=ASSERT  9→ 9 ( +0) same=0  282字   7.1s
+  rep1 P ex04  kind=ASSERT  4→ 4 ( +0) same=1  398字   8.8s
+  rep1 P ex05  kind=OK     16→16 ( +0) same=0  293字   5.6s
+  rep1 P ex06  kind=EXC     1→ 1 ( +0) same=1  490字  12.6s
+  rep1 P ex07  kind=OK     16→16 ( +0) same=1  207字   5.0s
+  rep1 P ex08  kind=EXC     0→14 (+14) same=0  235字   5.5s
+  rep1 P ex09  kind=ASSERT  9→ 7 ( -2) same=0  333字   7.5s
+  rep1 P ex10  kind=EXC     3→ 9 ( +6) same=0  380字   9.0s
+  rep1 R ex01  kind=OK     16→16 ( +0) same=1  119字   3.2s
+  rep1 R ex02  kind=ASSERT  2→ 2 ( +0) same=1  369字   9.7s
+  rep1 R ex03  kind=ASSERT  9→ 9 ( +0) same=1  292字   9.7s
+  rep1 R ex04  kind=ASSERT  4→ 4 ( +0) same=1  398字  23.6s
+  rep1 R ex05  kind=OK     16→16 ( +0) same=0  293字  14.0s
+  rep1 R ex06  kind=EXC     1→ 1 ( +0) same=0  602字  27.3s
+  rep1 R ex07  kind=OK     16→16 ( +0) same=1  207字   7.4s
+  rep1 R ex08  kind=EXC     0→ 0 ( +0) same=0  269字   8.8s
+  rep1 R ex09  kind=ASSERT  9→ 7 ( -2) same=0  333字   9.4s
+  rep1 R ex10  kind=EXC     3→ 3 ( +0) same=0  289字   6.8s
+  rep2 P ex01  kind=OK     16→16 ( +0) same=1  119字   3.2s
+  rep2 P ex02  kind=ASSERT  2→15 (+13) same=0  374字   8.5s
+  rep2 P ex03  kind=ASSERT  9→ 9 ( +0) same=0  282字   8.8s
+  rep2 P ex04  kind=ASSERT  4→ 4 ( +0) same=1  398字  11.7s
+  rep2 P ex05  kind=OK     16→16 ( +0) same=0  293字   5.9s
+  rep2 P ex06  kind=EXC     1→ 1 ( +0) same=1  490字  18.2s
+  rep2 P ex07  kind=OK     16→16 ( +0) same=1  207字   6.7s
+  rep2 P ex08  kind=EXC     0→14 (+14) same=0  235字   7.9s
+  rep2 P ex09  kind=ASSERT  9→ 7 ( -2) same=0  333字   8.9s
+  rep2 P ex10  kind=EXC     3→ 9 ( +6) same=0  380字  12.1s
+  rep2 R ex01  kind=OK     16→16 ( +0) same=1  119字   4.5s
+  rep2 R ex02  kind=ASSERT  2→ 2 ( +0) same=1  369字  10.8s
+  rep2 R ex03  kind=ASSERT  9→ 9 ( +0) same=1  292字  11.7s
+  rep2 R ex04  kind=ASSERT  4→ 4 ( +0) same=1  398字  15.1s
+  rep2 R ex05  kind=OK     16→16 ( +0) same=0  293字   8.3s
+  rep2 R ex06  kind=EXC     1→ 1 ( +0) same=0  602字  24.9s
+  rep2 R ex07  kind=OK     16→16 ( +0) same=1  207字   7.3s
+  rep2 R ex08  kind=EXC     0→ 0 ( +0) same=0  269字   9.5s
+  rep2 R ex09  kind=ASSERT  9→ 7 ( -2) same=0  333字  11.0s
+  rep2 R ex10  kind=EXC     3→ 3 ( +0) same=0  289字  10.3s
+
+落盘：/tmp/v1_s93_repair.jsonl  40 条  合计 399s

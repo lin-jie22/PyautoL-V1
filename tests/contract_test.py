@@ -9049,6 +9049,117 @@ check(RS,
       + " ｜ ".join(f"{k}={o}/{p}/{n}" for k, (o, p, n) in _AZ91_CAL.items())
       + f" ｜ 反证缺失={_AZ91_PROOF_BAD}")
 
+# ===========================================================================
+# AZ92（第九十一轮，§57）：收尾交付物**必须过同一道闸**，且 `_unverified`
+#      描述的是「交出去的那一份」，不是「本轮发生过什么」
+#
+# 为什么单列一条：第九十轮两臂 60 题次里，收尾交了 **11 份**，过闸 **0 份**，
+# 而 `unverified_delivery` 11 次全是 false。因为它只描述"主循环那道闸有没有
+# 放弃过"（exhausted），不描述"交出去的那一份过没过"：
+#   · A 臂 6 次 `closed` 全是 `校验=1跑/0过/1打回/0放弃` —— 那 1 次打回发生
+#     在主循环，交付物却是收尾重新要来的另一份；
+#   · B 臂 5 次 `closed` 全是 `校验=0跑` —— 闸一次都没跑过。
+# `sg10` 第 2 轮交的**就是刚被闸打回的那一份**（419 字符，sha 38f40729…），
+# 值 13 格；而它同时是 A 臂噪声极差 15 格里的 13 格 —— 判"可分辨"用的就是它。
+#
+# 三个方向缺一不可（少一个就有一条"恒真"的路）：
+#   ① 不过闸 ⇒ 必须置标 + `gate_failed` 计数 + `reason` 里说出来；
+#   ② 过闸且预置了旧标 ⇒ 必须**清标**（否则"交了好答案"被报成"交了坏答案"）；
+#   ③ `verify_retries=0` ⇒ **零跑**（`vfy.run(x, ())` 返回 ok=False，
+#      不跳过就是一个假失败 —— 关掉判据的用户没有错）。
+# 再加一条**不变量**：三个方向里交付物必须与桩的原文**逐字相同** ——
+# 本轮只许"记账"，不许改分（改了就是混口径，§45.9）。
+# ===========================================================================
+_AZ92_GOAL = ("写一个函数 norm_az92(rows)，参数是字符串列表，返回处理后的列表。"
+              "只输出代码，函数名必须是 norm_az92。")
+#: `re` 被引用但模块里没 import ⇒ `结构检查`（static=2 的 undefined）必命中。
+_AZ92_BAD = ("```python\ndef norm_az92(rows):\n"
+             "    return [re.sub(r'\\s+', ' ', r) for r in rows]\n```")
+_AZ92_GOOD = ("```python\nimport re\ndef norm_az92(rows):\n"
+              "    return [re.sub(r'\\s+', ' ', r) for r in rows]\n```")
+
+
+class _AZ92LLM(StubLLM):
+    """收尾索要答案时**原样**吐回预设的那一段。"""
+
+    def __init__(self, reply: str) -> None:
+        self.reply = reply
+
+    def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
+        return self.reply
+
+
+_AZ92_SEQ = [0]
+_AZ92_LOGS: list[str] = []
+
+
+def _az92_close(reply: str, *, retries: int = 2, prior: str = "") -> tuple:
+    """单独调 `_close_out`（AS20 已证明它是可单独调用的单元）。
+
+    ⚠️ `_reset_verify(goal)` 是 `run()` 里**同一处**派生（AZ90 钉着这条链）：
+    直接构造的实例没有 `run()`，不重放这一步就测不到"判据从题面来"。
+    """
+    _AZ92_SEQ[0] += 1
+    lim = cfg.Limits(max_steps=1, close_reserve_steps=1,
+                     verify_retries=retries, verify_static=2)
+    c = Core(settings=cfg.Settings(limits=lim), llm=_AZ92LLM(reply),
+             memory=MemoryStore(_TMP / f"az92_{_AZ92_SEQ[0]}.db"))
+    c.log = lambda m: _AZ92_LOGS.append(m)                       # noqa: ARG005
+    c._reset_verify(_AZ92_GOAL)
+    c._unverified = prior
+    seen: dict = {}
+
+    def _done(status: str, answer: str, reason: str) -> str:      # noqa: ANN001
+        seen.update(status=status, answer=answer, reason=reason)
+        return "ok"
+
+    c._close_out(_AZ92_GOAL, ["h1"], _done)
+    return c, seen
+
+
+_AZ92_C1, _AZ92_S1 = _az92_close(_AZ92_BAD)
+_AZ92_C2, _AZ92_S2 = _az92_close(_AZ92_GOOD, prior="旧原因：主循环那道闸放弃过")
+_AZ92_C3, _AZ92_S3 = _az92_close(_AZ92_BAD, retries=0)
+_AZ92_OK_BAD = bool(_AZ92_C1._unverified)                      # ① 不过闸 ⇒ 有标
+_AZ92_OK_CLEAR = _AZ92_C2._unverified == ""                    # ② 过闸 ⇒ 清标
+_AZ92_OK_OFF = (_AZ92_C3.verify_stats["runs"] == 0             # ③ 关掉 ⇒ 零跑
+                and _AZ92_C3.closeout_stats["gate_checked"] == 0)
+_AZ92_OK_SAME = (_AZ92_S1.get("answer") == _AZ92_BAD
+                 and _AZ92_S2.get("answer") == _AZ92_GOOD
+                 and _AZ92_S3.get("answer") == _AZ92_BAD)
+_AZ92_OK_NOTE = ("未通过自检" in str(_AZ92_S1.get("reason"))
+                 and "未通过自检" not in str(_AZ92_S2.get("reason")))
+_AZ92_OK_OLDKEEP = (_AZ92_C3._unverified == "")   # retries=0 且没预置 ⇒ 仍是空
+
+check(RS,
+      "AZ92 ★收尾交付物**必须过同一道闸**，且 `_unverified` 只描述交付出去的那一份\n"
+      "          ① 不过闸 ⇒ 置标 + `gate_failed=1` + `reason` 写出「未通过自检」；\n"
+      "          ② 过闸且预置了旧标 ⇒ **清标**（旧标说的是已被顶掉的那一版）；\n"
+      "          ③ `verify_retries=0` ⇒ **零跑**（`run(x, ())` 返回 ok=False，\n"
+      "             不跳过就是给关掉开关的用户一个假失败）；\n"
+      "          ④ 三个方向里交付物与桩原文**逐字相同** —— 本轮只许记账不许改分。\n"
+      "          —— 第九十轮实况：收尾交 11 份、过闸 0 份、`unverified_delivery`\n"
+      "             11 次全 false；`sg10` 第 2 轮交的就是刚被打回的那一份（13 格）。\n"
+      "          撤回语义：`if best and self._checks:` 改成 `if False:` ⇒ 必须红；\n"
+      "                    清标那行改成空操作 ⇒ 必须红；去掉 `and self._checks` ⇒ 必须红。",
+      _AZ92_OK_BAD and _AZ92_OK_CLEAR and _AZ92_OK_OFF
+      and _AZ92_OK_SAME and _AZ92_OK_NOTE and _AZ92_OK_OLDKEEP
+      and _AZ92_C1.closeout_stats["gate_checked"] == 1
+      and _AZ92_C1.closeout_stats["gate_failed"] == 1
+      and _AZ92_C2.closeout_stats["gate_checked"] == 1
+      and _AZ92_C2.closeout_stats["gate_failed"] == 0
+      and _AZ92_C1.verify_stats["closeout_runs"] == 1
+      and _AZ92_C1.verify_stats["closeout_failed"] == 1
+      and _AZ92_C2.verify_stats["closeout_failed"] == 0,
+      f"①不过闸={_AZ92_OK_BAD} 标={str(_AZ92_C1._unverified)[:40]!r} "
+      f"闸={_AZ92_C1.closeout_stats['gate_checked']}/"
+      f"{_AZ92_C1.closeout_stats['gate_failed']} ｜"
+      f"②过闸清标={_AZ92_OK_CLEAR}(旧标={_AZ92_C2._unverified!r}) "
+      f"闸={_AZ92_C2.closeout_stats['gate_checked']}/"
+      f"{_AZ92_C2.closeout_stats['gate_failed']} ｜"
+      f"③关掉零跑={_AZ92_OK_OFF}(runs={_AZ92_C3.verify_stats['runs']}) ｜"
+      f"④交付物逐字相同={_AZ92_OK_SAME} ｜ ⑤reason 措辞={_AZ92_OK_NOTE}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

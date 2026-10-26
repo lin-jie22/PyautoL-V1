@@ -500,6 +500,12 @@ class Core:
 
         self.ledger: Ledger | None = None   # run() 里构造（预算属于单次任务）
         self._counted: _LedgeredLLM | None = None  # run() 里构造（抖动重试的读数出口）
+        #: 判据与自检读数（第九十一轮收进 `_reset_verify` 一处）。
+        #: ⚠️ 为什么在 `__init__` 里就建：`_close_out` 从第九十一轮起**在交付前
+        #:    跑一次闸**，而它是可单独调用的单元（AS20 正是这么测它的语义的）⇒
+        #:    只把 `_checks`/`verify_stats` 建在 `run()` 里，直接构造的实例一调
+        #:    `_close_out` 就 AttributeError —— 收尾路径自己炸掉就等于交付零。
+        self._reset_verify("")
         # 收尾兜底的读数（第二十二轮）：在 `__init__` 里就要存在 ——
         # `_close_out` 是一个可以**单独调用**的单元（契约 AS20 正是这么测它的语义的），
         # 只把状态建在 `run()` 里会让"没跑过 run 的实例"一调就 AttributeError。
@@ -611,20 +617,17 @@ class Core:
         #    判据只认目标，与答案无关；`V1_VERIFY_RETRIES=0` ⇒ 判据为空 ⇒ 整条闸不存在。
         # ⚠️ `verify_static`（第八十轮）只是**多派生一条**判据，不是一个新分叉：
         #    0=不派生（默认，与之前逐位相同）/1=报名字/2=盲报（等长安慰剂臂）。
-        self._checks: tuple[vfy.Check, ...] = (
-            vfy.derive(goal, int(self.s.limits.verify_static))
-            if int(self.s.limits.verify_retries) > 0 else ())
-        self.verify_stats: dict = {
-            "runs": 0, "passed": 0, "failed": 0, "exhausted": 0,
-            "checks": [c.name for c in self._checks],
-        }
-        #: 每次 `finish` 的答案原文 —— 自检打回时**留着**，供最终交付兜底。
-        #: ⚠️ 不保留它的话，"自检打回 ⇒ 重写 ⇒ 停滞 ⇒ 交付空"这条路径会把
-        #:    一个本来能拿分的答案变成 0 分，而分数下降会被读成"自检有害"。
-        #:    装置不该吃掉效应，这是第十七轮（共用记忆目录）的同一条纪律。
-        self._salvage: str = ""
-        #: 交付时的自检说明。非空 ⇒ 这次交付**没有通过自检**，状态要如实标出来。
-        self._unverified: str = ""
+        # ⚠️ 第九十一轮：判据与读数收进 `_reset_verify()` **一处**声明。
+        #    `_close_out` 现在要在交付前跑闸，而它可以被单独调用（AS20）⇒
+        #    属性只建在 `run()` 里的话，收尾路径会 AttributeError，
+        #    而那条路径存在的唯一目的就是"别交付零"。
+        self._reset_verify(goal)
+        # ⚠️ `_salvage` / `_unverified` 也挪进了 `_reset_verify()`（第九十一轮）：
+        #    `_close_out` 本来就读 `self._salvage`（`overrode_rejected` 的比较基准），
+        #    而它只建在 `run()` 里 ⇒ **直接构造的实例一调收尾就 AttributeError**。
+        #    这个洞是第九十一轮写 AZ92 时当场撞出来的（`'Core' object has no
+        #    attribute '_salvage'`），不是推理出来的：AS20 一直绿，是因为它自己
+        #    先手工赋了 `_salvage` —— 那条断言顺带把洞挡住了。
         # ── 收尾兜底（第二十二轮）：把一条**一直在跑、却只有日志没有读数**的路接上
         # ⛔ 为什么必须结构化：第二十一轮的整条位移都来自这条路（`finish` 被打回 ⇒
         #    重规划 ⇒ 价值层否决 ⇒ 收尾余量 ⇒ `_close_out` ⇒ 交付），而当时
@@ -1354,6 +1357,40 @@ class Core:
         return state
 
     # ------------------------------------------------------------------
+    def _reset_verify(self, goal: str = "") -> None:
+        """判据与自检读数的**唯一**声明处（`__init__` 与 `run()` 都调它）。
+
+        ⚠️ 为什么收成一处（第九十一轮）：`_close_out` 从这一轮起在交付前跑一次闸，
+        而它可以被单独调用（AS20）⇒ `_checks` / `verify_stats` 不在构造时存在，
+        收尾路径就会 AttributeError —— 而它存在的唯一目的就是"别交付零"。
+        同时两处各写一份字典必然漂移（`run()` 加了键而 `__init__` 没加）。
+        """
+        self._checks: tuple[vfy.Check, ...] = (
+            vfy.derive(goal, int(self.s.limits.verify_static))
+            if int(self.s.limits.verify_retries) > 0 else ())
+        self.verify_stats: dict = {
+            "runs": 0, "passed": 0, "failed": 0, "exhausted": 0,
+            #: ★第九十一轮（§57）：**收尾那一次**闸的读数。
+            #: ⛔ 必须与上面三个数分列：混在一起就回答不了"没过的那次是哪条路交的"。
+            #:    第九十轮的实况就是"11 次收尾交付、0 次过闸"在只念 `校验=` 时
+            #:    完全看不见（A 臂 6 次全是 `1跑/0过/1打回/0放弃`，
+            #:    而那 1 次打回发生在**主循环**，交付物却换了来源）。
+            "closeout_runs": 0, "closeout_failed": 0,
+            "checks": [c.name for c in self._checks],
+        }
+        #: 每次 `finish` 的答案原文 —— 自检打回时**留着**，供最终交付兜底。
+        #: ⚠️ 不保留它的话，"自检打回 ⇒ 重写 ⇒ 停滞 ⇒ 交付空"这条路径会把
+        #:    一个本来能拿分的答案变成 0 分，而分数下降会被读成"自检有害"。
+        #:    装置不该吃掉效应，这是第十七轮（共用记忆目录）的同一条纪律。
+        #: ⚠️ 第九十一轮挪到这里：`_close_out` 拿它当 `overrode_rejected` 的比较基准，
+        #:    所以它必须在**构造时**就存在（否则可单独调用的收尾路径 AttributeError）。
+        self._salvage: str = ""
+        #: 交付时的自检说明。非空 ⇒ 这次交付**没有通过自检**，状态要如实标出来。
+        #: ★第九十一轮起语义收紧：它描述的是**交出去的那一份**，不是"本轮发生过什么"
+        #:   —— 收尾若把答案换成一个过闸的版本，这里必须清空（`_close_out`）。
+        self._unverified: str = ""
+
+    # ------------------------------------------------------------------
     def _reset_closeout(self) -> None:
         """收尾兜底读数的**唯一**初始化处（`__init__` 与 `run()` 都调它）。
 
@@ -1370,6 +1407,12 @@ class Core:
             #: ⚠️ 只主张**不同**，不主张**更好** —— 更好只有外部打分器能判。
             "overrode_rejected": 0,
             "same_as_rejected": 0,
+            #: ★第九十一轮（§57）：收尾交付物**过闸**的次数 / 其中没过的次数。
+            #: 为什么是独立两个键而不是并进 `verify_stats`：`verify_stats` 回答
+            #: "本轮一共跑了几次闸"，这里回答"交出去的那一份过没过"——
+            #: 第九十轮的病正是**前者的数字看着正常、后者根本没有**。
+            "gate_checked": 0,
+            "gate_failed": 0,
         }
         #: 本次进入收尾余量是哪条阈值触发的（`steps` / `wall`）。由
         #: `_closing_reserve_hit()` 写、`_close_out()` 读 —— 条件只在**一处**声明。
@@ -1515,6 +1558,57 @@ class Core:
             origin = "history"
         if not best:
             origin = "空"
+        # ── 交付前**必须**过同一道闸（第九十一轮，§57）──────────────────────
+        # ⛔ 第九十轮实测：这条路交付的 **11 份里 0 份过过闸**，而
+        #    `unverified_delivery` 11 次全是 false。因为它只描述"主循环那道闸
+        #    有没有放弃过"，**不描述交出去的那一份过没过**：
+        #      · A 臂 6 次 `closed` 全部是 `校验=1跑/0过/1打回/0放弃` ——
+        #        那 1 次打回发生在主循环，交付物却是收尾重新要来的另一份；
+        #      · B 臂 5 次 `closed` 全部是 `校验=0跑` —— 闸一次都没跑过。
+        #    `sg10` 第 2 轮交付的**就是刚被闸打回的那一份**（419 字符，
+        #    sha 38f40729…，`改交付=0(与被闸打回那版同=1)`）：14 条断言里 13 条
+        #    是同一句 `NameError: name 're' is not defined`。那一份值 13 格，
+        #    而它同时是 A 臂噪声极差 15 格里的 13 格 —— 判"可分辨"用的正是它。
+        #
+        # ✔ **只记状态，不重试**：重试会改变交付物 ⇒ 改变分数 ⇒ 这一轮就变成
+        #    "修读数"与"改能力"的混合实验（§45.9 混口径的老账）。下面这段
+        #    对 `best` **一个字符都不许改**，本轮的可证伪预测就是"交付物逐字不变"。
+        #
+        # ⚠️ 两个必须跳过的条件，一个是"判错对象"，一个是"判错语义"：
+        #    · `not best`：交付物是空串时 `_finish` 会用 `_salvage` 顶替 ⇒
+        #      这里判的就不是最终交付物。
+        #    · `not self._checks`：`vfy.run(x, ())` 返回 **ok=False**（"无判据"≠通过）
+        #      ⇒ 关掉 `verify_retries` 的用户会拿到一个**假失败**（自造假失败，
+        #      与"关掉判据也能刷出 100% 通过率"是同一枚硬币的两面）。
+        if best and self._checks:
+            _co_v = vfy.run(best, self._checks)
+            self.verify_stats["runs"] += 1
+            self.verify_stats["closeout_runs"] += 1
+            co["gate_checked"] += 1
+            if _co_v.ok:
+                self.verify_stats["passed"] += 1
+                # ★ 清标：`_unverified` 描述的是**交出去的那一份**。
+                #   预置的旧标属于"主循环放弃过的那一版"，而那一版已经被
+                #   `best` 顶掉了 —— 继续挂着它就是把"交了好答案"报成
+                #   "交了坏答案"。假指控与假绿是同一种病（§21 的 `_salvage`
+                #   那次教训的另一面）。
+                self._unverified = ""
+                self.log("  🧪 收尾交付过闸")
+            else:
+                self.verify_stats["failed"] += 1
+                self.verify_stats["closeout_failed"] += 1
+                co["gate_failed"] += 1
+                self._unverified = _co_v.report
+                # 与 `_gate_finish` 超限分支同一条理由（第二十七轮 §17-6 6a）：
+                # "最终为什么没过闸"是这一题最该被蒸馏成经验的信息 ——
+                # 不落 failure，它在情景记忆里就是零痕迹。
+                self.memory.record(
+                    "failure", f"收尾交付未过自检 — {_co_v.report[:200]}",
+                    error=_co_v.report[:300])
+                self.log(f"  🧪 收尾交付**未过闸**：{_co_v.report[:120]}")
+        #: 交付物过没过闸，必须写进 `reason` —— 状态名仍然说"怎么结束的"
+        #: （`closed` / `stalled` 本来就没说"已校验"），这句话补的是"过没过"。
+        _co_gate_note = " ｜ 该答案**未通过自检**" if self._unverified else ""
         # ── 读数（第二十二轮）：来源分布 + 交付量 + **有没有改掉被打回的那一版** ──
         # ⚠️ `overrode_rejected` 的语义严格限定为"不同"：它与 `_salvage` 逐字比较，
         #    只能说"收尾让交付物变了"，**不能说**"收尾救回了这道题"。
@@ -1537,8 +1631,9 @@ class Core:
             return done("stalled", best,
                         f"拒绝原地打转{('（' + detail + '）') if detail else ''}"
                         f"，但仍有 {_left_s:.0f}s 额度 ⇒ 走答案通道交付"
-                        f"（不是预算不足）")
-        return done("closed", best, "closing_reserve：预算不足，交付已有材料")
+                        f"（不是预算不足）{_co_gate_note}")
+        return done("closed", best,
+                    f"closing_reserve：预算不足，交付已有材料{_co_gate_note}")
 
     # ------------------------------------------------------------------
     def _finish(self, status: str, answer: str, reason: str, history: Sequence[str],
@@ -1725,6 +1820,15 @@ class Core:
                              f"(与被闸打回那版同={_co['same_as_rejected']})")
             if _co["empty"]:
                 _co_line += f" ⚠️交了空={_co['empty']}"
+            # ★第九十一轮（§57）：收尾那一次闸的读数。
+            # ⛔ 与上面的 `校验=` **分列**念：那个是"全轮跑了多少次闸"，这个是
+            #    "交出去的那一份过没过"。第九十轮的实况是"11 次收尾交付、0 次过闸"，
+            #    而 `校验=` 那一段在 B 臂的 5 次上写着 `0跑` —— 只说"没跑"，
+            #    不说"没跑就交了"。分列之后这两件事各自可读。
+            if _co.get("gate_checked"):
+                _co_line += (f" 收尾闸={_co['gate_checked']}跑"
+                             f"/{_co['gate_checked'] - _co.get('gate_failed', 0)}过"
+                             f"/{_co.get('gate_failed', 0)}未过")
         # 外部能力读数（第二十三轮；第六十六轮改为按「实际调用过」判）：
         # 判据搬进 `external_summary()` 是为了**能被契约直接钉住** ——
         # 放在 `_finish` 的函数体里只能靠读源码，读源码的断言恒真。

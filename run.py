@@ -35,6 +35,10 @@ from mw.ledger import (CALIBER_FIELD, ScoreLedger, is_passed,  # noqa: E402
                        ledger_caliber_of, ledger_sig_of,
                        next_session)
 from mw.llm import Message                        # noqa: E402
+#: 能力曲线的判据全在 `mw/loop.py`（内核之外）。这里**只接线，不重写判据** ——
+#: 一旦 run.py 自己算一遍趋势，就有两套口径，迟早一套改了另一套没改。
+from mw.loop import Curve as _Curve               # noqa: E402
+from mw.loop import run_loop as _run_curve        # noqa: E402
 from mw.measure import (Measurement, budget_curve, noise_floor,  # noqa: E402
                         paired_compare, repeat, summarize)
 #: 工具目录指纹的**唯一**实现（契约 AF1 拿它与真实 `Core.tools.catalog()` 对撞）。
@@ -611,6 +615,18 @@ def _option_conflict(args) -> str:
                 "（N 个 suite_sha），单一基线文件装不下 —— 每个领域都会写同一个"
                 " bench_baseline.json 并互相覆盖，最后只剩最后一个领域。"
                 " 请去掉 --save-baseline，或逐领域单独跑（--suite 一个一个来）。")
+    # ── 循环模式（第六十三轮）────────────────────────────────────────────
+    # ⛔ 这两条都是"静默忽略"型：不挡的话 --loop 会被悄悄丢掉，
+    #    而用户看到的仍是一份看起来正常的单轮读数 —— 那正是标签撒谎。
+    if int(getattr(args, "loop", 0) or 0) > 0:
+        if sd:
+            return ("--loop 与 --suite-dir 互斥：循环模式跑的是**一个**套件的一条曲线，"
+                    "而 --suite-dir 是 N 个领域各跑一次（N 把尺子）。"
+                    " 曲线只能对同一把尺子有意义 —— 请用 --suite 指定单套件。")
+        if getattr(args, "save_baseline", False) or getattr(args, "compare", False):
+            return ("--loop 与 --save-baseline / --compare 互斥：基线存的是**一次**读数，"
+                    "而循环产出的是 N 个点的曲线 —— 拿哪一轮当基线都得靠人挑，"
+                    "那等于在曲线里事后选一个好看的。要基线请用单轮 --bench。")
     return ""
 
 
@@ -712,6 +728,104 @@ def _cross_domain(args, suite_dir: Path) -> int:
         print(f"  ⚠️ 汇总落盘失败 {type(e).__name__}: {e}")
 
     return 0 if uni["ok"] else 1
+
+
+# ---------------------------------------------------------------------------
+# 循环模式（--loop N）的准入检查 —— **纯函数**，所以它能被契约直接钉住
+# ---------------------------------------------------------------------------
+def curve_guard(args, rounds: int) -> str:
+    """循环模式能不能开跑。返回空串 = 放行，否则返回拒绝理由。
+
+    ## 为什么必须挡"记忆跨轮累积"
+
+    `Caliber.memory_seed` 是**开跑之前**拍的快照（facts, episodes）。默认作用域
+    `shared_db` 下，第 2 轮起库里的记忆已经比第 1 轮多，而每个点上的签名
+    **仍然写着第 1 轮的基线** —— 那个签名描述的不是这一轮的条件。
+    于是曲线会拿"记忆更多"冒充"能力更强"，**而这件事在曲线上完全看不出来**：
+    它会显示成一条平滑上升的线，每一格都带着看似合法的口径签名。
+
+    这正是本项目反复栽的那一类错：不是尺子坏了，是尺子量错了对象。
+    所以要么 `--fresh`（每题一个新库，既不跨题也不跨轮），要么用不碰记忆的参照 solver。
+
+    ## 为什么挡 <3 轮
+
+    `Curve.trend()` 在轮数 <3 时一律 UNKNOWN（样本不足）。少于 3 轮跑出来的
+    不是一个"判不了的曲线"，是**一个点**；把它写进曲线文件会让后来的人
+    以为曾经量过趋势。
+    """
+    if int(rounds) < 3:
+        return (f"--loop 至少 3 轮（收到 {rounds}）：少于 3 轮 `trend()` 一律 UNKNOWN，"
+                "产出的不是曲线而是一个点 —— 写进曲线文件会让后来的人以为量过趋势。")
+    # 参照 solver 不碰记忆（oracle 直接抄答案、null 交空、partial 固定错一半）。
+    if getattr(args, "solver", "") in ("oracle", "null", "partial"):
+        return ""
+    if not getattr(args, "fresh", False):
+        return ("循环模式下真模型/内核 solver 必须加 `--fresh`：默认的 `shared_db` 让记忆"
+                "跨轮累积，而点上的口径签名仍是首轮快照 ⇒ 那条曲线会拿"
+                "『记忆更多』冒充『能力更强』，且在曲线上完全看不出来。")
+    return ""
+
+
+def _curve_mode(args, *, solver, scorer, suite, caliber, repeat_n: int,
+                tag: str, label: str, root: Path) -> int:
+    """跑 N 轮，把每轮读数写成一条能力曲线。**不写跨会话账本**（理由在末尾）。
+
+    接线原则：solver / scorer / suite / caliber 全部由 `cmd_bench` **已经建好的**
+    那一套传进来 —— 循环模式不加第二套口径构造。真模型的口径只有
+    `cmd_bench` 里那一处（契约 AZ53 钉住 run.py 里只有一个 `Caliber(` 构造点）。
+    """
+    rounds = int(args.loop)
+    why = curve_guard(args, rounds)
+    if why:
+        print(f"❌ {why}")
+        return 2
+
+    out = (Path(args.loop_out).expanduser() if args.loop_out
+           else (root / "state" / "curve.jsonl"))
+    print()
+    print(f"--- 第 2 步（循环模式）  连跑 {rounds} 轮  solver={label}  预算档={tag} ---")
+    print(f"  曲线落盘  {out}（**追加**写：同一个文件横跨多次运行）")
+    print(f"  口径签名  {caliber.signature()}")
+    print("  ⚠️ 每轮开头都会重算打分器与题集的 sha；**文件变了立即停机**，"
+          "不把换尺子之后的点接到旧曲线上。")
+
+    kept = _Curve()
+
+    def on_round(p) -> None:
+        kept.add(p)
+        # 逐轮落盘，不等整轮跑完：`--loop` 也可能被 Ctrl-C 打断，
+        # 写到内存再统一保存等于把"跑到一半"变成"什么都没留下"。
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with open(out, "a", encoding="utf-8") as f:
+            f.write(json.dumps(p.as_dict(), ensure_ascii=False, sort_keys=True) + "\n")
+
+    stopped = ""
+    try:
+        _run_curve(solver=solver, scorer=scorer, suite=suite,
+                   caliber_factory=lambda: caliber, rounds=rounds,
+                   repeat_n=repeat_n, budget_tag=tag, candidate=label,
+                   on_round=on_round)
+    except KeyboardInterrupt:
+        print("\n（Ctrl-C：已跑的轮次都已落盘，下面只按已有数据判定）")
+    except RuntimeError as e:
+        stopped = str(e)
+        print(f"\n⛔ 已停止：{e}")
+
+    print()
+    print("=" * 74)
+    for line in kept.as_lines():
+        print(line)
+    print("=" * 74)
+    verdict, why = kept.trend(args.noise_floor)
+    print(f"趋势：{verdict} —— {why}")
+    if args.noise_floor is None:
+        print("（未给 --noise-floor ⇒ UNKNOWN 是**设计上的默认**，不是失败："
+              "没有噪声下限时任何差值都不可判定）")
+    print(f"本次 {len(kept)} 个点已追加到 {out}")
+    print()
+    print("ℹ️ 循环模式**不写**跨会话账本：多轮 = 多个会话，而账本的语义是"
+          "『一次完整评测 = 一个会话』。要账本请用单轮 `--bench`。")
+    return 2 if stopped else 0
 
 
 def cmd_bench(args) -> int:
@@ -1052,8 +1166,41 @@ def cmd_bench(args) -> int:
     from mw.features import feature_set as _feature_set
     _feat_of = {t.id: _feature_set(t.as_dict()) for t in suite.tasks}
 
+    # ── 循环模式：同一套 solver / 尺子 / 口径连跑 N 轮 ────────────────────
+    # 干净地在这里分叉：下面是单轮路径（含账本、基线、奖励回灌），
+    # 而循环模式跑完就返回 —— 它**不写**账本（多轮 = 多个会话，语义不同），
+    # 也不碰基线（一份 baseline 装不下一条曲线）。
+    if int(getattr(args, "loop", 0) or 0) > 0:
+        return _curve_mode(args, solver=solver, scorer=scorer, suite=suite,
+                           caliber=caliber, repeat_n=repeat_n, tag=tag,
+                           label=label, root=root)
+
     print()
     print(f"--- 第 2 步  跑任务集  solver={label}  预算档={tag}  repeat={repeat_n} ---")
+
+    # ── 答案本体落盘（第七十九轮 §42）────────────────────────────────────
+    #
+    # ⚠️ 为什么不在 `run_suite` 里写：那会改 `mw/*.py` ⇒ `harness_sha()` 断段。
+    #    而这一轮是**量具**变更，不是能力变更 —— 断段会把旧曲线点全部作废，
+    #    代价远大于收益。所以包在 solver 外面：`run_suite` 一行都不用动。
+    #
+    # ⚠️ 为什么在 `--loop` 之后：循环模式有自己的逐轮落盘，语义不同
+    #    （一轮一条曲线点，不是一次运行）。**本版只覆盖单轮 bench 路径** ——
+    #    这是缺口，明写在这里，不当成"已经全覆盖"。
+    #
+    # ⛔ 三条边界见 `bench/answer_store.py` 模块头：只写答案文本、跑完才写、
+    #    任何判据都不读它。
+    _ans_log = None
+    if not getattr(args, "no_answers", False):
+        from bench.answer_store import AnswerLog, make_run_id, records_path
+        _ans_log = AnswerLog(records_path(s.paths.bench))
+        _solver_raw = solver
+
+        def solver(t):                                             # type: ignore[misc]
+            a = _solver_raw(t)
+            _ans_log.add(t.id, a)
+            return a
+
     m, rep = run_suite(solver, scorer, suite, repeat_n=repeat_n,
                        budget_tag=tag, candidate=label, provenance=prov,
                        critique_ledger=_crit)
@@ -1226,7 +1373,19 @@ def cmd_bench(args) -> int:
         ok, why = store.save(m, caliber, allow_supersede=args.allow_supersede)
         print(f"  {'✅' if ok else '⛔'} {why}")
 
+    # ── 这一轮的身份证：**先算一次，两处共用** ───────────────────────────
+    # 第七十九轮：`answers.jsonl` 要能与 `runs.jsonl` 靠 `run_id` 直接 join。
+    # 两处各造一次 = 两份 id 对不上，而"这次答案属于哪次运行"就又只能靠人记。
+    # ⛔ pid 会重用，所以加上写盘时刻：`run_id` 才是判据，pid 只是它的一半。
+    _run_id = make_run_id() if _ans_log is not None else f"{os.getpid()}@{int(time.time())}"
+
     append_jsonl(s.paths.bench / "runs.jsonl", {
+        # ── 独立运行的身份证（第七十二轮，§36）────────────────────────────
+        # 为什么必须落盘：噪声下限得在**独立进程之间**量，而"这次运行是不是
+        # 另一次运行"在这之前**在数据里不存在** —— 只能靠人记"我跑了几次"。
+        # 于是 `--repeat 2` 的两次重复与"跑了两个进程"在证据里长得一模一样，
+        # 而前者系统性低估噪声（DESIGN §35 实测 0.2619 vs 0.0000）。
+        "run_id": _run_id,
         "solver": label, "budget_tag": tag, "repeat": repeat_n,
         "caliber_sig": caliber.signature(), "caliber": caliber.as_dict(),
         "measurement": measurement_to_dict(m), "report": rep.as_dict(),
@@ -1243,6 +1402,18 @@ def cmd_bench(args) -> int:
                                         if cal.evidence is not None else None)},
     })
     print(f"  读数已落盘 {s.paths.bench / 'runs.jsonl'}")
+
+    # ── 答案本体：跑完之后写一次（与账本同理，轮内写会污染下一题）────────
+    if _ans_log is not None:
+        _w = _ans_log.save(
+            run_id=_run_id,
+            meta={"solver": label, "suite": suite.name, "repeat": repeat_n,
+                  "caliber_sig": caliber.signature(), "budget_tag": tag})
+        # ⚠️ 一句必须念出来的是 `max_chars`：它一旦停在 200 附近，
+        #    就说明某处又偷偷截断了（DESIGN §42 四处截断的共同形态）。
+        print(f"  答案已落盘 {_w['path']}  {_w['n_answers']} 条  "
+              f"共 {_w['chars']} 字符  最长 {_w['max_chars']} 字符  "
+              f"截断 {_w['truncated']} 条")
     return 0 if rep.trustworthy() else 1
 
 
@@ -1268,6 +1439,10 @@ def main() -> int:
                    help="跨会话分数账本路径（默认 $V1_STATE_DIR/score_ledger.jsonl）")
     p.add_argument("--no-ledger", action="store_true",
                    help="本轮不读写分数账本（自我模型空着起跑，用于对照）")
+    p.add_argument("--no-answers", action="store_true",
+                   help="不落答案本体（默认落 `bench_out/answers.jsonl`）。"
+                        "⛔ 关掉它就等于放弃「错在哪一行」的复核能力 —— 见 "
+                        "DESIGN §42 与 bench/answer_store.py 的表")
     p.add_argument("--critique-file", default="",
                    help="评审账本路径（默认 state/critique.jsonl）。"
                         "打分器给的理由会落盘到这里，供**下一轮**读取")
@@ -1312,6 +1487,16 @@ def main() -> int:
                    help="把每次 `_state()` 的产物追加到该文件（JSONL，**只读证据**）。"
                         "R1 的第二层用它：按块切开、查 `[语义记忆]` 之外有没有事实文本。"
                         "不给 ⇒ 内核一次都不写盘（零开销）。")
+    p.add_argument("--loop", type=int, default=0, metavar="N",
+                   help="**循环模式**：用同一套 solver / 尺子 / 口径连跑 N 轮，"
+                        "把每轮读数写成一条能力曲线（≥3 轮才判趋势）。"
+                        "曲线判据在 `mw/loop.py`：每轮校验尺子未被改动、"
+                        "口径变了断线开新段、不可信点不参与趋势。")
+    p.add_argument("--loop-out", default="",
+                   help="曲线落盘文件（默认 $V1_STATE_DIR/curve.jsonl，追加写）。")
+    p.add_argument("--noise-floor", type=float, default=None,
+                   help="趋势判定用的噪声下限。**不给就不判趋势**（不默认 0）——"
+                        "默认 0 等于『任何微小差值都算改进』。")
     args = p.parse_args()
 
     if args.bench:

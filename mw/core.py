@@ -157,7 +157,8 @@ class _LedgeredLLM:
 
     def __init__(self, inner: LLM, ledger: Ledger, *,
                  retries: int = 0, backoff_s: float = 0.5,
-                 wall_reserve_s: float = 0.0) -> None:
+                 wall_reserve_s: float = 0.0,
+                 close_overrun_s: float = 0.0) -> None:
         self.inner = inner
         self.ledger = ledger
         self.retries = max(0, int(retries))
@@ -165,6 +166,14 @@ class _LedgeredLLM:
         #: 留给收尾兜底的秒数。**不进口径签名**（它不改变量的是什么，只改变
         #: 失败时怎么退场），但它的值来自 `limits.close_reserve_s`（已在签名里）。
         self.wall_reserve_s = max(0.0, float(wall_reserve_s))
+        #: 收尾那一次调用允许超出墙钟的秒数（第九十六轮 §63）。
+        #: `0.0` ⇒ 行为与旧版**逐位相同**（这是本轮 A/B 的对照组，也是反证）。
+        #: ⚠️ 它只在 `closing` 为真时生效 —— 探索阶段不许超预算，一秒都不许。
+        self.close_overrun_s = max(0.0, float(close_overrun_s))
+        #: 是否已进入收尾阶段。**由 `reserve_release()` 置真**，不另设入口：
+        #: 「余量放出来了」与「允许超支」是同一件事的两个面，分成两个开关
+        #: 迟早会有人只拨一个。
+        self.closing = False
         #: 读数字段：抖动重试了几次、最终仍失败几次。**有消费者**（进 stats）。
         self.transient_retries = 0
         self.transient_exhausted = 0
@@ -181,6 +190,43 @@ class _LedgeredLLM:
         self.wall_refused_first = 0
         #: ③ 放弃的是**重试**（第一次发出去了，但墙钟已不够再试一次）。
         self.wall_refused_retry = 0
+        # ── 宽限的两个读数（第九十六轮 §63）────────────────────────────
+        #: ④ 宽限**真的抬高**了这一发的上限几次。
+        #:    ⚠️ 没有它，"宽限配了但一次没生效"与"宽限救了 5 次"在读数上同形
+        #:    —— 而这两种情况要求的下一步动作相反（前者要查配置接线，
+        #:    后者说明当前预算确实太紧）。
+        self.wall_overrun_grants = 0
+        #: ⑤ 本 run 里收尾调用实际**超出** `wall_s` 的最大秒数（0 = 没超）。
+        #:    它与 ④ 必须分开：④ 是"给了多少"，⑤ 是"用掉多少"。
+        #:    给了 30s 却一秒没用 = 那一发本来就跑得完（宽限是白给的，
+        #:    说明真正的问题不在这里）。
+        self.overrun_used_s = 0.0
+
+    def _left_s(self, *, honor_overrun: bool) -> float:
+        """剩余秒数。**唯一**的剩余量算法（两条路径都走它）。
+
+        `honor_overrun=True` ⇒ 用 `wall_s + close_overrun_s`（仅在收尾阶段）；
+        否则用 `wall_s` —— 也就是第二十五轮以来的旧公式。
+        ⚠️ 分成两个分支而不是就地加一个 `if`，是为了让「探索阶段逐位不变」
+        这件事可以被**逐位比较**（探针 C1/C5 就是这么验的）。
+        """
+        wall = float(self.ledger.budget.wall_s)
+        if honor_overrun:
+            wall = self._wall_deadline()
+        return wall - self.ledger.elapsed() - self.wall_reserve_s
+
+    def _wall_deadline(self) -> float:
+        """当前的墙钟上限（秒）。收尾阶段 = `wall_s + close_overrun_s`。"""
+        wall = float(self.ledger.budget.wall_s)
+        return wall + (self.close_overrun_s if self.closing else 0.0)
+
+    def _note_overrun(self) -> None:
+        """记下"这一发真的超出墙钟多少秒"。⛔ 只在收尾阶段有意义。"""
+        if not self.closing:
+            return
+        over = self.ledger.elapsed() - float(self.ledger.budget.wall_s)
+        if over > self.overrun_used_s:
+            self.overrun_used_s = over
 
     def _attempt_timeout(self) -> float:
         """本次尝试许用多少秒。**唯一**的裁剪处。
@@ -191,7 +237,7 @@ class _LedgeredLLM:
         base = getattr(self.inner, "timeout_s", None)
         if base is None:                     # 桩/无网络：不裁剪
             return float("inf")
-        left = self.ledger.budget.wall_s - self.ledger.elapsed() - self.wall_reserve_s
+        left = self._left_s(honor_overrun=True)
         if left <= self.MIN_ATTEMPT_S:
             return 0.0
         return min(float(base), float(left))
@@ -202,8 +248,13 @@ class _LedgeredLLM:
         ⚠️ 没有这一步，`wall_reserve_s` 就是装饰字段（只声明、不兑现）：
         探索阶段把它扣下来，收尾阶段若还扣着，收尾调用照样拿不到时间。
         第二十五轮的实测动机正是这个 —— "留了 45s"和"45s 能被用上"是两件事。
+
+        ★ 第九十六轮：同时把 `closing` 置真 —— 从这一刻起墙钟上限变成
+        `wall_s + close_overrun_s`。**两个动作放在同一个方法里**是刻意的：
+        「放出余量」与「允许超支」都是"进入收尾"这一个事件的后果。
         """
         self.wall_reserve_s = 0.0
+        self.closing = True
 
     def complete(self, messages: Sequence[Message], **kw: Any) -> str:
         # ⚠️ 这里刻意用 `for` 而**不是** `while`：内核「只准有一个 while」
@@ -212,7 +263,16 @@ class _LedgeredLLM:
         #    （把 J6 放宽去容纳一个 while = 尺子下移，那不是修法。）
         for attempt in range(self.retries + 1):
             # ① 墙钟闸：已尽 ⇒ 这是一等公民的预算事件，不是传输层吵闹。
-            self.ledger.check_wall()
+            #    ★ 第九十六轮：收尾阶段改用 `wall_s + close_overrun_s`。
+            #    ⛔ 非收尾分支**必须**仍然调 `ledger.check_wall()`（逐字不变）：
+            #       换成 `self.ledger.elapsed() >= wall` 写法看着等价，
+            #       但 AU1 钉的是同一个函数 —— 复制一份判断就是第二处实现。
+            if self.closing:
+                _dl = self._wall_deadline()
+                if self.ledger.elapsed() >= _dl:
+                    raise BudgetExhausted("wall_s", self.ledger.elapsed(), _dl)
+            else:
+                self.ledger.check_wall()
             # ② 裁剪：把本次尝试装进"剩余 − 收尾余量"。
             _to = self._attempt_timeout()
             if _to == 0.0:
@@ -222,6 +282,17 @@ class _LedgeredLLM:
                     self.wall_refused_retry += 1
                 raise BudgetExhausted("wall_s", self.ledger.elapsed(),
                                       self.ledger.budget.wall_s)
+            # ②b 记账：这一发的上限里有多少是**宽限**给的。
+            #     ⚠️ 必须与旧公式逐位比一遍，不能"收尾就计一次" ——
+            #        那会把"宽限没用上"记成"用上了"（本轮最容易自欺的读数）。
+            if self.closing and self.close_overrun_s > 0.0:
+                _base = getattr(self.inner, "timeout_s", None)
+                _left_old = self._left_s(honor_overrun=False)
+                if _base is not None and _to != float("inf"):
+                    _cap_old = (0.0 if _left_old <= self.MIN_ATTEMPT_S
+                                else min(float(_base), _left_old))
+                    if float(_to) > _cap_old:
+                        self.wall_overrun_grants += 1
             self.ledger.spend_llm()
             try:
                 if _to == float("inf"):
@@ -244,6 +315,9 @@ class _LedgeredLLM:
                 self.transient_retries += 1
                 # 退避用线性增长：本地/低价端点抖动通常是瞬时的，指数退避过于激进。
                 time.sleep(self.backoff_s * (attempt + 1))
+            finally:
+                # ⑤ 这一发实际超出墙钟多少（只在收尾阶段记）。
+                self._note_overrun()
         raise AssertionError("不可达：retries ≥ 0 保证循环至少执行一次并 return 或 raise")
 
 
@@ -644,7 +718,10 @@ class Core:
                                backoff_s=self.s.limits.llm_retry_backoff_s,
                                # 重试链不许把收尾预算吃掉 —— 否则"准时失败"
                                # 会退化成"没答案"（§16.24 ③）。
-                               wall_reserve_s=self.s.limits.close_reserve_s)
+                               wall_reserve_s=self.s.limits.close_reserve_s,
+                               # 收尾那一次调用允许超出墙钟的有界宽限（§63）。
+                               # ⛔ 不给 0 以外的值就等于退回旧版（反证组就是这么跑的）。
+                               close_overrun_s=self.s.limits.close_overrun_s)
         self._counted = counted
         self.planner.llm = counted
         self.wm.llm = counted
@@ -1712,10 +1789,16 @@ class Core:
                 "wall_shortened": self._counted.wall_shortened,
                 "wall_refused_first": self._counted.wall_refused_first,
                 "wall_refused_retry": self._counted.wall_refused_retry,
+                # ★ 第九十六轮 §63：宽限给没给（④次）、用掉多少（⑤秒）。
+                #   两个都要，且必须分开：给了 30s 却一秒没用 ⇒ 那一发本来就
+                #   跑得完 ⇒ 真正的问题不在这里。
+                "wall_overrun_grants": self._counted.wall_overrun_grants,
+                "close_overrun_used_s": round(self._counted.overrun_used_s, 2),
             } if self._counted is not None else
                 {"retries": 0, "exhausted": 0,
                  "wall_shortened": 0, "wall_refused_first": 0,
-                 "wall_refused_retry": 0}),
+                 "wall_refused_retry": 0,
+                 "wall_overrun_grants": 0, "close_overrun_used_s": 0.0}),
         }
         self.memory.record("finish", f"{status}: {answer or reason}"[:1000],
                            status=status, stats=stats)
@@ -1732,6 +1815,11 @@ class Core:
         if tx.get("wall_refused_first") or tx.get("wall_refused_retry"):
             tx_line += (f" | 墙钟放弃首发={tx['wall_refused_first']}"
                         f"/重试={tx['wall_refused_retry']}")
+        # ★ 第九十六轮 §63：宽限**给了几次**与**实际用掉几秒**必须一起念。
+        #   只印前者会让"配了但没用上"看起来像"救回来了"。
+        if tx.get("wall_overrun_grants"):
+            tx_line += (f" | 宽限生效={tx['wall_overrun_grants']}次"
+                        f"(超出{tx.get('close_overrun_used_s', 0):g}s)")
         # ★ 题边界清空（§17-7h）：零值不印（正常单题跑恒 0），非零必须念 ——
         #   它是"上一题的工具输出确实漏进了本题上下文"的唯一读数。
         if stats.get("working_cross_task"):

@@ -146,6 +146,11 @@ FROZEN: tuple[Frozen, ...] = (
     Frozen("close_reserve_steps",
            "与 `close_reserve_s` 是**同一件事的两种表达**（`_closing_reserve_hit` "
            "里是 OR）。两个都能动 = 两个真相，改一个另一个继续按旧值行事。"),
+    Frozen("close_overrun_s",
+           "收尾那一发的墙钟宽限。它买的是「不要让一份已写好的答案输给 1 秒」——"
+           "**交付可靠性**，不是解题过程。放进变异空间就等于允许系统用"
+           "「多赖几秒」冒充「变强」（与 `llm_retries` 同一条理由）。"
+           "⛔ 必须被 `coverage_gaps()` 覆盖：漏了它就是一个默认可动的字段。"),
     Frozen("external_answer_tool",
            "能力开关（谁来做这道题），不是过程。§30 刚把它的入口收成一处，"
            "不许在这里开第二个。"),
@@ -162,6 +167,9 @@ INVARIANTS: tuple[tuple[str, str], ...] = (
     ("close_reserve_s < max_wall_s",
      "`core.py` 的余量判据是 `wall_left <= lim.close_reserve_s`；"
      "相等即从第 0 秒起就在余量里 ⇒ 探索一次都不会发生。"),
+    ("close_overrun_s <= max_wall_s",
+     "宽限若不比整个预算小，它就不是宽限而是「取消预算」；"
+     "而 `_wall_deadline()` 的整个可信度建立在「多花的秒数有上界」上。"),
     ("max_stall <= max_steps",
      "每一次停滞都消耗一个 step；阈值大于总步数 ⇒ 它永远到不了，是装饰。"),
 )
@@ -204,6 +212,8 @@ def violations(limits: Limits) -> list[str]:
     out: list[str] = []
     if not (limits.close_reserve_s < limits.max_wall_s):
         out.append("close_reserve_s < max_wall_s")
+    if not (limits.close_overrun_s <= limits.max_wall_s):
+        out.append("close_overrun_s <= max_wall_s")
     if not (limits.max_stall <= limits.max_steps):
         out.append("max_stall <= max_steps")
     return out

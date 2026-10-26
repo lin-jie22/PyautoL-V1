@@ -255,6 +255,21 @@ class Limits:
         default_factory=lambda: _env_float("V1_CLOSE_RESERVE_S", 45.0, allow_zero=True))
     close_reserve_steps: int = field(
         default_factory=lambda: _env_int("V1_CLOSE_RESERVE_STEPS", 1, allow_zero=True))
+    #: 收尾那一次调用允许**超出** `max_wall_s` 的秒数（有界宽限，只此一次）。
+    #:
+    #: ★ 第九十六轮实测动机（§62/§63）：`close_reserve_s` 的默认 45.0 是按
+    #:   「一次模型调用约 20s」定的，而本机实测 **45.6s**。于是收尾在 75.5s
+    #:   启动、只拿到 44.5s ⇒ **差 1.1 秒**被 `timeout_s` 裁掉 ⇒ `BudgetExhausted`
+    #:   ⇒ 兜底交 `history[-1]`（那是 `[step 1] finish({...})` 的轨迹原文）。
+    #:   **一份已经写好的答案，输给了一个常数。**
+    #:
+    #: ⛔ 为什么不能只是把 `close_reserve_s` 调大：那会**同时**推迟收尾起点
+    #:   （探索少吃 45s 变少吃 75s），是另一件事，且已证明会让别的题变差。
+    #:   这里改的是**收尾这一发自己的上限**，探索阶段逐位不变。
+    #: ⛔ 为什么不能「取消超时」：无界的收尾调用会把一次跑批变成不可预算的。
+    #:   宽限必须是**有限数**，并且被不变式 `close_overrun_s <= max_wall_s` 盯住。
+    close_overrun_s: float = field(
+        default_factory=lambda: _env_float("V1_CLOSE_OVERRUN_S", 30.0, allow_zero=True))
     working_memory_items: int = field(
         default_factory=lambda: _env_int("V1_WORKING_MEMORY_ITEMS", 24))
     recall_k: int = field(
@@ -407,6 +422,7 @@ ENV_KEYS = (
     "V1_MAX_STALL",
     "V1_CLOSE_RESERVE_S",
     "V1_CLOSE_RESERVE_STEPS",
+    "V1_CLOSE_OVERRUN_S",
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",
@@ -435,6 +451,7 @@ ZERO_OK_KEYS: tuple[str, ...] = (
     "V1_LLM_TEMPERATURE",
     "V1_CLOSE_RESERVE_S",
     "V1_CLOSE_RESERVE_STEPS",
+    "V1_CLOSE_OVERRUN_S",
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",

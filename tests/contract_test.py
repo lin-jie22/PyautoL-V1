@@ -39,7 +39,7 @@ sys.path.insert(0, str(V1))
 from mw import config as cfg                                    # noqa: E402
 from mw import features as F                                    # noqa: E402
 from mw.budget import Budget, BudgetExhausted, Ledger            # noqa: E402
-from mw.core import Core, _Log                                # noqa: E402
+from mw.core import Core, _LedgeredLLM, _Log                   # noqa: E402
 from mw.guard import CHECKPOINTS, Guard                           # noqa: E402
 from mw.llm import (ANSWER_MARK, PARSE_MODES, HTTPLLM, Message, StubLLM,  # noqa: E402
                     parse_json, split_answer)
@@ -1322,6 +1322,10 @@ def _env_zero_takes_effect(key: str) -> bool:
         "V1_LLM_TEMPERATURE": ("llm", "temperature"),
         "V1_CLOSE_RESERVE_S": ("limits", "close_reserve_s"),
         "V1_CLOSE_RESERVE_STEPS": ("limits", "close_reserve_steps"),
+        # ★ 第九十六轮 §63：宽限的 0 也是一个**有意义的值**（关闭宽限 ⇒
+        #   行为退回旧版，这是 A/B 对照组）。它必须与 `close_reserve_s` 一样
+        #   被这条断言覆盖 —— 否则「设了 0 却被静默改回 30」会悄悄毁掉对照臂。
+        "V1_CLOSE_OVERRUN_S": ("limits", "close_overrun_s"),
         "V1_LLM_RETRIES": ("limits", "llm_retries"),
         "V1_LLM_RETRY_BACKOFF_S": ("limits", "llm_retry_backoff_s"),
         "V1_VERIFY_RETRIES": ("limits", "verify_retries"),
@@ -9172,6 +9176,104 @@ check(RS,
       f"{_AZ92_C2.closeout_stats['gate_failed']} ｜"
       f"③关掉零跑={_AZ92_OK_OFF}(runs={_AZ92_C3.verify_stats['runs']}) ｜"
       f"④交付物逐字相同={_AZ92_OK_SAME} ｜ ⑤reason 措辞={_AZ92_OK_NOTE}")
+
+# ── AZ94 ★收尾那一发允许**有界**超出墙钟，探索阶段一秒都不许多给 ────────
+#  第九十六轮 §63。动机（§62 实测）：`close_reserve_s=45.0` 是按「一次调用约 20s」
+#  定的，本机实测 45.6s ⇒ 收尾在 75.5s 启动只拿到 44.5s ⇒ **差 1.1 秒**被裁
+#  ⇒ `BudgetExhausted` ⇒ 兜底交 `history[-1]`（那是 `[step 1] finish({...})` 的
+#  轨迹原文）。**一份已经写好的答案，输给了一个常数。**
+#
+#  ⛔ 为什么不是「调大 close_reserve_s」：那会同时**推迟收尾起点**（探索少吃
+#     45s 变少吃 75s），是另一件事，且 §62 的对照臂已证明会让别的题变差。
+#     这里改的是**收尾这一发自己的上限**，探索阶段逐位不变。
+#
+#  五个方向（缺一条，这条断言就是「恒真」或「测了个算术」）：
+#   ① `close_overrun_s=0` ⇒ `_attempt_timeout()` 与旧公式**逐位相同**（A/B 对照组）
+#   ② 收尾后同一时刻的 `_to` **严格变大**，且增量 ≤ 宽限
+#   ③ `closing=False` 时给了宽限也**不加**（探索阶段不许超支）
+#   ④ 宽限再大也被 `inner.timeout_s` 夹住（不许退化成「取消预算」）
+#   ⑤ 两个新计数**零值也在** stats 里（"配了没生效"与"救回来了"必须分得开）
+_AZ94_WALL = 8.0
+_AZ94_PRE = 2.5
+
+
+def _az94_mk(overrun: float, *, base: float = 60.0, reserve: float = 0.0):
+    """只造账本 + 包装器（不建 Core：这条路只需要 `_attempt_timeout()`）。
+
+    ⚠️ 时钟**必须钉住**：用 `t0 = now - pre` 模拟"已用 pre 秒"，两次构造之间
+    差几十微秒，就足以让 `MIN_ATTEMPT_S` 边界上的 `_to` 从 5.5 变成 0.0。
+    探针第一版没钉，C0/C1/C2 全红 —— 那三条红里没有一条是真的缺陷。
+    """
+    class _Fast:
+        """**不睡**的桩：本断言只量 `_attempt_timeout()` 与"宽限有没有记账"，
+        不量一次调用跑多久 —— 真跑由 `bench/probe_closeoverrun.py` 的 C3 端到端钉。
+
+        ⚠️ 它必须有 `timeout_s`：`_attempt_timeout()` 用
+        `getattr(inner, "timeout_s", None)` 决定"要不要裁剪"，
+        而 `StubLLM` **没有**这个属性 ⇒ 走 `return inf` 那条路 ⇒ 这里全是假绿。
+        """
+        timeout_s = base
+
+        def complete(self, messages, **kw):                      # noqa: ANN001
+            return "```python\ndef norm_az94(rows):\n    return list(rows)\n```"
+
+    led = Ledger(budget=Budget(steps=1, llm_calls=4, wall_s=_AZ94_WALL, candidates=1),
+                 t0=0.0)
+    led.elapsed = lambda: _AZ94_PRE                            # type: ignore[method-assign]
+    return _LedgeredLLM(_Fast(), led, retries=0,
+                        wall_reserve_s=reserve, close_overrun_s=overrun)
+
+
+_AZ94_OLD = _az94_mk(0.0)
+_AZ94_NEW = _az94_mk(2.5)
+_AZ94_TO_EXPLORE_OLD = _AZ94_OLD._attempt_timeout()
+_AZ94_TO_EXPLORE_NEW = _AZ94_NEW._attempt_timeout()               # ③ 还不该变
+_AZ94_NEW.reserve_release()                                       # 进入收尾
+_AZ94_OLD.reserve_release()
+_AZ94_TO_CLOSE_OLD = _AZ94_OLD._attempt_timeout()
+_AZ94_TO_CLOSE_NEW = _AZ94_NEW._attempt_timeout()                 # ② 应变大
+_AZ94_HUGE = _az94_mk(1e6)
+_AZ94_HUGE.reserve_release()
+_AZ94_TO_HUGE = _AZ94_HUGE._attempt_timeout()                     # ④ 仍被 base 夹住
+
+_AZ94_OK_SAME = (abs(_AZ94_TO_EXPLORE_OLD - (_AZ94_WALL - _AZ94_PRE)) < 1e-9
+                 and _AZ94_TO_EXPLORE_OLD == _AZ94_TO_EXPLORE_NEW)
+_AZ94_OK_GROW = (_AZ94_TO_CLOSE_NEW > _AZ94_TO_CLOSE_OLD
+                 and abs(_AZ94_TO_CLOSE_NEW
+                         - min(60.0, _AZ94_TO_CLOSE_OLD + 2.5)) < 1e-9)
+_AZ94_OK_SCOPE = _AZ94_TO_EXPLORE_NEW == _AZ94_TO_CLOSE_OLD      # ③ 未收尾 ⇒ 旧值
+_AZ94_OK_BOUND = _AZ94_TO_HUGE <= 60.0 + 1e-9
+# ⑤ 接线三件：默认值、构造参数、两个计数器（"配了没生效"与"救回来了"分得开）。
+#    ⚠️ 这里只钉**常量与接线**；「收尾真的超出墙钟时 `overrun_used_s` 会变正」
+#    由 `bench/probe_closeoverrun.py` 的 C6 端到端钉住（它要真睡 ~11s，
+#    放进契约会让每次提交多付十秒，而契约是每次提交都跑的）。
+_AZ94_OLD.complete([Message("user", "x")])                # 旧臂：不该记一笔
+_AZ94_NEW.complete([Message("user", "x")])                # 新臂：应记一笔
+_AZ94_OK_KEYS = (abs(cfg.Limits().close_overrun_s - 30.0) < 1e-9
+                 and _AZ94_OLD.wall_overrun_grants == 0
+                 and _AZ94_OLD.overrun_used_s == 0.0
+                 and _AZ94_NEW.wall_overrun_grants >= 1)
+
+check(RS,
+      "AZ94 ★收尾那一发允许**有界**超出墙钟，探索阶段一秒都不许多给\n"
+      "          ① `close_overrun_s=0` ⇒ `_to` 与旧公式逐位相同（对照组）；\n"
+      "          ② 进入收尾后同一时刻的 `_to` 变大，且增量 ≤ 宽限；\n"
+      "          ③ 还没 `reserve_release()` 时给了宽限也**不加**；\n"
+      "          ④ 宽限 = 1e6s 时 `_to` 仍 ≤ `inner.timeout_s`；\n"
+      "          ⑤ 默认 30.0s；旧臂两个计数器为 0、新臂 `wall_overrun_grants ≥ 1`\n"
+      "             （「配了没生效」与「救回来了」必须分得开）。\n"
+      "          —— 第九十五轮实况：收尾在 75.5s 启动、给 44.5s、需要 45.6s\n"
+      "             ⇒ 差 1.1 秒丢掉一份已写好的答案 ⇒ 交了 `[step 1] finish(...)`。\n"
+      "          撤回语义：`_wall_deadline` 去掉 `+ close_overrun_s` ⇒ ② 必须红；\n"
+      "                    `reserve_release` 去掉 `self.closing = True` ⇒ ②⑤ 必须红。",
+      _AZ94_OK_SAME and _AZ94_OK_GROW and _AZ94_OK_SCOPE
+      and _AZ94_OK_BOUND and _AZ94_OK_KEYS,
+      f"①逐位相同={_AZ94_OK_SAME}({_AZ94_TO_EXPLORE_OLD:g}) ｜ "
+      f"②收尾后变大={_AZ94_OK_GROW}({_AZ94_TO_CLOSE_OLD:g}→{_AZ94_TO_CLOSE_NEW:g}) ｜ "
+      f"③未收尾不加={_AZ94_OK_SCOPE} ｜ "
+      f"④有界={_AZ94_OK_BOUND}({_AZ94_TO_HUGE:g}≤60) ｜ "
+      f"⑤两键常在={_AZ94_OK_KEYS}")
+
 
 print()
 print("=" * 74)

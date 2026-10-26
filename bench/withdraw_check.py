@@ -1115,6 +1115,27 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ92", "mw/core.py",
      '        if best and self._checks:',
      '        if best:  # 撤回态：忘了判据可能为空'),
+    # ── AZ94 ①：`_wall_deadline` 忘了加宽限 ⇒ 只有 AZ94 自己红（②方向）───
+    #: 语义：这正是第九十五轮的**原状** —— 收尾那一发仍然只能用到墙钟剩余。
+    #: ⚠️ 写成 `+ 0.0` 而不是删掉那个表达式：保留结构，只把宽限抹成 0
+    #:    （删掉会让缩进块变形，风险是连带改到别的行 —— 第⑬条自踩）。
+    ("AZ94", "mw/core.py",
+     '        return wall + (self.close_overrun_s if self.closing else 0.0)',
+     '        return wall + 0.0  # 撤回态：宽限没接上'),
+    # ── AZ94 ②：`reserve_release` 忘了置 `closing` ⇒ 宽限永不生效（②⑤）──
+    #: 语义：「放出余量」与「允许超支」被拆成两个人写的两个开关时，一定会漏一个。
+    #: 这条变异就是那个漏掉的世界。
+    ("AZ94", "mw/core.py",
+     '        self.wall_reserve_s = 0.0\n        self.closing = True',
+     '        self.wall_reserve_s = 0.0  # 撤回态：忘了置 closing'),
+    # ── AZ94 ③：宽限记账那行去掉 ⇒ 只有 AZ94 自己红（⑤方向）─────────────
+    #: 语义：计数恒 0 = "配了宽限但从没生效"与"宽限救了 5 次"在读数上同形。
+    #: 这两种情况要求的下一步动作相反，合并即不可归因。
+    ("AZ94", "mw/core.py",
+     '                    if float(_to) > _cap_old:\n'
+     '                        self.wall_overrun_grants += 1',
+     '                    if False:  # 撤回态：宽限记账没了\n'
+     '                        self.wall_overrun_grants += 1'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

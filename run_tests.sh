@@ -652,14 +652,20 @@ echo
 #     C6 EXC/ASSERT 两个分支都真能走到（不是死代码）；C7 冻结算复算 == §59 落盘读数；
 #     C8 报告器的增益/改坏/净/噪声算术。⛔ 它量「检出之后能不能改对」，
 #     而这一轮量出来的是**负数** —— 正因为预注册要求成对臂，才没把 −2 读成「重试没用」。
+#   · `probe_closeoverrun.py --self-check`（第九十六轮）：七条反证 C0~C6 ——
+#     C0 断言桩的 `timeout_s` **真的被读到**（`StubLLM` 没有这个属性 ⇒ 走 return inf
+#     ⇒ 整条裁剪路径不存在，后面全是假绿）；C1 `close_overrun_s=0` 时与旧公式逐位相同；
+#     C3 **端到端**真跑一次收尾（旧臂交给 `history`、新臂交给答案，约 11s）；
+#     C5 未收尾时给了宽限也不加。⛔ 它比别的量具慢十倍，因为 C3 必须真睡 ——
+#     把"差 1 秒"变成可复跑，值这 11 秒。
 #   · `audit_form.py --self-check`（第九十五轮）：四条反证 —— R1 分类器认得出
 #     CODE/EMPTY/PROSE；R2 手造一个 `finish({...})` 壳必须被认出且**逐字还原**载荷；
 #     R3 壳那一份的分**确实低于**载荷（否则说明打分器自己能剥壳，本工具的数就没意义）；
 #     R4 只剥 `finish` —— 别的工具渲染剥出来当答案就是伪造。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

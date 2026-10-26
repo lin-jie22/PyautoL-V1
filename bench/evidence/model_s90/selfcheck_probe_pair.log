@@ -1,0 +1,10 @@
+── 两臂单变量对 · 判定量具自检（七条反证）──
+  ✅ C1 只换 model（其余口径逐位相同）⇒ 放行且被判 SUBJECT_ONLY  [diff_keys=['model']]
+  ✅ C2 反证：limits 也变了 ⇒ R1 拒，并点名 'limits'  [除 ('llm_cond',) 外还有口径字段不同：['limits']（声明放行的只有 ['llm_cond']）]
+  ✅ C3 反证：只换 endpoint ⇒ R2 拒（通道差异不算换被测对象）  [llm_cond 的差异被判成 CHANNEL_ONLY，差异键 = ['endpoint']（只允许 model / thinking 变）]
+  ✅ C4 反证：两臂口径逐位相同 ⇒ R2 拒（那种对只能量噪声）  [两臂口径逐位相同 ⇒ 这不是'换被测对象'，是同口径重复（那种对只能用来量噪声）]
+  ✅ C5 反证：skipped_no_answer>0 ⇒ R3 拒  [臂B attempted=6 recorded=5 ⇒ 有样本没量到]
+  ✅ C6 判定：Δ 落在噪声内 ⇒ UNKNOWN（不是'趋势'）  [Δ=0.026 噪声=0.030]
+  ✅ C7 判定：Δ 超过噪声 ⇒ 可分辨  [Δ=0.100 噪声=0.030]
+
+结论：七条全部成立

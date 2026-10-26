@@ -632,10 +632,24 @@ echo
 #     S4 两边都改 ⇒ MIXED / S5 同一台 ollama 的 v4-v6 两种写法 ⇒ CHANNEL_ONLY /
 #     S6 本机台账复现冻结读数。**S1 与 S6 必须同时成立**：一个恒返回 MIXED 的分类器
 #     会让「SUBJECT_ONLY = 0 对」看起来像重大发现，实际是仪器瞎了。
+#   · `llm_proxy.py --inject`（第九十轮）：在原七组之外补 A8/A9/A9b/A9c/A10/A11/A12 ——
+#     零注入必须**原字节直通**（不是"解析后原样 dump 碰巧一样"）、注入后摘掉注入键必须
+#     **逐键等价**回客户端原文、多出来的字节数必须**恰好**等于注入键的文本长度
+#     （这一条是实测逼出来的：第一版固定 `ensure_ascii=False`，内核发的中文
+#     `\u53d1`（6 字节）被还原成 UTF-8（3 字节）⇒ 上游包比客户端包还小，
+#     语义没错但"只多一个键"再也无法用字节核验）、白名单外的键**构造即抛**
+#     （允许注 `messages` 就等于允许改题目）、注入键与客户端已有键重叠必须抛
+#     （覆盖 = 悄悄改口径）。
+#   · `probe_pair.py --self-check`（第九十轮）：七条反证 —— C1 是唯一**不该拒**的正例
+#     （只换 model ⇒ 放行且判 SUBJECT_ONLY）；C2 多一个口径字段不同 ⇒ 拒并**点名**；
+#     C3 只换通道 ⇒ 拒；C4 口径逐位相同 ⇒ 拒（那种对只能量噪声）；C5 有样本没量到 ⇒ 拒；
+#     C6/C7 **判定阈值两侧都试**（Δ 落在噪声内 ⇒ UNKNOWN；Δ 超过噪声 ⇒ 可分辨）。
+#     ⛔ 它存在的理由：第九十轮第一次真的造「只差被测对象」这一对，
+#     而"这对是干净的"不能靠肉眼核对 12 个字段 —— 前三次混口径全是"标签说同口径"。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

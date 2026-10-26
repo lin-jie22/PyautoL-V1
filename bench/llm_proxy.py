@@ -17,20 +17,49 @@
 
 它改了什么、没改什么（⛔ 读结论前必须看）
 ==========================================
-· **请求体逐字节不变**：代理不解析、不重写、不注入任何字段。`req_sha` 就是
-  客户端发出来的那串字节的 sha256 ⇒ 事后可以逐条核对"代理没有偷偷改口径"。
+· **默认请求体逐字节不变**：不给 `--inject` 时代理不解析、不重写、不注入任何字段。
+  `req_sha` 就是客户端发出来的那串字节的 sha256 ⇒ 事后可以逐条核对"代理没偷偷改口径"。
 · **响应体逐字节不变**：状态码、body 原样回写（含 429 的 error 报文）。
 · **唯一副作用**：客户端看到的 `base_url` 变成 `127.0.0.1:PORT`
   ⇒ 口径签名里的 `endpoint` 字段会变（`mw/config.py` 的 `llm_cond.endpoint`）。
   ⛔ 所以**带代理的读数不能与直连读数并列**，哪怕分数一样。这一条写在这里，
   是因为"反正只加了几毫秒"这种想法正是混口径的入口。
 
+`--inject`：把「协议差异」从「被测对象差异」里拆出来的唯一办法
+-------------------------------------------------------------
+第九十轮实测：本地两个可用模型**协议不同**——
+
+    127.0.0.1:11434  qwen2.5:7b      message = {role, content}
+                     Qwen3.5-4B      message = {role, content, reasoning}
+                                     同一句 20 字符的答案：554 vs 12 completion tokens，
+                                     23.23s vs 0.57s（40 倍）
+
+直接拿它们比"谁更强"，比的是**模型 + 思考协议 + 速度**三件事，正是本章反复
+登记的那类混口径。而关思考的唯一有效写法 `reasoning_effort: \"none\"`
+（另外三种写法 `think=false` / `chat_template_kwargs.enable_thinking`
+ / `thinking.type=disabled` 被端点**静默忽略**，token 数一个不少）
+**不在内核请求体里**，内核里也没法加（改 `mw/llm.py` ⇒ 断 `harness_sha`）。
+
+⇒ 代理给一个显式注入口：两臂发**同一个** `reasoning_effort`，于是
+「模型」成为唯一变量。这不是"绕过口径"，恰恰相反：它让"协议"这个变量被
+**固定住**，并且**逐条留痕**——
+
+    req_sha = 客户端发来的字节        up_sha = 实际发给上游的字节
+    injected = 被并进去的键值（没注入时是 None）
+
+⛔ 三条不许：不许改 `messages`、不许改 `model`、不许注入 `--inject` 以外的任何东西。
+⛔ 带 `--inject` 的读数要单独标注：它是「代理装饰过的通道」，与不带注入的读数
+   不是同一把尺子（`endpoint` 相同，但请求体不同）。
+
 用法
 ====
-    python bench/llm_proxy.py --self-check                     # 离线七组反证，不联网
+    python bench/llm_proxy.py --self-check                     # 离线十一组反证，不联网
     python bench/llm_proxy.py --upstream https://open.bigmodel.cn \\
         --log /tmp/v1_proxy.jsonl                              # 起代理（前台或后台）
     python bench/llm_proxy.py --report /tmp/v1_proxy.jsonl     # 事后统计
+    python bench/llm_proxy.py --upstream http://127.0.0.1:11434 \\
+        --log /tmp/v1_proxy.jsonl \\
+        --inject '{"reasoning_effort":"none"}'                 # 固定「协议」，让「模型」成为唯一变量
 
 ⚠️ `--upstream` 只能是**域名根**，不含任何路径前缀 —— 代理做的是 `upstream + path`
    的**纯拼接**。第一版给了 `.../api/paas/v4`，客户端那边 `base_url` 也是
@@ -66,7 +95,8 @@ ROOT = Path(__file__).resolve().parent.parent
 #: `reasoning_tokens` 缺字段时返回 `None`，才能把"没这个字段"与"用了 0 个"分开）。
 REC_KEYS = (
     "n", "t_wall", "method", "path", "status", "elapsed_s",
-    "req_bytes", "req_sha", "model", "max_tokens", "thinking",
+    "req_bytes", "req_sha", "up_bytes", "up_sha", "injected",
+    "model", "max_tokens", "thinking",
     "resp_bytes", "finish_reason", "usage", "error_code", "note",
 )
 
@@ -119,6 +149,92 @@ def _req_meta(body: bytes) -> dict:
     return meta
 
 
+#: ⛔ 注入**只允许**这几个顶层键。白名单而不是黑名单：黑名单意味着"没列进来的都能改"，
+#:    而下一次有人想注 `messages` 时，没有任何东西会拦住他。
+#:    这三个是**通道方言**字段（不同端点用不同拼写表达同一件事），不是实验变量本身。
+INJECT_ALLOWED: tuple[str, ...] = ("reasoning_effort", "thinking", "chat_template_kwargs")
+
+
+def parse_inject(spec: str) -> dict:
+    """把 `--inject` 的 JSON 解析成一个受限字典。⛔ 非法输入**构造即抛**，不宽容。"""
+    if not spec or not spec.strip():
+        return {}
+    try:
+        obj = json.loads(spec)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"--inject 不是合法 JSON：{e}") from e
+    if not isinstance(obj, dict):
+        raise ValueError("--inject 必须是 JSON 对象（如 '{\"reasoning_effort\":\"none\"}'）")
+    bad = [k for k in obj if k not in INJECT_ALLOWED]
+    if bad:
+        raise ValueError(f"--inject 里有不允许的键 {bad}；白名单 = {list(INJECT_ALLOWED)}")
+    return obj
+
+
+class InjectError(RuntimeError):
+    """注入后的请求体与"原文 + 注入键"不等价 ⇒ **必须 fail-closed**。
+
+    ⛔ 静默不注入是最坏的处置：那一臂会收到"没有 `reasoning_effort`"的请求，
+      于是"两臂同协议"这个前提当场变假，而读数上**什么都看不出来**。
+    """
+
+
+def apply_inject(body: bytes, inject: dict) -> tuple[bytes, dict | None]:
+    """把 `inject` 并进请求体顶层。
+
+    返回 `(发给上游的字节, 实际注入的键值或 None)`。
+
+    ⛔ `inject` 为空 ⇒ **原字节返回**（连一次 `json.loads` 都不做）：
+       这条"零注入 = 零重写"的路必须是**结构性**的，不能是"解析后原样 dump 回去
+       碰巧一样" —— 后者会在 JSON 键序/空格/浮点表示上悄悄改动字节，
+       而 `req_sha` 的对账能力正是建立在"字节没动"上。
+
+    ★ 非空时**复现客户端的序列化风格**：先试 `ensure_ascii=True`（`json.dumps` 默认，
+      内核用的就是它），再试 `False`，哪个能**逐字节复现原文**就用哪个。
+      这一条是实测逼出来的：第一版固定用 `ensure_ascii=False`，于是内核发来的中文
+      （`\\u53d1\\u51fa` 每字 6 字节）被还原成 UTF-8（3 字节）
+      ⇒ 上游收到的包**比客户端发的还小**（5440B → 3141B）。
+      语义没错（JSON 转义等价），但"只多了一个键"这句话就再也无法用字节核验了。
+    """
+    if not inject:
+        return body, None
+    try:
+        obj = json.loads(body.decode("utf-8", "replace"))
+    except Exception:
+        return body, None                      # 非 JSON 体不注入（GET/健康检查等）
+    if not isinstance(obj, dict):
+        return body, None
+    merged = dict(obj)
+    merged.update(inject)
+
+    out: bytes | None = None
+    for kw in ({"ensure_ascii": True}, {"ensure_ascii": False}):
+        try:
+            if json.dumps(obj, **kw).encode("utf-8") == body:
+                out = json.dumps(merged, **kw).encode("utf-8")
+                break
+        except Exception:
+            continue
+    if out is None:
+        #: 原文有额外空白/换行/键序无法复现 ⇒ 退回语义等价形态（并如实记账：
+        #: 这次的 `up_bytes` 与 `req_bytes` 之差**不只**是注入键的长度）。
+        out = json.dumps(merged, ensure_ascii=False).encode("utf-8")
+
+    #: ★ 逐请求的结构性自查：摘掉注入键之后，必须与原文**逐键等价**。
+    #:   放行一个"顺手改了 messages"的 bug，比让代理 500 严重得多。
+    try:
+        back = json.loads(out.decode("utf-8"))
+    except Exception as e:  # noqa: BLE001
+        raise InjectError(f"注入后无法解析: {type(e).__name__}") from e
+    if not isinstance(back, dict):
+        raise InjectError("注入后不是 JSON 对象")
+    for k in inject:
+        back.pop(k, None)
+    if back != obj:
+        raise InjectError("摘掉注入键后与原文不等价（夹带了别的改动）")
+    return out, dict(inject)
+
+
 # ---------------------------------------------------------------------------
 # 代理本体
 # ---------------------------------------------------------------------------
@@ -167,9 +283,10 @@ def _opener(use_env_proxy: bool):
 
 
 def make_handler(upstream: str, sink: _Sink, *, connect_timeout_s: float = 300.0,
-                 use_env_proxy: bool = False):
+                 use_env_proxy: bool = False, inject: dict | None = None):
     up = upstream.rstrip("/")
     op = _opener(use_env_proxy)
+    _inj = dict(inject or {})
 
     class H(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
@@ -186,10 +303,32 @@ def make_handler(upstream: str, sink: _Sink, *, connect_timeout_s: float = 300.0
             body = self.rfile.read(n) if n else b""
             rec["req_bytes"] = len(body)
             rec["req_sha"] = hashlib.sha256(body).hexdigest()
-            rec.update(_req_meta(body))
+            #: ★ 注入发生在这里，且**只有这里**。两笔 sha 都记账 ⇒ 事后能证明
+            #:   "上游收到的东西 = 客户端发的 + 恰好 injected 这几个键"。
+            up_body, applied = body, None
+            if self.command == "POST":
+                try:
+                    up_body, applied = apply_inject(body, _inj)
+                except InjectError as e:
+                    #: fail-closed：宁可不发，也不发一个"不知道差了什么"的请求。
+                    rec["note"] = f"inject_error: {e}"
+                    rec["status"] = 500
+                    sink.write(rec)
+                    payload = json.dumps({"error": {"code": "proxy_inject",
+                                                    "message": str(e)}}).encode("utf-8")
+                    self.send_response(500)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(payload)))
+                    self.end_headers()
+                    self.wfile.write(payload)
+                    return
+            rec["up_bytes"] = len(up_body)
+            rec["up_sha"] = hashlib.sha256(up_body).hexdigest()
+            rec["injected"] = applied
+            rec.update(_req_meta(up_body))
 
             url = up + self.path
-            req = urllib.request.Request(url, data=body if body else None,
+            req = urllib.request.Request(url, data=up_body if up_body else None,
                                         method=self.command)
             #: 只透传这两个头。⛔ 不透传 `Host`（会打到 upstream 的 vhost 校验）、
             #: 也不透传 `Content-Length`（由 urllib 自己按 body 重算）。
@@ -241,15 +380,16 @@ def make_handler(upstream: str, sink: _Sink, *, connect_timeout_s: float = 300.0
 
 
 def serve(upstream: str, log: Path | str | None, listen: str,
-          *, use_env_proxy: bool = False) -> ThreadingHTTPServer:
+          *, use_env_proxy: bool = False, inject: dict | None = None) -> ThreadingHTTPServer:
     host, _, port = listen.rpartition(":")
     sink = _Sink(log)
     httpd = ThreadingHTTPServer(
         (host or "127.0.0.1", int(port)),
-        make_handler(upstream, sink, use_env_proxy=use_env_proxy))
+        make_handler(upstream, sink, use_env_proxy=use_env_proxy, inject=inject))
     httpd.daemon_threads = True
     httpd.v1_sink = sink            # type: ignore[attr-defined]
     httpd.v1_upstream = upstream    # type: ignore[attr-defined]
+    httpd.v1_inject = dict(inject or {})   # type: ignore[attr-defined]
     return httpd
 
 
@@ -290,6 +430,16 @@ def report(path: Path | str) -> int:
     print(f"  请求里的 thinking：{dict((str(c), th.count(c)) for c in sorted(set(th), key=str))}")
     mt = [r.get("max_tokens") for r in rows]
     print(f"  请求里的 max_tokens：{dict((str(c), mt.count(c)) for c in sorted(set(mt), key=str))}")
+    #: 注入对账：`up_sha != req_sha` 的条数必须**恰好等于**带 `injected` 的条数。
+    #: 两者不相等 ⇒ 有别的力量在改字节（或者注入没生效），读数立刻不可信。
+    n_inj = sum(1 for r in rows if r.get("injected"))
+    n_diff = sum(1 for r in rows if r.get("up_sha") and r.get("req_sha")
+                 and r["up_sha"] != r["req_sha"])
+    print(f"  注入：{n_inj} 条带 injected｜{n_diff} 条 up_sha≠req_sha"
+          f"{'  ✅ 对得上' if n_inj == n_diff else '  ❌ 对不上 ⇒ 有未登记的改字节'}")
+    if n_inj:
+        uniq = {json.dumps(r["injected"], ensure_ascii=False, sort_keys=True) for r in rows}
+        print(f"  注入内容：{sorted(uniq)}")
     #: 逐条延迟明细（方便看"第一发就 429"这种形态）
     print("  ── 逐条 ──")
     for r in rows:
@@ -300,7 +450,7 @@ def report(path: Path | str) -> int:
 
 
 # ---------------------------------------------------------------------------
-# 自检：七组反证（离线，零外网）
+# 自检：反证组（离线，零外网）
 # ---------------------------------------------------------------------------
 def _fake_upstream(mode: dict) -> ThreadingHTTPServer:
     """一个只按剧本回话的"上游"。剧本在 `mode` 里，逐次消费。"""
@@ -367,7 +517,7 @@ def _self_check() -> int:
             ok = False
 
     print("=" * 74)
-    print("  本地转发代理自检（七组反证，零外网、零密钥）")
+    print("  本地转发代理自检（十一组反证，零外网、零密钥）")
     print("=" * 74)
 
     #: 剧本：200 正文 → 429（带 error.code）→ 200（带 usage/finish_reason）
@@ -454,8 +604,77 @@ def _self_check() -> int:
             n_silent == 2 and before == after,
             f"内存计数={n_silent}，文件数 {len(before)}→{len(after)}")
 
+        # ── A8/A9/A10 注入（第九十轮）：三条必须成对，缺一条就证不出"只多了一个键" ──
+        #: ⛔ 为什么必须三条：只有 A9（"上游收到了 reasoning_effort"）时，
+        #:    代理可能顺手改了 `messages` 而没人发现。A9b 把注入后的请求体
+        #:    减去注入键，**要求逐键等价回客户端原文** —— 这是"只多了一个键"的唯一机械证明。
+        #:    A8 是零注入路的结构性证据（原字节直通，不是"解析后原样 dump"）。
+        inj = {"reasoning_effort": "none"}
+        mode2: dict = {"script": [(200, OK1)]}
+        up2 = _fake_upstream(mode2)
+        _serve_in_thread(up2)
+        log2 = Path(td) / "inject.jsonl"
+        px2 = serve(f"http://{_addr(up2)}/v4", log2, "127.0.0.1:0", inject=inj)
+        _serve_in_thread(px2)
+        b4 = json.dumps({"model": "Qwen3.5-4B:latest", "max_tokens": 2048,
+                         "temperature": 0.0,
+                         "messages": [{"role": "user", "content": "只回答：收到"}]},
+                        ensure_ascii=False).encode("utf-8")
+        _post(f"http://{_addr(px2)}/v4/chat/completions", b4)
+        seen2 = mode2.get("seen") or []
+        rows2 = [json.loads(l) for l in log2.read_text(encoding="utf-8").splitlines() if l.strip()]
+        got = seen2[0] if seen2 else b""
+        got_obj = json.loads(got.decode("utf-8"))
+        src_obj = json.loads(b4.decode("utf-8"))
+        chk("A9 上游确实收到了注入键（`reasoning_effort=none`）",
+            got_obj.get("reasoning_effort") == "none",
+            f"up_bytes={len(got)} vs req_bytes={len(b4)}")
+        #: A9b —— 把注入键摘掉，剩下的必须与客户端原文**逐键等价**。
+        #:   比对象相等而不是比字节：注入必然重排/追加键，字节本来就会变；
+        #:   要证明的是"语义只多了一个键"，不是"字节没变"。
+        stripped = {k: v for k, v in got_obj.items() if k != "reasoning_effort"}
+        chk("A9b 摘掉注入键后与客户端原文逐键等价（没夹带别的改动）",
+            stripped == src_obj,
+            f"多的键={sorted(set(got_obj) - set(src_obj))} 少的键={sorted(set(src_obj) - set(got_obj))}")
+        #: A9c —— **字节级最小性**：上游包比客户端包多出来的长度，必须**恰好**等于
+        #:   一个 `, "k": "v"` 的长度。这一条挡的是"重排/换转义风格"造成的隐性改字节：
+        #:    第一版固定 `ensure_ascii=False`，于是内核发的中文 `\u53d1`（6 字节）
+        #:    被还原成 UTF-8（3 字节），上游包比客户端包**还小** ⇒ 读数是"注入了"，
+        #:    实际连原始请求都没原样送到。
+        _expect = len(json.dumps(inj)[1:-1]) + 2       # 逗号 + 空格 + 一组键值
+        chk("A9c 上游包比客户端包多的字节数 == 注入键的文本长度（复现了客户端的转义风格）",
+            len(got) - len(b4) == _expect,
+            f"{len(got)}−{len(b4)}={len(got) - len(b4)}，期望 {_expect}")
+        #: A12 —— 不许**覆盖**客户端已有的键。覆盖 = 悄悄改口径；
+        #:    而"两臂同协议"这个前提一旦被覆盖破坏，读数上完全看不出来。
+        _overlap = json.dumps({"model": "Qwen3.5-4B:latest", "messages": []}).encode("utf-8")
+        try:
+            apply_inject(_overlap, {"model": "x"})
+            over_ok = False
+        except InjectError:
+            over_ok = True
+        chk("A12 反证：注入键与客户端已有键重叠 ⇒ InjectError（不覆盖、不静默放行）", over_ok)
+        chk("A8 零注入时**原字节直通**（up_sha == req_sha，不是重排后碰巧一样）",
+            rows[0]["up_sha"] == rows[0]["req_sha"] and rows[0]["injected"] is None
+            and seen[0] == b1)
+        #: A10 反证：同一份 body、去掉 --inject ⇒ 上游收到的东西必须**逐字节**等于客户端原文。
+        #:   没有这条，A9/A9b 可能只是"代理本来就会重排 JSON"造成的假象。
+        chk("A10 反证：同一请求去掉 --inject ⇒ 上游收到的字节与客户端逐字节相同",
+            len(seen) >= 1 and seen[0] == b1 and rows2[0]["injected"] == inj,
+            f"注入那次的 up_sha={rows2[0]['up_sha'][:12]}… 与 req_sha="
+            f"{rows2[0]['req_sha'][:12]}… {'不同✅' if rows2[0]['up_sha'] != rows2[0]['req_sha'] else '相同❌'}")
+
+    #: A11：白名单必须能拒 —— 允许注 `messages` 就等于允许改题目。
+    for bad_spec in ('{"messages": []}', '{"model": "x"}', '[1,2]', '{bad json'):
+        try:
+            parse_inject(bad_spec)
+            good = False
+        except ValueError:
+            good = True
+        chk(f"A11 反证：`--inject {bad_spec}` 被拒（白名单外/非法 ⇒ 构造即抛）", good)
+
     print()
-    print(f"  结论：{'✅ 七组全部成立' if ok else '❌ 有反证没成立 ⇒ 代理不可信，读数作废'}")
+    print(f"  结论：{'✅ 十一组全部成立' if ok else '❌ 有反证没成立 ⇒ 代理不可信，读数作废'}")
     return 0 if ok else 1
 
 
@@ -468,7 +687,11 @@ def main() -> int:
     ap.add_argument("--report", default="", help="读台账并统计（零网络）")
     ap.add_argument("--use-env-proxy", action="store_true",
                     help="转发时走系统代理（默认绕过；见 _opener 的注释）")
-    ap.add_argument("--self-check", action="store_true", help="离线七组反证")
+    ap.add_argument("--inject", default="",
+                    help="注入的顶层字段（JSON 对象，白名单见 INJECT_ALLOWED）。"
+                         "如 '{\"reasoning_effort\":\"none\"}' —— 用来把「协议」固定住，"
+                         "让「模型」成为唯一变量。⛔ 不给 ⇒ 原字节直通")
+    ap.add_argument("--self-check", action="store_true", help="离线反证组")
     a = ap.parse_args()
 
     if a.self_check:
@@ -477,10 +700,16 @@ def main() -> int:
         return report(a.report)
     if not a.upstream:
         ap.error("要么 --self-check / --report，要么给 --upstream")
+    try:
+        _inj = parse_inject(a.inject)
+    except ValueError as e:
+        ap.error(str(e))
+        return 2
     httpd = serve(a.upstream, a.log or None, a.listen,
-                  use_env_proxy=a.use_env_proxy)
+                  use_env_proxy=a.use_env_proxy, inject=_inj)
     print(f"  代理已起：http://{a.listen}  →  {a.upstream}")
     print(f"  台账：{a.log or '（未落盘）'}")
+    print(f"  注入：{_inj or '（无，原字节直通）'}")
     print("  ⛔ 带代理的读数 endpoint 会变 ⇒ 不能与直连读数并列（见文件头）")
     try:
         httpd.serve_forever()

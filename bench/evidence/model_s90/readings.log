@@ -1,0 +1,58 @@
+============================================================================
+  第九十轮 §56 读数（两臂 × repeat=3，140 格）
+============================================================================
+
+--- 臂 A qwen2.5:7b ---
+  sig = 8a56e2ebeba58dca | repeat = 3 | verify_static = 2
+  attempted/recorded/skipped/failed = 30 30 0 0
+  closeout = {"by_reason": {"steps": 0, "wall": 1, "wall_retry": 5}, "chars": 2948, "empty": 0, "origin": {"收尾调用": 6}, "overrode_rejected": 5, "same_as_rejected": 1, "triggered": 6}
+  题           r1     r2     r3
+  sg01        12     12     14
+  sg02         7     10     10
+  sg03        14     14     14
+  sg04        14     14     14
+  sg05         0      0      0
+  sg06         8      8      8
+  sg07        12     12     12
+  sg08         7      7      7
+  sg09        12     12     12
+  sg10        14      1     14
+  合计         100     90    105
+  均值=0.7024  极差=0.1071（15 格）
+
+--- 臂 B Qwen3.5-4B ---
+  sig = 0fe84823aadb83ca | repeat = 3 | verify_static = 2
+  attempted/recorded/skipped/failed = 30 30 0 0
+  closeout = {"by_reason": {"steps": 0, "wall": 0, "wall_retry": 5}, "chars": 4559, "empty": 0, "origin": {"收尾调用": 5}, "overrode_rejected": 0, "same_as_rejected": 0, "triggered": 5}
+  题           r1     r2     r3
+  sg01        10     10     10
+  sg02        14     14     14
+  sg03        14     14     14
+  sg04        14     14     14
+  sg05         7      7      7
+  sg06        14     14     14
+  sg07        13     13     13
+  sg08        14     14     14
+  sg09        12     12     12
+  sg10         4      4      4
+  合计         116    116    116
+  均值=0.8286  极差=0.0000（0 格）
+
+============================================================================
+  sg10 三轮答案对比（臂 A）
+============================================================================
+  ord=1  chars=430  sha256=db82131d2c351ce6
+  ord=2  chars=419  sha256=38f40729a0ff3722
+  ord=3  chars=430  sha256=db82131d2c351ce6
+  ⇒ ord1 与 ord3 逐字节相同；ord2 少一行 `import re`
+
+  unified diff（ord1 → ord2）：
+    --- ord1(14/14)
+    +++ ord2(1/14)
+    @@ -1,4 +1,2 @@
+     ```python
+    -import re
+    -
+     def norm_sg10(rows):
+
+  ⚠️ answers.jsonl 的 rep 字段三轮都是 1（落盘缺陷，见 DESIGN §56.7）；上面的 ord 是按行序推断

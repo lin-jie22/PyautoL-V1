@@ -1,0 +1,44 @@
+sg10：14 条断言 | 答案 419 字符 / 抽出的代码 405 字符 | truncated=False
+
+[ 1] ❌ assert norm_sg10(['  Alpha Beta ', 'gamma', 'ALPHA BETA', 'delta\tepsilon', 'Zeta']) == ['#zeta'
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[ 2] ❌ assert norm_sg10(['one two  three', 'One Two Three', 'FOUR', 'five five', 'six']) == ['#six', '#
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[ 3] ❌ assert norm_sg10(['x']) == ['#x']
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[ 4] ✅ assert norm_sg10([]) == []
+
+[ 5] ❌ assert norm_sg10(['Mixed CASE line', 'mixed case line', '  Mixed   Case   LINE  ', 'tail-end tok
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[ 6] ❌ assert norm_sg10(['a b c d e f g', 'abcdefg', 'A B C D E F G', 'short', 'much longer line than t
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[ 7] ❌ assert norm_sg10(['same line', 'same line', '  same   line  ']) == ['#e line', '#e line', '#-lin
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[ 8] ❌ assert norm_sg10(['  pad  ', 'ze ta']) == ['#-pad-', '#ze ta']
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[ 9] ❌ assert norm_sg10(['ze ta', 'dup DUP']) == ['#ze ta', '#up dup']
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[10] ❌ assert norm_sg10(['  pad  ', 'DUP']) == ['#dup', '#-pad-']
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[11] ❌ assert norm_sg10(['delta', 'DELTA', 'delta']) == ['#delta', '#delta', '#delta']
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[12] ❌ assert norm_sg10([' ze ta  ', 'dup', 'same line']) == ['#dup', '#ze ta-', '#e line']
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[13] ❌ assert norm_sg10(['ALPHA', 'GAMMA', 'BETA X', '  pad  ', 'GAMMA']) == ['#-pad-', '#alpha', '#gam
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+[14] ❌ assert norm_sg10([' DUP ', 'dup']) == ['#dup', '# dup ']
+       求值失败: <异常: NameError: name 're' is not defined. Did you forget to import 're'?>
+
+=== 通过 1/14 = 0.0714 ===

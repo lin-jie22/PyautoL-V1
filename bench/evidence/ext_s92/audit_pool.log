@@ -1,0 +1,42 @@
+============================================================================
+  失分三池：自检过没过 × 一跑就炸 / 就是错
+  题集 bench/specgen/tasks_v3.jsonl    臂输出 /tmp/v1_s92_bench_v3_7b
+============================================================================
+
+[反证 V2]
+  ex01 oracle 满分？ 16/16  ✅
+  空壳实现（同签名返回 None）必须不满分？ 0/16  ✅
+
+[反证 V3] 答案行序 == 题集顺序 × rep 数？ ✅
+
+[反证 V1] 逐份复算 vs 落盘分数
+  ✅ 全部逐格相同（复算覆盖 480 格）
+
+[逐份明细]
+  ex02   rep1 闸=过  失14/16 池=逻辑错      
+  ex03   rep1 闸=过  失 7/16 池=逻辑错      
+  ex04   rep1 闸=过  失12/16 池=逻辑错      
+  ex06   rep1 闸=过  失15/16 池=假绿-崩     IndexError: string index out of range
+  ex08   rep1 闸=过  失16/16 池=假绿-崩     TypeError: can't multiply sequence by non-int 
+  ex09   rep1 闸=过  失 7/16 池=逻辑错      
+  ex10   rep1 闸=过  失13/16 池=假绿-崩     TypeError: sequence item 1: expected str insta
+  ex02   rep2 闸=过  失14/16 池=逻辑错      
+  ex03   rep2 闸=过  失 7/16 池=逻辑错      
+  ex04   rep2 闸=过  失12/16 池=逻辑错      
+  ex06   rep2 闸=过  失15/16 池=假绿-崩     IndexError: string index out of range
+  ex08   rep2 闸=过  失16/16 池=假绿-崩     TypeError: can't multiply sequence by non-int 
+  ex09   rep2 闸=过  失 7/16 池=逻辑错      
+  ex10   rep2 闸=过  失13/16 池=假绿-崩     TypeError: sequence item 1: expected str insta
+  ex02   rep3 闸=过  失14/16 池=逻辑错      
+  ex03   rep3 闸=过  失 7/16 池=逻辑错      
+  ex04   rep3 闸=过  失12/16 池=逻辑错      
+  ex06   rep3 闸=过  失15/16 池=假绿-崩     IndexError: string index out of range
+  ex08   rep3 闸=过  失16/16 池=假绿-崩     TypeError: can't multiply sequence by non-int 
+  ex09   rep3 闸=过  失 7/16 池=逻辑错      
+  ex10   rep3 闸=过  失13/16 池=假绿-崩     TypeError: sequence item 1: expected str insta
+
+[三池]
+  无闸          0 格    0.0%
+  假绿-崩      132 格   52.4%
+  逻辑错       120 格   47.6%
+  合计        252 格（总格数 480，均分 0.4750）

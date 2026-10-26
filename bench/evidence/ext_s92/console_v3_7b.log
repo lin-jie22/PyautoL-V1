@@ -1,0 +1,22 @@
+================ 尺子 tasks_v3  model=qwen2.5:7b ================
+口径：model=qwen2.5:7b endpoint=127.0.0.1:8790 inject={"reasoning_effort":"none"} repeat=3 suite=tasks_v3
+开始：22:38:39
+结束：23:00:35  EXIT=0
+--- 台账 /tmp/v1_s92_proxy_v3_7b.jsonl：99 行 ---
+--- run.log 尾部 ---
+  ex06                  0.0625  0.0625  0.0625   0.0000
+  ex07                  1.0000  1.0000  1.0000   0.0000
+  ex08                  0.0000  0.0000  0.0000   0.0000
+  ex09                  0.5625  0.5625  0.5625   0.0000
+  ex10                  0.1875  0.1875  0.1875   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/10
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=6cbf600c718c041f scorer=d4b1cbbfd7f1 suite=34fa4250a58d repeat=3 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=d6727c1c2c llm_cond=ea051ff619 max_tokens=2048 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s92_bench_v3_7b/runs.jsonl
+  答案已落盘 /private/tmp/v1_s92_bench_v3_7b/answers.jsonl  30 条  共 8763 字符  最长 490 字符  截断 0 条
+================ 结束 23:00:37 ================
+EXIT=0

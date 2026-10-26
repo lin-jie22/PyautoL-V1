@@ -1,0 +1,496 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  tasks_v3  n=10  suite_sha=34fa4250a58de38196fede17cfaebcd2
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=10/10
+  ex01: oracle=1.0000 partial=0.1250 null=0.0000 ✅
+  ex02: oracle=1.0000 partial=0.8750 null=0.0000 ✅
+  ex03: oracle=1.0000 partial=0.6250 null=0.0000 ✅
+  ex04: oracle=1.0000 partial=0.5625 null=0.0000 ✅
+  ex05: oracle=1.0000 partial=0.3750 null=0.0000 ✅
+  ex06: oracle=1.0000 partial=0.1875 null=0.0000 ✅
+  ex07: oracle=1.0000 partial=0.5000 null=0.0000 ✅
+  ex08: oracle=1.0000 partial=0.0625 null=0.0000 ✅
+  ex09: oracle=1.0000 partial=0.6250 null=0.0000 ✅
+  ex10: oracle=1.0000 partial=0.8750 null=0.0000 ✅
+  理由: 全部 10 条两极可分，其中 10 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=2b130728875781fb
+  [观察]
+    - ex01: oracle=1.0000 partial=0.1250 null=0.0000
+    - ex02: oracle=1.0000 partial=0.8750 null=0.0000
+    - ex03: oracle=1.0000 partial=0.6250 null=0.0000
+    - ex04: oracle=1.0000 partial=0.5625 null=0.0000
+    - ex05: oracle=1.0000 partial=0.3750 null=0.0000
+    - ex06: oracle=1.0000 partial=0.1875 null=0.0000
+    - ex07: oracle=1.0000 partial=0.5000 null=0.0000
+    - ex08: oracle=1.0000 partial=0.0625 null=0.0000
+    - ex09: oracle=1.0000 partial=0.6250 null=0.0000
+    - ex10: oracle=1.0000 partial=0.8750 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 10 条任务上两极可分
+    - 中段有序检查 10 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=34fa4250a58d；换任一者本校准即失效，必须重做
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=1x  repeat=3 ---
+22:38:50 ▶ 任务开始: 写一个函数 f_split_ws(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 s 按**任意空白字符**（空格、制表符、换行）切分成若干段
+  2. 连续出现的空白算**一个**分隔符，**不产生空串**
+  3. 首尾的
+22:38:50   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+22:39:09   [1] 通道=深 候选=1
+22:39:13       ↳ finish ok=True 直接实现函数逻辑
+22:39:13   ✅ 收尾: ```python
+def f_split_ws(s):
+    if not s.strip():
+        return []
+    return [t for t in s.strip().split() if t]
+```
+22:39:13 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.215 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_split_ws/语言标签/可编译/结构检查)
+22:39:14 ▶ 任务开始: 写一个函数 f_normpath(p)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 POSIX 路径 p 规范化：合并连续的斜杠、去掉单个 `.` 段
+  2. `..` 段吃掉它前面一个普通段；若它在开头（或在一串 `..` 
+22:39:14   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:39:36   [1] 通道=深 候选=3
+22:39:40       ↳ finish ok=True 直接实现函数逻辑
+22:39:40   ✅ 收尾: ```python
+def f_normpath(p):
+    parts = p.split('/')
+    stack = []
+    for part in parts:
+        if part == '.':
+    
+22:39:40 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.863 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_normpath/语言标签/可编译/结构检查)
+22:39:41 ▶ 任务开始: 写一个函数 f_splitext(p)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 p 拆成 (根, 扩展名) 两元组，扩展名**带点**
+  2. 取该路径段里**最后一个点**；但如果这个点之前、在**同一段内**的字符全是
+22:39:41   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:40:04   [1] 通道=深 候选=3
+22:40:21       ↳ finish ok=True 直接实现函数逻辑
+22:40:21   ✅ 收尾: ```python
+def f_splitext(p):
+    parts = p.split('.')
+    if len(parts) == 1 or all(c == '.' for c in parts[-1]):
+      
+22:40:21 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.083 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_splitext/语言标签/可编译/结构检查)
+22:40:22 ▶ 任务开始: 写一个函数 f_expandtabs(s, n)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 s 里的制表符换成空格，使下一个字符落在**列号**为 n 的整数倍处
+  2. 列号从 0 开始计，换行符把列号**重置为 0**
+
+22:40:22   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:41:10   [1] 通道=深 候选=3
+22:41:21       ↳ finish ok=True 直接实现函数逻辑
+22:41:21   ✅ 收尾: ```python
+def f_expandtabs(s, n):
+    result = []
+    col = 0
+    for char in s:
+        if char == '\t':
+            re
+22:41:21 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.802 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_expandtabs/语言标签/可编译/结构检查)
+22:41:22 ▶ 任务开始: 写一个函数 f_urlencode(pairs)，返回处理后的结果。按下面列出的规则实现：
+  1. pairs 是若干 (键, 值) 二元组，都是字符串
+  2. 输出 `键=值` 用 `&` 连接，**顺序与输入一致**
+  3. 键和
+22:41:22   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:41:39   [1] 通道=深 候选=1
+22:41:46       ↳ finish ok=True 直接实现函数
+22:41:46   ✅ 收尾: ```python
+import urllib.parse
+
+def f_urlencode(pairs):
+    encoded_pairs = ['='.join([urllib.parse.quote_plus(k), urllib
+22:41:46 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.133 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_urlencode/语言标签/可编译/结构检查)
+22:41:47 ▶ 任务开始: 写一个函数 f_b32(b)，返回处理后的结果。按下面列出的规则实现：
+  1. b 是 bytes，用 RFC 4648 base32 编码，返回**大写** ASCII 字符串
+  2. 每 5 个字节编成 8 个字符，不足 5 字节的
+22:41:47   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:42:34   [1] 通道=深 候选=3
+22:42:41       ↳ finish ok=True 直接实现所需功能
+22:42:41   ✅ 收尾: ```python
+def f_b32(b: bytes) -> str:
+    if not b:
+        return ""
+    base32_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ2345
+22:42:41 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.655 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_b32/语言标签/可编译/结构检查)
+22:42:42 ▶ 任务开始: 写一个函数 f_median_low(data)，返回处理后的结果。按下面列出的规则实现：
+  1. data 是非空的整数列表（可能有重复）
+  2. 返回**低中位数**：排序后，若长度是奇数取正中间那个；若是偶数取**偏小的那个**
+
+22:42:42   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:43:03   [1] 通道=深 候选=1
+22:43:10       ↳ finish ok=True 直接实现函数逻辑
+22:43:10   ✅ 收尾: ```python
+def f_median_low(data):
+    sorted_data = sorted(data)
+    n = len(sorted_data)
+    mid = n // 2
+    if n % 2 
+22:43:10 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.128 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_median_low/语言标签/可编译/结构检查)
+22:43:11 ▶ 任务开始: 写一个函数 f_nlargest(k, data)，返回处理后的结果。按下面列出的规则实现：
+  1. data 是整数列表，k 是正整数且不大于 len(data)
+  2. 返回**前 k 大**的元素，按**降序**排好的列表
+  3
+22:43:11   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+22:43:36   [1] 通道=深 候选=1
+22:43:45       ↳ finish ok=True 使用 Python 内置函数实现功能
+22:43:45   ✅ 收尾: ```python
+def f_nlargest(k, data):
+    from collections import Counter
+    counter = Counter(data)
+    result = sorted(c
+22:43:45 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.108 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_nlargest/语言标签/可编译/结构检查)
+22:43:46 ▶ 任务开始: 写一个函数 f_dedent(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 去掉 s 里**所有行共有**的前导空白（只认空格）
+  2. 空行（去掉空白后为空）**不参与**统计，也不阻挡
+  3. 去掉的量等于所有非空行前导
+22:43:46   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:44:12   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: '有的解决方案", "tool": "recall", "args": {"query": "如何实现去除字符串前导空格的功能", "source": "互联网"}, "rationale": "查询已有的解决方案，以确保实现的正确性"}]}'
+22:44:12   [1] 通道=深 候选=1
+22:44:17       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+22:44:53   [2] 通道=深 候选=1
+22:44:59       ↳ finish ok=True 直接实现函数逻辑
+22:44:59   ✅ 收尾: ```python
+def f_dedent(s):
+    lines = s.splitlines()
+    non_empty_lines = [line for line in lines if line.strip()]
+   
+22:44:59 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.053 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 上限被裁短=5 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_dedent/语言标签/可编译/结构检查)
+22:45:00 ▶ 任务开始: 写一个函数 f_quote(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 对 s 做 URL 百分号编码，返回字符串
+  2. ASCII 字母数字和 `_.-~/` **原样保留**
+  3. 其余字符（含空格、`?`、`#`
+22:45:00   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:45:31   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": "def f_quote(s):\\n    import urllib.parse\\n    import re\\n    url_encoded = urllib.parse.quote(s, safe=\'_.-~/\')\\n    safe_ch'
+22:45:31   [1] 通道=深 候选=1
+22:45:36       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+22:45:54   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 'byte:02X}\' if byte not in map(ord, \'_.-~/\') else char for byte, char in zip(encoded.encode(\'utf-8\'), encoded)])\\n```"}}]'
+22:45:54   [2] 通道=深 候选=1
+22:45:54       ⊘ [values:answer] 否决 — 目标要求展开（199 字），答案只有 24 字
+22:45:54   ⛔ 全部候选被拦 (1 次连续失败)
+22:46:15   ⏳ 预算耗尽 [wall_s]：已用 75.5045 / 上限 120
+22:46:15   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+22:46:15   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+22:46:30   🧪 收尾交付过闸
+22:46:30   📦 收尾交付 273 字符（来源=收尾调用）
+22:46:30 ■ closed | steps=3 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=5 | 墙钟放弃首发=0/重试=1 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_quote/语言标签/可编译/结构检查) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 273字) 收尾闸=1跑/1过/0未过
+22:46:31 ▶ 任务开始: 写一个函数 f_split_ws(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 s 按**任意空白字符**（空格、制表符、换行）切分成若干段
+  2. 连续出现的空白算**一个**分隔符，**不产生空串**
+  3. 首尾的
+22:46:31   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:46:54   [1] 通道=深 候选=1
+22:46:57       ↳ finish ok=True 直接实现函数逻辑
+22:46:57   ✅ 收尾: ```python
+def f_split_ws(s):
+    if not s.strip():
+        return []
+    return [t for t in s.strip().split() if t]
+```
+22:46:57 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.215 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_split_ws/语言标签/可编译/结构检查)
+22:46:57 ▶ 任务开始: 写一个函数 f_normpath(p)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 POSIX 路径 p 规范化：合并连续的斜杠、去掉单个 `.` 段
+  2. `..` 段吃掉它前面一个普通段；若它在开头（或在一串 `..` 
+22:46:57   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:47:31   [1] 通道=深 候选=3
+22:47:33       ↳ finish ok=True 直接实现函数逻辑
+22:47:33   ✅ 收尾: ```python
+def f_normpath(p):
+    parts = p.split('/')
+    stack = []
+    for part in parts:
+        if part == '.':
+    
+22:47:33 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.863 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_normpath/语言标签/可编译/结构检查)
+22:47:34 ▶ 任务开始: 写一个函数 f_splitext(p)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 p 拆成 (根, 扩展名) 两元组，扩展名**带点**
+  2. 取该路径段里**最后一个点**；但如果这个点之前、在**同一段内**的字符全是
+22:47:34   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:48:02   [1] 通道=深 候选=3
+22:48:15       ↳ finish ok=True 直接实现函数逻辑
+22:48:15   ✅ 收尾: ```python
+def f_splitext(p):
+    parts = p.split('.')
+    if len(parts) == 1 or all(c == '.' for c in parts[-1]):
+      
+22:48:15 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.083 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_splitext/语言标签/可编译/结构检查)
+22:48:16 ▶ 任务开始: 写一个函数 f_expandtabs(s, n)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 s 里的制表符换成空格，使下一个字符落在**列号**为 n 的整数倍处
+  2. 列号从 0 开始计，换行符把列号**重置为 0**
+
+22:48:16   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:48:44   [1] 通道=深 候选=3
+22:48:49       ↳ finish ok=True 直接实现函数逻辑
+22:48:49   ✅ 收尾: ```python
+def f_expandtabs(s, n):
+    result = []
+    col = 0
+    for char in s:
+        if char == '\t':
+            re
+22:48:49 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.802 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_expandtabs/语言标签/可编译/结构检查)
+22:48:50 ▶ 任务开始: 写一个函数 f_urlencode(pairs)，返回处理后的结果。按下面列出的规则实现：
+  1. pairs 是若干 (键, 值) 二元组，都是字符串
+  2. 输出 `键=值` 用 `&` 连接，**顺序与输入一致**
+  3. 键和
+22:48:50   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:49:02   [1] 通道=深 候选=1
+22:49:05       ↳ finish ok=True 直接实现函数
+22:49:05   ✅ 收尾: ```python
+import urllib.parse
+
+def f_urlencode(pairs):
+    encoded_pairs = ['='.join([urllib.parse.quote_plus(k), urllib
+22:49:05 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.133 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_urlencode/语言标签/可编译/结构检查)
+22:49:05 ▶ 任务开始: 写一个函数 f_b32(b)，返回处理后的结果。按下面列出的规则实现：
+  1. b 是 bytes，用 RFC 4648 base32 编码，返回**大写** ASCII 字符串
+  2. 每 5 个字节编成 8 个字符，不足 5 字节的
+22:49:05   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:49:52   [1] 通道=深 候选=3
+22:49:56       ↳ finish ok=True 直接实现所需功能
+22:49:56   ✅ 收尾: ```python
+def f_b32(b: bytes) -> str:
+    if not b:
+        return ""
+    base32_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ2345
+22:49:56 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.655 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_b32/语言标签/可编译/结构检查)
+22:49:57 ▶ 任务开始: 写一个函数 f_median_low(data)，返回处理后的结果。按下面列出的规则实现：
+  1. data 是非空的整数列表（可能有重复）
+  2. 返回**低中位数**：排序后，若长度是奇数取正中间那个；若是偶数取**偏小的那个**
+
+22:49:57   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/120s | llm_kind=http | 外部能力 0 个
+22:50:20   [1] 通道=深 候选=1
+22:50:23       ↳ finish ok=True 直接实现函数逻辑
+22:50:23   ✅ 收尾: ```python
+def f_median_low(data):
+    sorted_data = sorted(data)
+    n = len(sorted_data)
+    mid = n // 2
+    if n % 2 
+22:50:23 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.128 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_median_low/语言标签/可编译/结构检查)
+22:50:24 ▶ 任务开始: 写一个函数 f_nlargest(k, data)，返回处理后的结果。按下面列出的规则实现：
+  1. data 是整数列表，k 是正整数且不大于 len(data)
+  2. 返回**前 k 大**的元素，按**降序**排好的列表
+  3
+22:50:24   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:50:48   [1] 通道=深 候选=1
+22:50:53       ↳ finish ok=True 使用 Python 内置函数实现功能
+22:50:53   ✅ 收尾: ```python
+def f_nlargest(k, data):
+    from collections import Counter
+    counter = Counter(data)
+    result = sorted(c
+22:50:53 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.108 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_nlargest/语言标签/可编译/结构检查)
+22:50:54 ▶ 任务开始: 写一个函数 f_dedent(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 去掉 s 里**所有行共有**的前导空白（只认空格）
+  2. 空行（去掉空白后为空）**不参与**统计，也不阻挡
+  3. 去掉的量等于所有非空行前导
+22:50:54   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:51:16   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: '有的解决方案", "tool": "recall", "args": {"query": "如何实现去除字符串前导空格的功能", "source": "互联网"}, "rationale": "查询已有的解决方案，以确保实现的正确性"}]}'
+22:51:16   [1] 通道=深 候选=1
+22:51:21       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+22:51:51   [2] 通道=深 候选=1
+22:51:59       ↳ finish ok=True 直接实现函数逻辑
+22:51:59   ✅ 收尾: ```python
+def f_dedent(s):
+    lines = s.splitlines()
+    non_empty_lines = [line for line in lines if line.strip()]
+   
+22:51:59 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.053 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 上限被裁短=5 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_dedent/语言标签/可编译/结构检查)
+22:52:00 ▶ 任务开始: 写一个函数 f_quote(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 对 s 做 URL 百分号编码，返回字符串
+  2. ASCII 字母数字和 `_.-~/` **原样保留**
+  3. 其余字符（含空格、`?`、`#`
+22:52:00   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.11s/120s | llm_kind=http | 外部能力 0 个
+22:52:29   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": "def f_quote(s):\\n    import urllib.parse\\n    import re\\n    url_encoded = urllib.parse.quote(s, safe=\'_.-~/\')\\n    safe_ch'
+22:52:29   [1] 通道=深 候选=1
+22:52:31       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+22:52:51   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 'byte:02X}\' if byte not in map(ord, \'_.-~/\') else char for byte, char in zip(encoded.encode(\'utf-8\'), encoded)])\\n```"}}]'
+22:52:51   [2] 通道=深 候选=1
+22:52:51       ⊘ [values:answer] 否决 — 目标要求展开（199 字），答案只有 24 字
+22:52:51   ⛔ 全部候选被拦 (1 次连续失败)
+22:53:15   ⏳ 预算耗尽 [wall_s]：已用 75.5073 / 上限 120
+22:53:15   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+22:53:15   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+22:53:24   🧪 收尾交付过闸
+22:53:24   📦 收尾交付 273 字符（来源=收尾调用）
+22:53:24 ■ closed | steps=3 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=5 | 墙钟放弃首发=0/重试=1 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_quote/语言标签/可编译/结构检查) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 273字) 收尾闸=1跑/1过/0未过
+22:53:25 ▶ 任务开始: 写一个函数 f_split_ws(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 s 按**任意空白字符**（空格、制表符、换行）切分成若干段
+  2. 连续出现的空白算**一个**分隔符，**不产生空串**
+  3. 首尾的
+22:53:25   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:53:46   [1] 通道=深 候选=1
+22:53:50       ↳ finish ok=True 直接实现函数逻辑
+22:53:50   ✅ 收尾: ```python
+def f_split_ws(s):
+    if not s.strip():
+        return []
+    return [t for t in s.strip().split() if t]
+```
+22:53:50 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.215 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_split_ws/语言标签/可编译/结构检查)
+22:53:51 ▶ 任务开始: 写一个函数 f_normpath(p)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 POSIX 路径 p 规范化：合并连续的斜杠、去掉单个 `.` 段
+  2. `..` 段吃掉它前面一个普通段；若它在开头（或在一串 `..` 
+22:53:51   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:54:24   [1] 通道=深 候选=3
+22:54:27       ↳ finish ok=True 直接实现函数逻辑
+22:54:27   ✅ 收尾: ```python
+def f_normpath(p):
+    parts = p.split('/')
+    stack = []
+    for part in parts:
+        if part == '.':
+    
+22:54:27 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.863 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_normpath/语言标签/可编译/结构检查)
+22:54:28 ▶ 任务开始: 写一个函数 f_splitext(p)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 p 拆成 (根, 扩展名) 两元组，扩展名**带点**
+  2. 取该路径段里**最后一个点**；但如果这个点之前、在**同一段内**的字符全是
+22:54:28   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:54:58   [1] 通道=深 候选=3
+22:55:12       ↳ finish ok=True 直接实现函数逻辑
+22:55:12   ✅ 收尾: ```python
+def f_splitext(p):
+    parts = p.split('.')
+    if len(parts) == 1 or all(c == '.' for c in parts[-1]):
+      
+22:55:12 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.083 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_splitext/语言标签/可编译/结构检查)
+22:55:12 ▶ 任务开始: 写一个函数 f_expandtabs(s, n)，返回处理后的结果。按下面列出的规则实现：
+  1. 把 s 里的制表符换成空格，使下一个字符落在**列号**为 n 的整数倍处
+  2. 列号从 0 开始计，换行符把列号**重置为 0**
+
+22:55:12   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:55:41   [1] 通道=深 候选=3
+22:55:46       ↳ finish ok=True 直接实现函数逻辑
+22:55:46   ✅ 收尾: ```python
+def f_expandtabs(s, n):
+    result = []
+    col = 0
+    for char in s:
+        if char == '\t':
+            re
+22:55:46 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.802 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_expandtabs/语言标签/可编译/结构检查)
+22:55:47 ▶ 任务开始: 写一个函数 f_urlencode(pairs)，返回处理后的结果。按下面列出的规则实现：
+  1. pairs 是若干 (键, 值) 二元组，都是字符串
+  2. 输出 `键=值` 用 `&` 连接，**顺序与输入一致**
+  3. 键和
+22:55:47   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:56:00   [1] 通道=深 候选=1
+22:56:03       ↳ finish ok=True 直接实现函数
+22:56:03   ✅ 收尾: ```python
+import urllib.parse
+
+def f_urlencode(pairs):
+    encoded_pairs = ['='.join([urllib.parse.quote_plus(k), urllib
+22:56:03 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.133 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_urlencode/语言标签/可编译/结构检查)
+22:56:04 ▶ 任务开始: 写一个函数 f_b32(b)，返回处理后的结果。按下面列出的规则实现：
+  1. b 是 bytes，用 RFC 4648 base32 编码，返回**大写** ASCII 字符串
+  2. 每 5 个字节编成 8 个字符，不足 5 字节的
+22:56:04   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:56:50   [1] 通道=深 候选=3
+22:56:53       ↳ finish ok=True 直接实现所需功能
+22:56:53   ✅ 收尾: ```python
+def f_b32(b: bytes) -> str:
+    if not b:
+        return ""
+    base32_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ2345
+22:56:53 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.655 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_b32/语言标签/可编译/结构检查)
+22:56:54 ▶ 任务开始: 写一个函数 f_median_low(data)，返回处理后的结果。按下面列出的规则实现：
+  1. data 是非空的整数列表（可能有重复）
+  2. 返回**低中位数**：排序后，若长度是奇数取正中间那个；若是偶数取**偏小的那个**
+
+22:56:54   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:57:19   [1] 通道=深 候选=1
+22:57:23       ↳ finish ok=True 直接实现函数逻辑
+22:57:23   ✅ 收尾: ```python
+def f_median_low(data):
+    sorted_data = sorted(data)
+    n = len(sorted_data)
+    mid = n // 2
+    if n % 2 
+22:57:23 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.128 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_median_low/语言标签/可编译/结构检查)
+22:57:23 ▶ 任务开始: 写一个函数 f_nlargest(k, data)，返回处理后的结果。按下面列出的规则实现：
+  1. data 是整数列表，k 是正整数且不大于 len(data)
+  2. 返回**前 k 大**的元素，按**降序**排好的列表
+  3
+22:57:23   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:57:47   [1] 通道=深 候选=1
+22:57:53       ↳ finish ok=True 使用 Python 内置函数实现功能
+22:57:53   ✅ 收尾: ```python
+def f_nlargest(k, data):
+    from collections import Counter
+    counter = Counter(data)
+    result = sorted(c
+22:57:53 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.108 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_nlargest/语言标签/可编译/结构检查)
+22:57:54 ▶ 任务开始: 写一个函数 f_dedent(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 去掉 s 里**所有行共有**的前导空白（只认空格）
+  2. 空行（去掉空白后为空）**不参与**统计，也不阻挡
+  3. 去掉的量等于所有非空行前导
+22:57:54   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:58:17   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: '有的解决方案", "tool": "recall", "args": {"query": "如何实现去除字符串前导空格的功能", "source": "互联网"}, "rationale": "查询已有的解决方案，以确保实现的正确性"}]}'
+22:58:17   [1] 通道=深 候选=1
+22:58:22       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+22:58:58   [2] 通道=深 候选=1
+22:59:05       ↳ finish ok=True 直接实现函数逻辑
+22:59:05   ✅ 收尾: ```python
+def f_dedent(s):
+    lines = s.splitlines()
+    non_empty_lines = [line for line in lines if line.strip()]
+   
+22:59:05 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.053 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 上限被裁短=5 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_dedent/语言标签/可编译/结构检查)
+22:59:06 ▶ 任务开始: 写一个函数 f_quote(s)，返回处理后的结果。按下面列出的规则实现：
+  1. 对 s 做 URL 百分号编码，返回字符串
+  2. ASCII 字母数字和 `_.-~/` **原样保留**
+  3. 其余字符（含空格、`?`、`#`
+22:59:06   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+22:59:38   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": "def f_quote(s):\\n    import urllib.parse\\n    import re\\n    url_encoded = urllib.parse.quote(s, safe=\'_.-~/\')\\n    safe_ch'
+22:59:38   [1] 通道=深 候选=1
+22:59:41       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+23:00:02   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 'byte:02X}\' if byte not in map(ord, \'_.-~/\') else char for byte, char in zip(encoded.encode(\'utf-8\'), encoded)])\\n```"}}]'
+23:00:02   [2] 通道=深 候选=1
+23:00:02       ⊘ [values:answer] 否决 — 目标要求展开（199 字），答案只有 24 字
+23:00:02   ⛔ 全部候选被拦 (1 次连续失败)
+23:00:22   ⏳ 预算耗尽 [wall_s]：已用 75.5077 / 上限 120
+23:00:22   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+23:00:22   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+23:00:34   🧪 收尾交付过闸
+23:00:34   📦 收尾交付 273 字符（来源=收尾调用）
+23:00:34 ■ closed | steps=3 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=5 | 墙钟放弃首发=0/重试=1 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 f_quote/语言标签/可编译/结构检查) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 273字) 收尾闸=1跑/1过/0未过
+  分数账本  会话#0 追加 10 行（拒绝 0 行  ⚠️重复=20） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@1x n=3 mean=0.4750 std=0.0000 [0.4750,0.4750] 极差=0.0000
+  attempted=30 recorded=30 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=10 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=33 检验=33 命中=33 命中率=1.0 失配=0(成败0/文本0) 混淆={'ok_ok': 33, 'ok_fail': 0, 'fail_ok': 0, 'fail_fail': 0}
+  传输层    抖动重试=3 重试后仍失败=0 上限被裁短=99 墙钟放弃首发=0/重试=3 （共 30 题）
+
+--- 噪声明细（逐题 × 逐次）---
+  任务                        r1      r2      r3   极差
+  ex01                  1.0000  1.0000  1.0000   0.0000
+  ex02                  0.1250  0.1250  0.1250   0.0000
+  ex03                  0.5625  0.5625  0.5625   0.0000
+  ex04                  0.2500  0.2500  0.2500   0.0000
+  ex05                  1.0000  1.0000  1.0000   0.0000
+  ex06                  0.0625  0.0625  0.0625   0.0000
+  ex07                  1.0000  1.0000  1.0000   0.0000
+  ex08                  0.0000  0.0000  0.0000   0.0000
+  ex09                  0.5625  0.5625  0.5625   0.0000
+  ex10                  0.1875  0.1875  0.1875   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/10
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=6cbf600c718c041f scorer=d4b1cbbfd7f1 suite=34fa4250a58d repeat=3 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=d6727c1c2c llm_cond=ea051ff619 max_tokens=2048 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s92_bench_v3_7b/runs.jsonl
+  答案已落盘 /private/tmp/v1_s92_bench_v3_7b/answers.jsonl  30 条  共 8763 字符  最长 490 字符  截断 0 条

@@ -1,0 +1,50 @@
+================ §61 P/R on tasks_v2  model=qwen2.5:7b ================
+首答：/tmp/v1_s94_bench_v2_7b/answers.jsonl  31 行
+口径：model=qwen2.5:7b endpoint=127.0.0.1:8790 inject={"reasoning_effort":"none"} reps=2 arms=PR suite=tasks_v2
+开始：00:17:17
+结束：00:27:49  EXIT=0
+--- 台账 /tmp/v1_s94_proxy_pr.jsonl：40 行 ---
+--- 控制台 ---
+  rep1 P sg01  kind=EXC     0→14 (+14) same=0  527字  38.9s
+  rep1 P sg02  kind=ASSERT  7→ 7 ( +0) same=1  439字  21.8s
+  rep1 P sg03  kind=OK     14→14 ( +0) same=1  467字  35.3s
+  rep1 P sg04  kind=OK     14→14 ( +0) same=0  232字  13.1s
+  rep1 P sg05  kind=EXC     0→ 1 ( +1) same=0  408字  15.8s
+  rep1 P sg06  kind=ASSERT  8→ 8 ( +0) same=1  556字  19.4s
+  rep1 P sg07  kind=ASSERT 12→12 ( +0) same=0  652字  24.4s
+  rep1 P sg08  kind=ASSERT  7→ 7 ( +0) same=0  445字  17.7s
+  rep1 P sg09  kind=ASSERT 12→12 ( +0) same=0  809字  18.7s
+  rep1 P sg10  kind=EXC     0→14 (+14) same=0  430字  19.3s
+  rep1 R sg01  kind=EXC     0→14 (+14) same=0  527字  19.2s
+  rep1 R sg02  kind=ASSERT  7→ 7 ( +0) same=1  439字   9.4s
+  rep1 R sg03  kind=OK     14→14 ( +0) same=1  467字  16.9s
+  rep1 R sg04  kind=OK     14→14 ( +0) same=0  232字   5.1s
+  rep1 R sg05  kind=EXC     0→ 1 ( +1) same=0  468字   8.9s
+  rep1 R sg06  kind=ASSERT  8→ 8 ( +0) same=1  556字  10.6s
+  rep1 R sg07  kind=ASSERT 12→12 ( +0) same=0  658字  12.2s
+  rep1 R sg08  kind=ASSERT  7→ 7 ( +0) same=0  445字  11.3s
+  rep1 R sg09  kind=ASSERT 12→12 ( +0) same=0  809字  15.0s
+  rep1 R sg10  kind=EXC     0→14 (+14) same=0  430字  15.6s
+  rep2 P sg01  kind=EXC     0→14 (+14) same=0  527字  22.4s
+  rep2 P sg02  kind=ASSERT  7→ 7 ( +0) same=1  439字   9.5s
+  rep2 P sg03  kind=OK     14→14 ( +0) same=1  467字  16.7s
+  rep2 P sg04  kind=OK     14→14 ( +0) same=0  232字   6.4s
+  rep2 P sg05  kind=EXC     0→ 1 ( +1) same=0  408字  10.0s
+  rep2 P sg06  kind=ASSERT  8→ 8 ( +0) same=1  556字  10.9s
+  rep2 P sg07  kind=ASSERT 12→12 ( +0) same=0  652字  12.6s
+  rep2 P sg08  kind=ASSERT  7→ 7 ( +0) same=0  445字  11.7s
+  rep2 P sg09  kind=ASSERT 12→12 ( +0) same=0  809字  16.0s
+  rep2 P sg10  kind=EXC     0→14 (+14) same=0  430字  15.3s
+  rep2 R sg01  kind=EXC     0→14 (+14) same=0  527字  19.6s
+  rep2 R sg02  kind=ASSERT  7→ 7 ( +0) same=1  439字   9.3s
+  rep2 R sg03  kind=OK     14→14 ( +0) same=1  467字  17.1s
+  rep2 R sg04  kind=OK     14→14 ( +0) same=0  232字  18.4s
+  rep2 R sg05  kind=EXC     0→ 1 ( +1) same=0  468字  20.0s
+  rep2 R sg06  kind=ASSERT  8→ 8 ( +0) same=1  556字  10.7s
+  rep2 R sg07  kind=ASSERT 12→12 ( +0) same=0  658字  12.9s
+  rep2 R sg08  kind=ASSERT  7→ 7 ( +0) same=0  445字  12.1s
+  rep2 R sg09  kind=ASSERT 12→12 ( +0) same=0  809字  16.2s
+  rep2 R sg10  kind=EXC     0→14 (+14) same=0  430字  15.7s
+
+落盘：/tmp/v1_s94_repair_v2.jsonl  40 条  合计 632s
+================ 结束 00:27:50 ================

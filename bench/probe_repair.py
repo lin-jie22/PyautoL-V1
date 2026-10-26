@@ -28,6 +28,10 @@
     python3 bench/probe_repair.py --self-check                 # 零模型、零网络
     python3 bench/probe_repair.py --plan                       # 只打印 40 条消息，不发请求
     python3 bench/probe_repair.py --run --out /tmp/x.jsonl     # 发请求（需先起代理）
+
+第九十四轮 §61 加的管子（默认值仍是 v3 ⇒ 上面三条用法一字不变）：
+    --suite   bench/specgen/tasks_v2.jsonl   换题集
+    --answers <首答 jsonl>                   换起点答案（配套 --suite 一起换）
 """
 
 from __future__ import annotations
@@ -192,7 +196,7 @@ def string_literals(tests: list[str]) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# 自检（八条反证组）—— 零模型、零网络
+# 自检（九条反证组 C0~C8 + C9 换题集）—— 零模型、零网络
 # ---------------------------------------------------------------------------
 def _self_check() -> int:
     ok_all = True
@@ -203,7 +207,7 @@ def _self_check() -> int:
         print(f"  {'✅' if cond else '❌'} {name}{('  ' + extra) if extra else ''}")
 
     print("=" * 74)
-    print("  §60 探针自检（零模型、零网络）—— 八条反证组")
+    print("  §60/§61 探针自检（零模型、零网络）—— 九条反证组 C0~C9")
     print("=" * 74)
 
     sysm = direct_system()
@@ -275,6 +279,23 @@ def _self_check() -> int:
     chk("C8 反证：报告器把「增益 3 / 改坏 2 / 净 +1 / 噪声 5」算对（不是随便加总）",
         (s["gain"], s["loss"], s["net"], s["noise"]) == (3, 2, 1, 5), str(s))
 
+    # C9 第九十四轮新增的 `--suite/--answers` 管子：换题集后 C1/C3 的两条性质仍在
+    #    （否则「只换题集」这句话没有任何机制保证 —— 换个题集就可能悄悄换了长度）
+    v2p = ROOT / "bench" / "specgen" / "tasks_v2.jsonl"
+    if v2p.exists():
+        s2 = load_suite(v2p)
+        o2 = s2[0]
+        good2 = score_of(o2["tests"], code_of(o2["oracle"]))
+        bad2 = score_of(o2["tests"], "pass\n")
+        eq2 = all(len(pair[0]) == len(pair[1])
+                  for pair in (build_pair(t["tests"], code_of(t["oracle"]))[1:3] for t in s2))
+        chk("C9 换题集（tasks_v2）后：oracle 满分 / 空实现不满分 / 两臂等长 仍成立",
+            good2 == len(o2["tests"]) and bad2 < len(o2["tests"]) and eq2
+            and len(s2) == 10 and all(len(t["tests"]) == 14 for t in s2),
+            f"{len(s2)}题×{len(o2['tests'])}格 oracle={good2} pass={bad2} 等长={eq2}")
+    else:
+        chk("C9 tasks_v2 存在（换题集的管子可回归）", False, "文件不存在")
+
     print("-" * 74)
     print(f"  自检结果：{'全绿（可以起跑）' if ok_all else '有红项 ⇒ 拒绝起跑'}")
     print("=" * 74)
@@ -307,9 +328,15 @@ def frozen_scores() -> dict[str, int]:
 # ---------------------------------------------------------------------------
 # --plan：只打印，不发请求
 # ---------------------------------------------------------------------------
-def _plan() -> int:
-    suite = load_suite()
-    frozen = {r["task_id"]: r for r in load_frozen()}
+def _plan(suite_path: str | None = None, answers_path: str | None = None) -> int:
+    suite = load_suite(suite_path)
+    # ⚠️ 第九十四轮：同一题有多轮答案时**取第一轮**（`setdefault`），
+    #    与 `frozen_scores()`（C7 用的那一份）同一个口径。
+    #    原来这里是 dict 推导式（后者覆盖前者 ⇒ 取最后一轮）—— 两处口径不同，
+    #    多轮不一致时 C7 会通过而 `--run` 用的是另一轮，属于沉默的混口径。
+    frozen: dict[str, dict] = {}
+    for _r in load_frozen(answers_path):
+        frozen.setdefault(_r["task_id"], _r)
     print("=" * 74)
     print("  §60 反馈消息全览（R 臂 / P 臂，长度逐题相等）")
     print("=" * 74)
@@ -411,15 +438,19 @@ def main() -> int:
     ap.add_argument("--reps", type=int, default=2, help="每臂重复次数")
     ap.add_argument("--arms", default="PR", help="要跑的臂，如 'PR' 或 'R'")
     ap.add_argument("--report", default="", help="读 --run 的落盘，算 gain/loss/net（零网络）")
+    ap.add_argument("--suite", default="", help="题集 JSONL（默认 tasks_v3）")
+    ap.add_argument("--answers", default="", help="首答 JSONL（默认 §59 的 answers_v3_7b）")
     a = ap.parse_args()
+    sp = a.suite or None
+    apth = a.answers or None
     if a.self_check:
         return _self_check()
     if a.report:
         return _report(a.report)
     if a.plan:
-        return _plan()
+        return _plan(sp, apth)
     if a.run:
-        return run_real(a.out, a.reps, a.arms)
+        return run_real(a.out, a.reps, a.arms, sp, apth)
     ap.print_help()
     return 0
 
@@ -427,7 +458,8 @@ def main() -> int:
 # ---------------------------------------------------------------------------
 # 真请求
 # ---------------------------------------------------------------------------
-def run_real(out_path: str, reps: int, arms: str) -> int:
+def run_real(out_path: str, reps: int, arms: str,
+             suite_path: str | None = None, answers_path: str | None = None) -> int:
     """跑两臂。⛔ 只做读数，不做判定（判定在读完之后另算）。"""
     from mw.config import settings
     from mw.llm import HTTPLLM, Message
@@ -438,8 +470,14 @@ def run_real(out_path: str, reps: int, arms: str) -> int:
         return 2
     llm = HTTPLLM(s.llm)
     sysm = direct_system()
-    suite = load_suite()
-    frozen = {r["task_id"]: r for r in load_frozen()}
+    suite = load_suite(suite_path)
+    # ⚠️ 第九十四轮：同一题有多轮答案时**取第一轮**（`setdefault`），
+    #    与 `frozen_scores()`（C7 用的那一份）同一个口径。
+    #    原来这里是 dict 推导式（后者覆盖前者 ⇒ 取最后一轮）—— 两处口径不同，
+    #    多轮不一致时 C7 会通过而 `--run` 用的是另一轮，属于沉默的混口径。
+    frozen: dict[str, dict] = {}
+    for _r in load_frozen(answers_path):
+        frozen.setdefault(_r["task_id"], _r)
 
     rows: list[dict] = []
     t_all = time.time()

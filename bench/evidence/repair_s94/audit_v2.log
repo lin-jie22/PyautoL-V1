@@ -1,0 +1,45 @@
+============================================================================
+  失分三池：自检过没过 × 一跑就炸 / 就是错
+  题集 bench/specgen/tasks_v2.jsonl    臂输出 /tmp/v1_s94_bench_v2_7b
+============================================================================
+
+[反证 V2]
+  sg01 oracle 满分？ 14/14  ✅
+  空壳实现（同签名返回 None）必须不满分？ 0/14  ✅
+
+[反证 V3] 答案行序 == 题集顺序 × rep 数？ ✅
+
+[反证 V1] 逐份复算 vs 落盘分数
+  ✅ 全部逐格相同（复算覆盖 420 格）
+
+[逐份明细]
+  sg01   rep1 闸=未过 失14/14 池=无闸       SyntaxError: invalid character '—' (U+2014) (<
+  sg02   rep1 闸=过  失 7/14 池=逻辑错      
+  sg05   rep1 闸=过  失14/14 池=假绿-崩     AttributeError: 'odict_values' object has no a
+  sg06   rep1 闸=过  失 6/14 池=逻辑错      
+  sg07   rep1 闸=过  失 2/14 池=逻辑错      
+  sg08   rep1 闸=过  失 7/14 池=逻辑错      
+  sg09   rep1 闸=过  失 2/14 池=逻辑错      
+  sg10   rep1 闸=未过 失14/14 池=无闸       SyntaxError: invalid character '—' (U+2014) (<
+  sg01   rep2 闸=未过 失14/14 池=无闸       SyntaxError: invalid character '—' (U+2014) (<
+  sg02   rep2 闸=过  失 4/14 池=逻辑错      
+  sg05   rep2 闸=过  失13/14 池=逻辑错      
+  sg06   rep2 闸=过  失 6/14 池=逻辑错      
+  sg07   rep2 闸=过  失 2/14 池=逻辑错      
+  sg08   rep2 闸=过  失 7/14 池=逻辑错      
+  sg09   rep2 闸=过  失 2/14 池=逻辑错      
+  sg10   rep2 闸=未过 失14/14 池=无闸       SyntaxError: invalid character '—' (U+2014) (<
+  sg01   rep3 闸=未过 失14/14 池=无闸       SyntaxError: invalid character '—' (U+2014) (<
+  sg02   rep3 闸=过  失 4/14 池=逻辑错      
+  sg05   rep3 闸=过  失14/14 池=假绿-崩     AttributeError: 'odict_values' object has no a
+  sg06   rep3 闸=过  失 6/14 池=逻辑错      
+  sg07   rep3 闸=过  失 2/14 池=逻辑错      
+  sg08   rep3 闸=过  失 7/14 池=逻辑错      
+  sg09   rep3 闸=过  失 2/14 池=逻辑错      
+  sg10   rep3 闸=未过 失14/14 池=无闸       SyntaxError: invalid character '—' (U+2014) (<
+
+[三池]
+  无闸         84 格   44.0%
+  假绿-崩       28 格   14.7%
+  逻辑错        79 格   41.4%
+  合计        191 格（总格数 420，均分 0.5452）

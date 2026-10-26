@@ -9097,7 +9097,9 @@ def _az92_close(reply: str, *, retries: int = 2, prior: str = "") -> tuple:
     """单独调 `_close_out`（AS20 已证明它是可单独调用的单元）。
 
     ⚠️ `_reset_verify(goal)` 是 `run()` 里**同一处**派生（AZ90 钉着这条链）：
-    直接构造的实例没有 `run()`，不重放这一步就测不到"判据从题面来"。
+    直接构造的实例没有 `run()`，不重放这一步就没有 `verify_stats`/`_salvage`。
+    但**判据本身**在第 94 轮改成显式给（见下面那一段注释）——
+    因为「判据从哪来」由 AS11/AZ90 钉，本断言只测 `_close_out`。
     """
     _AZ92_SEQ[0] += 1
     lim = cfg.Limits(max_steps=1, close_reserve_steps=1,
@@ -9106,6 +9108,17 @@ def _az92_close(reply: str, *, retries: int = 2, prior: str = "") -> tuple:
              memory=MemoryStore(_TMP / f"az92_{_AZ92_SEQ[0]}.db"))
     c.log = lambda m: _AZ92_LOGS.append(m)                       # noqa: ARG005
     c._reset_verify(_AZ92_GOAL)
+    # ⚠️ 第九十四轮（169 条全量撤回态照出来的**重复覆盖**，不是图省事）：
+    #    判据在这里**显式给**，不从 `_reset_verify` 那条接线里取。
+    #    理由：AS11 撤的是 `... if verify_retries > 0 else ()` 那半句、
+    #    AZ90 撤的是 `int(self.s.limits.verify_static)` 这个接线参数 ——
+    #    两条变异都会让这里拿到的判据变空/没有静态检查，于是**连带打红本断言**，
+    #    在 169 条台账上表现为「多红=['AZ92']」（AS11、AZ90 各一次）。
+    #    而「判据从哪来」正是 AS11/AZ90 的被测物，不是 `_close_out` 的被测物。
+    #    ⇒ 本断言的范围收窄并写明：**只测 `_close_out` 自己**（闸在、闸置标、
+    #      闸不改分、判据为空时零跑）。判据来源那三条不变量由 AS11/AZ90 钉住。
+    c._checks = (tuple(_AZ89_V.derive(_AZ92_GOAL, 2)) if retries > 0 else ())
+    c.verify_stats["checks"] = [x.name for x in c._checks]
     c._unverified = prior
     seen: dict = {}
 

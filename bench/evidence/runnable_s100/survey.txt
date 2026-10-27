@@ -1,0 +1,94 @@
+扫描文件 15 个，去重后答案 386 份
+  · /Users/linshaojie/V1/bench/evidence/answers_s79/answers.jsonl
+  · /Users/linshaojie/V1/bench/evidence/blocked_s99/answers_a.jsonl
+  · /Users/linshaojie/V1/bench/evidence/blocked_s99/answers_b.jsonl
+  · /Users/linshaojie/V1/bench/evidence/cloud_s88/answers.jsonl
+  · /Users/linshaojie/V1/bench/evidence/ext_s92/answers_v3_7b.jsonl
+  · /Users/linshaojie/V1/bench/evidence/form_s95/answers_new.jsonl
+  · /Users/linshaojie/V1/bench/evidence/form_s95/answers_old.jsonl
+  · /Users/linshaojie/V1/bench/evidence/model_s90/answers_A_7b.jsonl
+  · /Users/linshaojie/V1/bench/evidence/model_s90/answers_B_4b.jsonl
+  · /Users/linshaojie/V1/bench/evidence/overrun_s96/answers_new.jsonl
+  · /Users/linshaojie/V1/bench/evidence/overrun_s96/answers_old.jsonl
+  · /Users/linshaojie/V1/bench/evidence/repair_s94/answers_store_v2.jsonl
+  · /Users/linshaojie/V1/bench/evidence/repair_s94/answers_v2_7b.jsonl
+  · /Users/linshaojie/V1/bench/evidence/zhipu_s85/answers.jsonl
+  · /Users/linshaojie/V1/bench_out/answers.jsonl
+
+=== 交付物形态 ===
+  ok        348   90.2%
+  undef      28    7.3%
+  no_def      0    0.0%
+  syntax      6    1.6%
+  empty       4    1.0%
+
+⛔ 空交付与「交了不能跑的代码」必须分开：
+    空交付           4    1.0%   （K1：预算被思考吃掉）
+    不可运行        30    7.8%   （缺 def / 缺名 / 语法错）
+
+=== 按题 ===
+  ex01   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex02   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex03   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex04   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex05   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex06   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex07   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex08   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex09   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  ex10   总  1  ok  1  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  sg01   总 54  ok 30  undef 21  no_def 0  syntax 3  empty 0   坏率  44.4%
+  sg02   总 56  ok 55  undef  0  no_def 0  syntax 1  empty 0   坏率   1.8%
+  sg03   总 50  ok 50  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  sg04   总 50  ok 50  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  sg05   总 52  ok 51  undef  0  no_def 0  syntax 0  empty 1   坏率   0.0%
+  sg06   总 50  ok 49  undef  0  no_def 0  syntax 0  empty 1   坏率   0.0%
+  sg07   总 15  ok 14  undef  0  no_def 0  syntax 0  empty 1   坏率   0.0%
+  sg08   总 15  ok 15  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  sg09   总 16  ok 16  undef  0  no_def 0  syntax 0  empty 0   坏率   0.0%
+  sg10   总 18  ok  8  undef  7  no_def 0  syntax 2  empty 1   坏率  50.0%
+
+=== 坏答案明细 ===
+  undef   re                     sg01  chars=  516 bench/evidence/answers_s79/answers.jsonl
+  undef   re                     sg10  chars=  419 bench/evidence/blocked_s99/answers_b.jsonl
+  undef   re                     sg10  chars=  419 bench/evidence/form_s95/answers_new.jsonl
+  undef   re                     sg01  chars=  516 bench/evidence/form_s95/answers_new.jsonl
+  syntax  -                      sg01  chars=  581 bench/evidence/form_s95/answers_old.jsonl
+  undef   re                     sg10  chars=  419 bench/evidence/model_s90/answers_A_7b.jsonl
+  undef   re                     sg10  chars=  419 bench/evidence/overrun_s96/answers_new.jsonl
+  undef   re                     sg10  chars=  419 bench/evidence/overrun_s96/answers_old.jsonl
+  syntax  -                      sg01  chars=  581 bench/evidence/repair_s94/answers_store_v2.jsonl
+  syntax  -                      sg10  chars=  483 bench/evidence/repair_s94/answers_store_v2.jsonl
+  syntax  -                      sg01  chars=  581 bench/evidence/repair_s94/answers_v2_7b.jsonl
+  syntax  -                      sg10  chars=  483 bench/evidence/repair_s94/answers_v2_7b.jsonl
+  syntax  -                      sg02  chars=  508 bench/evidence/zhipu_s85/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg10  chars=  419 bench_out/answers.jsonl
+  undef   re                     sg01  chars=  516 bench_out/answers.jsonl
+  undef   re                     sg10  chars=  419 bench_out/answers.jsonl
+
+=== 坏答案的**唯一性** ===
+  34 份坏答案，按 (判定, sha) 去重后只有 **5 种**
+    undef   sha=e63dea5c3d24… 出现 21 次
+    undef   sha=38f40729a0ff… 出现  7 次
+    syntax  sha=2dde10a7b8de… 出现  3 次
+    syntax  sha=088ba9fd9500… 出现  2 次
+    syntax  sha=ed215d527efb… 出现  1 次
+  ⇒ 有答案被**逐字节复现**多次：模型没改，只是重交了同一份（与 §93「只说结论 ⇒ 逐字相同重交」同形）

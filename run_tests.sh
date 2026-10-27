@@ -692,10 +692,22 @@ echo
 #     第一版写 `split(" ",1)[-1].startswith("↳")`，右半保留前导空格 ⇒ 恒 False
 #     ⇒ 6 次「被执行」被误归「预算掐掉」，而那个方向**对结论有利**（§62 自我打脸）；
 #     A5 步骤头后的重复必须记账（不许静默丢）。
+#   · `probe_runnable.py --self-check`（第一百轮）：四条反证 S1~S4 ——
+#     S1 十二例检测器样本，九个**不该报**的分支（顶层 import / 函数内 import /
+#     `import as` / `from … import` / 闭包 / 推导式 / `except as` / `with as` /
+#     lambda 闭包）+ 三个该报的；S2 与内核 `mw.verify.undefined_names` **逐条对拍**
+#     （两条独立实现不一致 ⇒ 至少一条错，而"哪条错"不能靠读代码决定）；
+#     S3 `sha` 去重（同一份答案重复 append 不许灌分母）；S4 空交付必须进 `empty`
+#     而**不是** `no_def`（K1 与"交了错的代码"是两种病）。
+#     ⛔ 它存在的理由：N3「`sg10` 缺 `import re` 的发生率」第一版量出 38.3%，
+#     而那是**装置误差**（顶层 `import re` 与真缺 `import re` 返回同一个结果）⇒
+#     修完是 7.3%。第二次仍不够：34 份坏答案按 sha 去重只有 **5 种**，
+#     其中 `e63dea5c…` 出现 21 次、`38f40729…` 出现 7 次
+#     ⇒ 不是"模型反复犯不同的错"，是"模型一次都没改，重交了同一份"。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账 / 停滞路径 / 重复步对账，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账 / 停滞路径 / 重复步对账 / 交付物可运行性，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard probe_stallpath audit_legs; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard probe_stallpath audit_legs probe_runnable; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

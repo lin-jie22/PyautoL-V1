@@ -1,0 +1,8 @@
+臂 N（真预演）: {"status": "done", "answer_sha": "2be556ee7a4a4fb7", "predict_calls": 1, "confusion": {"ok_ok": 1, "ok_fail": 0, "fail_ok": 0, "fail_fail": 0}}
+臂 F（恒预测失败）: {"status": "done", "answer_sha": "2be556ee7a4a4fb7", "predict_calls": 1, "confusion": {"ok_ok": 0, "ok_fail": 0, "fail_ok": 1, "fail_fail": 0}}
+
+交付物相同? True
+状态相同? True
+预演真被调用? 1 1
+
+臂F 的预演日志: ["      🔁 失配[outcome] finish({'answer': '```python\\nprint(1)\\n```'}) — 交答案 预演=失败 实际=成功 ⇒ 已沉淀为启发式", '■ done | steps=2 | guard_blocked=1 | 预演=0 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.818 memory>reason=n/a reason>act=0.5] 回流=n/a | 语义记忆=1 | 回看=1次/33字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=1项(非空)']

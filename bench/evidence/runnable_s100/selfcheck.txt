@@ -1,0 +1,28 @@
+=== S1 检测器 12 例（第一版在这里红 3 例）===
+  ✅ 顶层 import    got=[] exp=[]
+  ✅ 真缺 import    got=['re'] exp=['re']
+  ✅ 函数内 import   got=[] exp=[]
+  ✅ 闭包           got=[] exp=[]
+  ✅ from import  got=[] exp=[]
+  ✅ import as    got=[] exp=[]
+  ✅ 推导式          got=[] exp=[]
+  ✅ except as    got=[] exp=[]
+  ✅ with as      got=[] exp=[]
+  ✅ lambda 闭包    got=[] exp=[]
+  ✅ global 赋値    got=[] exp=[]
+  ✅ 真缺自定义名       got=['compress_spaces'] exp=['compress_spaces']
+
+=== S2 与内核 `mw.verify.undefined_names` 逐条对拍 ===
+  ✅ 样本0 本工具=() 内核=()
+  ✅ 样本1 本工具=('re',) 内核=('re',)
+  ✅ 样本2 本工具=('compress_spaces',) 内核=('compress_spaces',)
+  ✅ 样本3 本工具=() 内核=()
+  ✅ 样本4 本工具=('missing_name', 're') 内核=('missing_name', 're')
+  ⏭ 样本5 内核判「不可判定」⇒ 语义不同，不参与对拍
+
+=== S3 sha 去重（同一份答案重复 append 不许灌分母）===
+  ✅ 3 次重复 append + 1 次跨 run 复现 ⇒ 去重后 2 份（期望 2）
+  ✅ 空答案 ⇒ empty（期望 empty）；非空可运行 ⇒ ok（期望 ok）
+
+=== 反证结论 ===
+✅ 全部反证通过（S1 12 例 + S2 6 例对拍 + S3 去重 + S4 空答案单列）

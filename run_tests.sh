@@ -704,10 +704,21 @@ echo
 #     修完是 7.3%。第二次仍不够：34 份坏答案按 sha 去重只有 **5 种**，
 #     其中 `e63dea5c…` 出现 21 次、`38f40729…` 出现 7 次
 #     ⇒ 不是"模型反复犯不同的错"，是"模型一次都没改，重交了同一份"。
+#   · `probe_artifact_suite.py --self-check`（第一百轮 §70）：七条 A1~A7，
+#     其中三条是**反证**而不是描述——
+#     ⭐ A2 把 test **倒序**跑，分数必须不变（每条 test 自带 setup ⇒ 断言之间不共享状态）；
+#     ⭐ A4 用真打分器跑 `pure`（返回值完全正确、但**什么都没写出去**）⇒ 均分必须 < 0.10。
+#        这是"尺子形态确实变了"的运行时证明：同一类实现在 v1~v3 上满分，在这里 0.0469；
+#     ⭐ A6 把一条 test 的期望字节改一个字符 ⇒ 分数必须掉（否则断言恒真）；
+#     A5 冻结文件 == 生成器重生成（防"改了生成器忘了重冻结"）。
+#     ⛔ 它存在的理由：v1~v3 的 26 题答案全是纯函数、断言全是 `f(x) == y`，
+#     **没有一维**在测"做成了没有"。新尺子换了形态，就必须先证明它真的在量新东西 ——
+#     否则"128 格"只是 128 个看起来像断言的字。
+#     ⚠️ 它**不**证明"内核会用工具"：`ExternalScorer` 只吃 `{task, answer}`，看不到轨迹。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账 / 停滞路径 / 重复步对账 / 交付物可运行性，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账 / 停滞路径 / 重复步对账 / 交付物可运行性 / 产物型尺子，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard probe_stallpath audit_legs probe_runnable; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard probe_stallpath audit_legs probe_runnable probe_artifact_suite; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

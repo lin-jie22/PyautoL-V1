@@ -1,0 +1,99 @@
+=== S0-A 检测器自检（6 例，含 1 条真实负例）===
+  PASS     补了 import os               拦=False 名字=-      期望=False/-
+  PASS     from os import             拦=False 名字=-      期望=False/-
+  PASS     真缺 import os               拦=True  名字=os     期望=True/os
+  PASS     只写注释不算绑定                   拦=True  名字=os     期望=True/os
+  PASS     语法错 ⇒ 不可判定 ⇒ 不拦            拦=False 名字=-      期望=False/-
+  PASS     §71 T1b 真实 at04 答案         拦=True  名字=os     期望=True/os
+=== S0-B 判据派生自检（0 档必须**没有** undefined 判据）===
+  PASS     static=0 kinds=['nonempty', 'defines', 'fence_lang', 'compiles'] 期望含 undefined=False
+  PASS     static=1 kinds=['nonempty', 'defines', 'fence_lang', 'compiles', 'undefined'] 期望含 undefined=True
+  PASS     static=2 kinds=['nonempty', 'defines', 'fence_lang', 'compiles', 'undefined'] 期望含 undefined=True
+  PASS     static=0 放行=True 期望放行=True 载荷=-
+  PASS     static=1 放行=False 期望放行=False 载荷=revealed:os
+  PASS     static=2 放行=False 期望放行=False 载荷=blind
+自检全通过
+
+=== S1 接线层（N1）===
+  A =0: attempted=24 recorded=24 skipped_no_answer=0 failed_scorer=0 | 日志尝试块=24
+  B =2: attempted=24 recorded=24 skipped_no_answer=0 failed_scorer=0 | 日志尝试块=24
+
+=== S2 口径（唯一自变量 = verify_static；端口必须相同）===
+  A: sig=0e75985852bcd8f4 suite=8dec0771b8c5 scorer=d4b1cbbfd7f1 endpoint=127.0.0.1:8812 verify_static=0
+  B: sig=77d5a5f6b91f52d2 suite=8dec0771b8c5 scorer=d4b1cbbfd7f1 endpoint=127.0.0.1:8812 verify_static=2
+  两臂口径差异项（逐字段）= {'limits.verify_static': (0, 2)}
+
+=== S3 分数（Δ = A(=0) − B(=2)）===
+  A（=0 关自检） mean=0.5469 std=0.0000 lo=0.5469 hi=0.5469 极差=0.0000
+  B（=2 盲报）   mean=0.5469 std=0.0000 lo=0.5469 hi=0.5469 极差=0.0000
+  Δ(A−B) = +0.0000  ≡ +0.0 格 / 128   判定线 = max 极差 0.0000
+
+=== S4 逐题 × 逐 rep ===
+  题     A=0 (r1,r2,r3)        B=2 (r1,r2,r3)        Δ
+  at01  1.0000 1.0000 1.0000   1.0000 1.0000 1.0000   +0.0000
+  at02  0.0000 0.0000 0.0000   0.0000 0.0000 0.0000   +0.0000
+  at03  0.0000 0.0000 0.0000   0.0000 0.0000 0.0000   +0.0000
+  at04  0.3750 0.3750 0.3750   0.3750 0.3750 0.3750   +0.0000
+  at05  1.0000 1.0000 1.0000   1.0000 1.0000 1.0000   +0.0000
+  at06  0.0000 0.0000 0.0000   0.0000 0.0000 0.0000   +0.0000
+  at07  1.0000 1.0000 1.0000   1.0000 1.0000 1.0000   +0.0000
+  at08  1.0000 1.0000 1.0000   1.0000 1.0000 1.0000   +0.0000
+
+=== S5 真机会（日志；机会 = 触发静态判据的尝试）===
+  A =0: 机会=0 咬合=0 | 打回=0 收尾未过闸=0 收尾过闸=7 | 载荷={}
+  B =2: 机会=3 咬合=0 | 打回=6 收尾未过闸=2 收尾过闸=5 | 载荷={'blind': 8}
+      块04 at04  (write_or_fail) 失败3次 ['blind', 'blind', 'blind'] 打回=2 收尾未过=1 ⇒ 仍失败
+      块12 at04  (write_or_fail) 失败2次 ['blind', 'blind'] 打回=2 收尾未过=0 ⇒ 仍失败
+      块20 at04  (write_or_fail) 失败3次 ['blind', 'blind', 'blind'] 打回=2 收尾未过=1 ⇒ 仍失败
+
+=== S6 潜在机会（交付物离线复算：如果闸开着会被拦的份数）===
+  A =0: 交付 24 条 / 唯一 9 条 ⇒ 会被拦 1 条  按题={'at04': 1} 缺名={'os': 1}
+  B =2: 交付 24 条 / 唯一 10 条 ⇒ 会被拦 1 条  按题={'at04': 1} 缺名={'os': 1}
+
+=== S7 N8 反证：复算器 vs 内核判据是否同源 ===
+  B 臂日志「收尾未过闸」= 2 次；B 臂交付物离线复算「会被拦」= 1 条
+  ⚠️ 两者**不必相等**：日志数是「闸跑的次数」（同一尝试可多次），复算数是「末轮交付物的份数」。
+     真正要核的是：**B 臂末轮交付物里仍有会被拦的份数 ≤ 已修好的份数**，且 =0 臂的这个数**不低于** B 臂（关掉闸 ⇒ 没被修）。
+
+=== S8 成本（代理台账 = 生成次数；时间取自跑批记录）===
+  A =0: 生成请求 80 次  tok=64548  墙钟=1195s
+  B =2: 生成请求 94 次  tok=81896  墙钟=1257s
+
+=== S9 判负检查（PREREG 第四节；按主张分组）===
+  ✅ N1 接线
+  ✅ N2 oracle=1.0（日志）
+  ✅ N3 B 臂真机会 > 0
+  ✅ N4 A 臂零闸行（关真的关上了）
+  ✅ 口径只差 verify_static
+  ✅ N8 复算器与内核同源（S0-B 已证）
+  ⛔ N5 |Δ| > 本 run 极差
+  ⛔ N6 |Δ| > 3 格（0.0234）
+  ✅ 逐题 × 逐 rep 全等
+  ✅ |Δ| < 3 格（等效界）
+  ⚠️ 「有差异」组与「无差异」组**互斥**：前者要 |Δ| 大，后者要 |Δ| 小。只对其中一组下结论。
+
+=== S10 交付物级对照（sha；比分数更硬的一层）===
+  题     A 唯一 sha            B 唯一 sha            末条相同  交付物变了?
+  at01  82dd524f               82dd524f               True      —
+  at02  4d78f3b3               4d78f3b3               True      —
+  at03  e21cb93c               e21cb93c               True      —
+  at04  00b28618               1b5f6119,4beacfc9      False     变了
+  at05  1500eca8,5512482d      1500eca8,5512482d      False     —
+  at06  5f894904               5f894904               True      —
+  at07  8d2a89da               8d2a89da               True      —
+  at08  280174a5               280174a5               True      —
+  ⇒ 交付物 sha 集合有变化的题：['at04']
+
+=== S11 闸到底改了什么（只看被闸碰过的题）===
+  被闸碰过的题（由函数名映射题号）：['at04']
+  at04：逐条交付物（行序=尝试序）
+    A =0 #1 sha=00b28618 len= 369 会被拦=['os']
+    A =0 #2 sha=00b28618 len= 369 会被拦=['os']
+    A =0 #3 sha=00b28618 len= 369 会被拦=['os']
+    B =2 #1 sha=1b5f6119 len= 383 会被拦=['os']
+    B =2 #2 sha=4beacfc9 len= 441 会被拦=放行
+    B =2 #3 sha=1b5f6119 len= 383 会被拦=['os']
+
+=== S12 判读 ===
+  ⇒ H0 未被否证：两臂逐题逐 rep 全等、|Δ| < 3 格 ⇒ 盲报在这把尺子上是**纯开销**（生成 94 vs 80 次）
+  ⚠️ 这是**等效性**结论，不是「证明相等」：本 run 极差 = 0.0000 只说明「本时段抖动为 0」，不等于「任何 Δ 都可分辨」（§63）。

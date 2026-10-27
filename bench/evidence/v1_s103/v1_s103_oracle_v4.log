@@ -1,0 +1,64 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  tasks_v4  n=8  suite_sha=8dec0771b8c574fea6348dc2a4c20fe7
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=8/8
+  at01: oracle=1.0000 partial=0.4375 null=0.0000 ✅
+  at02: oracle=1.0000 partial=0.5000 null=0.0000 ✅
+  at03: oracle=1.0000 partial=0.8750 null=0.0000 ✅
+  at04: oracle=1.0000 partial=0.6250 null=0.0000 ✅
+  at05: oracle=1.0000 partial=0.3125 null=0.0000 ✅
+  at06: oracle=1.0000 partial=0.1250 null=0.0000 ✅
+  at07: oracle=1.0000 partial=0.8750 null=0.0000 ✅
+  at08: oracle=1.0000 partial=0.3125 null=0.0000 ✅
+  理由: 全部 8 条两极可分，其中 8 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=5e8394e682d3d51a
+  [观察]
+    - at01: oracle=1.0000 partial=0.4375 null=0.0000
+    - at02: oracle=1.0000 partial=0.5000 null=0.0000
+    - at03: oracle=1.0000 partial=0.8750 null=0.0000
+    - at04: oracle=1.0000 partial=0.6250 null=0.0000
+    - at05: oracle=1.0000 partial=0.3125 null=0.0000
+    - at06: oracle=1.0000 partial=0.1250 null=0.0000
+    - at07: oracle=1.0000 partial=0.8750 null=0.0000
+    - at08: oracle=1.0000 partial=0.3125 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 8 条任务上两极可分
+    - 中段有序检查 8 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=8dec0771b8c5；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 239 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=oracle（上界参照）  预算档=1x  repeat=3 ---
+  oracle（上界参照）@1x n=3 mean=1.0000 std=0.0000 [1.0000,1.0000] 极差=0.0000
+  attempted=24 recorded=24 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=247 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+
+--- 噪声明细（逐题 × 逐次）---
+  任务                        r1      r2      r3   极差
+  at01                  1.0000  1.0000  1.0000   0.0000
+  at02                  1.0000  1.0000  1.0000   0.0000
+  at03                  1.0000  1.0000  1.0000   0.0000
+  at04                  1.0000  1.0000  1.0000   0.0000
+  at05                  1.0000  1.0000  1.0000   0.0000
+  at06                  1.0000  1.0000  1.0000   0.0000
+  at07                  1.0000  1.0000  1.0000   0.0000
+  at08                  1.0000  1.0000  1.0000   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/8
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=50f76844cb3c7727 scorer=d4b1cbbfd7f1 suite=8dec0771b8c5 repeat=3 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=b18185531a llm_cond=1ceed06d67 max_tokens=2048 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s103_oracle_bench/runs.jsonl
+  答案已落盘 /private/tmp/v1_s103_oracle_bench/answers.jsonl  24 条  共 10494 字符  最长 617 字符  截断 0 条

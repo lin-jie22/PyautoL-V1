@@ -668,10 +668,20 @@ echo
 #     （分母变小会让比例变好看）/ D5 `status!=200` 不算丢失 / D6 上限算成 0 的进 `unsure`
 #     （⛔ 装置误差不许冒充缺陷）。它把「代理侧成功返回、内核侧没拿到」变成可复跑的数 ——
 #     §62/§63 盯了两轮「差 1 秒」，但只有把台账与日志对账才知道**差的是哪一次、差几秒**。
+#   · `probe_stallpath.py --self-check`（第九十八轮）：七条反证 P1~P7，两向成对 ——
+#     P1/P2 同一套断言跑两种候选组合（全等臂**必须**记停滞并填 reseek / 混合臂
+#     **必须**不记也不填，且走 else 支 `⛔ 全部候选被拦`）；P3 把空答案换成非空
+#     ⇒ 混合消失 ⇒ P2 **必须红**；P4 每轮都带一个新动作（全等永不可能，且候选预算
+#     抬到 99）⇒ P1 **必须红**；P5 `max_stall=1` ⇒ 阈值一到就收尾 ⇒ P1 **必须红**；
+#     P6 没有步骤头的重复行必须进 `orphan`；P7 三档分类互斥且穷尽。
+#     ⛔ 它存在的理由：`reseek`（「本轮全灭 ⇒ 换形态再问」）的判据是**全等**
+#     `repeats == len(cands)`，而真实 309 份任务日志里 81 次重复有 **33 次是混合**
+#     ⇒ 既不记停滞也不换形态；48 次全等的宽度**全是 1**（那一步本来就没有第二候选）。
+#     判据够不到"有选择空间"的那一半，这件事只能靠两侧（内核两臂 + 日志分母）同时说。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账 / 停滞路径，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard probe_stallpath; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

@@ -1,0 +1,15 @@
+
+=== 两臂读数 ===
+  A_allrepeat: status=stalled          iters=4 stalled=2 repeats=2 reseek=1 plan调用=4 提示词含reseek=True 日志含停滞=True 日志含全拦=False
+  B_mixed    : status=cascade          iters=4 stalled=0 repeats=1 reseek=0 plan调用=2 提示词含reseek=False 日志含停滞=False 日志含全拦=True
+
+=== 反证 ===
+  ✅ P1 A_allrepeat 判据: 绿（如预期）
+  ✅ P2 B_mixed 判据: 绿（如预期）
+  ✅ P3 B 的空答案换成非空（混合消失）: 红（如预期） — B: 日志里没有`全部候选被拦`（说明没走 else 支）
+  ✅ P4 每轮都有新动作（全等永不可能）: 红（如预期） — A: stalled=0（期望 ≥1：全等候选必须记停滞）
+  ✅ P5 max_stall=1（阈值一到就收尾）: 红（如预期） — A: planner.reseek=0（期望 1）
+  ✅ P6 无步骤头的重复行进 orphan（不静默丢）: 绿（如预期）
+  ✅ P7 全等/混合/无重复 各一档: 绿（如预期）
+
+全部通过：7 过 / 0 红

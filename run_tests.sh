@@ -662,10 +662,16 @@ echo
 #     CODE/EMPTY/PROSE；R2 手造一个 `finish({...})` 壳必须被认出且**逐字还原**载荷；
 #     R3 壳那一份的分**确实低于**载荷（否则说明打分器自己能剥壳，本工具的数就没意义）；
 #     R4 只剥 `finish` —— 别的工具渲染剥出来当答案就是伪造。
+#   · `probe_discard.py --self-check`（第九十七轮）：六条反证 D1~D6 ——
+#     D1 装得下**不入选** / D2 超的入选且秒数算对 / D3 **只改 `overrun`**：收尾窗口的
+#     上限必须变、探索窗口必须不变（两条分支都得是活的）/ D4 挂不上任务的进 `orphan`
+#     （分母变小会让比例变好看）/ D5 `status!=200` 不算丢失 / D6 上限算成 0 的进 `unsure`
+#     （⛔ 装置误差不许冒充缺陷）。它把「代理侧成功返回、内核侧没拿到」变成可复跑的数 ——
+#     §62/§63 盯了两轮「差 1 秒」，但只有把台账与日志对账才知道**差的是哪一次、差几秒**。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

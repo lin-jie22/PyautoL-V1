@@ -51,6 +51,12 @@ CHANNEL_KEYS = ("endpoint", "timeout_s", "offline")
 
 OTHER_TOKEN = "open.bigmodel.cn"   # 仅用于打印时脱敏，不影响判定
 
+#: 冻结台账：S6a 的**唯一**比对基准（相对仓库根）。
+#: ⛔ 第一百零一轮 §71 自踩：原来判据锚在「全仓库扫到多少行」，而 `collect()`
+#:    是递归扫 ⇒ 往 `bench/evidence/` 里多放两份 `runs.jsonl` 就把门禁撞红
+#:    （149 行 / 8 种）。判据必须锚在**文件**上，不能锚在「仓库里碰巧有几个文件」。
+FROZEN_LEDGER = "bench_out/runs.jsonl"
+
 
 def classify(a: dict, b: dict) -> str:
     """按键级差异分类两个 `llm_cond`。⛔ 不认整体哈希，只认逐键。"""
@@ -66,6 +72,16 @@ def classify(a: dict, b: dict) -> str:
     if chn and not sub and not unk:
         return "CHANNEL_ONLY"
     return "MIXED"
+
+
+def _is_frozen(src: str) -> bool:
+    """这一行来自**冻结台账**吗？
+
+    ⛔ 必须逐字比较，不能用 `"bench_out" in src` —— 子串匹配会把 `bench_out_x/`
+       与 `bench_out/runs.jsonl.bak` 一起捞进来，判据就会随目录名漂。
+       S6b 就是钉这一条的边界反证。
+    """
+    return src == FROZEN_LEDGER
 
 
 def collect(root: Path) -> list[dict]:
@@ -100,12 +116,16 @@ def collect(root: Path) -> list[dict]:
 
 
 def _self_check() -> int:
-    """八条反证。
+    """九条反证。
 
     ⛔ 最要紧的是 S1 与 S2 **成对**：只有 S1（仪器抓得住真·换被测对象）成立，
     主表里那个 `SUBJECT_ONLY = 0` 才是"历史上没发生过"，而不是"仪器永远判不出来"。
     一个恒返回 MIXED 的分类器会让 0 对看起来像重大发现 —— 这正是纪律⑩
     「检测器必须自带反证」要挡的东西。
+
+    S6a/S6b 是 §71 补的：冻结读数的判据必须锚在**一个文件**上（`bench_out/runs.jsonl`），
+    锚在「全仓库扫到多少行」就等于锚在「仓库里碰巧有几个 evidence 文件」——
+    往 `bench/evidence/` 里加两份台账会把它撞红（实测 149 行 / 8 种，门禁 EXIT=1）。
     """
     bad = 0
 
@@ -115,7 +135,7 @@ def _self_check() -> int:
         if not ok:
             bad += 1
 
-    print("── 口径拆分审计自检（八条反证）──")
+    print("── 口径拆分审计自检（九条反证）──")
 
     base = {"endpoint": "127.0.0.1:11434", "model": "qwen2.5:7b",
             "offline": False, "timeout_s": 120.0}
@@ -153,11 +173,19 @@ def _self_check() -> int:
     chk("S5 同一台 ollama 的 v4/v6 两种写法被判 CHANNEL_ONLY（同一服务、不同路径、延迟差 12 倍）",
         classify(base, {**base, "endpoint": "localhost:11434"}) == "CHANNEL_ONLY")
 
-    # S6 扫本机台账：结论必须与冻结读数一致（SUBJECT_ONLY = 0）。
-    #    ⚠️ 这条依赖 bench_out/runs.jsonl 在盘上；文件不在就报"没量到"，不报 0。
-    rows = collect(Path(__file__).resolve().parent.parent)
+    # S6 冻结台账的读数必须稳定。
+    #   ⛔ 第一百零一轮 §71 自踩：这条原来写的是 `len(rows) == 147 and len(ks) == 7`，
+    #      而 `collect()` 是 `rglob("runs.jsonl")` **递归扫全仓库** ⇒ 那两个数是
+    #      「145 行冻结台账 + 恰好两份 evidence 台账」的**巧合**。
+    #      我在 evidence 里多放两份 runs.jsonl，门禁当场 EXIT=1（149 行 / 8 种）。
+    #      ⇒ 量具被"加证据"撞坏，说明它的判据锚在**无关文件的数量**上，不是在台账本身。
+    #   修法：判据只认**冻结台账**这一份文件；额外台账单独计数、只作信息打印。
+    #   反证 S6b：`_is_frozen` 必须只认这一个路径（子串匹配会把 bench_out_x/ 也捞进来）。
+    rows_all = collect(Path(__file__).resolve().parent.parent)
+    rows = [r for r in rows_all if _is_frozen(r["src"])]
     if not rows:
-        chk("S6 台账在盘上（缺文件时不许把'没量到'读成 0 对）", False, "扫到 0 行")
+        chk("S6a 冻结台账在盘上（缺文件时不许把'没量到'读成 0 对）", False,
+            f"全库扫到 {len(rows_all)} 行，冻结台账 0 行")
     else:
         uniq: dict[str, dict] = {}
         for r in rows:
@@ -167,9 +195,20 @@ def _self_check() -> int:
         tally = {"SAME": 0, "SUBJECT_ONLY": 0, "CHANNEL_ONLY": 0, "MIXED": 0}
         for ka, kb in combinations(ks, 2):
             tally[classify(uniq[ka], uniq[kb])] += 1
-        chk("S6 本机台账复现冻结读数（SUBJECT_ONLY = 0）",
-            len(rows) == 147 and len(ks) == 7 and tally["SUBJECT_ONLY"] == 0,
+        chk("S6a 冻结台账复现冻结读数（145 行 / 5 种 / SUBJECT_ONLY = 0）",
+            len(rows) == 145 and len(ks) == 5 and tally["SUBJECT_ONLY"] == 0,
             f"{len(rows)} 行 / {len(ks)} 种 / {tally}")
+        # 额外台账只报数，不参与判据（它们是**别的轮次**的证据，不是这把尺子的基准）
+        print(f"      ℹ️ 全库另有 {len(rows_all) - len(rows)} 行 evidence 台账 "
+              f"（不参与 S6a；§71 之前它们会被算进去 ⇒ 判据随证据数量漂）")
+
+    # S6b ⭐ 反证：`_is_frozen` 的边界必须**逐字**，不能是子串匹配
+    ok_b = (_is_frozen("bench_out/runs.jsonl")
+            and not _is_frozen("bench/evidence/artifact_run_s101/t1_old_ruler/runs.jsonl")
+            and not _is_frozen("bench_out_x/runs.jsonl")
+            and not _is_frozen("bench_out/runs.jsonl.bak"))
+    chk("S6b 冻结台账的识别是逐字路径（子串匹配会把 bench_out_x 也捞进来）", bool(ok_b),
+        "四条边界样本" if ok_b else "有样本判错")
 
     print(f"\n结论：{'全部成立' if bad == 0 else f'{bad} 条不成立'}")
     return 0 if bad == 0 else 1

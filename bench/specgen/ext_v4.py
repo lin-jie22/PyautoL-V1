@@ -25,7 +25,7 @@
    v4 的期望值是 CPython **自己的序列化行为** + 我的格式规定。
    ⇒ 弱一层。登记在案，不许当成 v3 的加强版来引用。
 
-## 八条自检（缺一条这把尺子就不许用）
+## 十条自检（缺一条这把尺子就不许用）
 
   S1 oracle（参考解）必须满分                —— 否则题目不可解
   S2 spec_impl（只照规格文字手写）必须满分    —— 否则规格不充分
@@ -37,10 +37,15 @@
   S8 ⭐ **pure（只算对、不落盘）必须低分**     —— 这是本尺子存在的理由：
        一个返回值完全正确但什么都没写出去的实现，在 v1~v3 上会拿满分，
        在 v4 上必须接近零分。**证明这把尺子测的是另一件事。**
+  S9 题面必须**显式给出签名**（参数名与顺序）—— §71 实测的缺陷：第一版只让
+       模型「从规则里看名字」，at03/at05 的规则顺序与测试调用顺序相反
+       ⇒ 8 题里 2 题、32/128 格**不可归因**（那是题面欠定，不是能力读数）。
+  S10 ⭐ **反证**：把签名拿掉、只按「参数名在规则里首现的顺序」猜，必须至少错 1 条
+       —— 若 0 条 ⇒ 欠定根本不存在 ⇒ S9 是装饰，这道闸该删。
 
 ## 跑法
 
-    python3 bench/specgen/ext_v4.py            # 八条自检 + 标定表
+    python3 bench/specgen/ext_v4.py            # 十条自检 + 标定表
     python3 bench/specgen/ext_v4.py --emit     # 写 bench/specgen/tasks_v4.jsonl
 
 ⛔ 生成是**构建步骤**：`tasks_v4.jsonl` 一旦提交就冻结，
@@ -60,6 +65,7 @@ import argparse
 import json
 import os
 import random
+import re
 import sys
 import tempfile
 from dataclasses import dataclass
@@ -876,6 +882,21 @@ SPECS: list[Spec] = [AT01, AT02, AT03, AT04, AT05, AT06, AT07, AT08]
 # ===========================================================================
 # 渲染题面与断言
 # ===========================================================================
+def sig_of(sp: Spec) -> str:
+    """从 oracle 抽出**签名**（参数名 + 顺序），作为题面里唯一的真相来源。
+
+    ⛔ 第一百零一轮 §71 实测：第一版题面只写「参数见下面每一条规则里提到的名字」，
+       而 at03/at05 的规则里 `path`/`root` **先出现**、测试却按 `(rows, path)` 调用
+       ⇒ 模型照题面顺序写 `append_dedup(path, rows)` ⇒ `TypeError: ... not list` ⇒ 0 分。
+       那不是能力读数，是**题面欠定**（8 题里 2 题、32/128 格不可归因）。
+       修法：把签名印在题面上，顺序不再靠猜。S9 钉住它，S10 反证它不是装饰。
+    """
+    m = re.search(rf"def\s+{re.escape(sp.fn)}\s*\(([^)]*)\)", sp.oracle)
+    if not m:
+        raise SystemExit(f"❌ {sp.id}: oracle 里找不到 def {sp.fn}(...)")
+    return m.group(1).strip()
+
+
 def render_prompt(sp: Spec) -> str:
     rules = "\n".join(f"  {i + 1}. {b}" for i, b in enumerate(sp.body))
     extra = ""
@@ -883,8 +904,9 @@ def render_prompt(sp: Spec) -> str:
         extra = "\n把同一批输入连续调用两次后，文件里不许出现重复行。"
     if sp.id == "at08":
         extra = "\n注意：值里的 `=` 要转义，键里的不需要。"
-    return (f"写一个函数 {sp.fn}，参数见下面每一条规则里提到的名字。"
-            f"按下面列出的规则实现：\n{rules}{extra}\n"
+    sig = sig_of(sp)
+    return (f"写一个函数 `{sp.fn}`，函数签名**必须**是 `def {sp.fn}({sig})`"
+            f"（参数名与顺序照此写，不要改）。按下面列出的规则实现：\n{rules}{extra}\n"
             f"只输出代码，函数名必须是 {sp.fn}。")
 
 
@@ -1038,7 +1060,7 @@ def score(src: str, tests: list[str], *, timeout_s: float = 30.0) -> int:
 
 
 # ===========================================================================
-# 八条自检
+# 十条自检
 # ===========================================================================
 def self_check() -> int:
     print("=" * 78)
@@ -1089,7 +1111,37 @@ def self_check() -> int:
     print(f"[S7] 期望值泄漏进题面：{'✅ 无' if s7 else '❌ ' + str(leaks[:3])}")
     bad += 0 if s7 else 1
 
-    print(f"\n{'✅ 八条自检全绿' if bad == 0 else f'❌ {bad} 条自检失败'}")
+    # ── S9 每条题面必须**显式给出签名**（参数名与顺序）────────────────────
+    #   §71 实测的缺陷：第一版只让模型「从规则里看名字」，at03/at05 的规则顺序
+    #   与测试调用顺序相反 ⇒ 2/8 题不可解（32/128 格）。S9 钉住修法。
+    miss9 = [sp.id for sp in SPECS
+             if f"def {sp.fn}({sig_of(sp)})" not in render_prompt(sp)]
+    s9 = not miss9
+    print(f"[S9] 题面显式给出签名：{'✅ 8/8' if s9 else '❌ 缺 ' + str(miss9)}")
+    bad += 0 if s9 else 1
+
+    # ── S10 **反证**：若把签名从题面拿掉，只按「参数名在规则里首现的顺序」猜，
+    #   必须**至少错 1 条** —— 否则 S9 是装饰（说明欠定根本不存在，这道闸可以删）。
+    #   ⛔ 这是「断言自带反证」：一条恒真的闸等于没有闸。
+    body_text = {sp.id: "\n".join(sp.body) for sp in SPECS}
+    guess_bad = []
+    for sp in SPECS:
+        true_params = [p.strip() for p in sig_of(sp).split(",") if p.strip()]
+        firsts = [(body_text[sp.id].find(p), p) for p in true_params]
+        mentioned = [(pos, p) for pos, p in firsts if pos >= 0]
+        mentioned.sort()
+        guessed = [p for _, p in mentioned]
+        wanted = [p for p in true_params if p in guessed]
+        if guessed != wanted:
+            guess_bad.append(f"{sp.id}: 猜={','.join(guessed)} 实际={','.join(wanted)}")
+    s10 = bool(guess_bad)
+    print(f"[S10] 反证「按规则首现顺序猜参数」：{len(guess_bad)} 条会猜错 "
+          f"{'✅' if s10 else '❌ 0 条 ⇒ S9 是装饰，可以删'}")
+    for g in guess_bad:
+        print(f"      {g}")
+    bad += 0 if s10 else 1
+
+    print(f"\n{'✅ 十条自检全绿' if bad == 0 else f'❌ {bad} 条自检失败'}")
     if bad == 0:
         print("⚠️ S8 的含义：pure 是「返回值完全正确、但什么都没写出去」的实现。")
         print("   它在 v1~v3 上能拿满分，在这把尺子上拿不到分 ⇒ 形态确实变了。")

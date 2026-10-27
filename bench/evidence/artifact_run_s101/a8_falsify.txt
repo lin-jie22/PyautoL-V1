@@ -1,0 +1,11 @@
+=== A8 反证：对 HEAD 版旧题集跑同一判据（必须红）===
+  at01  旧=False  新=True   def write_lines(rows, path)
+  at02  旧=False  新=True   def write_counts(rows, path)
+  at03  旧=False  新=True   def append_dedup(rows, path)
+  at04  旧=False  新=True   def write_or_fail(rows, path)
+  at05  旧=False  新=True   def save_nested(rows, root)
+  at06  旧=False  新=True   def merge_sorted(path, new)
+  at07  旧=False  新=True   def merge_txt(indir, out)
+  at08  旧=False  新=True   def write_pairs(pairs, path)
+
+旧题集 8/8 不满足 ⇒ A8 在旧版上会红 8 次（不是恒真）

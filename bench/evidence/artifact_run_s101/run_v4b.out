@@ -1,0 +1,45 @@
+================ §71 T1  tasks_v4  model=qwen2.5:7b  单臂 ================
+口径：model=qwen2.5:7b endpoint=127.0.0.1:8801 inject={"reasoning_effort":"none"} repeat=3
+      suite=tasks_v4（8 题 × 16 格 = 128 格）  temperature=0  max_tokens=2048
+
+--- N2 前置：oracle 上界参照（同一 env）  23:05:37 ---
+oracle EXIT=0
+  任务集  tasks_v4  n=8  suite_sha=8dec0771b8c574fea6348dc2a4c20fe7
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=8dec0771b8c5；换任一者本校准即失效，必须重做
+--- 第 2 步  跑任务集  solver=oracle（上界参照）  预算档=1x  repeat=3 ---
+  oracle（上界参照）@1x n=3 mean=1.0000 std=0.0000 [1.0000,1.0000] 极差=0.0000
+
+--- 主臂：solver=llm  23:05:59 ---
+主臂结束：23:30:53  EXIT=0
+--- 台账 /tmp/v1_s101_proxy_v4_s101b.jsonl：87 行 ---
+--- 主臂读数 ---
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@1x n=3 mean=0.5469 std=0.0000 [0.5469,0.5469] 极差=0.0000
+  attempted=24 recorded=24 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/8
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+--- 主臂日志尾部 ---
+  世界模型  预演=28 检验=26 命中=23 命中率=0.885 失配=3(成败3/文本0) 混淆={'ok_ok': 21, 'ok_fail': 3, 'fail_ok': 0, 'fail_fail': 2}
+  传输层    抖动重试=9 重试后仍失败=0 上限被裁短=87 墙钟放弃首发=5/重试=9 （共 24 题）
+
+--- 噪声明细（逐题 × 逐次）---
+  任务                        r1      r2      r3   极差
+  at01                  1.0000  1.0000  1.0000   0.0000
+  at02                  0.0000  0.0000  0.0000   0.0000
+  at03                  0.0000  0.0000  0.0000   0.0000
+  at04                  0.3750  0.3750  0.3750   0.0000
+  at05                  1.0000  1.0000  1.0000   0.0000
+  at06                  0.0000  0.0000  0.0000   0.0000
+  at07                  1.0000  1.0000  1.0000   0.0000
+  at08                  1.0000  1.0000  1.0000   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/8
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=e863f9b399b50d8f scorer=d4b1cbbfd7f1 suite=8dec0771b8c5 repeat=3 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=cf5b220362 llm_cond=3eaee10706 max_tokens=2048 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s101_bench_v4_s101b/runs.jsonl
+  答案已落盘 /private/tmp/v1_s101_bench_v4_s101b/answers.jsonl  24 条  共 9893 字符  最长 638 字符  截断 0 条
+================ 结束 23:30:54 ================
+EXIT=0

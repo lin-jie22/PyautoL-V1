@@ -11,7 +11,7 @@
    这三个都是「看起来是 128 格、其实没量到 128 格」的形态。
    本文件逐条把它们变成可失败的断言。
 
-七条（A1~A7），其中 A2/A4/A6 是**反证**性质，不是描述性质：
+八条（A1~A8），其中 A2/A4/A6/A8 是**反证**性质，不是描述性质：
 
   A1 冻结题集结构（8 题 / 128 格 / id 唯一 / 每题 16 条 / 字段齐）
   A2 ⭐ **打乱 test 顺序，分数必须不变** —— 证明每条 test 自带 setup
@@ -21,6 +21,10 @@
   A5 冻结文件 == 生成器重生成（逐字节）—— 防"改了生成器忘了重冻结"
   A6 ⭐ 把一条 test 的期望值改一个字 ⇒ 分数必须掉（断言不是恒真）
   A7 空答案 ⇒ 0 分（防"没答案也给分"）
+  A8 ⭐ 题面必须**显式给出签名**（参数名 + 顺序）—— §71 实测的缺陷：
+        第一版题面只写「参数见规则里提到的名字」，at03/at05 的规则顺序与
+        测试调用顺序相反 ⇒ 2/8 题、32/128 格**不可归因**。
+        反证已做：拿 HEAD 版旧题集跑同一条判据 ⇒ **8/8 报错**（不是恒真）。
 
 零模型、零网络。A2 只抽 3 题（at03 幂等 / at05 多产物 / at07 目录遍历）——
 它们是最容易依赖顺序的三题；全量 8 题会把门禁拉到 40s 以上而没有额外信息。
@@ -33,6 +37,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -101,7 +106,7 @@ def gen_specs() -> dict[str, object]:
 # ===========================================================================
 def self_check() -> int:
     print("=" * 78)
-    print("  第十八件量具：tasks_v4 产物型尺子的性质（A1~A7）")
+    print("  第十八件量具：tasks_v4 产物型尺子的性质（A1~A8）")
     print("=" * 78)
     bad = 0
     suite = load()
@@ -215,10 +220,31 @@ def self_check() -> int:
         print(f"  {tid:5s} {s:.4f}  {'✅' if ok else '❌'}")
     bad += 0 if a7 else 1
 
-    print(f"\n{'✅ 七条全绿' if bad == 0 else f'❌ {bad} 条失败'}")
+    # ── A8 题面必须显式给出签名（参数名 + 顺序）────────────────────────
+    #   §71 实测的缺陷：第一版题面只写「参数见规则里提到的名字」，
+    #   at03/at05 的规则顺序与测试调用顺序相反 ⇒ 2/8 题、32/128 格不可归因。
+    #   ⛔ 这道闸的价值在于：它拦的是**尺子欠定**，不是「分数不好看」。
+    print("\n[A8] 题面必须显式给出签名（防「参数顺序靠猜」）")
+    a8 = True
+    for tid in sorted(suite):
+        row = suite[tid]
+        mo = re.search(r"def\s+(\w+)\s*\(([^)]*)\)", row["oracle"])
+        if not mo:
+            print(f"  {tid:5s} ❌ oracle 里抽不出签名")
+            a8 = False
+            continue
+        fn, params = mo.group(1), mo.group(2).strip()
+        want = f"def {fn}({params})"
+        ok = want in row["prompt"]
+        a8 &= ok
+        print(f"  {tid:5s} {want:34s} {'✅' if ok else '❌ 题面没给签名'}")
+    bad += 0 if a8 else 1
+
+    print(f"\n{'✅ 八条全绿' if bad == 0 else f'❌ {bad} 条失败'}")
     if bad == 0:
         print("判读：A4 是这把尺子存在的理由 —— 同一份「返回值完全正确」的实现")
         print("      在 v1~v3 上满分，在这里拿不到 10%。")
+        print("      A8 是**第二把**：尺子自己欠定时，分数再稳定也是假的。")
         print("⛔ 但它**不**证明「内核会用工具」：判分只看 answer，看不到轨迹。")
     return 0 if bad == 0 else 1
 

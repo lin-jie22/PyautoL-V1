@@ -1,0 +1,54 @@
+=== 检测器自检（6 例）===
+  PASS     pure 形态（有 def、无写调用）        def=True write=False (exp True/False)
+  PASS     真写（fh.write）               def=True write=True (exp True/True)
+  PASS     write_text                 def=True write=True (exp True/True)
+  PASS     只读 open（不算写）               def=True write=False (exp True/False)
+  PASS     open 带 w 模式但无 .write       def=True write=True (exp True/True)
+  PASS     无 def 的散文                  def=False write=False (exp False/False)
+自检全通过
+
+=== 接线层（c）===
+  attempted=24 recorded=24 skipped_no_answer=0 failed_scorer=0
+  calibration ok=True margin=1.0 middle_n=8
+  caliber_sig=e863f9b399b50d8f suite_sha=8dec0771b8c5 scorer_sha=d4b1cbbfd7f1
+
+=== 分数 ===
+  mean=0.5469 std=0.0000 n=3 lo=0.5469 hi=0.5469
+
+=== 逐题 × 逐 rep（格数按 128 计）===
+  任务  格数  r1  r2  r3
+  at01    16  1.0000  1.0000  1.0000
+  at02    16  0.0000  0.0000  0.0000
+  at03    16  0.0000  0.0000  0.0000
+  at04    16  0.3750  0.3750  0.3750
+  at05    16  1.0000  1.0000  1.0000
+  at06    16  0.0000  0.0000  0.0000
+  at07    16  1.0000  1.0000  1.0000
+  at08    16  1.0000  1.0000  1.0000
+
+=== 三因归因（a 交付层 × b 内容层）===
+  answers 行 24 条，按 (题, sha256) 去重后 **10** 条唯一答案
+  ┌─────────┬─────────┬──────┬────────────┐
+  │ 有 def  │ 有写调用│ 次数 │ 平均分     │
+  ├─────────┼─────────┼──────┼────────────┤
+  │ True    │ True    │   10 │ 0.5375     │
+  │ True    │ False   │    0 │ —          │
+  │ False   │ True    │    0 │ —          │
+  │ False   │ False   │    0 │ —          │
+  └─────────┴─────────┴──────┴────────────┘
+
+=== 逐条明细（每题一条唯一答案，分数取跨 rep 均值）===
+  at01  r1 score=1.0000 def=True  write=True  .write(,makedirs,open(mode=w)      通过 16/16           
+  at02  r1 score=0.0000 def=True  write=True  .write(,makedirs,open(mode=w)      通过 0/16；失败: import 
+  at03  r1 score=0.0000 def=True  write=True  .write(,open(mode=w)               通过 0/16；失败: import 
+  at03  r1 score=0.0000 def=True  write=True  .write(,open(mode=w)               通过 0/16；失败: import 
+  at04  r1 score=0.3750 def=True  write=True  .write(,makedirs,open(mode=w)      通过 6/16；失败: import 
+  at05  r1 score=1.0000 def=True  write=True  .write(,makedirs,open(mode=w)      通过 16/16           
+  at05  r1 score=1.0000 def=True  write=True  .write(,makedirs,open(mode=w)      通过 16/16           
+  at06  r1 score=0.0000 def=True  write=True  .write(                            通过 0/16；失败: import 
+  at07  r1 score=1.0000 def=True  write=True  .write(,makedirs,open(mode=w)      通过 16/16           
+  at08  r1 score=1.0000 def=True  write=True  .write(,makedirs,open(mode=w)      通过 16/16           
+
+=== 预注册判据 ===
+  全 0？否
+  「有 def 但无写调用」= 0/10 条

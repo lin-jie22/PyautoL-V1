@@ -1,0 +1,63 @@
+=== S0 检测器自检（7 例，含 1 条真实负例）===
+  PASS     闸载荷 =1 点名              got=revealed:os  want=revealed:os
+  PASS     闸载荷 =2 盲报              got=blind        want=blind
+  PASS     闸载荷 其他                 got=other        want=other
+  PASS     真实缺 import 的答案         got=no_bind      want=no_bind
+  PASS     补上一行的答案                got=bind         want=bind
+  PASS     from os import 也算绑定    got=bind         want=bind
+  PASS     只写注释不算绑定               got=no_bind      want=no_bind
+自检全通过
+
+=== S1 接线层（预注册 N1）===
+  A =1: attempted=24 recorded=24 skipped_no_answer=0 failed_scorer=0 | 日志尝试块=24
+  B =2: attempted=24 recorded=24 skipped_no_answer=0 failed_scorer=0 | 日志尝试块=24
+
+=== S2 口径（唯一自变量 = verify_static）===
+  A: sig=147b0db39edbd2e6 suite=8dec0771b8c5 scorer=d4b1cbbfd7f1 limits.verify_static=1
+  B: sig=77d5a5f6b91f52d2 suite=8dec0771b8c5 scorer=d4b1cbbfd7f1 limits.verify_static=2
+  B 与 §71 T1b 同 sig？False（⇒ 可作跨 run 噪声复现，不是新口径）
+  两臂 limits 差异项 = {'verify_static': (1, 2)}
+
+=== S3 分数 ===
+  A（=1 报名字） mean=0.6250 std=0.0000 lo=0.6250 hi=0.6250
+  B（=2 盲报）   mean=0.5469 std=0.0000 lo=0.5469 hi=0.5469
+  Δ(A−B) = +0.0781  本 run 极差：A=0.0000 B=0.0000 ⇒ 判定线取 max=0.0000
+  ≡ +10.0 格 / 128
+
+=== S4 逐题 × 逐 rep ===
+  题     A(r1,r2,r3)            B(r1,r2,r3)            Δ
+  at01  1.0000 1.0000 1.0000   1.0000 1.0000 1.0000   +0.0000
+  at02  0.0000 0.0000 0.0000   0.0000 0.0000 0.0000   +0.0000
+  at03  0.0000 0.0000 0.0000   0.0000 0.0000 0.0000   +0.0000
+  at04  1.0000 1.0000 1.0000   0.3750 0.3750 0.3750   +0.6250
+  at05  1.0000 1.0000 1.0000   1.0000 1.0000 1.0000   +0.0000
+  at06  0.0000 0.0000 0.0000   0.0000 0.0000 0.0000   +0.0000
+  at07  1.0000 1.0000 1.0000   1.0000 1.0000 1.0000   +0.0000
+  at08  1.0000 1.0000 1.0000   1.0000 1.0000 1.0000   +0.0000
+
+=== S5 机制读数（机会 = 触发静态判据的尝试；咬合 = 首次失败后重写即过闸）===
+  A =1: 机会=3 咬合=3 | 下游闸跑：打回=3 收尾未过闸=0 收尾过闸=9 | 载荷={'revealed:os': 3}
+      块04 write_or_fail  失败1次 ['revealed:os'] 打回=1 收尾未过=0 ⇒ 重写后过闸
+      块12 write_or_fail  失败1次 ['revealed:os'] 打回=1 收尾未过=0 ⇒ 重写后过闸
+      块20 write_or_fail  失败1次 ['revealed:os'] 打回=1 收尾未过=0 ⇒ 重写后过闸
+  B =2: 机会=3 咬合=0 | 下游闸跑：打回=6 收尾未过闸=2 收尾过闸=9 | 载荷={'blind': 8}
+      块04 write_or_fail  失败3次 ['blind', 'blind', 'blind'] 打回=2 收尾未过=1 ⇒ 仍失败
+      块12 write_or_fail  失败3次 ['blind', 'blind', 'blind'] 打回=2 收尾未过=1 ⇒ 仍失败
+      块20 write_or_fail  失败2次 ['blind', 'blind'] 打回=2 收尾未过=0 ⇒ 仍失败
+
+=== S6 交付物证据（at04：用了 os.* 却没有绑定 os）===
+  A =1: 交付 3 条 / 唯一 1 条 | 缺绑定 0 条 | 已绑定 1 条 | sha=['26fe8d59']
+  B =2: 交付 3 条 / 唯一 2 条 | 缺绑定 1 条 | 已绑定 1 条 | sha=['1b5f6119', '4beacfc9']
+
+=== S7 增补块（只含 at04，repeat=6；⛔ 分数禁跨 sha 比）===
+  A-子集 =1: mean=1.0000 逐 rep=['1.0000', '1.0000', '1.0000', '1.0000', '1.0000', '1.0000'] 唯一答案=1 已绑定 os=1
+  B-子集 =2: mean=0.3750 逐 rep=['0.3750', '0.3750', '0.3750', '0.3750', '0.3750', '0.3750'] 唯一答案=1 已绑定 os=0
+
+=== S8 判负检查（预注册第四节）===
+  ✅ N1 接线
+  ✅ N2 oracle=1.0（日志）
+  ✅ N3 两臂都有机会
+  ✅ N4 机会数相等
+  ✅ N5 |Δ| > 本 run 极差
+  ✅ N6 |Δ| > 3 格（0.0234）
+  ⇒ 判据全部满足且方向为 A 优：H1 未被否证，H0 被否证

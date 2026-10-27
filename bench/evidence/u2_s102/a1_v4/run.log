@@ -1,0 +1,386 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  tasks_v4  n=8  suite_sha=8dec0771b8c574fea6348dc2a4c20fe7
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=8/8
+  at01: oracle=1.0000 partial=0.4375 null=0.0000 ✅
+  at02: oracle=1.0000 partial=0.5000 null=0.0000 ✅
+  at03: oracle=1.0000 partial=0.8750 null=0.0000 ✅
+  at04: oracle=1.0000 partial=0.6250 null=0.0000 ✅
+  at05: oracle=1.0000 partial=0.3125 null=0.0000 ✅
+  at06: oracle=1.0000 partial=0.3750 null=0.0000 ✅
+  at07: oracle=1.0000 partial=0.8750 null=0.0000 ✅
+  at08: oracle=1.0000 partial=0.3125 null=0.0000 ✅
+  理由: 全部 8 条两极可分，其中 8 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=4478ba45e5ba04a2
+  [观察]
+    - at01: oracle=1.0000 partial=0.4375 null=0.0000
+    - at02: oracle=1.0000 partial=0.5000 null=0.0000
+    - at03: oracle=1.0000 partial=0.8750 null=0.0000
+    - at04: oracle=1.0000 partial=0.6250 null=0.0000
+    - at05: oracle=1.0000 partial=0.3125 null=0.0000
+    - at06: oracle=1.0000 partial=0.3750 null=0.0000
+    - at07: oracle=1.0000 partial=0.8750 null=0.0000
+    - at08: oracle=1.0000 partial=0.3125 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 8 条任务上两极可分
+    - 中段有序检查 8 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=8dec0771b8c5；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 248 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=1x  repeat=3 ---
+23:56:33 ▶ 任务开始: 写一个函数 `write_lines`，函数签名**必须**是 `def write_lines(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 对 rows 的**每一个原始下标** i（从 0 
+23:56:33   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+23:56:53   [1] 通道=深 候选=1
+23:56:57       ↳ finish ok=True 直接实现函数
+23:56:57   ✅ 收尾: ```python
+import os
+import codecs
+
+def write_lines(rows, path):
+    parent_dir = os.path.dirname(path)
+    if not os.pat
+23:56:57 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.806 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_lines/语言标签/可编译/未定义名)
+23:56:58 ▶ 任务开始: 写一个函数 `write_counts`，函数签名**必须**是 `def write_counts(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 把 rows 里每一行去掉首尾空白后转成**小写
+23:56:58   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+23:57:13   [1] 通道=深 候选=1
+23:57:18       ↳ finish ok=True 直接实现函数
+23:57:18   ✅ 收尾: def write_counts(rows, path):
+    import os
+    from collections import Counter
+
+    # 创建父目录
+    os.makedirs(os.path.dir
+23:57:18 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.594 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_counts/语言标签/可编译/未定义名)
+23:57:19 ▶ 任务开始: 写一个函数 `append_dedup`，函数签名**必须**是 `def append_dedup(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `path` 是文件路径，可能已存在也可能不存在
+23:57:19   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+23:57:44   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": """def append_dedup(rows, path):\n    with open(path, \'a\', encoding=\'utf-8\') as file:\n        existing_rows = set(row.strip()'
+23:57:44   [1] 通道=深 候选=1
+23:57:48       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+23:58:11   [2] 通道=深 候选=2
+23:58:21       ↳ finish ok=True 直接根据规则写出代码
+23:58:21   ✅ 收尾: ```python
+def append_dedup(rows, path):
+    with open(path, 'a', encoding='utf-8') as f:
+        existing = set(line.str
+23:58:21 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.005 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 上限被裁短=5 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 append_dedup/语言标签/可编译/未定义名)
+23:58:22 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+23:58:22   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+23:58:38   [1] 通道=深 候选=1
+23:58:45       ↳ finish ok=True 直接实现函数逻辑
+23:58:45       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+23:58:45       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+23:58:45       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+23:59:19   [2] 通道=深 候选=2
+23:59:26       ↳ finish ok=True 直接实现函数逻辑
+23:59:26       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+23:59:26       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+23:59:26   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+23:59:26 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+23:59:27 ▶ 任务开始: 写一个函数 `save_nested`，函数签名**必须**是 `def save_nested(rows, root)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 目标目录是 `root/a/b/`（root 是参数
+23:59:27   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:00:12   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现函数", "tool": "finish", "args": {"answer": """def save_nested(rows, root):\n    import os\n    \n    # 创建目标目录\n    os.makedirs(os.path.join(root, \'a\', \'b\'), exist_ok=True)\n '
+00:00:12   [1] 通道=深 候选=1
+00:00:18       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+00:00:43   [2] 通道=深 候选=1
+00:00:43       ⊘ [values:answer] 否决 — 空答案
+00:00:43   ⛔ 全部候选被拦 (1 次连续失败)
+00:00:43   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+00:01:00   🧪 收尾交付过闸
+00:01:00   📦 收尾交付 357 字符（来源=收尾调用）
+00:01:00 ■ closed | steps=3 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=5 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出0s) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 save_nested/语言标签/可编译/未定义名) | 收尾=1次(步0/时1 来源收尾调用:1 357字) 收尾闸=1跑/1过/0未过
+00:01:01 ▶ 任务开始: 写一个函数 `merge_sorted`，函数签名**必须**是 `def merge_sorted(path, new)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `path` 里可能已有若干行（文件不存在 ⇒ 视
+00:01:01   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:01:42   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": """def merge_sorted(path, new):\n    # 读取现有内容\n    with open(path, \'r\', encoding=\'utf-8\') as file:\n        existing = set(line'
+00:01:42   [1] 通道=深 候选=1
+00:01:47       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+00:02:17   [2] 通道=深 候选=1
+00:02:17       ⊘ [values:answer] 否决 — 空答案
+00:02:17   ⛔ 全部候选被拦 (1 次连续失败)
+00:02:17   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+00:02:28   🧪 收尾交付过闸
+00:02:28   📦 收尾交付 345 字符（来源=收尾调用）
+00:02:28 ■ closed | steps=3 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=5 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出0s) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_sorted/语言标签/可编译/未定义名) | 收尾=1次(步0/时1 来源收尾调用:1 345字) 收尾闸=1跑/1过/0未过
+00:02:29 ▶ 任务开始: 写一个函数 `merge_txt`，函数签名**必须**是 `def merge_txt(indir, out)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `indir` 目录下**只有顶层**的 `.txt` 文件
+00:02:29   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:02:58   [1] 通道=深 候选=1
+00:03:04       ↳ finish ok=True 直接实现所需功能
+00:03:04   ✅ 收尾: ```python
+import os
+import glob
+
+def merge_txt(indir, out):
+    # 确保输出文件的父目录存在
+    out_dir = os.path.dirname(out)
+    if
+00:03:04 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.505 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_txt/语言标签/可编译/未定义名)
+00:03:04 ▶ 任务开始: 写一个函数 `write_pairs`，函数签名**必须**是 `def write_pairs(pairs, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 把 pairs 里的每个 (键, 值) 写成一行 
+00:03:05   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:03:19   [1] 通道=深 候选=1
+00:03:25       ↳ finish ok=True 直接实现函数
+00:03:25   ✅ 收尾: ```python
+def write_pairs(pairs, path):
+    import os
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with ope
+00:03:25 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.1 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_pairs/语言标签/可编译/未定义名)
+00:03:26 ▶ 任务开始: 写一个函数 `write_lines`，函数签名**必须**是 `def write_lines(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 对 rows 的**每一个原始下标** i（从 0 
+00:03:26   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:03:42   [1] 通道=深 候选=1
+00:03:46       ↳ finish ok=True 直接实现函数
+00:03:46   ✅ 收尾: ```python
+import os
+import codecs
+
+def write_lines(rows, path):
+    parent_dir = os.path.dirname(path)
+    if not os.pat
+00:03:46 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.806 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_lines/语言标签/可编译/未定义名)
+00:03:46 ▶ 任务开始: 写一个函数 `write_counts`，函数签名**必须**是 `def write_counts(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 把 rows 里每一行去掉首尾空白后转成**小写
+00:03:46   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:04:13   [1] 通道=深 候选=1
+00:04:17       ↳ finish ok=True 直接实现函数
+00:04:17   ✅ 收尾: def write_counts(rows, path):
+    import os
+    from collections import Counter
+
+    # 创建父目录
+    os.makedirs(os.path.dir
+00:04:17 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.594 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_counts/语言标签/可编译/未定义名)
+00:04:18 ▶ 任务开始: 写一个函数 `append_dedup`，函数签名**必须**是 `def append_dedup(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `path` 是文件路径，可能已存在也可能不存在
+00:04:18   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:04:50   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": """def append_dedup(rows, path):\n    with open(path, \'a\', encoding=\'utf-8\') as file:\n        existing_rows = set(row.strip()'
+00:04:50   [1] 通道=深 候选=1
+00:04:53       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+00:05:18   [2] 通道=深 候选=2
+00:05:30       ↳ finish ok=True 直接根据规则写出代码
+00:05:30   ✅ 收尾: ```python
+def append_dedup(rows, path):
+    with open(path, 'a', encoding='utf-8') as f:
+        existing = set(line.str
+00:05:30 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.005 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 上限被裁短=5 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 append_dedup/语言标签/可编译/未定义名)
+00:05:31 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+00:05:31   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:05:45   [1] 通道=深 候选=1
+00:05:49       ↳ finish ok=True 直接实现函数逻辑
+00:05:49       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+00:05:50       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+00:05:50       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+00:06:15   [2] 通道=深 候选=2
+00:06:21       ↳ finish ok=True 直接实现函数逻辑
+00:06:21       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+00:06:21       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+00:06:21   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+00:06:21 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+00:06:21 ▶ 任务开始: 写一个函数 `save_nested`，函数签名**必须**是 `def save_nested(rows, root)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 目标目录是 `root/a/b/`（root 是参数
+00:06:21   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:06:57   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现函数", "tool": "finish", "args": {"answer": """def save_nested(rows, root):\n    import os\n    \n    # 创建目标目录\n    os.makedirs(os.path.join(root, \'a\', \'b\'), exist_ok=True)\n '
+00:06:57   [1] 通道=深 候选=1
+00:07:01       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+00:07:36   [2] 通道=深 候选=1
+00:07:36   ⏳ 预算耗尽 [wall_s]：已用 74.495 / 上限 120
+00:07:36   ⏱ 墙钟被重试链挡住，但还剩 45s ⇒ 转向收尾
+00:07:36   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+00:07:46   🧪 收尾交付过闸
+00:07:46   📦 收尾交付 377 字符（来源=收尾调用）
+00:07:46 ■ closed | steps=1 | guard_blocked=0 | 预演=2 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 上限被裁短=5 | 墙钟放弃首发=1/重试=0 | 宽限生效=1次(超出0s) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 save_nested/语言标签/可编译/未定义名) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 377字) 收尾闸=1跑/1过/0未过
+00:07:46 ▶ 任务开始: 写一个函数 `merge_sorted`，函数签名**必须**是 `def merge_sorted(path, new)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `path` 里可能已有若干行（文件不存在 ⇒ 视
+00:07:46   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:08:21   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": """def merge_sorted(path, new):\n    # 读取现有内容\n    with open(path, \'r\', encoding=\'utf-8\') as file:\n        existing = set(line'
+00:08:21   [1] 通道=深 候选=1
+00:08:23       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+00:08:53   [2] 通道=深 候选=1
+00:09:02   ⏳ 预算耗尽 [wall_s]：已用 75.5031 / 上限 120
+00:09:02   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+00:09:02   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+00:09:18   🧪 收尾交付过闸
+00:09:18   📦 收尾交付 345 字符（来源=收尾调用）
+00:09:18 ■ closed | steps=1 | guard_blocked=0 | 预演=2 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=6 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出0s) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_sorted/语言标签/可编译/未定义名) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 345字) 收尾闸=1跑/1过/0未过
+00:09:19 ▶ 任务开始: 写一个函数 `merge_txt`，函数签名**必须**是 `def merge_txt(indir, out)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `indir` 目录下**只有顶层**的 `.txt` 文件
+00:09:19   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:09:43   [1] 通道=深 候选=1
+00:09:46       ↳ finish ok=True 直接实现所需功能
+00:09:46   ✅ 收尾: ```python
+import os
+import glob
+
+def merge_txt(indir, out):
+    # 确保输出文件的父目录存在
+    out_dir = os.path.dirname(out)
+    if
+00:09:46 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.505 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_txt/语言标签/可编译/未定义名)
+00:09:47 ▶ 任务开始: 写一个函数 `write_pairs`，函数签名**必须**是 `def write_pairs(pairs, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 把 pairs 里的每个 (键, 值) 写成一行 
+00:09:47   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:10:02   [1] 通道=深 候选=1
+00:10:04       ↳ finish ok=True 直接实现函数
+00:10:04   ✅ 收尾: ```python
+def write_pairs(pairs, path):
+    import os
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with ope
+00:10:04 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.1 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_pairs/语言标签/可编译/未定义名)
+00:10:05 ▶ 任务开始: 写一个函数 `write_lines`，函数签名**必须**是 `def write_lines(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 对 rows 的**每一个原始下标** i（从 0 
+00:10:05   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:10:22   [1] 通道=深 候选=1
+00:10:25       ↳ finish ok=True 直接实现函数
+00:10:25   ✅ 收尾: ```python
+import os
+import codecs
+
+def write_lines(rows, path):
+    parent_dir = os.path.dirname(path)
+    if not os.pat
+00:10:25 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.806 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_lines/语言标签/可编译/未定义名)
+00:10:26 ▶ 任务开始: 写一个函数 `write_counts`，函数签名**必须**是 `def write_counts(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 把 rows 里每一行去掉首尾空白后转成**小写
+00:10:26   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:10:49   [1] 通道=深 候选=1
+00:10:52       ↳ finish ok=True 直接实现函数
+00:10:52   ✅ 收尾: def write_counts(rows, path):
+    import os
+    from collections import Counter
+
+    # 创建父目录
+    os.makedirs(os.path.dir
+00:10:52 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.594 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_counts/语言标签/可编译/未定义名)
+00:10:52 ▶ 任务开始: 写一个函数 `append_dedup`，函数签名**必须**是 `def append_dedup(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `path` 是文件路径，可能已存在也可能不存在
+00:10:52   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:11:25   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": """def append_dedup(rows, path):\n    with open(path, \'a\', encoding=\'utf-8\') as file:\n        existing_rows = set(row.strip()'
+00:11:25   [1] 通道=深 候选=1
+00:11:29       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+00:11:57   [2] 通道=深 候选=2
+00:12:08   ⏳ 预算耗尽 [wall_s]：已用 75.5038 / 上限 120
+00:12:08   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+00:12:08   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+00:12:19   🧪 收尾交付过闸
+00:12:19   📦 收尾交付 342 字符（来源=收尾调用）
+00:12:19 ■ closed | steps=1 | guard_blocked=0 | 预演=2 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.333] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=6 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出0s) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 append_dedup/语言标签/可编译/未定义名) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 342字) 收尾闸=1跑/1过/0未过
+00:12:20 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+00:12:20   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:12:33   [1] 通道=深 候选=1
+00:12:36       ↳ finish ok=True 直接实现函数逻辑
+00:12:36       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+00:12:36       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+00:12:36       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+00:13:01   [2] 通道=深 候选=2
+00:13:07       ↳ finish ok=True 直接实现函数逻辑
+00:13:07       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+00:13:07       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+00:13:07   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+00:13:07 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+00:13:08 ▶ 任务开始: 写一个函数 `save_nested`，函数签名**必须**是 `def save_nested(rows, root)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 目标目录是 `root/a/b/`（root 是参数
+00:13:08   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:13:45   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现函数", "tool": "finish", "args": {"answer": """def save_nested(rows, root):\n    import os\n    \n    # 创建目标目录\n    os.makedirs(os.path.join(root, \'a\', \'b\'), exist_ok=True)\n '
+00:13:45   [1] 通道=深 候选=1
+00:13:49       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+00:14:17   [2] 通道=深 候选=1
+00:14:23   ⏳ 预算耗尽 [wall_s]：已用 75.5072 / 上限 120
+00:14:23   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+00:14:23   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+00:14:44   🧪 收尾交付过闸
+00:14:44   📦 收尾交付 377 字符（来源=收尾调用）
+00:14:44 ■ closed | steps=1 | guard_blocked=0 | 预演=2 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=6 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出0s) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 save_nested/语言标签/可编译/未定义名) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 377字) 收尾闸=1跑/1过/0未过
+00:14:45 ▶ 任务开始: 写一个函数 `merge_sorted`，函数签名**必须**是 `def merge_sorted(path, new)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `path` 里可能已有若干行（文件不存在 ⇒ 视
+00:14:45   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:15:21   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现所需功能", "tool": "finish", "args": {"answer": """def merge_sorted(path, new):\n    # 读取现有内容\n    with open(path, \'r\', encoding=\'utf-8\') as file:\n        existing = set(line'
+00:15:21   [1] 通道=深 候选=1
+00:15:25       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+00:15:51   [2] 通道=深 候选=1
+00:16:00   ⏳ 预算耗尽 [wall_s]：已用 75.5115 / 上限 120
+00:16:00   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+00:16:00   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+00:16:13   🧪 收尾交付过闸
+00:16:13   📦 收尾交付 345 字符（来源=收尾调用）
+00:16:13 ■ closed | steps=1 | guard_blocked=0 | 预演=2 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=2.174 memory>reason=1.0 reason>act=0.5] 回流=1.0 | 语义记忆=0 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=6 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出0s) | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_sorted/语言标签/可编译/未定义名) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 345字) 收尾闸=1跑/1过/0未过
+00:16:14 ▶ 任务开始: 写一个函数 `merge_txt`，函数签名**必须**是 `def merge_txt(indir, out)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. `indir` 目录下**只有顶层**的 `.txt` 文件
+00:16:14   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:16:38   [1] 通道=深 候选=1
+00:16:41       ↳ finish ok=True 直接实现所需功能
+00:16:41   ✅ 收尾: ```python
+import os
+import glob
+
+def merge_txt(indir, out):
+    # 确保输出文件的父目录存在
+    out_dir = os.path.dirname(out)
+    if
+00:16:41 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.505 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_txt/语言标签/可编译/未定义名)
+00:16:42 ▶ 任务开始: 写一个函数 `write_pairs`，函数签名**必须**是 `def write_pairs(pairs, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 把 pairs 里的每个 (键, 值) 写成一行 
+00:16:42   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:16:59   [1] 通道=深 候选=1
+00:17:03       ↳ finish ok=True 直接实现函数
+00:17:03   ✅ 收尾: ```python
+def write_pairs(pairs, path):
+    import os
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with ope
+00:17:03 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.1 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 write_pairs/语言标签/可编译/未定义名)
+  分数账本  会话#0 追加 8 行（拒绝 0 行  ⚠️重复=16） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@1x n=3 mean=0.6250 std=0.0000 [0.6250,0.6250] 极差=0.0000
+  attempted=24 recorded=24 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=248 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=34 检验=29 命中=23 命中率=0.793 失配=6(成败6/文本0) 混淆={'ok_ok': 23, 'ok_fail': 3, 'fail_ok': 3, 'fail_fail': 0}
+  传输层    抖动重试=6 重试后仍失败=0 上限被裁短=91 墙钟放弃首发=1/重试=6 （共 24 题）
+
+--- 噪声明细（逐题 × 逐次）---
+  任务                        r1      r2      r3   极差
+  at01                  1.0000  1.0000  1.0000   0.0000
+  at02                  0.0000  0.0000  0.0000   0.0000
+  at03                  0.0000  0.0000  0.0000   0.0000
+  at04                  1.0000  1.0000  1.0000   0.0000
+  at05                  1.0000  1.0000  1.0000   0.0000
+  at06                  0.0000  0.0000  0.0000   0.0000
+  at07                  1.0000  1.0000  1.0000   0.0000
+  at08                  1.0000  1.0000  1.0000   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/8
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=f995c3991819099f scorer=d4b1cbbfd7f1 suite=8dec0771b8c5 repeat=3 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=860f4da9cc llm_cond=77b49bbacd max_tokens=2048 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s102_bench_a1_v4/runs.jsonl
+  答案已落盘 /private/tmp/v1_s102_bench_a1_v4/answers.jsonl  24 条  共 9853 字符  最长 638 字符  截断 0 条

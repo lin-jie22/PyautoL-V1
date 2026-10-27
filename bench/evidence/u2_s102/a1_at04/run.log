@@ -1,0 +1,149 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  v1_s102_at04  n=1  suite_sha=2ff0d987f2913f365b2f0dfb348fe816
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=1/1
+  at04: oracle=1.0000 partial=0.6250 null=0.0000 ✅
+  理由: 全部 1 条两极可分，其中 1 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=a723182a984d5b23
+  [观察]
+    - at04: oracle=1.0000 partial=0.6250 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 1 条任务上两极可分
+    - 中段有序检查 1 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=2ff0d987f291；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 248 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=1x  repeat=6 ---
+00:41:12 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+00:41:12   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:41:27   [1] 通道=深 候选=1
+00:41:32       ↳ finish ok=True 直接实现函数逻辑
+00:41:32       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+00:41:32       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+00:41:32       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+00:42:00   [2] 通道=深 候选=2
+00:42:07       ↳ finish ok=True 直接实现函数逻辑
+00:42:07       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+00:42:07       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+00:42:07   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+00:42:07 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+00:42:08 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+00:42:08   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:42:25   [1] 通道=深 候选=1
+00:42:31       ↳ finish ok=True 直接实现函数逻辑
+00:42:31       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+00:42:31       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+00:42:31       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+00:43:02   [2] 通道=深 候选=2
+00:43:09       ↳ finish ok=True 直接实现函数逻辑
+00:43:09       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+00:43:09       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+00:43:09   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+00:43:09 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+00:43:10 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+00:43:10   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:43:26   [1] 通道=深 候选=1
+00:43:30       ↳ finish ok=True 直接实现函数逻辑
+00:43:30       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+00:43:30       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+00:43:30       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+00:43:55   [2] 通道=深 候选=2
+00:44:03       ↳ finish ok=True 直接实现函数逻辑
+00:44:03       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+00:44:04       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+00:44:04   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+00:44:04 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+00:44:04 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+00:44:04   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:44:21   [1] 通道=深 候选=1
+00:44:26       ↳ finish ok=True 直接实现函数逻辑
+00:44:26       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+00:44:26       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+00:44:26       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+00:44:54   [2] 通道=深 候选=2
+00:45:00       ↳ finish ok=True 直接实现函数逻辑
+00:45:00       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+00:45:00       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+00:45:00   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+00:45:00 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+00:45:01 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+00:45:01   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:45:14   [1] 通道=深 候选=1
+00:45:18       ↳ finish ok=True 直接实现函数逻辑
+00:45:18       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+00:45:18       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+00:45:18       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+00:45:44   [2] 通道=深 候选=2
+00:45:49       ↳ finish ok=True 直接实现函数逻辑
+00:45:49       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+00:45:49       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+00:45:49   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+00:45:49 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+00:45:50 ▶ 任务开始: 写一个函数 `write_or_fail`，函数签名**必须**是 `def write_or_fail(rows, path)`（参数名与顺序照此写，不要改）。按下面列出的规则实现：
+  1. 先**完整校验**：只要 rows 中任意一
+00:45:50   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/120s | llm_kind=http | 外部能力 0 个
+00:46:03   [1] 通道=深 候选=1
+00:46:07       ↳ finish ok=True 直接实现函数逻辑
+00:46:07       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：未定义的名字 'os'（在 write_or_fail 内被引用，模块里既没有 import 也没有赋值）
+00:46:07       🔁 失配[outcome] finish({'answer': 'def write_or_fail(rows, path):\n    for r 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+00:46:07       📎 回看 b#1 因由=mismatch 窗=whole 85/85 字
+00:46:31   [2] 通道=深 候选=2
+00:46:38       ↳ finish ok=True 直接实现函数逻辑
+00:46:38       🔁 失配[outcome] finish({'answer': "def write_or_fail(rows, path):\n    for r 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+00:46:38       📎 回看 b#2 因由=mismatch 窗=whole 394/394 字
+00:46:38   ✅ 收尾: def write_or_fail(rows, path):
+    for row in rows:
+        if '#' in row:
+            raise ValueError('Invalid row con
+00:46:38 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.919 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 回看=2次/479字(失配2/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/1过/1打回/0放弃 判据=5项(非空/函数名 write_or_fail/语言标签/可编译/未定义名)
+  分数账本  会话#0 追加 1 行（拒绝 0 行  ⚠️重复=5） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@1x n=6 mean=1.0000 std=0.0000 [1.0000,1.0000] 极差=0.0000
+  attempted=6 recorded=6 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=248 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=12 检验=12 命中=0 命中率=0.0 失配=12(成败12/文本0) 混淆={'ok_ok': 0, 'ok_fail': 6, 'fail_ok': 6, 'fail_fail': 0}
+  传输层    抖动重试=0 重试后仍失败=0 上限被裁短=24 墙钟放弃首发=0/重试=0 （共 6 题）
+
+--- 噪声明细（逐题 × 逐次）---
+  任务                        r1      r2      r3      r4      r5      r6   极差
+  at04                  1.0000  1.0000  1.0000  1.0000  1.0000  1.0000   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/1
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=eddeaa7ff766a3b9 scorer=d4b1cbbfd7f1 suite=2ff0d987f291 repeat=6 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=860f4da9cc llm_cond=4259c37091 max_tokens=2048 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s102_bench_a1_at04/runs.jsonl
+  答案已落盘 /private/tmp/v1_s102_bench_a1_at04/answers.jsonl  6 条  共 2298 字符  最长 383 字符  截断 0 条

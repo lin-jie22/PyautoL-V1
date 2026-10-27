@@ -1136,6 +1136,29 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '                        self.wall_overrun_grants += 1',
      '                    if False:  # 撤回态：宽限记账没了\n'
      '                        self.wall_overrun_grants += 1'),
+    # ── AZ95 ①：判据丢掉 `repeats` 前置 ⇒ 只有 AZ95 自己红（④方向）────────
+    #: 语义：这正是 §65.9 预注册草稿的**原形** —— `repeats == 0` 的全拦
+    #: 会被记成停滞，于是「全部候选被拦」（真信号）被并进「原地打转」，
+    #: 两条出口（熔断 vs `_close_out`）从此分不开。第九十九轮**刻意不照抄**它。
+    ("AZ95", "mw/core.py",
+     '                    if repeats and (repeats + _blocked_eff) == len(cands):',
+     '                    if (repeats + _blocked_eff) == len(cands):'
+     '  # 撤回态：丢了 repeats 前置'),
+    # ── AZ95 ②：开关被架空（恒用 `blocked_now`）⇒ 只有 AZ95 自己红（②0 档）──
+    #: 语义："默认关闭"变成"永远打开" —— 那正是"新口径靠改默认值上线"的
+    #: 另一种写法，读数上会假装自己做过两臂对照。
+    ("AZ95", "mw/core.py",
+     '                    _blocked_eff = (blocked_now\n'
+     '                                    if self.s.limits.stall_on_blocked >= 1 else 0)',
+     '                    _blocked_eff = blocked_now  # 撤回态：开关被架空'),
+    # ── AZ95 ③：价值层那处不累加 ⇒ 只有 AZ95 自己红（②1 档 + ⑤）──────────
+    #: 语义：`blocked_now` 恒 0 ⇒ 开闸也是空操作；而 `blocked_skipped` 还留着，
+    #: 于是"计数说有被拦、判据说没有"—— 两个数字互相矛盾却都不报错。
+    ("AZ95", "mw/core.py",
+     '                        history.append(f"[step {it}] 价值层否决[{vj.kind}]：{cand.intent[:40]}")\n'
+     '                        blocked_now += 1',
+     '                        history.append(f"[step {it}] 价值层否决[{vj.kind}]：{cand.intent[:40]}")'
+     '  # 撤回态：本步计数没加'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

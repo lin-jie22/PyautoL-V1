@@ -76,9 +76,12 @@ def main() -> int:
     #    自动进清理集合（左半边断言已通过，红的只有这个计数锚）——
     #    也就是说这条硬锚**干了它该干的事**：逼我确认一遍，而不是让我猜。
     #    不是为了让这条变绿而改的。
+    #    19 → 20（第九十九轮加 `stall_on_blocked`，§66）。复核同前：
+    #    `clean_env` 仍是 `fields_of_limits()` 动态取，`V1_RECALL_K=已清`
+    #    说明清理集合真的扩到了新字段；红只有计数锚。
     ck("P5 ★`clean_env` 清掉**全部** `Limits` 字段的同名 env，但保住模型配置",
        e.get("V1_MAX_STALL") == "3" and "V1_RECALL_K" not in e
-       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 19,
+       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 20,
        f"limits 字段 {len(fields)} 个 ｜ V1_RECALL_K={'在' if 'V1_RECALL_K' in e else '已清'}")
     for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_LLM_MODEL"):
         os.environ.pop(k, None)

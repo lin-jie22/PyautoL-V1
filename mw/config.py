@@ -270,6 +270,22 @@ class Limits:
     #:   宽限必须是**有限数**，并且被不变式 `close_overrun_s <= max_wall_s` 盯住。
     close_overrun_s: float = field(
         default_factory=lambda: _env_float("V1_CLOSE_OVERRUN_S", 30.0, allow_zero=True))
+    #: 停滞判据是否把「被 guard / 价值层拦下」的候选算进分母（`0`=旧行为，`1`=算入）。
+    #:
+    #: ★ 第九十九轮实测动机（§65）：停滞闸的入口是 `repeats == len(cands)`
+    #:   —— 一个**全等**条件。真实回合里 2108 步中：全等 **48 步、宽度全是 1**；
+    #:   混合（1 重复 + 1 被拦/被执行）**33 步、宽度全是 2**。
+    #:   ⇒ 触发时那一步**根本没有第二个候选可换**；有第二个候选时它**沉默**，
+    #:   且掉进 `else` 支把"重复"记成"做错"（`consecutive_failures += 1`）。
+    #:
+    #: ⛔ 为什么不直接改默认：§80 的先例是"先 KEEP 再 promote"。
+    #:   没有两臂读数就把默认改掉，等于把"我认为它更好"当成证据。
+    #: ⛔ 为什么判据仍以 `repeats >= 1` 为**前置**（比 §65.9 的草稿更窄）：
+    #:   `repeats == 0` 的全拦是"这些动作都不许做"，一个重复都没有；
+    #:   把它记成停滞会吞掉「全部候选被拦」这条独立的真信号，而两者的出口
+    #:   （`_close_out` vs 熔断）与修法完全不同。
+    stall_on_blocked: int = field(
+        default_factory=lambda: _env_int("V1_STALL_ON_BLOCKED", 0))
     working_memory_items: int = field(
         default_factory=lambda: _env_int("V1_WORKING_MEMORY_ITEMS", 24))
     recall_k: int = field(
@@ -423,6 +439,7 @@ ENV_KEYS = (
     "V1_CLOSE_RESERVE_S",
     "V1_CLOSE_RESERVE_STEPS",
     "V1_CLOSE_OVERRUN_S",
+    "V1_STALL_ON_BLOCKED",
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",
@@ -452,6 +469,10 @@ ZERO_OK_KEYS: tuple[str, ...] = (
     "V1_CLOSE_RESERVE_S",
     "V1_CLOSE_RESERVE_STEPS",
     "V1_CLOSE_OVERRUN_S",
+    # ★ 第九十九轮 §66：停滞判据的 `0` 就是**对照组**（只认"全等"）。
+    #   默认值也是 0，但"默认 0"与"设为 0"在 `_env_int` 里是两条路
+    #   （后者要先看这里有没有登记）⇒ 不登记，对照臂会静默地变成"没设"。
+    "V1_STALL_ON_BLOCKED",
     "V1_LLM_RETRIES",
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",

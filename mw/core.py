@@ -762,6 +762,12 @@ class Core:
         #: 为什么连被拦的也要记：重复提出一个注定被拦的动作，同样不产生新信息。
         attempted_sigs: set[str] = set()
         repeats_skipped = 0
+        #: 全程被 guard / 价值层拦下的候选数（第九十九轮 §66）。
+        #: ⚠️ 与 `repeats_skipped` 分工不同：那个数"这一步是旧的"，
+        #:    这个数"这一步被拒绝了"。两者**都**意味着"没能执行"，
+        #:    但只有前者说明"模型在原地打转" —— 判据因此以 `repeats >= 1` 为前置。
+        #: ⛔ 不含"额度不足"（`skipped_now`）：那是**没试**，不是被拒。
+        blocked_skipped = 0
         stalled = 0
         #: 「本轮全灭」之后要**换形态**再问的载荷：被内核丢掉的那几个动作的原文行。
         #: 只活一轮（喂给下一次提问就清空）—— 不留着，否则它会变成又一段
@@ -783,6 +789,9 @@ class Core:
             return self._finish(status, ans, why, history, extra={
                 "repeats_skipped": repeats_skipped,
                 "stalled": stalled,
+                # ★ 第九十九轮 §66：零值也在 —— "一次没遇到被拦"与"配了没生效"
+                #   在读数上必须分得开（同 `wall_overrun_grants` 的理由）。
+                "blocked_skipped": blocked_skipped,
                 "attempted_actions": len(attempted_sigs),
             })
 
@@ -856,6 +865,7 @@ class Core:
                 #    已经犯过的错（静态清单被无视），只是换个位置再犯一遍。
                 reseek_lines = []
                 skipped_now = 0
+                blocked_now = 0
                 if plan.degraded:
                     self.log(f"  ⚠️ {plan.note}")
                 if not plan:
@@ -964,12 +974,16 @@ class Core:
                         gv = self.guard.check_goal(action=cand.as_line(), goal=goal)
                         if not gv.allow:
                             self.log(f"      ✋ {gv.as_line()}")
+                            blocked_now += 1
+                            blocked_skipped += 1
                             continue
                     # 工具滥用
                     if cand.tool == "run_shell":
                         sv = self.guard.check_shell(str(cand.args.get("cmd", "")))
                         if not sv.allow:
                             self.log(f"      ✋ {sv.as_line()}")
+                            blocked_now += 1
+                            blocked_skipped += 1
                             continue
                     # 记忆投毒
                     if cand.tool == "note":
@@ -978,6 +992,8 @@ class Core:
                             confidence=float(cand.args.get("confidence", 0.6)))
                         if not mv.allow:
                             self.log(f"      ✋ {mv.as_line()}")
+                            blocked_now += 1
+                            blocked_skipped += 1
                             continue
 
                     # ── 价值层：方向 → 授权 ────────────────────────────────
@@ -991,6 +1007,8 @@ class Core:
                     if not vj.allow:
                         self.log(f"      ⊘ {vj.as_line()}")
                         history.append(f"[step {it}] 价值层否决[{vj.kind}]：{cand.intent[:40]}")
+                        blocked_now += 1
+                        blocked_skipped += 1
                         continue
 
                     # 预演（只有深通道才付这个成本 —— 这就是 ACT 的实际意义）
@@ -1158,13 +1176,33 @@ class Core:
                                  f"（不是失败，是没试）")
                         history.append(f"[step {it}] 全部候选因额度不足未执行（不是失败）")
                         continue
-                    if repeats and repeats == len(cands):
+                    # ── 停滞：这一步"一个候选都没能执行"──────────────────────
+                    # ★ 第九十九轮（§65/§66）：判据从**全等**放宽成
+                    #   「有重复 且 重复 + 被拦 == 候选数」，但那要**显式开闸**
+                    #   （`V1_STALL_ON_BLOCKED=1`）。默认 0 ⇒ 与旧版逐位相同。
+                    #   动机（309 份任务日志 / 2108 步 / 81 次重复候选）：
+                    #     全等 48 步，**宽度全是 1** ⇒ 触发时那一步根本没有
+                    #       第二个候选可换（换形态正是要靠它）；
+                    #     混合 33 步，**宽度全是 2** ⇒ 掉进下面的 `else`，
+                    #       把"重复"记成"连续失败"，由熔断兜底（出口是交空）。
+                    #   ⇒ 机制没错，**触发条件与用途错位**。
+                    # ⛔ 前置 `repeats` 不是形式主义：`repeats == 0` 的全拦是
+                    #   "这些动作都不许做"，一个重复都没有。把它记成停滞会吞掉
+                    #   「全部候选被拦」这条**独立**的真信号 —— 两者出口不同
+                    #   （`_close_out` vs 熔断），修法也不同，必须分得开。
+                    _blocked_eff = (blocked_now
+                                    if self.s.limits.stall_on_blocked >= 1 else 0)
+                    if repeats and (repeats + _blocked_eff) == len(cands):
                         # 本轮**全部**候选都是已试过的动作 ⇒ 停滞。
                         # 不停在原地继续烧预算，而是计数并按阈值收尾 ——
                         # 如实报告"没有进展"，不假装在做事情。
                         stalled += 1
                         self.log(f"  🧊 本轮 {repeats} 个候选全部是已试过的动作"
-                                 f" ⇒ 停滞 {stalled}/{self.s.limits.max_stall}")
+                                 # 只在真有被拦的候选参与判据时才多说这一句：
+                                 # 关闸时日志**逐字**与旧版相同（对照臂要能逐行 diff）。
+                                 + (f"（另有 {blocked_now} 个被拦）"
+                                    if _blocked_eff else "")
+                                 + f" ⇒ 停滞 {stalled}/{self.s.limits.max_stall}")
                         # ★ 第六十九轮（§31.7）：**停滞 ≠ 交零**。
                         #   旧代码到这里就 `return _done("stalled", "", …)`，
                         #   而第六十六轮的 A 臂实测那一刻还剩 85s —— 那 85s

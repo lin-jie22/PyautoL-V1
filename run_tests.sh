@@ -678,10 +678,24 @@ echo
 #     `repeats == len(cands)`，而真实 309 份任务日志里 81 次重复有 **33 次是混合**
 #     ⇒ 既不记停滞也不换形态；48 次全等的宽度**全是 1**（那一步本来就没有第二候选）。
 #     判据够不到"有选择空间"的那一半，这件事只能靠两侧（内核两臂 + 日志分母）同时说。
+#     ★ 第九十九轮（§66）把反证扩到 **十五条 P1~P15**，新加的钉的是**判据开关**
+#     （`V1_STALL_ON_BLOCKED`）：P8/P9 一对（`B0` 关闸仍 `cascade`、`B1` 开闸翻成
+#     `stalled` 且 `stalled==2`/`reseek==1`/提示词含 reseek 块）、P10/P11 一对
+#     （全等步两档**逐位相同**）、P12/P13 一对（`repeats == 0` 的全拦**两档都不许**
+#     算停滞 —— 这一对就是对 §65.9 草稿的**收窄**证据：照抄草稿时 P12 会红）、
+#     P14/P15（三条撤回态各单红；`blocked_skipped` 零值也在 `stats`）。
+#   · `audit_legs.py --self-check`（第九十九轮）：五条反证 A1~A5 ——
+#     重复跳过的下一步里，那条「另一条腿」到底是**被执行**、**被拦**、还是**被预算掐掉**。
+#     A1/A2 必须能把「被执行」与「被拦」**分开归**（⛔ 一个永远归不出「被拦」的分类器，
+#     给出的 0 和真实的 0 同形 —— 而本轮结论正是「被拦 = 0」）；A3 全等步不进混合；
+#     A4 ★回归：真实日志格式（`HH:MM:SS` + 前导空格 + `↳`）必须认成执行 ——
+#     第一版写 `split(" ",1)[-1].startswith("↳")`，右半保留前导空格 ⇒ 恒 False
+#     ⇒ 6 次「被执行」被误归「预算掐掉」，而那个方向**对结论有利**（§62 自我打脸）；
+#     A5 步骤头后的重复必须记账（不许静默丢）。
 echo "=============================================================="
-echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账 / 停滞路径，零模型、零网络）"
+echo "步骤 7i  分析量具自证（失分分类器 / 自检探针 / 结构约束 / 选择器 / 交付面 / 代理 / 失分归因 / 口径拆分 / 两臂判定 / 交付物过闸 / 重试修复 / 交付形态 / 收尾宽限 / 丢弃对账 / 停滞路径 / 重复步对账，零模型、零网络）"
 echo "=============================================================="
-for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard probe_stallpath; do
+for _p in probe_error_taxonomy probe_selftest probe_structcheck probe_select probe_delivery llm_proxy probe_task_attrib probe_caliber_split probe_pair probe_closeout_gate probe_repair audit_form probe_closeoverrun probe_discard probe_stallpath audit_legs; do
   if "$PY" "bench/$_p.py" --self-check > "/tmp/v1_${_p}.out" 2>&1; then
     echo "  ✅ $_p --self-check"
     grep -E "^  ✅|^  ⚠️" "/tmp/v1_${_p}.out" | sed 's/^/     /'

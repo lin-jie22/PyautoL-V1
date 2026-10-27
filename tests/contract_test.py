@@ -1326,6 +1326,11 @@ def _env_zero_takes_effect(key: str) -> bool:
         #   行为退回旧版，这是 A/B 对照组）。它必须与 `close_reserve_s` 一样
         #   被这条断言覆盖 —— 否则「设了 0 却被静默改回 30」会悄悄毁掉对照臂。
         "V1_CLOSE_OVERRUN_S": ("limits", "close_overrun_s"),
+        # ★ 第九十九轮 §66：停滞判据的 0 = 只认"全等"（**对照组**）。
+        #   不登记它，"设为 0"会走 `_env_int` 的"0 ⇒ 回默认"那条路 ——
+        #   默认值恰好也是 0 所以**看不出差别**，但下一个把默认改成 1 的人
+        #   会得到一个静默失效的对照臂（§46 那场事故的同款形状）。
+        "V1_STALL_ON_BLOCKED": ("limits", "stall_on_blocked"),
         "V1_LLM_RETRIES": ("limits", "llm_retries"),
         "V1_LLM_RETRY_BACKOFF_S": ("limits", "llm_retry_backoff_s"),
         "V1_VERIFY_RETRIES": ("limits", "verify_retries"),
@@ -9273,6 +9278,190 @@ check(RS,
       f"③未收尾不加={_AZ94_OK_SCOPE} ｜ "
       f"④有界={_AZ94_OK_BOUND}({_AZ94_TO_HUGE:g}≤60) ｜ "
       f"⑤两键常在={_AZ94_OK_KEYS}")
+
+
+# ── AZ95 ★停滞判据的"分母"可以被打开，但**默认关闭**（第九十九轮 §66）──────
+#  动机（§65 实测，309 份任务日志 / 2108 步 / 81 次重复候选）：
+#    全等 `repeats == len(cands)` 48 步，**宽度全是 1** ⇒ 触发时那一步根本没有
+#      第二个候选可换（"换形态再问"正是要靠它）；
+#    混合 `0 < repeats < len(cands)` 33 步，**宽度全是 2** ⇒ 掉进 else 支，
+#      把"重复"记成"做错"（`consecutive_failures += 1`），由熔断兜底（出口是交空）。
+#  ⇒ 判据从"全等"放宽成「有重复 且 重复 + 被拦 == 候选数」，开关
+#     `V1_STALL_ON_BLOCKED`（0=旧行为，**默认**；1=把被拦候选也算进分母）。
+#
+#  五个方向（缺一条，这条断言就是"恒真"或"测了半个算术"）：
+#    ① 默认 0：新口径**默认关闭**（没有两臂读数就不许改默认，§80 的先例）
+#    ② 混合步：0 ⇒ `cascade` + `全部候选被拦`；1 ⇒ `stalled` + reseek + 提示词含块
+#    ③ 全等步：0/1 **逐位相同**（前置 `repeats` 没被顺手放大）
+#    ④ `repeats == 0` 的全拦：0/1 **都不许**算停滞（这是对 §65.9 草稿的**收窄**）
+#    ⑤ `blocked_skipped` 只在真有被拦时 >0（A 臂恒 0、B 臂 ≥1、C 臂 ==1）
+_AZ95_GOAL = ("分析并清理历史遗留的临时文件，然后总结根因与修复方案，"
+              "最后把结论写回记忆")
+_AZ95_MARK_PLAN = "请给出"
+_AZ95_MARK_PREDICT = "准备执行的动作"
+#: ⛔ **不能**用 `ANSWER_MARK` 判别答案通道 —— 实测（第九十九轮）：
+#: `planner.py:108` 训它"在 JSON 之后写 `---ANSWER---`"，于是**规划器提示词里
+#: 也含有 `---ANSWER---`**。用它当判据，规划调用会被当成答案调用、返回一段
+#: 代码给 JSON 解析器 ⇒ `⚠️ 模型输出不是合法 JSON` ⇒ 整轮 `done`（本轮真踩了）。
+#: 正确的锚是答案提示词**独有**的那句（`planner.py:150`）。
+_AZ95_MARK_ANSWER = "只输出最终答案本身"
+
+
+class _AZ95LLM(StubLLM):
+    """按**通道**分派的脚本化模型（⛔ 不按调用序数 —— 某轮没走预演就会串位）。
+
+    `answers` 必须可编排：规划器有一条「`finish` 却没给 answer」的**定向补救**
+    （`mw/planner.py:369-394`），它会在内核看到候选之前就把空答案填上 ——
+    空答案因此**根本到不了价值层**。要复现"空答案被否决"这一格，
+    必须让那一发补救也返回空。
+    """
+
+    def __init__(self, plans: list[str], answers: list[str]) -> None:
+        super().__init__()
+        self.plans, self.answers = list(plans), list(answers)
+        self.n_plan = 0
+        self.n_answer = 0
+        self.plan_prompts: list[str] = []
+
+    def complete(self, messages, **kw):                          # noqa: ANN001, ANN003
+        blob = "\n".join(m.content for m in messages)
+        if _AZ95_MARK_ANSWER in blob:
+            i = min(self.n_answer, len(self.answers) - 1)
+            self.n_answer += 1
+            return self.answers[i] if self.answers else ""
+        if _AZ95_MARK_PREDICT in blob:
+            return '{"expect_ok": true, "expected": "会成功", "confidence": 0.9}'
+        assert _AZ95_MARK_PLAN in blob, f"未识别的通道：{blob[:120]!r}"
+        self.plan_prompts.append(blob)
+        i = self.n_plan
+        self.n_plan += 1
+        return self.plans[min(i, len(self.plans) - 1)]
+
+
+def _az95_plan(*cands: dict) -> str:
+    return json.dumps({"candidates": list(cands)}, ensure_ascii=False)
+
+
+def _az95_recall(q: str, intent: str = "找已有结论") -> dict:
+    return {"intent": intent, "tool": "recall", "args": {"query": q},
+            "rationale": "先看有没有现成结论"}
+
+
+_AZ95_HINT = _az95_recall("python 截断", "再找一次")
+#: A：第 2 轮**全等**（只有一个重复候选）。
+_AZ95_ARM_A = [_az95_plan(_az95_recall("python 截断")),
+               _az95_plan(_AZ95_HINT),
+               _az95_plan({"intent": "沉淀结论", "tool": "note",
+                           "args": {"text": "结论", "source": "selftest",
+                                    "confidence": 0.9},
+                           "rationale": "写回记忆"})]
+#: B：第 2 轮**混合**（1 个重复 + 1 个空答案 `finish`）。两臂只差这一个候选。
+_AZ95_ARM_B = [_az95_plan(_az95_recall("python 截断")),
+               _az95_plan(_AZ95_HINT,
+                          {"intent": "交付", "tool": "finish",
+                           "args": {"answer": ""}, "rationale": "已经够了"})]
+#: C：**零重复的全拦**（单个空答案 finish，宽度 1）。它必须两档都不算停滞。
+_AZ95_ARM_C = [_az95_plan({"intent": "交付", "tool": "finish",
+                           "args": {"answer": ""}, "rationale": "已经够了"})]
+#: 第一发（定向补救）返回空 ⇒ 空答案真的到得了价值层；之后正常。
+_AZ95_ANS = ["", "```python\nprint(1)\n```"]
+
+
+def _az95_run(gate: int, plans: list[str], answers: list[str]) -> dict:
+    """跑一个臂。**每臂一套独立 state**（`facts` 跨轮累积，共用会污染下一个臂）。"""
+    _tag = f"{gate}_{len(plans)}_{len(_az95_calls)}"
+    _az95_calls.append(_tag)
+    _dir = _TMP / f"az95_{_tag}"
+    _keep = {k: os.environ.get(k)
+             for k in ("V1_STATE_DIR", "V1_LOG_DIR", "V1_WORKSPACE",
+                       "V1_MAX_CONSECUTIVE_FAILURES", "V1_STALL_ON_BLOCKED")}
+    os.environ["V1_STATE_DIR"] = str(_dir / "state")
+    os.environ["V1_LOG_DIR"] = str(_dir / "logs")
+    os.environ["V1_WORKSPACE"] = str(_dir / "ws")
+    #: 两臂共用的**测量条件**：混合那一步之后立刻熔断，读数才只包含被测那一支。
+    #: ⚠️ 不加它，第 3 步候选预算塌到 1 ⇒ 混合自己变成全等 ⇒ 两支混在一起。
+    os.environ["V1_MAX_CONSECUTIVE_FAILURES"] = "1"
+    os.environ["V1_STALL_ON_BLOCKED"] = str(gate)
+    try:
+        llm = _AZ95LLM(plans, answers)
+        log = _Log(None)
+        out = Core(cfg.settings(), llm=llm, log=log).run(_AZ95_GOAL)
+    finally:
+        for k, v in _keep.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+    loop = (out.stats or {}).get("loop") or {}
+    prompts = "\n".join(llm.plan_prompts)
+    return {
+        "status": out.status,
+        "stalled": loop.get("stalled"),
+        "repeats_skipped": loop.get("repeats_skipped"),
+        "blocked_skipped": loop.get("blocked_skipped"),
+        "reseek": ((out.stats or {}).get("planner") or {}).get("reseek"),
+        "iterations": out.iterations,
+        "n_plan": llm.n_plan,
+        "has_reseek_prompt": "你上一次的回答被**拒绝**了" in prompts,
+        "has_allblock_log": any("全部候选被拦" in ln for ln in log.lines),
+        "has_stall_log": any("个候选全部是已试过的动作" in ln for ln in log.lines),
+    }
+
+
+_az95_calls: list[str] = []
+_AZ95_A0 = _az95_run(0, _AZ95_ARM_A, _AZ95_ANS)
+_AZ95_A1 = _az95_run(1, _AZ95_ARM_A, _AZ95_ANS)
+_AZ95_B0 = _az95_run(0, _AZ95_ARM_B, _AZ95_ANS)
+_AZ95_B1 = _az95_run(1, _AZ95_ARM_B, _AZ95_ANS)
+_AZ95_C0 = _az95_run(0, _AZ95_ARM_C, _AZ95_ANS)
+_AZ95_C1 = _az95_run(1, _AZ95_ARM_C, _AZ95_ANS)
+
+_AZ95_FACE = ("status", "stalled", "repeats_skipped", "reseek", "iterations",
+              "n_plan", "has_reseek_prompt", "has_allblock_log", "has_stall_log",
+              "blocked_skipped")
+_AZ95_OK_DEFAULT = cfg.Limits().stall_on_blocked == 0
+_AZ95_OK_MIXED = (_AZ95_B0["status"] == "cascade" and _AZ95_B0["stalled"] == 0
+                  and _AZ95_B0["has_allblock_log"] and _AZ95_B0["reseek"] == 0
+                  and _AZ95_B1["status"] == "stalled" and (_AZ95_B1["stalled"] or 0) >= 1
+                  and _AZ95_B1["reseek"] == 1 and _AZ95_B1["has_reseek_prompt"]
+                  and not _AZ95_B1["has_allblock_log"])
+_AZ95_OK_SAME = all(_AZ95_A0[k] == _AZ95_A1[k] for k in _AZ95_FACE) \
+    and _AZ95_A0["status"] == "stalled" and (_AZ95_A0["stalled"] or 0) >= 1
+_AZ95_OK_BOUND = all(x["status"] == "cascade" and x["stalled"] == 0
+                     and x["has_allblock_log"] and not x["has_reseek_prompt"]
+                     for x in (_AZ95_C0, _AZ95_C1))
+#: ⑤ 计数器只在真有被拦时动：A 臂一个都没被拦（0）、B 臂有一个（≥1）、C 臂恰好一个。
+_AZ95_OK_COUNT = (_AZ95_A0["blocked_skipped"] == 0
+                  and _AZ95_A1["blocked_skipped"] == 0
+                  and (_AZ95_B1["blocked_skipped"] or 0) >= 1
+                  and _AZ95_C0["blocked_skipped"] == 1
+                  and _AZ95_C1["blocked_skipped"] == 1)
+
+check(RS,
+      "AZ95 ★停滞判据的分母可以被打开（`V1_STALL_ON_BLOCKED`），但**默认关闭**\n"
+      "          ① 默认 0（新口径不许靠改默认值上线）；\n"
+      "          ② 混合步（1 重复 + 1 空答案）：0 ⇒ `cascade`＋`全部候选被拦`；\n"
+      "             1 ⇒ `stalled`＋`reseek==1`＋提示词含 reseek 块；\n"
+      "          ③ 全等步（宽度 1）两档**逐位相同**（前置 `repeats` 没被放大）；\n"
+      "          ④ `repeats == 0` 的全拦两档**都不算**停滞（对 §65.9 草稿的收窄）；\n"
+      "          ⑤ `blocked_skipped` 只在真有被拦时动（A=0 / B≥1 / C=1）。\n"
+      "          撤回语义：判据去掉 `repeats` 前置 ⇒ ④ 必须红；\n"
+      "                    `_blocked_eff` 忽略开关（恒用 `blocked_now`）⇒ ② 的\n"
+      "                    0 档必须红；价值层那处不累加 ⇒ ② 的 1 档与 ⑤ 必须红。\n"
+      "          ⛔ 未测的边界：「1 重复 + 1 个因**额度不足**没试」该不该算停滞。\n"
+      "             它只在 `V1_EXTERNAL_ANSWER_TOOL` 配上且预算见底时出现，\n"
+      "             本轮没有造这个格子 —— 只能靠代码位置保证（那条 `continue`\n"
+      "             在 `core.py:935`，**不**碰 `blocked_now`），登记为口径边界。",
+      _AZ95_OK_DEFAULT and _AZ95_OK_MIXED and _AZ95_OK_SAME
+      and _AZ95_OK_BOUND and _AZ95_OK_COUNT,
+      f"①默认={_AZ95_OK_DEFAULT}({cfg.Limits().stall_on_blocked}) ｜ "
+      f"②混合={_AZ95_OK_MIXED}(B0={_AZ95_B0['status']}/B1={_AZ95_B1['status']},"
+      f"stalled={_AZ95_B1['stalled']}) ｜ "
+      f"③全等同={_AZ95_OK_SAME}({_AZ95_A0['status']}/{_AZ95_A1['status']}) ｜ "
+      f"④零重复全拦={_AZ95_OK_BOUND}({_AZ95_C1['status']}) ｜ "
+      f"⑤计数={_AZ95_OK_COUNT}"
+      f"(A={_AZ95_A0['blocked_skipped']},B={_AZ95_B1['blocked_skipped']},"
+      f"C={_AZ95_C1['blocked_skipped']})")
 
 
 print()

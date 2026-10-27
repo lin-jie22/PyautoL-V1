@@ -37,6 +37,19 @@
 
 两条臂**只差一个候选**（`B` 多一个会被价值层否决的 `finish`），其余逐字相同。
 
+## 第九十九轮（§66）追加的三个臂：判据可以被**打开**
+
+`B_mixed` 那条路径是本轮要修的格子。修法不是直接改判据，而是加一个默认关闭的开关
+（`Limits.stall_on_blocked` / `V1_STALL_ON_BLOCKED`，0=旧行为、1=把被拦的候选也算进分母）。
+所以探针必须同时证明**两向**：
+
+| 臂 | 开关 | 期望 |
+|---|---|---|
+| `B_gate0` | 0 | 与 `B_mixed` 逐位相同（`stalled=0`、`cascade`） |
+| `B_gate1` | 1 | `stalled ≥ 1`、`reseek == 1`、提示词**含** reseek 块、`stalled` 收尾 |
+| `A_gate1` | 1 | 与 `A_allrepeat` **完全一致**（判据的前置 `repeats` 没被动过） |
+| `C_allblock` | 0 和 1 | `repeats == 0` 的全拦**两档都**仍是 `全部候选被拦` ⇒ 不许被并进停滞 |
+
 ## 反证（`--self-check`，零模型零网络）
 
 | # | 反证 | 防的是什么 |
@@ -185,7 +198,8 @@ GOAL = ("分析并清理历史遗留的临时文件，然后总结根因与修�
 
 def run_arm(plans: list, *, max_stall: int | None = None,
             answer: str | list[str] = "```python\nprint(1)\n```",
-            cf_max: int = 1, cand_budget: int | None = None) -> dict:
+            cf_max: int = 1, cand_budget: int | None = None,
+            stall_on_blocked: int | None = None) -> dict:
     """跑一个臂，返回读数。**每条读数都来自内核自己**（stats / 提示词原文）。
 
     `cf_max=1`（`V1_MAX_CONSECUTIVE_FAILURES`）是**两臂共用的**测量条件，不是变体：
@@ -206,6 +220,9 @@ def run_arm(plans: list, *, max_stall: int | None = None,
             os.environ["V1_MAX_CONSECUTIVE_FAILURES"] = str(cf_max)
             if cand_budget is not None:
                 os.environ["V1_MAX_CANDIDATES"] = str(cand_budget)
+            if stall_on_blocked is not None:
+                #: 第九十九轮的自变量。`None` = 不设（默认 0 = 旧判据）。
+                os.environ["V1_STALL_ON_BLOCKED"] = str(stall_on_blocked)
             try:
                 s = cfg.settings()
                 llm = Script(plans, answer=answer)
@@ -219,6 +236,8 @@ def run_arm(plans: list, *, max_stall: int | None = None,
                 os.environ.pop("V1_MAX_CONSECUTIVE_FAILURES", None)
                 if cand_budget is not None:
                     os.environ.pop("V1_MAX_CANDIDATES", None)
+                if stall_on_blocked is not None:
+                    os.environ.pop("V1_STALL_ON_BLOCKED", None)
 
     st = out.stats or {}
     loop = st.get("loop") or {}
@@ -230,6 +249,9 @@ def run_arm(plans: list, *, max_stall: int | None = None,
         #    第一版按顶层取，取到 None 却"没报错" —— 三个判据同时假红。
         "stalled": loop.get("stalled"),
         "repeats_skipped": loop.get("repeats_skipped"),
+        #: 被 guard / 价值层拦下的候选总数（全程）。零值也要在 ——
+        #: "一次没遇到"与"计数器没接线"在读数上必须分得开。
+        "blocked_skipped": loop.get("blocked_skipped"),
         "reseek": (st.get("planner") or {}).get("reseek"),
         "iterations": out.iterations,
         "n_plan": llm.n_plan,
@@ -295,9 +317,79 @@ def measure() -> dict:
     return {"A": a, "B": b}
 
 
+# ---------------------------------------------------------------------------
+# 第九十九轮（§66）：判据开关的两向 + 一条"不许被并吞"的边界
+# ---------------------------------------------------------------------------
+#: `repeats == 0` 的全拦：单个空答案 `finish`。宽度 1（规划器只给一个候选），
+#: 那一格**没有重复**，因此无论开关是 0 还是 1，都必须仍走 `全部候选被拦`。
+C_ARM = [_plan(_finish_empty())]
+
+#: 两臂 A 的**可观测面**：只比这些字段。⛔ 不整字典比 ——
+#: `lines`/`last_prompt` 里有时间戳式的字（预算播报），整字典比会把噪声当差异。
+_A_FACE = ("status", "stalled", "repeats_skipped", "reseek", "iterations",
+           "plan_prompts", "has_reseek_prompt", "has_stall_log", "has_allblock_log",
+           "blocked_skipped")
+
+
+def _face_diff(x: dict, y: dict) -> list[str]:
+    return [f"{k}: {x.get(k)!r} vs {y.get(k)!r}"
+            for k in _A_FACE if x.get(k) != y.get(k)]
+
+
+def _assert_b_gate(r: dict) -> list[str]:
+    """`B` **开闸**后的判据：混合 ⇒ 停滞 ⇒ reseek 真的进了提示词。"""
+    bad: list[str] = []
+    if not r["stalled"]:
+        bad.append(f"B_gate1: stalled={r['stalled']}（期望 ≥1：混合开闸后必须记停滞）")
+    if r["reseek"] != 1:
+        bad.append(f"B_gate1: planner.reseek={r['reseek']}（期望 1）")
+    if not r["has_reseek_prompt"]:
+        bad.append("B_gate1: 提示词里没有 reseek 块（`reseek_lines` 没进提问）")
+    if not r["has_stall_log"]:
+        bad.append("B_gate1: 日志里没有停滞行")
+    if r["has_allblock_log"]:
+        bad.append("B_gate1: 日志里仍出现`全部候选被拦`（说明没走到停滞支）")
+    if r["status"] != "stalled":
+        bad.append(f"B_gate1: status={r['status']}（期望 stalled：停滞到阈值后转向交付）")
+    #: ⭐ 这条是**接线**断言：计数器不进 stats 或没累加时，"判据成立"可能只是运气
+    #:  （比如 `blocked_now` 恒 0 而 `len(cands)` 恰好也是 1）。同 AZ94 的 C0。
+    if (r["blocked_skipped"] or 0) < 1:
+        bad.append(f"B_gate1: blocked_skipped={r['blocked_skipped']}"
+                   "（期望 ≥1：计数器没接线，判据的分子来路不明）")
+    return bad
+
+
+def _assert_c(r: dict) -> list[str]:
+    """`repeats == 0` 的全拦：两档都**不许**变成停滞。"""
+    bad: list[str] = []
+    if r["stalled"]:
+        bad.append(f"C: stalled={r['stalled']}（期望 0：零重复的全拦不是停滞）")
+    if not r["has_allblock_log"]:
+        bad.append("C: 日志里没有`全部候选被拦`（真信号被吞了）")
+    if r["status"] != "cascade":
+        bad.append(f"C: status={r['status']}（期望 cascade：出口是熔断，不是收尾）")
+    if r["has_reseek_prompt"]:
+        bad.append("C: 提示词里出现 reseek 块（零重复不该换形态）")
+    return bad
+
+
+def measure_gate() -> dict:
+    """四个臂：A×2、B×2、C×2（开关 0/1）。**每臂只差一个 env**。"""
+    out = {
+        "A0": run_arm(ARM_A),
+        "A1": run_arm(ARM_A, stall_on_blocked=1),
+        "B0": run_arm(ARM_B, answer=_B_ANSWERS),
+        "B1": run_arm(ARM_B, answer=_B_ANSWERS, stall_on_blocked=1),
+        "C0": run_arm(C_ARM, answer=_B_ANSWERS),
+        "C1": run_arm(C_ARM, answer=_B_ANSWERS, stall_on_blocked=1),
+    }
+    return out
+
+
 def _fmt(r: dict) -> str:
     return (f"status={r['status']:16s} iters={r['iterations']} "
             f"stalled={r['stalled']} repeats={r['repeats_skipped']} "
+            f"blocked={r['blocked_skipped']} "
             f"reseek={r['reseek']} plan调用={r['plan_prompts']} "
             f"提示词含reseek={r['has_reseek_prompt']} "
             f"日志含停滞={r['has_stall_log']} 日志含全拦={r['has_allblock_log']}")
@@ -487,9 +579,28 @@ def self_check() -> int:
         [] if (k["all_repeat"], k["mixed"], k["no_repeat"]) == (1, 1, 1)
         else [f"分类错：{k}"], False)
 
+    # ── 第九十九轮（§66）：判据开关 ────────────────────────────────────────
+    # 四臂成对出现，**每对只差一个 env**：
+    #   B0/B1 是"要修的格子"、(A0/A1) 是"不许被动的前置"、C0/C1 是"不许被吞的边界"。
+    g = measure_gate()
+    one("P8 B 开闸 ⇒ cascade 翻成 stalled（本轮的自变量真的起作用）",
+        _assert_b_gate(g["B1"]), False)
+    one("P9 B 关闸 ⇒ 仍 cascade（对照臂：开关的 0 真的等于旧行为）",
+        _assert_b(g["B0"]), False)
+    one("P10 A 开/关闸逐位相同（前置 `repeats` 没被顺手放大）",
+        _face_diff(g["A0"], g["A1"]), False)
+    one("P11 C 关闸 ⇒ 零重复的全拦仍是 cascade",
+        _assert_c(g["C0"]), False)
+    one("P12 C 开闸 ⇒ 仍 cascade（⚠️ 这一条就是「收窄」的证据："
+        "若判据照抄 §65.9 的草稿，这里会红）",
+        _assert_c(g["C1"]), False)
+
     print("\n=== 两臂读数 ===")
     print("  A_allrepeat:", _fmt(base["A"]))
     print("  B_mixed    :", _fmt(base["B"]))
+    print("=== 判据开关（0=旧 / 1=把被拦算进分母）===")
+    for _k in ("A0", "A1", "B0", "B1", "C0", "C1"):
+        print(f"  {_k:3s}:", _fmt(g[_k]))
     print("\n=== 反证 ===")
     for line in ok:
         print("  ✅", line)

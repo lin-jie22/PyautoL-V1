@@ -1,0 +1,126 @@
+[
+ {
+  "task": "p1wi",
+  "group": "wi",
+  "chars": 12,
+  "compiles": true,
+  "import_lines": 0,
+  "skeleton_import_lines": 1,
+  "added": -1,
+  "names": [
+   "语义记忆中无相关条目"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 0.0,
+  "outside_n": 12,
+  "sha": "7667db8d"
+ },
+ {
+  "task": "p2wi",
+  "group": "wi",
+  "chars": 593,
+  "compiles": true,
+  "import_lines": 1,
+  "skeleton_import_lines": 1,
+  "added": 0,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "outside_n": 9,
+  "sha": "8e196b87"
+ },
+ {
+  "task": "p3wi",
+  "group": "wi",
+  "chars": 893,
+  "compiles": true,
+  "import_lines": 1,
+  "skeleton_import_lines": 1,
+  "added": 0,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "outside_n": 11,
+  "sha": "c35dd680"
+ },
+ {
+  "task": "p1ni",
+  "group": "ni",
+  "chars": 754,
+  "compiles": true,
+  "import_lines": 0,
+  "skeleton_import_lines": 0,
+  "added": 0,
+  "names": [
+   "re"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 0.9091,
+  "outside_n": 11,
+  "sha": "dfce8b93"
+ },
+ {
+  "task": "p1ni",
+  "group": "ni",
+  "chars": 0,
+  "compiles": true,
+  "import_lines": 0,
+  "skeleton_import_lines": 0,
+  "added": 0,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": 0.0,
+  "outside_n": 11,
+  "sha": "e3b0c442"
+ },
+ {
+  "task": "p1ni",
+  "group": "ni",
+  "chars": 711,
+  "compiles": true,
+  "import_lines": 0,
+  "skeleton_import_lines": 0,
+  "added": 0,
+  "names": [
+   "re"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 0.9091,
+  "outside_n": 11,
+  "sha": "f7a8fd42"
+ },
+ {
+  "task": "p2ni",
+  "group": "ni",
+  "chars": 662,
+  "compiles": true,
+  "import_lines": 0,
+  "skeleton_import_lines": 0,
+  "added": 0,
+  "names": [
+   "json"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "outside_n": 8,
+  "sha": "ab3ad344"
+ },
+ {
+  "task": "p3ni",
+  "group": "ni",
+  "chars": 772,
+  "compiles": true,
+  "import_lines": 0,
+  "skeleton_import_lines": 0,
+  "added": 0,
+  "names": [
+   "_monday_of",
+   "_read_day",
+   "datetime"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 0.6,
+  "outside_n": 10,
+  "sha": "dd2db0f8"
+ }
+]

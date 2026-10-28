@@ -1,0 +1,12 @@
+  requests             94
+  slow                 23
+  slow_max_s           300.0
+  truncated            4
+  non_200              6
+  tps_median           6.86
+  tps_min              0.98
+  tps_slow_n           17
+  zero_answers         6
+  episodic_fallbacks   3
+  answers              18
+  装置判定：⛔ 垃圾交付 9/18 达到或超过一半 ⇒ 装置不可用

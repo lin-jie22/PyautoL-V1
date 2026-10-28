@@ -1,0 +1,12 @@
+  requests             116
+  slow                 3
+  slow_max_s           147.8
+  truncated            7
+  non_200              0
+  tps_median           8.5
+  tps_min              2.56
+  tps_slow_n           3
+  zero_answers         0
+  episodic_fallbacks   3
+  answers              18
+  装置判定：✅ 装置可用

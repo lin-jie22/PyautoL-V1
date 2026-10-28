@@ -1,0 +1,88 @@
+{
+ "wi_hit": [],
+ "wi_n": 0,
+ "ni_hit": [
+  "p1ni",
+  "p2ni",
+  "p3ni"
+ ],
+ "ni_n": 3,
+ "total_hit_n": 3,
+ "attempts": 18,
+ "rewrite": 16,
+ "closeout": 4,
+ "unknown_blocks": 0
+}
+{
+ "per": {
+  "p1wi": {
+   "group": "wi",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 2,
+   "closeout": 3,
+   "names": {
+    "语义记忆中无相关条目": 3
+   },
+   "hit_names": {}
+  },
+  "p1ni": {
+   "group": "ni",
+   "attempts": 3,
+   "hit_attempts": 3,
+   "rewrite": 5,
+   "closeout": 1,
+   "names": {
+    "re": 3,
+    "_SEP": 3
+   },
+   "hit_names": {
+    "re": 3
+   }
+  },
+  "p2wi": {
+   "group": "wi",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 0,
+   "closeout": 0,
+   "names": {},
+   "hit_names": {}
+  },
+  "p2ni": {
+   "group": "ni",
+   "attempts": 3,
+   "hit_attempts": 3,
+   "rewrite": 3,
+   "closeout": 0,
+   "names": {
+    "json": 3
+   },
+   "hit_names": {
+    "json": 3
+   }
+  },
+  "p3wi": {
+   "group": "wi",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 0,
+   "closeout": 0,
+   "names": {},
+   "hit_names": {}
+  },
+  "p3ni": {
+   "group": "ni",
+   "attempts": 3,
+   "hit_attempts": 3,
+   "rewrite": 6,
+   "closeout": 0,
+   "names": {
+    "datetime": 6
+   },
+   "hit_names": {
+    "datetime": 6
+   }
+  }
+ }
+}

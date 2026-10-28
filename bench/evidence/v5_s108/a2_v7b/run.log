@@ -1,0 +1,475 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  tasks_v7  n=6  suite_sha=2efed3123e40672156b39e1301d51beb
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=6/6
+  p1wi: oracle=1.0000 partial=0.3125 null=0.0000 ✅
+  p1ni: oracle=1.0000 partial=0.3125 null=0.0000 ✅
+  p2wi: oracle=1.0000 partial=0.6250 null=0.0000 ✅
+  p2ni: oracle=1.0000 partial=0.6250 null=0.0000 ✅
+  p3wi: oracle=1.0000 partial=0.4375 null=0.0000 ✅
+  p3ni: oracle=1.0000 partial=0.4375 null=0.0000 ✅
+  理由: 全部 6 条两极可分，其中 6 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=65ea142da78f565f
+  [观察]
+    - p1wi: oracle=1.0000 partial=0.3125 null=0.0000
+    - p1ni: oracle=1.0000 partial=0.3125 null=0.0000
+    - p2wi: oracle=1.0000 partial=0.6250 null=0.0000
+    - p2ni: oracle=1.0000 partial=0.6250 null=0.0000
+    - p3wi: oracle=1.0000 partial=0.4375 null=0.0000
+    - p3ni: oracle=1.0000 partial=0.4375 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 6 条任务上两极可分
+    - 中段有序检查 6 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=2efed3123e40；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 245 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=1x  repeat=3 ---
+02:14:44 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `tag_report` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一段
+02:14:44   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:14:58   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 't in seen:  # 全局去重\n                seen.add(s)\n                fh.write(f"{i}.{s}\\n")  # 拼输出文本并写入文件\n    return None\n"""}'
+02:14:58   [1] 通道=深 候选=1
+02:15:01       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:15:01       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:15:30   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接完成任务", "tool": "finish", "args": {"answer": """def tag_report(items, path):\n    _tag = re.compile(r"@[A-Za-z0-9]+")\n    seen = []\n    for item in items:\n        s = _tag.'
+02:15:30   [2] 通道=深 候选=1
+02:15:30       ⊘ [values:answer] 否决 — 目标要求展开（1423 字），答案只有 24 字
+02:15:30   ⛔ 全部候选被拦 (1 次连续失败)
+02:17:06   [3] 通道=深 候选=1
+02:17:11       ↳ finish ok=True 补全函数tag_report，满足给定规则
+02:17:11       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：编译失败 line 1: invalid syntax ⇒ ```python
+02:17:11       🔁 失配[outcome] finish({'answer': '```python\nimport re\n\n_SEP = " \\t"\n\n 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:17:11       📎 回看 b#2 因由=mismatch 窗=whole 71/71 字
+02:17:52   ⚠️ 因「?」失败而重规划
+02:17:52   [4] 通道=深 候选=1
+02:17:52       ⏭ 重复动作已跳过（不产生新信息）: finish
+02:17:52   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+02:17:59   ⏳ 预算耗尽 [wall_s]：已用 195.511 / 上限 240
+02:17:59   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+02:17:59   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+02:19:14       收尾调用失败 BudgetExhausted: 预算耗尽 [wall_s]：已用 270.513 / 上限 270
+02:19:14   🧪 收尾交付**未过闸**：2/5 项未过：缺少 def tag_report(...)；自检未通过（不提供细节）
+02:19:14   📦 收尾交付 12 字符（来源=episodic）
+02:19:14 ■ closed | steps=5 | guard_blocked=0 | 预演=2 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=1.574 memory>reason=0.455 reason>act=0.5] 回流=1.0 | 语义记忆=1 | 抖动重试=2 重试后仍失败=0 | 上限被裁短=4 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出30.51s) | 回看=1次/71字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 tag_report/语言标签/可编译/结构检查) ⚠️本次交付未过自检 | 收尾=1次(步0/时0/wall_retry1 来源episodic:1 12字) 改交付=1(与被闸打回那版同=0) 收尾闸=1跑/0过/1未过
+02:19:16 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `tag_report` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许*
+02:19:16   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+02:22:31   💥 内核异常 LLMError: 请求失败: TimeoutError: timed out
+02:22:31 ■ error | steps=0 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=0 否决=0(-) | 通量[perceive>memory=n/a memory>reason=n/a reason>act=n/a] 回流=n/a | 语义记忆=0 | 抖动重试=1 重试后仍失败=1 | 上限被裁短=1 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=0跑/0过/0打回/0放弃 判据=5项(非空/函数名 tag_report/语言标签/可编译/结构检查)
+02:22:31 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `save_roster` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+02:22:31   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:23:11   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """def save_roster(items, path):\n    table = {}\n    # >>> BEGIN TODO\n    for item in items:\n        if "|" not in item:\n      '
+02:23:11   [1] 通道=深 候选=1
+02:23:16       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:23:16       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:23:41   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接完成任务", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全函数 save_roster，无需使用工具。"}], "finish": {"answer": """```python\nimport json\n\ndef _dump(payload):\n    return j'
+02:23:41   [2] 通道=深 候选=1
+02:23:41       ⊘ [values:answer] 否决 — 目标要求展开（1307 字），答案只有 24 字
+02:23:41   ⛔ 全部候选被拦 (1 次连续失败)
+02:24:06   [3] 通道=深 候选=1
+02:24:11       ↳ finish ok=True 补全 save_roster 函数
+02:24:11   ✅ 收尾: ```python
+import json
+
+def _dump(payload):
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def save_roster(items, p
+02:24:11 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.59 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 上限被裁短=1 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 save_roster/语言标签/可编译/结构检查)
+02:24:12 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `save_roster` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+02:24:12   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+02:24:46   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """def save_roster(items, path):\n    table = {}\n    # >>> BEGIN TODO\n    for item in items:\n        if "|" not in item:\n      '
+02:24:46   [1] 通道=深 候选=1
+02:24:52       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:24:52       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:25:34   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 'ble)}\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": ordered}))\n    return None\n```'
+02:25:34   [2] 通道=深 候选=1
+02:25:34       ⊘ [values:answer] 否决 — 目标要求展开（1300 字），答案只有 24 字
+02:25:34   ⛔ 全部候选被拦 (1 次连续失败)
+02:26:01   [3] 通道=深 候选=1
+02:26:05       ↳ finish ok=True 直接完成任务
+02:26:05       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:26:05       🔁 失配[outcome] finish({'answer': '```python\ndef _dump(payload):\n    retur 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:26:05       📎 回看 b#2 因由=mismatch 窗=whole 44/44 字
+02:26:37   [4] 通道=深 候选=1
+02:26:43       ↳ finish ok=True 补全 save_roster 函数
+02:26:43       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:26:43   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+02:26:43 ■ cascade | steps=5 | guard_blocked=1 | 预演=3 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=4 否决=1(answer:1) | 通量[perceive>memory=1.73 memory>reason=0.6 reason>act=0.75] 回流=1.0 | 语义记忆=1 | 上限被裁短=5 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 save_roster/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+02:26:44 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `week_buckets` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这
+02:26:44   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:27:15   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: '       for key in sorted(buckets):\n            fh.write(key + "|" + ",".join(buckets[key]) + "\\n")\n    return None\n```"}'
+02:27:15   [1] 通道=深 候选=1
+02:27:20       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:28:13   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: '\n        for key in sorted(buckets):\n            fh.write(key + "|" + ",".join(buckets[key]) + "\\n")\n    return None\n```'
+02:28:13   [2] 通道=深 候选=1
+02:28:13       ⊘ [values:answer] 否决 — 目标要求展开（1470 字），答案只有 24 字
+02:28:13   ⛔ 全部候选被拦 (1 次连续失败)
+02:28:46   [3] 通道=深 候选=1
+02:28:51       ↳ finish ok=True 补全 week_buckets 函数
+02:28:51   ✅ 收尾: ```python
+import datetime
+
+def _monday_of(day):
+    return (day - datetime.timedelta(days=day.weekday())).isoformat()
+
+
+
+02:28:51 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.402 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 week_buckets/语言标签/可编译/结构检查)
+02:28:52 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `week_buckets` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允
+02:28:52   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:29:21   [1] 通道=深 候选=1
+02:29:25       ↳ finish ok=True 直接补全代码
+02:29:25       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:29:25       🔁 失配[outcome] finish({'answer': '```python\ndef _monday_of(day):\n    retu 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:29:25       📎 回看 b#1 因由=mismatch 窗=whole 44/44 字
+02:30:08   ⚠️ 因「?」失败而重规划
+02:30:08   [2] 通道=深 候选=1
+02:30:08       ⊘ [values:answer] 否决 — 目标要求展开（1459 字），答案只有 24 字
+02:30:08   ⛔ 全部候选被拦 (2 次连续失败)
+02:30:41   [3] 通道=深 候选=1
+02:30:47       ↳ finish ok=True 补全 week_buckets 函数
+02:30:47       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:30:47   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+02:30:47 ■ cascade | steps=4 | guard_blocked=1 | 预演=2 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=1.614 memory>reason=0.5 reason>act=0.667] 回流=1.0 | 语义记忆=1 | 上限被裁短=3 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 week_buckets/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+02:30:48 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `tag_report` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一段
+02:30:48   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:31:04   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 't in seen:  # 全局去重\n                seen.add(s)\n                fh.write(f"{i}.{s}\\n")  # 拼输出文本并写入文件\n    return None\n"""}'
+02:31:04   [1] 通道=深 候选=1
+02:31:07       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:31:07       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:31:38   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接完成任务", "tool": "finish", "args": {"answer": """def tag_report(items, path):\n    _tag = re.compile(r"@[A-Za-z0-9]+")\n    seen = []\n    for item in items:\n        s = _tag.'
+02:31:38   [2] 通道=深 候选=1
+02:31:38       ⊘ [values:answer] 否决 — 目标要求展开（1423 字），答案只有 24 字
+02:31:38   ⛔ 全部候选被拦 (1 次连续失败)
+02:33:08   [3] 通道=深 候选=1
+02:33:13       ↳ finish ok=True 补全函数tag_report，满足给定规则
+02:33:13       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：编译失败 line 1: invalid syntax ⇒ ```python
+02:33:13       🔁 失配[outcome] finish({'answer': '```python\nimport re\n\n_SEP = " \\t"\n\n 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:33:13       📎 回看 b#2 因由=mismatch 窗=whole 71/71 字
+02:33:55   ⚠️ 因「?」失败而重规划
+02:33:55   [4] 通道=深 候选=1
+02:33:55       ⏭ 重复动作已跳过（不产生新信息）: finish
+02:33:55   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+02:34:03   ⏳ 预算耗尽 [wall_s]：已用 195.504 / 上限 240
+02:34:03   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+02:34:03   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+02:35:18       收尾调用失败 BudgetExhausted: 预算耗尽 [wall_s]：已用 270.504 / 上限 270
+02:35:18   🧪 收尾交付**未过闸**：2/5 项未过：缺少 def tag_report(...)；自检未通过（不提供细节）
+02:35:18   📦 收尾交付 12 字符（来源=episodic）
+02:35:18 ■ closed | steps=5 | guard_blocked=0 | 预演=2 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=1.574 memory>reason=0.455 reason>act=0.5] 回流=1.0 | 语义记忆=1 | 抖动重试=2 重试后仍失败=0 | 上限被裁短=4 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出30.5s) | 回看=1次/71字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 tag_report/语言标签/可编译/结构检查) ⚠️本次交付未过自检 | 收尾=1次(步0/时0/wall_retry1 来源episodic:1 12字) 改交付=1(与被闸打回那版同=0) 收尾闸=1跑/0过/1未过
+02:35:19 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `tag_report` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许*
+02:35:19   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:37:54   [1] 通道=深 候选=1
+02:38:10       ↳ finish ok=True 直接补全代码
+02:38:10       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:38:10       🔁 失配[outcome] finish({'answer': '```python\n_SEP = " \\t"\n\n\ndef _fold(t 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:38:10       📎 回看 b#1 因由=mismatch 窗=whole 44/44 字
+02:38:35   ⏳ 预算耗尽 [wall_s]：已用 195.51 / 上限 240
+02:38:35   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+02:38:35   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+02:39:06   🧪 收尾交付**未过闸**：1/5 项未过：自检未通过（不提供细节）
+02:39:06   📦 收尾交付 768 字符（来源=收尾调用）
+02:39:06 ■ closed | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.614 memory>reason=0.5 reason>act=1.0] 回流=1.0 | 语义记忆=1 | 抖动重试=2 重试后仍失败=0 | 上限被裁短=4 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出0s) | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 tag_report/语言标签/可编译/结构检查) ⚠️本次交付未过自检 | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 768字) 改交付=1(与被闸打回那版同=0) 收尾闸=1跑/0过/1未过
+02:39:07 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `save_roster` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+02:39:07   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:39:30   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """def save_roster(items, path):\n    table = {}\n    # >>> BEGIN TODO\n    for item in items:\n        if "|" not in item:\n      '
+02:39:30   [1] 通道=深 候选=1
+02:39:34       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:39:34       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:39:53   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接完成任务", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全函数 save_roster，无需使用工具。"}], "finish": {"answer": """```python\nimport json\n\ndef _dump(payload):\n    return j'
+02:39:53   [2] 通道=深 候选=1
+02:39:53       ⊘ [values:answer] 否决 — 目标要求展开（1307 字），答案只有 24 字
+02:39:53   ⛔ 全部候选被拦 (1 次连续失败)
+02:40:12   [3] 通道=深 候选=1
+02:40:16       ↳ finish ok=True 补全 save_roster 函数
+02:40:16   ✅ 收尾: ```python
+import json
+
+def _dump(payload):
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def save_roster(items, p
+02:40:16 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.59 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 save_roster/语言标签/可编译/结构检查)
+02:40:17 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `save_roster` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+02:40:17   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:40:47   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """def save_roster(items, path):\n    table = {}\n    # >>> BEGIN TODO\n    for item in items:\n        if "|" not in item:\n      '
+02:40:47   [1] 通道=深 候选=1
+02:40:53       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:40:53       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:41:34   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 'ble)}\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": ordered}))\n    return None\n```'
+02:41:34   [2] 通道=深 候选=1
+02:41:34       ⊘ [values:answer] 否决 — 目标要求展开（1300 字），答案只有 24 字
+02:41:34   ⛔ 全部候选被拦 (1 次连续失败)
+02:42:01   [3] 通道=深 候选=1
+02:42:06       ↳ finish ok=True 直接完成任务
+02:42:06       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:42:06       🔁 失配[outcome] finish({'answer': '```python\ndef _dump(payload):\n    retur 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:42:06       📎 回看 b#2 因由=mismatch 窗=whole 44/44 字
+02:42:37   [4] 通道=深 候选=1
+02:42:42       ↳ finish ok=True 补全 save_roster 函数
+02:42:42       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:42:42   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+02:42:42 ■ cascade | steps=5 | guard_blocked=1 | 预演=3 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=4 否决=1(answer:1) | 通量[perceive>memory=1.73 memory>reason=0.6 reason>act=0.75] 回流=1.0 | 语义记忆=1 | 上限被裁短=5 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 save_roster/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+02:42:43 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `week_buckets` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这
+02:42:43   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:43:08   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: '       for key in sorted(buckets):\n            fh.write(key + "|" + ",".join(buckets[key]) + "\\n")\n    return None\n```"}'
+02:43:08   [1] 通道=深 候选=1
+02:43:12       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:43:57   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: '\n        for key in sorted(buckets):\n            fh.write(key + "|" + ",".join(buckets[key]) + "\\n")\n    return None\n```'
+02:43:57   [2] 通道=深 候选=1
+02:43:57       ⊘ [values:answer] 否决 — 目标要求展开（1470 字），答案只有 24 字
+02:43:57   ⛔ 全部候选被拦 (1 次连续失败)
+02:44:22   [3] 通道=深 候选=1
+02:44:25       ↳ finish ok=True 补全 week_buckets 函数
+02:44:25   ✅ 收尾: ```python
+import datetime
+
+def _monday_of(day):
+    return (day - datetime.timedelta(days=day.weekday())).isoformat()
+
+
+
+02:44:25 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.402 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 week_buckets/语言标签/可编译/结构检查)
+02:44:26 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `week_buckets` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允
+02:44:26   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:44:53   [1] 通道=深 候选=1
+02:44:59       ↳ finish ok=True 直接补全代码
+02:44:59       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:44:59       🔁 失配[outcome] finish({'answer': '```python\ndef _monday_of(day):\n    retu 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:44:59       📎 回看 b#1 因由=mismatch 窗=whole 44/44 字
+02:45:42   ⚠️ 因「?」失败而重规划
+02:45:42   [2] 通道=深 候选=1
+02:45:42       ⊘ [values:answer] 否决 — 目标要求展开（1459 字），答案只有 24 字
+02:45:42   ⛔ 全部候选被拦 (2 次连续失败)
+02:46:17   [3] 通道=深 候选=1
+02:46:24       ↳ finish ok=True 补全 week_buckets 函数
+02:46:24       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:46:24   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+02:46:24 ■ cascade | steps=4 | guard_blocked=1 | 预演=2 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=1.614 memory>reason=0.5 reason>act=0.667] 回流=1.0 | 语义记忆=1 | 上限被裁短=3 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 week_buckets/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+02:46:25 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `tag_report` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一段
+02:46:25   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:46:47   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 't in seen:  # 全局去重\n                seen.add(s)\n                fh.write(f"{i}.{s}\\n")  # 拼输出文本并写入文件\n    return None\n"""}'
+02:46:47   [1] 通道=深 候选=1
+02:46:50       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:46:50       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:47:29   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接完成任务", "tool": "finish", "args": {"answer": """def tag_report(items, path):\n    _tag = re.compile(r"@[A-Za-z0-9]+")\n    seen = []\n    for item in items:\n        s = _tag.'
+02:47:29   [2] 通道=深 候选=1
+02:47:29       ⊘ [values:answer] 否决 — 目标要求展开（1423 字），答案只有 24 字
+02:47:29   ⛔ 全部候选被拦 (1 次连续失败)
+02:49:26   [3] 通道=深 候选=1
+02:49:33       ↳ finish ok=True 补全函数tag_report，满足给定规则
+02:49:33       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：编译失败 line 1: invalid syntax ⇒ ```python
+02:49:33       🔁 失配[outcome] finish({'answer': '```python\nimport re\n\n_SEP = " \\t"\n\n 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:49:33       📎 回看 b#2 因由=mismatch 窗=whole 71/71 字
+02:49:40   ⏳ 预算耗尽 [wall_s]：已用 195.509 / 上限 240
+02:49:40   ⏱ 墙钟被重试链挡住，但还剩 44s ⇒ 转向收尾
+02:49:40   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+02:50:55       收尾调用失败 BudgetExhausted: 预算耗尽 [wall_s]：已用 270.51 / 上限 270
+02:50:55   🧪 收尾交付**未过闸**：2/5 项未过：缺少 def tag_report(...)；自检未通过（不提供细节）
+02:50:55   📦 收尾交付 12 字符（来源=episodic）
+02:50:55 ■ closed | steps=4 | guard_blocked=0 | 预演=2 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=1.574 memory>reason=0.5 reason>act=0.667] 回流=1.0 | 语义记忆=1 | 抖动重试=2 重试后仍失败=0 | 上限被裁短=3 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出30.51s) | 回看=1次/71字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 tag_report/语言标签/可编译/结构检查) ⚠️本次交付未过自检 | 收尾=1次(步0/时0/wall_retry1 来源episodic:1 12字) 改交付=1(与被闸打回那版同=0) 收尾闸=1跑/0过/1未过
+02:50:57 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `tag_report` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许*
+02:50:57   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+02:52:33   [1] 通道=深 候选=1
+02:52:45       ↳ finish ok=True 直接补全代码
+02:52:45       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:52:45       🔁 失配[outcome] finish({'answer': '```python\n_SEP = " \\t"\n\n\ndef _fold(t 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:52:45       📎 回看 b#1 因由=mismatch 窗=whole 44/44 字
+02:53:36   [2] 通道=深 候选=1
+02:53:41       ↳ finish ok=True 补全函数以满足要求
+02:53:41       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:54:12   [3] 通道=深 候选=1
+02:54:12       ⊘ [values:answer] 否决 — 空答案
+02:54:12   ⛔ 全部候选被拦 (3 次连续失败)
+02:54:12   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
+02:54:46   🧪 收尾交付**未过闸**：1/5 项未过：自检未通过（不提供细节）
+02:54:46   📦 收尾交付 725 字符（来源=收尾调用）
+02:54:46 ■ closed | steps=4 | guard_blocked=0 | 预演=2 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=1.614 memory>reason=0.375 reason>act=0.667] 回流=1.0 | 语义记忆=1 | 抖动重试=1 重试后仍失败=0 | 上限被裁短=7 | 墙钟放弃首发=0/重试=1 | 宽限生效=1次(超出0s) | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=3跑/0过/3打回/0放弃 判据=5项(非空/函数名 tag_report/语言标签/可编译/结构检查) ⚠️本次交付未过自检 | 收尾=1次(步0/时1 来源收尾调用:1 725字) 改交付=1(与被闸打回那版同=0) 收尾闸=1跑/0过/1未过
+02:54:47 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `save_roster` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+02:54:47   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:55:11   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """def save_roster(items, path):\n    table = {}\n    # >>> BEGIN TODO\n    for item in items:\n        if "|" not in item:\n      '
+02:55:11   [1] 通道=深 候选=1
+02:55:15       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:55:15       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:55:35   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接完成任务", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全函数 save_roster，无需使用工具。"}], "finish": {"answer": """```python\nimport json\n\ndef _dump(payload):\n    return j'
+02:55:35   [2] 通道=深 候选=1
+02:55:35       ⊘ [values:answer] 否决 — 目标要求展开（1307 字），答案只有 24 字
+02:55:35   ⛔ 全部候选被拦 (1 次连续失败)
+02:55:53   [3] 通道=深 候选=1
+02:55:57       ↳ finish ok=True 补全 save_roster 函数
+02:55:57   ✅ 收尾: ```python
+import json
+
+def _dump(payload):
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def save_roster(items, p
+02:55:57 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.59 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 save_roster/语言标签/可编译/结构检查)
+02:55:58 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `save_roster` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+02:55:58   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+02:56:25   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """def save_roster(items, path):\n    table = {}\n    # >>> BEGIN TODO\n    for item in items:\n        if "|" not in item:\n      '
+02:56:25   [1] 通道=深 候选=1
+02:56:29       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+02:56:29       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:57:01   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 'ble)}\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": ordered}))\n    return None\n```'
+02:57:01   [2] 通道=深 候选=1
+02:57:01       ⊘ [values:answer] 否决 — 目标要求展开（1300 字），答案只有 24 字
+02:57:01   ⛔ 全部候选被拦 (1 次连续失败)
+02:57:23   [3] 通道=深 候选=1
+02:57:26       ↳ finish ok=True 直接完成任务
+02:57:26       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:57:26       🔁 失配[outcome] finish({'answer': '```python\ndef _dump(payload):\n    retur 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+02:57:26       📎 回看 b#2 因由=mismatch 窗=whole 44/44 字
+02:57:51   [4] 通道=深 候选=1
+02:57:56       ↳ finish ok=True 补全 save_roster 函数
+02:57:56       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+02:57:56   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+02:57:56 ■ cascade | steps=5 | guard_blocked=1 | 预演=3 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=4 否决=1(answer:1) | 通量[perceive>memory=1.73 memory>reason=0.6 reason>act=0.75] 回流=1.0 | 语义记忆=1 | 上限被裁短=4 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 save_roster/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+02:57:57 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `week_buckets` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这
+02:57:57   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+02:58:21   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: '       for key in sorted(buckets):\n            fh.write(key + "|" + ",".join(buckets[key]) + "\\n")\n    return None\n```"}'
+02:58:21   [1] 通道=深 候选=1
+02:58:25       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:59:05   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: '\n        for key in sorted(buckets):\n            fh.write(key + "|" + ",".join(buckets[key]) + "\\n")\n    return None\n```'
+02:59:05   [2] 通道=深 候选=1
+02:59:05       ⊘ [values:answer] 否决 — 目标要求展开（1470 字），答案只有 24 字
+02:59:05   ⛔ 全部候选被拦 (1 次连续失败)
+02:59:33   [3] 通道=深 候选=1
+02:59:37       ↳ finish ok=True 补全 week_buckets 函数
+02:59:37   ✅ 收尾: ```python
+import datetime
+
+def _monday_of(day):
+    return (day - datetime.timedelta(days=day.weekday())).isoformat()
+
+
+
+02:59:37 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.402 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 上限被裁短=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 week_buckets/语言标签/可编译/结构检查)
+02:59:37 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `week_buckets` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允
+02:59:37   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+03:00:01   [1] 通道=深 候选=1
+03:00:06       ↳ finish ok=True 直接补全代码
+03:00:06       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+03:00:06       🔁 失配[outcome] finish({'answer': '```python\ndef _monday_of(day):\n    retu 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+03:00:06       📎 回看 b#1 因由=mismatch 窗=whole 44/44 字
+03:00:40   ⚠️ 因「?」失败而重规划
+03:00:40   [2] 通道=深 候选=1
+03:00:40       ⊘ [values:answer] 否决 — 目标要求展开（1459 字），答案只有 24 字
+03:00:40   ⛔ 全部候选被拦 (2 次连续失败)
+03:01:06   [3] 通道=深 候选=1
+03:01:12       ↳ finish ok=True 补全 week_buckets 函数
+03:01:12       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+03:01:12   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+03:01:12 ■ cascade | steps=4 | guard_blocked=1 | 预演=2 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=1.614 memory>reason=0.5 reason>act=0.667] 回流=1.0 | 语义记忆=1 | 上限被裁短=1 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 week_buckets/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+  分数账本  会话#0 追加 6 行（拒绝 0 行  ⚠️重复=11） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@1x n=3 mean=0.0312 std=0.0000 [0.0312,0.0312] 极差=0.0000
+  attempted=18 recorded=17 skipped_no_answer=1 failed_scorer=0 对账=✅ 可信=❌
+  评审     落盘=245 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=36 检验=27 命中=16 命中率=0.593 失配=11(成败11/文本0) 混淆={'ok_ok': 9, 'ok_fail': 11, 'fail_ok': 0, 'fail_fail': 7}
+  传输层    抖动重试=10 重试后仍失败=1 上限被裁短=52 墙钟放弃首发=0/重试=5 （共 18 题）
+  ⚠️ 本轮存在早退（没量到的条目）⇒ 这个读数**不得**用于判定。
+     · [r1] p1ni: solver 未产出答案
+
+--- 噪声明细（逐题 × 逐次）---
+  任务                        r1      r2      r3   极差
+  p1wi                  0.0000  0.0000  0.0000   0.0000
+  p1ni                       —  0.0000  0.0000   0.0000
+  p2wi                  0.1875  0.1875  0.1875   0.0000
+  p2ni                  0.0000  0.0000  0.0000   0.0000
+  p3wi                  0.0000  0.0000  0.0000   0.0000
+  p3ni                  0.0000  0.0000  0.0000   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/6
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=773d5b672ef50bf8 scorer=d4b1cbbfd7f1 suite=2efed3123e40 repeat=3 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=36e8683034 llm_cond=ae10d1d8f6 max_tokens=1024 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s108b_bench_a2_v7b/runs.jsonl
+  答案已落盘 /private/tmp/v1_s108b_bench_a2_v7b/answers.jsonl  18 条  共 10457 字符  最长 907 字符  截断 0 条

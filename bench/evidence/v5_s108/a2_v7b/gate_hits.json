@@ -1,0 +1,69 @@
+{
+ "wi_hit": [],
+ "wi_n": 0,
+ "ni_hit": [],
+ "ni_n": 0,
+ "total_hit_n": 0,
+ "attempts": 18,
+ "rewrite": 18,
+ "closeout": 5,
+ "unknown_blocks": 0
+}
+{
+ "per": {
+  "p1wi": {
+   "group": "wi",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 3,
+   "closeout": 3,
+   "names": {},
+   "hit_names": {}
+  },
+  "p1ni": {
+   "group": "ni",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 3,
+   "closeout": 2,
+   "names": {},
+   "hit_names": {}
+  },
+  "p2wi": {
+   "group": "wi",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 0,
+   "closeout": 0,
+   "names": {},
+   "hit_names": {}
+  },
+  "p2ni": {
+   "group": "ni",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 6,
+   "closeout": 0,
+   "names": {},
+   "hit_names": {}
+  },
+  "p3wi": {
+   "group": "wi",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 0,
+   "closeout": 0,
+   "names": {},
+   "hit_names": {}
+  },
+  "p3ni": {
+   "group": "ni",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 6,
+   "closeout": 0,
+   "names": {},
+   "hit_names": {}
+  }
+ }
+}

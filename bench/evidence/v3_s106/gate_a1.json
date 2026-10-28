@@ -1,0 +1,52 @@
+{
+ "nc_hit": [],
+ "nc_n": 0,
+ "ct_hit": [],
+ "ct_n": 0,
+ "attempts": 19,
+ "rejections": 0,
+ "per": {
+  "?": {
+   "attempts": 1,
+   "hit_attempts": 0,
+   "rejections": 0,
+   "names": {}
+  },
+  "nc01": {
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rejections": 0,
+   "names": {}
+  },
+  "nc02": {
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rejections": 0,
+   "names": {}
+  },
+  "nc03": {
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rejections": 0,
+   "names": {}
+  },
+  "ct01": {
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rejections": 0,
+   "names": {}
+  },
+  "ct02": {
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rejections": 0,
+   "names": {}
+  },
+  "ct03": {
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rejections": 0,
+   "names": {}
+  }
+ }
+}

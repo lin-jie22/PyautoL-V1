@@ -1,0 +1,22 @@
+[骨架形态] 按 (题, sha) 去重后的唯一交付
+  题      组   sha         字符    可编译  import行              缺名字     保留率
+  --------------------------------------------------------------------------
+  p1bf   bf  0acc1daa   827      ✅        4                —       —
+  p1bf   bf  7667db8d    12      ✅        0       语义记忆中无相关条目       —
+  p1bf   bf  7d864f3d   629      ✅        2                —       —
+  p2bf   bf  63f58ce7   644      ✅        2                —       —
+  p2bf   bf  a4303378   623      ✅        2                —       —
+  p3bf   bf  820ef733  1047      ✅        2                —       —
+  p3bf   bf  d07f691b  1205      ✅        3                —       —
+  p1sk   sk  902bdfdc   655      ✅        0            os,re    1.00
+  p1sk   sk  ca715fe3   630      ✅        0            os,re    1.00
+  p2sk   sk  0c786222   705      ✅        0          json,os    1.00
+  p2sk   sk  65b1176d   696      ✅        0          json,os    1.00
+  p3sk   sk  45c85203   853      ✅        0 _monday_of,datetime,os    0.82
+  p3sk   sk  8b2a69d9  1057      ✅        0      datetime,os    1.00
+  p3sk   sk  8d31ba39   984      ✅        0 _monday_of,datetime,os    0.82
+
+[汇总]
+  bf: 7 份唯一交付 | 有 import 行 6 | 缺名字 1 | 语法错 0 | 不可判 0
+  sk: 7 份唯一交付 | 有 import 行 0 | 缺名字 7 | 语法错 0 | 不可判 0
+      骨架保留率：min=0.82 mean=0.95 max=1.00

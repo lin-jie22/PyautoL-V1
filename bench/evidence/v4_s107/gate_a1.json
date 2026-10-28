@@ -1,0 +1,76 @@
+{
+ "bf_hit": [
+  "p1bf"
+ ],
+ "bf_n": 1,
+ "sk_hit": [
+  "p1sk",
+  "p2sk",
+  "p3sk"
+ ],
+ "sk_n": 3,
+ "total_hit_n": 4,
+ "attempts": 18,
+ "rewrite": 2,
+ "closeout": 10,
+ "unknown_blocks": 1,
+ "per": {
+  "p1bf": {
+   "group": "bf",
+   "attempts": 3,
+   "hit_attempts": 1,
+   "rewrite": 0,
+   "closeout": 1,
+   "names": {
+    "语义记忆中无相关条目": 1
+   }
+  },
+  "p1sk": {
+   "group": "sk",
+   "attempts": 3,
+   "hit_attempts": 3,
+   "rewrite": 0,
+   "closeout": 3,
+   "names": {
+    "re": 3
+   }
+  },
+  "p2bf": {
+   "group": "bf",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 0,
+   "closeout": 0,
+   "names": {}
+  },
+  "p2sk": {
+   "group": "sk",
+   "attempts": 3,
+   "hit_attempts": 3,
+   "rewrite": 1,
+   "closeout": 3,
+   "names": {
+    "os": 4
+   }
+  },
+  "p3bf": {
+   "group": "bf",
+   "attempts": 3,
+   "hit_attempts": 0,
+   "rewrite": 0,
+   "closeout": 0,
+   "names": {}
+  },
+  "p3sk": {
+   "group": "sk",
+   "attempts": 3,
+   "hit_attempts": 3,
+   "rewrite": 1,
+   "closeout": 3,
+   "names": {
+    "os": 3,
+    "datetime": 1
+   }
+  }
+ }
+}

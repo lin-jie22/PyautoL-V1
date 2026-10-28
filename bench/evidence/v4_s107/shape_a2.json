@@ -1,0 +1,127 @@
+[
+ {
+  "task": "p1bf",
+  "group": "bf",
+  "chars": 629,
+  "compiles": true,
+  "import_lines": 2,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": null,
+  "outside_n": null,
+  "sha": "7d864f3d"
+ },
+ {
+  "task": "p2bf",
+  "group": "bf",
+  "chars": 644,
+  "compiles": true,
+  "import_lines": 2,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": null,
+  "outside_n": null,
+  "sha": "63f58ce7"
+ },
+ {
+  "task": "p3bf",
+  "group": "bf",
+  "chars": 1047,
+  "compiles": true,
+  "import_lines": 2,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": null,
+  "outside_n": null,
+  "sha": "820ef733"
+ },
+ {
+  "task": "p3bf",
+  "group": "bf",
+  "chars": 1205,
+  "compiles": true,
+  "import_lines": 3,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": null,
+  "outside_n": null,
+  "sha": "d07f691b"
+ },
+ {
+  "task": "p1sk",
+  "group": "sk",
+  "chars": 641,
+  "compiles": true,
+  "import_lines": 0,
+  "names": [
+   "os",
+   "re"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "outside_n": 10,
+  "sha": "2d68dacb"
+ },
+ {
+  "task": "p1sk",
+  "group": "sk",
+  "chars": 655,
+  "compiles": true,
+  "import_lines": 0,
+  "names": [
+   "os",
+   "re"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "outside_n": 10,
+  "sha": "902bdfdc"
+ },
+ {
+  "task": "p2sk",
+  "group": "sk",
+  "chars": 696,
+  "compiles": true,
+  "import_lines": 0,
+  "names": [
+   "json",
+   "os"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "outside_n": 10,
+  "sha": "65b1176d"
+ },
+ {
+  "task": "p3sk",
+  "group": "sk",
+  "chars": 976,
+  "compiles": true,
+  "import_lines": 0,
+  "names": [
+   "_monday_of",
+   "datetime",
+   "os"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 0.8182,
+  "outside_n": 11,
+  "sha": "7e840895"
+ },
+ {
+  "task": "p3sk",
+  "group": "sk",
+  "chars": 984,
+  "compiles": true,
+  "import_lines": 0,
+  "names": [
+   "_monday_of",
+   "datetime",
+   "os"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 0.8182,
+  "outside_n": 11,
+  "sha": "8d31ba39"
+ }
+]

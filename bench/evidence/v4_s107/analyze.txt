@@ -1,0 +1,54 @@
+========================================================================================
+  §77 V4″ 读数：verify_static 1（报名字） vs 2（盲报） —— tasks_v6（6 题 / 96 格 / 3 对）
+========================================================================================
+
+[N4/N5] 口径签名与端口
+  A: sig=67a25eab59c22932  endpoint=127.0.0.1:8812  verify_static=1  suite_sha=a61fb809f16eaf03
+  B: sig=de29658b4b476622  endpoint=127.0.0.1:8812  verify_static=2  suite_sha=a61fb809f16eaf03
+  逐字段比对：34 个字段，不同 1 项 ⇒ ['limits.verify_static']
+  N4 ✅ 只差 limits.verify_static
+  N5 ✅ 两臂同端口 8812
+
+[N6] 尝试数与代理台账
+  A: attempted=18 代理台账=100 行
+  B: attempted=18 代理台账=97 行
+  期望 attempted=18（6 题 × 3 rep）
+
+[逐题] 每题 3 rep 的平均格分（分母 16）与 Δ_t = A − B
+  题      组             A(rep1/2/3)          B(rep1/2/3)      Δ_t
+  p1bf   bf         0.00/0.00/0.00       0.00/0.00/0.00  +0.0000
+  p2bf   bf         0.00/0.00/0.00       0.00/0.00/0.00  +0.0000
+  p3bf   bf         0.00/1.00/1.00       0.00/1.00/0.00  +0.3333
+  p1sk   sk         0.00/0.00/0.00       0.00/0.00/0.00  +0.0000
+  p2sk   sk         0.00/0.00/0.00       0.00/0.00/0.00  +0.0000
+  p3sk   sk         0.00/0.00/0.00       0.00/0.00/0.00  +0.0000
+
+[组均值] Δ_bf = +0.1111   Δ_sk = +0.0000   （need_diff 门槛 0.1250 / need_eq 门槛 0.0833）
+
+[判决] 四条判据分别给结论（预注册 §4）
+  P1 need_diff |Δ_sk − Δ_bf| = 0.1111 < 0.1250  ❌ 两族 Δ 分不开
+  P2 need_diff Δ_sk = +0.0000 < 0.0833  ❌ 没有效应（预注册 §7.2：撤回「闸的价值」）
+  P4 need_eq  |Δ_bf| = 0.1111 ≥ 0.0833  ❌ bf 不是干净对照 ⇒ 跨组比较降级为描述性
+
+[名字状态] 首答 / 末答是否有未定义名（零模型静态；只作描述）
+  题      组    臂    尝试  sha数            首答名            末答名              首→末 sha
+  p1bf   bf   A     3     3              —     语义记忆中无相关条目 0acc1daa→7667db8d
+  p1bf   bf   B     3     1              —              — 7d864f3d→7d864f3d
+  p2bf   bf   A     3     2              —              — 63f58ce7→a4303378
+  p2bf   bf   B     3     1              —              — 63f58ce7→63f58ce7
+  p3bf   bf   A     3     2              —              — d07f691b→820ef733
+  p3bf   bf   B     3     2              —              — d07f691b→d07f691b
+  p1sk   sk   A     3     2          re,os          re,os 902bdfdc→ca715fe3
+  p1sk   sk   B     3     2          re,os          re,os 902bdfdc→2d68dacb
+  p2sk   sk   A     3     2        os,json        os,json 65b1176d→0c786222
+  p2sk   sk   B     3     1        os,json        os,json 65b1176d→65b1176d
+  p3sk   sk   A     3     3 os,datetime,_monday_of os,datetime,_monday_of 8d31ba39→45c85203
+  p3sk   sk   B     3     2 os,datetime,_monday_of os,datetime,_monday_of 8d31ba39→7e840895
+
+[N3] 同一命令两次分类逐字相同：316eb596f9953e92 == 316eb596f9953e92 ✅
+
+[兑现] 首答含未定义名的题 ⇒ 末答是否消除（同臂内，只作描述）
+  A: 3 题有名字 ⇒ 末答消除 0 题 []（未消除：['p1sk', 'p2sk', 'p3sk']）
+  B: 3 题有名字 ⇒ 末答消除 0 题 []（未消除：['p1sk', 'p2sk', 'p3sk']）
+
+[成本] A=1795.7s  B=1804.5s  合计=60.0 分钟

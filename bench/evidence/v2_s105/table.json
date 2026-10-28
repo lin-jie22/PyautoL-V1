@@ -1,0 +1,860 @@
+[
+ {
+  "suite": "tasks_v1",
+  "task": "sg01",
+  "sha": "9e594986f050a8ac4f98ab5df230db7ed4a90d78969ced7703db0ae299c75106",
+  "family": "NO_NAME",
+  "base": 0.8571,
+  "rep": 0.8571,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg01",
+  "sha": "dfd4ac9816906810de195a56f7084d95d7d4bcb656bf1fe66bb3d9ef1eab764d",
+  "family": "NO_NAME",
+  "base": 0.4286,
+  "rep": 0.4286,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg01",
+  "sha": "e63dea5c3d24d48f86716e0d7d124a4eac2e65d19e1388c7f0e3d2bb602d5009",
+  "family": "NAME_FIXED",
+  "base": 0.0714,
+  "rep": 1.0,
+  "names": [
+   "re"
+  ]
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg02",
+  "sha": "454b10335b116da6b0f3e749aa7ad0a991a8df9ee21e9192e2ba44349ec0a2ef",
+  "family": "NO_NAME",
+  "base": 0.5,
+  "rep": 0.5,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg02",
+  "sha": "5949a5f678e519e93b97c974040bea7954053ae0a1f307ad82f1440a64c1cb6e",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg02",
+  "sha": "5e8404ac625236d1144d91dde59c200271009d2fa55ab18125cf5e0299e578d2",
+  "family": "NO_NAME",
+  "base": 0.7143,
+  "rep": 0.7143,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg03",
+  "sha": "a73fc203c7135108b467da6ff92b80e03274a7d45f13fe65c8a34af0a97f7a87",
+  "family": "NO_NAME",
+  "base": 0.0714,
+  "rep": 0.0714,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg03",
+  "sha": "f7cd107568c7f43169774d9e065aeb46eead0ba0edbd46244ffaac00c7bd5405",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg04",
+  "sha": "85ebdca50830af6e99ec92be6c69fd77730a47e0048c6acca0a57e57bf1b63d9",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg04",
+  "sha": "e91a119e67c9e959966e63081085d65fbc7be9e0ccc4598cf63015d6fa1a7afa",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg05",
+  "sha": "4a494dd89abb5ed042cbfde0d15490e7c0b8ff80e3f3d4c72774be03e36f6b95",
+  "family": "NO_NAME",
+  "base": 0.0714,
+  "rep": 0.0714,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg05",
+  "sha": "b0e74e2bf1cbb2429734c15ef6d2e0c264d76f09002535ae6abfadac28870de8",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg06",
+  "sha": "1ae4f59edbf53fe54ac13fb86b3ceb69f66cc9d4d9aa440d8dc24d6d1a44e78b",
+  "family": "NO_NAME",
+  "base": 0.0714,
+  "rep": 0.0714,
+  "names": []
+ },
+ {
+  "suite": "tasks_v1",
+  "task": "sg06",
+  "sha": "28cce1894dc80bce1b6f39111fcda859290c2c57b1222d1e5a9bc3378d6aec6e",
+  "family": "NO_NAME",
+  "base": 0.5714,
+  "rep": 0.5714,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg01",
+  "sha": "2dde10a7b8de20f0219ea0569ce365c6144d274bd65559a45bbcf1a418b24fc3",
+  "family": "UNDECIDABLE",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg01",
+  "sha": "5ea812bb8026d16e6a6e8fb782d3b0fdf687808d540a3e5b7728d8dce8b39b50",
+  "family": "NO_NAME",
+  "base": 0.7143,
+  "rep": 0.7143,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg01",
+  "sha": "8c895e8f30f3c48c58d5d7eff2ec1cf3562e08d92ecc504d015e9c451aa23f6d",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg01",
+  "sha": "9e594986f050a8ac4f98ab5df230db7ed4a90d78969ced7703db0ae299c75106",
+  "family": "NO_NAME",
+  "base": 0.8571,
+  "rep": 0.8571,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg01",
+  "sha": "cede756ec63da0835f6e1f774c5dc446b2dc278417615a3ac754626719d0cf96",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg01",
+  "sha": "e63dea5c3d24d48f86716e0d7d124a4eac2e65d19e1388c7f0e3d2bb602d5009",
+  "family": "NAME_FIXED",
+  "base": 0.0714,
+  "rep": 1.0,
+  "names": [
+   "re"
+  ]
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg01",
+  "sha": "fc002f4fbe3c244e3b4421a63a2021f7dedc3d40d7463caeda520fdda95a0d32",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg02",
+  "sha": "454b10335b116da6b0f3e749aa7ad0a991a8df9ee21e9192e2ba44349ec0a2ef",
+  "family": "NO_NAME",
+  "base": 0.5,
+  "rep": 0.5,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg02",
+  "sha": "5e8404ac625236d1144d91dde59c200271009d2fa55ab18125cf5e0299e578d2",
+  "family": "NO_NAME",
+  "base": 0.7143,
+  "rep": 0.7143,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg02",
+  "sha": "76fcd76a7acbef8f6a4b41983ad90dc2e33e2d912de19d2e80e3b6ed27a7ce16",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg02",
+  "sha": "8de7ac3dff5521b0c3d171230039c40e923649965fd1b915a19ffd9f299f7275",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg02",
+  "sha": "ed215d527efbd14c1e4bec1d9a6e91eb17dbbbddb00348c31274e7181ea99c55",
+  "family": "UNDECIDABLE",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg03",
+  "sha": "495f2e59944b216cb3cd5d391294ef9bdf71608ff9427b103dd2199760755fd7",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg03",
+  "sha": "b1e592b5aed39d5b15373bd3d68a8a5dbc5cc35ac9ed700f7859be46a78e4196",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg03",
+  "sha": "f7cd107568c7f43169774d9e065aeb46eead0ba0edbd46244ffaac00c7bd5405",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg03",
+  "sha": "fb2cf42198d6b304f0af7e6880cfa3951d6c5b0dfddbd7f97d5340e6594f8598",
+  "family": "NO_NAME",
+  "base": 0.2857,
+  "rep": 0.2857,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg04",
+  "sha": "26e5f3b6598c8f53403cc55ca96dbc4c96c402597cae974381c2c2768705ccbf",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg04",
+  "sha": "3b5996bbc30796a33c00098bc1cfb26897cc44780024b1ac8870c01f72d1490e",
+  "family": "NO_NAME",
+  "base": 0.4286,
+  "rep": 0.4286,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg04",
+  "sha": "68f5fad70098360f6fc8cfea0bf430c96fe78d06ae542fff2dfc26aa676b7f3b",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg04",
+  "sha": "85ebdca50830af6e99ec92be6c69fd77730a47e0048c6acca0a57e57bf1b63d9",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg05",
+  "sha": "b0e74e2bf1cbb2429734c15ef6d2e0c264d76f09002535ae6abfadac28870de8",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg05",
+  "sha": "c05445074c0c7f947ec1ec64c90d6eb42aeb45cb1a885db30a3337cd606bdb89",
+  "family": "NO_NAME",
+  "base": 0.5,
+  "rep": 0.5,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg05",
+  "sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "family": "NO_CODE",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg05",
+  "sha": "e44cf003b68109dd64e28b33eaa53af580f941f19e793b6a856908e5225a5779",
+  "family": "NO_NAME",
+  "base": 0.0714,
+  "rep": 0.0714,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg05",
+  "sha": "edb8d3298b76bbdd49e8fed09d01649a43c7e323edb407ae9fb353c94302ca3e",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg06",
+  "sha": "28cce1894dc80bce1b6f39111fcda859290c2c57b1222d1e5a9bc3378d6aec6e",
+  "family": "NO_NAME",
+  "base": 0.5714,
+  "rep": 0.5714,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg06",
+  "sha": "6142f6f1c7ba2991d0c527e778d495a91288becb18c7573c6f5dd11c09824db9",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg06",
+  "sha": "6db6333f2f0f9bc3d5bb00073d33391a54eab04c2fcc1f2096de65702dc11ebf",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg06",
+  "sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "family": "NO_CODE",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg07",
+  "sha": "2a57a79243fddf23ccbebae95a045235b97aeb1ec57eb8013aa5592bc83d45be",
+  "family": "NO_NAME",
+  "base": 0.3571,
+  "rep": 0.3571,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg07",
+  "sha": "a085a420108e21511067e12feb1351d67ae8bda1fae513be2876755ed6e7e8e7",
+  "family": "NO_NAME",
+  "base": 0.8571,
+  "rep": 0.8571,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg07",
+  "sha": "a6bb3b1f155b03f84768b07c4610165d8dd20d87da438589e38194e5fee4e531",
+  "family": "NO_NAME",
+  "base": 0.9286,
+  "rep": 0.9286,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg07",
+  "sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "family": "NO_CODE",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg08",
+  "sha": "104f31b4a74b53c41ec174ba2eb81db083d17863e6e4dbe0aa8f94d4dcb8e06f",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg08",
+  "sha": "1ef773791387c66c1cf7edc0e8e71dd3cc3c502b28f8adf834f1452c0f8687f3",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg08",
+  "sha": "de900ff2b994523da2ed465646afd2c1cf4aa15d4a381094a3dac720a8677b7a",
+  "family": "NO_NAME",
+  "base": 0.5,
+  "rep": 0.5,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg08",
+  "sha": "ed8b96cf252edb77586e6e6dd1cbb5c033f11123887bc41b0a3b8b566327b137",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg09",
+  "sha": "13898a91a3e8788627755ff4658474d33787232c7f99fff6da196473c0da27ea",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg09",
+  "sha": "1d77216f990af5054ababff24ae1b48ba536196d02ff443b7b255a8a2383ce47",
+  "family": "NO_NAME",
+  "base": 0.8571,
+  "rep": 0.8571,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg09",
+  "sha": "9f65d5a95d468a6e3856de553f994307926a2378af9a787db82469b50b66f032",
+  "family": "NO_NAME",
+  "base": 0.9286,
+  "rep": 0.9286,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg09",
+  "sha": "b80c865687e9650e3a31a691c8549bb46cb279ca2c2f640b2d19c1184c4591de",
+  "family": "NO_NAME",
+  "base": 0.8571,
+  "rep": 0.8571,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg09",
+  "sha": "fe0becf478de83e4924b17060c01bdfe14a7720617f59d32a7a6dc32363e5c79",
+  "family": "NO_NAME",
+  "base": 0.8571,
+  "rep": 0.8571,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg10",
+  "sha": "088ba9fd9500fa0a81f1d07955f66b67995fd21586984e3ada15a5e439728eb1",
+  "family": "UNDECIDABLE",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg10",
+  "sha": "31a014f3027f9e3ee81a5ce768119b70b866c5c4f63d04c9dc104d8154e9abaf",
+  "family": "NO_NAME",
+  "base": 0.2857,
+  "rep": 0.2857,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg10",
+  "sha": "38f40729a0ff3722c5ed0056e980a2361cb609de5ace48c6790d0cd20ea48d9d",
+  "family": "NAME_FIXED",
+  "base": 0.0714,
+  "rep": 1.0,
+  "names": [
+   "re"
+  ]
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg10",
+  "sha": "a29b3d53cfa35132f0555965551e76595ba3b63e8d4012155d5c756c766af741",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg10",
+  "sha": "db82131d2c351ce6f342e1264ab1e3d0f22ff64e8ceb6dda7763e39e99406dc4",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v2",
+  "task": "sg10",
+  "sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "family": "NO_CODE",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex01",
+  "sha": "c949ac993be604cec6adef2d7d158a4d6ac6e86d98c418dd6386b697def50fd5",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex02",
+  "sha": "06fab2dc5b8e0a99dd6d82a4c2f0e45351a6464d730bff75a4d4a66615384e54",
+  "family": "NO_NAME",
+  "base": 0.125,
+  "rep": 0.125,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex03",
+  "sha": "5ac47dac0c428cc66434d8d84b9950d8f59a6dfb8286bbfc11bc0331a58aa802",
+  "family": "NO_NAME",
+  "base": 0.5625,
+  "rep": 0.5625,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex04",
+  "sha": "15d6c8b449d187a1e63b6e92d4fcbb015b7caee6e9c9698af33396dc19a61489",
+  "family": "NO_NAME",
+  "base": 0.25,
+  "rep": 0.25,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex05",
+  "sha": "496c40dd154ce481da272d7d2671fb49faa7b217d178cde4845ade912d423208",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex06",
+  "sha": "99802be04f069cce6a653f5b248b3cc3fa6cbe636d416c20bdd0659b957d1738",
+  "family": "NO_NAME",
+  "base": 0.0625,
+  "rep": 0.0625,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex07",
+  "sha": "a9f3fd95bd070b7e148f2dd567faba902c64ea72febfe1f07c982da02120005e",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex08",
+  "sha": "a13a42a8f75202fc9a5387ca01cbd0672f2e796d4696a956f728acfbe888456f",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex09",
+  "sha": "b16ba4563ef0666f663d9a30bf4569163d195446e04acef78d53eb43a42ba605",
+  "family": "NO_NAME",
+  "base": 0.5625,
+  "rep": 0.5625,
+  "names": []
+ },
+ {
+  "suite": "tasks_v3",
+  "task": "ex10",
+  "sha": "5208e8cae3d3ee8178e825c9f3827ad8b2bf0b495c9738acbc408313cacce7cd",
+  "family": "NO_NAME",
+  "base": 0.1875,
+  "rep": 0.1875,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at01",
+  "sha": "82dd524fc7b74d3d6ea35e77cba991cc84ba87ffda8463de7e9d023efebfd57e",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at01",
+  "sha": "e9a047d2557e38a5795b0330eeff3aab2dee21a9f8824b8c1d432f7e7df05bea",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at02",
+  "sha": "4d78f3b3d6ab104c584dc3867c52677c99e806292217538503fcd6bc2c366f97",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at02",
+  "sha": "8d3b86f786ac1109dc09da61cfb2785b219e53ff6f16617b3aa3ce151bd81f3d",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at03",
+  "sha": "38716aa6d884c2a981a0ed568ae3df15ffe98f90ea6c2707a3cd6b45cc20f94b",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at03",
+  "sha": "7d6698fe293c0feae6b958e28cd7382fa87d643e661e2d318a90953f90f61274",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at03",
+  "sha": "e21cb93c78631cb684de89eaa611d88738217d12f5105ba2acca48f487010aba",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at04",
+  "sha": "00b286184087ccdd6ff61e1c42a80b661ea8157a649ee6706b88bf0ecbd5d150",
+  "family": "NAME_FIXED",
+  "base": 0.375,
+  "rep": 1.0,
+  "names": [
+   "os"
+  ]
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at04",
+  "sha": "1b5f6119b641e3e1b5636641f0a5748d7e88dc3c8b15e5fc5165ba66e47bf739",
+  "family": "NAME_FIXED",
+  "base": 0.375,
+  "rep": 1.0,
+  "names": [
+   "os"
+  ]
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at04",
+  "sha": "26fe8d592e157bded09bcfb299c3e146f2d137c48cb1ee6e9dc9d73f4389ca20",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at04",
+  "sha": "4beacfc9668ed630efbbc6b63ff21fb58a45d5c7cfc93d3447ba4031bd5864f5",
+  "family": "NO_NAME",
+  "base": 0.375,
+  "rep": 0.375,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at04",
+  "sha": "4f654f8fbd640e4c14084dad27e8ba557bf0f8079b47ba6295284c701d98cc24",
+  "family": "NAME_FIXED",
+  "base": 0.375,
+  "rep": 1.0,
+  "names": [
+   "os"
+  ]
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at05",
+  "sha": "1500eca84ae8ad22555bb68b3f15979cf5a6e77f60127dc443d6e6adc134e947",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at05",
+  "sha": "5512482d2c5a49904e6643b404052795a297e514a82c8986e3c71fedfc19bbe6",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at05",
+  "sha": "dd7eca5391bd96b5c6a1622c8e6c19a535f5d7a95d198fcbe4eed154785c286e",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at06",
+  "sha": "30ddeadd72a5277d099a4db543c8ebec29f6d06e0026c4ac3274c7d3c77b13d1",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at06",
+  "sha": "5f894904847c7f3e131127639e93d5a70ee5ae6d1056dfff0a5778c63d8be220",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at07",
+  "sha": "8d2a89dafb324e1ef69158761fdb475ace53975e4c45468611a155433603967f",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at07",
+  "sha": "b1190f7a7c03ad9a9bb645e3c7d44c2686bd84f7a2dc688a382412cb1c54f6b2",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at08",
+  "sha": "280174a58f4f519435e1c01398d364be7bd2e737477a48af63c9b821e7552018",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at08",
+  "sha": "6eb0fd289d3d93cf34cd9bb2a89d5118d980e34a185ae12d32d6accc421a367f",
+  "family": "NO_NAME",
+  "base": 0.0,
+  "rep": 0.0,
+  "names": []
+ },
+ {
+  "suite": "tasks_v4",
+  "task": "at08",
+  "sha": "9a26dff51c337478de802cba01eaf4ac455227fe6eb170f955b4f4345da533a3",
+  "family": "PASS",
+  "base": 1.0,
+  "rep": 1.0,
+  "names": []
+ }
+]

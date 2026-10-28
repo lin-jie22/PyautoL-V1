@@ -1,0 +1,83 @@
+<answer>:5: SyntaxWarning: invalid escape sequence '\='
+=== V2 · 失败分族（单位 = 唯一交付物 (suite, task, sha)）===
+台账行 650，去重后 94 份唯一交付物（重复行 544）；题集 ['tasks_v1', 'tasks_v2', 'tasks_v3', 'tasks_v4']
+
+--- 每把尺子 ---
+  tasks_v1  交付  14  失败  11  NAME_FIXED  1 ⇒ share=0.091 [0.016,0.377]  share_any=0.091  命中题 1/6
+            族分布 {'NO_NAME': 10, 'NAME_FIXED': 1}
+  tasks_v2  交付  48  失败  28  NAME_FIXED  2 ⇒ share=0.071 [0.020,0.226]  share_any=0.071  命中题 2/10
+            族分布 {'NO_CODE': 4, 'UNDECIDABLE': 3, 'NO_NAME': 19, 'NAME_FIXED': 2}
+  tasks_v3  交付  10  失败   7  NAME_FIXED  0 ⇒ share=0.000 [0.000,0.354]  share_any=0.000  命中题 0/10
+            族分布 {'NO_NAME': 7}
+  tasks_v4  交付  22  失败  13  NAME_FIXED  3 ⇒ share=0.231 [0.082,0.503]  share_any=0.231  命中题 1/8
+            族分布 {'NO_NAME': 10, 'NAME_FIXED': 3}
+
+--- 每个台账文件（同一份代码在不同臂只算一次）---
+  answers_s79/answers.jsonl                      tasks_v1  失败  4  FIXED  1  share=0.250  族={'NO_NAME': 3, 'NAME_FIXED': 1}
+  artifact_run_s101/t1_old_ruler/answers.jsonl   tasks_v4  失败  6  FIXED  1  share=0.167  族={'NO_NAME': 5, 'NAME_FIXED': 1}
+  artifact_run_s101/t1b_fixed_ruler/answers.json tasks_v4  失败  5  FIXED  1  share=0.200  族={'NO_NAME': 4, 'NAME_FIXED': 1}
+  blocked_s99/answers_a.jsonl                    tasks_v2  失败  8  FIXED  0  share=0.000  族={'NO_NAME': 8}
+  blocked_s99/answers_b.jsonl                    tasks_v2  失败  1  FIXED  1  share=1.000  族={'NAME_FIXED': 1}
+  cloud_s88/answers.jsonl                        tasks_v2  失败  2  FIXED  0  share=0.000  族={'NO_NAME': 2}
+  ext_s92/answers_v3_7b.jsonl                    tasks_v3  失败  7  FIXED  0  share=0.000  族={'NO_NAME': 7}
+  form_s95/answers_new.jsonl                     tasks_v2  失败  2  FIXED  1  share=0.500  族={'NO_NAME': 1, 'NAME_FIXED': 1}
+  form_s95/answers_old.jsonl                     tasks_v2  失败  1  FIXED  0  share=0.000  族={'UNDECIDABLE': 1}
+  model_s90/answers_B_4b.jsonl                   tasks_v2  失败  6  FIXED  0  share=0.000  族={'NO_NAME': 6}
+  prompt_s81/direct_arm_answers.jsonl            tasks_v1  失败  5  FIXED  0  share=0.000  族={'NO_NAME': 5}
+  repair_s94/answers_store_v2.jsonl              tasks_v2  失败  1  FIXED  0  share=0.000  族={'UNDECIDABLE': 1}
+  select_s85/v1_kernel_answers.jsonl             tasks_v1  失败  2  FIXED  0  share=0.000  族={'NO_NAME': 2}
+  u2_s102/a1_v4/answers.jsonl                    tasks_v4  失败  0  FIXED  0  share=0.000  族={}
+  u2_s102/a2_v4/answers.jsonl                    tasks_v4  失败  1  FIXED  0  share=0.000  族={'NO_NAME': 1}
+  v1_s103/a0_v4/answers.jsonl                    tasks_v4  失败  1  FIXED  1  share=1.000  族={'NAME_FIXED': 1}
+  zhipu_s85/answers.jsonl                        tasks_v2  失败  7  FIXED  0  share=0.000  族={'NO_CODE': 4, 'UNDECIDABLE': 1, 'NO_NAME': 2}
+
+--- 逐题（只列出现 NAME_FIXED 的题）---
+  tasks_v1  sg01  e63dea5c answers_s79/answers.jsonl          base=0.071 → 1.000  名字=['re']
+  tasks_v2  sg01  e63dea5c form_s95/answers_new.jsonl         base=0.071 → 1.000  名字=['re']
+  tasks_v2  sg10  38f40729 blocked_s99/answers_b.jsonl        base=0.071 → 1.000  名字=['re']
+  tasks_v4  at04  00b28618 v1_s103/a0_v4/answers.jsonl        base=0.375 → 1.000  名字=['os']
+  tasks_v4  at04  1b5f6119 artifact_run_s101/t1b_fixed_ruler/ base=0.375 → 1.000  名字=['os']
+  tasks_v4  at04  4f654f8f artifact_run_s101/t1_old_ruler/ans base=0.375 → 1.000  名字=['os']
+
+--- 逐题（v4 全表，用来看 at04 的形状）---
+  at01  82dd524f PASS          base=1.000 rep=1.000 names=[]
+  at01  e9a047d2 PASS          base=1.000 rep=1.000 names=[]
+  at02  4d78f3b3 NO_NAME       base=0.000 rep=0.000 names=[]
+  at02  8d3b86f7 NO_NAME       base=0.000 rep=0.000 names=[]
+  at03  38716aa6 NO_NAME       base=0.000 rep=0.000 names=[]
+  at03  7d6698fe NO_NAME       base=0.000 rep=0.000 names=[]
+  at03  e21cb93c NO_NAME       base=0.000 rep=0.000 names=[]
+  at04  00b28618 NAME_FIXED    base=0.375 rep=1.000 names=['os']
+  at04  1b5f6119 NAME_FIXED    base=0.375 rep=1.000 names=['os']
+  at04  26fe8d59 PASS          base=1.000 rep=1.000 names=[]
+  at04  4beacfc9 NO_NAME       base=0.375 rep=0.375 names=[]
+  at04  4f654f8f NAME_FIXED    base=0.375 rep=1.000 names=['os']
+  at05  1500eca8 PASS          base=1.000 rep=1.000 names=[]
+  at05  5512482d PASS          base=1.000 rep=1.000 names=[]
+  at05  dd7eca53 NO_NAME       base=0.000 rep=0.000 names=[]
+  at06  30ddeadd NO_NAME       base=0.000 rep=0.000 names=[]
+  at06  5f894904 NO_NAME       base=0.000 rep=0.000 names=[]
+  at07  8d2a89da PASS          base=1.000 rep=1.000 names=[]
+  at07  b1190f7a PASS          base=1.000 rep=1.000 names=[]
+  at08  280174a5 PASS          base=1.000 rep=1.000 names=[]
+  at08  6eb0fd28 NO_NAME       base=0.000 rep=0.000 names=[]
+  at08  9a26dff5 PASS          base=1.000 rep=1.000 names=[]
+
+=== 判负检查（PREREG 第四节）===
+  N3 接线：114/114 = 100.0%
+  N4 UNDECIDABLE 占比：3/59 = 5.1%（阈值 ≤30%）
+  N5 tasks_v1  失败交付  11 ✅
+  N5 tasks_v2  失败交付  28 ✅
+  N5 tasks_v3  失败交付   7 ✅
+  N5 tasks_v4  失败交付  13 ✅
+
+=== 判读（PREREG 第三节）===
+  P1 share(v4)=0.231 [0.082,0.503] vs share(v1)=0.091 [0.016,0.377] ⇒ ✅ 方向未被否证
+     ⚠️ 但两个 Wilson 区间**重叠** ⇒ 这个方向在本分母下**不可分辨**，只能当点估计，⛔ 不许写成「v4 的占比更高」这一结论
+  P2 at04/1b5f6119 ⇒ NAME_FIXED（base 0.375 → 1.000） ✅
+  P3 合计 share=0.102（6/59）⇒ ✅ < 0.20
+  P4 tasks_v2 share=0.071 ⇒ ✅ 在 0.05~0.40
+  P4 tasks_v3 share=0.000 ⇒ ⚠️ 区间外（登记为预期错）
+
+  分类表 sha256[:16] = 294c192b0f412c23（N2 用它比对两次跑是否逐字相同）
+  已落盘 /tmp/v2_table_2.json

@@ -1,0 +1,6 @@
+=== N1 仪器反证（4 例，全部都按设计落位才算过）===
+  S1 删 import os        ⇒ NAME_FIXED    base=0.3750 rep=1.0000 PASS
+  S2 去掉尾换行          ⇒ NO_NAME       base=0.3750 PASS
+  S3 未绑定的普通名字    ⇒ NAME_OTHER    names=['undefined_helper'] PASS
+  S4 已知满分交付物      ⇒ PASS          base=1.0000 PASS
+  ⇒ N1 全绿

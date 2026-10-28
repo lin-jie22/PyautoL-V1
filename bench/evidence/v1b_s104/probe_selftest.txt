@@ -1,0 +1,5 @@
+at04 断言数 = 16；规则 3 期望字节 = b'alpha\ndelta\n'
+
+=== A4-反证：把正确程序的行尾换行删掉，必须掉到 6/16 ===
+  PASS     正确版        16/16 期望=16 写出=b'alpha\ndelta\n' 首败=-
+  PASS     删尾换行版      6/16 期望=6 写出=b'alphadelta' 首败=(3, 'AssertionError', '')

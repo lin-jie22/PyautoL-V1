@@ -27,9 +27,27 @@ def rows(p: Path) -> list[dict]:
     return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
 
 
+def _round_dir(w: Path, arm: str, r: int) -> Path:
+    """优先用补跑目录 —— 但**只在该轮原本 EXIT≠0 时**才允许替换。
+
+    ⚠️ 这条判断必须显式：否则「补跑目录里有就用」等于**事后挑好看的轮**
+    （补跑可能只覆盖了一部分，剩下的是原轮，混起来就分不清哪个是哪个）。
+    """
+    tag = f"{arm}_r{r}"
+    t = w / f"time_{tag}.txt"
+    orig_ok = t.exists() and t.read_text().strip().endswith("EXIT=0")
+    retry = w / "retry" / f"bench_{tag}"
+    if not orig_ok and retry.exists():
+        rt = w / "retry" / f"time_{tag}.txt"
+        if rt.exists() and rt.read_text().strip().endswith("EXIT=0"):
+            return retry
+    return w / f"bench_{tag}"
+
+
 def round_score(w: Path, arm: str, r: int) -> tuple[float, dict, dict]:
     """一轮的格分 + 逐题分 + 逐题交付件 sha。"""
-    runs = rows(w / f"bench_{arm}_r{r}" / "runs.jsonl")
+    d = _round_dir(w, arm, r)
+    runs = rows(d / "runs.jsonl")
     if not runs:
         return float("nan"), {}, {}
     pt = runs[-1]["report"]["per_task"]
@@ -40,7 +58,7 @@ def round_score(w: Path, arm: str, r: int) -> tuple[float, dict, dict]:
     # 分母 = 6 题全部，量不到的记 0（PREREG §3）
     sc = sum(task_mean.get(t, 0.0) for t in TASKS) / len(TASKS) * CELLS
     sha: dict[str, str] = {}
-    for x in rows(w / f"bench_{arm}_r{r}" / "answers.jsonl"):
+    for x in rows(d / "answers.jsonl"):
         tid = str(x.get("task_id"))
         a = str(x.get("answer") or "")
         sha[tid] = hashlib.sha256(a.encode()).hexdigest()[:12]
@@ -48,7 +66,7 @@ def round_score(w: Path, arm: str, r: int) -> tuple[float, dict, dict]:
 
 
 def answers(w: Path, arm: str, r: int, tid: str) -> str:
-    for x in rows(w / f"bench_{arm}_r{r}" / "answers.jsonl"):
+    for x in rows(_round_dir(w, arm, r) / "answers.jsonl"):
         if str(x.get("task_id")) == tid:
             return str(x.get("answer") or "")
     return ""

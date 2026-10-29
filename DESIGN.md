@@ -16885,6 +16885,10 @@ def clean_lines(items, path):
 要把它归因到「内容」而不是「扰动」，必须有**等长安慰剂臂**（纪律 1 的四项前提之一）——
 V22 也没有做（它的 `S0` 是「没有那段」，不是「有等长无关段」），这条缺口记在 §85.9。
 
+⛔⛔ **而且 V22 的读数把这一节原本的归因也否证了**（§85.10）：`S0` 臂剔掉了全部 18 条 reward，
+`e1wi` 仍然 5 轮全 16。⇒ 让 `e1wi` 修对的**不是** reward 段，是 facts / `_state()` 那条路。
+§85.2 原来的句子（「`B_r2` 起跑时 `e1wi` 收到 `NameError` 段 ⇒ 修对」）作废。
+
 ## 85.3 同一机制在 `e1ni` 上是负的
 
 `B_r1`(16) → `B_r2`(0) → `B_r3`(0/0/16)。`B_r2` 的 `e1ni` 收到的提示原文：
@@ -16940,9 +16944,14 @@ A 臂 27 次逐字节全同，我据此说过「本时段极差 = 0」。**这�
 
 1. **`--repeat 3` 把每个失败记 3 份**：库里 18 条 reward = 6 题 × 3 rep ⇒ 提示里
    「`NameError` 出现过 6 次」实际是「2 道题各测了 3 次」。计数与语义不符。
-2. **`facts` 通道从未通电**：`seed_s1.db` 里有 2 条 facts，但 `probe_v22_seed.py` 实测
-   `guidance()` 里**没有**「已知易错点」段（`source` 不是 `worldmodel`，`recall` 取不出来）。
-   ⇒ 「语义记忆累积」这条支路在 V19/V21 里一次都没进过 prompt。
+2. **`facts` 通道不在 `guidance()` 里，在 `_state()` 里**（第三次自纠）：
+   `seed_s1.db` 里有 2 条 facts，但 `probe_v22_seed.py` 实测 `guidance()` 里**没有**
+   「已知易错点」段（`source` 不是 `worldmodel`）—— 我据此写了「facts 通道从未通电」，**这句是错的**。
+   `core.py:1419 self.memory.recall(goal, k=self.s.limits.recall_k)` 把 facts 检索进 `_state()`，
+   那条路一直是通的。**V22 的 `S0` 臂给出反证**：`S0` 剔掉了全部 reward 记录、只留 facts 与其他
+   episode，`e1wi` 仍然 **5 轮全 16**，而空库的 A 臂是 0 ⇒ facts 通道值 16 格。
+   ⚠️ 教训：我拿 `guidance()` 的探针去证「facts 通道有没有通电」，探针只覆盖了一个入口。
+   **证「通道不通」必须把该通道的全部读取点列出来**（`grep self.memory.` 一共 14 处）。
 3. **B 臂的 rep 是序列的机制**：`for rep: for task:` ⇒ rep2 的第 1 题前面隔着 5 道题。
    纪律 11 的「rep 是序列不是样本」现在有了确切出处（`mw/bench.py:775`）。
 

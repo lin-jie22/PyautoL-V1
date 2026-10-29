@@ -89,7 +89,19 @@ def main(argv: list[str]) -> int:
                 ln = p.read_text().strip().split()
                 time_rows.append((f"{arm}_r{r}", ln[-1]))
     bad = [t for t, e in time_rows if e != "EXIT=0"]
-    print(f"  P0-a 轮次 {len(time_rows)}/{rounds*2}  EXIT≠0 的轮：{bad or '无'}")
+    print(f"  P0-a 轮次 {len(time_rows)}/{rounds*2}  原始 EXIT≠0 的轮：{bad or '无'}")
+    # ⚠️ 原始 EXIT≠0 的轮若被补跑顶替，必须显式说出来 —— 否则「10/10」是假象。
+    replaced, still = {}, []
+    for t in bad:
+        rt = w / "retry" / f"time_{t}.txt"
+        if rt.exists() and rt.read_text().strip().endswith("EXIT=0"):
+            replaced[t] = "补跑成功"
+        else:
+            still.append(t)
+    if replaced:
+        print(f"       ⇒ 补跑顶替 {len(replaced)} 轮：{sorted(replaced)}（补跑自身 EXIT=0）")
+    print(f"  P0-a 有效轮次 = {len(time_rows) - len(still)}/{rounds*2}"
+          + ("" if not still else f"  ❌ 仍不合格：{still}"))
     p0c = (w / "p0c.txt").read_text().strip().splitlines() if (w / "p0c.txt").exists() else []
     nok = sum(1 for x in p0c if x.endswith("OK"))
     nmis = sum(1 for x in p0c if x.endswith("MISMATCH"))

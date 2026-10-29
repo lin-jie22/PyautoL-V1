@@ -55,7 +55,14 @@ OTHER_TOKEN = "open.bigmodel.cn"   # 仅用于打印时脱敏，不影响判定
 #: ⛔ 第一百零一轮 §71 自踩：原来判据锚在「全仓库扫到多少行」，而 `collect()`
 #:    是递归扫 ⇒ 往 `bench/evidence/` 里多放两份 `runs.jsonl` 就把门禁撞红
 #:    （149 行 / 8 种）。判据必须锚在**文件**上，不能锚在「仓库里碰巧有几个文件」。
-FROZEN_LEDGER = "bench_out/runs.jsonl"
+#:
+#: ⛔⛔ 第一百一十二轮（§84）第二踩：锚在文件上还不够 —— 锚在**一个被 .gitignore 掉的文件**
+#:    上，等于这条自检在干净 clone 里**结构性必红**。`bench_out/` 被 `.gitignore:5` 忽略，
+#:    于是 CI（每次 fresh clone）永远读到「冻结台账 0 行」，而本地永远是绿的。
+#:    ⇒ 冻结台账必须**入库**。`bench_out/runs.jsonl` 与这里这份 sha256 逐字节相同
+#:    （`77043550e5309c71f…`）；本地那份继续留给跑批追加，判据只认仓库里这份**只读副本**。
+#:    ⛔ 不许把它改成「文件缺失 ⇒ SKIP」：那样这条自检在 CI 上就永远不跑了。
+FROZEN_LEDGER = "bench/evidence/frozen/runs.jsonl"
 
 
 def classify(a: dict, b: dict) -> str:
@@ -123,9 +130,10 @@ def _self_check() -> int:
     一个恒返回 MIXED 的分类器会让 0 对看起来像重大发现 —— 这正是纪律⑩
     「检测器必须自带反证」要挡的东西。
 
-    S6a/S6b 是 §71 补的：冻结读数的判据必须锚在**一个文件**上（`bench_out/runs.jsonl`），
+    S6a/S6b 是 §71 补的：冻结读数的判据必须锚在**一个文件**上（`bench/evidence/frozen/runs.jsonl`），
     锚在「全仓库扫到多少行」就等于锚在「仓库里碰巧有几个 evidence 文件」——
     往 `bench/evidence/` 里加两份台账会把它撞红（实测 149 行 / 8 种，门禁 EXIT=1）。
+    ⛔ §84：那个文件还必须**入库**，否则干净 clone 里恒缺 ⇒ CI 结构性必红。
     """
     bad = 0
 
@@ -203,12 +211,18 @@ def _self_check() -> int:
               f"（不参与 S6a；§71 之前它们会被算进去 ⇒ 判据随证据数量漂）")
 
     # S6b ⭐ 反证：`_is_frozen` 的边界必须**逐字**，不能是子串匹配
-    ok_b = (_is_frozen("bench_out/runs.jsonl")
+    #   ⚠️ §84 改锚点后，这条原本用字面量 `"bench_out/runs.jsonl"` 当正样本；
+    #     锚点一换，S6b 立刻红 —— 这正是它的价值（判据换地方时必须有东西叫）。
+    #     现在正样本是**仓库里那份**，同时把 `bench_out/runs.jsonl`（.gitignore 掉的）
+    #     降级成**负样本**：它不再参与 S6a，所以必须判 False。
+    ok_b = (_is_frozen("bench/evidence/frozen/runs.jsonl")
+            and not _is_frozen("bench_out/runs.jsonl")
             and not _is_frozen("bench/evidence/artifact_run_s101/t1_old_ruler/runs.jsonl")
             and not _is_frozen("bench_out_x/runs.jsonl")
-            and not _is_frozen("bench_out/runs.jsonl.bak"))
+            and not _is_frozen("bench/evidence/frozen_x/runs.jsonl")
+            and not _is_frozen("bench/evidence/frozen/runs.jsonl.bak"))
     chk("S6b 冻结台账的识别是逐字路径（子串匹配会把 bench_out_x 也捞进来）", bool(ok_b),
-        "四条边界样本" if ok_b else "有样本判错")
+        "六条边界样本" if ok_b else "有样本判错")
 
     print(f"\n结论：{'全部成立' if bad == 0 else f'{bad} 条不成立'}")
     return 0 if bad == 0 else 1

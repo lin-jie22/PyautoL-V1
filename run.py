@@ -978,8 +978,18 @@ def cmd_bench(args) -> int:
     # ⚠️ 默认**只落盘、不投喂**：同一轮里把第 1 题的理由喂给第 6 题，
     #    第 6 题就不再是同一条件下的测量了 —— `repeat` 的意义当场消失。
     #    `--use-critique` 打开的是**接线验证**，不是能力测量。
+    # ⛔⛔ 第一百一十二轮（§84）真 bug：这里原来是 `root / "state" / "critique.jsonl"`，
+    #    而 `root = Path(__file__).parent`（模块目录）—— **完全不看 `V1_STATE_DIR`**。
+    #    于是门禁步骤 5/5b、`--fresh` 的 TemporaryDirectory、以及任何
+    #    `V1_STATE_DIR=/tmp/... python3 run.py` 的隔离调用，**评审账本照样写进仓库 `state/`**。
+    #    ⭐ 为什么 60 多轮没被发现：本地写入是**幂等**的（题集不变时重写后 sha 不变
+    #      `54e89407`），所以「评审账本被改动」这条门禁检查在本地**恒真**；
+    #      而 CI 每次 fresh clone 都读到 absent，于是**恒假**。
+    #      两边都没测到它想测的那件事（隔离有没有做到），只是在 CI 上意外撞见。
+    #    ⇒ 与 `score_ledger` 同口径：默认走 `s.paths.state`（`mw/config.py:86`
+    #      已按 `V1_STATE_DIR` 解析）。纪律「设了 env ≠ 全部隔离」由此落地。
     _crit_path = (Path(args.critique_file).expanduser() if args.critique_file
-                  else (root / "state" / "critique.jsonl"))
+                  else (s.paths.state / "critique.jsonl"))
     _crit = CritiqueLedger(_crit_path)
     _crit_loaded = _crit.load()
     _crit_for_kernel = _crit if args.use_critique else None

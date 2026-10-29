@@ -159,6 +159,10 @@ fi
 
 echo
 echo "=============================================================="
+# ⛔ 先清掉上一次的隔离账本：步骤 8 的**正控**要求「本次真的写了」，
+#    留着旧文件就会让正控恒真（=「红=无」的第二种成因）。
+rm -f /tmp/v1_cross_state/critique.jsonl /tmp/v1_lang_state/critique.jsonl
+
 echo "步骤 5/7  跨领域冒烟（同一把打分器 × 每个领域，oracle 参照）"
 echo "=============================================================="
 # 为什么要有这一步：`--suite-dir` 的价值是"**每个领域**都非零"。
@@ -828,6 +832,24 @@ else
   echo "     ⇒ 同上：门禁在写生产账本。"
   FAIL=1
 fi
+
+# ⭐⭐ 正控（第 112 轮 §84）：光查「生产没变」是**不够**的 ——
+#    「两边都没写」也能让上面两条变绿，而那恰恰是账本**丢了**，不是隔离成功。
+#    所以还要断言：隔离目录里**真的**出现了评审账本。
+#    事故形态见 §84：`run.py` 曾经用 `root/"state"` 绕开 `V1_STATE_DIR`，
+#    本地因写入幂等而看不出来，CI 因每次 fresh clone 而恒红 —— **两边都没测到这件事**。
+#    这条正控在本地与 CI 同时能判红：把 `run.py` 那行改回 `root/"state"`，
+#    下面两个文件就不会出现。
+_ISO_MISS=0
+for _st in /tmp/v1_cross_state /tmp/v1_lang_state; do
+  if [ -s "$_st/critique.jsonl" ]; then
+    echo "  ✅ 隔离目录收到评审账本（$_st/critique.jsonl $(wc -l < "$_st/critique.jsonl" | tr -d ' ') 条）"
+  else
+    echo "  ❌ 隔离目录**没有**评审账本：$_st/critique.jsonl（账本丢了，或没走 V1_STATE_DIR）"
+    _ISO_MISS=1
+  fi
+done
+[ "$_ISO_MISS" -eq 0 ] || FAIL=1
 
 echo
 if [ "$FAIL" -eq 0 ]; then

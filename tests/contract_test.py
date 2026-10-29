@@ -50,7 +50,7 @@ from mw.planner import (Planner, Step, action_signature,              # noqa: E4
                         looks_complex)
 from mw.tools import (ToolRegistry, ToolSpec, external_agent_names,  # noqa: E402
                       register_core_tools, register_external_agents)
-from mw.worldmodel import Prediction, WorldModel, similarity      # noqa: E402
+from mw.worldmodel import Mismatch, Prediction, WorldModel, similarity  # noqa: E402
 
 RS = Report()
 MW_DIR = V1 / "mw"
@@ -9462,6 +9462,74 @@ check(RS,
       f"⑤计数={_AZ95_OK_COUNT}"
       f"(A={_AZ95_A0['blocked_skipped']},B={_AZ95_B1['blocked_skipped']},"
       f"C={_AZ95_C1['blocked_skipped']})")
+
+
+# ── AZ96（第 110 轮 / §0.5 第 2 步）：语义层的身份是「动作」，不是「动作的载荷」 ──
+#
+# 病根读数（`state/memory.db`，10-29 15:53，571 次 outcome 失配）：
+#   旧 `key = " ".join(sorted(_tokens(action))[:4])`，而 `action` 的真实形态是
+#   `finish({'answer': '<整份代码>'})`（见 `episodes.meta.action`）
+#   ⇒ 身份由**答案内容**决定：`answer def dict elif` / `answer finish int nint` ……
+#   旧文本还抄进 `实测：{actual[:90]}`（本次报错原文）⇒ 换一道题一个字用不上，
+#   它只是**日志**，却被 `recall()` 当知识检索出来。
+#
+# ⛔ 本轮先否掉一个我自己写错的判断：这不是「行数爆炸」。
+#   按 `learn()` 的真实准入（只收 `teachable` = outcome）重算 571 条，
+#   旧实现也只产出 **3 行**（新实现 2 行）。我第一版把 57 条 `mm_kind='?'`
+#   的旧数据混进 outcome 组，才读出「22 个身份 / 27 行」——那个数是错口径，已撤回。
+#
+# 判据（结构性，不靠「不含某个字符串」——那种判据换个写法就绕过）：
+#   ① 同类别、同方向、**载荷完全不同**的两次失配 ⇒ 提炼文本必须**逐字节相同**。
+#      这正是「跨任务可迁移」的机器化定义：规则不随实例变。
+#      ★ 它**严格蕴含**「不许抄本次报错」：只要文本里含 `actual`，两份不同载荷
+#        必然产出不同文本 ⇒ ① 先红。所以不单列那条子判据（少一条判据，多一分可读）。
+#   ② 不同类别 ⇒ 文本**不同**（身份真的进了文本；防 `category` 退化成常量）。
+#   ③ 走真 DB：同类别失配两次 ⇒ `facts` **只 1 行**、`hits == 2`
+#      （沉淀的是校准规则，不是流水账）。
+#
+# 撤回语义（两条撤回态各咬一处，互不掩盖）：
+#   AX5 `category` 退回 `" ".join(sorted(_tokens(action))[:4])` ⇒ ①② 之一（①）与 ③ 必红；
+#   AX6 `category` 退化成常量 `"该动作"` ⇒ **只** ② 必红（过度泛化也是病）；
+#   AX1 `learn()` 里不再 `commit_fact` ⇒ ③ 必红（0 行）。
+_AZ96_MEM = MemoryStore(_TMP / "az96_mem.db")
+_AZ96_WM = WorldModel(_AZ96_MEM, StubLLM())
+
+
+def _az96_mm(action: str, actual: str) -> Mismatch:
+    return Mismatch(action, "会成功", actual, 0.0, kind="outcome",
+                    predicted_ok=True, actual_ok=False)
+
+
+_AZ96_A = ("finish({'answer': 'def solve0(int x) { return x; }'})",
+           "自检未通过：3/4 项未过：缺少 def solve(...)")
+_AZ96_B = ("finish({'answer': \"def flatten(d):\\n    return list(d)\"})",
+           "编译失败 line 1: invalid syntax")
+
+_AZ96_T1 = _az96_mm(*_AZ96_A).as_heuristic()
+_AZ96_T2 = _az96_mm(*_AZ96_B).as_heuristic()
+_AZ96_T4 = _az96_mm("recall({'q': 'x'})", "空结果").as_heuristic()
+
+_AZ96_OK_SAME = _AZ96_T1 == _AZ96_T2          # ① 载荷无关（⇒ 不抄实例）
+_AZ96_OK_IDENT = _AZ96_T4 != _AZ96_T1         # ② 类别区分
+
+_AZ96_WM.learn(_az96_mm(*_AZ96_A))
+_AZ96_WM.learn(_az96_mm(*_AZ96_B))
+_AZ96_ROWS = _AZ96_MEM.conn.execute(
+    "SELECT text, hits FROM facts WHERE source='worldmodel'").fetchall()
+_AZ96_OK_ONE = (len(_AZ96_ROWS) == 1 and int(_AZ96_ROWS[0]["hits"]) == 2)
+
+check(RS, "AZ96 ★★§0.5-2 语义层的身份是动作不是载荷：\n"
+          "          `Mismatch.category` 必须取**最外层调用名**（`finish(...)` ⇒ `finish`），\n"
+          "          ⛔ 不是把整份交付物切词后字典序取前 4 个 —— 那样身份由答案内容决定。\n"
+          "          ① 同类别同方向、载荷完全不同 ⇒ 文本**逐字节相同**（⇒ 不许抄本次报错）；\n"
+          "          ② 不同类别 ⇒ 文本不同（防 `category` 退化成常量）；\n"
+          "          ③ 走真 DB：同类别失配两次 ⇒ facts 只 1 行、hits=2。\n"
+          "          撤回语义：AX5 ⇒ ①③ 红；AX6（常量）⇒ 只 ② 红；AX1 ⇒ ③ 红。",
+      _AZ96_OK_SAME and _AZ96_OK_IDENT and _AZ96_OK_ONE,
+      f"①同载荷无关={_AZ96_OK_SAME} ②类别区分={_AZ96_OK_IDENT} "
+      f"③单行hits2={_AZ96_OK_ONE}"
+      f"(rows={len(_AZ96_ROWS)},hits={_AZ96_ROWS[0]['hits'] if _AZ96_ROWS else 'NA'})"
+      f" ｜ t1={_AZ96_T1[:48]!r}")
 
 
 print()

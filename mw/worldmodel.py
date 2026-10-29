@@ -146,21 +146,49 @@ class Mismatch:
             f"实际：{self.actual[:160]} ｜ 一致度 {self.agreement:.2f}"
         )
 
-    def as_heuristic(self) -> str:
-        """把一次失配提炼成一条持久规则 —— 这是"不带权重的学习"。
+    @property
+    def category(self) -> str:
+        """动作的**身份** = 最外层调用名。⛔ 不是它携带的载荷。
 
-        写成**可执行**的形态（"这个动作我预期 X，实际 Y"），
-        而不是"不可假设其结果等同于「某段话」" —— 后者只描述了字面差异，
-        下一轮读到时无法据此改变任何动作。
+        这里曾经是 `" ".join(sorted(_tokens(self.action))[:4])` —— 把**整份交付物**
+        切词、字典序取前 4 个当 key。而 `action` 的真实形态是
+        `finish({'answer': '<整份代码>'})`（见 `episodes.meta.action`），
+        于是 key 由**答案内容**决定：`answer def dict elif` / `answer finish int nint` ……
+        同一类动作换一份代码就换一个 key ⇒ 语义层按答案内容分裂。
+
+        实测（`state/memory.db`，10-29 15:53）：7 行 `source=worldmodel` 的事实
+        `hits` 合计 **571** —— 同一类动作写了 571 遍，只偶然聚成 7 行。
+        这不是"记住了 571 次教训"，是**把动作的内容当成了动作的身份**。
         """
-        key = " ".join(sorted(_tokens(self.action))[:4]) or "该动作"
+        head = (self.action or "").strip().split("(", 1)[0].strip()
+        parts = head.split()
+        return (parts[0].strip("'\"") if parts else "") or "该动作"
+
+    def as_heuristic(self) -> str:
+        """把一次失配提炼成一条**跨任务可迁移**的规则 —— 这是"不带权重的学习"。
+
+        ★ 文本必须**与本次实例无关**，理由是可复现的，不是风格偏好：
+
+        · 旧形态把 `实测：{actual[:90]}` 抄进语义层，那 90 字是**本次的报错清单**
+          （`自检未通过：3/4 项未过：缺少 def solve(...)`）。下一次换一道题，
+          这条事实一个字都用不上 ⇒ 它只是**日志**，被 `recall()` 当成知识检索出来。
+        · 文本若含"第几次""多少次"，`fingerprint` 就每次不同 ⇒ 每写一次新增一行。
+          次数由 `commit_fact` 的 `hits` 承载，⛔ 不写进文本。
+
+        ⇒ 这里只写**方向性偏差**（乐观/悲观），同一类别同一方向**恒为同一行**，
+        `hits` 即该类别该类偏差的样本量。语义层于是从"流水账"变成"校准表"。
+        """
+        cat = self.category
         if self.kind == "outcome":
-            want = "成功" if self.predicted_ok else "失败"
-            got = "成功" if self.actual_ok else "失败"
-            detail = " ".join(self.actual.split())[:90]
-            return f"动作 [{key}]：我预演「会{want}」，实际{got}。实测：{detail}"
+            if self.predicted_ok and not self.actual_ok:
+                return (f"动作 [{cat}] 存在乐观偏差：我预演「会成功」，实际失败"
+                        f" ⇒ 该动作的预演应先打折再采信")
+            if (not self.predicted_ok) and self.actual_ok:
+                return (f"动作 [{cat}] 存在悲观偏差：我预演「会失败」，实际成功"
+                        f" ⇒ 该动作的预演结论偏保守")
+            return f"动作 [{cat}] 的预演方向不可判定，仅登记该类别出现过失配"
         return (
-            f"执行 [{key}] 时不可假设其结果等同于「{self.expected[:60]}」"
+            f"执行 [{cat}] 时不可假设其结果等同于「{self.expected[:60]}」"
             f"（实测为「{self.actual[:60]}」，一致度 {self.agreement:.2f}）"
         )
 

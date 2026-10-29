@@ -25,6 +25,26 @@ cd "$(dirname "$0")"
 
 FAIL=0
 
+# ══════════════════════════════════════════════════════════════════
+# 步骤 0  门禁自身的环境隔离（第 110 轮，2026-10-29 实测事故）
+# ══════════════════════════════════════════════════════════════════
+# 事故形态：`bench/probe_verify.py`（步骤 6g）与 `bench/probe_recall.py`（6f）
+# 会真的 `Core(...).run()`，但本脚本当时**没给它们设 `V1_STATE_DIR`** ⇒ 回落到
+# `mw/config.py:86` 的默认值 `ROOT/state` = **生产记忆库**。
+# 实测后果（一次门禁的账）：`state/memory.db` 多 36 条 episode（StubLLM 的
+# `solve(x)` / `flatten(d)`），`state/critique.jsonl` 多 8 条 `tasks_v4` 记录。
+# ⛔ 生产库是「累积循环」的唯一载体 —— 被污染后累积读数不可归因。
+# 取证：`bench/evidence/v5_s110/AUDIT_agi_loop.md`
+CI_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/v1_ci_state.XXXXXX")"
+export V1_STATE_DIR="$CI_ROOT/state"
+export V1_LOG_DIR="$CI_ROOT/logs"
+echo "门禁状态目录：$CI_ROOT   （临时；⛔ 不许落到 ./state）"
+
+# 生产目录指纹：步骤 8 要断言它没变 —— 这不是承诺，是一条**能判红**的检查。
+_prod_sha() { if [ -f "$1" ]; then shasum -a 256 "$1" | awk '{print $1}'; else echo absent; fi; }
+PROD_DB_BEFORE="$(_prod_sha state/memory.db)"
+PROD_CRIT_BEFORE="$(_prod_sha state/critique.jsonl)"
+
 echo "=============================================================="
 echo "步骤 1/7  依赖审计（必须零第三方依赖）"
 echo "=============================================================="
@@ -779,6 +799,33 @@ if "$PY" bench/probe_delivery.py --replay > /tmp/v1_deliver_replay.out 2>&1; the
 else
   echo "  ❌ 重算与台账不一致（探针在换尺子，交付读数一律作废）："
   sed 's/^/     /' /tmp/v1_deliver_replay.out
+  FAIL=1
+fi
+
+echo
+echo "=============================================================="
+echo "步骤 8  门禁隔离自检（生产目录指纹必须未变）"
+echo "=============================================================="
+# 为什么要这一步：步骤 6f/6g 这两个探针会真的跑 `Core(...)`.run()`。
+# 「脚本里写了 export」只能说明**我打算隔离**，不能说明**真的隔离了** ——
+# 2026-10-29 那次就是「打算」和「事实」差了一条赋值。
+# 所以判据必须落在**结果**上：跑完之后生产库指纹必须逐字节未变。
+PROD_DB_AFTER="$(_prod_sha state/memory.db)"
+PROD_CRIT_AFTER="$(_prod_sha state/critique.jsonl)"
+if [ "$PROD_DB_AFTER" = "$PROD_DB_BEFORE" ]; then
+  echo "  ✅ 生产记忆库未被触碰（state/memory.db sha256=${PROD_DB_AFTER:0:16}）"
+else
+  echo "  ❌ 生产记忆库被改动："
+  echo "       前 ${PROD_DB_BEFORE:0:16} → 后 ${PROD_DB_AFTER:0:16}（state/memory.db）"
+  echo "     ⇒ 有步骤没隔离 `V1_STATE_DIR`（探针会真的 Core().run()）。"
+  echo "     ⇒ 这就是 2026-10-29 那 36 条污染的同一机制；累积读数在此之前不可信。"
+  FAIL=1
+fi
+if [ "$PROD_CRIT_AFTER" = "$PROD_CRIT_BEFORE" ]; then
+  echo "  ✅ 评审账本未被触碰（state/critique.jsonl sha256=${PROD_CRIT_AFTER:0:16}）"
+else
+  echo "  ❌ 评审账本被改动：前 ${PROD_CRIT_BEFORE:0:16} → 后 ${PROD_CRIT_AFTER:0:16}"
+  echo "     ⇒ 同上：门禁在写生产账本。"
   FAIL=1
 fi
 

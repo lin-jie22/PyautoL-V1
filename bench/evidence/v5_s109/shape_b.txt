@@ -1,0 +1,24 @@
+[骨架形态] 按 (题, sha) 去重后的唯一交付
+  题      组   sha         字符    可编译  import行     骨架自带    新增        缺名字     保留率     动了骨架
+  --------------------------------------------------------------------------------------------------------
+  e1wi   wi  4e9be367   449      ✅        1        1    +0          —    0.88       ⚠️
+  e2wi   wi  925bcdc0   685      ✅        1        1    +0          —    1.00        ·
+  e3wi   wi  e9fe1979  1013      ✅        1        1    +0          —    1.00        ·
+  e1ni   ni  18124115   515      ✅        1        0    +1          —    1.00        ·
+  e2ni   ni  711ae11d   302      ✅        0        0    +0 _add,_dump,_split    0.37       ⚠️
+  e3ni   ni  c5ff8464   504      ✅        0        0    +0 _add,_monday_of,_read_day,_split    0.36       ⚠️
+        └─ e1wi/4e9be367 丢掉骨架行：['kept = []']
+        └─ e2ni/711ae11d 丢掉骨架行：['def _dump(payload):', 'return json.dumps(payload, ensure_ascii=False)', 'def _split(raw):', 'head, sep, name = raw.partition("|")']
+        └─ e3ni/c5ff8464 丢掉骨架行：['def _split(raw):', 'head, sep, event = raw.partition("|")', 'if not sep:', 'head, event = head.strip(), event.strip()']
+
+[汇总]
+  wi: 3 份唯一交付 | **自己补了 import** 0 | 缺名字 0 | 语法错 0 | 不可判 0
+      骨架保留率：min=0.88 mean=0.96 max=1.00
+      ⭐ V12 `keep_ratio < 1.00`：动了骨架外的行的交付 **1/3** 份  ['e1wi']
+         ⚠️ e1wi/4e9be367 keep=0.88 丢掉 ['kept = []']
+  ni: 3 份唯一交付 | **自己补了 import** 1 | 缺名字 2 | 语法错 0 | 不可判 0
+      骨架保留率：min=0.36 mean=0.58 max=1.00
+      ⭐ V12 `keep_ratio < 1.00`：动了骨架外的行的交付 **2/3** 份  ['e2ni', 'e3ni']
+         ⚠️ e2ni/711ae11d keep=0.37 丢掉 ['def _dump(payload):', 'return json.dumps(payload, ensure_ascii=False)', 'def _split(raw):', 'head, sep, name = raw.partition("|")']
+         ⚠️ e3ni/c5ff8464 keep=0.36 丢掉 ['def _split(raw):', 'head, sep, event = raw.partition("|")', 'if not sep:', 'head, event = head.strip(), event.strip()']
+      ⭐ 机会归零读数：1/3 份交付自己补了 import（补了 ⇒ 这份交付里没有机会；没补 ⇒ 机会仍在）

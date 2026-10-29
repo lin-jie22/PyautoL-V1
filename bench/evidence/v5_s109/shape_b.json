@@ -1,0 +1,119 @@
+[
+ {
+  "task": "e1wi",
+  "group": "wi",
+  "chars": 449,
+  "compiles": true,
+  "import_lines": 1,
+  "skeleton_import_lines": 1,
+  "added": 0,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": 0.875,
+  "dirty": true,
+  "lost": [
+   "kept = []"
+  ],
+  "outside_n": 8,
+  "sha": "4e9be367"
+ },
+ {
+  "task": "e2wi",
+  "group": "wi",
+  "chars": 685,
+  "compiles": true,
+  "import_lines": 1,
+  "skeleton_import_lines": 1,
+  "added": 0,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "dirty": false,
+  "lost": [],
+  "outside_n": 20,
+  "sha": "925bcdc0"
+ },
+ {
+  "task": "e3wi",
+  "group": "wi",
+  "chars": 1013,
+  "compiles": true,
+  "import_lines": 1,
+  "skeleton_import_lines": 1,
+  "added": 0,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "dirty": false,
+  "lost": [],
+  "outside_n": 23,
+  "sha": "e9fe1979"
+ },
+ {
+  "task": "e1ni",
+  "group": "ni",
+  "chars": 515,
+  "compiles": true,
+  "import_lines": 1,
+  "skeleton_import_lines": 0,
+  "added": 1,
+  "names": [],
+  "names_undecidable": false,
+  "keep_ratio": 1.0,
+  "dirty": false,
+  "lost": [],
+  "outside_n": 7,
+  "sha": "18124115"
+ },
+ {
+  "task": "e2ni",
+  "group": "ni",
+  "chars": 302,
+  "compiles": true,
+  "import_lines": 0,
+  "skeleton_import_lines": 0,
+  "added": 0,
+  "names": [
+   "_add",
+   "_dump",
+   "_split"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 0.3684,
+  "dirty": true,
+  "lost": [
+   "def _dump(payload):",
+   "return json.dumps(payload, ensure_ascii=False)",
+   "def _split(raw):",
+   "head, sep, name = raw.partition(\"|\")"
+  ],
+  "outside_n": 19,
+  "sha": "711ae11d"
+ },
+ {
+  "task": "e3ni",
+  "group": "ni",
+  "chars": 504,
+  "compiles": true,
+  "import_lines": 0,
+  "skeleton_import_lines": 0,
+  "added": 0,
+  "names": [
+   "_add",
+   "_monday_of",
+   "_read_day",
+   "_split"
+  ],
+  "names_undecidable": false,
+  "keep_ratio": 0.3636,
+  "dirty": true,
+  "lost": [
+   "def _split(raw):",
+   "head, sep, event = raw.partition(\"|\")",
+   "if not sep:",
+   "head, event = head.strip(), event.strip()"
+  ],
+  "outside_n": 22,
+  "sha": "c5ff8464"
+ }
+]

@@ -1,0 +1,464 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  tasks_v8  n=6  suite_sha=519dad774a3664612e6611b220b33f4a
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=6/6
+  e1wi: oracle=1.0000 partial=0.4375 null=0.0000 ✅
+  e1ni: oracle=1.0000 partial=0.4375 null=0.0000 ✅
+  e2wi: oracle=1.0000 partial=0.3750 null=0.0000 ✅
+  e2ni: oracle=1.0000 partial=0.3750 null=0.0000 ✅
+  e3wi: oracle=1.0000 partial=0.2500 null=0.0000 ✅
+  e3ni: oracle=1.0000 partial=0.2500 null=0.0000 ✅
+  理由: 全部 6 条两极可分，其中 6 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=ad0c184d67e8e2b0
+  [观察]
+    - e1wi: oracle=1.0000 partial=0.4375 null=0.0000
+    - e1ni: oracle=1.0000 partial=0.4375 null=0.0000
+    - e2wi: oracle=1.0000 partial=0.3750 null=0.0000
+    - e2ni: oracle=1.0000 partial=0.3750 null=0.0000
+    - e3wi: oracle=1.0000 partial=0.2500 null=0.0000
+    - e3ni: oracle=1.0000 partial=0.2500 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 6 条任务上两极可分
+    - 中段有序检查 6 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=519dad774a36；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 245 条  投喂=关（默认：保住测量一致性）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）  预算档=1x  repeat=3 ---
+15:22:10 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `clean_lines` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+15:22:10   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:22:54   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """import re\n\ndef _strip_tags(text):\n    return re.sub(r"@[A-Za-z0-9]+", "", text)\n\n\ndef clean_lines(items, path):\n    kept = '
+15:22:54   [1] 通道=深 候选=1
+15:22:59       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:23:20   [2] 通道=深 候选=1
+15:23:28       ↳ finish ok=True 直接补全代码
+15:23:28   ✅ 收尾: ```python
+import re
+
+def _strip_tags(text):
+    return re.sub(r"@[A-Za-z0-9]+", "", text)
+
+
+def clean_lines(items, path)
+15:23:28 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.761 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 clean_lines/语言标签/可编译/结构检查)
+15:23:29 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `clean_lines` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+15:23:29   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:23:49   [1] 通道=深 候选=1
+15:24:09       ↳ finish ok=True 直接补全代码
+15:24:09   ✅ 收尾: ```python
+import re
+
+def _strip_tags(text):
+    return re.sub(r"@[A-Za-z0-9]+", "", text)
+
+
+def clean_lines(items, path)
+15:24:09 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.607 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 clean_lines/语言标签/可编译/结构检查)
+15:24:10 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `group_names` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+15:24:10   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:24:30   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 'r[1])\n\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": table}))\n    return None\n```}'
+15:24:30   [1] 通道=深 候选=1
+15:24:33       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:24:52   [2] 通道=深 候选=1
+15:24:55       ↳ finish ok=True 直接补全函数
+15:24:55   ✅ 收尾: ```python
+import json
+
+def _dump(payload):
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def _split(raw):
+    hea
+15:24:55 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.516 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 group_names/语言标签/可编译/结构检查)
+15:24:56 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `group_names` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+15:24:56   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:25:13   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: ' TODO\n\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": table}))\n    return None\n```}'
+15:25:13   [1] 通道=深 候选=1
+15:25:16       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:25:34   [2] 通道=深 候选=1
+15:25:37       ↳ finish ok=True 直接补全代码
+15:25:37       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:25:37       🔁 失配[outcome] finish({'answer': '```python\ndef _dump(payload):\n    retur 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+15:25:37       📎 回看 b#2 因由=mismatch 窗=whole 44/44 字
+15:25:53   [3] 通道=深 候选=1
+15:25:57       ↳ finish ok=True 补全 group_names 函数
+15:25:57       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:26:15   [4] 通道=深 候选=1
+15:26:15       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:26:15   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+15:26:37   ⚠️ 因「?」失败而重规划
+15:26:37   [5] 通道=深 候选=1
+15:26:37       ⊘ [values:answer] 否决 — 目标要求展开（1478 字），答案只有 24 字
+15:26:37   ⛔ 全部候选被拦 (3 次连续失败)
+15:26:37   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+15:26:37 ■ cascade | steps=6 | guard_blocked=1 | 预演=3 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) | 价值判定=4 否决=1(answer:1) | 通量[perceive>memory=1.73 memory>reason=0.333 reason>act=0.6] 回流=1.0 | 语义记忆=1 | 上限被裁短=1 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 group_names/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+15:26:38 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `week_of` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一段，其余
+15:26:38   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:27:36   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: ': "需要补全 week_of 函数，确保符合题目要求。", "source": "目标代码", "confidence": 0.9}, "rationale": "note 工具用于记录语义记忆，但本题直接补全代码即可，无需记录。"}]}'
+15:27:36   [1] 通道=深 候选=1
+15:27:39       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:28:02   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全 week_of 函数", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全 week_of 函数，无需调用其他工具。"}], "finish": {"intent": "补全 week_of 函数并返回答案", "tool": "finish", "args": {"'
+15:28:02   [2] 通道=深 候选=1
+15:28:02       ⊘ [values:answer] 否决 — 目标要求展开（1705 字），答案只有 24 字
+15:28:02   ⛔ 全部候选被拦 (1 次连续失败)
+15:28:23   [3] 通道=深 候选=1
+15:28:26       ↳ finish ok=True 补全 week_of 函数
+15:28:26   ✅ 收尾: ```python
+import datetime
+
+def _split(raw):
+    head, sep, event = raw.partition("|")
+    if not sep:
+        return Non
+15:28:26 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.357 memory>reason=1.0 reason>act=0.667] 回流=0.0 | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 week_of/语言标签/可编译/结构检查)
+15:28:27 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `week_of` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许**你在
+15:28:27   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:28:40   [1] 通道=深 候选=1
+15:28:44       ↳ finish ok=True 补全 week_of 函数
+15:28:44       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:28:44       🔁 失配[outcome] finish({'answer': '```python\ndef week_of(items, path):\n    预演=成功 实际=失败 ⇒ 已沉淀为启发式
+15:28:44       📎 回看 b#1 因由=mismatch 窗=whole 44/44 字
+15:29:02   ⚠️ 因「?」失败而重规划
+15:29:02   [2] 通道=深 候选=1
+15:29:02       ⊘ [values:answer] 否决 — 目标要求展开（1694 字），答案只有 24 字
+15:29:02   ⛔ 全部候选被拦 (2 次连续失败)
+15:29:18   ⚠️ 因「?」失败而重规划
+15:29:18   [3] 通道=深 候选=1
+15:29:18       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:29:18   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+15:29:35   ⚠️ 因「?」失败而重规划
+15:29:35   [4] 通道=深 候选=1
+15:29:35       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:29:35   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 2/2
+15:29:35   🧊 停滞 ⇒ 探索到此为止，但**还有额度** ⇒ 转向交付（不是预算不足）
+15:29:45   🧪 收尾交付**未过闸**：1/5 项未过：自检未通过（不提供细节）
+15:29:45   📦 收尾交付 518 字符（来源=收尾调用）
+15:29:45 ■ stalled | steps=5 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=1.614 memory>reason=0.5 reason>act=0.25] 回流=0.0 | 语义记忆=1 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 week_of/语言标签/可编译/结构检查) ⚠️本次交付未过自检 | 收尾=1次(步0/时0/stalled1 来源收尾调用:1 518字) 改交付=1(与被闸打回那版同=0) 收尾闸=1跑/0过/1未过
+15:29:46 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `clean_lines` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+15:29:46   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:30:23   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """import re\n\ndef _strip_tags(text):\n    return re.sub(r"@[A-Za-z0-9]+", "", text)\n\n\ndef clean_lines(items, path):\n    kept = '
+15:30:23   [1] 通道=深 候选=1
+15:30:26       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:30:40   [2] 通道=深 候选=1
+15:30:45       ↳ finish ok=True 直接补全代码
+15:30:45   ✅ 收尾: ```python
+import re
+
+def _strip_tags(text):
+    return re.sub(r"@[A-Za-z0-9]+", "", text)
+
+
+def clean_lines(items, path)
+15:30:45 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.761 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 clean_lines/语言标签/可编译/结构检查)
+15:30:46 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `clean_lines` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+15:30:46   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:30:58   [1] 通道=深 候选=1
+15:31:11       ↳ finish ok=True 直接补全代码
+15:31:11   ✅ 收尾: ```python
+import re
+
+def _strip_tags(text):
+    return re.sub(r"@[A-Za-z0-9]+", "", text)
+
+
+def clean_lines(items, path)
+15:31:11 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.607 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 clean_lines/语言标签/可编译/结构检查)
+15:31:11 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `group_names` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+15:31:11   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:31:27   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 'r[1])\n\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": table}))\n    return None\n```}'
+15:31:27   [1] 通道=深 候选=1
+15:31:30       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:31:47   [2] 通道=深 候选=1
+15:31:51       ↳ finish ok=True 直接补全函数
+15:31:51   ✅ 收尾: ```python
+import json
+
+def _dump(payload):
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def _split(raw):
+    hea
+15:31:51 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.516 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 group_names/语言标签/可编译/结构检查)
+15:31:51 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `group_names` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+15:31:51   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:32:08   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: ' TODO\n\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": table}))\n    return None\n```}'
+15:32:08   [1] 通道=深 候选=1
+15:32:12       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:32:30   [2] 通道=深 候选=1
+15:32:34       ↳ finish ok=True 直接补全代码
+15:32:34       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:32:34       🔁 失配[outcome] finish({'answer': '```python\ndef _dump(payload):\n    retur 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+15:32:34       📎 回看 b#2 因由=mismatch 窗=whole 44/44 字
+15:32:50   [3] 通道=深 候选=1
+15:32:54       ↳ finish ok=True 补全 group_names 函数
+15:32:54       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:33:12   [4] 通道=深 候选=1
+15:33:12       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:33:12   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+15:33:34   ⚠️ 因「?」失败而重规划
+15:33:34   [5] 通道=深 候选=1
+15:33:34       ⊘ [values:answer] 否决 — 目标要求展开（1478 字），答案只有 24 字
+15:33:34   ⛔ 全部候选被拦 (3 次连续失败)
+15:33:34   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+15:33:34 ■ cascade | steps=6 | guard_blocked=1 | 预演=3 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) | 价值判定=4 否决=1(answer:1) | 通量[perceive>memory=1.73 memory>reason=0.333 reason>act=0.6] 回流=1.0 | 语义记忆=1 | 上限被裁短=1 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 group_names/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+15:33:35 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `week_of` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一段，其余
+15:33:35   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+15:34:38   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: ': "需要补全 week_of 函数，确保符合题目要求。", "source": "目标代码", "confidence": 0.9}, "rationale": "note 工具用于记录语义记忆，但本题直接补全代码即可，无需记录。"}]}'
+15:34:39   [1] 通道=深 候选=1
+15:34:42       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:35:05   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全 week_of 函数", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全 week_of 函数，无需调用其他工具。"}], "finish": {"intent": "补全 week_of 函数并返回答案", "tool": "finish", "args": {"'
+15:35:05   [2] 通道=深 候选=1
+15:35:05       ⊘ [values:answer] 否决 — 目标要求展开（1705 字），答案只有 24 字
+15:35:05   ⛔ 全部候选被拦 (1 次连续失败)
+15:35:26   [3] 通道=深 候选=1
+15:35:29       ↳ finish ok=True 补全 week_of 函数
+15:35:29   ✅ 收尾: ```python
+import datetime
+
+def _split(raw):
+    head, sep, event = raw.partition("|")
+    if not sep:
+        return Non
+15:35:29 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.357 memory>reason=1.0 reason>act=0.667] 回流=0.0 | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 week_of/语言标签/可编译/结构检查)
+15:35:30 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `week_of` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许**你在
+15:35:30   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:35:42   [1] 通道=深 候选=1
+15:35:44       ↳ finish ok=True 补全 week_of 函数
+15:35:44       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:35:44       🔁 失配[outcome] finish({'answer': '```python\ndef week_of(items, path):\n    预演=成功 实际=失败 ⇒ 已沉淀为启发式
+15:35:44       📎 回看 b#1 因由=mismatch 窗=whole 44/44 字
+15:36:02   ⚠️ 因「?」失败而重规划
+15:36:02   [2] 通道=深 候选=1
+15:36:02       ⊘ [values:answer] 否决 — 目标要求展开（1694 字），答案只有 24 字
+15:36:02   ⛔ 全部候选被拦 (2 次连续失败)
+15:36:18   ⚠️ 因「?」失败而重规划
+15:36:18   [3] 通道=深 候选=1
+15:36:18       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:36:18   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+15:36:35   ⚠️ 因「?」失败而重规划
+15:36:35   [4] 通道=深 候选=1
+15:36:35       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:36:35   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 2/2
+15:36:35   🧊 停滞 ⇒ 探索到此为止，但**还有额度** ⇒ 转向交付（不是预算不足）
+15:36:45   🧪 收尾交付**未过闸**：1/5 项未过：自检未通过（不提供细节）
+15:36:45   📦 收尾交付 518 字符（来源=收尾调用）
+15:36:45 ■ stalled | steps=5 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=1.614 memory>reason=0.5 reason>act=0.25] 回流=0.0 | 语义记忆=1 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 week_of/语言标签/可编译/结构检查) ⚠️本次交付未过自检 | 收尾=1次(步0/时0/stalled1 来源收尾调用:1 518字) 改交付=1(与被闸打回那版同=0) 收尾闸=1跑/0过/1未过
+15:36:46 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `clean_lines` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+15:36:46   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:37:23   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """import re\n\ndef _strip_tags(text):\n    return re.sub(r"@[A-Za-z0-9]+", "", text)\n\n\ndef clean_lines(items, path):\n    kept = '
+15:37:24   [1] 通道=深 候选=1
+15:37:27       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:37:42   [2] 通道=深 候选=1
+15:37:47       ↳ finish ok=True 直接补全代码
+15:37:47   ✅ 收尾: ```python
+import re
+
+def _strip_tags(text):
+    return re.sub(r"@[A-Za-z0-9]+", "", text)
+
+
+def clean_lines(items, path)
+15:37:47 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.761 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 clean_lines/语言标签/可编译/结构检查)
+15:37:48 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `clean_lines` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+15:37:48   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:38:01   [1] 通道=深 候选=1
+15:38:14       ↳ finish ok=True 直接补全代码
+15:38:14   ✅ 收尾: ```python
+import re
+
+def _strip_tags(text):
+    return re.sub(r"@[A-Za-z0-9]+", "", text)
+
+
+def clean_lines(items, path)
+15:38:14 ■ done | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.607 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 clean_lines/语言标签/可编译/结构检查)
+15:38:15 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `group_names` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一
+15:38:15   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:38:32   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: 'r[1])\n\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": table}))\n    return None\n```}'
+15:38:32   [1] 通道=深 候选=1
+15:38:35       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:38:54   [2] 通道=深 候选=1
+15:38:57       ↳ finish ok=True 直接补全函数
+15:38:57   ✅ 收尾: ```python
+import json
+
+def _dump(payload):
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def _split(raw):
+    hea
+15:38:57 ■ done | steps=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.516 memory>reason=1.0 reason>act=1.0] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 group_names/语言标签/可编译/结构检查)
+15:38:58 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `group_names` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许
+15:38:58   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:39:19   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: ' TODO\n\n    with open(path, "w", encoding="utf-8") as fh:\n        fh.write(_dump({"groups": table}))\n    return None\n```}'
+15:39:19   [1] 通道=深 候选=1
+15:39:23       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:39:43   [2] 通道=深 候选=1
+15:39:46       ↳ finish ok=True 直接补全代码
+15:39:46       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:39:46       🔁 失配[outcome] finish({'answer': '```python\ndef _dump(payload):\n    retur 预演=成功 实际=失败 ⇒ 已沉淀为启发式
+15:39:46       📎 回看 b#2 因由=mismatch 窗=whole 44/44 字
+15:40:04   [3] 通道=深 候选=1
+15:40:08       ↳ finish ok=True 补全 group_names 函数
+15:40:08       🧪 自检未过（第 2/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:40:28   [4] 通道=深 候选=1
+15:40:28       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:40:28   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+15:40:51   ⚠️ 因「?」失败而重规划
+15:40:51   [5] 通道=深 候选=1
+15:40:51       ⊘ [values:answer] 否决 — 目标要求展开（1478 字），答案只有 24 字
+15:40:51   ⛔ 全部候选被拦 (3 次连续失败)
+15:40:51   ✋ [guard:cascade] 拦截 —— 连续失败 3 次 ≥ 3
+15:40:51 ■ cascade | steps=6 | guard_blocked=1 | 预演=3 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) | 价值判定=4 否决=1(answer:1) | 通量[perceive>memory=1.73 memory>reason=0.333 reason>act=0.6] 回流=1.0 | 语义记忆=1 | 上限被裁短=2 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 group_names/语言标签/可编译/结构检查) ⚠️本次交付未过自检
+15:40:52 ▶ 任务开始: 下面是一段**已定稿**的框架代码，import 已就位，请你把函数 `week_of` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 除了这一段，其余
+15:40:52   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.02s/240s | llm_kind=http | 外部能力 0 个
+15:41:54   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 1024）；原文片段: ': "需要补全 week_of 函数，确保符合题目要求。", "source": "目标代码", "confidence": 0.9}, "rationale": "note 工具用于记录语义记忆，但本题直接补全代码即可，无需记录。"}]}'
+15:41:54   [1] 通道=深 候选=1
+15:41:57       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+15:42:22   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接补全 week_of 函数", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全 week_of 函数，无需调用其他工具。"}], "finish": {"intent": "补全 week_of 函数并返回答案", "tool": "finish", "args": {"'
+15:42:22   [2] 通道=深 候选=1
+15:42:22       ⊘ [values:answer] 否决 — 目标要求展开（1705 字），答案只有 24 字
+15:42:22   ⛔ 全部候选被拦 (1 次连续失败)
+15:42:46   [3] 通道=深 候选=1
+15:42:49       ↳ finish ok=True 补全 week_of 函数
+15:42:49   ✅ 收尾: ```python
+import datetime
+
+def _split(raw):
+    head, sep, event = raw.partition("|")
+    if not sep:
+        return Non
+15:42:49 ■ done | steps=4 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=1(answer:1) | 通量[perceive>memory=0.357 memory>reason=1.0 reason>act=0.667] 回流=0.0 | 语义记忆=0 | 上限被裁短=3 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 week_of/语言标签/可编译/结构检查)
+15:42:49 ▶ 任务开始: 下面是一段**已定稿**的框架代码，请你把函数 `week_of` 补全。
+
+编辑约定：
+  - 补全 `# >>> BEGIN TODO` 与 `# >>> END TODO` 之间的内容；
+  - 如果补全需要外部模块，**允许**你在
+15:42:49   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/240s | llm_kind=http | 外部能力 0 个
+15:43:03   [1] 通道=深 候选=1
+15:43:06       ↳ finish ok=True 补全 week_of 函数
+15:43:06       🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：1/5 项未过：自检未通过（不提供细节）
+15:43:06       🔁 失配[outcome] finish({'answer': '```python\ndef week_of(items, path):\n    预演=成功 实际=失败 ⇒ 已沉淀为启发式
+15:43:06       📎 回看 b#1 因由=mismatch 窗=whole 44/44 字
+15:43:25   ⚠️ 因「?」失败而重规划
+15:43:25   [2] 通道=深 候选=1
+15:43:25       ⊘ [values:answer] 否决 — 目标要求展开（1694 字），答案只有 24 字
+15:43:25   ⛔ 全部候选被拦 (2 次连续失败)
+15:43:42   ⚠️ 因「?」失败而重规划
+15:43:42   [3] 通道=深 候选=1
+15:43:42       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:43:42   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 1/2
+15:44:00   ⚠️ 因「?」失败而重规划
+15:44:00   [4] 通道=深 候选=1
+15:44:00       ⏭ 重复动作已跳过（不产生新信息）: finish
+15:44:00   🧊 本轮 1 个候选全部是已试过的动作 ⇒ 停滞 2/2
+15:44:00   🧊 停滞 ⇒ 探索到此为止，但**还有额度** ⇒ 转向交付（不是预算不足）
+15:44:11   🧪 收尾交付**未过闸**：1/5 项未过：自检未通过（不提供细节）
+15:44:11   📦 收尾交付 518 字符（来源=收尾调用）
+15:44:11 ■ stalled | steps=5 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=2 否决=1(answer:1) | 通量[perceive>memory=1.614 memory>reason=0.5 reason>act=0.25] 回流=0.0 | 语义记忆=1 | 回看=1次/44字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=2跑/0过/2打回/0放弃 判据=5项(非空/函数名 week_of/语言标签/可编译/结构检查) ⚠️本次交付未过自检 | 收尾=1次(步0/时0/stalled1 来源收尾调用:1 518字) 改交付=1(与被闸打回那版同=0) 收尾闸=1跑/0过/1未过
+  分数账本  会话#0 追加 6 行（拒绝 0 行  ⚠️重复=12） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（每题新建内核 + 记忆隔离）@1x n=3 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+  attempted=18 recorded=18 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=245 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=33 检验=33 命中=27 命中率=0.818 失配=6(成败6/文本0) 混淆={'ok_ok': 24, 'ok_fail': 6, 'fail_ok': 0, 'fail_fail': 3}
+  传输层    抖动重试=0 重试后仍失败=0 上限被裁短=13 墙钟放弃首发=0/重试=0 （共 18 题）
+
+--- 噪声明细（逐题 × 逐次）---
+  任务                        r1      r2      r3   极差
+  e1wi                  0.0000  0.0000  0.0000   0.0000
+  e1ni                  1.0000  1.0000  1.0000   0.0000
+  e2wi                  1.0000  1.0000  1.0000   0.0000
+  e2ni                  0.0000  0.0000  0.0000   0.0000
+  e3wi                  1.0000  1.0000  1.0000   0.0000
+  e3ni                  0.0000  0.0000  0.0000   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/6
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=0a0c2030256f5590 scorer=d4b1cbbfd7f1 suite=519dad774a36 repeat=3 budget=1x temperature=0.0 fresh=True memory_scope=per_task_fresh memory_seed=(0, 0) limits=36e8683034 llm_cond=ae10d1d8f6 max_tokens=1024 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v1_s109_bench_a2_v8/runs.jsonl
+  答案已落盘 /private/tmp/v1_s109_bench_a2_v8/answers.jsonl  18 条  共 10656 字符  最长 1027 字符  截断 0 条

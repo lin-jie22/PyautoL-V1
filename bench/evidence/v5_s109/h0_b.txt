@@ -1,0 +1,19 @@
+  requests             99
+  slow                 0
+  slow_max_s           0.0
+  truncated            3
+  non_200              0
+  tps_median           11.46
+  tps_min              3.64
+  tps_slow_n           0
+  zero_answers         0
+  episodic_fallbacks   0
+  answers              18
+  装置判定（H0 总量闸）：✅ 装置可用
+
+  ⭐ H0′ 逐次判据（V14，run.log）
+    attempts      18
+    bad_attempts  0（装置给的 0 分，H0 总量闸**看不见**）
+    by_reason     {'error': 0, 'timeout': 0, 'episodic': 0, 'zero_delivery': 0}
+    比例          0/18 = 0%
+    ⛔ 逐次零**不改 H0 的判决**；它只用来在报告里说清「哪一格 0 分不是能力的锅」。

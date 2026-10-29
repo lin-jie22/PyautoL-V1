@@ -55,6 +55,42 @@ REWARD_SOURCE = "external_scorer"
 #: 这句话的直接翻译，与 `_MISMATCH_THRESHOLD`（0.34）刻意取同一个量级。
 REWARD_MIN_SIM = 0.30
 
+#: 失败文本 → **错误类别** → 一句**与任务实例无关**的检查项。
+#:
+#: 为什么必须归类（V19 实测，`bench/evidence/v6_s111/RESULTS.md` §5.3）：
+#: 打分器给的 `why` 长这样 ——
+#:     `通过 0/16；失败: import pathlib as _pp\nclean_lines([...]) ⇒ NameError: name 're' is not defined…`
+#: 前 60 多个字符是**测试调用的源码**，真正的诊断被埋在中间，而 `record_reward`
+#: 又把它整体截到 200 字符。把这段原样塞进提示词，等于让模型自己从噪音里挖。
+#:
+#: ⛔ 表里只放**类别级**检查，绝不放实例（不写"缺的是 re"）：那会把答案写进提示词，
+#:    与 `reward_guidance` 边界③"排除同一题号"是同一条理由。
+_ERROR_CLASS_CHECK = {
+    "NameError": "代码里用到的每个名字，是否都已定义或 import",
+    "AttributeError": "对容器/对象调用的方法，在它的类型上是否真的存在",
+    "TypeError": "传入的参数个数与类型，是否与函数签名一致",
+    "IndexError": "下标/切片是否可能越界（尤其是空输入）",
+    "KeyError": "取键之前是否确认它存在",
+    "AssertionError": "用题目给出的示例输入，把当前实现手算一遍",
+    "其他": "用题目给出的示例输入，把当前实现手算一遍",
+}
+_ERROR_CLASS_RE = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception))\b")
+
+
+def _error_class(failure: str) -> str:
+    """从失败文本里抽出**错误类别**；抽不到归 `其他`，空文本返回空串。
+
+    ⛔ 只返回类别，**不返回实例**。返回"缺的是 re"就是开卷。
+    """
+    text = str(failure or "")
+    if not text.strip():
+        return ""
+    m = _ERROR_CLASS_RE.search(text)
+    if not m:
+        return "其他"
+    name = m.group(1)
+    return name if name in _ERROR_CLASS_CHECK else "其他"
+
 
 def _tokens(text: str) -> set[str]:
     return set(re.findall(r"[A-Za-z0-9_\u4e00-\u9fff]{2,}", (text or "").lower()))
@@ -228,6 +264,11 @@ class WorldModel:
         self.rewards_rejected_missing: int = 0  # 缺题号或特征 ⇒ 无法归属 ⇒ 拒
         self.rewards_seen: int = 0              # 检索时被**真正读进上下文**的次数
         self.rewards_skipped_self: int = 0      # 命中但被"防自评"挡下的次数
+        #: 命中但因为是**成功记录**而被丢掉的次数。
+        #: 成功记录唯一能说的是「没有记录的失败模式」，那是零可执行内容；
+        #: V19 实测：收到三行"历史通过、无记录的失败模式"的题，分数没升；
+        #: 收到"两行通过 + 一行未通过"的 `e1ni`，反而把唯一需要的那行 import 删了。
+        self.rewards_skipped_success: int = 0
 
     @property
     def mismatches(self) -> int:
@@ -458,11 +499,35 @@ class WorldModel:
         ⛔ `task_id` 相同的记录**一律跳过**（`rewards_skipped_self` 计数）：
         读到自己上一次在这道题上的分数 = 开卷考同一道题，
         那不是"学习"，那是把测试集答案抄进提示词。
+
+        ★★ 第 111 轮（§82）按 V19 的实测改了两处，**两处都是被读数逼出来的**：
+
+        ① **成功记录不再进提示**（`rewards_skipped_success` 计数）。
+           旧格式里它渲染成「历史通过，得分 1.00 ⇒ 无记录的失败模式」——
+           「无记录的失败模式」这句话本身就是零可执行内容。
+           V19 实测（`bench/evidence/v6_s111/RESULTS.md`）：
+             · 收到三行"历史通过"的 `e2ni`/`e3ni`，分数**一动不动**；
+             · 收到"两行通过 + 一行未通过"的 `e1ni`，**把唯一需要的那行 import 删了**
+               （16/16 → 0/16，diff 只有两行，3 rep 一致）。
+           ⇒ 成功记录至少是噪音，最坏是"不用改"的安慰剂信号。
+
+        ② **失败文本先归类、再渲染**（`_error_class`）。
+           旧格式把打分器的 `why` 原样塞进去，而它**以测试调用的源码开头**、
+           诊断被埋在中间、整体又被 `[:200]` 截断。归类之后提示变成类别级的
+           「`NameError` 出现过 N 次 ⇒ 先检查：用到的每个名字是否都已定义或 import」——
+           这才是可迁移的：三条恒失败的题出错类别同为 `NameError`，
+           而具体缺哪个符号各不相同（`re` / `_split`），实例本来就不该跨题传。
+
+        ⚠️ 边界：类别到检查项的映射是**人写的模板**，类别是**机器归一的**。
+           所以本机制成立时，只能说"抽象到类别级能跨题生效"，
+           ⛔ 不能说"系统自己发明了这条规则"。
         """
         if not features:
             return ""
         cur = set(str(f) for f in features)
-        hits: list[tuple[float, dict]] = []
+        by_class: dict[str, int] = {}
+        class_scores: dict[str, list[float]] = {}
+        used = 0
         for ep in self.memory.episodes(kind="reward", limit=300):
             meta = getattr(ep, "meta", None)
             if not isinstance(meta, dict):
@@ -476,29 +541,34 @@ class WorldModel:
             hist = set(x for x in str(meta.get("rkey") or "").split(",") if x)
             if not hist:
                 continue
-            sim = len(cur & hist) / len(cur | hist)
-            if sim < REWARD_MIN_SIM:
+            if len(cur & hist) / len(cur | hist) < REWARD_MIN_SIM:
                 continue
-            hits.append((sim, meta))
-        if not hits:
-            return ""
-        hits.sort(key=lambda x: -x[0])
-        lines = []
-        for sim, meta in hits[:k]:
-            passed = bool(meta.get("passed"))
+            # ⛔ 成功记录**不产生提示行**：它唯一能说的是"没有记录的失败模式"，
+            #    那是零可执行内容。V19 的读数给它判了刑 —— 见本方法 docstring。
+            if bool(meta.get("passed")):
+                self.rewards_skipped_success += 1
+                continue
+            cls = _error_class(meta.get("failure"))
+            if not cls:
+                continue
+            by_class[cls] = by_class.get(cls, 0) + 1
             sc = meta.get("score")
-            fail = str(meta.get("failure") or "")
-            head = f"同类题（结构重合 {sim:.2f}）：历史{'通过' if passed else '未通过'}"
             if isinstance(sc, (int, float)):
-                head += f"，得分 {float(sc):.2f}"
-            # ⚠️ 写**可执行**形态：给出"先检查什么"，不是"不可假设…"
-            #    （后者是 V1 之前 9/10 条 facts 的形态，读了也改不了任何动作）
-            if fail:
-                head += f" ⇒ 先检查：{fail}"
-            else:
-                head += " ⇒ 无记录的失败模式"
-            lines.append("- " + head)
-        self.rewards_seen += len(hits[:k])
+                class_scores.setdefault(cls, []).append(float(sc))
+            used += 1
+        if not by_class:
+            return ""
+        self.rewards_seen += used
+        # 按出现次数排序：**最常栽的那一类**排在最前（不是最相似的那一条）。
+        rows = sorted(by_class.items(), key=lambda kv: (-kv[1], kv[0]))
+        lines = []
+        for cls, n in rows[:k]:
+            avg = class_scores.get(cls) or []
+            head = f"- 同类题里 `{cls}` 出现过 {n} 次"
+            if avg:
+                head += f"（历史得分均值 {sum(avg) / len(avg):.2f}）"
+            head += f" ⇒ 先检查：{_ERROR_CLASS_CHECK.get(cls, _ERROR_CLASS_CHECK['其他'])}"
+            lines.append(head)
         return "历史同类题的外部得分：\n" + "\n".join(lines)
 
     def guidance(self, *, action: str, k: int = 3,
@@ -555,4 +625,5 @@ class WorldModel:
             "rewards_rejected_missing": self.rewards_rejected_missing,
             "rewards_seen": self.rewards_seen,
             "rewards_skipped_self": self.rewards_skipped_self,
+            "rewards_skipped_success": self.rewards_skipped_success,
         }

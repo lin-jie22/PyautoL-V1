@@ -258,6 +258,7 @@ def _kwm_zero() -> dict:
             # ⛔ 只报"写入 N 条"而不报"读到几条"，正是"字段无消费者"：
             #    一个你永远看不出它有没有被用过的通道 = 装饰。
             "rewards_recorded": 0, "rewards_seen": 0, "rewards_skipped_self": 0,
+            "rewards_skipped_success": 0,
             "rewards_rejected_source": 0, "rewards_rejected_missing": 0,
             # —— 读层：语义记忆检索到几条 / 其中几条属于抽象层（memory-mode=abstract 时）——
             "layer_recalled": 0, "layer_abstract": 0,
@@ -1299,10 +1300,12 @@ def cmd_bench(args) -> int:
               + (f" 奖励[写={_kw.get('rewards_recorded', 0)}"
                  f" 读={_kw.get('rewards_seen', 0)}"
                  f" 挡自己={_kw.get('rewards_skipped_self', 0)}"
+                 f" 挡成功={_kw.get('rewards_skipped_success', 0)}"
                  f" 拒={_kw.get('rewards_rejected_source', 0)}"
                  f"+{_kw.get('rewards_rejected_missing', 0)}]"
                  if (_kw.get('rewards_recorded') or _kw.get('rewards_seen')
-                     or _kw.get('rewards_skipped_self')) else "")
+                     or _kw.get('rewards_skipped_self')
+                     or _kw.get('rewards_skipped_success')) else "")
               # ⛔ 抽象臂必须把"检索到几条 / 其中几条是抽象层"念出来。
               #    只念 mode 的人分不清" abstract 层有用"和"abstract 层是空的"——
               #    后者会让整个实验变成一场没有变量的空转（第十五轮自踩过一次）。

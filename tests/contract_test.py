@@ -3334,10 +3334,14 @@ _AL_g = _AL_wm2.reward_guidance(features={"in_str", "op_convert", "level1"},
                                 task_id="probe_self")
 check(RS, "AL4 ★★★检索必须**排除当前题号**：自己的历史得分绝不能进上下文\n"
           "         —— 读到自己上一次在这道题上的分数 = 开卷考同一道题。\n"
-          "            那不是学习，那是把测试集答案抄进提示词。",
+          "            那不是学习，那是把测试集答案抄进提示词。\n"
+          "         ⚠️ 第 111 轮（§82）把计数从「== 2」改成「>= 1」：那个 2 其实是在\n"
+          "            **强制把成功记录也渲染出来**；而 V19 实测成功记录零可执行\n"
+          "            内容、且与 `e1ni` 掉分同时出现（那条政策归 AX7 单独守）。\n"
+          "            ⇒ 本条只守「排除自己 + 同类题至少给 1 条」两件事。",
       "probe_self" not in _AL_g
       and _AL_wm2.rewards_skipped_self >= 1
-      and _AL_g.count("- 同类题") == 2,
+      and _AL_g.count("- 同类题") >= 1,
       f"跳过自己={_AL_wm2.rewards_skipped_self} 命中={_AL_g.count('- 同类题')}")
 
 check(RS, "AL5 ★★提示必须是**可执行**的：给出『先检查什么』，不是『不可假设…』\n"
@@ -3351,6 +3355,36 @@ check(RS, "AL6 结构不重合 ⇒ 不给提示（避免把不相干题的分数
       _AL_wm2.reward_guidance(features={"in_dict", "op_nest", "level2"},
                               task_id="x") == "",
       f"min_sim={REWARD_MIN_SIM}")
+
+# ── AL13/AL14（第 111 轮 / §82）：V19 的两条读数逼出来的两条政策 ─────────────
+#: ⚠️ 用**独立库**，避免污染上面 AL4/AL5 的 `_AL_g`。
+_AL_wm3 = WorldModel(MemoryStore(_TMP / "al_reward_cls.db"), StubLLM())
+_AL_f3 = {"in_str", "op_clean", "level0"}
+_AL_wm3.record_reward(task_id="ok_1", features=_AL_f3, passed=True, score=1.0,
+                      source=REWARD_SOURCE)
+_AL_g_ok = _AL_wm3.reward_guidance(features=_AL_f3, task_id="probe_x")
+check(RS, "AX7 ★★成功记录**不得**产生提示行（`rewards_skipped_success` 计数）\n"
+          "         —— 旧格式把它渲染成「历史通过，得分 1.00 ⇒ 无记录的失败模式」，\n"
+          "            而「无记录的失败模式」本身就是零可执行内容。\n"
+          "            V19 实测：收到三行「历史通过」的 `e2ni`/`e3ni` 一动不动；\n"
+          "            收到「两行通过 + 一行未通过」的 `e1ni`，反而把唯一需要的那行\n"
+          "            import 删了（16/16 → 0/16，diff 只有两行，3 rep 一致）。",
+      _AL_g_ok == "" and _AL_wm3.rewards_skipped_success == 1,
+      f"全通过时提示={_AL_g_ok!r} 挡成功={_AL_wm3.rewards_skipped_success}")
+
+_AL_wm3.record_reward(
+    task_id="bad_1", features=_AL_f3, passed=False, score=0.0,
+    failure="通过 0/16；失败: import pathlib as _pp\nclean_lines(['a'])"
+            "  ⇒ NameError: name 're' is not defined",
+    source=REWARD_SOURCE)
+_AL_g_cls = _AL_wm3.reward_guidance(features=_AL_f3, task_id="probe_x")
+check(RS, "AX8 ★★失败文本必须**提炼成错误类别**，不得把打分器原文塞进提示\n"
+          "         —— 原文以「测试调用的源码」开头（`通过 0/16；失败: import pathlib…`），\n"
+          "            诊断被埋在中间、又被 `[:200]` 截断 ⇒ 模型得自己从噪音里挖。\n"
+          "            ⛔ 但只许传出**类别**，不许传出实例（「缺的是 re」= 开卷）。",
+      ("NameError" in _AL_g_cls) and ("import pathlib" not in _AL_g_cls)
+      and ("'re'" not in _AL_g_cls) and ("先检查" in _AL_g_cls),
+      _AL_g_cls.replace("\n", " ｜ ")[:120])
 
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
@@ -9530,6 +9564,20 @@ check(RS, "AZ96 ★★§0.5-2 语义层的身份是动作不是载荷：\n"
       f"③单行hits2={_AZ96_OK_ONE}"
       f"(rows={len(_AZ96_ROWS)},hits={_AZ96_ROWS[0]['hits'] if _AZ96_ROWS else 'NA'})"
       f" ｜ t1={_AZ96_T1[:48]!r}")
+
+# ⛔ AX5/AX6（第 111 轮补登）：上一轮把这两条**撤回态**写进了驱动器，却没有
+#    与之同名的契约断言 —— 而驱动器的判据是 `hit = tag in red`，所以它们
+#    永远只可能报「目标=✘」。上一轮只做了手工定向演练、没跑驱动器，因此没发现。
+#    ⇒ 这里把 AZ96 的 ①② 各补一条独立见证（AZ96 仍是伞形断言，靠 COUPLED 认账）。
+check(RS, "AX5 ★★身份必须**与载荷无关**：同类别、同方向、载荷完全不同的两次失配，\n"
+          "          启发式文本必须**逐字节相同**（⇒ 不许把本次报错抄进规则）",
+      _AZ96_OK_SAME,
+      f"t1={_AZ96_T1[:60]!r} t2={_AZ96_T2[:60]!r}")
+
+check(RS, "AX6 ★★身份**不得退化成常量**：`finish` 与 `recall` 两个类别必须给出\n"
+          "          不同的启发式文本（⇒ 防止把所有动作归成一类、语义层只剩一句废话）",
+      _AZ96_OK_IDENT,
+      f"finish={_AZ96_T1[:50]!r} recall={_AZ96_T4[:50]!r}")
 
 
 print()

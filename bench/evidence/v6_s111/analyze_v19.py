@@ -60,6 +60,47 @@ def grab(pattern: str, text: str) -> int | None:
     return int(m.group(1)) if m else None
 
 
+def probe_library(db: Path) -> dict:
+    """零模型探针：只读库，回答「这 6 题现在能不能检索到别的题的历史得分」。
+
+    与 `probe_reward_wire.py` 同口径（同一套 features / REWARD_MIN_SIM），
+    但内联在这里以免分析脚本依赖另一个进程的输出格式。
+    """
+    import sqlite3
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+    from mw.features import feature_set  # noqa: PLC0415
+
+    out = {"rows": None, "retr": None}
+    if not db.exists():
+        return out
+    suite = Path(__file__).resolve().parents[3] / "bench/specgen/tasks_v8.jsonl"
+    tasks = [json.loads(x) for x in suite.read_text(encoding="utf-8").splitlines() if x.strip()]
+    fs = {t["id"]: set(feature_set(t)) for t in tasks}
+    conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+    rows = []
+    for _id, meta in conn.execute("select id, meta from episodes where kind='reward' order by id"):
+        try:
+            rows.append((_id, json.loads(meta)))
+        except Exception:
+            continue
+    out["rows"] = len(rows)
+    hit = 0
+    for tid, cur in fs.items():
+        got = 0
+        for _id, meta in rows:
+            if str(meta.get("task_id")) == tid:
+                continue
+            hist = set(x for x in str(meta.get("rkey") or "").split(",") if x)
+            if not hist:
+                continue
+            if len(cur & hist) / len(cur | hist) >= 0.30:
+                got += 1
+        if got:
+            hit += 1
+    out["retr"] = hit
+    return out
+
+
 def main() -> int:
     print("=" * 66)
     print("V19 读数 —— PREREG §5 / §6")
@@ -100,21 +141,24 @@ def main() -> int:
     else:
         print("  ⚠️ 缺轮次，无法逐题对比")
 
-    # ── P0 前提闸 ───────────────────────────────────────────────────────
+    # ── P0 前提闸（口径 = PREREG §5 修正后的版本：零模型探针）────────────
     print("\n【P0 前提闸】")
-    rb2 = reward_line("b", 2)
-    ra2 = reward_line("a", 2)
-    seen_b2 = grab(r"读", rb2) if rb2 else None
-    seen_a2 = grab(r"读", ra2) if ra2 else None
-    print(f"  B 第2轮 奖励行: {rb2 or '(未找到)'}")
-    print(f"  A 第2轮 奖励行: {ra2 or '(未找到)'}")
+    for r in (1, 2, 3):
+        print(f"  B 第{r}轮 奖励行: {reward_line('b', r) or '(无)'}")
+        print(f"  A 第{r}轮 奖励行: {reward_line('a', r) or '(无)'}")
 
-    p0a = (seen_b2 is not None and seen_b2 > 0)
-    p0b = (seen_a2 == 0)
-    print(f"  P0-a（B 第2轮 读>0）: " + ("✅ 成立" if p0a else
-                                      f"❌ 不成立（读={seen_b2}）"))
-    print(f"  P0-b（A 第2轮 读=0）: " + ("✅ 成立" if p0b else
-                                      f"❌ 不成立（读={seen_a2}）"))
+    probe = probe_library(W / "mem_b" / "memory.db")
+    print(f"  P0-a 探针(mem_b): REWARD_ROWS={probe['rows']} RETRIEVABLE={probe['retr']}")
+    p0a = probe["rows"] is not None and probe["rows"] >= 6 and probe["retr"] == 6
+
+    av_all = [cell_score(data[("a", r)]) for r in (1, 2, 3) if ("a", r) in data]
+    a_range = (max(av_all) - min(av_all)) if len(av_all) == 3 else None
+    mem_a = probe_library(W / "mem_a" / "memory.db")
+    print(f"  P0-b 探针(mem_a): REWARD_ROWS={mem_a['rows']}；A 臂三轮极差={a_range}")
+    p0b = a_range == 0 and (mem_a["rows"] or 0) > 0
+
+    print(f"  ⇒ P0-a（链路通）: " + ("✅ 成立" if p0a else "❌ 不成立"))
+    print(f"  ⇒ P0-b（安慰剂真）: " + ("✅ 成立" if p0b else "❌ 不成立"))
     p0 = p0a and p0b
     print(f"  ⇒ P0 = {'✅ 通过' if p0 else '❌ 未通过 ⇒ P1/P2 一律 None'}")
 

@@ -1335,6 +1335,10 @@ def _env_zero_takes_effect(key: str) -> bool:
         "V1_LLM_RETRY_BACKOFF_S": ("limits", "llm_retry_backoff_s"),
         "V1_VERIFY_RETRIES": ("limits", "verify_retries"),
         "V1_VERIFY_STATIC": ("limits", "verify_static"),
+        # ★第一百一十四轮（§87）：`V1_REWARD_ECHO=0` 是**对照臂**（奖励段不回显）。
+        #   不登记它，`0` 会走 `_env_int` 的"0 ⇒ 回默认"那条路，而默认是 1
+        #   ⇒ A0 与 A1 变成同一条命令，V22 那 −16 格会被量成 0 格。
+        "V1_REWARD_ECHO": ("limits", "reward_echo"),
     }
     grp, attr = _keys[key]
     _old = os.environ.get(key)
@@ -3385,6 +3389,69 @@ check(RS, "AX8 ★★失败文本必须**提炼成错误类别**，不得把打�
       ("NameError" in _AL_g_cls) and ("import pathlib" not in _AL_g_cls)
       and ("'re'" not in _AL_g_cls) and ("先检查" in _AL_g_cls),
       _AL_g_cls.replace("\n", " ｜ ")[:120])
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AX9 / AX10 ★★奖励段的**三档回显**（第 114 轮 / §87，V23 的唯一自变量）
+#
+# 为什么必须有三档，而不是"有/没有"两档：
+#   纪律 1 的四项前提里，第三项是**等长安慰剂臂**。V19~V22 一直缺它，
+#   于是 V22 量到的那 −16 格只能叫「块的存在」的**总效应**（内容 + 扰动之和）。
+#   `T=0` 下两个假设给出同一个预测 —— prompt 变 ⇒ 输出变：
+#     `H_content`：那段「NameError ⇒ 检查 import」让模型改了做法；
+#     `H_perturb`：任何等长文本都会把采样点推到别处，改对改错与内容无关。
+#   ⇒ 无安慰剂臂时两者**结构性不可识别**（§85.9）。
+#   三档读**同一个库**（`al_reward_cls.db` 里一条 NameError 失败记录），
+#   唯一的差别是 `reward_echo` ⇒ 与 V23 的三臂装置同构。
+_AL_wm_e0 = WorldModel(MemoryStore(_TMP / "al_reward_cls.db"), StubLLM(),
+                       reward_echo=0)
+_AL_g_e0 = _AL_wm_e0.reward_guidance(features=_AL_f3, task_id="probe_x")
+_AL_wm_e1 = WorldModel(MemoryStore(_TMP / "al_reward_cls.db"), StubLLM(),
+                       reward_echo=1)
+_AL_g_e1 = _AL_wm_e1.reward_guidance(features=_AL_f3, task_id="probe_x")
+_AL_wm_e2 = WorldModel(MemoryStore(_TMP / "al_reward_cls.db"), StubLLM(),
+                       reward_echo=2)
+_AL_g_e2 = _AL_wm_e2.reward_guidance(features=_AL_f3, task_id="probe_x")
+#: 越界值必须**当场报错**（⛔ 不许静默按 1 处理 —— 那正是"设了却没生效"的病）。
+try:
+    WorldModel(MemoryStore(_TMP / "al_reward_cls.db"), StubLLM(), reward_echo=3)
+    _AL_ECHO_RAISED = False
+except ValueError:
+    _AL_ECHO_RAISED = True
+
+check(RS, "AX9 ★★`V1_REWARD_ECHO=0` ⇒ 奖励段**一个字都不进提示**，但「看到过」照记\n"
+          "         —— 「关掉回显」与「通道没数据」必须能分开：`rewards_seen` 是\n"
+          "            通道的**占用**读数，它不许因为渲染被关掉就变 0。\n"
+          "            ⛔ 反过来也一样：纪律 14「机制存在 ≠ 机制通电」，这条守的是\n"
+          "            它的反面 —— 通的被记成「没通」。\n"
+          "         撤回语义：`if self.reward_echo == 0: return \"\"` 改成 `if False:` ⇒ 必须红。",
+      _AL_g_e0 == "" and _AL_wm_e0.rewards_seen >= 1
+      and _AL_g_e1 != "" and ("NameError" in _AL_g_e1)
+      and _AL_ECHO_RAISED,
+      f"echo0={_AL_g_e0!r} 看到={_AL_wm_e0.rewards_seen} ｜ "
+      f"echo1={_AL_g_e1.replace(chr(10), ' ｜ ')[:52]!r} ｜ "
+      f"越界报错={_AL_ECHO_RAISED}")
+
+#: 逐行等长 + 结构量相同 + 真词零泄漏。⛔ 这四个条件是安慰剂臂**能叫安慰剂**的
+#: 全部理由：少一条，它就是"另一次混装"，而不是"同一块字数、不带语义"。
+_AL_L2E1 = _AL_g_e1.split("\n")
+_AL_L2E2 = _AL_g_e2.split("\n")
+_AL_ECHO_SAME_LEN = (len(_AL_L2E1) == len(_AL_L2E2)
+                     and all(len(a) == len(b) for a, b in zip(_AL_L2E1, _AL_L2E2))
+                     and all(a.startswith("- ") == b.startswith("- ")
+                             for a, b in zip(_AL_L2E1, _AL_L2E2)))
+_AL_ECHO_LEAK = [w for w in ("NameError", "先检查", "import", "得分", "同类题")
+                 if w in _AL_g_e2]
+check(RS, "AX10 ★★`V1_REWARD_ECHO=2` ⇒ **逐行等长、内容无关**的安慰剂，真词零泄漏\n"
+          "          —— 判据 = 行数相同 ∧ 逐行字符数相同 ∧ 同一行的 `- ` 前缀相同\n"
+          "                    ∧ 与真回显不相等 ∧ 不含类别名/检查项/通道名。\n"
+          "            这就是纪律 1 的第三项前提：`2≈1` ⇒ 载荷在「有这么一块字」；\n"
+          "            `2≈0` ⇒ 载荷在内容。⛔ 没有它，前两项前提量出来的 Δ 只是一半信息。\n"
+          "         撤回语义：`return _echo_fill(body)` 改成 `return body` ⇒ 必须红。",
+      _AL_ECHO_SAME_LEN and _AL_g_e2 != _AL_g_e1 and not _AL_ECHO_LEAK
+      and bool(_AL_g_e2),
+      f"行数 {len(_AL_L2E1)}vs{len(_AL_L2E2)} 逐行等长={_AL_ECHO_SAME_LEN} "
+      f"与真回显不同={_AL_g_e2 != _AL_g_e1} 泄漏={_AL_ECHO_LEAK} ｜ "
+      f"安慰剂={_AL_g_e2.replace(chr(10), ' ｜ ')[:64]!r}")
 
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",

@@ -600,7 +600,8 @@ class Core:
         self.planner = Planner(self.llm, self.tools,
                                max_tokens=self.s.limits.llm_max_tokens)
         self.wm = WorldModel(self.memory, self.llm,
-                             allow_learn=self.s.limits.allow_learn)
+                             allow_learn=self.s.limits.allow_learn,
+                             reward_echo=self.s.limits.reward_echo)
 
         # ── 三个"调制层"（不是相位）────────────────────────────────────
         # 相位是环上的必经点，缺了就断流；调制层只改变**怎么走**。

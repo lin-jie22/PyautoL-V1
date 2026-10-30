@@ -92,6 +92,79 @@ def _error_class(failure: str) -> str:
     return name if name in _ERROR_CLASS_CHECK else "其他"
 
 
+#: ★★ 第一百一十四轮（§87）：`V1_REWARD_ECHO=2` 的**安慰剂语料**。
+#:
+#: 为什么要一段"跟什么都无关"的中文：`T=0` 下「内容起了作用」与「多了一段等长
+#: 文本把采样点推到别处」给出**同一个预测**（prompt 变 ⇒ 输出变）⇒ 只要没有
+#: 「等长但内容无关」这一臂，这两个假设在本装置上**结构性不可识别**（§85.9）。
+#: V22 量到 reward 段 = −16 格、5 轮极差 0，但那只是「块的存在」的**总效应**
+#: （内容 + 扰动之和），拆不开。这一臂就是那把刀。
+#:
+#: ⛔ 选语料的三条硬约束（都由 AX10 锚住，不是"看着像"）：
+#:   ① 与题面、与错误类别、与代码**零词汇交集**（不许出现 import / 函数 / 检查 /
+#:      名字 / 定义 / 得分 / 历史 等任何能在提示里"接上话"的词）；
+#:   ② 是可读的中文**完整句**（见下），不是乱码也不是半句 —— 否则"读不通"本身
+#:      就成了第二个变量（`_echo_fill` 按整句填充、末尾才截断）；
+#:   ③ 总长足够覆盖最长的一行（否则循环取句会在行内出现可见重复）。
+#:
+#: 为什么存成**句子元组**而不是一段长文本：按整句拼接能让每一行读起来是连续的
+#: 中文，只有行尾那半句是截断的。若按字符滑窗切（第一版就是那样），每行都从
+#: 半句话开始 —— 读起来像坏文本，而"看起来像坏文本"是一个我没在控制的变量。
+_ECHO_FILL_TEXT: tuple[str, ...] = (
+    "周一早晨的例会从核对排期开始。",
+    "行政那边先把三间屋子的占用抄在纸上。",
+    "再按先来后到的顺序重新排一遍。",
+    "两拨人同时要用同一间的时候，让等在前台的那拨先用。",
+    "另一拨改到走廊尽头那间小一点的屋子。",
+    "茶歇的东西提前半小时送上来。",
+    "纸杯和热水放在靠门的长桌上。",
+    "用完的杯子要记得顺手带下楼。",
+    "天气转凉以后，靠窗那排座位的出风口要调到最小。",
+    "不然坐在下面的人一直说冷。",
+    "下午的安排相对宽松一些。",
+    "把上午没聊完的话题接着聊。",
+    "剩下的时间留给各自手上的事情。",
+)
+
+
+def _echo_fill(text: str) -> str:
+    """产出与 `text` **逐行等长、内容无关**的文本（`V1_REWARD_ECHO=2`）。
+
+    为什么逐行等长、而不是整段等长：真实提示是「一行表头 + k 行 `- ` 列表」。
+    只抹平总字数会**同时**改掉"这块里有几条要点"这个结构量 ⇒ 那一臂就不是
+    安慰剂，而是"另一次混装"。逐行等长之后，总字数、行数、每行长度、
+    每行的 `- ` 前缀**全部相同**，变的只有语义。
+
+    实现：每行用**整句**循环填充到恰好 `len(line)` 个字符再截断 ⇒ 行内读起来是
+    连续中文，只有行尾半句被切掉；起始句号逐行轮换，避免每行都从同一句开始。
+
+    ⛔ 这是**唯一**一处允许内核伪造提示文本的地方，它的用途只有一个：
+       当安慰剂。⛔ 不许拿它去"优化"任何东西（判据只读长度与结构，不读内容）。
+    """
+    out: list[str] = []
+    n_sent = len(_ECHO_FILL_TEXT)
+    k = 0
+    for line in text.split("\n"):
+        n = len(line)
+        if n == 0:
+            out.append("")
+            continue
+        # 保 `- ` 前缀：结构量不许跟着语义一起变
+        prefix = "- " if line.startswith("- ") else ""
+        m = n - len(prefix)
+        buf: list[str] = []
+        got = 0
+        j = k
+        while got < m:
+            s = _ECHO_FILL_TEXT[j % n_sent]
+            buf.append(s)
+            got += len(s)
+            j += 1
+        out.append(prefix + "".join(buf)[:m])
+        k = j % n_sent
+    return "\n".join(out)
+
+
 def _tokens(text: str) -> set[str]:
     return set(re.findall(r"[A-Za-z0-9_\u4e00-\u9fff]{2,}", (text or "").lower()))
 
@@ -236,9 +309,20 @@ class Mismatch:
 
 
 class WorldModel:
-    def __init__(self, memory: Any, llm: LLM, *, allow_learn: bool = True) -> None:
+    def __init__(self, memory: Any, llm: LLM, *, allow_learn: bool = True,
+                 reward_echo: int = 1) -> None:
         self.memory = memory
         self.llm = llm
+        #: ★第一百一十四轮（§87）：外部奖励段的**回显形态**，`0/1/2` 三档。
+        #: 由 `Limits.reward_echo`（env `V1_REWARD_ECHO`）传入，进口径签名
+        #: ⇒ 三臂是三个口径，读数不许并列。
+        #: ⛔ 越界值**当场报错**，不许静默按 1 处理：这个项目的病一直是
+        #:    "设了却没生效"，而静默回落正好把那种病伪装成"设了"。
+        if reward_echo not in (0, 1, 2):
+            raise ValueError(
+                f"reward_echo 只接受 0/1/2（0=不回显 1=真回显 2=等长安慰剂），"
+                f"收到 {reward_echo!r}。⛔ 这不是一个『越大越强』的数。")
+        self.reward_echo: int = int(reward_echo)
         #: 是否允许把可教学的失配**沉淀成语义事实**（`learn()` 的 commit_fact）。
         #: False 时失配仍记情景（`mismatch` 行，不进检索），只是不进语义层。
         #: 为什么必须可关（第二十八轮 6c 首跑实测）：这是运行期写语义层的**第二条**
@@ -569,7 +653,17 @@ class WorldModel:
                 head += f"（历史得分均值 {sum(avg) / len(avg):.2f}）"
             head += f" ⇒ 先检查：{_ERROR_CLASS_CHECK.get(cls, _ERROR_CLASS_CHECK['其他'])}"
             lines.append(head)
-        return "历史同类题的外部得分：\n" + "\n".join(lines)
+        body = "历史同类题的外部得分：\n" + "\n".join(lines)
+        # ── 三档回显（第一百一十四轮 / §87）───────────────────────────────
+        #: `0` 不回显 / `1` 真回显（默认）/ `2` **等长安慰剂**。
+        #: ⚠️ 计数 `rewards_seen` 在上面已经加过 ⇒ 「关掉回显」**不等于**
+        #:    「通道没数据」。这两件事在台账里必须能分开，否则纪律 14
+        #:    （机制存在 ≠ 机制通电）会以反方向重演：通的被记成"没通"。
+        if self.reward_echo == 0:
+            return ""
+        if self.reward_echo == 2:
+            return _echo_fill(body)
+        return body
 
     def guidance(self, *, action: str, k: int = 3,
                  features: frozenset[str] | set[str] | None = None,

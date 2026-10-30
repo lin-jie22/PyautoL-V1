@@ -346,6 +346,25 @@ class Limits:
     #:    代价却是沙箱 + 探针输入派生（一处新的判据来源）+ 挂死风险。被读数否掉的，不是嫌麻烦。
     verify_static: int = field(
         default_factory=lambda: _env_int("V1_VERIFY_STATIC", 2, allow_zero=True))
+    #: ★★ 第 114 轮（§87）：外部奖励通道的**回显形态**。三档，不是"越大越好"：
+    #:   `0` = **不回显**（`reward_guidance` 恒返回空串，但计数照记）；
+    #:   `1` = 现状（真回显，默认）；
+    #:   `2` = **等长安慰剂**：回显**逐行等长、内容无关**的文本。
+    #:
+    #: 为什么必须有 `2`（纪律 1 的第三项前提，V19~V22 一直缺着）：
+    #:   `T=0` 下"那段话的内容让模型改了做法"与"多了一段等长文本把采样点推到别处"
+    #:   **给出同一个预测**（prompt 变 ⇒ 输出变）⇒ 只要没有 `2`，这两个假设在
+    #:   本装置上**结构性不可识别**（§85.9）。V22 量到 reward 段 = −16 格、极差 0，
+    #:   但它量的是「块的存在」的**总效应 = 内容 + 扰动**，拆不开。
+    #:   `0`/`1`/`2` 同一个 seed 库、只改这一个 env：`2≈1` ⇒ 载荷在"有这么一块字"；
+    #:   `2≈0` ⇒ 载荷在内容。**没有 `2` 就没有第三项前提，Δ 再干净也只是一半信息。**
+    #: ⚠️ 与 `verify_static` 同构：`0` 是**有意义的对照值**（不是"没填"）⇒ 必须
+    #:    同时进 `ENV_KEYS` 与 `ZERO_OK_KEYS`，否则设 0 会被静默改回 1。
+    #: ⚠️ 它进口径签名（`as_dict` 自动）⇒ 三臂是三个口径，不许并列比较读数。
+    #: ⚠️ 它在 `mutate.FROZEN` 里：⛔ 不许自演化去动它 —— 那等于允许系统
+    #:    "通过关掉自己的反馈通道"来提分，正是本项目要防的那种自欺。
+    reward_echo: int = field(
+        default_factory=lambda: _env_int("V1_REWARD_ECHO", 1, allow_zero=True))
     #: 指定一个**外部能力**作为答案的第一来源（第二十三轮，路线①）。
     #: 空字符串 = 关（默认）：内核的行为与之前**逐位相同**。
     #:
@@ -444,6 +463,7 @@ ENV_KEYS = (
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",
     "V1_VERIFY_STATIC",
+    "V1_REWARD_ECHO",
     "V1_EXTERNAL_ANSWER_TOOL",
     "V1_ALLOW_NOTE",
     "V1_ALLOW_LEARN",
@@ -477,4 +497,8 @@ ZERO_OK_KEYS: tuple[str, ...] = (
     "V1_LLM_RETRY_BACKOFF_S",
     "V1_VERIFY_RETRIES",
     "V1_VERIFY_STATIC",
+    # ★ 第一百一十四轮（§87）：`0` = 不回显奖励段 —— 它是**对照臂**（A0），
+    #   不是"没填"。不登记它，`V1_REWARD_ECHO=0` 会被 `_env_int` 静默改回默认 1，
+    #   于是 A0 与 A1 变成同一条命令 ⇒ 「奖励段有害」那 16 格会被读成 0 格。
+    "V1_REWARD_ECHO",
 )

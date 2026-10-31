@@ -1,0 +1,9 @@
+c0_r1 scope=prev exit=0 dump=24 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c0_r2 scope=prev exit=0 dump=25 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c0_r3 scope=prev exit=0 dump=26 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c0_r4 scope=prev exit=0 dump=24 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c1_r1 scope=prev exit=0 dump=24 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c1_r2 scope=prev-self exit=0 dump=23 自评入块=22 块state=22 块题数=6 max_state=2387 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c1_r3 scope=prev-self exit=0 dump=22 自评入块=21 块state=21 块题数=6 max_state=2387 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c1_r4 scope=prev-self exit=0 dump=22 自评入块=21 块state=21 块题数=6 max_state=2387 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c0b_r1 scope=prev exit=0 dump=24 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0

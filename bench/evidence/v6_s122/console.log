@@ -1,0 +1,74 @@
+========== V32 跨轮自省（tasks_v8 6题/96格） model=qwen2.5:7b cap=2400 ==========
+开始 2026-10-31 22:59:46  工作目录=/tmp/v32
+
+--- H0 装置自检 ---
+  ✅ H0-a ollama 可达
+✅ 种子 sha=9c009fdc6fb8c6cd（V31 同款 9c009fdc6fb8c6cd） 条数=6
+   e1wi  score=1.00 why='通过 16/16'
+   e1ni  score=0.00 why='通过 0/16；失败: import pathlib as _pp\nclean_line'
+   e2wi  score=1.00 why='通过 16/16'
+   e2ni  score=0.00 why='通过 0/16；失败: import pathlib as _pp\nimport jso'
+   e3wi  score=1.00 why='通过 16/16'
+   e3ni  score=0.00 why="通过 0/16；失败: import pathlib as _pp\nweek_of(['"
+VERDICT OK
+预置 11 条后重开，首个句柄=b#1
+VERDICT OK
+  ✅ H0-d prev-self 档位可用
+  ✅ H0-e 互斥规则生效
+  ✅ H0-f 代理已起（pid=91836，端口 8833）
+  H0-g state-dump 预检 行=2
+  ✅ H0-g state-dump 可用（2 行）
+
+════════ 臂 c0：4 轮全部 prev（旧口径，同题被挡）════════
+  ▶ c0_r1 scope=prev EXIT=0 耗时=899s 23:16:10
+       自评入块 0  含块 22/6 题  最长 2291  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+  ▶ c0_r2 scope=prev EXIT=0 耗时=966s 23:32:17
+       自评入块 0  含块 22/6 题  最长 2291  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+  ▶ c0_r3 scope=prev EXIT=0 耗时=969s 23:48:27
+       自评入块 0  含块 22/6 题  最长 2291  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+  ▶ c0_r4 scope=prev EXIT=0 耗时=634s 23:59:01
+       自评入块 0  含块 22/6 题  最长 2291  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+
+════════ 臂 c1：r1 prev（同起点）/ r2-r4 prev-self（同题放行）════════
+  ▶ c1_r1 scope=prev EXIT=0 耗时=714s 00:10:56
+       自评入块 0  含块 22/6 题  最长 2291  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+  ▶ c1_r2 scope=prev-self EXIT=0 耗时=713s 00:22:49
+       自评入块 22  含块 22/6 题  最长 2387  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+  ▶ c1_r3 scope=prev-self EXIT=0 耗时=695s 00:34:25
+       自评入块 21  含块 21/6 题  最长 2387  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+  ▶ c1_r4 scope=prev-self EXIT=0 耗时=698s 00:46:04
+       自评入块 21  含块 21/6 题  最长 2387  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+
+════════ 漂移复跑 c0b：与 c0_r1 同条件，隔约 70 分钟 ════════
+  ▶ c0b_r1 scope=prev EXIT=0 耗时=697s 00:57:43
+       自评入块 0  含块 22/6 题  最长 2291  skipped=0 failed=0
+       本轮加载的 e1wi.why = 通过 16/16
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+
+================ 结束 2026-11-01 00:57:43 ================
+代理台账 374 行
+c0_r1 scope=prev exit=0 dump=24 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c0_r2 scope=prev exit=0 dump=25 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c0_r3 scope=prev exit=0 dump=26 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c0_r4 scope=prev exit=0 dump=24 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c1_r1 scope=prev exit=0 dump=24 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c1_r2 scope=prev-self exit=0 dump=23 自评入块=22 块state=22 块题数=6 max_state=2387 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c1_r3 scope=prev-self exit=0 dump=22 自评入块=21 块state=21 块题数=6 max_state=2387 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c1_r4 scope=prev-self exit=0 dump=22 自评入块=21 块state=21 块题数=6 max_state=2387 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0
+c0b_r1 scope=prev exit=0 dump=24 自评入块=0 块state=22 块题数=6 max_state=2291 账本读数=6条(e1wi why=通过 16/16) skipped=0 failed=0

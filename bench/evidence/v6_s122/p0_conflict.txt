@@ -1,0 +1,1 @@
+❌ --use-critique 等价于 --critique-scope=all，与 --critique-scope=prev-self 冲突：前者要求轮内也投喂（接线验证），后者要求本轮新增的评审不进本轮（保住同轮内每题的可比性）。只留一个。

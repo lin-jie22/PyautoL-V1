@@ -1,0 +1,8 @@
+✅ 种子 sha=9c009fdc6fb8c6cd（V31 同款 9c009fdc6fb8c6cd） 条数=6
+   e1wi  score=1.00 why='通过 16/16'
+   e1ni  score=0.00 why='通过 0/16；失败: import pathlib as _pp\nclean_line'
+   e2wi  score=1.00 why='通过 16/16'
+   e2ni  score=0.00 why='通过 0/16；失败: import pathlib as _pp\nimport jso'
+   e3wi  score=1.00 why='通过 16/16'
+   e3ni  score=0.00 why="通过 0/16；失败: import pathlib as _pp\nweek_of(['"
+VERDICT OK

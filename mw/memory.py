@@ -101,7 +101,7 @@ class Handle:
     ⛔ `chars` 与 `sha` 是**写侧承诺的事实**，读侧要用它们自证：
       `expand()` 必须核验读回来的文本 sha 与这里一致，否则说明库被动过。
     """
-    ref: str        # `b#<id>`，短、稳定、可打印
+    ref: str        # `b#<本会话第几次捕获>`，短、稳定、可打印（⛔ 不是库的全局行号）
     sha: str        # 全文 sha256 前 12 位
     chars: int      # 全文字符数
 
@@ -165,6 +165,20 @@ class MemoryStore:
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
         self.conn.commit()
+        #: ★ 句柄编号的**分母**：打开这个库时 `blobs` 已经有多少行（§91 治污）。
+        #  ⛔ 为什么不能用 `blobs` 的全局自增 id 直接当句柄（§90 实测）：
+        #    那个数字会随「库变大」而变，而它**进了 prompt**（`core.py:1110` 的索引行）。
+        #    于是「库里有 11 条历史」与「这一格从 0 分变 16 分」之间出现了一条
+        #    **与语义完全无关**的因果边：`b#1` → `b#12`（+1 字符）就够翻转。
+        #    实测：`s12`（空库 + 预置 11 条 dummy blob）两次独立冷启动都是 64，
+        #    而空库对照两次都是 48（§90.6）。
+        #  ⇒ 句柄改成**本会话内序**（`rowid - base`），长度一点没变（仍是 `b#1`），
+        #    但「库里有几条历史」不再能改动 prompt。
+        #  ⚠️ 代价：内序 ref **不能跨进程解析**（重开库后 base 变）。
+        #    本系统里 ref 从不落盘：它只活在 `working`（进程级）与 state 快照里，
+        #    `expand()` 总与 `capture()` 同进程 ⇒ 本装置内无成本。换装置必须重审。
+        self._blobs_base = int(
+            self.conn.execute("SELECT COALESCE(MAX(id), 0) FROM blobs").fetchone()[0])
 
     # ---------------- working ----------------
     def think(self, text: str) -> None:
@@ -230,7 +244,9 @@ class MemoryStore:
             (time.time(), kind, sha, len(body), body),
         )
         self.conn.commit()
-        return Handle(ref=f"b#{int(cur.lastrowid or 0)}", sha=sha, chars=len(body))
+        # ★ 句柄用**本会话内序**，不是 `lastrowid`（§91）：后者让「库变大」本身改动 prompt。
+        seq = int(cur.lastrowid or 0) - self._blobs_base
+        return Handle(ref=f"b#{seq}", sha=sha, chars=len(body))
 
     def expand(self, ref: str, *, cap: int, where: str = "whole") -> tuple[str, bool]:
         """按句柄取回原文的一窗（`head` / `tail` / `whole`）。
@@ -248,9 +264,21 @@ class MemoryStore:
         """
         if where not in ("head", "tail", "whole"):
             raise ValueError(f"未知取回窗口 {where!r}；合法值：('head','tail','whole')")
+        # ★ 句柄 = **本会话内序** ⇒ 反算库里的全局 id（§91）。
+        #  ⛔ `seq < 1` 必须当场判不存在：库里 `id` 从 1 起，而 `base` 可能 >0，
+        #    于是 `b#0` 会落到 `id == base` 那一行 —— **别人写的行**。
+        #    那样「取回失败」会返回一段看似合理的正文，与成功长得一模一样
+        #    （与 `.txt 被误判成功` 同一类事故）。
+        key = str(ref).strip()
+        try:
+            seq = int(key[2:] if key.startswith("b#") else key)
+        except (TypeError, ValueError):
+            raise KeyError(f"句柄不存在：{ref!r}") from None
+        if seq < 1:
+            raise KeyError(f"句柄不存在：{ref!r}")
         row = self.conn.execute(
             "SELECT sha, chars, text FROM blobs WHERE id=?",
-            (int(str(ref).lstrip("b#").lstrip("#") or 0),),
+            (seq + self._blobs_base,),
         ).fetchone()
         if row is None:
             raise KeyError(f"句柄不存在：{ref!r}")

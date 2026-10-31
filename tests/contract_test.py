@@ -3453,6 +3453,40 @@ check(RS, "AX10 ★★`V1_REWARD_ECHO=2` ⇒ **逐行等长、内容无关**的�
       f"与真回显不同={_AL_g_e2 != _AL_g_e1} 泄漏={_AL_ECHO_LEAK} ｜ "
       f"安慰剂={_AL_g_e2.replace(chr(10), ' ｜ ')[:64]!r}")
 
+# ── AX11 的取证装置（§91）：三个起点，同一个判据 ─────────────────────────
+#  ⚠️ 目录里**先清干净**：留着上一轮的库会让「有 11 条历史」这个前提靠运气
+#     （纪律 15 的第二种来源：本地绿可能只是依赖了未入库的本地文件）。
+_AX11_TMP = _TMP / "ax11_blobs"
+_AX11_TMP.mkdir(parents=True, exist_ok=True)
+for _p in _AX11_TMP.glob("*.db*"):
+    _p.unlink()
+_AX11_HIST = MemoryStore(_AX11_TMP / "hist.db")
+_AX11_PRE = [_AX11_HIST.capture(f"历史观测 {i}").ref for i in range(11)]
+_AX11_HIST.close()
+#: 同一个库，**重开**一次（base 变成 11）⇒ 这就是 `s12` 臂的单元级版本。
+_AX11_REOPEN = MemoryStore(_AX11_TMP / "hist.db")
+_AX11_FIRST = _AX11_REOPEN.capture("重开后的第一条").ref
+_AX11_NEXT = [_AX11_REOPEN.capture(f"再{i}").ref for i in (1, 2)]
+_AX11_REOPEN.close()
+_AX11_NEW = MemoryStore(_AX11_TMP / "fresh.db")
+_AX11_FRESH = [_AX11_NEW.capture(f"空库{i}").ref for i in (1, 2, 3)]
+_AX11_NEW.close()
+
+check(RS, "AX11 ★★句柄编号必须是**本会话内序**，不许把库的全局自增行号带进提示\n"
+          "          —— §90 实测：`b#1` → `b#12`（**+1 个字符**，一张表的 lastrowid）\n"
+          "             就足以把 `e1wi` 从 0 分那版翻到 16 分那版，两次独立冷启动一致。\n"
+          "             那条边与语义**完全无关**：它只说明「库里有 11 条历史」。\n"
+          "             ⇒ 只要库会变大（它一定变大：每轮写 6 条 reward），prompt 就会变，\n"
+          "               任何跨轮实验的对照里都混着这条边。\n"
+          "         判据：同一个库先有 11 条历史、重开后第一次捕获必须仍是 `b#1`；\n"
+          "               同一会话内连捕必须 `b#1,b#2,b#3`（长度与旧口径一致，不挤占正文宽度）。\n"
+          "         撤回语义：`ref=f\"b#{seq}\"` 改回 `ref=f\"b#{int(cur.lastrowid)}\"` ⇒ 必须红。",
+      _AX11_PRE == [f"b#{i}" for i in range(1, 12)]
+      and _AX11_FIRST == "b#1" and _AX11_NEXT == ["b#2", "b#3"]
+      and _AX11_FRESH == ["b#1", "b#2", "b#3"],
+      f"预置 11 条={_AX11_PRE[:2]}… 重开后首={_AX11_FIRST} 连捕={_AX11_NEXT} "
+      f"空库={_AX11_FRESH}")
+
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
       _AL_wm2.reward_guidance(features=None, task_id="x") == ""
@@ -4629,6 +4663,12 @@ _AR_BODY = "traceback...\n" + ("x" * 4000) + "\n决定性信息：KeyError 'z02'
 # ── AR1：原文必须**整段**落盘，且句柄自述的事实必须为真 ─────────────────
 _AR_TMP = _TMP / "ar_blobs"
 _AR_TMP.mkdir(parents=True, exist_ok=True)
+#: ⚠️ 先清干净。**这条坑是 §91 顺手发现的**：AR 组原先靠「`_TMP` 每次都是新目录」
+#:   这条隐含前提才能让 `b#<seq>` 恰好等于 `id`（base=0）⇒ 篡改才命中。
+#:    只要这个库里有历史行，`int(ref)` 就会改到**上一轮那一行**，篡改静默无效、
+#:    AR3 变成恒真（纪律 6 的第二种形态：变异没起作用）。
+for _p in _AR_TMP.glob("*.db*"):
+    _p.unlink()
 _AR_MEM = MemoryStore(_AR_TMP / "ar.db")
 _AR_H = _AR_MEM.capture(_AR_BODY)
 _AR_BACK = _AR_MEM.expand(_AR_H.ref, cap=10 ** 6)[0]
@@ -4667,8 +4707,13 @@ for bad in ("b#999999", "b#0"):
     except KeyError:
         pass
 _AR_MEM.conn.execute("UPDATE blobs SET text=? WHERE id=?",
-                     ("被改过", int(_AR_H.ref.lstrip("b#"))))
+                     ("被改过", int(_AR_H.ref[2:]) + _AR_MEM._blobs_base))
 _AR_MEM.conn.commit()
+#: ⛔ 篡改必须**真的命中一行**（`changes()==1`）。§91 之前这里写的是
+#:    `int(_AR_H.ref.lstrip("b#"))` —— 句柄改成本会话内序之后，那个数字不再是库 id，
+#:    UPDATE 会打到一行不存在的地方（或打到别人的行），而 `expand` 照样报错/不报错，
+#:    AR3 的结论就不再是它自称的那件事。所以「命中」本身要被断言，不能默认。
+_AR_TAMPERED = _AR_MEM.conn.execute("SELECT changes()").fetchone()[0]
 try:
     _AR_MEM.expand(_AR_H.ref, cap=10)
     _AR_err.append("被改过却没报错")
@@ -4676,8 +4721,11 @@ except BlobIntegrityError:
     pass
 check(RS, "AR3 ★句柄不存在 ⇒ `KeyError`；原文与写侧承诺不符 ⇒ `BlobIntegrityError`\n"
           "         —— 静默返回空串/原文会让『取回失败』长得和『取回成功』一样。\n"
-          "           这与 `.txt 被误判成功`是同一类事故。",
-      not _AR_err, f"异常={(not _AR_err)} 漏网={_AR_err}")
+          "           这与 `.txt 被误判成功`是同一类事故。\n"
+          "         ⛔ 且篡改本身必须命中（`changes()==1`）：没命中的篡改等于没做变异，\n"
+          "           那时『没报错』会被误读成『断言是恒真的』。",
+      not _AR_err and _AR_TAMPERED == 1,
+      f"异常={(not _AR_err)} 漏网={_AR_err} 篡改命中={_AR_TAMPERED} 行")
 _AR_MEM.close()
 
 # ── AR4：触发条件必须**可证伪**（两个不动的情形 + 两个动的情形）─────────

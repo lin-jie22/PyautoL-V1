@@ -598,7 +598,8 @@ class Core:
         #: 建在 `__init__` 的理由同上面两条（单独调用 `_state` 的探针也会用到）。
         self.state_log: list[tuple[int, str]] = []
         self.planner = Planner(self.llm, self.tools,
-                               max_tokens=self.s.limits.llm_max_tokens)
+                               max_tokens=self.s.limits.llm_max_tokens,
+                               state_chars=self.s.limits.state_chars)
         self.wm = WorldModel(self.memory, self.llm,
                              allow_learn=self.s.limits.allow_learn,
                              reward_echo=self.s.limits.reward_echo)
@@ -1382,7 +1383,7 @@ class Core:
         # 不在上游估一个数 —— 估出来的数会让"覆盖率"变成自我安慰。
         mem_items = 0
         mem_chars = 0
-        # ── 预算：`cfg.STATE_CHAR_CAP`（唯一声明处），按**优先级**取舍 ──────
+        # ── 预算：`settings().limits.state_chars`（唯一运行时声明处），按**优先级**取舍 ──
         # ⚠️ 第二十轮之前这里没有预算，而规划器那边有一句 `state[:1200]`。
         #    两侧各有一套"能放多少"的真相 ⇒ 被剪掉的东西**不会有任何报错**。
         #    实测：回看正文拼在状态尾部，被规划器一剪，一个字都没进模型，
@@ -1390,7 +1391,11 @@ class Core:
         # 优先级（高 → 低）：目标 > 工作记忆（含回看升级） > 步号 > 语义记忆 > 轨迹
         #   顺序的理由：目标与"下一步的动作依据"是**不可替代**的；
         #   语义记忆与轨迹是"有更好、没有也能继续"的辅助。
-        cap = int(cfg.STATE_CHAR_CAP)
+        # ⚠️ 第 120 轮（§93）：这里原来读模块常量 `cfg.STATE_CHAR_CAP`，
+        #    而那个常量**不在** `CALIBER_KEYS` 也不在 `Limits` ⇒ 改预算会改读数
+        #    却让 `Caliber.same_as()` 仍返回 True（V29 实测 2/6 → 6/6 题拿到辅助块）。
+        #    ⇒ 改读 `Limits.state_chars`（进 `as_dict()` ⇒ 进签名）。
+        cap = int(self.s.limits.state_chars)
         wm = [] if self.memory_mode == ABSTRACT_MODE else self.memory.working_view()
         if wm:
             # ⚠️ **必须逐条截断**：工作记忆存的是工具输出的原文，不截断的话

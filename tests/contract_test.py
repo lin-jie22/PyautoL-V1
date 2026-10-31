@@ -9695,6 +9695,103 @@ check(RS, "AX6 ★★身份**不得退化成常量**：`finish` 与 `recall` 两
       f"finish={_AZ96_T1[:50]!r} recall={_AZ96_T4[:50]!r}")
 
 
+# ── AZ97（第 120 轮 / §93）：状态预算是**口径字段**，不是隐形常量 ───────────────
+#
+# 病根读数（V29 §92.5，`probe_s119_budget.py`）：
+#   `STATE_CHAR_CAP=1600` 是一道**硬墙** —— `e3wi`/`e3ni` 的题面本身就 1705/1694，
+#   于是那两题的 prompt 里**结构上永远放不进**任何辅助块；`e2wi`/`e2ni` 余量不足
+#   同样整块被丢。可是它当时**不在** `CALIBER_KEYS`(12) 也不在 `Limits`(20)，
+#   `suite_sha` 只哈希题集 ⇒ 把它改到 4000 会让 2/6 题变成 6/6 题拿到辅助块，
+#   而 `Caliber.same_as()` 仍返回 **True**。这与 `temperature` 那次同源：
+#   **不是尺子坏了，是尺子漏了一个旋钮。**
+#
+# 判据（四条，前三条正面、第四条防回归）：
+#   ① 默认值必须**等于**模块常量 `STATE_CHAR_CAP`（常量降级为"默认值来源"，
+#      两者漂移就说明"唯一默认值来源"这句话成了假的）；
+#   ② `V1_STATE_CHARS=2400` ⇒ `Limits.state_chars == 2400`，且它出现在
+#      `Limits.as_dict()` 里（⇒ 自动进口径签名）；
+#   ③ 同一个 `Caliber`、只换 `limits` 快照 ⇒ `same_as()` 必须 **False**。
+#      ⛔ 只看字段不看签名会漏掉"字段加了但没进制"这一种坏法。
+#   ④ **通电**（纪律 14）：同一条 goal、同一份 history，cap=1600 时 `[轨迹]`
+#      整块被丢（`state_trimmed=1`），cap=2400 时它在。⇒ 这个旋钮真的改变 prompt。
+#   ⑤ 防回归：`core.py` / `planner.py` 里不许再出现"直接读模块常量做截断"。
+#      否则字段加了、读点还是老路 ⇒ 读数照旧、签名照变 = 更坏的静默不可比。
+#
+# 撤回语义：把 `core.py` 的 `cap = int(self.s.limits.state_chars)` 改回
+#   `cap = int(cfg.STATE_CHAR_CAP)` ⇒ ④ 必红（②③ 仍绿 —— 它们只看字段）。
+_AZ97_ENV = "V1_STATE_CHARS"
+_AZ97_BAK = os.environ.get(_AZ97_ENV)
+
+
+def _az97_env(cap) -> None:
+    if cap is None:
+        os.environ.pop(_AZ97_ENV, None)
+    else:
+        os.environ[_AZ97_ENV] = str(cap)
+
+
+try:
+    _az97_env(None)
+    _AZ97_DEF = cfg.settings().limits.state_chars
+    _az97_env(2400)
+    _AZ97_S24 = cfg.settings()
+    _AZ97_OK_DEF = (_AZ97_DEF == cfg.STATE_CHAR_CAP)
+    _AZ97_OK_FIELD = (_AZ97_S24.limits.state_chars == 2400
+                      and _AZ97_S24.limits.as_dict().get("state_chars") == 2400
+                      and cfg.settings().limits.as_dict().get("state_chars") == 2400)
+
+    from mw.bench import Caliber as _AZ97_Cal                       # noqa: E402
+    _az97_env(None)
+    _AZ97_BASE = dict(scorer_sha="az97", suite_sha="az97", repeat=1,
+                      budget_tag="1x", temperature=0.0, fresh=False,
+                      memory_scope="shared_db", memory_seed="",
+                      llm_cond={}, max_tokens=1024, tool_catalog_sha="az97")
+    _AZ97_C1 = _AZ97_Cal(limits=cfg.settings().limits.as_dict(), **_AZ97_BASE)
+    _az97_env(2400)
+    _AZ97_C2 = _AZ97_Cal(limits=cfg.settings().limits.as_dict(), **_AZ97_BASE)
+    _AZ97_OK_SIG = (not _AZ97_C1.same_as(_AZ97_C2)) and ("limits" in _AZ97_C1.diff(_AZ97_C2))
+
+    # ④ 通电：同一条 goal、同一份 history，只换 cap
+    _AZ97_GOAL = "目标" * 600                     # 1200 字
+    _AZ97_HIST = ["历史步骤" * 40] * 3            # 每条 160 字
+
+    def _az97_state(cap: int):
+        _az97_env(cap)
+        _c = Core(cfg.settings(), llm=StubLLM())
+        _c.state_trimmed = 0
+        _st = _c._state(_AZ97_GOAL, list(_AZ97_HIST), 1)
+        _r = (("[轨迹]" in _st), int(_c.state_trimmed), len(_st))
+        _c.memory.close()
+        return _r
+
+    _AZ97_S16 = _az97_state(1600)
+    _AZ97_S24R = _az97_state(2400)
+    _AZ97_OK_LIVE = (not _AZ97_S16[0]) and _AZ97_S24R[0] and \
+                    _AZ97_S16[1] == 1 and _AZ97_S24R[1] == 0
+finally:
+    _az97_env(_AZ97_BAK)
+
+_AZ97_CORE_SRC = _src("core.py")
+_AZ97_PL_SRC = _src("planner.py")
+_AZ97_OK_NOREGRESS = ("int(cfg.STATE_CHAR_CAP)" not in _AZ97_CORE_SRC
+                      and "state[:cfg.STATE_CHAR_CAP]" not in _AZ97_PL_SRC
+                      and "self.state_chars" in _AZ97_PL_SRC)
+
+check(RS, "AZ97 ★★§93 状态预算是**口径字段**：`STATE_CHAR_CAP` 只是默认值来源，\n"
+          "          运行时读数必须是 `Limits.state_chars`（`V1_STATE_CHARS` 可覆盖）。\n"
+          "          ① 默认值 == 常量（不许漂移）；② 它进 `Limits.as_dict()`（⇒ 进签名）；\n"
+          "          ③ 同一个 Caliber 只换 limits 快照 ⇒ `same_as()` 必须 **False**；\n"
+          "          ④ **通电**：同 goal 同 history，cap=1600 时 `[轨迹]` 整块被丢、\n"
+          "             cap=2400 时在（⇒ 这个旋钮真的改变 prompt，不只是多了个字段）；\n"
+          "          ⑤ 防回归：`core.py`/`planner.py` 不许再直接读模块常量做截断。\n"
+          "          撤回语义：`cap = int(self.s.limits.state_chars)` 改回常量 ⇒ ④ 红。",
+      _AZ97_OK_DEF and _AZ97_OK_FIELD and _AZ97_OK_SIG
+      and _AZ97_OK_LIVE and _AZ97_OK_NOREGRESS,
+      f"①默认={_AZ97_DEF==cfg.STATE_CHAR_CAP}({_AZ97_DEF}) ②字段={_AZ97_OK_FIELD} "
+      f"③签名={_AZ97_OK_SIG} ④通电={_AZ97_OK_LIVE}"
+      f"(1600:{_AZ97_S16} 2400:{_AZ97_S24R}) ⑤回归={_AZ97_OK_NOREGRESS}")
+
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

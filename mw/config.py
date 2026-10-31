@@ -396,6 +396,21 @@ class Limits:
     #: ⚠️ 与 `allow_note` 同理必须进 `Limits`（口径签名）。
     allow_learn: bool = field(
         default_factory=lambda: _env_bool("V1_ALLOW_LEARN", True))
+    #: ★★ 第 120 轮（§92.9 / §93）：**拼给规划器的状态字符串上限**。
+    #:
+    #: 为什么它必须是一个 `Limits` 字段，而不是模块常量 `STATE_CHAR_CAP`：
+    #:   V29 量到它是一道**硬墙** —— `e3wi`/`e3ni` 的题面本身就 1705/1694 > 1600，
+    #:   于是那两题的 prompt 里**结构上永远放不进**任何辅助块（语义记忆 / 外部评审 / 轨迹）；
+    #:   `e2wi`/`e2ni`（1485/1478）余量不足同样整块被丢。
+    #:   可是它当时**不在** `CALIBER_KEYS`(12) 也不在 `Limits`(20) ⇒
+    #:   把它从 1600 改到 4000 会让 2/6 题变成 6/6 题拿到辅助块，
+    #:   而 `Caliber.same_as()` 仍返回 **True** = 静默不可比。
+    #:   这与 `temperature` 那次同源：**不是尺子坏了，是尺子漏了一个旋钮**。
+    #: ⚠️ 进 `Limits` ⇒ 自动进 `as_dict()` ⇒ 自动进口径签名（`fields()` 派生）。
+    #: ⚠️ `STATE_CHAR_CAP` 常量保留，但降级为「**默认值**的唯一来源」；
+    #:    运行时的真读数只从 `settings().limits.state_chars` 取（契约 AZ97 钉死）。
+    state_chars: int = field(
+        default_factory=lambda: _env_int("V1_STATE_CHARS", STATE_CHAR_CAP))
 
     def as_dict(self) -> dict:
         """硬上限的**完整**快照 —— 口径签名的输入之一。
@@ -429,6 +444,11 @@ def settings() -> Settings:
 #:    第二十轮实测就是这样翻车的：按需回看把正文放进状态尾部，规划器一剪，
 #:    正文一个字都没进模型 —— 读数上"取回成功"，实际"没看见"。
 #:    ⇒ 提成常量并让两侧共读，`core._state()` 负责在这个预算内**按优先级**取舍。
+#:
+#: ⚠️ 第 120 轮（§93）：这个常量现在**只是默认值**，不是运行时事实源。
+#:    运行时可被 `V1_STATE_CHARS` 覆盖，真读数见 `Limits.state_chars`
+#:    （它进 `Limits.as_dict()` ⇒ 进口径签名 ⇒ 改预算 = 换口径，不再静默可比）。
+#:    V29 的教训：改这个数能让 2/6 题变成 6/6 题拿到辅助块，而签名一个字不变。
 STATE_CHAR_CAP = 1600
 
 
@@ -467,6 +487,9 @@ ENV_KEYS = (
     "V1_EXTERNAL_ANSWER_TOOL",
     "V1_ALLOW_NOTE",
     "V1_ALLOW_LEARN",
+    # ★ 第 120 轮（§93）：状态预算。V29 量到它是一道硬墙（题面 1705 > 1600），
+    #   而它当时不在口径签名里 ⇒ 改它 = 静默换尺子。现进 `Limits`。
+    "V1_STATE_CHARS",
 )
 
 #: **允许取 0** 的 env 键（唯一事实源）。

@@ -18035,3 +18035,75 @@ V30 的第一件事不是跑读数，是**先把这个旋钮补进签名** —�
    - `P0-e'`（载荷到达闸）先过：`prev` 臂 r2 的 **6/6** state 必须含 `[外部评审]`；
    - 判据**并列**两条：「Σ 判据」+「逐格置换判据」（§92.8 的教训）；
    - 同一轮自带 `off` 基线，⛔ 不与 V28/V29 的 48 相减（cap 改了口径）。
+
+---
+
+# 93. V30 第一步：把 `STATE_CHAR_CAP` 从隐形常量变成口径字段
+
+> 本轮回答用户「下一步，离成为产品还有多远」。先落 §92.9 的第①步（补口径），
+> 因为第②步的四臂实验**必须**在一个能区分口径的签名下跑才有意义。
+
+## 93.1 病：一个能让 2/6 题变 6/6 题的旋钮，不在签名里
+
+V29 §92.5 量到的硬墙是 `STATE_CHAR_CAP=1600`：`e3wi`/`e3ni` 的题面本身就 1705/1694，
+那两题的 prompt 里**结构上永远放不进**任何辅助块；`e2wi`/`e2ni`（1485/1478）余量不足
+同样整块被丢。可是它当时：
+
+- **不在** `mw/bench.py:130 CALIBER_KEYS`（12 项）；
+- **不在** `mw/config.py:220 Limits`（20 字段）；
+- `suite_sha` 只哈希**题集**，与预算无关。
+
+⇒ 把它从 1600 改到 4000，会让 2/6 题变成 6/6 题拿到辅助块（`probe_s119_budget.py`
+里 `trimmed` 从 1 变 0），而 `Caliber.same_as()` 仍返回 **True**。
+与 `temperature` / `memory_scope` / `tool_catalog_sha` 三次同源：
+**不是尺子坏了，是尺子漏了一个旋钮。**
+
+## 93.2 处置（四处，`mw/` 两处 + 契约 + 撤回态）
+
+| 位置 | 改了什么 |
+|---|---|
+| `mw/config.py` `Limits` | 新增 `state_chars`（`V1_STATE_CHARS`，默认取 `STATE_CHAR_CAP`）⇒ 自动进 `as_dict()`（`fields()` 派生）⇒ 自动进口径签名 |
+| `mw/config.py` `STATE_CHAR_CAP` | 保留，但**降级为「默认值的唯一来源」**；运行时不再有读点 |
+| `mw/core.py:_state()` | `cap = int(self.s.limits.state_chars)`（原来读模块常量） |
+| `mw/planner.py` | `Planner(..., state_chars=...)`；两处 `state[:self.state_chars]`（原来 `state[:cfg.STATE_CHAR_CAP]`） |
+| `mw/mutate.py` `FROZEN` | 新增 `state_chars` 冻结条目（否则 AZ69 判「界上开着门」） |
+| `tests/contract_test.py` | **AZ97**（契约 596 → **597**） |
+| `bench/withdraw_check.py` | AZ97 撤回态（182 → **183**） |
+
+`FROZEN` 而不是 `KNOBS` 的理由（写进代码注释）：它是**观测条件**，放进变异空间有两条自欺路径 ——
+① 缩小窗口 ⇒ 删掉对自己不利的反馈（与 `reward_echo` 同宗）；② 放大窗口 ⇒ 与历史读数不可比，
+而它当时连签名都不进。
+
+## 93.3 AZ97 的四条判据（为什么"加字段"不够）
+
+1. 默认值 == 常量（常量降级后"唯一默认值来源"这句话不许是假的）；
+2. `V1_STATE_CHARS=2400` ⇒ `Limits.state_chars == 2400` 且出现在 `as_dict()` 里；
+3. 同一个 `Caliber`、只换 `limits` 快照 ⇒ `same_as()` 必须 **False**
+   （只看字段不看签名，会漏掉"字段加了但没进制"这一种坏法）；
+4. **通电**（纪律 14）：同一条 goal（1200 字）+ 同一份 history（3×160 字）：
+   `cap=1600` ⇒ `[轨迹]` 整块被丢、`state_trimmed==1`、`len(state)=1215`；
+   `cap=2400` ⇒ `[轨迹]` 在、`trimmed==0`、`len(state)=1707`。
+
+## 93.4 撤回态为什么必须"改读点"而不是"删字段"
+
+删字段会让 ②③ 一起红 —— 而 ②③ 只看字段存在性。真正要钉死的是**读数从哪来**：
+把 `cap = int(self.s.limits.state_chars)` 改回 `int(cfg.STATE_CHAR_CAP)` 之后，
+①②③ **全都还绿**，只有 ④ 红。这正是 V29 那个病的原形：**字段与签名都对，读数照样是旧的**。
+
+## 93.5 一个必须登记的连带修复：旧探针会静默变假
+
+`bench/evidence/v6_s119/probe_s119_budget.py` 原来靠 `cfg.STATE_CHAR_CAP = BIG` 做单变量。
+改完之后这个 monkeypatch **改不动** `_state()` 的读数 ⇒ 脚本会静默打印
+「cap=4000 时 0/6」这个**假读数**（纪律 6 第二种形态：变异没起作用）。
+⇒ 已改为「设 `V1_STATE_CHARS` + 重建 Core」，并在文件头写明为什么。
+
+**通则**：改一个旋钮的事实源时，必须搜一遍**所有**写过它的脚本 ——
+包括 bench/evidence 里的历史装置。它们不会自己报错，只会输出一个看起来更干净的假读数。
+
+## 93.6 门禁与计数
+
+- 契约 **597/0**（+AZ97）；锚层 97/0；撤回态 **183**（AZ97 单红已验证，
+  `红=['AZ97'] 多红=无`，还原后基线 597/0）。
+- `check_counts.py` 扫描面 22 处同步：README 9 处、demo/README 1 处、quickstart 1 处、site 2 处。
+- **`suite_sha` 没变**（预算不进题集哈希），但 `Caliber.signature()` **变了**
+  ⇒ 本轮起与 V28/V29 的 48 **不可直接相减**，V30 四臂必须同轮自带 `off` 基线。

@@ -66,6 +66,7 @@ def main() -> int:
     fields = MD.fields_of_limits()
     os.environ["V1_MAX_STALL"] = "5"
     os.environ["V1_RECALL_K"] = "9"
+    os.environ["V1_STATE_CHARS"] = "2400"
     os.environ["V1_LLM_MODEL"] = "keep-me"
     e = MD.clean_env({"V1_MAX_STALL": "3"})
     # ⚠️ 这个数字是**故意的硬锚**：加 `Limits` 字段时它必然红，
@@ -82,11 +83,17 @@ def main() -> int:
     #    20 → 21（第一百一十四轮加 `reward_echo`，§87）。复核同前，结论同上：
     #    动态取值 ⇒ 新字段自动进清理集合（`V1_RECALL_K=已清` 仍是那句实证）；
     #    红的只有这个计数锚 ⇒ **它又一次干了它该干的事**。
+    #    21 → 22（第一百二十轮加 `state_chars`，§93）。这次不再只靠
+    #    「`V1_RECALL_K=已清` ⇒ 集合扩了」的**推理**：把 `V1_STATE_CHARS`
+    #    自己塞进环境再断言它被清掉（纪律 29：读数标签不是读数）——
+    #    否则「动态取值」只是我读过代码之后的一个信念。
     ck("P5 ★`clean_env` 清掉**全部** `Limits` 字段的同名 env，但保住模型配置",
        e.get("V1_MAX_STALL") == "3" and "V1_RECALL_K" not in e
-       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 21,
-       f"limits 字段 {len(fields)} 个 ｜ V1_RECALL_K={'在' if 'V1_RECALL_K' in e else '已清'}")
-    for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_LLM_MODEL"):
+       and "V1_STATE_CHARS" not in e
+       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 22,
+       f"limits 字段 {len(fields)} 个 ｜ V1_RECALL_K={'在' if 'V1_RECALL_K' in e else '已清'}"
+       f" ｜ V1_STATE_CHARS={'在' if 'V1_STATE_CHARS' in e else '已清'}")
+    for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_STATE_CHARS", "V1_LLM_MODEL"):
         os.environ.pop(k, None)
 
     # ── P6：守门员的"生效 + 单变量"，每格都喂一个坏样本 ────────────────────

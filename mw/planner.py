@@ -225,12 +225,22 @@ def reseek_block(rejected: Sequence[str], untried: Sequence[str]) -> str:
 
 
 class Planner:
-    def __init__(self, llm: LLM, tools: Any, *, max_tokens: int = 2048) -> None:
+    def __init__(self, llm: LLM, tools: Any, *, max_tokens: int = 2048,
+                 state_chars: int | None = None) -> None:
         self.llm = llm
         self.tools = tools
         #: 单次规划调用的 token 上限。**从 config 注入**，不在这里写死 ——
         #: 实测教训：写死 700 导致含代码的 JSON 被截断，却被误读成"模型不会写 JSON"。
         self.max_tokens = int(max_tokens)
+        #: 拼提示词时 `state` 的截断上限。**必须与 `core._state()` 用同一个数**：
+        #: 否则"内核以为放得下"和"规划器实际收下多少"是两套真相，
+        #: 而被剪掉的东西不会有任何报错（第二十轮实测栽过一次）。
+        #: ⚠️ 第 120 轮（§93）：真读数来自 `settings().limits.state_chars`（进口径签名）。
+        #:    `None` ⇒ 回退到模块常量（**只**为不传参的独立探针保留；Core 一定传）。
+        #: ⛔ 不写 `int(state_chars) or cfg.STATE_CHAR_CAP` —— `0` 是假值，
+        #:    那会把"显式设成 0"与"没传"混成一条路（纪律 30 的坑形态）。
+        self.state_chars = int(cfg.STATE_CHAR_CAP if state_chars is None
+                               else state_chars)
         self.calls = 0
         self.degraded = 0
         # ── 降级原因**分项计数**，不许合并成一个 degraded ──────────────────
@@ -303,10 +313,11 @@ class Planner:
                   ) if blocked else ""
         prompt = (
             f"目标：{goal}\n"
-            # ⚠️ 这里的上限**必须**与 `core._state()` 用同一个常量：
+            # ⚠️ 这里的上限**必须**与 `core._state()` 用同一个数：
             #    否则"内核以为放得下"和"规划器实际收下多少"是两套真相，
             #    而被剪掉的东西不会有任何报错（第二十轮实测栽过一次）。
-            f"当前状态：\n{state[:cfg.STATE_CHAR_CAP]}\n"
+            #    第 120 轮起这个数由 `Limits.state_chars` 单点注入（进签名）。
+            f"当前状态：\n{state[:self.state_chars]}\n"
             f"{('已知易错点：' + guidance) if guidance else ''}\n"
             f"{avoid}{banned}{reseek}\n"
             f"可用工具：\n{self.tools.catalog()}\n\n"
@@ -378,7 +389,7 @@ class Planner:
                     #   于是只能交基线答案 ⇒ D=0.2。这与第二十轮 replan 丢 state、
                     #   guidance 断点**同宗**：最需要上下文的那一次，上下文被扔了。
                     #   修法 = 把 state 原样带进补救（截断在 answer() 内部，
-                    #   用与这里同一个 cfg.STATE_CHAR_CAP —— 单一事实源）。
+                    #   用与这里同一个 `self.state_chars` —— 单一事实源）。
                     got = self.answer(goal, state=state)
                 except Exception as e:  # noqa: BLE001 —— 模型抖动不该带走整轮
                     _raised = True
@@ -437,12 +448,12 @@ class Planner:
         ★ 第四十五轮（§17-7q）：`state` 不再可扔。7o 定律（16/16 格）：
         K=0 格的交付**确定性**走本方法，而旧版 prompt 只有 goal ⇒
         记忆盲补救 ⇒ 基线交付。调用方（propose 的补救 / core 的收尾）
-        必须把各自手里的 state 带进来；截断用 `cfg.STATE_CHAR_CAP`，
-        与 `propose()` 拼提示词处同一个常量 —— 否则又是两套真相。
+        必须把各自手里的 state 带进来；截断用 `self.state_chars`，
+        与 `propose()` 拼提示词处同一个数 —— 否则又是两套真相。
         """
         prompt = f"目标：{goal}\n"
         if state:
-            prompt += f"当前状态：\n{state[:cfg.STATE_CHAR_CAP]}\n"
+            prompt += f"当前状态：\n{state[:self.state_chars]}\n"
             #: 忠实引用指令只跟在**状态块之后**（同 7q 的 state 约定）。
             prompt += _ANSWER_FIDELITY + "\n"
         prompt += "请直接给出最终答案。"

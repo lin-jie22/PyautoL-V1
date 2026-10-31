@@ -1016,10 +1016,16 @@ def cmd_bench(args) -> int:
                    or ("all" if args.use_critique else "off"))
     if _crit_scope == "all":
         _crit_for_kernel = _crit
-    elif _crit_scope == "prev":
+    elif _crit_scope in ("prev", "prev-self"):
         #: ⚠️ 必须是一个**新**账本且不落盘：`add()` 只拷已加载的条目，
         #:  `path=None` ⇒ `save()` 返回 0，绝不会把快照写回磁盘。
-        _crit_for_kernel = CritiqueLedger(None)
+        #:
+        #: `prev-self`（第一百二十三轮 §96）：`prev` 挡掉了**同题**那条评审，
+        #: 理由是「不许用当前题」—— 但快照里的同题那条讲的是**上一轮**的答案，
+        #: 内核此刻还没答，不是自评分。`prev` 把这个区分一起抹平了，
+        #: 于是「每道题上一次为什么错」结构上永远送不到（V32 探针：6/6 不可达）。
+        #: 差别只有一个布尔：`allow_self`。其余（只读副本、不落盘、不带本轮新增）全同。
+        _crit_for_kernel = CritiqueLedger(None, allow_self=(_crit_scope == "prev-self"))
         for _c in _crit.by_key.values():
             _crit_for_kernel.add(_c)
     else:
@@ -1027,7 +1033,8 @@ def cmd_bench(args) -> int:
     if _crit_loaded or _crit_scope != "off":
         print(f"  评审账本  {_crit_path.name}  载入 {_crit_loaded} 条"
               f"  投喂={_crit_scope}"
-              f"（off=关 / prev=只给**加载时**已有的 / all=轮内也给）"
+              f"（off=关 / prev=只给**加载时**已有的且排除同题 / "
+              f"prev-self=同上但**放行同题**（跨轮自省）/ all=轮内也给）"
               f"  本轮赠送 {len(_crit_for_kernel.by_key) if _crit_for_kernel else 0} 条")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
@@ -1492,11 +1499,14 @@ def main() -> int:
     p.add_argument("--critique-file", default="",
                    help="评审账本路径（默认 state/critique.jsonl）。"
                         "打分器给的理由会落盘到这里，供**下一轮**读取")
-    p.add_argument("--critique-scope", default="", choices=("", "off", "prev", "all"),
+    p.add_argument("--critique-scope", default="", choices=("", "off", "prev", "prev-self", "all"),
                    help="外部评审的**投喂口径**（缺省 = 跟随 --use-critique）："
                         "off=不投喂；"
                         "prev=只投喂**账本加载时**已有的条目（跨轮累积：上一轮的评审"
-                        "给本轮，本轮新增的不给本轮，同轮各题条件仍然一致）；"
+                        "给本轮，本轮新增的不给本轮，同轮各题条件仍然一致），"
+                        "**且排除同题**（旧口径）；"
+                        "prev-self=同上，但**放行同题**那条 —— 它讲的是上一轮该题的"
+                        "答案与分数，不是自评分（跨轮自省；见 DESIGN §96）；"
                         "all=轮内也投递（等价 --use-critique，接线验证用）")
     p.add_argument("--use-reward", action="store_true",
                    help="把外部打分器的分数作为**只读**奖励写进记忆（DESIGN §17-5）")

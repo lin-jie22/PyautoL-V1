@@ -1,0 +1,209 @@
+====================================================================================================
+V32 探针 —— 可动面（e1wi/e1ni）是不是一颗骰子
+====================================================================================================
+读到 (轮,臂,题) 三元组 13866 个，有答案原文 9395 个
+
+## 一、`kept = set()`（抽搐）⇔ 失分，是不是决定关系
+
+  e1wi
+    干净list    0 分    2 | 1 分   67
+    抽搐        0 分   65 | 1 分    0
+
+  e1ni
+    干净list    0 分   31 | 1 分   92
+    抽搐        0 分    5 | 1 分    0
+
+## 二、第二个坑：`_strip_tags` 用 re 却没 import re
+
+  e1wi  用re.sub=True  有import=True  → score=0  n=67
+  e1wi  用re.sub=True  有import=True  → score=1  n=67
+
+  e1ni  用re.sub=False 有import=False → score=0  n=17
+  e1ni  用re.sub=True  有import=False → score=0  n=15
+  e1ni  用re.sub=True  有import=True  → score=0  n=4
+  e1ni  用re.sub=True  有import=True  → score=1  n=92
+
+## 三、逐轮逐臂：Σ 与 e1 两题的抽搐方向（同 suite 才并列）
+
+  轮/臂                          suite              Σ   e1wi  e1ni  抽搐(e1wi/e1ni)
+  artifact_run_s101/t1_old_ruler ea8d7d1d91ab7524 1168   None  None  -/-
+  artifact_run_s101/t1b_fixed_ruler 8dec0771b8c574fe 1680   None  None  -/-
+  attempt1_device_failure/a1_v7 2efed3123e406721  64   None  None  -/-
+  evidence/cloud_s88           d6b7ed14f56a5401 1490   None  None  -/-
+  evidence/zhipu_s85           d6b7ed14f56a5401 600   None  None  -/-
+  preflight/bench              7b1b5bdbe1225ad6   0      0  None  set/-
+  retry/bench_s0_r1            519dad774a366461  64     16    16  []/[]
+  retry/bench_s1_r1            519dad774a366461  48     16     0  []/[]
+  retry/bench_s1_r2            519dad774a366461  48     16     0  []/[]
+  retry/bench_s1_r3            519dad774a366461  48     16     0  []/[]
+  tmp/v1_cross_ci              3b363fcd97778874 54400   None  None  -/-
+  tmp/v1_lang_ci               6ac790efc6bcae18 5248   None  None  -/-
+  tmp/v1_s101_bench_v4_s101    ea8d7d1d91ab7524 146   None  None  -/-
+  tmp/v1_s101_bench_v4_s101b   8dec0771b8c574fe 210   None  None  -/-
+  tmp/v1_s101_oraclebench_v4_s101 ea8d7d1d91ab7524 384   None  None  -/-
+  tmp/v1_s101_oraclebench_v4_s101b 8dec0771b8c574fe 384   None  None  -/-
+  tmp/v1_s101_wire             ea8d7d1d91ab7524 384   None  None  -/-
+  tmp/v1_s102_bench_a1_at04    2ff0d987f2913f36  96   None  None  -/-
+  tmp/v1_s102_bench_a1_v4      8dec0771b8c574fe 240   None  None  -/-
+  tmp/v1_s102_bench_a1b_v4     8dec0771b8c574fe 240   None  None  -/-
+  tmp/v1_s102_bench_a2_at04    2ff0d987f2913f36  36   None  None  -/-
+  tmp/v1_s102_bench_a2_v4      8dec0771b8c574fe 210   None  None  -/-
+  tmp/v1_s102_oracle_bench     8dec0771b8c574fe 768   None  None  -/-
+  tmp/v1_s102_oracle_sub_bench 2ff0d987f2913f36  64   None  None  -/-
+  tmp/v1_s103_bench_a0_v4      8dec0771b8c574fe 210   None  None  -/-
+  tmp/v1_s103_bench_a2_v4      8dec0771b8c574fe 210   None  None  -/-
+  tmp/v1_s103_oracle_bench     8dec0771b8c574fe 384   None  None  -/-
+  tmp/v1_s104_bench_a0_v4      8dec0771b8c574fe 210   None  None  -/-
+  tmp/v1_s104_bench_a1_v4      8dec0771b8c574fe 240   None  None  -/-
+  tmp/v1_s104_bench_a2_v4      8dec0771b8c574fe 210   None  None  -/-
+  tmp/v1_s104_oracle_bench     8dec0771b8c574fe 384   None  None  -/-
+  tmp/v1_s106_bench_a1_v5      7fd16c7a0891034b 192   None  None  -/-
+  tmp/v1_s106_oracle_bench     7fd16c7a0891034b 288   None  None  -/-
+  tmp/v1_s107_bench_a1_v6      a61fb809f16eaf03  32   None  None  -/-
+  tmp/v1_s107_bench_a2_v6      a61fb809f16eaf03  16   None  None  -/-
+  tmp/v1_s107_oracle_bench     a61fb809f16eaf03 288   None  None  -/-
+  tmp/v1_s108_bench_a1_v7      2efed3123e406721  32   None  None  -/-
+  tmp/v1_s108_oracle_bench     2efed3123e406721 288   None  None  -/-
+  tmp/v1_s108b_bench_a1_v7b    2efed3123e406721  57   None  None  -/-
+  tmp/v1_s108b_bench_a2_v7b    2efed3123e406721   9   None  None  -/-
+  tmp/v1_s108b_oracle_bench    2efed3123e406721 288   None  None  -/-
+  tmp/v1_s109_bench_a1_v8      519dad774a366461 144      0    16  set/[]
+  tmp/v1_s109_bench_a2_v8      519dad774a366461 144      0    16  set/[]
+  tmp/v1_s109_oracle_bench     519dad774a366461 288     16    16  []/[]
+  tmp/v1_s94_bench_v2_7b       d6b7ed14f56a5401 262   None  None  -/-
+  tmp/v1_s95_bench_v2_7b_s95   d6b7ed14f56a5401 300   None  None  -/-
+  tmp/v1_s95_bench_v2_7b_s95old d6b7ed14f56a5401 344   None  None  -/-
+  tmp/v1_s96_bench_v2_7b_s96_new d6b7ed14f56a5401 336   None  None  -/-
+  tmp/v1_s96_bench_v2_7b_s96_old d6b7ed14f56a5401 309   None  None  -/-
+  tmp/v1_s99_bench_v2_7b_s99a  d6b7ed14f56a5401 351   None  None  -/-
+  tmp/v1_s99_bench_v2_7b_s99b  d6b7ed14f56a5401 341   None  None  -/-
+  u2_s102/a1_at04              2ff0d987f2913f36 672   None  None  -/-
+  u2_s102/a1_v4                8dec0771b8c574fe 1680   None  None  -/-
+  u2_s102/a1b_v4               8dec0771b8c574fe 1680   None  None  -/-
+  u2_s102/a2_at04              2ff0d987f2913f36 252   None  None  -/-
+  u2_s102/a2_v4                8dec0771b8c574fe 1470   None  None  -/-
+  v19/bench_a_r1               519dad774a366461 144      0    16  set/[]
+  v19/bench_a_r2               519dad774a366461 144      0    16  set/[]
+  v19/bench_a_r3               519dad774a366461 144      0    16  set/[]
+  v19/bench_b_r1               519dad774a366461 176     16    16  []/[]
+  v19/bench_b_r2               519dad774a366461 144     16     0  []/[]
+  v19/bench_b_r3               519dad774a366461 160     16    16  []/[]
+  v19_wire/bench_r1            74d9f567846eb668  16      0  None  set/-
+  v19_wire/bench_r2            74d9f567846eb668  16     16  None  []/-
+  v1_s101b_work/bench_out      045ccbe01b68bfb8 7171   None  None  -/-
+  v1_s102_work/bench_out       045ccbe01b68bfb8 7171   None  None  -/-
+  v1_s103/a0_v4                8dec0771b8c574fe 1260   None  None  -/-
+  v1_s103/a2_v4                8dec0771b8c574fe 1260   None  None  -/-
+  v1_s103_work/bench_out       045ccbe01b68bfb8 7171   None  None  -/-
+  v1_s104_work/bench_out       045ccbe01b68bfb8 7171   None  None  -/-
+  v1_s106_work/bench_out       045ccbe01b68bfb8 7171   None  None  -/-
+  v1_s107_work/bench_out       045ccbe01b68bfb8 7171   None  None  -/-
+  v1_s108_work/bench_out       045ccbe01b68bfb8 7171   None  None  -/-
+  v1_s108b_work/bench_out      045ccbe01b68bfb8 7171   None  None  -/-
+  v1_s109_work/bench_out       045ccbe01b68bfb8 7171   None  None  -/-
+  v1b_s104/a0_v4               8dec0771b8c574fe 1050   None  None  -/-
+  v1b_s104/a1_v4               8dec0771b8c574fe 1200   None  None  -/-
+  v1b_s104/a2_v4               8dec0771b8c574fe 1050   None  None  -/-
+  v21/bench_a_r1               519dad774a366461 144      0    16  set/[]
+  v21/bench_a_r2               519dad774a366461 144      0    16  set/[]
+  v21/bench_a_r3               519dad774a366461 144      0    16  set/[]
+  v21/bench_b_r1               519dad774a366461 176     16    16  []/[]
+  v21/bench_b_r2               519dad774a366461 144     16     0  []/[]
+  v21/bench_b_r3               519dad774a366461 160     16    16  []/[]
+  v22/bench_s0_r1              519dad774a366461  48     16    16  []/[]
+  v22/bench_s0_r2              519dad774a366461  64     16    16  []/[]
+  v22/bench_s0_r3              519dad774a366461  64     16    16  []/[]
+  v22/bench_s0_r4              519dad774a366461  64     16    16  []/[]
+  v22/bench_s0_r5              519dad774a366461  64     16    16  []/[]
+  v22/bench_s1_r1              519dad774a366461  32     16     0  []/[]
+  v22/bench_s1_r2              519dad774a366461  32     16     0  []/[]
+  v22/bench_s1_r3              519dad774a366461  32     16     0  []/[]
+  v22/bench_s1_r4              519dad774a366461  48     16     0  []/[]
+  v22/bench_s1_r5              519dad774a366461  48     16     0  []/[]
+  v23/bench_a0_r1              519dad774a366461  64     16    16  []/[]
+  v23/bench_a0_r2              519dad774a366461  64     16    16  []/[]
+  v23/bench_a0_r3              519dad774a366461  64     16    16  []/[]
+  v23/bench_a1_r1              519dad774a366461  48     16     0  []/[]
+  v23/bench_a1_r2              519dad774a366461  48     16     0  []/[]
+  v23/bench_a1_r3              519dad774a366461  48     16     0  []/[]
+  v23/bench_a2_r1              519dad774a366461  32      0     0  set/[]
+  v23/bench_a2_r2              519dad774a366461  32      0     0  set/[]
+  v23/bench_a2_r3              519dad774a366461  32      0     0  set/[]
+  v24/bench_a0p1_r1            519dad774a366461  64     16    16  []/[]
+  v24/bench_a0p1_r2            519dad774a366461  64     16    16  []/[]
+  v24/bench_a0p1_r3            519dad774a366461  64     16    16  []/[]
+  v24/bench_a0p2_r1            519dad774a366461  64     16    16  []/[]
+  v24/bench_a0p2_r2            519dad774a366461  64     16    16  []/[]
+  v24/bench_a0p2_r3            519dad774a366461  64     16    16  []/[]
+  v24/bench_a1p1_r1            519dad774a366461  64     16    16  []/[]
+  v24/bench_a1p1_r2            519dad774a366461  64     16    16  []/[]
+  v24/bench_a1p1_r3            519dad774a366461  64     16    16  []/[]
+  v24/bench_a1p2_r1            519dad774a366461  48     16     0  []/[]
+  v24/bench_a1p2_r2            519dad774a366461  48     16     0  []/[]
+  v24/bench_a1p2_r3            519dad774a366461  48     16     0  []/[]
+  v25/bench_c1_r1              519dad774a366461  48      0    16  set/[]
+  v25/bench_c1_r2              519dad774a366461  64     16    16  []/[]
+  v25/bench_c2_r1              519dad774a366461  48      0    16  set/[]
+  v25/bench_c2_r2              519dad774a366461  48     16     0  []/[]
+  v25/bench_c2_r3              519dad774a366461  32     16     0  []/[]
+  v25/bench_c2_r4              519dad774a366461  32     16     0  []/[]
+  v25/bench_c2z_r1             519dad774a366461  48      0    16  set/[]
+  v25/bench_c2z_r2             519dad774a366461  64     16    16  []/[]
+  v25/bench_c2z_r3             519dad774a366461  48   None    16  -/[]
+  v25/bench_c2z_r4             519dad774a366461  64     16    16  []/[]
+  v25/bench_f2_r1              519dad774a366461  48      0    16  set/[]
+  v25/bench_f2_r2              519dad774a366461  48      0    16  set/[]
+  v26/bench_d2_r1              519dad774a366461  48      0    16  set/[]
+  v26/bench_d2_r2              519dad774a366461  64     16    16  []/[]
+  v26/bench_f2_r1              519dad774a366461  48      0    16  set/[]
+  v26/bench_f2_r2              519dad774a366461  48      0    16  set/[]
+  v27/bench_s12_r1             519dad774a366461  64     16    16  []/[]
+  v27/bench_s12_r2             519dad774a366461  64     16    16  []/[]
+  v28/bench_d2_r1              519dad774a366461  48      0    16  set/[]
+  v28/bench_d2_r2              519dad774a366461  48      0    16  set/[]
+  v28/bench_f2_r1              519dad774a366461  48      0    16  set/[]
+  v28/bench_f2_r2              519dad774a366461  48      0    16  set/[]
+  v28/bench_s12_r1             519dad774a366461  48      0    16  set/[]
+  v28/bench_s12_r2             519dad774a366461  48      0    16  set/[]
+  v29/bench_o2_r1              519dad774a366461  48      0    16  set/[]
+  v29/bench_o2_r2              519dad774a366461  48      0    16  set/[]
+  v29/bench_p2_r1              519dad774a366461  48      0    16  set/[]
+  v29/bench_p2_r2              519dad774a366461  48      0    16  set/[]
+  v29/bench_q2_r1              519dad774a366461  48      0    16  set/[]
+  v29/bench_q2_r2              519dad774a366461  48     16     0  []/[]
+  v30/bench_o3_r1              519dad774a366461  48      0    16  set/[]
+  v30/bench_o3_r2              519dad774a366461  48      0    16  set/[]
+  v30/bench_o3_r3              519dad774a366461  48      0    16  set/[]
+  v30/bench_o4_r1              519dad774a366461  48      0    16  set/[]
+  v30/bench_o4_r2              519dad774a366461  48      0    16  set/[]
+  v30/bench_o4_r3              519dad774a366461  48      0    16  set/[]
+  v30/bench_p3_r1              519dad774a366461  48      0    16  set/[]
+  v30/bench_p3_r2              519dad774a366461  48      0    16  set/[]
+  v30/bench_p3_r3              519dad774a366461  48      0    16  set/[]
+  v30/bench_p4_r1              519dad774a366461  48      0    16  set/[]
+  v30/bench_p4_r2              519dad774a366461  48     16     0  []/set
+  v30/bench_p4_r3              519dad774a366461  48     16     0  []/set
+  v31/bench_s0                 519dad774a366461  48      0    16  set/[]
+  v31/bench_s1                 519dad774a366461  48     16     0  []/set
+  v31/bench_s1b                519dad774a366461  48     16     0  []/set
+  v31/bench_s2                 519dad774a366461  48     16     0  []/set
+  v31/bench_s3                 519dad774a366461  48      0    16  set/[]
+  v31/bench_s4                 519dad774a366461  48      0    16  set/[]
+  v3_s106/a1_v5                7fd16c7a0891034b 768   None  None  -/-
+  v4_s107/a1_v6                a61fb809f16eaf03 128   None  None  -/-
+  v4_s107/a2_v6                a61fb809f16eaf03  48   None  None  -/-
+  v5_s108/a1_v7b               2efed3123e406721  57   None  None  -/-
+  v5_s108/a2_v7b               2efed3123e406721   9   None  None  -/-
+
+## 四、抽搐率的分组统计（v8 六题；只看 e1 两题 = 每臂 2 个样本）
+
+  suite=519dad774a366461 抽搐 0/1 的臂数 = 1
+  suite=519dad774a366461 抽搐 0/2 的臂数 = 42
+  suite=519dad774a366461 抽搐 0/6 的臂数 = 7
+  suite=519dad774a366461 抽搐 1/2 的臂数 = 40
+  suite=519dad774a366461 抽搐 3/6 的臂数 = 8
+  suite=74d9f567846eb668 抽搐 0/1 的臂数 = 1
+  suite=74d9f567846eb668 抽搐 1/1 的臂数 = 1
+  suite=7b1b5bdbe1225ad6 抽搐 5/5 的臂数 = 1
+
+VERDICT PROBE-OK

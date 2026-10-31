@@ -1440,9 +1440,19 @@ class Core:
         if crit:
             # 只放**已完成**的题的理由，且每条都带分数与族 ——
             # 没有来源的"教训"就是知识层失控的起点（重复堆积、无法归因）。
-            parts.append("[外部评审] " + " ｜ ".join(c.as_line()[:140] for c in crit[-3:]))
-            mem_items += len(crit[-3:])
-            mem_chars += sum(len(c.as_line()[:140]) for c in crit[-3:])
+            # ⭐ 第一百二十三轮（§96）：**自评优先**。
+            #   `crit[-3:]` 是按 `task_id` 字典序切尾三，而字典序与被评题毫无关系
+            #   ⇒ 本题上一次的失败原因会被**系统性**切掉（V31 实测：`e1wi` 自己那条
+            #   恒不在窗口里，而它讲的正是 `AttributeError: 'set'.append`）。
+            #   让自评占一个固定名额，其余按原规则取，才能让「自省」这一环通上电。
+            # ⚠️ `allow_self=False`（默认）时 `self_c` 恒空 ⇒ `pick is crit[-3:]`
+            #    逐元素相同，旧口径一字不变（AZ99 双向钉住）。
+            self_c = [c for c in crit if task_id and c.task_id == task_id]
+            others = [c for c in crit if not (task_id and c.task_id == task_id)]
+            pick = ([self_c[-1]] + others[-(3 - 1):]) if self_c else crit[-3:]
+            parts.append("[外部评审] " + " ｜ ".join(c.as_line()[:140] for c in pick))
+            mem_items += len(pick)
+            mem_chars += sum(len(c.as_line()[:140]) for c in pick)
         if history:
             parts.append("[轨迹] " + " ｜ ".join(history[-6:]))
         step_line = f"[第 {it}/{self.ledger.budget.steps if self.ledger else '?'} 步]"

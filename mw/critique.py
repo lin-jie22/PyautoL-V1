@@ -70,8 +70,17 @@ class CritiqueLedger:
     同一内容存 39 次就是后者的下场：写入时没人管，清理时两套逻辑对不上。
     """
 
-    def __init__(self, path: Path | None = None) -> None:
+    def __init__(self, path: Path | None = None, *, allow_self: bool = False) -> None:
         self.path = Path(path) if path else None
+        #: ⭐ 第一百二十三轮（§96）：同题评审是否放行。**默认 False = 旧行为一字不改。**
+        #:
+        #: 为什么需要一个开关而不是直接改闸：第 2 条纪律（「不许用当前题」）挡的是
+        #: **本轮正在答的这道题**——那确实是照着自己的答案改答案。但 `--critique-scope=prev`
+        #: 给内核的是**加载时的快照**：里面同题那条讲的是**上一轮**的答案与分数，
+        #: 内核此刻还没答。把这两件事一起挡掉，等于把「自省」这一环物理切断：
+        #: V32 探针实测 6/6 题的同题评审不可达（`p0_selfreach.txt`）。
+        #: 所以：**轮内照旧挡（默认），跨轮由调用方显式打开**。
+        self.allow_self = bool(allow_self)
         self.by_key: dict[tuple[str, str, str], Critique] = {}
         self.added = 0
         #: 同一键被覆盖的次数 —— 这个数不为 0 说明有题被重跑过，是有用信息
@@ -103,7 +112,7 @@ class CritiqueLedger:
         self.calls += 1
         out: list[Critique] = []
         for (ss, su, tid), c in self.by_key.items():
-            if exclude_task_id and tid == exclude_task_id:
+            if exclude_task_id and tid == exclude_task_id and not self.allow_self:
                 self.rejected["self"] += 1
                 continue
             if ss != scorer_sha:
@@ -125,6 +134,9 @@ class CritiqueLedger:
             "superseded": self.superseded,
             "calls": self.calls,
             "served": self.served,
+            #: ⚠️ 口径必须自报：`allow_self=True` 的账本和 `False` 的账本
+            #: 读出来的 `served` 不可比（前者最多 6 条，后者最多 5 条）。
+            "allow_self": self.allow_self,
             # 分母同时给出：`rejected` 是**累计**的，离开 `calls` 无法解释
             "rejected": dict(self.rejected),
         }

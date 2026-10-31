@@ -9792,6 +9792,98 @@ check(RS, "AZ97 ★★§93 状态预算是**口径字段**：`STATE_CHAR_CAP` �
       f"(1600:{_AZ97_S16} 2400:{_AZ97_S24R}) ⑤回归={_AZ97_OK_NOREGRESS}")
 
 
+# ── AZ98 / AZ99（第 123 轮 / §96）：自省这一环的**两道闸**都要能开 ─────────────
+#
+# 病根读数（`bench/evidence/v6_s122/p0_selfreach.txt`，零 LLM）：
+#   6/6 题的「同题评审」不可达 ⇒ 每道题**上一次为什么错**结构上永远送不到它自己。
+#   两道独立闸：
+#     ① `critique.py` 的 `exclude_task_id`：同题一律拒收（轮内对、跨轮错）；
+#     ② `core.py` 的 `crit[-3:]`：`crit` 按 task_id 字典序排，末三与被评题无关
+#        ⇒ 即使拆了 ①，自评照样被切掉。**只拆一道等于没拆。**
+#
+# 判据（每条都双向，防「断言恒真」）：
+#   AZ98：`allow_self=False`（默认）⇒ 同题仍被挡，且 `stats()['allow_self']` 自报 False；
+#         `allow_self=True`  ⇒ 同题放行，且自报 True。
+#         ⛔ 只测"开着能放行"是不够的：那样把默认改成 True 也全绿。
+#   AZ99：有自评时它必须**占一个名额**进 `[外部评审]`（否则 ② 那道闸没开）；
+#         无自评时取条必须与旧口径 `crit[-3:]` **逐元素相同**（否则旧读数不可比）。
+_AZ98_OK = False
+try:
+    _az98_a = CritiqueLedger()
+    _az98_a.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="w1"))
+    _az98_a.add(Critique(scorer_sha="S", suite_sha="U", task_id="t2", why="w2"))
+    _az98_off = [c.task_id for c in _az98_a.admissible(
+        scorer_sha="S", suite_sha="U", exclude_task_id="t1")]
+
+    _az98_b = CritiqueLedger(None, allow_self=True)
+    _az98_b.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why="w1"))
+    _az98_b.add(Critique(scorer_sha="S", suite_sha="U", task_id="t2", why="w2"))
+    _az98_on = [c.task_id for c in _az98_b.admissible(
+        scorer_sha="S", suite_sha="U", exclude_task_id="t1")]
+
+    _AZ98_OK = (_az98_off == ["t2"] and _az98_a.rejected["self"] >= 1
+                and _az98_on == ["t1", "t2"] and _az98_b.rejected["self"] == 0
+                and _az98_a.stats()["allow_self"] is False
+                and _az98_b.stats()["allow_self"] is True)
+except Exception as _e:  # noqa: BLE001
+    _az98_off, _az98_on = f"异常 {type(_e).__name__}: {_e}", ""
+
+check(RS, "AZ98 ★『不许用当前题』必须是**一个可关的闸**，不是一个隐形的常量：\n"
+          "          ① 默认（`allow_self=False`）⇒ 同题仍被拒，`rejected['self']` 计数 ≥1；\n"
+          "          ② 显式打开 ⇒ 同题放行，`rejected['self']==0`；\n"
+          "          ③ 两种账本必须在 `stats()['allow_self']` 里**自报**口径\n"
+          "             （否则 `served` 5 与 6 两种读数混在一张表里无法归因）。\n"
+          "          ⛔ 只测②不测① ⇒ 把默认改成 True 也全绿（断言恒真）。",
+      _AZ98_OK,
+      f"默认放行={_az98_off} 打开放行={_az98_on} "
+      f"自报={_az98_a.stats()['allow_self']}/{_az98_b.stats()['allow_self']}")
+
+_AZ99_OK = False
+try:
+    def _az99_block(allow: bool) -> tuple[str, bool]:
+        _led = CritiqueLedger(None, allow_self=allow)
+        for _i in range(1, 7):
+            _led.add(Critique(scorer_sha="S", suite_sha="U", task_id=f"t{_i}",
+                              why=f"理由{_i}", family="f"))
+        _c = Core(cfg.Settings(limits=cfg.Limits(max_steps=6)), llm=StubLLM(),
+                  critique_ledger=_led)
+        _c.log = lambda _m: None
+        _st = _c._state("目标", [], 1, task_id="t1", scorer_sha="S", suite_sha="U")
+        _c.memory.close()
+        _line = ""
+        for _ln in _st.splitlines():
+            if _ln.startswith("[外部评审]"):
+                _line = _ln
+        return _line, ("t1" in _line)
+
+    #: ① 打开：t1 必须进块（占一个名额），且另外两条是字典序末二 t5/t6
+    _az99_line_on, _az99_has_self = _az99_block(True)
+    #: ② 关闭：必须与旧口径一致 —— t1..t6 里去掉 t1 ⇒ t2..t6 ⇒ 末三 t4/t5/t6
+    _az99_line_off, _az99_off_has_self = _az99_block(False)
+    _AZ99_OK = (_az99_has_self
+                and "t5" in _az99_line_on and "t6" in _az99_line_on
+                and not _az99_off_has_self
+                and "t4" in _az99_line_off and "t5" in _az99_line_off
+                and "t6" in _az99_line_off)
+except Exception as _e:  # noqa: BLE001
+    _az99_line_on = _az99_line_off = f"异常 {type(_e).__name__}: {_e}"
+    _az99_has_self = _az99_off_has_self = None
+
+_AZ99_SRC = _src("core.py")
+_AZ99_OK_NOREGRESS = ("crit[-3:]" in _AZ99_SRC and "self_c" in _AZ99_SRC)
+
+check(RS, "AZ99 ★★『自评优先』必须同时满足两件事，缺一即等于没改：\n"
+          "          ① 有自评时它**占一个名额**进 `[外部评审]` —— 否则 `crit[-3:]`\n"
+          "             的字典序照样把它切掉（探针实测 6/6 不可达）；\n"
+          "          ② 无自评时取条与旧口径 `crit[-3:]` **逐元素相同** ——\n"
+          "             否则 V19~V31 的读数在换内核后不可比。\n"
+          "          撤回语义：把 `pick = ...` 改回 `pick = crit[-3:]` ⇒ ① 红、② 仍绿。",
+      _AZ99_OK and _AZ99_OK_NOREGRESS,
+      f"①自评入块={_az99_has_self} 块={_az99_line_on[:90]!r} | "
+      f"②无自评={_az99_off_has_self} 块={_az99_line_off[:90]!r} | "
+      f"③静态锚={_AZ99_OK_NOREGRESS}")
+
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

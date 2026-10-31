@@ -1,0 +1,80 @@
+{
+ "reach": {
+  "e1wi": [
+   "e1ni",
+   "e2ni",
+   "e2wi",
+   "e3ni",
+   "e3wi"
+  ],
+  "e1ni": [
+   "e1wi",
+   "e2ni",
+   "e2wi",
+   "e3ni",
+   "e3wi"
+  ],
+  "e2wi": [
+   "e1ni",
+   "e1wi",
+   "e2ni",
+   "e3ni",
+   "e3wi"
+  ],
+  "e2ni": [
+   "e1ni",
+   "e1wi",
+   "e2wi",
+   "e3ni",
+   "e3wi"
+  ],
+  "e3wi": [
+   "e1ni",
+   "e1wi",
+   "e2ni",
+   "e2wi",
+   "e3ni"
+  ],
+  "e3ni": [
+   "e1ni",
+   "e1wi",
+   "e2ni",
+   "e2wi",
+   "e3wi"
+  ]
+ },
+ "served": {
+  "e1wi": [
+   "e2wi",
+   "e3ni",
+   "e3wi"
+  ],
+  "e1ni": [
+   "e2wi",
+   "e3ni",
+   "e3wi"
+  ],
+  "e2wi": [
+   "e2ni",
+   "e3ni",
+   "e3wi"
+  ],
+  "e2ni": [
+   "e2wi",
+   "e3ni",
+   "e3wi"
+  ],
+  "e3wi": [
+   "e2ni",
+   "e2wi",
+   "e3ni"
+  ],
+  "e3ni": [
+   "e2ni",
+   "e2wi",
+   "e3wi"
+  ]
+ },
+ "self_reach": [],
+ "overwrite": true
+}

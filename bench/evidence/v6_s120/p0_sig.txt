@@ -1,0 +1,5 @@
+state_chars=1600 sig=3bf122fc5c5a21af
+state_chars=1600 sig=3bf122fc5c5a21af
+state_chars=2400 sig=94c8e24ca989db75
+同参可复现: True  cap 改变 ⇒ 签名改变: True
+VERDICT OK

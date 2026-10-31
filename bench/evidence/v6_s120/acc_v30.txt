@@ -1,0 +1,12 @@
+o3_r1 cap=1600 scope=off pre_crit=0 pre_bytes=0 exit=0 dump=18 crit_states=0 crit_chars=0 crit_tasks=0 max_state=1721 judge=OK skipped=0
+p3_r1 cap=1600 scope=prev pre_crit=0 pre_bytes=0 exit=0 dump=18 crit_states=0 crit_chars=0 crit_tasks=0 max_state=1721 judge=OK skipped=0
+o4_r1 cap=2400 scope=off pre_crit=0 pre_bytes=0 exit=0 dump=17 crit_states=0 crit_chars=0 crit_tasks=0 max_state=1966 judge=OK skipped=0
+p4_r1 cap=2400 scope=prev pre_crit=0 pre_bytes=0 exit=0 dump=17 crit_states=0 crit_chars=0 crit_tasks=0 max_state=1966 judge=OK skipped=0
+p4_r2 cap=2400 scope=prev pre_crit=6 pre_bytes=118784 exit=0 dump=24 crit_states=22 crit_chars=5012 crit_tasks=6 max_state=2291 judge=OK skipped=0
+o4_r2 cap=2400 scope=off pre_crit=6 pre_bytes=118784 exit=0 dump=17 crit_states=0 crit_chars=0 crit_tasks=0 max_state=1966 judge=OK skipped=0
+p3_r2 cap=1600 scope=prev pre_crit=6 pre_bytes=118784 exit=0 dump=22 crit_states=7 crit_chars=1456 crit_tasks=2 max_state=1721 judge=OK skipped=0
+o3_r2 cap=1600 scope=off pre_crit=6 pre_bytes=122880 exit=0 dump=18 crit_states=0 crit_chars=0 crit_tasks=0 max_state=1721 judge=OK skipped=0
+o4_r3 cap=2400 scope=off pre_crit=6 pre_bytes=184320 exit=0 dump=17 crit_states=0 crit_chars=0 crit_tasks=0 max_state=1966 judge=OK skipped=0
+p4_r3 cap=2400 scope=prev pre_crit=6 pre_bytes=184320 exit=0 dump=24 crit_states=22 crit_chars=5012 crit_tasks=6 max_state=2291 judge=OK skipped=0
+o3_r3 cap=1600 scope=off pre_crit=6 pre_bytes=192512 exit=0 dump=18 crit_states=0 crit_chars=0 crit_tasks=0 max_state=1721 judge=OK skipped=0
+p3_r3 cap=1600 scope=prev pre_crit=6 pre_bytes=184320 exit=0 dump=22 crit_states=7 crit_chars=1456 crit_tasks=2 max_state=1721 judge=OK skipped=0

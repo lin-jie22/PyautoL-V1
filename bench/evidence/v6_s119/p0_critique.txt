@@ -1,0 +1,7 @@
+✅ C-a 账本非空 ⇒ [外部评审] 进 state  含块=True  len(state)=154
+✅ C-a' 块内含别题 id 与 why 片段  含e3ni=True 含_split=True
+✅ C-a'' 自评闸（当前题看不到自己）  e3ni 自看含块=False
+✅ C-b 同对象 ⇒ 本轮新增可见（= all 语义）  含e1wi=True
+✅ C-c 副本 ⇒ 本轮新增不可见（= prev 语义）  含e1wi=False
+✅ C-c' 副本仍看得到加载时的那条  含e3ni=True
+✅ C-d 快照与实时块长差（同内容应≈0）  |Δlen|=48

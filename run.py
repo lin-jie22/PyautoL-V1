@@ -628,6 +628,17 @@ def _option_conflict(args) -> str:
             return ("--loop 与 --save-baseline / --compare 互斥：基线存的是**一次**读数，"
                     "而循环产出的是 N 个点的曲线 —— 拿哪一轮当基线都得靠人挑，"
                     "那等于在曲线里事后选一个好看的。要基线请用单轮 --bench。")
+    # ── 外部评审投喂口径（V29）──────────────────────────────────────────
+    # `--use-critique` 是一个二值开关，而它把两件代价完全不同的事绑在了一起：
+    # 轮内投喂（第 1 题的理由喂给第 6 题 ⇒ 第 6 题不再是同一条件的测量）
+    # 与跨轮投喂（上一轮的理由给本轮 ⇒ 整轮 6 题看到同一份起点，可比性完整）。
+    # 所以有了 `--critique-scope`。两个入口同时给且语义不一致时，静默让某个赢
+    # 就会产出一个标签与事实不符的读数 —— 与 `--fresh --memory-dir` 同一条纪律。
+    _cs = getattr(args, "critique_scope", "")
+    if _cs and getattr(args, "use_critique", False) and _cs != "all":
+        return (f"--use-critique 等价于 --critique-scope=all，与 --critique-scope={_cs} "
+                "冲突：前者要求轮内也投喂（接线验证），后者要求本轮新增的评审"
+                "不进本轮（保住同轮内每题的可比性）。只留一个。")
     return ""
 
 
@@ -992,10 +1003,32 @@ def cmd_bench(args) -> int:
                   else (s.paths.state / "critique.jsonl"))
     _crit = CritiqueLedger(_crit_path)
     _crit_loaded = _crit.load()
-    _crit_for_kernel = _crit if args.use_critique else None
-    if _crit_loaded or args.use_critique:
+    # ── 投喂口径三档（V29）──────────────────────────────────────────────
+    # 为什么必须有第三档：旧装置是 全开/全关 两档，而「全开」把跨轮累积和
+    # 轮内投喂绑死 —— 想测「上一轮学到的东西对本轮有没有用」，就不得不接受
+    # 「同一轮里第 6 题看到第 1 题的评审」这个污染。于是**主线通道结构上无法被测量**。
+    #   off  : 内核拿 None（默认，V19~V28 全部如此）
+    #   prev : 内核拿**加载时的快照副本**；本轮 `run_suite` 新增的评审不进本轮
+    #   all  : 内核拿真账本本体（= 旧 `--use-critique`，接线验证用）
+    # `prev` 的实现是只读快照：真账本继续负责落盘 ⇒ `mw/*.py` 零改动
+    # （`harness_sha` 不断段 ⇒ 读数可与 V28 的 48 直接比）。
+    _crit_scope = (getattr(args, "critique_scope", "")
+                   or ("all" if args.use_critique else "off"))
+    if _crit_scope == "all":
+        _crit_for_kernel = _crit
+    elif _crit_scope == "prev":
+        #: ⚠️ 必须是一个**新**账本且不落盘：`add()` 只拷已加载的条目，
+        #:  `path=None` ⇒ `save()` 返回 0，绝不会把快照写回磁盘。
+        _crit_for_kernel = CritiqueLedger(None)
+        for _c in _crit.by_key.values():
+            _crit_for_kernel.add(_c)
+    else:
+        _crit_for_kernel = None
+    if _crit_loaded or _crit_scope != "off":
         print(f"  评审账本  {_crit_path.name}  载入 {_crit_loaded} 条"
-              f"  投喂={'开' if args.use_critique else '关（默认：保住测量一致性）'}")
+              f"  投喂={_crit_scope}"
+              f"（off=关 / prev=只给**加载时**已有的 / all=轮内也给）"
+              f"  本轮赠送 {len(_crit_for_kernel.by_key) if _crit_for_kernel else 0} 条")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
     # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
@@ -1459,6 +1492,12 @@ def main() -> int:
     p.add_argument("--critique-file", default="",
                    help="评审账本路径（默认 state/critique.jsonl）。"
                         "打分器给的理由会落盘到这里，供**下一轮**读取")
+    p.add_argument("--critique-scope", default="", choices=("", "off", "prev", "all"),
+                   help="外部评审的**投喂口径**（缺省 = 跟随 --use-critique）："
+                        "off=不投喂；"
+                        "prev=只投喂**账本加载时**已有的条目（跨轮累积：上一轮的评审"
+                        "给本轮，本轮新增的不给本轮，同轮各题条件仍然一致）；"
+                        "all=轮内也投递（等价 --use-critique，接线验证用）")
     p.add_argument("--use-reward", action="store_true",
                    help="把外部打分器的分数作为**只读**奖励写进记忆（DESIGN §17-5）")
     p.add_argument("--memory-mode", default="raw", choices=("raw", "abstract"),

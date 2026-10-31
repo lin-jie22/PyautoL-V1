@@ -1,0 +1,22 @@
+账本载入 6 条  scorer_sha=d4b1cbbfd7f1  suite_sha=519dad774a36
+STATE_CHAR_CAP 默认 = 1600
+
+题        cap goal_len state_len   评审块  trimmmed  块序
+e1wi    1600     1182      1413     1         0  [目标],[外部评审]
+e1ni    1600     1177      1408     1         0  [目标],[外部评审]
+e2wi    1600     1485      1500     0         1  [目标]
+e2ni    1600     1478      1493     0         1  [目标]
+e3wi    1600     1705      1720     0         1  [目标]
+e3ni    1600     1694      1709     0         1  [目标]
+
+—— 只把 cap 改成 4000（别的都不动）——
+题        cap state_len   评审块  trimmmed
+e1wi    4000      1413     1         0
+e1ni    4000      1408     1         0
+e2wi    4000      1825     1         0
+e2ni    4000      1709     1         0
+e3wi    4000      2045     1         0
+e3ni    4000      1925     1         0
+
+cap=4000 时 6 题里有评审块的：6/6
+清空账本后 e1wi 含评审块=False（应为 False）

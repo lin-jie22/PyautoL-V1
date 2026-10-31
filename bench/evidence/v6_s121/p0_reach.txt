@@ -1,0 +1,58 @@
+========================================================================================================
+V31 押注前：可行动载荷的到达率（离线，零 LLM）
+cap=2400  种子目录 /Users/linshaojie/V1/bench/evidence/v6_s121/seeds  题集 tasks_v8.jsonl
+========================================================================================================
+
+## Q1 口径对账（种子签名 vs 本轮当前签名）
+
+- 种子 scorer_sha = d4b1cbbfd7f1ef50d1e1a2a4cd95371ec7a82c05f6cb6d277e079814ea021076
+- 当前 scorer_sha = d4b1cbbfd7f1ef50d1e1a2a4cd95371ec7a82c05f6cb6d277e079814ea021076   ✅ 一致
+- 种子 suite_sha  = 519dad774a3664612e6611b220b33f4a
+- 当前 suite_sha  = 519dad774a3664612e6611b220b33f4a   ✅ 一致
+- 判决：✅ 种子可用（不会被三道闸拒收）
+
+## Q1b 载荷原文与可视预算
+
+- P（74 字，可行动）：骨架要整份原样输出（含 _split 等辅助函数），只在 BEGIN/END TODO 之间填代码，其余逐字保留；顶部补上本题用到的 import。
+- Q（74 字，等长安慰剂）：上一轮交付的结构安排与本题面的约定之间并无实质差异，细节请按规则逐条落实即可，无需再做额外的调整或补充说明，也不必在文字里解释理由，或给出示例代码。
+- 标记词 MARKER='整份原样输出'  PLACEBO_MARKER='并无实质差异'
+- `as_line()[:140]` 内 P 完整可见：True（head 23 + 74 = 97）
+
+## Q2 到达矩阵（`_state` 里逐字命中）
+
+条件                负载      e1wi   e1ni   e2wi   e2ni   e3wi   e3ni   块被挤掉
+s0_off            bare       —      —      —      —      —      —   0
+s0_off            real       —      —      —      —      —      —   0
+s1_base           bare       块      块      块      块      块      块   0
+s1_base           real       块      块      块      块      块      块   0
+s2_fix_nondeliv   bare       块      块      块      块      块      块   0
+s2_fix_nondeliv   real       块      块      块      块      块      块   0
+s3_placebo        bare       Q      Q      Q      Q      块      Q   0
+s3_placebo        real       Q      Q      Q      Q      块      Q   0
+s4_fix            bare       P      P      P      P      块      P   0
+s4_fix            real       P      P      P      P      块      P   0
+
+图例：`P`=载荷送到 · `Q`=安慰剂送到 · `块`=有评审块但不含标记 · `—`=无块
+（`s2` 的 P 放在 `e1ni`，而 `e1ni` **永不在任何送达窗口**，所以全程应为 `块`/`—`）
+
+## Q3 `s4_fix` / `real` 档逐题明细（块里那三段原样）
+
+--- e1wi  state=1628  block=274  来源=['e2wi', 'e3ni', 'e3wi']  P=True  Q=False  trimmed=0
+--- e1ni  state=1623  block=274  来源=['e2wi', 'e3ni', 'e3wi']  P=True  Q=False  trimmed=0
+--- e2wi  state=2040  block=383  来源=['e2ni', 'e3ni', 'e3wi']  P=True  Q=False  trimmed=0
+--- e2ni  state=1924  block=274  来源=['e2wi', 'e3ni', 'e3wi']  P=True  Q=False  trimmed=0
+--- e3wi  state=2194  block=317  来源=['e2ni', 'e2wi', 'e3ni']  P=False  Q=False  trimmed=0
+--- e3ni  state=2140  block=274  来源=['e2ni', 'e2wi', 'e3wi']  P=True  Q=False  trimmed=0
+
+## Q4 判决（本探针只做前提，不出效应）
+
+- `P0-a` 口径一致：✅
+- `P0-b` `s4` 把 P 送到 ['e1wi', 'e1ni', 'e2wi', 'e2ni', 'e3ni'] 且不送到 e3wi：✅
+- `P0-c` `s3` 把 Q 送到同一 5 题、且 P 一次都没出现：✅
+- `P0-d` `s2` 的 P **零送达**（放在永不送达的条目里）：✅
+- `P0-e` `s1` 不含任何标记（基线干净）：✅
+- `P0-f` `s0_off` 一个块都没有（开关真的关）：✅
+
+⇒ ✅ 前提全部成立，V31 装置可跑
+
+VERDICT OK

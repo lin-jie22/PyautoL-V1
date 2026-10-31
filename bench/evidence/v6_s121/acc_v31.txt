@@ -1,0 +1,6 @@
+s1 seed=s1_base scope=prev exit=0 dump=24 P命中=0 Q命中=0 块state=22 块题数=6 块字=5012 max_state=2291 skipped=0 failed=0
+s4 seed=s4_fix scope=prev exit=0 dump=20 P命中=16 Q命中=0 块state=19 块题数=6 块字=5662 max_state=2291 skipped=0 failed=0
+s3 seed=s3_placebo scope=prev exit=0 dump=24 P命中=0 Q命中=19 块state=22 块题数=6 块字=6484 max_state=2291 skipped=0 failed=0
+s2 seed=s2_fix_nondeliv scope=prev exit=0 dump=24 P命中=0 Q命中=0 块state=22 块题数=6 块字=5012 max_state=2291 skipped=0 failed=0
+s0 seed=s0_off scope=off exit=0 dump=17 P命中=0 Q命中=0 块state=0 块题数=0 块字=0 max_state=1966 skipped=0 failed=0
+s1b seed=s1_base scope=prev exit=0 dump=24 P命中=0 Q命中=0 块state=22 块题数=6 块字=5012 max_state=2291 skipped=0 failed=0

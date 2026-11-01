@@ -1,0 +1,7 @@
+base_url=http://127.0.0.1:8835/v1
+model=qwen2.5:7b
+temperature=0.0
+thinking=''
+llm_max_tokens=1024
+state_chars=2400
+TEMP_ZERO=True

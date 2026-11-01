@@ -1,0 +1,51 @@
+# V34 重放探针  task=e1wi  state_len=1414  N=16
+# base_url=http://127.0.0.1:8835/v1  model=qwen2.5:7b  temperature=0.0  max_tokens=1024
+
+## 组 A  n=1  messages_sha=369151c6  chars=3500
+
+## 组 B  n=3  messages_sha=0904295c  chars=3500
+
+组      次 答案 sha       len 容器  import_re
+A      1 60a74736     603 set() 无
+A      2 60a74736     603 set() 无
+A      3 60a74736     603 set() 无
+A      4 60a74736     603 set() 无
+A      5 60a74736     603 set() 无
+A      6 60a74736     603 set() 无
+A      7 60a74736     603 set() 无
+A      8 60a74736     603 set() 无
+A      9 60a74736     603 set() 无
+A     10 60a74736     603 set() 无
+A     11 60a74736     603 set() 无
+A     12 60a74736     603 set() 无
+A     13 60a74736     603 set() 无
+A     14 60a74736     603 set() 无
+A     15 60a74736     603 set() 无
+A     16 60a74736     603 set() 无
+
+  ⇒ 组 A：k=1 种答案 ['60a74736']  容器 {'set()': 16}
+B      1 3dede36f     758 set() 无
+B      2 3dede36f     758 set() 无
+B      3 3dede36f     758 set() 无
+B      4 3dede36f     758 set() 无
+B      5 3dede36f     758 set() 无
+B      6 3dede36f     758 set() 无
+B      7 3dede36f     758 set() 无
+B      8 3dede36f     758 set() 无
+B      9 3dede36f     758 set() 无
+B     10 3dede36f     758 set() 无
+B     11 3dede36f     758 set() 无
+B     12 3dede36f     758 set() 无
+B     13 3dede36f     758 set() 无
+B     14 3dede36f     758 set() 无
+B     15 3dede36f     758 set() 无
+B     16 3dede36f     758 set() 无
+
+  ⇒ 组 B：k=1 种答案 ['3dede36f']  容器 {'set()': 16}
+
+### 判决输入
+  D1 组 A（n=1）k = 1
+  D3 组 B（n=3）k = 1
+  ⇒ 组 A 16/16 全同（1 种）⇒ 本探针量不到噪声
+
+原始读数写到 /tmp/v34_replay.json

@@ -1,0 +1,356 @@
+{
+ "groups": {
+  "1": {
+   "messages_sha": "369151c6",
+   "shas": [
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736",
+    "60a74736"
+   ],
+   "distinct": [
+    "60a74736"
+   ],
+   "k": 1,
+   "containers": {
+    "set()": 16
+   },
+   "import_re": {
+    "无": 16
+   }
+  },
+  "3": {
+   "messages_sha": "0904295c",
+   "shas": [
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f",
+    "3dede36f"
+   ],
+   "distinct": [
+    "3dede36f"
+   ],
+   "k": 1,
+   "containers": {
+    "set()": 16
+   },
+   "import_re": {
+    "无": 16
+   }
+  }
+ },
+ "raw": [
+  {
+   "group": 1,
+   "rep": 1,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 2,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 3,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 4,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 5,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 6,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 7,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 8,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 9,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 10,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 11,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 12,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 13,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 14,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 15,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 1,
+   "rep": 16,
+   "sha": "60a74736",
+   "len": 603,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"补全 clean_lines 函数\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                kept.append(stripped)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fh:\n        fh.write(\"\".join(s + \"\\n\" for s in kept))\n    return None\n\"\"\"}, \"rationale\": \"根据规则，遍历 items，使用_strip_tags_处理并去重，最后写入文件。\"}]}"
+  },
+  {
+   "group": 3,
+   "rep": 1,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 2,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 3,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 4,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 5,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 6,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 7,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 8,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 9,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 10,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 11,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 12,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 13,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 14,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 15,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  },
+  {
+   "group": 3,
+   "rep": 16,
+   "sha": "3dede36f",
+   "len": 758,
+   "container": "set()",
+   "import_re": "无",
+   "text": "{\"candidates\": [{\"intent\": \"直接补全代码\", \"tool\": \"finish\", \"args\": {\"answer\": \"\"\"import re\n\ndef _strip_tags(text):\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item in items:\n        stripped = _strip_tags(item).strip(\" \\t\")\n        if stripped:\n            if stripped not in kept:\n                kept.add(stripped)\n                with open(path, \"a\", encoding=\"utf-8\") as fh:\n                    fh.write(stripped + \"\\n\")\n    return None\n\"\"\"}}, {\"intent\": \"尝试使用 set 去重\", \"tool\": \"note\", \"args\": {\"text\": \"使用 set 去重可以确保不相邻的重复行也被去除\", \"source\": \"目标代码要求\", \"confidence\": 0.8}}, {\"intent\": \"检查已有 import 是否正确\", \"tool\": \"recall\", \"args\": {\"query\": \"检查 import re 是否正确\", \"source\": \"目标代码\", \"confidence\": 0.9}}]}"
+  }
+ ]
+}

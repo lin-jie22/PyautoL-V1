@@ -1,0 +1,12 @@
+c0_r1 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c1_r1 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+P_r1 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c0_r2 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c1_r2 scope=prev-self drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=23 块=22 自评入块=22 e1ni首条={'e1ni': 4} e1ni块长={324: 4}
+P_r2 scope=prev drop=e2wi exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=20 块=19 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}
+c0_r3 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c1_r3 scope=prev-self drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=22 块=21 自评入块=21 e1ni首条={'e1ni': 3} e1ni块长={324: 3}
+P_r3 scope=prev drop=e2wi exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=21 块=20 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}
+c0_r4 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c1_r4 scope=prev-self drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=22 块=21 自评入块=21 e1ni首条={'e1ni': 3} e1ni块长={324: 3}
+P_r4 scope=prev drop=e2wi exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=21 块=20 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}

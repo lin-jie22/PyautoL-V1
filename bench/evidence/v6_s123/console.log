@@ -1,0 +1,67 @@
+========== V33 等长安慰剂（tasks_v8 6题/96格） model=qwen2.5:7b cap=2400 ==========
+开始 2026-11-01 10:18:07  工作目录=/tmp/v33
+
+--- H0 装置自检 ---
+  ✅ H0-a ollama 可达
+✅ 种子 sha=9c009fdc6fb8c6cd（V31/V32 同款 9c009fdc6fb8c6cd） 条数=6
+VERDICT OK
+预置 11 条后重开，首个句柄=b#1
+VERDICT OK
+  ✅ H0-d --critique-drop 可用且自报
+  ✅ H0-e drop×off 冲突生效
+  ✅ H0-f 代理已起（pid=52133，端口 8834）
+  H0-g state-dump 预检 行=2
+  ✅ H0-g state-dump 可用（2 行）
+
+════════ 交错：每轮依次 c0 / c1 / P（r1 三臂同条件）════════
+  ▶ c0_r1 scope=prev drop=无 EXIT=0 耗时=632s 10:29:57
+       states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ c1_r1 scope=prev drop=无 EXIT=0 耗时=564s 10:39:23
+       states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ P_r1 scope=prev drop=无 EXIT=0 耗时=587s 10:49:11
+       states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ c0_r2 scope=prev drop=无 EXIT=0 耗时=584s 10:58:55
+       states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ c1_r2 scope=prev-self drop=无 EXIT=0 耗时=592s 11:08:48
+       states=23 块=22 自评入块=22 e1ni首条={'e1ni': 4} e1ni块长={324: 4}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ P_r2 scope=prev drop=e2wi EXIT=0 耗时=492s 11:17:00
+       states=20 块=19 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ c0_r3 scope=prev drop=无 EXIT=0 耗时=682s 11:28:22
+       states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ c1_r3 scope=prev-self drop=无 EXIT=0 耗时=592s 11:38:14
+       states=22 块=21 自评入块=21 e1ni首条={'e1ni': 3} e1ni块长={324: 3}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ P_r3 scope=prev drop=e2wi EXIT=0 耗时=484s 11:46:19
+       states=21 块=20 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ c0_r4 scope=prev drop=无 EXIT=0 耗时=576s 11:55:55
+       states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ c1_r4 scope=prev-self drop=无 EXIT=0 耗时=606s 12:06:01
+       states=22 块=21 自评入块=21 e1ni首条={'e1ni': 3} e1ni块长={324: 3}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+  ▶ P_r4 scope=prev drop=e2wi EXIT=0 耗时=600s 12:16:03
+       states=21 块=20 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}
+       账本 6 条  attempted=6 recorded=6 skipped=0 failed=0
+
+================ 结束 2026-11-01 12:16:03 ================
+代理台账 485 行
+c0_r1 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c1_r1 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+P_r1 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c0_r2 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c1_r2 scope=prev-self drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=23 块=22 自评入块=22 e1ni首条={'e1ni': 4} e1ni块长={324: 4}
+P_r2 scope=prev drop=e2wi exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=20 块=19 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}
+c0_r3 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c1_r3 scope=prev-self drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=22 块=21 自评入块=21 e1ni首条={'e1ni': 3} e1ni块长={324: 3}
+P_r3 scope=prev drop=e2wi exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=21 块=20 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}
+c0_r4 scope=prev drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=24 块=22 自评入块=0 e1ni首条={'e2wi': 5} e1ni块长={215: 5}
+c1_r4 scope=prev-self drop=无 exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=22 块=21 自评入块=21 e1ni首条={'e1ni': 3} e1ni块长={324: 3}
+P_r4 scope=prev drop=e2wi exit=0 账本=6条 attempted=6 recorded=6 skipped=0 failed=0 | states=21 块=20 自评入块=0 e1ni首条={'e2ni': 4} e1ni块长={324: 4}

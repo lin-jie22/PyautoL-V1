@@ -1,0 +1,45 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  tasks_v8  n=6  suite_sha=519dad774a3664612e6611b220b33f4a
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=6/6
+  e1wi: oracle=1.0000 partial=0.4375 null=0.0000 ✅
+  e1ni: oracle=1.0000 partial=0.4375 null=0.0000 ✅
+  e2wi: oracle=1.0000 partial=0.3750 null=0.0000 ✅
+  e2ni: oracle=1.0000 partial=0.3750 null=0.0000 ✅
+  e3wi: oracle=1.0000 partial=0.2500 null=0.0000 ✅
+  e3ni: oracle=1.0000 partial=0.2500 null=0.0000 ✅
+  理由: 全部 6 条两极可分，其中 6 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=ad0c184d67e8e2b0
+  [观察]
+    - e1wi: oracle=1.0000 partial=0.4375 null=0.0000
+    - e1ni: oracle=1.0000 partial=0.4375 null=0.0000
+    - e2wi: oracle=1.0000 partial=0.3750 null=0.0000
+    - e2ni: oracle=1.0000 partial=0.3750 null=0.0000
+    - e3wi: oracle=1.0000 partial=0.2500 null=0.0000
+    - e3ni: oracle=1.0000 partial=0.2500 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 6 条任务上两极可分
+    - 中段有序检查 6 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=519dad774a36；换任一者本校准即失效，必须重做
+  评审账本  critique.jsonl  载入 0 条  投喂=prev（off=关 / prev=只给**加载时**已有的且排除同题 / prev-self=同上但**放行同题**（跨轮自省）/ all=轮内也给）  本轮赠送 0 条  快照丢弃=['e2wi']（消融：真账本不受影响）
+
+  ℹ️ 未配置真模型（V1_LLM_API_KEY）⇒ 本轮跑的是**参照点**，不是模型成绩。
+
+--- 第 2 步  跑任务集  solver=oracle（上界参照）  预算档=1x  repeat=1 ---
+  分数账本  会话#0 追加 6 行（拒绝 0 行） ⇒ 下一次起跑时自我模型可读
+  oracle（上界参照）@1x n=1 mean=1.0000 std=0.0000 [1.0000,1.0000] 极差=0.0000
+  attempted=6 recorded=6 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=6 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+
+  ⛔ 血缘显示本轮**不是**真模型（llm_of_record=unknown） ⇒ 拒绝出分／判定／写基线。

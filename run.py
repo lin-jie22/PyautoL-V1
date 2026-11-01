@@ -413,28 +413,77 @@ def _ktx_absorb(acc: dict, stats: dict) -> dict:
     return acc
 
 
+def _kwm_now(stats: dict, core: object = None) -> dict:
+    """把「世界模型 + 层读数」取成一张**累计快照**（只含单调递增的计数）。
+
+    ⛔ 为什么需要快照（V37 §103.4② 的真 bug）：`--memory-dir` 臂（累积臂）
+       **复用同一个 `Core`**（`run.py:1246`），而 `WorldModel` 与
+       `core.memory_layer_view` 都活在整个 bench 进程里 ⇒ 它们报的是**跨题累计值**。
+       把累计值当增量相加，等于「同一个计数器被读几次就加几遍」：
+       V37 实测 6 题逐题 `预演=2,3,5,6,8,10`（这就是累计值）
+       ⇒ 落盘写的是 `2+3+5+6+8+10 = 34`，真值只有 **10**（proxy 200 型 10 条、
+       `preds` 逐条 10 条两个独立来源都对得上）。
+
+    ⚠️ 层读数（`layer_recalled` / `layer_abstract`）住在 `Core` 上、不在
+       `stats()` 里，但**同样是 `+=` 累计**（`core.py:1555`）⇒ 必须一起做差分，
+       否则它俩会继续重复累加（同一个病，两个病灶）。
+    """
+    cur = {k: int(stats.get(k, 0) or 0) for k in _KWM_NUM_KEYS}
+    if core is not None:
+        view = getattr(core, "memory_layer_view", None) or {}
+        cur["layer_recalled"] = int(view.get("recalled", 0) or 0)
+        cur["layer_abstract"] = int(view.get("abstract", 0) or 0)
+    else:
+        cur["layer_recalled"] = 0
+        cur["layer_abstract"] = 0
+    cm = stats.get("confusion") or {}
+    cur["confusion"] = {k: int(cm.get(k, 0) or 0)
+                        for k in ("ok_ok", "ok_fail", "fail_ok", "fail_fail")}
+    return cur
+
+
+def _kwm_delta(now: dict, prev: dict | None) -> dict:
+    """`now - prev`；`prev is None`（第一次读）⇒ 全量。
+
+    ⚠️ 不做 `max(0, …)` 钳位：所有计数在 `mw/worldmodel.py` 里都是纯 `+=`
+       （`predictions`/`scored`/`hits` 三处，无清零）⇒ 负数只可能意味着
+       「有人加了会清零的计数器」。**读数要显形，不许被钳位藏掉。**
+    """
+    if prev is None:
+        return now
+    out = {k: int(now.get(k, 0) or 0) - int(prev.get(k, 0) or 0)
+           for k in _KWM_NUM_KEYS}
+    out["confusion"] = {k: int(now["confusion"].get(k, 0) or 0)
+                        - int((prev.get("confusion") or {}).get(k, 0) or 0)
+                        for k in now["confusion"]}
+    return out
+
+
 def _kwm_absorb(acc: dict, stats: dict, core: object = None) -> dict:
     """把一次内核运行的读数并进累加器（就地修改并返回）。
 
+    ⚠️ 并进去的是**增量**，不是 `stats()` 的原始值 —— 见 `_kwm_now` 的注释。
     ⚠️ `hit_rate` **不并** —— 它是比值，逐次平均会给出错的答案
     （100 次全对 + 1 次全错，平均 0.5；真值是 100/101）。只能由总数重算。
     ⚠️ 缺失的键按 0 并，**不炸**：老读数文件里没有 `scored` 是正常的，
     但"没有这个字段" ≠ "这个字段是 0" —— 所以 `hit_rate` 在 `scored==0` 时
     返回 `None`，让"没量到"在读数里显形。
     """
-    for k in _KWM_NUM_KEYS:
-        acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
-    # 层读数住在 `Core.memory_layer_view` 里，**不在** worldmodel stats 里。
-    # ⛔ 这里由 absorb **主动去 core 上取**，而不是要求每个调用点记着传：
-    #    "记着传"这种约定在本项目已经失败过两次（详见 §15.2 的记录）。
+    now = _kwm_now(stats, core)
+    #: 基线挂在**产生这些计数的对象**上（而不是挂在 `acc` 里）：
+    #:   · `--fresh` 每题新建 Core ⇒ 基线天然不存在 ⇒ 第一次即全量；
+    #:   · 累积臂复用同一个 Core ⇒ 基线就是上一次的快照 ⇒ 差分为本题增量。
+    #: ⛔ 不许把基线塞进 `acc`：`_kwm_line` 会对每个非 `confusion` 的键做 `int(v)`，
+    #:    一个 dict 会把落盘打断（这正是一个"顺手放一下"会炸掉的地方）。
+    prev = getattr(core, "_kwm_seen", None) if core is not None else None
+    delta = _kwm_delta(now, prev)
     if core is not None:
-        view = getattr(core, "memory_layer_view", None) or {}
-        for kk in ("layer_recalled", "layer_abstract"):
-            key = {"layer_recalled": "recalled", "layer_abstract": "abstract"}[kk]
-            acc[kk] = int(acc.get(kk, 0)) + int(view.get(key, 0) or 0)
+        setattr(core, "_kwm_seen", now)
+    for k in _KWM_NUM_KEYS:
+        acc[k] = int(acc.get(k, 0)) + int(delta.get(k, 0) or 0)
     cm = acc.setdefault("confusion", {})
     for k in ("ok_ok", "ok_fail", "fail_ok", "fail_fail"):
-        cm[k] = int(cm.get(k, 0)) + int((stats.get("confusion") or {}).get(k, 0) or 0)
+        cm[k] = int(cm.get(k, 0)) + int((delta.get("confusion") or {}).get(k, 0) or 0)
     return acc
 
 

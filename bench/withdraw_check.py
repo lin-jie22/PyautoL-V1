@@ -1272,6 +1272,16 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ101", "mw/core.py",
      "                    if not executed and _vetoed_this_round:",
      "                    if not executed and False:  # 撤回态：专属出口被短路"),
+    # ── AZ102：累加器必须按增量并（第 129 轮 / §104）────────────────────────
+    #: 撤的是 `run.py` 里那行**求差**：`delta = _kwm_delta(now, prev)` → `delta = now`
+    #:   ⇒ 每一题都把「跨题累计值」整份再加一遍（也就是这个 bug 的原始形状）。
+    #: 效果：三次 run 后累加器 = `2+4+6=12` 而世界模型终值 = 6 ⇒
+    #:   AZ102 的 ②（终值相等）与 ③（混淆矩阵/层读数相等）一起红，① 仍绿。
+    #: ⚠️ 为什么撤这一行而不是删掉 `_kwm_now`：删了会让 `_kwm_delta` 变成死函数
+    #:   （"只定义不调用"会被静态锚盯上），那测的就是"函数没人调"而不是"没求差"。
+    ("AZ102", "run.py",
+     "    delta = _kwm_delta(now, prev)",
+     "    delta = now  # 撤回态：累计值当增量"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

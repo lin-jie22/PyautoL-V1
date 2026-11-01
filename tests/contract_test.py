@@ -1889,7 +1889,7 @@ print("=" * 74)
 # **内核自己的读数一概丢失** ⇒ "失配=3 ⇒ 因果闭环在工作"只能靠翻 stdout，
 # 日志又不落盘、事后无法复核。现在世界模型的 scored/hits/混淆矩阵随每次运行落盘。
 from run import (_KWM_NUM_KEYS, _kwm_absorb, _kwm_line,         # noqa: E402
-                 _kwm_zero)
+                 _kwm_now, _kwm_zero)
 
 _z_s1 = {"predictions": 10, "scored": 100, "hits": 100, "mismatches": 0,
          "mismatches_outcome": 0, "mismatches_text": 0, "text_compared": 0,
@@ -3638,6 +3638,59 @@ check(RS, "AZ101 ★★★预演否决必须有**专属出口**：不许落进 `
       f"vetoed={getattr(_AZ101_OFF.wm, 'vetoed', 'NA')} "
       f"被拦={_AZ101_LOG_OFF.count('全部候选被拦')}")
 
+# ── AZ102 的取证装置（V38）：跨题复用**同一个** Core ⇒ 累计值不许当增量 ──────
+#  ⭐ 为什么这是根因而不是"读数不好看"：`--memory-dir` 臂（累积臂）复用同一个
+#     `Core`（`run.py:1246`），`WorldModel` 与 `core.memory_layer_view` 都活在整个
+#     bench 进程里 ⇒ 它们报的是**跨题累计值**；而累加器把它们当增量相加，
+#     等于「同一个计数器被读几次就加几遍」。
+#  ⛔ 三个独立来源必须对上（V37 实测）：proxy 里 200 型请求 10 条 / `preds` 逐条
+#     10 条 / 而 `kernel_worldmodel.predictions` 写着 34。
+import importlib as _importlib                                        # noqa: E402
+_AZ102_RUN = _importlib.import_module("run")
+_AZ102_TMP = _TMP / "az102_kwm"
+_AZ102_TMP.mkdir(parents=True, exist_ok=True)
+for _p in _AZ102_TMP.glob("*.db*"):
+    _p.unlink()
+#: ⚠️ 复用 `_AZ101_GOAL`（> 120 字）：`looks_complex()` 为假就不会预演，
+#:    那样三次 run 的 `predictions` 恒为 0 ⇒ 「0==0」恒真，这条断言等于没写。
+_AZ102_CORE = Core(llm=StubLLM(), memory=MemoryStore(_AZ102_TMP / "m.db"),
+                   memory_mode="raw")
+_AZ102_ACC = _AZ102_RUN._kwm_zero()
+_AZ102_SNAP: list[int] = []
+with contextlib.redirect_stdout(io.StringIO()):
+    for _i in range(3):
+        _o = _AZ102_CORE.run(_AZ101_GOAL, budget_factor=1)
+        _AZ102_RUN._kwm_absorb(_AZ102_ACC, _o.stats["worldmodel"], _AZ102_CORE)
+        _AZ102_SNAP.append(int(_o.stats["worldmodel"]["predictions"]))
+_AZ102_ST = _AZ102_CORE.wm.stats()
+_AZ102_LAYER = dict(getattr(_AZ102_CORE, "memory_layer_view", None) or {})
+
+check(RS, "AZ102 ★★★累加器必须按**增量**并：不许把跨题累计值当增量（V38 / §104）\n"
+          "          —— 累积臂（`--memory-dir`）复用**同一个** `Core`，而\n"
+          "             `WorldModel.stats()` 与 `core.memory_layer_view` 都是\n"
+          "             纯 `+=` 的跨题累计值。把累计值相加 = 同一个计数器被\n"
+          "             读几次就加几遍：V37 实测 6 题逐题 `预演=2,3,5,6,8,10`\n"
+          "             ⇒ 落盘 34，真值 10（proxy 200 型 10 条、`preds` 10 条\n"
+          "             两个独立来源都对得上）。\n"
+          "         为什么必须单独设一条契约：这个 bug 不改变任何一格分数、\n"
+          "             不改变任何一条 prompt ⇒ 全部既有判据都看不见它，\n"
+          "             而它污染了历史上每一个『预演 N 次 / 命中 M 次』。\n"
+          "         判据：① 三次 run 的 `predictions` 真的在增长（否则 0==0 恒真）；\n"
+          "               ② 累加器终值 == 世界模型终值（同一个计数器）；\n"
+          "               ③ 混淆矩阵四格、层读数（住在 Core 上、同样是累加）同样相等。\n"
+          "         撤回语义：把 `delta = _kwm_delta(now, prev)` 换成 `delta = now`\n"
+          "               ⇒ ②③ 必红（每读一次就多抄一遍累计值）。",
+      _AZ102_SNAP[-1] > _AZ102_SNAP[0] > 0
+      and _AZ102_ACC["predictions"] == _AZ102_ST["predictions"]
+      and _AZ102_ACC["scored"] == _AZ102_ST["scored"]
+      and _AZ102_ACC["confusion"] == _AZ102_ST["confusion"]
+      and _AZ102_ACC["layer_recalled"] == int(_AZ102_LAYER.get("recalled", 0)),
+      f"三次 predictions={_AZ102_SNAP} ｜ acc={_AZ102_ACC['predictions']} "
+      f"stats={_AZ102_ST['predictions']} "
+      f"（旧写法会得 {sum(_AZ102_SNAP)}）｜ "
+      f"confusion acc={_AZ102_ACC['confusion']} stats={_AZ102_ST['confusion']} ｜ "
+      f"layer acc={_AZ102_ACC['layer_recalled']} core={_AZ102_LAYER.get('recalled', 0)}")
+
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
       _AL_wm2.reward_guidance(features=None, task_id="x") == ""
@@ -3931,13 +3984,22 @@ check(RS, "AN6 abstract 模式下只有 `source==abstract` 的事实留得下\n"
       and "不是抽象层的旧事实" not in _AN_exp,
       f"经验块={_AN_exp[:120]!r}")
 
-check(RS, "AN7 层读数必须有消费者：`memory_layer_view` 要被 `_kwm_absorb` **主动取走**\n"
+#: ⚠️ 第四十次复核（§104）：`_kwm_absorb` 被拆成「取快照（`_kwm_now`）+ 求差」两段
+#: （因为跨题累计值不许当增量）。静态锚必须跟着走**整条链**：只看 `_kwm_absorb` 的源码
+#: 会得出「它不读 memory_layer_view」—— 那是**锚点腐烂**，不是实现退步（`AS12` 的同宗）。
+#: 所以判据要求两件事**同时**在场：① `_kwm_now` 里真的读 `memory_layer_view`；
+#: ② `_kwm_absorb` 真的调 `_kwm_now`（否则读的地方变成孤岛，链断了锚还是绿的）。
+_AN_AbsSrc = _strip_docstrings(inspect.getsource(_kwm_absorb))
+_AN_NowSrc = _strip_docstrings(inspect.getsource(_kwm_now))
+check(RS, "AN7 层读数必须有消费者：`memory_layer_view` 要被吸收链**主动取走**\n"
           "         —— 第三次踩'新建字段没人搬运'的根因就是要求每个调用点**记着传**。\n"
-          "           现在由 absorb 自己去 core 上取，调用点传不传都有。",
-      "memory_layer_view" in _strip_docstrings(inspect.getsource(_kwm_absorb))
+          "           现在由吸收链自己去 core 上取，调用点传不传都有。\n"
+          "         ⛔ 静态锚必须覆盖整条链：`_kwm_now`（读） + `_kwm_absorb`（调）。",
+      "memory_layer_view" in _AN_NowSrc and "_kwm_now(" in _AN_AbsSrc
       and _AN_abs.memory_layer_view["abstract"] >= 1
       and _AN_abs.memory_layer_view["recalled"] >= _AN_abs.memory_layer_view["abstract"],
-      f"view={_AN_abs.memory_layer_view}")
+      f"view={_AN_abs.memory_layer_view} "
+      f"链：读={('memory_layer_view' in _AN_NowSrc)} 调={('_kwm_now(' in _AN_AbsSrc)}")
 
 
 class _StrReply:

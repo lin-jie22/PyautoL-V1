@@ -1,0 +1,430 @@
+==============================================================================
+V35 块级归因  root=/tmp  比较对 32
+==============================================================================
+
+--- ① 逐 run 逐臂（same / handle-only / content）---
+  v26/d2: states_d2_r1 → states_d2_r2  共同键 18  r2 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=12/6/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+      e1wi  it2.0 [工作记忆]: handle-only 57->58
+      e2ni  it2.0 [工作记忆]: handle-only 57->58
+      e2ni  it3.0 [工作记忆]: handle-only 90->91
+      e2ni  it4.0 [工作记忆]: handle-only 90->91
+      e2ni  it5.0 [工作记忆]: handle-only 90->91
+      e2wi  it2.0 [工作记忆]: handle-only 57->58
+  v26/f2: states_f2_r1 → states_f2_r2  共同键 18  r2 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=18/0/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+  v27/s12: states_s12_r1 → states_s12_r2  共同键 18  r2 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=18/0/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+  v28/d2: states_d2_r1 → states_d2_r2  共同键 18  r2 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=18/0/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+  v28/f2: states_f2_r1 → states_f2_r2  共同键 18  r2 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=18/0/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+  v28/s12: states_s12_r1 → states_s12_r2  共同键 18  r2 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=18/0/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+  v29/o2: states_o2_r1 → states_o2_r2  共同键 18  r2 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=18/0/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+  v29/p2: states_p2_r1 → states_p2_r2  共同键 18  r2 多 4 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=13/5/0  [语义记忆]=18/0/0  [外部评审]=15/0/3  [轨迹]=18/0/0  [步号]=18/0/0
+      e1ni  it1.0 [外部评审]: content 0->215
+      e1wi  it1.0 [外部评审]: content 0->215
+      e1wi  it2.0 [外部评审]: content 0->215
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [工作记忆]: handle-only 90->90
+      e2ni  it4.0 [工作记忆]: handle-only 90->91
+      e2ni  it5.0 [工作记忆]: handle-only 90->91
+      e2wi  it2.0 [工作记忆]: handle-only 57->57
+  v29/q2: states_q2_r1 → states_q2_r2  共同键 18  r2 多 4 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=13/5/0  [语义记忆]=18/0/0  [外部评审]=15/0/3  [轨迹]=18/0/0  [步号]=18/0/0
+      e1ni  it1.0 [外部评审]: content 0->215
+      e1wi  it1.0 [外部评审]: content 0->215
+      e1wi  it2.0 [外部评审]: content 0->215
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [工作记忆]: handle-only 90->90
+      e2ni  it4.0 [工作记忆]: handle-only 90->91
+      e2ni  it5.0 [工作记忆]: handle-only 90->91
+      e2wi  it2.0 [工作记忆]: handle-only 57->57
+  v30/o3: states_o3_r1 → states_o3_r2  共同键 18  r2 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=18/0/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+  v30/o3: states_o3_r1 → states_o3_r3  共同键 18  r3 多 0 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=18/0/0  [语义记忆]=18/0/0  [外部评审]=18/0/0  [轨迹]=18/0/0  [步号]=18/0/0
+  v30/o4: states_o4_r1 → states_o4_r2  共同键 17  r2 多 0 步
+      [same/handle/content] [目标]=17/0/0  [工作记忆]=17/0/0  [语义记忆]=17/0/0  [外部评审]=17/0/0  [轨迹]=17/0/0  [步号]=17/0/0
+  v30/o4: states_o4_r1 → states_o4_r3  共同键 17  r3 多 0 步
+      [same/handle/content] [目标]=17/0/0  [工作记忆]=17/0/0  [语义记忆]=17/0/0  [外部评审]=17/0/0  [轨迹]=17/0/0  [步号]=17/0/0
+  v30/p3: states_p3_r1 → states_p3_r2  共同键 18  r2 多 4 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=13/5/0  [语义记忆]=18/0/0  [外部评审]=15/0/3  [轨迹]=18/0/0  [步号]=18/0/0
+      e1ni  it1.0 [外部评审]: content 0->215
+      e1wi  it1.0 [外部评审]: content 0->215
+      e1wi  it2.0 [外部评审]: content 0->215
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [工作记忆]: handle-only 90->90
+      e2ni  it4.0 [工作记忆]: handle-only 90->91
+      e2ni  it5.0 [工作记忆]: handle-only 90->91
+      e2wi  it2.0 [工作记忆]: handle-only 57->57
+  v30/p3: states_p3_r1 → states_p3_r3  共同键 18  r3 多 4 步
+      [same/handle/content] [目标]=18/0/0  [工作记忆]=13/5/0  [语义记忆]=18/0/0  [外部评审]=15/0/3  [轨迹]=18/0/0  [步号]=18/0/0
+      e1ni  it1.0 [外部评审]: content 0->215
+      e1wi  it1.0 [外部评审]: content 0->215
+      e1wi  it2.0 [外部评审]: content 0->215
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [工作记忆]: handle-only 90->90
+      e2ni  it4.0 [工作记忆]: handle-only 90->91
+      e2ni  it5.0 [工作记忆]: handle-only 90->91
+      e2wi  it2.0 [工作记忆]: handle-only 57->57
+  v30/p4: states_p4_r1 → states_p4_r2  共同键 15  r2 多 9 步
+      [same/handle/content] [目标]=15/0/0  [工作记忆]=7/5/3  [语义记忆]=15/0/0  [外部评审]=0/0/15  [轨迹]=13/0/2  [步号]=15/0/0
+      e1ni  it1.0 [外部评审]: content 0->215
+      e1wi  it1.0 [外部评审]: content 0->215
+      e1wi  it2.0 [外部评审]: content 0->215
+      e2ni  it1.0 [外部评审]: content 0->215
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it2.0 [外部评审]: content 0->215
+      e2ni  it3.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [外部评审]: content 0->215
+      e2ni  it4.0 [工作记忆]: content 57->143
+      e2ni  it4.0 [外部评审]: content 0->215
+      e2ni  it4.0 [轨迹]: content 247->0
+      e2wi  it1.0 [外部评审]: content 0->324
+      e3ni  it1.0 [外部评审]: content 0->215
+      e3ni  it2.0 [工作记忆]: handle-only 58->58
+      e3ni  it2.0 [外部评审]: content 0->215
+      e3ni  it3.0 [工作记忆]: content 145->58
+      e3ni  it3.0 [外部评审]: content 0->215
+      e3ni  it3.0 [轨迹]: content 0->186
+      e3ni  it4.0 [工作记忆]: content 232->145
+      e3ni  it4.0 [外部评审]: content 0->215
+      e3wi  it1.0 [外部评审]: content 0->324
+      e3wi  it2.0 [工作记忆]: handle-only 57->57
+      e3wi  it2.0 [外部评审]: content 0->324
+      e3wi  it3.0 [工作记忆]: handle-only 57->57
+      e3wi  it3.0 [外部评审]: content 0->324
+  v30/p4: states_p4_r1 → states_p4_r3  共同键 15  r3 多 9 步
+      [same/handle/content] [目标]=15/0/0  [工作记忆]=7/5/3  [语义记忆]=15/0/0  [外部评审]=0/0/15  [轨迹]=13/0/2  [步号]=15/0/0
+      e1ni  it1.0 [外部评审]: content 0->215
+      e1wi  it1.0 [外部评审]: content 0->215
+      e1wi  it2.0 [外部评审]: content 0->215
+      e2ni  it1.0 [外部评审]: content 0->215
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it2.0 [外部评审]: content 0->215
+      e2ni  it3.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [外部评审]: content 0->215
+      e2ni  it4.0 [工作记忆]: content 57->143
+      e2ni  it4.0 [外部评审]: content 0->215
+      e2ni  it4.0 [轨迹]: content 247->0
+      e2wi  it1.0 [外部评审]: content 0->324
+      e3ni  it1.0 [外部评审]: content 0->215
+      e3ni  it2.0 [工作记忆]: handle-only 58->58
+      e3ni  it2.0 [外部评审]: content 0->215
+      e3ni  it3.0 [工作记忆]: content 145->58
+      e3ni  it3.0 [外部评审]: content 0->215
+      e3ni  it3.0 [轨迹]: content 0->186
+      e3ni  it4.0 [工作记忆]: content 232->145
+      e3ni  it4.0 [外部评审]: content 0->215
+      e3wi  it1.0 [外部评审]: content 0->324
+      e3wi  it2.0 [工作记忆]: handle-only 57->57
+      e3wi  it2.0 [外部评审]: content 0->324
+      e3wi  it3.0 [工作记忆]: handle-only 57->57
+      e3wi  it3.0 [外部评审]: content 0->324
+  v32/c0: states_c0_r1 → states_c0_r2  共同键 24  r2 多 1 步
+      [same/handle/content] [目标]=24/0/0  [工作记忆]=17/5/2  [语义记忆]=24/0/0  [外部评审]=24/0/0  [轨迹]=24/0/0  [步号]=24/0/0
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it5.0 [工作记忆]: content 143->131
+      e3ni  it2.0 [工作记忆]: handle-only 58->58
+      e3ni  it3.0 [工作记忆]: handle-only 58->58
+      e3ni  it4.0 [工作记忆]: handle-only 145->145
+      e3ni  it5.0 [工作记忆]: handle-only 145->145
+      e3ni  it5.1 [工作记忆]: handle-only 145->145
+  v32/c0: states_c0_r1 → states_c0_r3  共同键 24  r3 多 2 步
+      [same/handle/content] [目标]=24/0/0  [工作记忆]=10/12/2  [语义记忆]=24/0/0  [外部评审]=24/0/0  [轨迹]=24/0/0  [步号]=24/0/0
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it5.0 [工作记忆]: content 143->131
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [工作记忆]: handle-only 57->57
+      e2ni  it4.0 [工作记忆]: handle-only 143->143
+      e2ni  it5.0 [工作记忆]: handle-only 143->143
+      e2ni  it5.1 [工作记忆]: handle-only 143->143
+      e3ni  it2.0 [工作记忆]: handle-only 58->57
+      e3ni  it3.0 [工作记忆]: handle-only 58->57
+      e3ni  it4.0 [工作记忆]: handle-only 145->144
+      e3ni  it5.0 [工作记忆]: handle-only 145->144
+      e3ni  it5.1 [工作记忆]: handle-only 145->144
+      e3wi  it2.0 [工作记忆]: handle-only 57->57
+      e3wi  it3.0 [工作记忆]: handle-only 57->57
+  v32/c0: states_c0_r1 → states_c0_r4  共同键 24  r4 多 0 步
+      [same/handle/content] [目标]=24/0/0  [工作记忆]=22/0/2  [语义记忆]=24/0/0  [外部评审]=24/0/0  [轨迹]=24/0/0  [步号]=24/0/0
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it5.0 [工作记忆]: content 143->131
+  v32/c1: states_c1_r1 → states_c1_r2  共同键 21  r2 多 2 步
+      [same/handle/content] [目标]=21/0/0  [工作记忆]=10/10/1  [语义记忆]=21/0/0  [外部评审]=1/0/20  [轨迹]=20/0/1  [步号]=21/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it4.0 [外部评审]: content 215->324
+      e1wi  it1.0 [外部评审]: content 215->215
+      e1wi  it2.0 [外部评审]: content 215->215
+      e1wi  it3.0 [外部评审]: content 215->215
+      e2ni  it1.0 [外部评审]: content 215->324
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it2.0 [外部评审]: content 215->324
+      e2ni  it3.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [外部评审]: content 215->324
+      e2ni  it4.0 [工作记忆]: handle-only 143->143
+      e2ni  it4.0 [外部评审]: content 215->324
+      e2ni  it5.0 [工作记忆]: handle-only 143->143
+      e2ni  it5.0 [外部评审]: content 215->324
+      e2ni  it5.1 [工作记忆]: handle-only 143->143
+      e2ni  it5.1 [轨迹]: content 0->748
+      e2wi  it1.0 [外部评审]: content 324->215
+      e3ni  it1.0 [外部评审]: content 215->215
+      e3ni  it2.0 [工作记忆]: handle-only 58->58
+      e3ni  it2.0 [外部评审]: content 215->215
+      e3ni  it3.0 [工作记忆]: handle-only 58->58
+      e3ni  it3.0 [外部评审]: content 215->215
+      e3ni  it4.0 [工作记忆]: handle-only 145->145
+      e3ni  it4.0 [外部评审]: content 215->215
+      e3wi  it1.0 [外部评审]: content 324->215
+      e3wi  it2.0 [工作记忆]: handle-only 57->58
+      e3wi  it2.0 [外部评审]: content 324->215
+      e3wi  it3.0 [工作记忆]: handle-only 57->58
+      e3wi  it3.0 [外部评审]: content 324->215
+  v32/c1: states_c1_r1 → states_c1_r3  共同键 20  r3 多 2 步
+      [same/handle/content] [目标]=20/0/0  [工作记忆]=20/0/0  [语义记忆]=20/0/0  [外部评审]=1/0/19  [轨迹]=19/0/1  [步号]=20/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1wi  it1.0 [外部评审]: content 215->215
+      e1wi  it2.0 [外部评审]: content 215->215
+      e1wi  it3.0 [外部评审]: content 215->215
+      e2ni  it1.0 [外部评审]: content 215->324
+      e2ni  it2.0 [外部评审]: content 215->324
+      e2ni  it3.0 [外部评审]: content 215->324
+      e2ni  it4.0 [外部评审]: content 215->324
+      e2ni  it5.0 [外部评审]: content 215->324
+      e2ni  it5.1 [轨迹]: content 0->748
+      e2wi  it1.0 [外部评审]: content 324->215
+      e3ni  it1.0 [外部评审]: content 215->215
+      e3ni  it2.0 [外部评审]: content 215->215
+      e3ni  it3.0 [外部评审]: content 215->215
+      e3ni  it4.0 [外部评审]: content 215->215
+      e3wi  it1.0 [外部评审]: content 324->215
+      e3wi  it2.0 [外部评审]: content 324->215
+      e3wi  it3.0 [外部评审]: content 324->215
+  v32/c1: states_c1_r1 → states_c1_r4  共同键 20  r4 多 2 步
+      [same/handle/content] [目标]=20/0/0  [工作记忆]=20/0/0  [语义记忆]=20/0/0  [外部评审]=1/0/19  [轨迹]=19/0/1  [步号]=20/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1wi  it1.0 [外部评审]: content 215->215
+      e1wi  it2.0 [外部评审]: content 215->215
+      e1wi  it3.0 [外部评审]: content 215->215
+      e2ni  it1.0 [外部评审]: content 215->324
+      e2ni  it2.0 [外部评审]: content 215->324
+      e2ni  it3.0 [外部评审]: content 215->324
+      e2ni  it4.0 [外部评审]: content 215->324
+      e2ni  it5.0 [外部评审]: content 215->324
+      e2ni  it5.1 [轨迹]: content 0->748
+      e2wi  it1.0 [外部评审]: content 324->215
+      e3ni  it1.0 [外部评审]: content 215->215
+      e3ni  it2.0 [外部评审]: content 215->215
+      e3ni  it3.0 [外部评审]: content 215->215
+      e3ni  it4.0 [外部评审]: content 215->215
+      e3wi  it1.0 [外部评审]: content 324->215
+      e3wi  it2.0 [外部评审]: content 324->215
+      e3wi  it3.0 [外部评审]: content 324->215
+  v33/P: states_P_r1 → states_P_r2  共同键 20  r2 多 0 步
+      [same/handle/content] [目标]=20/0/0  [工作记忆]=17/0/3  [语义记忆]=20/0/0  [外部评审]=2/0/18  [轨迹]=17/0/3  [步号]=20/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it4.0 [外部评审]: content 215->324
+      e1ni  it4.0 [轨迹]: content 716->0
+      e1wi  it1.0 [外部评审]: content 215->324
+      e1wi  it2.0 [外部评审]: content 215->324
+      e1wi  it3.0 [外部评审]: content 215->324
+      e2ni  it1.0 [外部评审]: content 215->215
+      e2ni  it2.0 [外部评审]: content 215->215
+      e2ni  it3.0 [外部评审]: content 215->215
+      e2ni  it4.0 [外部评审]: content 215->215
+      e2ni  it5.0 [外部评审]: content 215->215
+      e3ni  it1.0 [外部评审]: content 215->215
+      e3ni  it2.0 [工作记忆]: content 58->91
+      e3ni  it2.0 [外部评审]: content 215->215
+      e3ni  it2.0 [轨迹]: content 127->0
+      e3ni  it3.0 [工作记忆]: content 58->91
+      e3ni  it3.0 [外部评审]: content 215->215
+      e3ni  it3.0 [轨迹]: content 186->0
+      e3wi  it1.0 [外部评审]: content 324->324
+      e3wi  it2.0 [外部评审]: content 324->324
+      e3wi  it3.0 [外部评审]: content 324->324
+  v33/P: states_P_r1 → states_P_r3  共同键 21  r3 多 0 步
+      [same/handle/content] [目标]=21/0/0  [工作记忆]=19/0/2  [语义记忆]=21/0/0  [外部评审]=2/0/19  [轨迹]=19/0/2  [步号]=21/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it4.0 [外部评审]: content 215->324
+      e1ni  it4.0 [轨迹]: content 716->0
+      e1wi  it1.0 [外部评审]: content 215->324
+      e1wi  it2.0 [外部评审]: content 215->324
+      e1wi  it3.0 [外部评审]: content 215->324
+      e2ni  it1.0 [外部评审]: content 215->324
+      e2ni  it2.0 [外部评审]: content 215->324
+      e2ni  it3.0 [外部评审]: content 215->324
+      e2ni  it4.0 [工作记忆]: content 143->57
+      e2ni  it4.0 [外部评审]: content 215->324
+      e2ni  it4.0 [轨迹]: content 0->246
+      e3ni  it1.0 [外部评审]: content 215->324
+      e3ni  it2.0 [外部评审]: content 215->324
+      e3ni  it3.0 [外部评审]: content 215->324
+      e3ni  it4.0 [外部评审]: content 215->324
+      e3ni  it5.0 [外部评审]: content 215->324
+      e3wi  it1.0 [外部评审]: content 324->433
+      e3wi  it2.0 [外部评审]: content 324->433
+      e3wi  it3.0 [外部评审]: content 324->433
+  v33/P: states_P_r1 → states_P_r4  共同键 21  r4 多 0 步
+      [same/handle/content] [目标]=21/0/0  [工作记忆]=19/0/2  [语义记忆]=21/0/0  [外部评审]=2/0/19  [轨迹]=19/0/2  [步号]=21/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it4.0 [外部评审]: content 215->324
+      e1ni  it4.0 [轨迹]: content 716->0
+      e1wi  it1.0 [外部评审]: content 215->324
+      e1wi  it2.0 [外部评审]: content 215->324
+      e1wi  it3.0 [外部评审]: content 215->324
+      e2ni  it1.0 [外部评审]: content 215->324
+      e2ni  it2.0 [外部评审]: content 215->324
+      e2ni  it3.0 [外部评审]: content 215->324
+      e2ni  it4.0 [工作记忆]: content 143->57
+      e2ni  it4.0 [外部评审]: content 215->324
+      e2ni  it4.0 [轨迹]: content 0->246
+      e3ni  it1.0 [外部评审]: content 215->324
+      e3ni  it2.0 [外部评审]: content 215->324
+      e3ni  it3.0 [外部评审]: content 215->324
+      e3ni  it4.0 [外部评审]: content 215->324
+      e3ni  it5.0 [外部评审]: content 215->324
+      e3wi  it1.0 [外部评审]: content 324->433
+      e3wi  it2.0 [外部评审]: content 324->433
+      e3wi  it3.0 [外部评审]: content 324->433
+  v33/c0: states_c0_r1 → states_c0_r2  共同键 24  r2 多 0 步
+      [same/handle/content] [目标]=24/0/0  [工作记忆]=22/0/2  [语义记忆]=24/0/0  [外部评审]=24/0/0  [轨迹]=24/0/0  [步号]=24/0/0
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it5.0 [工作记忆]: content 143->131
+  v33/c0: states_c0_r1 → states_c0_r3  共同键 24  r3 多 0 步
+      [same/handle/content] [目标]=24/0/0  [工作记忆]=22/0/2  [语义记忆]=24/0/0  [外部评审]=24/0/0  [轨迹]=24/0/0  [步号]=24/0/0
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it5.0 [工作记忆]: content 143->131
+  v33/c0: states_c0_r1 → states_c0_r4  共同键 24  r4 多 0 步
+      [same/handle/content] [目标]=24/0/0  [工作记忆]=22/0/2  [语义记忆]=24/0/0  [外部评审]=24/0/0  [轨迹]=24/0/0  [步号]=24/0/0
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it5.0 [工作记忆]: content 143->131
+  v33/c1: states_c1_r1 → states_c1_r2  共同键 21  r2 多 2 步
+      [same/handle/content] [目标]=21/0/0  [工作记忆]=10/10/1  [语义记忆]=21/0/0  [外部评审]=1/0/20  [轨迹]=20/0/1  [步号]=21/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1ni  it4.0 [工作记忆]: content 143->131
+      e1ni  it4.0 [外部评审]: content 215->324
+      e1wi  it1.0 [外部评审]: content 215->215
+      e1wi  it2.0 [外部评审]: content 215->215
+      e1wi  it3.0 [外部评审]: content 215->215
+      e2ni  it1.0 [外部评审]: content 215->324
+      e2ni  it2.0 [工作记忆]: handle-only 57->57
+      e2ni  it2.0 [外部评审]: content 215->324
+      e2ni  it3.0 [工作记忆]: handle-only 57->57
+      e2ni  it3.0 [外部评审]: content 215->324
+      e2ni  it4.0 [工作记忆]: handle-only 143->143
+      e2ni  it4.0 [外部评审]: content 215->324
+      e2ni  it5.0 [工作记忆]: handle-only 143->143
+      e2ni  it5.0 [外部评审]: content 215->324
+      e2ni  it5.1 [工作记忆]: handle-only 143->143
+      e2ni  it5.1 [轨迹]: content 0->748
+      e2wi  it1.0 [外部评审]: content 324->215
+      e3ni  it1.0 [外部评审]: content 215->215
+      e3ni  it2.0 [工作记忆]: handle-only 58->58
+      e3ni  it2.0 [外部评审]: content 215->215
+      e3ni  it3.0 [工作记忆]: handle-only 58->58
+      e3ni  it3.0 [外部评审]: content 215->215
+      e3ni  it4.0 [工作记忆]: handle-only 145->145
+      e3ni  it4.0 [外部评审]: content 215->215
+      e3wi  it1.0 [外部评审]: content 324->215
+      e3wi  it2.0 [工作记忆]: handle-only 57->58
+      e3wi  it2.0 [外部评审]: content 324->215
+      e3wi  it3.0 [工作记忆]: handle-only 57->58
+      e3wi  it3.0 [外部评审]: content 324->215
+  v33/c1: states_c1_r1 → states_c1_r3  共同键 20  r3 多 2 步
+      [same/handle/content] [目标]=20/0/0  [工作记忆]=20/0/0  [语义记忆]=20/0/0  [外部评审]=1/0/19  [轨迹]=19/0/1  [步号]=20/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1wi  it1.0 [外部评审]: content 215->215
+      e1wi  it2.0 [外部评审]: content 215->215
+      e1wi  it3.0 [外部评审]: content 215->215
+      e2ni  it1.0 [外部评审]: content 215->324
+      e2ni  it2.0 [外部评审]: content 215->324
+      e2ni  it3.0 [外部评审]: content 215->324
+      e2ni  it4.0 [外部评审]: content 215->324
+      e2ni  it5.0 [外部评审]: content 215->324
+      e2ni  it5.1 [轨迹]: content 0->748
+      e2wi  it1.0 [外部评审]: content 324->215
+      e3ni  it1.0 [外部评审]: content 215->215
+      e3ni  it2.0 [外部评审]: content 215->215
+      e3ni  it3.0 [外部评审]: content 215->215
+      e3ni  it4.0 [外部评审]: content 215->215
+      e3wi  it1.0 [外部评审]: content 324->215
+      e3wi  it2.0 [外部评审]: content 324->215
+      e3wi  it3.0 [外部评审]: content 324->215
+  v33/c1: states_c1_r1 → states_c1_r4  共同键 20  r4 多 2 步
+      [same/handle/content] [目标]=20/0/0  [工作记忆]=20/0/0  [语义记忆]=20/0/0  [外部评审]=1/0/19  [轨迹]=19/0/1  [步号]=20/0/0
+      e1ni  it1.0 [外部评审]: content 215->324
+      e1ni  it2.0 [外部评审]: content 215->324
+      e1ni  it3.0 [外部评审]: content 215->324
+      e1wi  it1.0 [外部评审]: content 215->215
+      e1wi  it2.0 [外部评审]: content 215->215
+      e1wi  it3.0 [外部评审]: content 215->215
+      e2ni  it1.0 [外部评审]: content 215->324
+      e2ni  it2.0 [外部评审]: content 215->324
+      e2ni  it3.0 [外部评审]: content 215->324
+      e2ni  it4.0 [外部评审]: content 215->324
+      e2ni  it5.0 [外部评审]: content 215->324
+      e2ni  it5.1 [轨迹]: content 0->748
+      e2wi  it1.0 [外部评审]: content 324->215
+      e3ni  it1.0 [外部评审]: content 215->215
+      e3ni  it2.0 [外部评审]: content 215->215
+      e3ni  it3.0 [外部评审]: content 215->215
+      e3ni  it4.0 [外部评审]: content 215->215
+      e3wi  it1.0 [外部评审]: content 324->215
+      e3wi  it2.0 [外部评审]: content 324->215
+      e3wi  it3.0 [外部评审]: content 324->215
+
+--- ② 全局块级计数（所有比较对的 (task,it,行序) 累加）---
+  块             same  handle  content     从无到有
+  [目标]           626       0        0        0
+  [工作记忆]         526      73       27        0
+  [语义记忆]         626       0        0        0
+  [外部评审]         412       0      214       42
+  [轨迹]           609       0       17       10
+  [步号]           626       0        0        0
+
+--- ③ handle-only 差异的形态（句柄从什么变成什么）---
+       b#8 → b#9        10 次
+       b#7 → b#8        10 次
+       b#8 → b#10        8 次
+      b#11 → b#12        6 次
+      b#11 → b#10        5 次
+       b#7 → b#6         5 次
+      b#11 → b#9         5 次
+       b#6 → b#8         4 次
+       b#7 → b#9         4 次
+       b#4 → b#6         4 次
+       b#6 → b#7         4 次
+       b#9 → b#10        4 次
+      b#12 → b#11        3 次
+       b#8 → b#7         3 次
+      b#12 → b#10        3 次
+
+==============================================================================
+⛔ 本脚本只输出事实。判决见 PREREG.md §3；本文件不含任何结论。
+==============================================================================

@@ -1,0 +1,67 @@
+==============================================================================
+V35 逐字符证据  /tmp/v26
+==============================================================================
+
+--- ① 分数 ---
+  e1ni   r1=   16  r2=   16
+  e1wi   r1=    0  r2=   16  <<< 变了
+  e2ni   r1=    0  r2=    0
+  e2wi   r1=   16  r2=   16
+  e3ni   r1=    0  r2=    0
+  e3wi   r1=   16  r2=   16
+
+--- ② e1wi 每一步 state 的两轮比较 ---
+  it=1 idx=0  len 1198 / 1198  sha debe3b9cd0 / debe3b9cd0  逐字节相同
+  it=2 idx=0  len 1384 / 1385  sha a28ae7099c / d4eabe45e5  **不同**
+
+--- ③ 不同那几步的字符级 diff ---
+  it=2 idx=0  insert: a[1199:1199]='' b[1199:1200]='2'
+     上下文: ..."间若看起来有冲突，以更具体的那条为准。\n只输出代码，函数名必须是 clean_lines。不要写示例调用或测试代码。\n[工作记忆] [b#1 23字 sha=34ea10ccd32e] recall ⇒ ✔ (语义记忆中无相关条目)\n[轨迹] [step 1] recall({'"...
+
+--- ④ proxy 台账：e1wi 的每次请求（socket 层指纹）---
+  [d2_r1] 窗 1793419195~1793419807  共 33 次请求；前 3 次：
+    #0 req_sha=56dcd4acaf8a1429 up_sha=6a674bba33ccb570 req_bytes=10950 prompt_tokens=1763 resp_bytes=2329 completion=493 finish=stop
+    #1 req_sha=17198ede6ccb949a up_sha=dd9e0c561516e50c req_bytes=2831 prompt_tokens=464 resp_bytes=454 completion=34 finish=stop
+    #2 req_sha=ba957838a1c3c4f7 up_sha=f889e21bc9ded910 req_bytes=12382 prompt_tokens=2018 resp_bytes=1036 completion=171 finish=stop
+  [d2_r2] 窗 1793420692~1793421098  共 33 次请求；前 3 次：
+    #0 req_sha=56dcd4acaf8a1429 up_sha=6a674bba33ccb570 req_bytes=10950 prompt_tokens=1763 resp_bytes=2329 completion=493 finish=stop
+    #1 req_sha=17198ede6ccb949a up_sha=dd9e0c561516e50c req_bytes=2831 prompt_tokens=464 resp_bytes=454 completion=34 finish=stop
+    #2 req_sha=8635c8f778eec913 up_sha=cdd26e137fc90865 req_bytes=12383 prompt_tokens=2019 resp_bytes=1075 completion=181 finish=stop
+  逐条对照（共 33 对）：
+    # 0 req_sha 同  56dcd4acaf8a / 56dcd4acaf8a  bytes 10950 / 10950
+    # 1 req_sha 同  17198ede6ccb / 17198ede6ccb  bytes 2831 / 2831
+    # 2 req_sha **异**  ba957838a1c3 / 8635c8f778ee  bytes 12382 / 12383
+    # 3 req_sha **异**  8c49874e8911 / feed7a736d20  bytes 2795 / 3284
+    # 4 req_sha 同  a8fae27891be / a8fae27891be  bytes 11066 / 11066
+    # 5 req_sha 同  4a748623f0cf / 4a748623f0cf  bytes 8621 / 8621
+    # 6 req_sha **异**  8cb0ee967b06 / cd091f9d2228  bytes 2860 / 3348
+    # 7 req_sha 同  7f5ea8577ba8 / 7f5ea8577ba8  bytes 11056 / 11056
+    # 8 req_sha 同  f2a225d3b657 / f2a225d3b657  bytes 2665 / 2665
+    # 9 req_sha **异**  8f823d29f962 / 31ddb2bf1ff8  bytes 12086 / 12087
+    #10 req_sha **异**  e076c37e41d8 / 25c59a8ae295  bytes 2624 / 3112
+    #11 req_sha 同  1db29162064b / 1db29162064b  bytes 11168 / 11168
+    #12 req_sha 同  27e830c73fb9 / 27e830c73fb9  bytes 2718 / 2718
+    #13 req_sha **异**  e2ac6f797546 / 899157bc1e81  bytes 12178 / 12179
+    #14 req_sha **异**  fe5fd0287bd4 / 130a9e609390  bytes 2686 / 3174
+    #15 req_sha **异**  19ae891501c2 / 9fb4f21722ea  bytes 14370 / 14371
+    #16 req_sha **异**  5cdfc368c1e7 / d4557fa4b0dc  bytes 9031 / 9032
+    #17 req_sha **异**  432fd4428107 / 89edefdbd123  bytes 2955 / 3175
+    #18 req_sha **异**  77d0ba7c67c0 / 29d8738875e1  bytes 15250 / 15251
+    #19 req_sha **异**  667b3bade979 / c94c0f09320a  bytes 9031 / 9032
+    #20 req_sha **异**  6a14aec4b5d8 / df299bba28af  bytes 16632 / 16633
+    #21 req_sha 同  153768c43c9a / 153768c43c9a  bytes 11512 / 11512
+    #22 req_sha 同  e31d890348c1 / e31d890348c1  bytes 2675 / 2675
+    #23 req_sha 同  d4c0c47beac3 / d4c0c47beac3  bytes 12418 / 12418
+    #24 req_sha 同  75f93b16b185 / 75f93b16b185  bytes 13056 / 13056
+    #25 req_sha 同  1bc0985e4677 / 1bc0985e4677  bytes 9067 / 9067
+    #26 req_sha **异**  0c4414e4539b / 6809d892adfa  bytes 2893 / 3113
+    #27 req_sha 同  f5f5331b49a4 / f5f5331b49a4  bytes 11642 / 11642
+    #28 req_sha 同  e365dffe9c81 / e365dffe9c81  bytes 3171 / 3171
+    #29 req_sha 同  60e005d7ea11 / 60e005d7ea11  bytes 13322 / 13322
+    #30 req_sha 同  7c9d16e47cd8 / 7c9d16e47cd8  bytes 13715 / 13715
+    #31 req_sha 同  ef902b50fae7 / ef902b50fae7  bytes 15053 / 15053
+    #32 req_sha 同  cff841971998 / cff841971998  bytes 9197 / 9197
+
+==============================================================================
+⛔ 本脚本只输出事实。
+==============================================================================

@@ -298,6 +298,69 @@ def _kwm_zero() -> dict:
 _KWM_NUM_KEYS: tuple[str, ...] = tuple(k for k in _kwm_zero() if k != "confusion")
 
 
+#: 规划器读数的累加键（V39）。⛔ 同样由零点派生 —— 理由见 `_KWM_NUM_KEYS`。
+_KPL_NUM_KEYS: tuple[str, ...] = ("calls", "degraded", "json_fail", "truncated",
+                                  "no_tool_fit", "empty_plan", "reseek",
+                                  "answer_retry_ok", "answer_retry_fail")
+
+
+def _kpl_zero() -> dict:
+    """规划器读数的零点（第三十九轮 / V39）。
+
+    ⛔ 为什么要落盘：`Planner` 一直有 `json_fail` / `truncated` / `no_tool_fit` /
+    `empty_plan` 四个**分项**降级计数（`mw/planner.py`，注释写着"修法不同的分支
+    合并，就再也分不清该修哪里"）—— 但它们**从来没进过 `runs.jsonl`**：
+    台账里只有 `kernel_worldmodel` / `kernel_closeout` / `kernel_external` /
+    `kernel_transport`，没有 `kernel_planner`。
+
+    后果是具体的：V39 的前置量要靠这四项才看出「请求 n=3 时 6 题全坏」，
+    而那时候它们是**从 stdout 日志里手数的**（`⚠️` 行 + 正则）——
+    手数不进台账 ⇒ 不可审计，下一轮只能再数一遍。
+
+    ⚠️ `degrade_rate` / `cause_balances` **不进累加键**：一个是派生比值
+    （§104.3 已证明比值同样会被重复累加污染），一个是单轮不变量。
+    """
+    return {k: 0 for k in _KPL_NUM_KEYS}
+
+
+def _kpl_absorb(acc: dict, stats: dict, core: object = None) -> dict:
+    """把一次内核运行的规划器读数并进累加器（就地修改并返回）。
+
+    ⚠️ **必须求差，不能直接累加**：`--memory-dir` 臂复用同一个 `Core`
+    （`run.py` 的 `_core` 分支），而 `Planner` 的计数是生命周期内纯 `+=`
+    ⇒ `stats()` 给的是**跨题累计值**。V38 已经为 `_kwm` 修过一次同一个病
+    （6 题 `2,3,5,6,8,10` 被加成 34），这里不许重演：基线挂 `core._kpl_seen`。
+
+    ⛔ 基线**不挂 `acc`**：`_kpl_line` 对每个键做 `int(v)`，把 dict 塞进
+    `acc` 会把落盘打断 —— 这正是 V38 记录过的"顺手放一下会炸掉的地方"。
+    ⛔ 也不做 `max(0, …)` 钳位：负数只可能意味着"有人改了会清零的计数器"，
+    读数要显形，不许被钳掉（同 §104.2 第 3 条）。
+    """
+    now = {k: int(stats.get(k, 0) or 0) for k in _KPL_NUM_KEYS}
+    prev = getattr(core, "_kpl_seen", None) if core is not None else None
+    for k in _KPL_NUM_KEYS:
+        was = int((prev or {}).get(k, 0) or 0)
+        acc[k] = int(acc.get(k, 0)) + (now[k] - was)
+    if core is not None:
+        setattr(core, "_kpl_seen", now)
+    return acc
+
+
+def _kpl_line(acc: dict) -> dict:
+    """落盘前的派生量。**分母同时给** —— 只报 `json_fail=7` 无法判断严重程度。
+
+    `fail_total` 把四种"这次规划回答用不了"的分支合成一个数，
+    但它**不替代分项**：四个分支的修法完全不同（改提示词 / 调 max_tokens /
+    加工具 / 改解析器），合起来只剩一个数就归不了因。
+    """
+    out = {k: int(acc.get(k, 0) or 0) for k in _KPL_NUM_KEYS}
+    out["fail_total"] = (out["json_fail"] + out["truncated"]
+                         + out["empty_plan"] + out["no_tool_fit"])
+    out["fail_rate"] = (round(out["fail_total"] / out["calls"], 3)
+                        if out["calls"] else None)
+    return out
+
+
 def _kex_zero() -> dict:
     """外部能力读数的累加器零点（第二十三轮，路线①）。
 
@@ -1092,6 +1155,7 @@ def cmd_bench(args) -> int:
     #: "读数不可复核"。世界模型的分辨力（scored/hits/混淆矩阵）现在随每次运行落盘。
     #: 累加/派生逻辑在模块级（`_kwm_zero/_kwm_absorb/_kwm_line`），**不在这里重写一遍**。
     _kwm = _kwm_zero()
+    _kpl = _kpl_zero()      # 规划器读数（V39）：降级四个分项必须可审计
     _kco = _kco_zero()      # 收尾兜底（第二十二轮）：与 _kwm 同源的落盘读数
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
     _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
@@ -1271,6 +1335,7 @@ def cmd_bench(args) -> int:
                                     scorer_sha=scorer.sha(), suite_sha=suite.sha(),
                                     features=_feat_of.get(t.id))
                         _kwm_absorb(_kwm, out.stats["worldmodel"], c)
+                        _kpl_absorb(_kpl, out.stats.get("planner") or {}, c)
                         _kco_absorb(_kco, out.stats.get("closeout") or {})
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
@@ -1302,6 +1367,7 @@ def cmd_bench(args) -> int:
                                 scorer_sha=scorer.sha(), suite_sha=suite.sha(),
                                 features=_feat_of.get(t.id))
                 _kwm_absorb(_kwm, out.stats["worldmodel"], _core)
+                _kpl_absorb(_kpl, out.stats.get("planner") or {}, _core)
                 _kco_absorb(_kco, out.stats.get("closeout") or {})
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
@@ -1475,6 +1541,18 @@ def cmd_bench(args) -> int:
                  if _kw["layer_recalled"] or _kw["layer_abstract"] else "")
               + (f" ⚠️未检验={_kw['unscored']}" if _kw["unscored"] else ""))
 
+    # ── 规划器降级分项（V39）──────────────────────────────────────────────
+    # ⛔ **无条件**印：`json_fail=0` 与"根本没统计"在读数上必须分得开
+    #    （同 `blocked_skipped` 的理由）。分母 `calls` 一起印 ——
+    #    只报 `失败=3` 无法判断是 3/3 还是 3/60。
+    _kpl_p = _kpl_line(_kpl)
+    print(f"  规划器    调用={_kpl_p['calls']} 失败={_kpl_p['fail_total']}"
+          f"（json={_kpl_p['json_fail']} 截断={_kpl_p['truncated']}"
+          f" 无工具={_kpl_p['no_tool_fit']} 空计划={_kpl_p['empty_plan']}）"
+          f" 率={'n/a' if _kpl_p['fail_rate'] is None else _kpl_p['fail_rate']}"
+          f" 重问={_kpl_p['reseek']}"
+          f" 补救={_kpl_p['answer_retry_ok']}/{_kpl_p['answer_retry_fail']}")
+
     # ── 传输层读数（第二十五轮）：**只在出过事时**才占一行 ────────────────
     # 为什么要印：R2 主张"这次修复不改变正常路径"，而它的证据是
     # 正常端点上"放弃"类计数全程为 0（而"上限被裁短"会是 N ≡ 调用次数的常数
@@ -1554,6 +1632,9 @@ def cmd_bench(args) -> int:
         "measurement": measurement_to_dict(m), "report": rep.as_dict(),
         # 内核侧读数（世界模型的**分辨力**）。不落盘的读数不可审计。
         "kernel_worldmodel": _kw,
+        # 内核侧读数（规划器的**降级分项**，V39）。同一条理由：
+        # 四个分项的修法完全不同，只报 `degraded` 一个总数就归不了因。
+        "kernel_planner": _kpl_line(_kpl),
         # 收尾兜底读数（第二十二轮）：**不落盘的读数不可审计**。
         "kernel_closeout": _kco,
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。

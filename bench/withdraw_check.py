@@ -1282,6 +1282,15 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ102", "run.py",
      "    delta = _kwm_delta(now, prev)",
      "    delta = now  # 撤回态：累计值当增量"),
+    # ── AZ103：规划器降级分项进台账 + 按增量累加（第 130 轮 / V39）──────────
+    #: 撤的是 `_kpl_absorb` 里那行**求差**：`+ (now[k] - was)` → `+ now[k]`。
+    #:   ⇒ 同一个 `Core` 连跑 3 题时，每个计数器都被读几次加几遍，
+    #:   累加器终值 ≠ `Planner.stats()` 终值 ⇒ ② 必红，① 仍绿。
+    #: ⚠️ 为什么撤这一行而不是删 `_kpl_zero`：删了 `_kpl_zero` 会让 `_kpl` 未定义，
+    #:   红的是 `NameError` 不是"没求差"—— 那是把「机制坏了」读成「脚本崩了」。
+    ("AZ103", "run.py",
+     "        acc[k] = int(acc.get(k, 0)) + (now[k] - was)",
+     "        acc[k] = int(acc.get(k, 0)) + now[k]  # 撤回态：累计值当增量"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

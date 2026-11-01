@@ -3691,6 +3691,54 @@ check(RS, "AZ102 ★★★累加器必须按**增量**并：不许把跨题累�
       f"confusion acc={_AZ102_ACC['confusion']} stats={_AZ102_ST['confusion']} ｜ "
       f"layer acc={_AZ102_ACC['layer_recalled']} core={_AZ102_LAYER.get('recalled', 0)}")
 
+# ── AZ103 的取证装置（V39）：规划器的降级分项必须进台账，且同样按增量累加 ────
+#  ⭐ 为什么这是"读数不可审计"而不是"少印一行"：`Planner` 有四个**分项**降级计数
+#     （`json_fail`/`truncated`/`no_tool_fit`/`empty_plan`），注释写着"修法不同的
+#     分支合并，就再也分不清该修哪里" —— 而 `runs.jsonl` 里只有
+#     `kernel_worldmodel`/`kernel_closeout`/`kernel_external`/`kernel_transport`，
+#     **没有 `kernel_planner`**。V39 的前置量只能从 stdout 日志里正则手数。
+_AZ103_TMP = _TMP / "az103_kpl"
+_AZ103_TMP.mkdir(parents=True, exist_ok=True)
+for _p in _AZ103_TMP.glob("*.db*"):
+    _p.unlink()
+_AZ103_CORE = Core(llm=StubLLM(), memory=MemoryStore(_AZ103_TMP / "m.db"),
+                   memory_mode="raw")
+_AZ103_ACC = _AZ102_RUN._kpl_zero()
+_AZ103_SNAP: list[int] = []
+with contextlib.redirect_stdout(io.StringIO()):
+    for _i in range(3):
+        _o = _AZ103_CORE.run(_AZ101_GOAL, budget_factor=1)
+        _AZ102_RUN._kpl_absorb(_AZ103_ACC, _o.stats["planner"], _AZ103_CORE)
+        _AZ103_SNAP.append(int(_o.stats["planner"]["calls"]))
+_AZ103_ST = _AZ103_CORE.planner.stats()
+_AZ103_LINE = _AZ102_RUN._kpl_line(_AZ103_ACC)
+_AZ103_SRC = inspect.getsource(_AZ102_RUN)
+
+check(RS, "AZ103 ★★★规划器的**降级分项**必须进台账，累加同样按增量（V39）\n"
+          "          —— 四个分支（json/截断/无工具/空计划）的修法完全不同：\n"
+          "             改提示词 / 调 max_tokens / 加工具 / 改解析器。\n"
+          "             只落一个 `degraded` 总数就等于把它们重新合成一句\n"
+          "             「模型不行」，而那正是 `planner.py` 里被明确否掉的写法。\n"
+          "         判据：① 三次 run 的 `calls` 真的在增长（否则 0==0 恒真）；\n"
+          "               ② 累加器终值 == 规划器终值（同一个计数器）；\n"
+          "               ③ `fail_total`/`fail_rate` 与四个分项自洽；\n"
+          "               ④ `runs.jsonl` 的写盘字典里真有 `kernel_planner` 这个键。\n"
+          "         撤回语义：把 `acc[k] += (now[k] - was)` 换回 `+= now[k]`\n"
+          "               ⇒ ② 必红（同一个计数器被读几次就加几遍）。",
+      _AZ103_SNAP[-1] > _AZ103_SNAP[0] > 0
+      and _AZ103_ACC["calls"] == int(_AZ103_ST["calls"])
+      and _AZ103_ACC["json_fail"] == int(_AZ103_ST["json_fail"])
+      and _AZ103_ACC["truncated"] == int(_AZ103_ST["truncated"])
+      and _AZ103_LINE["fail_total"] == (
+          _AZ103_ACC["json_fail"] + _AZ103_ACC["truncated"]
+          + _AZ103_ACC["empty_plan"] + _AZ103_ACC["no_tool_fit"])
+      and '"kernel_planner"' in _AZ103_SRC,
+      f"三次 calls={_AZ103_SNAP} ｜ acc={_AZ103_ACC['calls']} "
+      f"stats={_AZ103_ST['calls']}（旧写法会得 {sum(_AZ103_SNAP)}）｜ "
+      f"json_fail acc={_AZ103_ACC['json_fail']} stats={_AZ103_ST['json_fail']} ｜ "
+      f"fail_total={_AZ103_LINE['fail_total']} ｜ "
+      f"台账键={'有' if chr(34) + 'kernel_planner' + chr(34) in _AZ103_SRC else '缺'}")
+
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
       _AL_wm2.reward_guidance(features=None, task_id="x") == ""

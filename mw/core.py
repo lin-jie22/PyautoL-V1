@@ -597,6 +597,15 @@ class Core:
         #: 内核不读它做决策；runner 在任务结束后取走落盘，由外部探针审计。
         #: 建在 `__init__` 的理由同上面两条（单独调用 `_state` 的探针也会用到）。
         self.state_log: list[tuple[int, str]] = []
+        #: ★V36：与 `state_log` **同长同序**的附加证据 —— 逐步落 `n` 与 `guidance`。
+        #  ⛔ 为什么必须有它（V35 留下的 488 字节悬案）：
+        #    `v26/d2` 的 `e1wi` 两轮 state 只差 **1 个字符**，而 proxy 台账里
+        #    `req_bytes` 差 **488**。差额在 state 之外，而 `wm.guidance()`（本文件第 851 行
+        #    一线）与候选数 `n` 从来不进 `_state()` —— 于是「读数为什么变」无法归因。
+        #    V34 已立纪律 43：`state` 不是 `prompt` 的身份。这条字段是把它补上。
+        #  ⚠️ 仍然是**只读证据出口**：内核不读它做决策，runner 取走落盘，外部探针审计。
+        #  ⚠️ 容量必须与 `state_log` 同步裁剪，否则两份证据会错位 —— 错位比没有更糟。
+        self.state_meta: list[dict] = []
         self.planner = Planner(self.llm, self.tools,
                                max_tokens=self.s.limits.llm_max_tokens,
                                state_chars=self.s.limits.state_chars)
@@ -681,6 +690,8 @@ class Core:
         # 不清空的话，第 k 题的 dump 里会混进第 k−1 题的 state ——
         # 那正是本轮在修的同一类错误（跨题残留），不能在新字段上重演一遍。
         self.state_log = []
+        # 同一条理由：附加证据也必须按轮清空，否则上一题的 `guidance` 会挂到本题的 state 上。
+        self.state_meta = []
         self.expand_stats: dict = {
             "calls": 0, "chars": 0, "errors": 0,
             "by_trigger": {"mismatch": 0, "fail_tail": 0},
@@ -842,6 +853,14 @@ class Core:
                 # ③ 规划（失败过就带错误原文重规划，不原地重试）
                 #    同时把"已尝试过的动作签名"精确交给规划器 —— 不是靠自由文本
                 #    提醒（实测里模型会无视"已试过：…"的自然语言）。
+                # ★ V36：`guidance` 提到分支**之前**只算一次。两个分支本来就只走一个，
+                #   ⇒ 调用次数与副作用完全不变；但它现在能被落进证据出口，
+                #   否则「state 只差 1 字符、请求差 488 字节」永远没有主人（V35 悬案）。
+                guidance_text = self.wm.guidance(
+                    action=goal, features=features, task_id=task_id)
+                if self.state_meta:
+                    self.state_meta[-1]["n"] = int(n)
+                    self.state_meta[-1]["guidance"] = guidance_text
                 if consecutive_failures and last_error:
                     plan = self.planner.replan(
                         goal=goal, failed=Step("(上一步)", "?", {}),
@@ -850,16 +869,14 @@ class Core:
                         rejected=reseek_lines,
                         # ⚠️ 重规划**更**需要易错点：它正是"刚栽了"的那一次。
                         #    原来这里不传 ⇒ guidance 只在首次尝试时有效。
-                        guidance=self.wm.guidance(
-                            action=goal, features=features, task_id=task_id),
+                        guidance=guidance_text,
                         # ★ 失败之后**更**需要状态，不是更不需要 ——
                         #   回看取回的报错原文就拼在状态里（第二十轮）。
                         state=state)
                 else:
                     plan = self.planner.propose(
                         goal=goal, state=state, history=history, n=n,
-                        guidance=self.wm.guidance(
-                            action=goal, features=features, task_id=task_id),
+                        guidance=guidance_text,
                         blocked=sorted(attempted_sigs),
                         rejected=reseek_lines)
                 # 「刚刚发生的事」只喂一次：下一次提问若还是全灭，会重新填。
@@ -1105,10 +1122,19 @@ class Core:
                     #   在此之前这里只有 `stored = full[:300]`，于是 5000 字的观测
                     #   有 94% 当场消失且**不可找回**（§17-9 实测覆盖率 0.06）。
                     #   现在那 94% 进了 `blobs`，工作记忆里留一个**可寻址的索引**：
-                    #     `[b#7 5025字 sha=4baa3718fdb3] <前 300 字>`
+                    #     `[5025字 sha=4baa3718fdb3] <前 300 字>`
                     #   ⇒ 宽度**一点没变**（300 仍是 300），变的是"要得回来"。
+                    # ★ V36：索引里**不再放 `b#N`**（原来长这样：`[b#7 5025字 sha=...]`）。
+                    #   理由是把「噪声」和「信息」分开：
+                    #     · `chars` 与 `sha` 都是**内容的函数** ⇒ 同一段观测在任何轮次渲染相同；
+                    #     · `ref` 是**捕获次序**的函数（`memory.py:249` 的 `lastrowid - base`）
+                    #       ⇒ 本轮只要比上轮多捕获 k 条，同一段内容的句柄就整体后移 k。
+                    #   而**模型根本用不到它**：`expand()` 只由内核 `_recall_for()` 用
+                    #   进程内的 `handle.ref` 调用，`mw/tools.py` 里没有任何按 ref 取回的工具。
+                    #   ⇒ 那 4~5 个字符是纯噪声，V35 实测：`b#1`→`b#12`（+1 字符）
+                    #     就能让 `e1wi` 从 0 分翻到 16 分。
                     handle = self.memory.capture(full, kind="observation")
-                    index = f"[{handle.ref} {handle.chars}字 sha={handle.sha}] "
+                    index = f"[{handle.chars}字 sha={handle.sha}] "
                     stored = (index + full[:WORKING_CHAR_CAP])[:WORKING_CHAR_CAP + 80]
                     self.flow.emit(it, "perceive>memory", 1, len(full))
                     self.flow.take("perceive>memory", 1, len(stored))
@@ -1359,9 +1385,13 @@ class Core:
             self.expand_stats["errors"] += 1
             self.log(f"      ⚠️ 回看失败[{type(e).__name__}] {e} ⇒ 上下文里不会有这段")
             return
-        head = f"{EXPAND_MARK}{handle.ref} 原文{handle.chars}字 窗={where}"
+        # ★ V36：回看块标题同样**不放 `b#N`** —— 与索引行同一条理由：
+        #  ref 是捕获次序的函数（同一段正文在本轮第 8 条、下一轮可能第 9 条），
+        #  而 sha 是内容的函数。标题会整段进 `[工作记忆]`（`core.py` 的 `_render`
+        #  对 `EXPAND_MARK` 开头的条目**不再二次截断**）⇒ 它也是漂移源。
+        head = f"{EXPAND_MARK}原文{handle.chars}字 窗={where}"
         head += f" 已截断到{len(text)}字" if truncated else " 未截断"
-        head += f" 因由={trigger}]"
+        head += f" 因由={trigger} sha={handle.sha}]"
         if not self.memory.upgrade_last(f"{head}\n{text}"):
             # 没有可升级的条目（例如上层关掉了工作记忆写入）⇒ 计数，不假装成功。
             self.expand_stats["skipped"]["no_entry"] += 1
@@ -1475,8 +1505,14 @@ class Core:
         #    由 runner 取走落盘、由**内核之外**的探针按块切开判定。
         # ⚠️ 有界：只留最近 `STATE_LOG_CAP` 步（预算的步数上限是 12）。
         self.state_log.append((it, state))
+        # ★V36：同序追加。`state_meta[-1]` 必须**永远**对应 `state_log[-1]` ——
+        #  `n` 与 `guidance` 在调用方（第 ③ 规划处）回填，因为它们比 state 更晚算出来。
+        #  ⚠️ 两份列表的裁剪必须同一步做，否则证据会错位（错位比没有更糟）。
+        self.state_meta.append({"it": it})
         if len(self.state_log) > STATE_LOG_CAP:
             del self.state_log[:-STATE_LOG_CAP]
+        if len(self.state_meta) > STATE_LOG_CAP:
+            del self.state_meta[:-STATE_LOG_CAP]
         # 通量：记忆 → 推理。分子 = 真的拼进上下文的条数，分母 = 池子里可用的条数。
         # ⚠️ 这个比值**不是健康度**（库越大比例越小），只回答"这条线通没通"。
         self.flow.emit(it, "memory>reason", self.memory.pool_size(), 0)

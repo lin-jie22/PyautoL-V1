@@ -219,8 +219,24 @@ def main(argv: list[str] | None = None) -> int:
     #    ⇒ 一律用**内核实际打开的那个库**（`core.memory.path`），不另拼路径。
     db = core.memory.path
     before = _md5(db)
-    refs = [w.split("]", 1)[0].lstrip(EXPAND_MARK).split(" ")[0]
-            for w in core.memory.working_view() if w.startswith(EXPAND_MARK)]
+    # ★ V36：回看块标题里**不再有 `b#N`**（它是捕获次序的函数，进 prompt 就会跨轮漂移：
+    #   `b#1`→`b#12` 只差 1 个字符，实测足以让 `e1wi` 从 0 分翻到 16 分），
+    #   改由内容决定的 `sha=` 标识（`core.py` 的 `_recall_for`）。
+    #   ⇒ 探针必须跟着改，但**仍然从产物里取**：
+    #   先在标题里抓 sha，再按 sha 反查库里的行，换算成"本会话内序"的句柄。
+    #   ⛔ 不在这里手写 `b#1`：那会让 P8 变成"探针自己拼了一个一定能解析的串"，
+    #     取回是不是只读就再也测不到了（纪律 12 的另一种形态）。
+    refs = []
+    for w in core.memory.working_view():
+        if not w.startswith(EXPAND_MARK):
+            continue
+        for s in re.findall(r"sha=([0-9a-f]{12})", w.split("]", 1)[0]):
+            row = core.memory.conn.execute(
+                "SELECT id FROM blobs WHERE sha=? ORDER BY id DESC LIMIT 1",
+                (s,)).fetchone()
+            if row:
+                refs.append(f"b#{int(row[0]) - core.memory._blobs_base}")
+    refs = list(dict.fromkeys(refs))       # 同一段正文可能被回看多次 ⇒ 去重再取
     for r in refs:
         core.memory.expand(r, cap=EXPAND_CHAR_CAP, where="whole")
         core.memory.expand(r, cap=EXPAND_CHAR_CAP, where="head")

@@ -228,7 +228,8 @@ def _kernel_prov(core) -> dict:
 
 
 def _dump_states(path: str, task_id: str,
-                 states: list[tuple[int, str]] | None) -> int:
+                 states: list[tuple[int, str]] | None,
+                 metas: list[dict] | None = None) -> int:
     """把内核本轮每次 `_state()` 的产物落到证据文件（第三十六轮 §17-7h）。
 
     ⛔ 为什么由 **runner** 写而不是内核写：内核不产生实验产物，也不该知道
@@ -237,14 +238,30 @@ def _dump_states(path: str, task_id: str,
 
     ⛔ 落盘的是**原文**，不做任何裁剪：R1 的第二层要按块切开比对，
        裁一刀就等于替判据先把可疑的部分删掉了。
+
+    ★ V36：除 `state` 外再落 `n` 与 `guidance`（内核 `state_meta`，同长同序）。
+      ⛔ 为什么非落不可：V35 实测 `v26/d2` 的 `e1wi` 两轮 **state 只差 1 个字符**，
+         而 proxy 台账里 `req_bytes` 差 **488**。差额落在 state 之外，而
+         `wm.guidance()` 与候选数 `n` 从来不进 `_state()` ⇒「读数为什么变」无法归因。
+         V34 的纪律 43 已经写明：**`state` 不是 `prompt` 的身份**。这两个字段是把它补上。
+      ⚠️ 两份列表长度不等 = 证据错位。⛔ 不许静默按 idx 对齐（那是"看起来有值"），
+         必须当场炸 —— 错位的证据比没有证据更糟。
     """
     if not path or not states:
         return 0
+    metas = list(metas or [])
+    if metas and len(metas) != len(states):
+        raise RuntimeError(
+            f"state 与 state_meta 长度不等（{len(states)} vs {len(metas)}）⇒ "
+            f"证据已错位，拒绝落盘。这是内核 `state_meta` 裁剪不同步的 bug。")
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("a", encoding="utf-8") as f:
-        for it, st in states:
-            f.write(json.dumps({"task": task_id, "it": it, "state": st},
+        for idx, (it, st) in enumerate(states):
+            meta = metas[idx] if idx < len(metas) else {}
+            f.write(json.dumps({"task": task_id, "it": it, "state": st,
+                                "n": meta.get("n"),
+                                "guidance": meta.get("guidance")},
                                ensure_ascii=False) + "\n")
     return len(states)
 
@@ -1201,7 +1218,8 @@ def cmd_bench(args) -> int:
                         _ktx_absorb(_ktx, out.stats.get("transport") or {})
                         # ★state 证据出口（§17-7h）：只在 `--state-dump` 时写盘
                         _dump_states(getattr(args, "state_dump", ""),
-                                     t.id, getattr(c, "state_log", None))
+                                     t.id, getattr(c, "state_log", None),
+                                     getattr(c, "state_meta", None))
                         # 血缘**从内核读**（llm_kind / external_agents / model / temperature
                         # 四个字段一次到位）—— 曾经这里手写两个键，漏了 model。
                         _seen.update(_kernel_prov(c))
@@ -1232,7 +1250,8 @@ def cmd_bench(args) -> int:
                 # ★state 证据出口（§17-7h）：同一内核连跑多题，`state_log` 在
                 # `run()` 开头清空 ⇒ 每次 dump 出来的都是**本题**的 state。
                 _dump_states(getattr(args, "state_dump", ""),
-                             t.id, getattr(_core, "state_log", None))
+                             t.id, getattr(_core, "state_log", None),
+                             getattr(_core, "state_meta", None))
                 return out.answer
 
             label += "（复用同一内核，记忆跨题累积）"

@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import ast
 import collections
+import contextlib
 import inspect
+import io
 import json
 import os
 import re
@@ -3486,6 +3488,56 @@ check(RS, "AX11 ★★句柄编号必须是**本会话内序**，不许把库的
       and _AX11_FRESH == ["b#1", "b#2", "b#3"],
       f"预置 11 条={_AX11_PRE[:2]}… 重开后首={_AX11_FIRST} 连捕={_AX11_NEXT} "
       f"空库={_AX11_FRESH}")
+
+# ── AZ100 的取证装置（V36）：同一正文、两种捕获次序 ─────────────────────
+#  ⚠️ 先清目录：留着上一轮的库会让「前面多捕获 11 条」这个前提靠运气
+#     （纪律 15 的第二种来源：本地绿可能只是依赖了未入库的本地文件）。
+_AZ100_TMP = _TMP / "az100_handle"
+_AZ100_TMP.mkdir(parents=True, exist_ok=True)
+for _p in _AZ100_TMP.glob("*.db*"):
+    _p.unlink()
+_AZ100_BODY = "recall ⇒ ✔ (语义记忆中无相关条目)"
+_AZ100_A = MemoryStore(_AZ100_TMP / "a.db")
+_H0 = _AZ100_A.capture(_AZ100_BODY)          # 空库直接捕 ⇒ 应为 b#1
+_AZ100_A.close()
+_AZ100_B = MemoryStore(_AZ100_TMP / "b.db")
+for _i in range(11):
+    _AZ100_B.capture(f"历史观测 {_i}")        # 先垫 11 条 ⇒ 同一正文应为 b#12
+_H1 = _AZ100_B.capture(_AZ100_BODY)
+_AZ100_B.close()
+#: 真实产物：跑一次 `core.run()`，从 state 里抓索引行。
+#  ⛔ 绝不在这里手抄 `index = ...` —— 那测的是探针，不是产物（纪律 12）。
+_AZ100_CORE = Core(llm=StubLLM(), memory=MemoryStore(_AZ100_TMP / "c.db"),
+                   memory_mode="raw")
+with contextlib.redirect_stdout(io.StringIO()):
+    _AZ100_CORE.run("把 read_text 改成显式 encoding", budget_factor=1)
+_AZ100_STATES = "".join(st for _, st in _AZ100_CORE.state_log)
+_AZ100_IDX = re.findall(r"\[\d+字 sha=[0-9a-f]{12}\]", _AZ100_STATES)
+
+check(RS, "AZ100 ★★进 prompt 的记忆索引**不许带 `b#N`** —— 索引只准由内容决定\n"
+          "          —— V35 把「累积到底改了什么」量到字符级：`v26/d2` 的 `e1wi` 两轮\n"
+          "             it=1 的 state **逐字节相同**，it=2 **只差 1 个字符**\n"
+          "             （`[b#1 …]` → `[b#12 …]`，插了一个 `2`），而分数 **0 → 16**；\n"
+          "             两条记忆的**正文逐字节相同**（都是 `recall ⇒ ✔ (语义记忆中无相关条目)`）。\n"
+          "             代理台账同步：`req_bytes` 12382→12383、`resp_bytes` 1036→1075。\n"
+          "             ⇒ 那 16 分完全由**句柄数字**买来，与学到的东西零关系。\n"
+          "         为什么 `ref` 是噪声而 `sha` 不是：`ref = lastrowid - base` 是**捕获次序**的\n"
+          "             函数（本轮比上轮多捕 k 条就整体后移 k）；`chars`/`sha` 是**内容**的函数。\n"
+          "             而模型**根本用不到** `ref`：`expand()` 只由内核 `_recall_for()` 用\n"
+          "             进程内的 `handle.ref` 调用，`mw/tools.py` 里没有任何接受 ref 的工具。\n"
+          "         判据：同一段正文，在「空库直接捕」与「先捕 11 条再捕」两种情境下，\n"
+          "               `chars` 与 `sha` 必须相同；真实 `core.run()` 的 state 里 `b#` 出现 0 次；\n"
+          "               `state_meta` 必须与 `state_log` 同长。\n"
+          "         撤回语义：`index = f\"[{handle.chars}字 sha={handle.sha}] \"` 改回\n"
+          "               `index = f\"[{handle.ref} {handle.chars}字 sha={handle.sha}] \"` ⇒ 必须红。",
+      (_H0.chars, _H0.sha) == (_H1.chars, _H1.sha)
+      and _H0.ref != _H1.ref
+      and _AZ100_IDX and _AZ100_STATES.count("b#") == 0
+      and len(_AZ100_CORE.state_meta) == len(_AZ100_CORE.state_log),
+      f"同内容不同次序 chars/sha 同={(_H0.chars, _H0.sha) == (_H1.chars, _H1.sha)} "
+      f"ref 异={_H0.ref}≠{_H1.ref} 产物索引行={_AZ100_IDX[:2]} "
+      f"产物b#次数={_AZ100_STATES.count('b#')} "
+      f"meta/log={len(_AZ100_CORE.state_meta)}/{len(_AZ100_CORE.state_log)}")
 
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",

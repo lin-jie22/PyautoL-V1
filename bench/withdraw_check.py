@@ -1250,6 +1250,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ99", "mw/core.py",
      "            pick = ([self_c[-1]] + others[-(3 - 1):]) if self_c else crit[-3:]",
      "            pick = crit[-3:]  # 撤回态：自评又被字典序切掉"),
+    # ── AZ100：进 prompt 的记忆索引不许带 `b#N`（第 127 轮 / §101）───────────
+    #: 撤的是 `core.py` 的索引行：把 `handle.ref` 加回 format string。
+    #: 效果：产物里重新出现 `[b#N …]` ⇒ ①（`b#` 出现 0 次）与 ③（索引行 regex
+    #:   `\[\d+字 sha=` 匹配不到，因为 `[` 后跟的是 `b` 不是数字）**一起红**；
+    #:   而 ②（同一正文在两种捕获次序下 `chars`/`sha` 相同）**不受影响** ——
+    #:   那属于 `memory.py` 层，本变异没动它。
+    #: ⚠️ 这不是"多条一起红"的反例：三个子判据在**同一条 check** 里（同一个 tag），
+    #:   驱动器看到的仍然是「只有 AZ100 红」。
+    ("AZ100", "mw/core.py",
+     '                    index = f"[{handle.chars}字 sha={handle.sha}] "',
+     '                    index = f"[{handle.ref} {handle.chars}字 sha={handle.sha}] "'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

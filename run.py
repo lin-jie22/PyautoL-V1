@@ -584,6 +584,36 @@ def _domain_row(name: str, rc: int, rec: dict | None) -> dict:
     }
 
 
+def _critique_snapshot(crit: "CritiqueLedger", scope: str,
+                       dropped: set[str] | None = None) -> "CritiqueLedger | None":
+    """构造「内核拿到的那份评审账本」（**纯函数**，无 I/O、不落盘）。
+
+    为什么不把它留在 `cmd_bench` 里：证据探针要能**调用同一份实现**。
+    自己抄一遍 4 行看起来更省事，但那 4 行正是被测对象 ——
+    抄出来的探针会证明「抄写正确」，而不是「实现正确」（V31 自踩 ⑩ 的同宗）。
+
+    - `off`        → `None`（内核不投喂，V19~V28 全部如此）
+    - `prev`       → 只读快照副本，`allow_self=False`（同题被挡，旧口径）
+    - `prev-self`  → 同上但 `allow_self=True`（跨轮自省，§96）
+    - `all`        → **不在本函数处理**（调用方直接用真账本；轮内投喂 = 接线验证）
+    - `dropped`    → 只在**副本**里跳过这些题（§98 的等长安慰剂：
+                      丢一条 31 字的满分条目，`crit[-3:]` 的窗口就换成三条
+                      140 字的真实失败行，块长与 `prev-self` 逐字节相同）
+    """
+    if scope == "all":
+        return crit
+    if scope not in ("prev", "prev-self"):
+        return None
+    #: ⚠️ 必须是一个**新**账本且不落盘：`path=None` ⇒ `save()` 返回 0，
+    #:  绝不会把快照写回磁盘（`prev` 的隔离性就靠这一句）。
+    snap = CritiqueLedger(None, allow_self=(scope == "prev-self"))
+    for c in crit.by_key.values():
+        if dropped and c.task_id in dropped:
+            continue
+        snap.add(c)
+    return snap
+
+
 def _option_conflict(args) -> str:
     """互斥/危险选项组合检查。返回说明（空串 = 无冲突）。
 
@@ -639,6 +669,15 @@ def _option_conflict(args) -> str:
         return (f"--use-critique 等价于 --critique-scope=all，与 --critique-scope={_cs} "
                 "冲突：前者要求轮内也投喂（接线验证），后者要求本轮新增的评审"
                 "不进本轮（保住同轮内每题的可比性）。只留一个。")
+    #: `--critique-drop` 只改**快照**；off 档根本不建快照 ⇒ 它会**静默失效**。
+    #: 静默失效正是本项目最贵的一类 bug（读数是「按 A 做的」，实际按 B 做的）。
+    _cd = getattr(args, "critique_drop", "") or ""
+    if _cd.strip():
+        _sc = _cs or ("all" if getattr(args, "use_critique", False) else "off")
+        if _sc == "off":
+            return (f"--critique-drop={_cd} 与 投喂=off 冲突：off 档内核拿 None，"
+                    "根本不构造快照，丢弃什么都不会发生 —— 跑出来的是一份"
+                    "「看着像消融臂、其实是关着」的读数。")
     return ""
 
 
@@ -1014,28 +1053,21 @@ def cmd_bench(args) -> int:
     # （`harness_sha` 不断段 ⇒ 读数可与 V28 的 48 直接比）。
     _crit_scope = (getattr(args, "critique_scope", "")
                    or ("all" if args.use_critique else "off"))
+    #: `--critique-drop` 的解析放在**快照构造之前**：它描述的正是「快照里没有谁」。
+    _crit_dropped = {t.strip() for t in (getattr(args, "critique_drop", "") or "").split(",")
+                     if t.strip()}
     if _crit_scope == "all":
         _crit_for_kernel = _crit
-    elif _crit_scope in ("prev", "prev-self"):
-        #: ⚠️ 必须是一个**新**账本且不落盘：`add()` 只拷已加载的条目，
-        #:  `path=None` ⇒ `save()` 返回 0，绝不会把快照写回磁盘。
-        #:
-        #: `prev-self`（第一百二十三轮 §96）：`prev` 挡掉了**同题**那条评审，
-        #: 理由是「不许用当前题」—— 但快照里的同题那条讲的是**上一轮**的答案，
-        #: 内核此刻还没答，不是自评分。`prev` 把这个区分一起抹平了，
-        #: 于是「每道题上一次为什么错」结构上永远送不到（V32 探针：6/6 不可达）。
-        #: 差别只有一个布尔：`allow_self`。其余（只读副本、不落盘、不带本轮新增）全同。
-        _crit_for_kernel = CritiqueLedger(None, allow_self=(_crit_scope == "prev-self"))
-        for _c in _crit.by_key.values():
-            _crit_for_kernel.add(_c)
     else:
-        _crit_for_kernel = None
+        _crit_for_kernel = _critique_snapshot(_crit, _crit_scope, _crit_dropped)
     if _crit_loaded or _crit_scope != "off":
         print(f"  评审账本  {_crit_path.name}  载入 {_crit_loaded} 条"
               f"  投喂={_crit_scope}"
               f"（off=关 / prev=只给**加载时**已有的且排除同题 / "
               f"prev-self=同上但**放行同题**（跨轮自省）/ all=轮内也给）"
-              f"  本轮赠送 {len(_crit_for_kernel.by_key) if _crit_for_kernel else 0} 条")
+              f"  本轮赠送 {len(_crit_for_kernel.by_key) if _crit_for_kernel else 0} 条"
+              + (f"  快照丢弃={sorted(_crit_dropped)}（消融：真账本不受影响）"
+                 if _crit_dropped else ""))
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
     # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
@@ -1508,6 +1540,13 @@ def main() -> int:
                         "prev-self=同上，但**放行同题**那条 —— 它讲的是上一轮该题的"
                         "答案与分数，不是自评分（跨轮自省；见 DESIGN §96）；"
                         "all=轮内也投递（等价 --use-critique，接线验证用）")
+    p.add_argument("--critique-drop", default="",
+                   help="**消融开关**（DESIGN §98）：从**快照副本**里丢弃这些题的评审"
+                        "（逗号分隔，如 e2wi）。真账本照常落盘、磁盘上一条不少。"
+                        "为什么需要它：`crit[-3:]` 按 task_id 字典序切尾三，丢一条"
+                        "31 字的满分条目就能让窗口换成「全是真的、全是别人的失败」，"
+                        "从而构造**块长逐字节相同**的等长安慰剂臂（V33）。"
+                        "与 off 档同给视为冲突（它什么也不会做）。")
     p.add_argument("--use-reward", action="store_true",
                    help="把外部打分器的分数作为**只读**奖励写进记忆（DESIGN §17-5）")
     p.add_argument("--memory-mode", default="raw", choices=("raw", "abstract"),

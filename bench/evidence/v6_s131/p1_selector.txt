@@ -1,0 +1,69 @@
+====================================================================================================
+L1 静态：`mw/core.py` 里 `cands` 的每一处读取点
+====================================================================================================
+  core.py:899   [赋值/拼装] cands = plan.steps[:n]
+  core.py:931   [赋值/拼装] cands = [Step("整题交给外部能力", _ext,
+  core.py:932   [其他] answer_task(goal, _dl))] + list(cands)
+  core.py:936   [消费(遍历/计数)] self.ledger.spend_candidate(len(cands))
+  core.py:937   [消费(遍历/计数)] self.log(f"  [{it}] 通道={'深' if complex_task else '快'} 候选={len(cands)}")
+  core.py:939   [消费(遍历/计数)] self.flow.emit(it, "reason>act", len(cands), sum(len(c.as_line()) for c in cands))
+  core.py:949   [消费(遍历/计数)] for cand in cands:
+  core.py:1056  [消费(遍历/计数)] #   于是 `ci < len(cands)-1` 这个条件**永远为假** ⇒
+  core.py:1269  [消费(遍历/计数)] if skipped_now and skipped_now == len(cands):
+  core.py:1302  [消费(遍历/计数)] reseek_lines = [c.as_line() for c in cands]
+  core.py:1320  [消费(遍历/计数)] if repeats and (repeats + _blocked_eff) == len(cands):
+  core.py:1357  [消费(遍历/计数)] reseek_lines = [c.as_line() for c in cands]
+  ── 合计 12 处；其中**比较/选择** 0 处
+
+====================================================================================================
+L2 动态：每次真 run() 的 dispatch 序列（按轮次分组，带载荷摘要）
+====================================================================================================
+
+■ S1 三finish·首候选过闸
+  自检判据 = ['非空', '函数名 flatten', '语言标签', '可编译', '结构检查']
+  状态     = done  交付长度 = 237
+  交付内容 = '```python\ndef flatten(xs):\n    out = []\n    stack = list(xs)\n    while'
+  dispatch = {1: ['finish(```python def fl)']}
+  predict  = {1: 1}（每轮走过几个候选）
+  LLM 调用 = 2 次
+
+■ S2 首候选被跳过
+  自检判据 = ['非空', '函数名 flatten', '语言标签', '可编译', '结构检查']
+  状态     = done  交付长度 = 237
+  交付内容 = '```python\ndef flatten(xs):\n    out = []\n    stack = list(xs)\n    while'
+  dispatch = {1: ['finish(```python def fl)']}
+  predict  = {1: 1}（每轮走过几个候选）
+  LLM 调用 = 2 次
+
+■ S3 首候选失败
+  自检判据 = ['非空', '函数名 flatten', '语言标签', '可编译', '结构检查']
+  状态     = stalled  交付长度 = 81
+  交付内容 = "[step 4] 重复动作被跳过：finish({'answer': '（规划降级：模型输出不可解析，未能形成有效计划）'}) — 信息不足"
+  dispatch = {1: ['finish(```python def ot)'], 2: ['finish(（规划降级：模型输出不可解析，未)']}
+  predict  = {1: 1, 2: 1}（每轮走过几个候选）
+  LLM 调用 = 7 次
+
+■ S4 真原文·真题面
+  自检判据 = ['非空', '函数名 clean_lines', '语言标签', '可编译', '结构检查']
+  状态     = done  交付长度 = 449
+  交付内容 = 'import re\n\ndef _strip_tags(text):\n    return re.sub(r"@[A-Za-z0-9]+", '
+  dispatch = {1: ['finish(import re def _s)']}
+  predict  = {1: 1}（每轮走过几个候选）
+  LLM 调用 = 2 次
+
+====================================================================================================
+D1~D5 判据
+====================================================================================================
+  D1 S1 第1轮 dispatch = ['finish'] ⇒ ✅ 长度1 ｜交付=A(第2候选)
+  D2 S2 第1轮 dispatch = ['finish'] ⇒ 交付=A(第2候选)  ✅ 让位到第2候选
+  D3 S3 第1轮 dispatch = ['finish'] ⇒ ✅ 长度1（失败也 break） ｜交付="[step 4] 重复动作被跳过：finish({'answ"  
+  D4 静态比较点 = 0 处 ⇒ ✅ 0
+  D5 predict−dispatch 次数差 = {'S1 三finish·首候选过闸': 0, 'S2 首候选被跳过': 0, 'S3 首候选失败': 0, 'S4 真原文·真题面': 0}
+
+====================================================================================================
+S4 真实形态：V39 那份给出 3 个候选的原文，走真题面
+====================================================================================================
+  自检判据 = ['非空', '函数名 clean_lines', '语言标签', '可编译', '结构检查']
+  dispatch = {1: ['finish(import re def )']}
+  交付长度 = 449  状态 = done
+  ⭐ 判读：第 1 轮只 dispatch 了 1 个候选；共 1 次 dispatch、1 轮

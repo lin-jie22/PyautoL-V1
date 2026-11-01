@@ -1261,6 +1261,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ100", "mw/core.py",
      '                    index = f"[{handle.chars}字 sha={handle.sha}] "',
      '                    index = f"[{handle.ref} {handle.chars}字 sha={handle.sha}] "'),
+    # ── AZ101：预演否决必须有**专属出口**（第 128 轮 / §103）─────────────────
+    #: 撤的是 `core.py` 里那段专属出口的**判据行**：把 `and _vetoed_this_round`
+    #:   去掉 ⇒ 分支永不进入、但代码仍"看起来有出口"（最能骗过阅读的一种撤法）。
+    #: 效果：每一次否决都会往下落到 `consecutive_failures += 1`
+    #:   ⇒ 开臂的「全部候选被拦」次数**多于**关臂 ⇒ ③ 红（①② 仍绿）。
+    #: ⚠️ 为什么撤这一行而不是删整段：删整段会让 `_vetoed_this_round` 变成
+    #:   「只写不读」的字段（K5 那条死代码断言会一起红）—— 那样测的就不是
+    #:   "出口丢了"，而是"字段没人读"，两个病形状不同。
+    ("AZ101", "mw/core.py",
+     "                    if not executed and _vetoed_this_round:",
+     "                    if not executed and False:  # 撤回态：专属出口被短路"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

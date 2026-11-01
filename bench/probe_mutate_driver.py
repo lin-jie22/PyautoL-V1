@@ -67,6 +67,7 @@ def main() -> int:
     os.environ["V1_MAX_STALL"] = "5"
     os.environ["V1_RECALL_K"] = "9"
     os.environ["V1_STATE_CHARS"] = "2400"
+    os.environ["V1_FORESIGHT_VETO"] = "1"
     os.environ["V1_LLM_MODEL"] = "keep-me"
     e = MD.clean_env({"V1_MAX_STALL": "3"})
     # ⚠️ 这个数字是**故意的硬锚**：加 `Limits` 字段时它必然红，
@@ -87,13 +88,17 @@ def main() -> int:
     #    「`V1_RECALL_K=已清` ⇒ 集合扩了」的**推理**：把 `V1_STATE_CHARS`
     #    自己塞进环境再断言它被清掉（纪律 29：读数标签不是读数）——
     #    否则「动态取值」只是我读过代码之后的一个信念。
+    #    22 → 23（第一百二十八轮加 `foresight_veto`，§103）。复核方式同 §93：
+    #    把 `V1_FORESIGHT_VETO` 也塞进环境，断言它被清掉（不再是推理）。
     ck("P5 ★`clean_env` 清掉**全部** `Limits` 字段的同名 env，但保住模型配置",
        e.get("V1_MAX_STALL") == "3" and "V1_RECALL_K" not in e
-       and "V1_STATE_CHARS" not in e
-       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 22,
+       and "V1_STATE_CHARS" not in e and "V1_FORESIGHT_VETO" not in e
+       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 23,
        f"limits 字段 {len(fields)} 个 ｜ V1_RECALL_K={'在' if 'V1_RECALL_K' in e else '已清'}"
-       f" ｜ V1_STATE_CHARS={'在' if 'V1_STATE_CHARS' in e else '已清'}")
-    for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_STATE_CHARS", "V1_LLM_MODEL"):
+       f" ｜ V1_STATE_CHARS={'在' if 'V1_STATE_CHARS' in e else '已清'}"
+       f" ｜ V1_FORESIGHT_VETO={'在' if 'V1_FORESIGHT_VETO' in e else '已清'}")
+    for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_STATE_CHARS",
+              "V1_FORESIGHT_VETO", "V1_LLM_MODEL"):
         os.environ.pop(k, None)
 
     # ── P6：守门员的"生效 + 单变量"，每格都喂一个坏样本 ────────────────────

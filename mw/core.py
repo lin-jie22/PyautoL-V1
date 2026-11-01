@@ -940,6 +940,11 @@ class Core:
                 # ④⑤⑥ 逐候选过闸 → 预演 → 执行
                 executed = False
                 repeats = 0
+                #: ★ §103：**本轮**被预演否决的候选数。与 `repeats` / `skipped_now`
+                #: 并列，缺一列就会让"没做"的三种来源互相冒充：
+                #:   没额度（`skipped_now`）/ 被闸拦（`blocked_now`）/ 被预演否（这里）。
+                #: 它们的出口必须各不相同 —— 见 `if not executed:` 分支。
+                _vetoed_this_round = 0
                 for cand in cands:
                     spec = self.tools.get(cand.tool)
 
@@ -1031,12 +1036,81 @@ class Core:
                         continue
 
                     # 预演（只有深通道才付这个成本 —— 这就是 ACT 的实际意义）
+                    #
+                    # ★★★ 第一百二十八轮（§103）：`pred` 第一次**接进决策链**。
+                    #
+                    # 变之前（§102 实测）：`pred` 在生产路径上只有 6 处引用，
+                    # **全部是观测用途** —— `if not pred.trustworthy: log` 与
+                    # `observe(pred, ...)`。候选在 `predict` **之前**就定死了
+                    # （`cand` 来自 `plan.steps[:n]`）⇒ 累积出来的启发式
+                    # 确实进了预演 prompt（268~488 字节，逐字节算过），
+                    # 却**一格分数也改不动**。那条环闭合在记录仪上，不闭合在执行器上。
+                    #
+                    # 现在：`trustworthy` 且 `expect_ok is False` 的候选**不执行**。
+                    #
+                    # ⛔ 为什么不是"让位给下一个候选"（本轮的**第一版设计，已作废**）：
+                    #   §103 零成本实测 —— V36 四轮日志里 `通道=深 候选=1`
+                    #   **76/76 次**。规划器给出的 `steps` 恒为 1 条，`n`
+                    #   （3/2/1）只是**上限**，从来没人填满。
+                    #   于是 `ci < len(cands)-1` 这个条件**永远为假** ⇒
+                    #   「让位」这条接法在本装置上是结构性的零次机制。
+                    #   （纪律 29：押注前先量载荷能不能到达押注的格子。
+                    #     第一版没量就写，等于又造了一次空实验。）
+                    #
+                    # 所以真正的边界不是"前后还有没有候选"，而是**否决之后去哪**：
+                    #   ① 否决 ⇒ `executed` 保持 False ⇒ 必须有自己的出口
+                    #      （见下面的 `if not executed:` 分支）。
+                    #      ⛔ 绝不能让它落进 `consecutive_failures += 1` ——
+                    #      "预演说会失败所以没做"与"做错了"是两件事，
+                    #      混在一起三轮就熔断，交付变空，而那一格会被读成"机制有害"。
+                    #   ② **有界**：`attempted_sigs` 在预演**之前**就已 `add(sig)`，
+                    #      所以同一个动作签名一辈子只可能被否决一次；下一轮
+                    #      规划器若再提它，会先被重复闸拦下（不花预演）。
+                    #      ⇒ 不需要另设 `veto_seen`，终止性由既有机制保证。
+                    #   ③ **只否决，不替代**：预演只输出 `expected`（一句话），
+                    #      不输出可执行的动作。让它直接造动作 = 让它绕过规划器。
+                    #   ④ **交付路径不否决**：`produces_answer` 的动作（finish /
+                    #      外部能力）永不因预演被否 —— 那是"手段停了把目的也停掉"，
+                    #      §31.7 / §63 都为此交过学费。
                     pred = None
+                    _vetoed = False
                     if complex_task:
                         pred = self.wm.predict(state=state, action=cand.as_line(), use_llm=True)
-                        if not pred.trustworthy:
+                        _produces_early = (cand.tool == "finish"
+                                           or bool(spec is not None and spec.produces_answer))
+                        _want = (bool(self.s.limits.foresight_veto)
+                                 and pred.trustworthy
+                                 and pred.expect_ok is False
+                                 and not _produces_early)
+                        if _want:
+                            _vetoed = True
+                            self.wm.vetoed += 1
+                            _vetoed_this_round += 1
+                        elif (bool(self.s.limits.foresight_veto)
+                              and pred.trustworthy and pred.expect_ok is False):
+                            # 条件命中，但被"交付路径"豁免 ⇒ **必须显形**，
+                            # 否则 `vetoed=0` 会被读成"模型从没预测过失败"。
+                            self.wm.veto_refused_answer += 1
+                            self.log("      🔮 预演说这一步会失败，但它是交付动作 ⇒ 仍然执行")
+                        elif not pred.trustworthy:
                             self.wm.suppressed += 1
                             self.log(f"      🔮 预演置信度 {pred.confidence:.2f} 过低 ⇒ 不进决策链")
+                        # 证据：**恒存在**的产物（`--state-dump` 的同一行）。
+                        # ⛔ 不用日志：日志不是结构化证据，也不进任何冻结产物
+                        #    （纪律 26：计数必须来自恒存在的产物）。
+                        if self.state_meta:
+                            self.state_meta[-1].setdefault("preds", []).append({
+                                "ok": pred.expect_ok,
+                                "conf": round(float(pred.confidence), 2),
+                                "trust": bool(pred.trustworthy),
+                                "veto": bool(_vetoed),
+                                "src": pred.source,
+                            })
+                    if _vetoed:
+                        self.log(f"      🔮 预演否决（expect_ok=False）⇒ 不做：{cand.intent[:40]}")
+                        history.append(
+                            f"[step {it}] 预演否决（expect_ok=False）⇒ 未执行：{cand.as_line()[:80]}")
+                        continue
 
                     result = self.tools.dispatch(cand.tool, cand.args)
                     self.log(tool_result_line(cand.tool, result.ok,
@@ -1203,6 +1277,28 @@ class Core:
                         self.log(f"  ⛔ 本轮 {skipped_now} 个候选都因额度不足未执行"
                                  f"（不是失败，是没试）")
                         history.append(f"[step {it}] 全部候选因额度不足未执行（不是失败）")
+                        continue
+                    # ★ §103：**预演否决**的专属出口。
+                    #
+                    # 位置必须是**写死的**，理由与本文件里其他"写死位置"的机制同源：
+                    # 交给模型选，机制就会恒 0 次触发，而读数只说"没触发"。
+                    #
+                    # ⛔ 绝不能让它落到下面的 `consecutive_failures += 1`：
+                    #   "预演说会失败所以没做"与"做错了"是**相反**的两件事。
+                    #   混在一起 ⇒ 三轮熔断 ⇒ 交付变空 ⇒ 那一格会被读成
+                    #   "接上预演有害"，而事实是"我们把没做记成了做错"。
+                    #   （同构先例：`skipped_now` 那次，第六十八轮。）
+                    # ⛔ 也**不**记 `stalled`：停滞的语义是"模型在原地打转"，
+                    #   而被否的动作是**新的**（它没被执行过），只是我们决定不做。
+                    if not executed and _vetoed_this_round:
+                        self.log(f"  🔮 本轮 {_vetoed_this_round} 个候选被预演否决"
+                                 f"（不是失败，是决定不做）")
+                        history.append(
+                            f"[step {it}] 预演否决 {_vetoed_this_round} 个候选（不是失败）")
+                        # 把被否的动作**原文**喂给下一次提问：不是把话说重，
+                        # 是给规划器一个它此前拿不到的信息 ——
+                        # "这个动作预演会失败"（`blocked` 只有签名，看不出结论）。
+                        reseek_lines = [c.as_line() for c in cands]
                         continue
                     # ── 停滞：这一步"一个候选都没能执行"──────────────────────
                     # ★ 第九十九轮（§65/§66）：判据从**全等**放宽成

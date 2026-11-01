@@ -332,6 +332,17 @@ class WorldModel:
         self.allow_learn = bool(allow_learn)
         self.predictions: int = 0
         self.suppressed: int = 0   # selective foresight 挡下的低置信预测数
+        #: ★ 第一百二十八轮（§103）：预演**真的改变了执行**的次数（候选让位）。
+        #: ⚠️ 与 `suppressed` 分开记：那个数"置信度太低所以不参与"，
+        #:    这个数"置信度够高、预测会失败、于是换了候选"。两者语义相反，
+        #:    合并成一个数会让"机制从没通电"和"机制在挡人"读成同一个 0。
+        self.vetoed: int = 0
+        #: 条件命中、但因**交付路径豁免**（finish / 外部能力）而仍然执行。
+        #: ⛔ 必须单独记：否则 `vetoed=0` 会被读成"模型从没预测过失败"，
+        #:    而事实可能是"每次都正好预测失败在一个 finish 上"。
+        #:    这也是一条独立的诊断：如果这个数远大于 `vetoed`，说明模型倾向于
+        #:    预测"收尾会失败" —— 那本身是一个值得读的现象，不是噪声。
+        self.veto_refused_answer: int = 0
         # —— 分辨力读数（缺陷 #12 的修复带来的）——
         # 分母**必须**是"被检验过的预演数"，不是"预演了多少次"：
         # 拿 predictions 当分母，命中率永远被那些"根本没检验"的预演稀释。
@@ -713,6 +724,16 @@ class WorldModel:
             "suppressed": self.suppressed,
             "suppress_rate": round(
                 self.suppressed / self.predictions, 3) if self.predictions else 0.0,
+            # —— 预演接进决策链（§103）——
+            #: 真的改变了执行的次数。**它是"机制通电了吗"的唯一读数。**
+            "vetoed": self.vetoed,
+            #: 条件命中却被**交付路径豁免**吃掉 —— 与 `vetoed` 并列，缺一半就会误读。
+            "veto_refused_answer": self.veto_refused_answer,
+            #: ⚠️ **本机制的已知缺口**（不另设字段，就写在这里）：
+            #:    被否决的候选**从未执行** ⇒ 那次预演永远拿不到 `result.ok`
+            #:    ⇒ 世界模型**无法学到"我的否决对不对"**。它只进预演、不进检验。
+            #:    所以 `vetoed > 0` 时，`scored` 里**不含**这些样本 ——
+            #:    这是"预演→执行"这根边被切断后的必然代价，不是可以顺手补上的字段。
             # —— 外部奖励通道（只读）——
             "rewards_recorded": self.rewards_recorded,
             "rewards_rejected_source": self.rewards_rejected_source,

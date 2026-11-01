@@ -261,7 +261,12 @@ def _dump_states(path: str, task_id: str,
             meta = metas[idx] if idx < len(metas) else {}
             f.write(json.dumps({"task": task_id, "it": it, "state": st,
                                 "n": meta.get("n"),
-                                "guidance": meta.get("guidance")},
+                                "guidance": meta.get("guidance"),
+                                # ★ §103：本步**逐候选**的预演读数
+                                #   （`ok` 三态 / `conf` / `trust` / `veto` / `src`）。
+                                #   ⛔ 不以"有预演就非空"为前提：快通道没有预演，
+                                #     这里的空列表就是"这一步没预演"，不是"没落盘"。
+                                "preds": meta.get("preds") or []},
                                ensure_ascii=False) + "\n")
     return len(states)
 
@@ -271,6 +276,11 @@ def _kwm_zero() -> dict:
     return {"predictions": 0, "scored": 0, "hits": 0, "unscored": 0,
             "mismatches": 0, "mismatches_outcome": 0, "mismatches_text": 0,
             "text_compared": 0, "suppressed": 0,
+            # —— §103：预演接进决策链的两个读数 ——
+            #: `vetoed` = 真的决定不做的次数（"机制通电了吗"的唯一读数）；
+            #: `veto_refused_answer` = 条件命中但被"交付路径豁免"放行的次数。
+            #: ⛔ 两个必须并列：只有前一个，`vetoed=0` 会读成"模型没预测过失败"。
+            "vetoed": 0, "veto_refused_answer": 0,
             # —— 外部奖励通道：写了几条 / **读了几条** ——
             # ⛔ 只报"写入 N 条"而不报"读到几条"，正是"字段无消费者"：
             #    一个你永远看不出它有没有被用过的通道 = 装饰。

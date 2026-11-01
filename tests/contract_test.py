@@ -1341,6 +1341,11 @@ def _env_zero_takes_effect(key: str) -> bool:
         #   不登记它，`0` 会走 `_env_int` 的"0 ⇒ 回默认"那条路，而默认是 1
         #   ⇒ A0 与 A1 变成同一条命令，V22 那 −16 格会被量成 0 格。
         "V1_REWARD_ECHO": ("limits", "reward_echo"),
+        # ★第一百二十八轮（§103）：`V1_FORESIGHT_VETO=0` 就是**对照臂 A0**
+        #   （= V36 及之前的全部历史：预演不参与决策）。今天默认也是 0，
+        #   所以"不登记"看不出差别 —— 但只要将来把默认 promote 成 1，
+        #   A0 就会静默变成 A1，而两臂读数会被读成"接上预演没有效果"。
+        "V1_FORESIGHT_VETO": ("limits", "foresight_veto"),
     }
     grp, attr = _keys[key]
     _old = os.environ.get(key)
@@ -3538,6 +3543,100 @@ check(RS, "AZ100 ★★进 prompt 的记忆索引**不许带 `b#N`** —— 索�
       f"ref 异={_H0.ref}≠{_H1.ref} 产物索引行={_AZ100_IDX[:2]} "
       f"产物b#次数={_AZ100_STATES.count('b#')} "
       f"meta/log={len(_AZ100_CORE.state_meta)}/{len(_AZ100_CORE.state_log)}")
+
+# ── AZ101 的取证装置（V37）：让预演**一定**说"会失败" ────────────────────
+#  ⚠️ 为什么要钉死 `expect_ok`：真模型在空库上**从不说会失败**
+#     （V37 实测 a0_r1：10 次预演全是 `ok=True`；只有在累积第 2 轮才出现 2 次
+#      `ok=False`）。要在契约里验"否决之后去哪"，就不能靠模型碰巧说错。
+class _AZ101WM:
+    """只替换 `predict` 的结论，其余全部委托给真 `WorldModel`。
+
+    ⛔ 不 `__getattr__` 转发 `stats`/`observe`/`guidance` 的话，内核里
+       `self.wm.observe(...)` 会 AttributeError —— 那测的是桩，不是产物。
+    """
+
+    def __init__(self, inner):
+        self._inner = inner
+        self.vetoed = 0
+        self.veto_refused_answer = 0
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+    def predict(self, *, state, action, use_llm=True):
+        return Prediction(action=action, expected="(契约桩：钉死为会失败)",
+                          confidence=0.9, expect_ok=False)
+
+
+_AZ101_TMP = _TMP / "az101_veto"
+_AZ101_TMP.mkdir(parents=True, exist_ok=True)
+for _p in _AZ101_TMP.glob("*.db*"):
+    _p.unlink()
+#: ⚠️ 题面必须 > 120 字：`looks_complex()` 是**唯一**决定走不走深通道的地方
+#:    （`len(goal) > 120` / 多步动词 ≥2 / 有失败历史）。走快通道 ⇒ `predict`
+#:    根本不会被调用 ⇒ 桩永远不会被问到 —— 那会读成「机制没触发」，
+#:    而事实是「这条题根本没资格触发」（第一版就栽在这里：veto日志=0）。
+_AZ101_GOAL = (
+    "把 read_text 改成显式 encoding，并逐一检查所有 open() 调用，"
+    "然后确认没有残留的默认编码路径，接着把每一处改动写进一个报告文件，"
+    "以及补充一条注释说明为什么必须显式指定编码，"
+    "最后再跑一遍自检确认没有引入新的未定义名；"
+    "报告的文件名固定为 report.txt，不要创建别的文件，也不要修改测试用例"
+)
+_old_veto = os.environ.get("V1_FORESIGHT_VETO")
+os.environ["V1_FORESIGHT_VETO"] = "1"
+try:
+    _AZ101_ON = Core(llm=StubLLM(), memory=MemoryStore(_AZ101_TMP / "on.db"),
+                     memory_mode="raw")
+    _AZ101_ON.wm = _AZ101WM(_AZ101_ON.wm)
+    _buf = io.StringIO()
+    with contextlib.redirect_stdout(_buf):
+        _AZ101_ON.run(_AZ101_GOAL, budget_factor=1)
+    _AZ101_LOG = _buf.getvalue()
+    _AZ101_VETO_LOG = _AZ101_LOG.count("预演否决")
+    #: 对照组：同一个桩、同一个题，**只把开关关掉**
+    os.environ["V1_FORESIGHT_VETO"] = "0"
+    _AZ101_OFF = Core(llm=StubLLM(), memory=MemoryStore(_AZ101_TMP / "off.db"),
+                      memory_mode="raw")
+    _AZ101_OFF.wm = _AZ101WM(_AZ101_OFF.wm)
+    _buf2 = io.StringIO()
+    with contextlib.redirect_stdout(_buf2):
+        _AZ101_OFF.run(_AZ101_GOAL, budget_factor=1)
+    _AZ101_LOG_OFF = _buf2.getvalue()
+finally:
+    if _old_veto is None:
+        os.environ.pop("V1_FORESIGHT_VETO", None)
+    else:
+        os.environ["V1_FORESIGHT_VETO"] = _old_veto
+
+check(RS, "AZ101 ★★★预演否决必须有**专属出口**：不许落进 `consecutive_failures`\n"
+          "          —— V36 §102 量到 `pred` 只有 6 处引用、**全是观测用途**\n"
+          "             （`observe()` 与日志）⇒ 累积出的启发式真的进了预演 prompt\n"
+          "             （268~488 字节，逐字节算过），却**一格分数也改不动**。\n"
+          "             V37 把它接进决策链：`trustworthy and expect_ok is False` ⇒ 不做。\n"
+          "         为什么出口必须**写死**：`continue` 之后 `executed` 保持 False，\n"
+          "             会落到 `consecutive_failures += 1`（『全部候选被拦』）——\n"
+          "             那是把『我们决定不做』记成『做错了』，三轮就熔断 ⇒ 交付变空 ⇒\n"
+          "             那一格会被读成『接上预演有害』。同构先例：`skipped_now` 那次\n"
+          "             （没额度 ≠ 失败，第六十八轮）。\n"
+          "         判据：① 开关开 ⇒ 日志里出现「预演否决」且 `wm.vetoed ≥ 1`；\n"
+          "               ② 同一题、同一桩、开关关 ⇒ 一次都不出现；\n"
+          "               ③ 开的那一臂「全部候选被拦」的次数**不许多于**关的那一臂\n"
+          "                  —— 后者是既有行为的基线（有些步的候选在预演之前就被\n"
+          "                     guard 拦掉了，那一步本来就会打这句），\n"
+          "                    差值 > 0 才是「否决自己掉进了失败计数」的铁证。\n"
+          "         撤回语义：删掉 `if not executed and _vetoed_this_round:` 那一整段 ⇒\n"
+          "               ③ 必红（每一次否决都会各自多加一次『全部候选被拦』）。",
+      _AZ101_VETO_LOG >= 1
+      and int(getattr(_AZ101_ON.wm, "vetoed", 0)) >= 1
+      and _AZ101_LOG.count("全部候选被拦") <= _AZ101_LOG_OFF.count("全部候选被拦")
+      and "预演否决" not in _AZ101_LOG_OFF
+      and int(getattr(_AZ101_OFF.wm, "vetoed", 0)) == 0,
+      f"开: veto日志={_AZ101_VETO_LOG} vetoed={getattr(_AZ101_ON.wm, 'vetoed', 'NA')} "
+      f"被拦={_AZ101_LOG.count('全部候选被拦')} ｜ "
+      f"关: veto日志={_AZ101_LOG_OFF.count('预演否决')} "
+      f"vetoed={getattr(_AZ101_OFF.wm, 'vetoed', 'NA')} "
+      f"被拦={_AZ101_LOG_OFF.count('全部候选被拦')}")
 
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",

@@ -1,0 +1,49 @@
+{"candidates": [{"intent": "补全 week_of 函数", "tool": "finish", "args": {"answer": """def week_of(items, path):
+    buckets = {}
+    for raw in items:
+        pair = _split(raw)
+        if pair is None:
+            continue
+        try:
+            day = _read_day(pair[0])
+        except ValueError:
+            continue
+        monday = _monday_of(day)
+        _add(buckets, monday, pair[1])
+
+    with open(path, "w", encoding="utf-8") as fh:
+        for key in sorted(buckets):
+            fh.write(key + "|" + ",".join(buckets[key]) + "\n")
+    return None"""}, "rationale": "根据题目要求补全 week_of 函数，实现归档事件的功能。"}, {"intent": "补全 week_of 函数", "tool": "finish", "args": {"answer": """def week_of(items, path):
+    buckets = {}
+    for raw in items:
+        pair = _split(raw)
+        if pair is None:
+            continue
+        try:
+            day = _read_day(pair[0])
+        except ValueError:
+            continue
+        monday = _monday_of(day)
+        _add(buckets, monday, pair[1])
+
+    with open(path, "w", encoding="utf-8") as fh:
+        for key in sorted(buckets):
+            fh.write(key + "|" + ",".join(buckets[key]) + "\n")
+    return None"""}, "rationale": "根据题目要求补全 week_of 函数，实现归档事件的功能。"}, {"intent": "补全 week_of 函数", "tool": "finish", "args": {"answer": """def week_of(items, path):
+    buckets = {}
+    for raw in items:
+        pair = _split(raw)
+        if pair is None:
+            continue
+        try:
+            day = _read_day(pair[0])
+        except ValueError:
+            continue
+        monday = _monday_of(day)
+        _add(buckets, monday, pair[1])
+
+    with open(path, "w", encoding="utf-8") as fh:
+        for key in sorted(buckets):
+            fh.write(key + "|" + ",".join(buckets[key]) + "\n")
+    return None"""}, "rationale": "根据题目要求补全 week_of 函数，实现归档事件的功能。"}]}

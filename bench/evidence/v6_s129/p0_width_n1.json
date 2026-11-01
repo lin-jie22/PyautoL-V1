@@ -1,0 +1,74 @@
+[
+  {
+    "task": "e1wi",
+    "A": 0,
+    "B": 1,
+    "C": 1,
+    "tag": "no_json",
+    "raw_len": 569,
+    "degraded": true,
+    "calls": 1,
+    "n_tool_tokens": 1,
+    "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{\"candidates\": [{\"intent\": "
+  },
+  {
+    "task": "e1ni",
+    "A": 1,
+    "B": 1,
+    "C": 1,
+    "tag": "ok",
+    "raw_len": 113,
+    "degraded": false,
+    "calls": 2,
+    "n_tool_tokens": 1,
+    "note": ""
+  },
+  {
+    "task": "e2wi",
+    "A": 1,
+    "B": 1,
+    "C": 1,
+    "tag": "ok",
+    "raw_len": 825,
+    "degraded": false,
+    "calls": 1,
+    "n_tool_tokens": 1,
+    "note": ""
+  },
+  {
+    "task": "e2ni",
+    "A": 1,
+    "B": 1,
+    "C": 1,
+    "tag": "ok",
+    "raw_len": 852,
+    "degraded": false,
+    "calls": 1,
+    "n_tool_tokens": 1,
+    "note": ""
+  },
+  {
+    "task": "e3wi",
+    "A": 1,
+    "B": 1,
+    "C": 1,
+    "tag": "ok",
+    "raw_len": 1164,
+    "degraded": false,
+    "calls": 1,
+    "n_tool_tokens": 1,
+    "note": ""
+  },
+  {
+    "task": "e3ni",
+    "A": 1,
+    "B": 1,
+    "C": 1,
+    "tag": "ok",
+    "raw_len": 124,
+    "degraded": false,
+    "calls": 2,
+    "n_tool_tokens": 1,
+    "note": ""
+  }
+]

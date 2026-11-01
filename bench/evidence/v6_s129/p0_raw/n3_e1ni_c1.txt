@@ -1,0 +1,23 @@
+```python
+import re
+
+def _strip_tags(text):
+    return re.sub(r"@[A-Za-z0-9]+", "", text)
+
+
+def clean_lines(items, path):
+    kept = []
+    seen = set()
+    for item in items:
+        stripped = _strip_tags(item).strip(" \t")
+        if not stripped:
+            continue
+        if stripped not in seen:
+            seen.add(stripped)
+            kept.append(stripped)
+    # >>> BEGIN TODO
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("".join(s + "\n" for s in kept))
+    # >>> END TODO
+    return None
+```

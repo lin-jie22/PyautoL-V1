@@ -1,0 +1,1 @@
+{"candidates": [{"intent": "补全 week_of 函数", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全 week_of 函数，无需使用工具。"}]}

@@ -1,0 +1,34 @@
+============================================================================================
+V39 前置量：探索宽度三段分解（请求 n=3）
+============================================================================================
+suite_sha = 519dad774a3664612e6611b220b33f4a  ✅
+temperature = 0.0   state_chars = 2400   planner.max_tokens = 1024
+limits.max_candidates = 3
+tool_catalog_sha = 8decb60895d4a972  ✅
+
+--------------------------------------------------------------------------------------------
+task        A 原始    B 去重后    C 截断后         标签  raw 长度
+--------------------------------------------------------------------------------------------
+e1wi           0        1        1    no_json   1654  ·  degraded=True  calls=1  note='模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '
+         raw[0][:220] = '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """import re\n\ndef _strip_tags(text):\n    return re.sub(r"@[A-Za-z0-9]+", "", text)\n\n\ndef clean_lines(items, path):\n    kept = set()\n    for item i'
+e1ni           1        1        1         ok    108  ·  degraded=False  calls=2  note=''
+         raw[0][:220] = '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全代码，无需使用工具。"}]}'
+         raw[1][:120] = '```python\nimport re\n\ndef _strip_tags(text):\n    return re.sub(r"@[A-Za-z0-9]+", "", text)\n\n\ndef clean_lines(items, path)'  ← 定向补救响应
+e2wi           0        1        1    no_json    831  ·  degraded=True  calls=1  note='模型输出被**截断**（⇒ 调大 max_tokens，当前 1'
+         raw[0][:220] = '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {}, "rationale": "根据题目要求，可以直接补全代码，无需使用工具。"}], "finish": {"answer": "```python\nimport json\n\ndef _dump(payload):\n    return json.dumps(payload, ensure_ascii=Fa'
+e2ni           0        1        1    no_json    858  ·  degraded=True  calls=1  note='模型输出被**截断**（⇒ 调大 max_tokens，当前 1'
+         raw[0][:220] = '{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {}, "rationale": "根据题目要求，可以直接补全代码，无需使用工具。"}], "finish": {"answer": "```python\ndef _dump(payload):\n    return json.dumps(payload, ensure_ascii=False)\n\n\ndef _s'
+e3wi           0        1        1    no_json   1179  ·  degraded=True  calls=1  note='模型输出被**截断**（⇒ 调大 max_tokens，当前 1'
+         raw[0][:220] = '{"candidates": [{"intent": "直接补全 week_of 函数", "tool": "finish", "args": {}, "rationale": "根据题目要求，可以直接补全 week_of 函数，无需调用其他工具。"}], "finish": {"answer": "```python\nimport datetime\n\ndef _split(raw):\n    head, sep, event = ra'
+e3ni           0        1        1    no_json   1804  ·  degraded=True  calls=1  note='模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '
+         raw[0][:220] = '{"candidates": [{"intent": "补全 week_of 函数", "tool": "finish", "args": {"answer": """def week_of(items, path):\n    buckets = {}\n    for raw in items:\n        pair = _split(raw)\n        if pair is None:\n            continu'
+--------------------------------------------------------------------------------------------
+合计：A 原始 1 条 → B 去重 6 条 → C 截断 6 条（6 题 × 请求 3 条）
+`"tool"` 出现总次数 = 10（6 题） ｜ 触发定向补救的题数 = 1
+
+去重损失 = -5 条 ｜ 截断损失 = 0 条
+⛔ 归因：**模型给了多个、但 JSON 写坏了**（`"tool"` 出现 10 次 > 题数 6，可 A 只有 1）⇒ 病在**格式/解析**，不在服从性。
+
+⚠️ 样本量：每题只发一次（T=0 下一发是重放不是抽样，纪律 34/39）
+   ⇒ 本读数只回答「这一刻模型给几条」，不回答「模型稳不稳定」。
+明细已写 /tmp/v39_width_n3.json

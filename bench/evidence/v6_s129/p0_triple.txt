@@ -1,0 +1,23 @@
+============================================================================================
+V39 零成本归因：原文 → 修三引号 → 候选数
+============================================================================================
+样本                       原 tool 数    修后 candidates                        tools answer 长度
+--------------------------------------------------------------------------------------------
+n1_e1ni_c0.txt                  1                1                   ['finish'] [0]
+n1_e1ni_c1.txt                  0             解析失败 JSONDecodeError: Expecting value: line 1 column 1
+n1_e1wi_c0.txt                  1                1                   ['finish'] [450]
+n1_e2ni_c0.txt                  1             解析失败 JSONDecodeError: Extra data: line 1 column 114 (c
+n1_e2wi_c0.txt                  1             解析失败 JSONDecodeError: Extra data: line 1 column 114 (c
+n1_e3ni_c0.txt                  1                1                   ['finish'] [0]
+n1_e3ni_c1.txt                  0             解析失败 JSONDecodeError: Expecting value: line 1 column 1
+n1_e3wi_c0.txt                  1             解析失败 JSONDecodeError: Extra data: line 1 column 125 (c
+n3_e1ni_c0.txt                  1                1                   ['finish'] [0]
+n3_e1ni_c1.txt                  0             解析失败 JSONDecodeError: Expecting value: line 1 column 1
+n3_e1wi_c0.txt                  3                3 ['finish', 'finish', 'finish [449, 443, 411]
+n3_e2ni_c0.txt                  1             解析失败 JSONDecodeError: Expecting ',' delimiter: line 7 
+n3_e2wi_c0.txt                  1             解析失败 JSONDecodeError: Expecting ',' delimiter: line 9 
+n3_e3ni_c0.txt                  3                3 ['finish', 'finish', 'finish [474, 474, 474]
+n3_e3wi_c0.txt                  1             解析失败 JSONDecodeError: Expecting ',' delimiter: line 5 
+--------------------------------------------------------------------------------------------
+读法：`修后 candidates > 1` ⇒ 模型**给了**多个，卡在格式；
+      恒为 1 或解析失败 ⇒ 那句话要先分清「没给」与「没收到」。

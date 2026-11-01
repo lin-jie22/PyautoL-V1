@@ -1,0 +1,4 @@
+a1_r1 cand=1 pre=0 post=118784 dump=14 sig=53af603418be1baf seed=[0, 0]
+a3_r1 cand=3 pre=0 post=114688 dump=21 sig=a078f6544609dd37 seed=[0, 0]
+a3_r2 cand=3 pre=114688 post=180224 dump=21 sig=24cf93b3910f8198 seed=[1, 27]
+a1_r2 cand=1 pre=118784 post=184320 dump=14 sig=c81bb63bfd2f7cae seed=[2, 27]

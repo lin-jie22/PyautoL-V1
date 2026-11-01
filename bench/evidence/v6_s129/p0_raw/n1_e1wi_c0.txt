@@ -1,0 +1,19 @@
+{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {"answer": """import re
+
+def _strip_tags(text):
+    return re.sub(r"@[A-Za-z0-9]+", "", text)
+
+
+def clean_lines(items, path):
+    kept = set()
+    for item in items:
+        stripped = _strip_tags(item).strip(" \t")
+        if stripped:
+            if stripped not in kept:
+                kept.add(stripped)
+                kept.append(stripped)
+
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("".join(s + "\n" for s in kept))
+    return None
+"""}, "rationale": "根据规则直接补全代码，满足所有要求。"}]}

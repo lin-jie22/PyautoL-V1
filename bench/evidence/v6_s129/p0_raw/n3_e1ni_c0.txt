@@ -1,0 +1,1 @@
+{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全代码，无需使用工具。"}]}

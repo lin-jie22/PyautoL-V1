@@ -1,0 +1,4 @@
+  H0-f state-dump 预检 EXIT=0 行=2 keys=guidance,it,n,preds,state,task
+n_pred=2
+  H0-g 台账规划器读数 has_planner=True
+calls=2 fail_total=1

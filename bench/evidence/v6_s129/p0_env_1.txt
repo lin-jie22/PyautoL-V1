@@ -1,0 +1,6 @@
+max_candidates=1
+temperature=0.0
+state_chars=2400
+CAND_OK=True
+TEMP_ZERO=True
+CAP_2400=True

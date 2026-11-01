@@ -1,0 +1,810 @@
+[
+  {
+    "arm": 0,
+    "sig_limits": "4971a382d9e90fa7",
+    "rows": [
+      {
+        "sample": "n1_e1ni_c0",
+        "shape": "A 已可解析",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n1_e1ni_c1",
+        "shape": "E 无JSON",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e1ni_c1'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '```python\\nimport re\\n\\ndef _strip_ta",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e1wi_c0",
+        "shape": "C 三引号",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e1wi_c0'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{\"candidates\": [{\"intent\": \"直接补全代码\", ",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e2ni_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          726
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not sep:\\n        ret",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e2wi_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          699
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport json\\n\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not se",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e3ni_c0",
+        "shape": "A 已可解析",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n1_e3ni_c1",
+        "shape": "E 无JSON",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e3ni_c1'})]",
+        "note": "合法 JSON 但没有可用候选（⇒ 改提示词）",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e3wi_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          1027
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport datetime\\n\\ndef _split(raw):\\n    head, sep, event = raw.partition(\"|\")\\n    if not sep:\\n        return None\\n    head, event = head.strip(), event.strip()\\n",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e1ni_c0",
+        "shape": "A 已可解析",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n3_e1ni_c1",
+        "shape": "E 无JSON",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e1ni_c1'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '```python\\nimport re\\n\\ndef _strip_ta",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e1wi_c0",
+        "shape": "C 三引号",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e1wi_c0'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{\"candidates\": [{\"intent\": \"直接补全代码\", ",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e2ni_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e2ni_c0'})]",
+        "note": "模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: ' TODO\\n\\n    with open(pat",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e2wi_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e2wi_c0'})]",
+        "note": "模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 'r[1])\\n\\n    with open(pat",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e3ni_c0",
+        "shape": "C 三引号",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e3ni_c0'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{\"candidates\": [{\"intent\": \"补全 week_o",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e3wi_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e3wi_c0'})]",
+        "note": "模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: '        for key in sorted(",
+        "llm_calls": 1
+      }
+    ],
+    "stats": {
+      "calls": 15,
+      "degraded": 9,
+      "json_fail": 5,
+      "truncated": 3,
+      "no_tool_fit": 0,
+      "empty_plan": 1,
+      "salvage": 0,
+      "salvage_ok": 0,
+      "salvage_fail": 0,
+      "salvage_completed": 0
+    }
+  },
+  {
+    "arm": 1,
+    "sig_limits": "fbdbb2f04e3fbaf7",
+    "rows": [
+      {
+        "sample": "n1_e1ni_c0",
+        "shape": "A 已可解析",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n1_e1ni_c1",
+        "shape": "E 无JSON",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e1ni_c1'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '```python\\nimport re\\n\\ndef _strip_ta",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e1wi_c0",
+        "shape": "C 三引号",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          450
+        ],
+        "steps_repr": "[('finish', {'answer': 'import re\\n\\ndef _strip_tags(text):\\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\\n\\n\\ndef clean_lines(items, path):\\n    kept = set()\\n    for item in items:\\n        strippe",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e2ni_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          726
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not sep:\\n        ret",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e2wi_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          699
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport json\\n\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not se",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e3ni_c0",
+        "shape": "A 已可解析",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n1_e3ni_c1",
+        "shape": "E 无JSON",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e3ni_c1'})]",
+        "note": "合法 JSON 但没有可用候选（⇒ 改提示词）",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e3wi_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          1027
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport datetime\\n\\ndef _split(raw):\\n    head, sep, event = raw.partition(\"|\")\\n    if not sep:\\n        return None\\n    head, event = head.strip(), event.strip()\\n",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e1ni_c0",
+        "shape": "A 已可解析",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n3_e1ni_c1",
+        "shape": "E 无JSON",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e1ni_c1'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '```python\\nimport re\\n\\ndef _strip_ta",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e1wi_c0",
+        "shape": "C 三引号",
+        "n": 3,
+        "cands": 3,
+        "degraded": false,
+        "answer_len": [
+          449,
+          443,
+          411
+        ],
+        "steps_repr": "[('finish', {'answer': 'import re\\n\\ndef _strip_tags(text):\\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\\n\\n\\ndef clean_lines(items, path):\\n    kept = set()\\n    for item in items:\\n        strippe",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e2ni_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e2ni_c0'})]",
+        "note": "模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: ' TODO\\n\\n    with open(pat",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e2wi_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e2wi_c0'})]",
+        "note": "模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 'r[1])\\n\\n    with open(pat",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e3ni_c0",
+        "shape": "C 三引号",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          474
+        ],
+        "steps_repr": "[('finish', {'answer': 'def week_of(items, path):\\n    buckets = {}\\n    for raw in items:\\n        pair = _split(raw)\\n        if pair is None:\\n            continue\\n        try:\\n            day = ",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e3wi_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e3wi_c0'})]",
+        "note": "模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: '        for key in sorted(",
+        "llm_calls": 1
+      }
+    ],
+    "stats": {
+      "calls": 15,
+      "degraded": 6,
+      "json_fail": 2,
+      "truncated": 3,
+      "no_tool_fit": 0,
+      "empty_plan": 1,
+      "salvage": 1,
+      "salvage_ok": 3,
+      "salvage_fail": 0,
+      "salvage_completed": 0
+    }
+  },
+  {
+    "arm": 2,
+    "sig_limits": "ec34026a49413709",
+    "rows": [
+      {
+        "sample": "n1_e1ni_c0",
+        "shape": "A 已可解析",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n1_e1ni_c1",
+        "shape": "E 无JSON",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e1ni_c1'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '```python\\nimport re\\n\\ndef _strip_ta",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e1wi_c0",
+        "shape": "C 三引号",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e1wi_c0'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{\"candidates\": [{\"intent\": \"直接补全代码\", ",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e2ni_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          726
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not sep:\\n        ret",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e2wi_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          699
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport json\\n\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not se",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e3ni_c0",
+        "shape": "A 已可解析",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n1_e3ni_c1",
+        "shape": "E 无JSON",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e3ni_c1'})]",
+        "note": "合法 JSON 但没有可用候选（⇒ 改提示词）",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e3wi_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          1027
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport datetime\\n\\ndef _split(raw):\\n    head, sep, event = raw.partition(\"|\")\\n    if not sep:\\n        return None\\n    head, event = head.strip(), event.strip()\\n",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e1ni_c0",
+        "shape": "A 已可解析",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n3_e1ni_c1",
+        "shape": "E 无JSON",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e1ni_c1'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '```python\\nimport re\\n\\ndef _strip_ta",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e1wi_c0",
+        "shape": "C 三引号",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e1wi_c0'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{\"candidates\": [{\"intent\": \"直接补全代码\", ",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e2ni_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          726
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not sep:\\n        ret",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e2wi_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          699
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport json\\n\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not se",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e3ni_c0",
+        "shape": "C 三引号",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e3ni_c0'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{\"candidates\": [{\"intent\": \"补全 week_o",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e3wi_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          1027
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport datetime\\n\\ndef _split(raw):\\n    head, sep, event = raw.partition(\"|\")\\n    if not sep:\\n        return None\\n    head, event = head.strip(), event.strip()\\n",
+        "note": "",
+        "llm_calls": 1
+      }
+    ],
+    "stats": {
+      "calls": 15,
+      "degraded": 6,
+      "json_fail": 5,
+      "truncated": 0,
+      "no_tool_fit": 0,
+      "empty_plan": 1,
+      "salvage": 2,
+      "salvage_ok": 3,
+      "salvage_fail": 5,
+      "salvage_completed": 3
+    }
+  },
+  {
+    "arm": 3,
+    "sig_limits": "f28a3faf98834e16",
+    "rows": [
+      {
+        "sample": "n1_e1ni_c0",
+        "shape": "A 已可解析",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n1_e1ni_c1",
+        "shape": "E 无JSON",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e1ni_c1'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '```python\\nimport re\\n\\ndef _strip_ta",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e1wi_c0",
+        "shape": "C 三引号",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          450
+        ],
+        "steps_repr": "[('finish', {'answer': 'import re\\n\\ndef _strip_tags(text):\\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\\n\\n\\ndef clean_lines(items, path):\\n    kept = set()\\n    for item in items:\\n        strippe",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e2ni_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          726
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not sep:\\n        ret",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e2wi_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          699
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport json\\n\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not se",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e3ni_c0",
+        "shape": "A 已可解析",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n1_e3ni_c1",
+        "shape": "E 无JSON",
+        "n": 1,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n1_e3ni_c1'})]",
+        "note": "合法 JSON 但没有可用候选（⇒ 改提示词）",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n1_e3wi_c0",
+        "shape": "B 分隔符",
+        "n": 1,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          1027
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport datetime\\n\\ndef _split(raw):\\n    head, sep, event = raw.partition(\"|\")\\n    if not sep:\\n        return None\\n    head, event = head.strip(), event.strip()\\n",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e1ni_c0",
+        "shape": "A 已可解析",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          0
+        ],
+        "steps_repr": "[('finish', {})]",
+        "note": "",
+        "llm_calls": 2
+      },
+      {
+        "sample": "n3_e1ni_c1",
+        "shape": "E 无JSON",
+        "n": 3,
+        "cands": 1,
+        "degraded": true,
+        "answer_len": [],
+        "steps_repr": "[('recall', {'query': '重放样本 n3_e1ni_c1'})]",
+        "note": "模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '```python\\nimport re\\n\\ndef _strip_ta",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e1wi_c0",
+        "shape": "C 三引号",
+        "n": 3,
+        "cands": 3,
+        "degraded": false,
+        "answer_len": [
+          449,
+          443,
+          411
+        ],
+        "steps_repr": "[('finish', {'answer': 'import re\\n\\ndef _strip_tags(text):\\n    return re.sub(r\"@[A-Za-z0-9]+\", \"\", text)\\n\\n\\ndef clean_lines(items, path):\\n    kept = set()\\n    for item in items:\\n        strippe",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e2ni_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          726
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not sep:\\n        ret",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e2wi_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          699
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport json\\n\\ndef _dump(payload):\\n    return json.dumps(payload, ensure_ascii=False)\\n\\n\\ndef _split(raw):\\n    head, sep, name = raw.partition(\"|\")\\n    if not se",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e3ni_c0",
+        "shape": "C 三引号",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          474
+        ],
+        "steps_repr": "[('finish', {'answer': 'def week_of(items, path):\\n    buckets = {}\\n    for raw in items:\\n        pair = _split(raw)\\n        if pair is None:\\n            continue\\n        try:\\n            day = ",
+        "note": "",
+        "llm_calls": 1
+      },
+      {
+        "sample": "n3_e3wi_c0",
+        "shape": "D 兄弟finish",
+        "n": 3,
+        "cands": 1,
+        "degraded": false,
+        "answer_len": [
+          1027
+        ],
+        "steps_repr": "[('finish', {'answer': '```python\\nimport datetime\\n\\ndef _split(raw):\\n    head, sep, event = raw.partition(\"|\")\\n    if not sep:\\n        return None\\n    head, event = head.strip(), event.strip()\\n",
+        "note": "",
+        "llm_calls": 1
+      }
+    ],
+    "stats": {
+      "calls": 15,
+      "degraded": 3,
+      "json_fail": 2,
+      "truncated": 0,
+      "no_tool_fit": 0,
+      "empty_plan": 1,
+      "salvage": 3,
+      "salvage_ok": 6,
+      "salvage_fail": 2,
+      "salvage_completed": 3
+    }
+  }
+]

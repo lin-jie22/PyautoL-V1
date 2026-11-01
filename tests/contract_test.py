@@ -1346,6 +1346,12 @@ def _env_zero_takes_effect(key: str) -> bool:
         #   所以"不登记"看不出差别 —— 但只要将来把默认 promote 成 1，
         #   A0 就会静默变成 A1，而两臂读数会被读成"接上预演没有效果"。
         "V1_FORESIGHT_VETO": ("limits", "foresight_veto"),
+        # ★第一百三十轮（§106）：`V1_PLAN_SALVAGE=0` 就是**对照臂 A0**
+        #   （= V39 及之前的全部历史：解析器一个字符都不修）。
+        #   T5 会实测"设成 0 之后真的取到 0" —— 这一条对本轮尤其要紧：
+        #   `run_v40.sh` 里 4 个臂靠这一个变量的 4 个取值区分，
+        #   若 0 被静默改回默认，臂 0 与臂 3 之外的臂会**静默变成同一个**。
+        "V1_PLAN_SALVAGE": ("limits", "plan_salvage"),
     }
     grp, attr = _keys[key]
     _old = os.environ.get(key)
@@ -3738,6 +3744,146 @@ check(RS, "AZ103 ★★★规划器的**降级分项**必须进台账，累加�
       f"json_fail acc={_AZ103_ACC['json_fail']} stats={_AZ103_ST['json_fail']} ｜ "
       f"fail_total={_AZ103_LINE['fail_total']} ｜ "
       f"台账键={'有' if chr(34) + 'kernel_planner' + chr(34) in _AZ103_SRC else '缺'}")
+
+# ── AZ104 的取证装置（V40 / §106）：两种坏形态必须**各自**可修，off 臂必须真的不修 ──
+#  ⭐ 为什么这条断言比"多修好两个样本"重要：V39 已经用原文证明「宽度被解析器扣住」，
+#     而"修一下解析器"是那种**会顺手把一切都修好**的改动 —— 它既能偷偷把截断的
+#     响应补成合法计划，也能改掉它本不该碰的样本。所以本条测的不是"修好了没有"，
+#     而是四条**边界**：off 臂逐位不动 / 两种修法互不越界 / 载荷一个字符不动 /
+#     截断不许被补完。
+from mw.planner import (Planner as _AZ104_P,          # noqa: E402
+                        salvage_payload as _AZ104_SP,
+                        salvage_triple as _AZ104_ST)
+from mw.tools import ToolRegistry as _AZ104_REG, register_core_tools as _AZ104_RCT  # noqa: E402
+from mw.tools import _StubMemory as _AZ104_MEM        # noqa: E402
+
+_AZ104_TQ = '"' * 3
+#: 载荷里刻意放**裸双引号**（形态 D 的真病之一：`open(path, "w")`）
+_AZ104_BODY = 'def _dump(payload):\n    return open(path, "w")\n'
+#: 形态 C：三引号（模型把 Python 的三引号习惯写进了 JSON）
+_AZ104_C = ('{"candidates": ['
+            '{"intent": "a", "tool": "finish", "args": {"answer": '
+            + _AZ104_TQ + _AZ104_BODY + "A" + _AZ104_TQ + '}},'
+            '{"intent": "b", "tool": "finish", "args": {"answer": '
+            + _AZ104_TQ + _AZ104_BODY + "B" + _AZ104_TQ + '}}'
+            ']}')
+#: 形态 D：载荷在 `candidates` **之外**（兄弟字段）+ 裸引号 + 结尾少 2 个闭合符
+_AZ104_D = ('{"candidates": [{"intent": "a", "tool": "finish", "args": {}}],'
+            ' "finish": {"answer": "' + _AZ104_BODY + "}")
+#: 截断：结尾停在**字符串里**，一个闭合符都不剩 ⇒ 一律不许补
+_AZ104_TRUNC = '{"candidates": [{"intent": "a", "tool": "finish", "args": {"answer": "' + _AZ104_BODY
+
+
+def _az104_planner(salvage: int) -> "_AZ104_P":
+    _reg = _AZ104_REG()
+    _AZ104_RCT(_reg, memory=_AZ104_MEM(), allow_note=True)
+    return _AZ104_P(StubLLM(), _reg, salvage=salvage)
+
+
+def _AZ104_cands(plan) -> list:
+    return [(s.tool, str(s.args.get("answer", ""))) for s in plan.steps]
+
+
+_AZ104_OFF = _az104_planner(0)
+_AZ104_W1 = _az104_planner(1)
+_AZ104_W2 = _az104_planner(2)
+_AZ104_BOTH = _az104_planner(3)
+
+
+def _az104_run(planner, raw: str):
+    planner.llm = _AZ104Stub(raw)
+    _b = io.StringIO()
+    with contextlib.redirect_stdout(_b):
+        return planner.propose(goal="给一段代码", state="", history=[],
+                               n=3, guidance="", blocked=(), rejected=())
+
+
+class _AZ104Stub:
+    """第 1 次给原文，其后给空串 —— 补救必须确定性失败（否则读数归因不到修法）。"""
+
+    def __init__(self, raw: str) -> None:
+        self.raw = raw
+        self.calls = 0
+
+    def complete(self, messages, max_tokens=None):
+        self.calls += 1
+        return self.raw if self.calls == 1 else ""
+
+
+_AZ104_P0_C = _az104_run(_AZ104_OFF, _AZ104_C)
+_AZ104_P1_C = _az104_run(_AZ104_W1, _AZ104_C)
+_AZ104_P2_D = _az104_run(_AZ104_W2, _AZ104_D)
+_AZ104_P1_D = _az104_run(_AZ104_W1, _AZ104_D)
+_AZ104_P3_C = _az104_run(_AZ104_BOTH, _AZ104_C)
+_AZ104_P3_D = _az104_run(_AZ104_BOTH, _AZ104_D)
+_AZ104_SP_D = _AZ104_SP(_AZ104_D)
+_AZ104_ST_C = _AZ104_ST(_AZ104_C)
+_AZ104_ST_D = _AZ104_ST(_AZ104_D)
+#: 环境 → `Limits` → `Planner` 的整条链路（纪律 13：机制存在 ≠ 机制通电）
+_az104_env_old = os.environ.get("V1_PLAN_SALVAGE")
+try:
+    os.environ["V1_PLAN_SALVAGE"] = "2"
+    _AZ104_ENV_HIT = int(cfg.settings().limits.plan_salvage)
+    _AZ104_ENV_P = _az104_planner(int(cfg.settings().limits.plan_salvage))
+    _AZ104_ENV_PLANNER = int(_AZ104_ENV_P.salvage)
+finally:
+    if _az104_env_old is None:
+        os.environ.pop("V1_PLAN_SALVAGE", None)
+    else:
+        os.environ["V1_PLAN_SALVAGE"] = _az104_env_old
+#: 越界档位必须当场拒绝（`7` 与 `-1` 都不是"没设"）
+_AZ104_BAD: list[str] = []
+for _bad in (-1, 4, 7):
+    try:
+        _az104_planner(_bad)
+        _AZ104_BAD.append(f"{_bad}:未拒绝")
+    except ValueError:
+        _AZ104_BAD.append(f"{_bad}:拒绝")
+
+check(RS, "AZ104 ★★★规划器格式修复必须是**两个各自单变量**的档位，且 off 臂逐位不动（V40）\n"
+          "          —— V39 §三 的判决：`max_candidates` 从 3 拧到 1，解析失败率从 0.684\n"
+          "             降到 0.308，而**候选数两臂都恒为 1**；原文证明模型在 n=3 时**给了 3 个**，\n"
+          "             只是每个都写成 `\"answer\": \"\"\"<代码>\"\"\"` ⇒ `json.loads` 一律拒收。\n"
+          "             ⇒ 真凶是解析器，不是模型的服从性。但「修解析器」是一类**会顺手修好一切**\n"
+          "             的改动：它能把截断补成合法计划，也能改掉它不该碰的样本。\n"
+          "         判据（五条，缺一即证明不了边界）：\n"
+          "               ① `salvage=0` ⇒ 三引号样本**照旧降级**（off 就是 off，不是「默认开一点」）；\n"
+          "               ② `1` 修三引号（2 个候选）但**修不了**兄弟字段；`2` 反之（1 个候选\n"
+          "                  且载荷**逐字节等于**原文那段）；⇒ 两档是正交对照臂，不是强弱两档；\n"
+          "               ③ `3` = 两者都通（同一份原文两处都救得回来）；\n"
+          "               ④ 截断（结尾停在字符串里、一个闭合符都不剩）**一律不补完** ——\n"
+          "                  这是「修复器总能修好」的唯一入口，必须留一条永远修不了的路；\n"
+          "               ⑤ env → `Limits` → `Planner` 整条链通电；越界档位当场 `ValueError`。\n"
+          "         撤回语义：把 `if len(done) > len(struct) and not tail:` 改成 `if False:`\n"
+          "               ⇒ ② 里 `_AZ104_SP_D[2]` 与 ③ 的 D 组恢复必红（补完不再受控）。",
+      # ⚠️ 负向判据**不能**写成「候选为空」：`_degrade` 一律走 `_fallback`，
+      #    它**必然**产出 1 条合法动作（`planner.py` 的硬约束 ①）。所以"没修好"
+      #    的可观测形态是 `degraded=True` + 那条兜底答复里**没有载荷**。
+      #    （自踩：第一版写成 `not _AZ104_cands(...)`，于是 off 臂恒为"有 1 条" 而红。）
+      bool(_AZ104_P0_C.degraded)
+      and _AZ104_BODY not in _AZ104_cands(_AZ104_P0_C)[0][1]
+      and not _AZ104_P1_C.degraded
+      and len(_AZ104_cands(_AZ104_P1_C)) == 2
+      and not _AZ104_P2_D.degraded
+      and _AZ104_cands(_AZ104_P2_D)[0][1] == _AZ104_BODY
+      and _AZ104_P1_D.degraded
+      and _AZ104_BODY not in _AZ104_cands(_AZ104_P1_D)[0][1]
+      and not _AZ104_P3_C.degraded
+      and len(_AZ104_cands(_AZ104_P3_C)) == 2
+      and not _AZ104_P3_D.degraded
+      and _AZ104_cands(_AZ104_P3_D)[0][1] == _AZ104_BODY
+      and _AZ104_SP_D is not None and _AZ104_SP_D[2] is True
+      and _AZ104_SP(_AZ104_TRUNC) is None
+      and _AZ104_ST_D == _AZ104_D                    # 没三引号 ⇒ 这条修法一个字节都不许动
+      and _AZ104_ENV_HIT == 2 and _AZ104_ENV_PLANNER == 2
+      and all(x.endswith(":拒绝") for x in _AZ104_BAD),
+      f"臂0 降级={_AZ104_P0_C.degraded} 候选={len(_AZ104_cands(_AZ104_P0_C))} ｜ "
+      f"臂1(C)={len(_AZ104_cands(_AZ104_P1_C))} 臂1(D)={len(_AZ104_cands(_AZ104_P1_D))} ｜ "
+      f"臂2(D)={_AZ104_cands(_AZ104_P2_D)}（载荷逐字节={_AZ104_cands(_AZ104_P2_D) and _AZ104_cands(_AZ104_P2_D)[0][1] == _AZ104_BODY}）｜ "
+      f"臂3 C/D={len(_AZ104_cands(_AZ104_P3_C))}/{len(_AZ104_cands(_AZ104_P3_D))} ｜ "
+      f"补完={None if _AZ104_SP_D is None else _AZ104_SP_D[2]} "
+      f"截断不补={_AZ104_SP(_AZ104_TRUNC) is None} ｜ "
+      f"env→limits={_AZ104_ENV_HIT} planner={_AZ104_ENV_PLANNER} ｜ 越界={_AZ104_BAD}")
 
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",

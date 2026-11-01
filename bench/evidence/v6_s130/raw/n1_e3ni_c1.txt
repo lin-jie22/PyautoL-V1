@@ -1,0 +1,20 @@
+```python
+def week_of(items, path):
+    buckets = {}
+    for raw in items:
+        pair = _split(raw)
+        if pair is None:
+            continue
+        day, event = pair
+        try:
+            day = _read_day(day)
+        except ValueError:
+            continue
+        monday = _monday_of(day)
+        _add(buckets, monday, event)
+
+    with open(path, "w", encoding="utf-8") as fh:
+        for key in sorted(buckets):
+            fh.write(key + "|" + ",".join(buckets[key]) + "\n")
+    return None
+```

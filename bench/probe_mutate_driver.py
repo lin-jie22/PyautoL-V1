@@ -68,6 +68,7 @@ def main() -> int:
     os.environ["V1_RECALL_K"] = "9"
     os.environ["V1_STATE_CHARS"] = "2400"
     os.environ["V1_FORESIGHT_VETO"] = "1"
+    os.environ["V1_PLAN_SALVAGE"] = "3"
     os.environ["V1_LLM_MODEL"] = "keep-me"
     e = MD.clean_env({"V1_MAX_STALL": "3"})
     # ⚠️ 这个数字是**故意的硬锚**：加 `Limits` 字段时它必然红，
@@ -90,15 +91,20 @@ def main() -> int:
     #    否则「动态取值」只是我读过代码之后的一个信念。
     #    22 → 23（第一百二十八轮加 `foresight_veto`，§103）。复核方式同 §93：
     #    把 `V1_FORESIGHT_VETO` 也塞进环境，断言它被清掉（不再是推理）。
+    #    23 → 24（第一百三十轮加 `plan_salvage`，§106）。复核方式同上第三轮：
+    #    `V1_PLAN_SALVAGE` 也塞进环境，断言它被清掉。这一条对本轮尤其要紧 ——
+    #    `run_v40` 的四臂就是靠这个 env 区分的，清不干净 ⇒ 臂之间互相污染。
     ck("P5 ★`clean_env` 清掉**全部** `Limits` 字段的同名 env，但保住模型配置",
        e.get("V1_MAX_STALL") == "3" and "V1_RECALL_K" not in e
        and "V1_STATE_CHARS" not in e and "V1_FORESIGHT_VETO" not in e
-       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 23,
+       and "V1_PLAN_SALVAGE" not in e
+       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 24,
        f"limits 字段 {len(fields)} 个 ｜ V1_RECALL_K={'在' if 'V1_RECALL_K' in e else '已清'}"
        f" ｜ V1_STATE_CHARS={'在' if 'V1_STATE_CHARS' in e else '已清'}"
-       f" ｜ V1_FORESIGHT_VETO={'在' if 'V1_FORESIGHT_VETO' in e else '已清'}")
+       f" ｜ V1_FORESIGHT_VETO={'在' if 'V1_FORESIGHT_VETO' in e else '已清'}"
+       f" ｜ V1_PLAN_SALVAGE={'在' if 'V1_PLAN_SALVAGE' in e else '已清'}")
     for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_STATE_CHARS",
-              "V1_FORESIGHT_VETO", "V1_LLM_MODEL"):
+              "V1_FORESIGHT_VETO", "V1_PLAN_SALVAGE", "V1_LLM_MODEL"):
         os.environ.pop(k, None)
 
     # ── P6：守门员的"生效 + 单变量"，每格都喂一个坏样本 ────────────────────

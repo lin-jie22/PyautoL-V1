@@ -608,7 +608,8 @@ class Core:
         self.state_meta: list[dict] = []
         self.planner = Planner(self.llm, self.tools,
                                max_tokens=self.s.limits.llm_max_tokens,
-                               state_chars=self.s.limits.state_chars)
+                               state_chars=self.s.limits.state_chars,
+                               salvage=self.s.limits.plan_salvage)
         self.wm = WorldModel(self.memory, self.llm,
                              allow_learn=self.s.limits.allow_learn,
                              reward_echo=self.s.limits.reward_echo)

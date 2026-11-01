@@ -301,7 +301,12 @@ _KWM_NUM_KEYS: tuple[str, ...] = tuple(k for k in _kwm_zero() if k != "confusion
 #: 规划器读数的累加键（V39）。⛔ 同样由零点派生 —— 理由见 `_KWM_NUM_KEYS`。
 _KPL_NUM_KEYS: tuple[str, ...] = ("calls", "degraded", "json_fail", "truncated",
                                   "no_tool_fit", "empty_plan", "reseek",
-                                  "answer_retry_ok", "answer_retry_fail")
+                                  "answer_retry_ok", "answer_retry_fail",
+                                  # ★§106：格式修复读数。**必须进这个元组**，
+                                  # 否则 `salvage_ok` 只活在 `Planner.stats()` 里、
+                                  # 不进 `runs.jsonl` ⇒ 又一次"机制有牙但没读数"。
+                                  "salvage_ok", "salvage_fail",
+                                  "salvage_completed")
 
 
 def _kpl_zero() -> dict:
@@ -1551,7 +1556,11 @@ def cmd_bench(args) -> int:
           f" 无工具={_kpl_p['no_tool_fit']} 空计划={_kpl_p['empty_plan']}）"
           f" 率={'n/a' if _kpl_p['fail_rate'] is None else _kpl_p['fail_rate']}"
           f" 重问={_kpl_p['reseek']}"
-          f" 补救={_kpl_p['answer_retry_ok']}/{_kpl_p['answer_retry_fail']}")
+          f" 补救={_kpl_p['answer_retry_ok']}/{_kpl_p['answer_retry_fail']}"
+          # ★§106：修复读数**必须**无条件印 —— `0/0` 表示"没叫到修复器"，
+          # 与"叫到了但修不动（`0/N`）"是两件事（纪律 13：机制存在 ≠ 机制通电）。
+          f" 修复={_kpl_p['salvage_ok']}/{_kpl_p['salvage_fail']}"
+          f"（补完={_kpl_p['salvage_completed']}）")
 
     # ── 传输层读数（第二十五轮）：**只在出过事时**才占一行 ────────────────
     # 为什么要印：R2 主张"这次修复不改变正常路径"，而它的证据是

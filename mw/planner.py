@@ -16,6 +16,7 @@ V1 的实现刻意轻：不做完整 HTN，不改写整张图。只做两件在�
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field
 from typing import Any, Sequence
@@ -151,6 +152,184 @@ _ANSWER_SYS = (
     "如果是代码，直接输出代码原文。"
 )
 
+
+# ===========================================================================
+# 规划器输出的**格式修复**（V40 / §106）—— 只修外壳，不造结构
+# ===========================================================================
+#: W1 认的三引号。为什么用变量而不是字面量：三引号在源码里会把后面的字符串一起吞掉，
+#: 上一轮探针首次运行时就是靠 `TQ = '"' * 3` 才写出来的（一个会静默改变语法的字面量，
+#: 不该散落在多处）。
+_TQ = '"' * 3
+
+
+def salvage_triple(text: str) -> str:
+    """W1：把**成对**的三引号包起来的载荷转成合法 JSON 字符串，其余字节一个不动。
+
+    ## 它修的是什么（V39 实测的原文形态）
+
+        {"candidates": [{"intent": "…", "tool": "finish",
+                         "args": {"answer": \"\"\"<整段代码>\"\"\"}}]}
+
+    这是模型把 Python 的三引号习惯带进了 JSON。`json.loads` 在 `"answer": ` 之后
+    先读到一个空字符串 `""`，再撞上第三个 `"` ⇒ 一律报 `Expecting ',' delimiter`。
+    `strict=False` 也救不了 —— 它放宽的是控制字符，不是引号结构。
+
+    ## 为什么这事值得进内核
+
+    V39 `p0_triple.txt`（零 LLM，读冻结原文）：同一份 `n3_e1wi_c0`，修三引号之后
+    `candidates` 从 **0（解析失败）** 变成 **3**（三段代码 449/443/411 字符）。
+    ⇒ 模型**给了**三个候选，是解析器把它们一起丢掉的。
+
+    ⛔ **不做"总能修好"的修复**：没配对（截断）时把剩余全部当载荷，于是修出来的
+       仍是**残缺 JSON**，上层照样判失败 —— 这正是我们要的（失败必须还看得见）。
+    """
+    out: list[str] = []
+    i = 0
+    while True:
+        j = text.find(_TQ, i)
+        if j < 0:
+            out.append(text[i:])
+            break
+        out.append(text[i:j])
+        k = text.find(_TQ, j + 3)
+        if k < 0:
+            # 没配对 ⇒ 后面全是载荷，但结构已残 ⇒ 交给上层判失败
+            out.append(_json_str(text[j + 3:]))
+            break
+        out.append(_json_str(text[j + 3:k]))
+        i = k + 3
+    return "".join(out)
+
+
+def _json_str(s: str) -> str:
+    """把一个**原样载荷**编成 JSON 字符串字面量（含两侧引号）。
+
+    ⚠️ `ensure_ascii=False`：这不是落盘，是同一个进程内的中间表示 ——
+       转成 `\\uXXXX` 会让后面的长度读数全是假的（V39 §三 的教训：
+       长度是判据的一部分，不能在中途改变）。
+    """
+    return json.dumps(s, ensure_ascii=False)
+
+
+#: W2 的锚点：`"answer"` 键 + 值的**起始引号**。
+#: 用正则而不是 `find`：模型对冒号两侧空白的写法不统一（实测有 `"answer" : "`）。
+_ANSWER_KEY_RE = re.compile(r'"answer"\s*:\s*"')
+
+#: W2 允许**补完**的闭合符上限。
+#:
+#: ⚠️ 这个常数是本轮最危险的一个数，所以它必须是一个有名字的常量、有上限、有计数器：
+#:   "把 JSON 补完整"和"把残句说成通顺"只隔一步。实测（`v6_s130` D 组三份原文）
+#:   缺的恰好是 **2 个字符**（`"` 与 `}`）；把上限设成 2 是**由读数定的**，
+#:   不是"看着差不多"。超过 2 ⇒ 拒绝修复 ⇒ 照旧记 `json_fail`/`truncated`。
+#: ⛔ 不许把它调大来"提高恢复率"：那正是"修复器总能修好"的入口。
+_SALVAGE_MAX_CLOSE = 2
+
+
+def _close_stack(struct: str) -> str | None:
+    """把**只差闭合符**的结构补完；任何别的毛病都返回 `None`。
+
+    为什么这件事不能交给 `parse_json`：`json.loads` 只会说"不合法"，它不告诉你
+    差几个括号。而"差几个"正是这里的判据 —— 差 1~2 个可以补，差半段不能补。
+
+    只认两种不闭合：① 未闭合的对象/数组；② 结尾停在字符串里（那是**截断**，一律不补）。
+    """
+    stack: list[str] = []
+    in_str = esc = False
+    for ch in struct:
+        if esc:
+            esc = False
+            continue
+        if ch == "\\":
+            esc = True
+            continue
+        if in_str:
+            if ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch == "{":
+            stack.append("}")
+        elif ch == "[":
+            stack.append("]")
+        elif ch in "}]":
+            if not stack or stack.pop() != ch:
+                return None      # 闭错了（不是"没闭完"）⇒ 这不是补完能修的
+    if in_str or not stack or len(stack) > _SALVAGE_MAX_CLOSE:
+        return None
+    return struct + "".join(reversed(stack))
+
+
+def salvage_payload(text: str, parse: Any = None):
+    """W2：把 `"answer": "<载荷>"` 的**载荷原文**从结构里剥出来 → `(结构数据, 载荷)`。
+
+    ## 它修的是什么（V39 实测的原文形态）
+
+        {"candidates": [{"intent": "…", "tool": "finish", "args": {}}],
+         "finish": {"answer": "<整段代码，含裸双引号>}
+
+    这里有**三**个病叠在一起：载荷放在了 `candidates` **之外**（兄弟字段）、
+    载荷里的裸 `"` 破坏了 JSON、而且结尾还**少了 `"` 和 `}` 两个字符**
+    （模型以为代码围栏的 ``` 已经把字符串收住了）。
+
+    只补转义是不可能的 —— 那要求知道"哪个 `"` 是内容、哪个是分隔符"，
+    而这件事**没有唯一解**。
+
+    ## 所以修法是：不解析载荷
+
+    与 `split_answer()` 同一条哲学（**解析只作用在结构上**）：把载荷那一段
+    **整段剪掉**、换成一个空串占位，让剩下的结构单独解析；载荷原文另行返回，
+    由调用方**原样**注入 `finish.args.answer` ⇒ 代码从模型直达打分器。
+
+    ## 四条判据（决定它是"修复"还是"编造"）
+
+    ① 必须有 `"answer"` 键、载荷非空、且**剪完的结构真的能解析** ——
+       这是防"总能修好"的主闸：解析不了就返回 `None`，上层照旧记失败；
+    ② 载荷终点**只允许**由 JSON 闭合符（`"` `]` `}`）组成，不许夹空白 ——
+       否则载荷里"代码自己的右花括号"会被当成 JSON 的闭合符；
+    ③ **补完有界**：只补 ≤ `_SALVAGE_MAX_CLOSE` 个闭合符，且**结尾停在字符串里
+       一律不补**（那是截断）；补过的那次会被 `completed` 标出来、单独计数；
+    ④ **不猜"最像的"**：从**最长载荷**（剪得最少）开始试，取第一个自洽的终点。
+
+    ⚠️ 为什么是"最长"而不是"最短"：短载荷会把载荷末尾的 `}` / `"` 吃进结构里，
+       于是 `n3_e2wi_c0` 的代码**少最后一个字符** —— 少一个字符的代码在打分器里
+       表现为"语法错"，看起来像模型的锅。长度是判据的一部分，剪错一个字符
+       就归因全错（V39 已栽过同类）。
+    """
+    hits = list(_ANSWER_KEY_RE.finditer(text))
+    if not hits:
+        return None
+    m = hits[-1]                       # 只认**最后**一个 answer：更靠前的多半在示例里
+    start = m.end()
+    body = text.rstrip()
+    parse = parse or parse_json
+    for k in range(len(body), start, -1):
+        tail = body[k:]
+        if not set(tail) <= set('"}]'):
+            continue                   # 终点后面混进了非闭合符 ⇒ 这个终点不成立
+        payload = text[start:k]
+        if not payload.strip():
+            continue                   # 空载荷不是"修复"，那只是把答案丢了
+        # ⚠️ 只补**一个**引号：`start` 落在值起始引号的**后面**（正则把它一起吃了），
+        #    所以 `""` 会拼出三个引号 —— 那正是 W1 要修的那个坏形态（自踩，见 RESULTS §七）。
+        struct = text[:start] + '"' + body[k:]
+        done = _close_stack(struct)
+        if done is None:
+            continue                   # 判据 ③：补不了（截断/闭错）⇒ 这个终点不成立
+        if len(done) > len(struct) and not tail:
+            continue                   # 一个闭合符都没剩 ⇒ 更像是被截断，不补
+        data = parse(done, fallback=None)
+        if data is None:
+            continue                   # 判据 ① 的主闸：结构不自洽 ⇒ 这个终点不成立
+        if payload.endswith('"') and '"' not in tail:
+            # 尾巴里没有引号 ⇒ 这一个 `"` 是载荷**值的闭合引号**，不是内容
+            payload = payload[:-1]
+        # 第三个返回值 = "这次是靠补完闭合符才通的"。**必须回传**：
+        # 不带它，`salvage_ok` 就把"剥离即可"与"剥离+补完"混成一个数，
+        # 而后者是本轮唯一带风险的动作（见 `_SALVAGE_MAX_CLOSE`）。
+        return data, payload, len(done) > len(struct)
+    return None
+
 #: ★ 第五十轮（§17-7v-b）：语义记忆的**忠实引用**指令（34 字）。
 #:
 #: 来源与定位：它先是 7u 的**安慰剂臂 C**（当时当作"中性串"），实测却让
@@ -226,7 +405,7 @@ def reseek_block(rejected: Sequence[str], untried: Sequence[str]) -> str:
 
 class Planner:
     def __init__(self, llm: LLM, tools: Any, *, max_tokens: int = 2048,
-                 state_chars: int | None = None) -> None:
+                 state_chars: int | None = None, salvage: int | None = None) -> None:
         self.llm = llm
         self.tools = tools
         #: 单次规划调用的 token 上限。**从 config 注入**，不在这里写死 ——
@@ -241,6 +420,22 @@ class Planner:
         #:    那会把"显式设成 0"与"没传"混成一条路（纪律 30 的坑形态）。
         self.state_chars = int(cfg.STATE_CHAR_CAP if state_chars is None
                                else state_chars)
+        #: ★ 第 130 轮（§106）：格式修复档位 0/1/2/3。真读数来自
+        #: `settings().limits.plan_salvage`（进口径签名）；`None` 只给不传参的独立探针用。
+        #: ⛔ 同样**不写** `int(salvage) or ...` —— `0`（不修）是合法取值，是**对照臂**。
+        self.salvage = int(cfg.settings().limits.plan_salvage
+                           if salvage is None else salvage)
+        if not 0 <= self.salvage <= 3:
+            raise ValueError(f"salvage 只允许 0/1/2/3，收到 {self.salvage}")
+        #: 修复**成功**次数（按次计：同一次调用里 W1 成功就不再试 W2）
+        self.salvage_ok = 0
+        #: 修复**尝试过但没救回来**的次数 —— 它**不是**降级：降级由 json_fail 等照旧计。
+        #: 为什么要单独计：`salvage_ok=0 且 salvage_fail=0` 表示"修复器根本没被叫到"
+        #: （开关没通电 / 样本没进这条路），而那与"叫到了但修不动"是两件事（纪律 13）。
+        self.salvage_fail = 0
+        #: 其中"靠**补完闭合符**才通"的次数（`_SALVAGE_MAX_CLOSE` 那次动作的专账）。
+        #: ⛔ 它必须 ≤ `salvage_ok`：两者相等 ⇒ 本轮**所有**恢复都动了结构补完。
+        self.salvage_completed = 0
         self.calls = 0
         self.degraded = 0
         # ── 降级原因**分项计数**，不许合并成一个 degraded ──────────────────
@@ -334,6 +529,12 @@ class Planner:
         data = parse_json(head, fallback=None)
         if data is None and payload:
             data = parse_json(raw, fallback=None)   # 兼容：模型把 answer 也塞进了 JSON
+        if data is None and self.salvage:
+            # ── 格式修复（§106）：**只修外壳，不造结构** ────────────────────
+            # 顺序刻意写死，因为它决定了"两个坏形态能否各自单变量"：
+            #   `salvage & 1` → W1（三引号）先试；`salvage & 2` → W2（载荷剥离）后试。
+            # ⛔ 不许写成 `if 1 or 2` 的短路把两条合并 —— `1` 与 `2` 是对照臂。
+            data, payload = self._salvage(raw, head, payload)
         if data is None:
             # ── 「截断」与「不会写 JSON」是两种病，修法完全不同，必须分开计 ──
             # 实测：规划器写死 700 token，而它要求把整段代码塞进 JSON 字符串 ——
@@ -404,6 +605,45 @@ class Planner:
                     else:
                         self.answer_retry_fail += 1
         return Plan(steps)
+
+    def _salvage(self, raw: str, head: str, payload: str) -> tuple[Any, str]:
+        """W1 / W2 的**唯一**入口 —— 两个档位只在这里分开。
+
+        ⛔ 为什么不让调用点各自写：那样"两臂只差一个变量"就只是一句散文。
+           在这个函数里，`salvage & 1` 与 `salvage & 2` 是两条**互不包含**的分支，
+           于是 `V1_PLAN_SALVAGE=1` 与 `=2` 天然是对照臂（V40 的 J5 量这一条）。
+
+        返回 `(结构数据 | None, 载荷原文)`。载荷的优先级：`split_answer` 已切出的
+        那段（`---ANSWER---` 之后）> W2 从 JSON 里剥出来的那段。两者不叠加 ——
+        一次响应里只有一个真载荷，叠加等于编造。
+        """
+        tried = False
+        texts = [t for t in (head, raw) if t] or [raw]
+        if self.salvage & 1:
+            for t in texts:
+                fixed = salvage_triple(t)
+                if fixed == t:
+                    continue          # 没有三引号 ⇒ 这条修法对这份原文无从下手
+                tried = True
+                data = parse_json(fixed, fallback=None)
+                if data is not None:
+                    self.salvage_ok += 1
+                    return data, payload
+        if self.salvage & 2:
+            for t in texts:
+                tried = True
+                got = salvage_payload(t)
+                if got is not None:
+                    self.salvage_ok += 1
+                    if got[2]:
+                        # 这次是靠**补完闭合符**才通的 —— 单独计数，不许并进 `salvage_ok`
+                        self.salvage_completed += 1
+                    return got[0], (payload or got[1])
+        if tried:
+            # ⚠️ 一次调用只记一次：这里数的是"这条路被走过几次而没救回来"，
+            #    不是"试了几种修法" —— 后者会把 W1+W2 双开的臂读成失败率翻倍。
+            self.salvage_fail += 1
+        return None, payload
 
     def _degrade(self, note: str, *, steps_used: int, goal: str = "") -> Plan:
         """降级出口唯一 —— 保证 self.degraded 与分项计数**同源**，不会两处漂移。"""
@@ -546,6 +786,13 @@ class Planner:
             "reseek": self.reseek,
             "answer_retry_ok": self.answer_retry_ok,
             "answer_retry_fail": self.answer_retry_fail,
+            # ★§106：格式修复的**开关读数**。`salvage` 必须在 stats 里 ——
+            # 否则"这轮读数变了"与"这轮修复器开了"只能靠跑批脚本的 env 行去猜。
+            # `ok/fail` 分开报的理由与 `answer_retry_*` 同：一个改写了结果，一个没有。
+            "salvage": self.salvage,
+            "salvage_ok": self.salvage_ok,
+            "salvage_fail": self.salvage_fail,
+            "salvage_completed": self.salvage_completed,
             "last_bad_tools": list(self.last_bad_tools)[:5],
             # 不变量：总分项数必须等于 degraded，否则说明有降级走了旁路（漏记）
             "cause_balances": causes == self.degraded,

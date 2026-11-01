@@ -1,0 +1,35 @@
+{"candidates": [{"intent": "直接补全代码", "tool": "finish", "args": {}, "rationale": "根据任务描述，可以直接补全代码以满足要求，无需使用工具。"}]}---
+ANSWER---```python
+import json
+
+def _dump(payload):
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def _split(raw):
+    head, sep, name = raw.partition("|")
+    if not sep:
+        return None
+    head, name = head.strip(), name.strip()
+    if not head or not name:
+        return None
+    return head, name
+
+
+def _add(table, head, name):
+    bucket = table.setdefault(head, [])
+    if name not in bucket:
+        bucket.append(name)
+
+
+def group_names(items, path):
+    table = {}
+    for raw in items:
+        pair = _split(raw)
+        if pair:
+            _add(table, pair[0], pair[1])
+
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(_dump({"groups": table}))
+    return None
+```

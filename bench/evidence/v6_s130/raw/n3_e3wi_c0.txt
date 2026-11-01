@@ -1,0 +1,46 @@
+{"candidates": [{"intent": "直接补全 week_of 函数", "tool": "finish", "args": {}, "rationale": "根据题目要求，可以直接补全 week_of 函数，无需调用其他工具。"}], "finish": {"answer": "```python
+import datetime
+
+def _split(raw):
+    head, sep, event = raw.partition("|")
+    if not sep:
+        return None
+    head, event = head.strip(), event.strip()
+    if not head or not event:
+        return None
+    return head, event
+
+
+def _read_day(stamp):
+    return datetime.date.fromisoformat(stamp)
+
+
+def _monday_of(day):
+    return (day - datetime.timedelta(days=day.weekday())).isoformat()
+
+
+def _add(table, key, value):
+    bucket = table.setdefault(key, [])
+    if value not in bucket:
+        bucket.append(value)
+
+
+def week_of(items, path):
+    buckets = {}
+    for raw in items:
+        pair = _split(raw)
+        if not pair:
+            continue
+        day, event = pair
+        try:
+            day = _read_day(day)
+        except ValueError:
+            continue
+        monday = _monday_of(day)
+        _add(buckets, monday, event)
+
+    with open(path, "w", encoding="utf-8") as fh:
+        for key in sorted(buckets):
+            fh.write(key + "|" + ",".join(buckets[key]) + "\n")
+    return None
+```}

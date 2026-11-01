@@ -1,0 +1,65 @@
+# 全量 run（六题齐全）= 112
+
+## 1  e1wi × e1ni 2×2（同一 run 内）
+
+  e1wi   e1ni  run 数   和
+     1      1      28   32
+     1      0      38   16
+     0      1      43   16
+     0      0       3   0
+
+两边都过 = 28 / 112
+恰好一边过 = 81 / 112
+两边都不过 = 3 / 112
+
+### 两边都过的 run（存在性证明 ⇒ 守恒不是结构律）
+  v19/bench_b_r1         e1wi=1.00 e1ni=1.00
+  v19/bench_b_r3         e1wi=1.00 e1ni=1.00
+  tmp/v1_s109_oracle_bench e1wi=1.00 e1ni=1.00
+  v21/bench_b_r1         e1wi=1.00 e1ni=1.00
+  v21/bench_b_r3         e1wi=1.00 e1ni=1.00
+  v22/bench_s0_r2        e1wi=1.00 e1ni=1.00
+  v22/bench_s0_r3        e1wi=1.00 e1ni=1.00
+  v22/bench_s0_r4        e1wi=1.00 e1ni=1.00
+  v22/bench_s0_r5        e1wi=1.00 e1ni=1.00
+  retry/bench_s0_r1      e1wi=1.00 e1ni=1.00
+  v23/bench_a0_r1        e1wi=1.00 e1ni=1.00
+  v23/bench_a0_r2        e1wi=1.00 e1ni=1.00
+  v23/bench_a0_r3        e1wi=1.00 e1ni=1.00
+  v24/bench_a0p1_r1      e1wi=1.00 e1ni=1.00
+  v24/bench_a0p1_r2      e1wi=1.00 e1ni=1.00
+  v24/bench_a0p1_r3      e1wi=1.00 e1ni=1.00
+  v24/bench_a0p2_r1      e1wi=1.00 e1ni=1.00
+  v24/bench_a0p2_r2      e1wi=1.00 e1ni=1.00
+  v24/bench_a0p2_r3      e1wi=1.00 e1ni=1.00
+  v24/bench_a1p1_r1      e1wi=1.00 e1ni=1.00
+  v24/bench_a1p1_r2      e1wi=1.00 e1ni=1.00
+  v24/bench_a1p1_r3      e1wi=1.00 e1ni=1.00
+  v25/bench_c1_r2        e1wi=1.00 e1ni=1.00
+  v25/bench_c2z_r2       e1wi=1.00 e1ni=1.00
+  v25/bench_c2z_r4       e1wi=1.00 e1ni=1.00
+  v26/bench_d2_r2        e1wi=1.00 e1ni=1.00
+  v27/bench_s12_r1       e1wi=1.00 e1ni=1.00
+  v27/bench_s12_r2       e1wi=1.00 e1ni=1.00
+
+## 2  逐对（pair）守恒核对
+  pair=e1: 过题数分布 {0: 3, 1: 81, 2: 28}  (Σ 恒 32 的 run = 81/112)
+  pair=e2: 过题数分布 {1: 111, 2: 1}  (Σ 恒 32 的 run = 111/112)
+  pair=e3: 过题数分布 {1: 111, 2: 1}  (Σ 恒 32 的 run = 111/112)
+
+## 3  e1 两题的失败机制（答案原文分类，不看台账 why）
+
+### e1wi
+  list+import_re+append                  过=1  n=66
+  set()+import_re+append                 过=0  n=46
+
+### e1ni
+  list+import_re+append                  过=1  n=71
+  list+no_re+append                      过=0  n=19
+  set()+import_re+append                 过=0  n=6
+  set()+no_re+no_append                  过=0  n=16
+
+## 4  e1ni 过 / 不过 × 是否写了 import re（只看有答案原文的 run）
+  import_re=False 过=0  n=35
+  import_re=True  过=0  n=6
+  import_re=True  过=1  n=71

@@ -1,0 +1,120 @@
+=== 同 state（逐字节）下答案是否唯一 ===
+  state=debe3b9cd0 n= 25 答案种数=2 ❗不一致
+        v26/d2_r1              e1wi ans=4e9be367 len=1198
+        v26/d2_r2              e1wi ans=7fd287cd len=1198
+        v26/f2_r1              e1wi ans=4e9be367 len=1198
+        v26/f2_r2              e1wi ans=4e9be367 len=1198
+        v27/s12_r1             e1wi ans=7fd287cd len=1198
+        v27/s12_r2             e1wi ans=7fd287cd len=1198
+        v28/d2_r1              e1wi ans=4e9be367 len=1198
+        v28/d2_r2              e1wi ans=4e9be367 len=1198
+        v28/f2_r1              e1wi ans=4e9be367 len=1198
+        v28/f2_r2              e1wi ans=4e9be367 len=1198
+        v28/s12_r1             e1wi ans=4e9be367 len=1198
+        v28/s12_r2             e1wi ans=4e9be367 len=1198
+        v29/o2_r1              e1wi ans=4e9be367 len=1198
+        v29/o2_r2              e1wi ans=4e9be367 len=1198
+        v29/p2_r1              e1wi ans=4e9be367 len=1198
+        v29/q2_r1              e1wi ans=4e9be367 len=1198
+        v30/o3_r1              e1wi ans=4e9be367 len=1198
+        v30/o3_r2              e1wi ans=4e9be367 len=1198
+        v30/o3_r3              e1wi ans=4e9be367 len=1198
+        v30/o4_r1              e1wi ans=4e9be367 len=1198
+        v30/o4_r2              e1wi ans=4e9be367 len=1198
+        v30/o4_r3              e1wi ans=4e9be367 len=1198
+        v30/p3_r1              e1wi ans=4e9be367 len=1198
+        v30/p4_r1              e1wi ans=4e9be367 len=1198
+        v31/s0                 e1wi ans=4e9be367 len=1198
+  state=253f4715ce n= 25 答案种数=1 一致
+        v26/d2_r1              e1ni ans=18124115 len=1193
+        v26/d2_r2              e1ni ans=18124115 len=1193
+        v26/f2_r1              e1ni ans=18124115 len=1193
+        v26/f2_r2              e1ni ans=18124115 len=1193
+        v27/s12_r1             e1ni ans=18124115 len=1193
+        v27/s12_r2             e1ni ans=18124115 len=1193
+        v28/d2_r1              e1ni ans=18124115 len=1193
+        v28/d2_r2              e1ni ans=18124115 len=1193
+        v28/f2_r1              e1ni ans=18124115 len=1193
+        v28/f2_r2              e1ni ans=18124115 len=1193
+        v28/s12_r1             e1ni ans=18124115 len=1193
+        v28/s12_r2             e1ni ans=18124115 len=1193
+        v29/o2_r1              e1ni ans=18124115 len=1193
+        v29/o2_r2              e1ni ans=18124115 len=1193
+        v29/p2_r1              e1ni ans=18124115 len=1193
+        v29/q2_r1              e1ni ans=18124115 len=1193
+        v30/o3_r1              e1ni ans=18124115 len=1193
+        v30/o3_r2              e1ni ans=18124115 len=1193
+        v30/o3_r3              e1ni ans=18124115 len=1193
+        v30/o4_r1              e1ni ans=18124115 len=1193
+        v30/o4_r2              e1ni ans=18124115 len=1193
+        v30/o4_r3              e1ni ans=18124115 len=1193
+        v30/p3_r1              e1ni ans=18124115 len=1193
+        v30/p4_r1              e1ni ans=18124115 len=1193
+        v31/s0                 e1ni ans=18124115 len=1193
+  state=7fdac54a23 n= 20 答案种数=2 ❗不一致
+        v29/p2_r2              e1wi ans=4e9be367 len=1414
+        v30/p3_r2              e1wi ans=4e9be367 len=1414
+        v30/p3_r3              e1wi ans=4e9be367 len=1414
+        v30/p4_r2              e1wi ans=8e9a4623 len=1414
+        v30/p4_r3              e1wi ans=8e9a4623 len=1414
+        v31/s1                 e1wi ans=8e9a4623 len=1414
+        v31/s1b                e1wi ans=8e9a4623 len=1414
+        v31/s2                 e1wi ans=8e9a4623 len=1414
+        v32/c0_r1              e1wi ans=8e9a4623 len=1414
+        v32/c0_r2              e1wi ans=8e9a4623 len=1414
+        v32/c0_r3              e1wi ans=8e9a4623 len=1414
+        v32/c0_r4              e1wi ans=8e9a4623 len=1414
+        v32/c0b_r1             e1wi ans=8e9a4623 len=1414
+        v32/c1_r1              e1wi ans=8e9a4623 len=1414
+        v33/P_r1               e1wi ans=8e9a4623 len=1414
+        v33/c0_r1              e1wi ans=8e9a4623 len=1414
+        v33/c0_r2              e1wi ans=8e9a4623 len=1414
+        v33/c0_r3              e1wi ans=8e9a4623 len=1414
+        v33/c0_r4              e1wi ans=8e9a4623 len=1414
+        v33/c1_r1              e1wi ans=8e9a4623 len=1414
+  state=4bdb1a0ffa n= 20 答案种数=3 ❗不一致
+        v29/p2_r2              e1ni ans=47b26821 len=1409
+        v30/p3_r2              e1ni ans=47b26821 len=1409
+        v30/p3_r3              e1ni ans=47b26821 len=1409
+        v30/p4_r2              e1ni ans=cfc70ef1 len=1409
+        v30/p4_r3              e1ni ans=cfc70ef1 len=1409
+        v31/s1                 e1ni ans=cfc70ef1 len=1409
+        v31/s1b                e1ni ans=cfc70ef1 len=1409
+        v31/s2                 e1ni ans=cfc70ef1 len=1409
+        v32/c0_r1              e1ni ans=cfc70ef1 len=1409
+        v32/c0_r2              e1ni ans=cfc70ef1 len=1409
+        v32/c0_r3              e1ni ans=9034499c len=1409
+        v32/c0_r4              e1ni ans=cfc70ef1 len=1409
+        v32/c0b_r1             e1ni ans=cfc70ef1 len=1409
+        v32/c1_r1              e1ni ans=cfc70ef1 len=1409
+        v33/P_r1               e1ni ans=cfc70ef1 len=1409
+        v33/c0_r1              e1ni ans=cfc70ef1 len=1409
+        v33/c0_r2              e1ni ans=cfc70ef1 len=1409
+        v33/c0_r3              e1ni ans=cfc70ef1 len=1409
+        v33/c0_r4              e1ni ans=cfc70ef1 len=1409
+        v33/c1_r1              e1ni ans=cfc70ef1 len=1409
+  state=7a7be78c5b n=  6 答案种数=1 一致
+        v32/c1_r2              e1wi ans=8e9a4623 len=1414
+        v32/c1_r3              e1wi ans=8e9a4623 len=1414
+        v32/c1_r4              e1wi ans=8e9a4623 len=1414
+        v33/c1_r2              e1wi ans=8e9a4623 len=1414
+        v33/c1_r3              e1wi ans=8e9a4623 len=1414
+        v33/c1_r4              e1wi ans=8e9a4623 len=1414
+  state=f5faeb482b n=  4 答案种数=1 一致
+        v32/c1_r3              e1ni ans=9ef08436 len=1518
+        v32/c1_r4              e1ni ans=9ef08436 len=1518
+        v33/c1_r3              e1ni ans=9ef08436 len=1518
+        v33/c1_r4              e1ni ans=9ef08436 len=1518
+  state=210bca38dc n=  3 答案种数=1 一致
+        v33/P_r2               e1wi ans=4e9be367 len=1523
+        v33/P_r3               e1wi ans=4e9be367 len=1523
+        v33/P_r4               e1wi ans=4e9be367 len=1523
+  state=a666afa1b0 n=  3 答案种数=1 一致
+        v33/P_r2               e1ni ans=b103fe2c len=1518
+        v33/P_r3               e1ni ans=b103fe2c len=1518
+        v33/P_r4               e1ni ans=b103fe2c len=1518
+  state=5d426c9cf8 n=  2 答案种数=1 一致
+        v32/c1_r2              e1ni ans=3969c27d len=1518
+        v33/c1_r2              e1ni ans=3969c27d len=1518
+
+同 state 但答案不一致的组 = 3

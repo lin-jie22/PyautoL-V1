@@ -174,6 +174,11 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
         return str(args.get("answer", ""))
 
     _put(ToolSpec(
+        # ⛔ V50（§116）实测：往这句里加「finish 不会写文件、要写就先 run_shell」
+        #   **不但没拦住，反而让它更自信**。C 臂现场（`v6_s140/logs_c.txt`）：
+        #   模型的 intent 从 B 臂的「直接生成report.md文件」升级成
+        #   「直接生成Markdown表格**并写入**report.md」—— 它把"提醒"读成了"确认"。
+        #   ⇒ 退回原文案。**提示词层修不了这条边**，改的是归因，不是文案。
         "finish", "**把完整答案原文放进 answer** 并结束本次任务"
                   "（目标只是要一段代码/一个结论时，就用它，不要为用工具而用工具）",
         {"answer": "最终答复文本"}, _finish,

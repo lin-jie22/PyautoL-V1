@@ -1352,6 +1352,12 @@ def _env_zero_takes_effect(key: str) -> bool:
         #   `run_v40.sh` 里 4 个臂靠这一个变量的 4 个取值区分，
         #   若 0 被静默改回默认，臂 0 与臂 3 之外的臂会**静默变成同一个**。
         "V1_PLAN_SALVAGE": ("limits", "plan_salvage"),
+        # ★第一百三十二轮（§108）：`V1_CAND_FAILOVER=0` 就是**对照臂 A0**
+        #   （= V41 及之前的全部历史：交付被打回时结束本轮、不换候选）。
+        #   ⛔ 这条登不上不只是"少一行"：`_env_zero_takes_effect` 会**当场
+        #   KeyError 打断整个测试**（本文件 R13 硬坑：崩了不是判红）。
+        #   本轮尤其要紧 —— `run_v42.sh` 的 2×2 里有**两臂**是 `=0`。
+        "V1_CAND_FAILOVER": ("limits", "cand_failover"),
     }
     grp, attr = _keys[key]
     _old = os.environ.get(key)
@@ -3884,6 +3890,156 @@ check(RS, "AZ104 ★★★规划器格式修复必须是**两个各自单变量*
       f"补完={None if _AZ104_SP_D is None else _AZ104_SP_D[2]} "
       f"截断不补={_AZ104_SP(_AZ104_TRUNC) is None} ｜ "
       f"env→limits={_AZ104_ENV_HIT} planner={_AZ104_ENV_PLANNER} ｜ 越界={_AZ104_BAD}")
+
+# ── AZ105 的取证装置（V42）：交付候选被打回时**会不会换下一个** ──────────────
+#  ⭐ 为什么它不是"再加一层重试"：V41 §107.2 量到 `for cand in cands` 是**短路求值** ——
+#     被*跳过*会让位（guard 拦，S2 实测交付第 2 候选），被*执行*（成功 `return` /
+#     失败 `break`）**都不让位**。而真实形态是 `finish`×3 ⇒ 首候选要么成功、要么
+#     被打回，两条路都不让位。所以这是一条**独立的边**，不是既有重试的复用。
+import dataclasses as _AZ105_DC                              # noqa: E402
+
+_AZ105_GOAL = (
+    "写一个函数，函数名必须是 flatten，把嵌套列表压平，只输出代码。"
+    "不允许使用递归，也不能引入任何第三方库，并且要处理空列表的情况，"
+    "还要保证结果里保留原始顺序，最后不要写任何解释文字。"
+)
+#: 过全部 5 条判据（非空 / 函数名 / 语言标签 / 可编译 / 结构检查）
+_AZ105_OK = ("```python\ndef flatten(xs):\n    out = []\n    for x in xs:\n"
+             "        if isinstance(x, list):\n            out.extend(flatten(x))\n"
+             "        else:\n            out.append(x)\n    return out\n```")
+_AZ105_OK2 = ("```python\ndef flatten(xs):\n    out = []\n    stack = list(xs)\n"
+              "    while stack:\n        cur = stack.pop(0)\n"
+              "        if isinstance(cur, list):\n            stack = list(cur) + stack\n"
+              "        else:\n            out.append(cur)\n    return out\n```")
+#: ⚠️ "坏答案"必须**过得了规划器、过不了自检**（可编译 + 函数名不是 flatten）。
+#    空答案会在 `propose()` 的 `blank` 过滤里被吃掉，根本到不了执行器（§107.7 自踩）。
+_AZ105_BAD1 = "```python\ndef other(xs):\n    return xs\n```"
+_AZ105_BAD2 = "```python\ndef other2(xs):\n    return list(xs)\n```"
+_AZ105_BAD3 = "```python\ndef other3(xs):\n    out = []\n    return out\n```"
+
+
+def _az105_cands(*items) -> str:
+    return json.dumps({"candidates": [
+        {"intent": it, "tool": tool, "args": args} for it, tool, args in items
+    ]}, ensure_ascii=False)
+
+
+class _AZ105LLM:
+    """第 1 次给候选 JSON，其后给空串（⊆ 不测模型，只测执行器）。"""
+
+    def __init__(self, payload: str) -> None:
+        self.payload = payload
+        self.calls = 0
+
+    def complete(self, messages, max_tokens=None):
+        self.calls += 1
+        return self.payload if self.calls == 1 else ""
+
+
+def _az105_run(payload: str, failover: int, tag: str):
+    """⛔ 两臂靠 `settings` **注入**，不走 env：`cfg.settings()` 在 import 时求值，
+    用 env 会让同一进程里的两臂读到同一个值（MEMORY 硬约束）。"""
+    d = _TMP / f"az105_{tag}_{failover}"
+    d.mkdir(parents=True, exist_ok=True)
+    s = cfg.settings()
+    s2 = _AZ105_DC.replace(
+        s, limits=_AZ105_DC.replace(s.limits, cand_failover=int(failover)))
+    core = Core(s2, llm=_AZ105LLM(payload),
+                memory=MemoryStore(d / "m.db"), memory_mode="raw")
+    hits: list = []
+    inner = core.tools
+
+    class _Reg:
+        """只读观测点：记 `(轮次, 工具)`。⛔ 记工具名不够 —— 三次都是 `finish`。"""
+
+        def __getattr__(self, name):
+            return getattr(inner, name)
+
+        def dispatch(self, name, args):
+            hits.append((int(core.ledger.steps_used), str(name)))
+            return inner.dispatch(name, args)
+
+    core.tools = _Reg()
+    with contextlib.redirect_stdout(io.StringIO()):
+        out = core.run(_AZ105_GOAL, budget_factor=1)
+    return out, hits
+
+
+_AZ105_T = _az105_cands(("x", "finish", {"answer": _AZ105_BAD1}),
+                        ("a", "finish", {"answer": _AZ105_OK}),
+                        ("b", "finish", {"answer": _AZ105_OK2}))
+_AZ105_S = _az105_cands(("x", "finish", {"answer": _AZ105_BAD1}))
+_AZ105_A = _az105_cands(("x", "finish", {"answer": _AZ105_BAD1}),
+                        ("y", "finish", {"answer": _AZ105_BAD2}),
+                        ("z", "finish", {"answer": _AZ105_BAD3}))
+
+_AZ105_T_OFF, _AZ105_T_OFF_H = _az105_run(_AZ105_T, 0, "three")
+_AZ105_T_ON, _AZ105_T_ON_H = _az105_run(_AZ105_T, 1, "three")
+_AZ105_S_OFF, _AZ105_S_OFF_H = _az105_run(_AZ105_S, 0, "one")
+_AZ105_S_ON, _AZ105_S_ON_H = _az105_run(_AZ105_S, 1, "one")
+_AZ105_A_ON, _AZ105_A_ON_H = _az105_run(_AZ105_A, 1, "allbad")
+
+
+def _az105_r1(hits: list) -> list:
+    return [n for st, n in hits if st == 1]
+
+
+#: ⭐ `switch` 是**配置值**不是计数：6 道题累加后必须仍是 1（第一版 `+=` 得 6）。
+_AZ105_ACC = _AZ102_RUN._kfo_zero()
+for _ in range(6):
+    _AZ102_RUN._kfo_absorb(_AZ105_ACC, {"used": 1, "rescued": 1, "cf_extra": 0,
+                                        "finish": 1, "external": 0,
+                                        "no_more": 0, "switch": 1})
+_AZ105_LINE = _AZ102_RUN._kfo_line(_AZ105_ACC)
+_AZ105_SRC = (V1 / "run.py").read_text(encoding="utf-8")
+
+check(RS, "AZ105 ★★★★交付候选被打回时**让位给下一个**，且只在「还有候选」时（V42）\n"
+          "          —— V41 §107.2：`core.py:1243` 失败 `break`、`1261` 交付 `return`\n"
+          "             ⇒ 被*跳过*会让位、被*执行*（无论成败）都不让位。可真实形态是\n"
+          "             `finish`×3 ⇒ 首候选要么成功要么被打回，两条路都不让位。\n"
+          "         判据（五条，缺一即证明不了这条边）：\n"
+          "               ① `failover=0`：三候选、首候选被打回 ⇒ **第 1 轮只 dispatch 1 次**、\n"
+          "                  交付里没有那段合法实现（= V41 的行为，一个字节都不许变）；\n"
+          "               ② `failover=1`：同一样本 ⇒ 第 1 轮 dispatch **2 次**、交付就是\n"
+          "                  第 2 候选的原文、`used=1`/`rescued=1`/`switch=1`；\n"
+          "               ③ **单候选时两臂逐字节相同**（`no_more≥1` 显形）——\n"
+          "                  开关在没有候选可换时也改变行为 = 语义泄漏；\n"
+          "               ④ 三候选全坏 ⇒ `used=2`、自检 `exhausted=1`、状态 `done_unverified`\n"
+          "                  ⇒ **代价必须与收益并列**：让位烧的是同一份自检预算；\n"
+          "               ⑤ `_kfo_absorb` 里 `switch` **不能求和**（配置值 ≠ 计数），\n"
+          "                  且 `run.py` 真的落 `kernel_failover`（不落盘 = 不可审计）。\n"
+          "         撤回语义：把 `if (bool(self.s.limits.cand_failover) and _produces\n"
+          "                       and ci < len(cands) - 1):` 改成 `if False:` ⇒ ② 必红。",
+      # ① 与 ② 必须成对：只看 ② 会把"本来就让位"（S2 那条老路径）记成本机制的功劳，
+      #    所以 ① 的"只 dispatch 1 次"是 ② 的**对照**，不是补充说明。
+      len(_az105_r1(_AZ105_T_OFF_H)) == 1
+      and _AZ105_T_OFF.answer != _AZ105_OK
+      and _AZ105_T_OFF.stats["failover"]["used"] == 0
+      and len(_az105_r1(_AZ105_T_ON_H)) == 2
+      and _AZ105_T_ON.answer == _AZ105_OK
+      and _AZ105_T_ON.stats["failover"]["used"] == 1
+      and _AZ105_T_ON.stats["failover"]["rescued"] == 1
+      and _AZ105_T_ON.stats["failover"]["finish"] == 1
+      and _AZ105_T_ON.stats["failover"]["switch"] == 1
+      and _AZ105_S_OFF.status == _AZ105_S_ON.status
+      and _AZ105_S_OFF.answer == _AZ105_S_ON.answer
+      and _az105_r1(_AZ105_S_OFF_H) == _az105_r1(_AZ105_S_ON_H)
+      and _AZ105_S_ON.stats["failover"]["no_more"] >= 1
+      and _AZ105_A_ON.stats["failover"]["used"] == 2
+      and _AZ105_A_ON.stats["verify"]["exhausted"] == 1
+      and _AZ105_A_ON.status == "done_unverified"
+      and _AZ105_A_ON.answer == _AZ105_BAD3
+      and _AZ105_LINE["switch"] == 1 and _AZ105_LINE["used"] == 6
+      and '"kernel_failover"' in _AZ105_SRC,
+      f"三候选 off 第1轮={_az105_r1(_AZ105_T_OFF_H)} 交付OK={_AZ105_T_OFF.answer == _AZ105_OK} ｜ "
+      f"on 第1轮={_az105_r1(_AZ105_T_ON_H)} 交付OK={_AZ105_T_ON.answer == _AZ105_OK} "
+      f"used={_AZ105_T_ON.stats['failover']['used']} "
+      f"rescued={_AZ105_T_ON.stats['failover']['rescued']} ｜ "
+      f"单候选 off/on={_AZ105_S_OFF.status}/{_AZ105_S_ON.status} "
+      f"no_more={_AZ105_S_ON.stats['failover']['no_more']} ｜ "
+      f"全坏 used={_AZ105_A_ON.stats['failover']['used']} "
+      f"exhausted={_AZ105_A_ON.stats['verify']['exhausted']} "
+      f"态={_AZ105_A_ON.status} ｜ 台账 switch={_AZ105_LINE['switch']}")
 
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",

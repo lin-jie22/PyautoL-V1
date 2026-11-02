@@ -725,6 +725,17 @@ class Core:
         # 外部能力读数是**单轮**的（与预算同源）：跨轮累计会让"这一轮 0 次调用"
         # 显示成上一轮的数字（读数混了时间维度）。
         self._reset_external()
+        # ★ 第一百三十二轮（§108）：候选让位读数。与预算同源 ⇒ **单轮**清零，
+        #   否则"这一轮一次没让位"会显示成上一轮的数字。
+        #   ⚠️ 零值也进 stats（同 §66 的理由）：`used=0` 与"机制没装"必须分得开。
+        self.failover_stats = {
+            "used": 0,          # 交付候选被打回、且**真的**让位给下一个的次数
+            "rescued": 0,       # 其中"之后确实交付成功"的次数（救回）
+            "cf_extra": 0,      # 让位路径额外产生的 `consecutive_failures += 1` 次数
+            "finish": 0,        # 其中来自内核 `finish` 的次数
+            "external": 0,      # 其中来自 `produces_answer` 外部能力的次数
+            "no_more": 0,       # 条件成立但**没有**剩余候选 ⇒ 与 `0` 臂同路径
+        }
 
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
         counted = _LedgeredLLM(self.llm, self.ledger,
@@ -946,7 +957,12 @@ class Core:
                 #:   没额度（`skipped_now`）/ 被闸拦（`blocked_now`）/ 被预演否（这里）。
                 #: 它们的出口必须各不相同 —— 见 `if not executed:` 分支。
                 _vetoed_this_round = 0
-                for cand in cands:
+                #: ★ §108：本轮已经让位过几次。用于三个读数：
+                #:   ① `rescued`（让位之后真的交付了）；② `cf_extra`（让位换来的额外失败）；
+                #:   ③ 日志/历史里"让位"这件事必须留痕 —— 否则下一轮的状态里
+                #:      只有"失败"而没有"失败后试了另一个"，模型会以为没试过。
+                _fo_pending = 0
+                for ci, cand in enumerate(cands):
                     spec = self.tools.get(cand.tool)
 
                     # ── 同一扇门（第六十七轮）──────────────────────────────
@@ -1230,6 +1246,12 @@ class Core:
 
                     if not result.ok:
                         consecutive_failures += 1
+                        # ⚠️ 这一笔是**让位换来的**：本轮已经让位过 ⇒ 这次的失败
+                        #    在 `0` 臂上根本不会发生（那一臂第一次失败就收工了）。
+                        #    ⛔ 必须与"首候选失败"分开计数：否则 D3 的代价面
+                        #    （一根轮次里打满 3 次 ⇒ `cascade`）在读数上不可见。
+                        if _fo_pending:
+                            self.failover_stats["cf_extra"] += 1
                         last_error = result.error
                         # ★ 第二十七轮（§17-6 6a）：错误原文必须进 **content** ——
                         #   蒸馏器只读 content，meta 它看不见。实测（离线探针）：
@@ -1240,12 +1262,49 @@ class Core:
                             "failure",
                             f"{cand.as_line()} — {result.error[:200]}",
                             error=result.error[:300])
+                        # ── ★ 第一百三十二轮（§108）：交付被打回 ⇒ 换下一个 ────
+                        # V41 §107.2 量到：`if not result.ok:` 一直是 `break`，
+                        # 于是第 2/3 个候选**永无机会**（S3/S4 实测只 dispatch 第 1 个）。
+                        # 这里把它换成本轮的**唯一改动**：还有候选就让位。
+                        #
+                        # ⛔ 三条边界（与 `Limits.cand_failover` 的注释同源，
+                        #    改一处必须改两处否则就是两处实现）：
+                        #    ① 只对**交付动作**（`_produces`）：普通工具失败照旧 `break`。
+                        #       把两者混在一起 = 给"所有失败"加重试，那是另一个实验。
+                        #    ② 只在**还有候选**时：`ci < len(cands) - 1`。
+                        #       单候选 ⇒ 与 `0` 臂逐字节相同（AZ105 钉死这条）。
+                        #    ③ 不改 `verify_retries`：让位烧的是**同一份**自检预算。
+                        #       ⇒ 一轮里连打 3 次会 `exhausted` + `cascade` —— 那是代价，
+                        #       `cf_extra` 单独记账就是为了让它显形，不是为了把它藏起来。
+                        if (bool(self.s.limits.cand_failover) and _produces
+                                and ci < len(cands) - 1):
+                            self.failover_stats["used"] += 1
+                            self.failover_stats[
+                                "finish" if cand.tool == "finish" else "external"] += 1
+                            _fo_pending += 1
+                            self.log(f"      ↪ 交付被打回 ⇒ 让位给候选 "
+                                     f"{ci + 2}/{len(cands)}（不重规划，直接用已有的）")
+                            history.append(
+                                f"[step {it}] 交付被打回 ⇒ 让位给候选 "
+                                f"{ci + 2}/{len(cands)}")
+                            continue
+                        if bool(self.s.limits.cand_failover) and _produces:
+                            # 条件成立但没弹药：必须**显形**，否则"fire 0 次"
+                            # 会被读成"机制没装"（§107 的老病）。
+                            self.failover_stats["no_more"] += 1
                         executed = True
                         break
                     consecutive_failures = 0
                     last_error = ""
 
                     if _produces:
+                        # ★ §108：**救回** —— 答案来自让位之后（`ci > 0` 且本轮让位过）。
+                        # ⛔ 判据必须是"这一轮让位过"，不能只看 `ci > 0`：
+                        #    `ci > 0` 在没有让位时也能成立（首候选被 guard 拦掉那种
+                        #    老路径，V41 S2 就是它）⇒ 只按 `ci` 数会把**旧机制**
+                        #    记成新机制的功劳（纪律 24 的同构：判据分辨率高于装置）。
+                        if _fo_pending and ci > 0:
+                            self.failover_stats["rescued"] += 1
                         # 两个来源（内核自己的 finish / 外部能力的答案）走**同一条**
                         # 交付路径：同一道自检闸、同一个 `done_unverified` 语义。
                         # ⛔ 外部能力**不许**有"免检通道" —— 那就成了"换个来源就换把尺子"。
@@ -1933,6 +1992,12 @@ class Core:
                          if self.critique_ledger else {}),
             "worldmodel": self.wm.stats(),
             "planner": self.planner.stats(),
+            # ★ 第一百三十二轮（§108）：候选让位。**五项零值也在** ——
+            # `used=0` 与"开关没装"是两件必须分得开的事（§66 同因）。
+            # ⚠️ `no_more` 是"条件成立但没弹药"：V41 量到的 8/64 窗口全是这一形态，
+            # 没有它，`used=0` 会被读成"机制没通电"，而真相是"没有第二个候选可换"。
+            "failover": {**dict(self.failover_stats),
+                         "switch": int(self.s.limits.cand_failover)},
             "memory": self.memory.stats(),
             # 第二十轮：按需回看。**必须报跳过原因** —— 只报 calls 的话，
             # "机制装了但一次没触发"和"机制根本没装"看起来一模一样。

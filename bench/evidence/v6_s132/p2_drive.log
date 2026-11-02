@@ -1,0 +1,72 @@
+========== V42 候选让位：salvage × failover 2×2  tasks_v8 6题/96格 ==========
+开始 2026-11-02 12:01:42  工作目录=/tmp/v42
+suite=/Users/linshaojie/V1/bench/specgen/tasks_v8.jsonl
+
+--- H0 装置自检 ---
+  ✅ H0-a ollama 可达
+  suite_sha = 519dad774a3664612e6611b220b33f4a
+  tasks = ['e1wi', 'e1ni', 'e2wi', 'e2ni', 'e3wi', 'e3ni']
+  MATCH=True
+  ✅ H0-b suite 未变
+  [S=0F=0] plan_salvage=0 cand_failover=0
+  [S=0F=0] temperature=0.0 state_chars=2400
+  [S=0F=0] cands=3 verify_static=2
+  [S=0F=0] READ_OK=True
+  [S=0F=0] BASE_OK=True
+  [S=0F=1] plan_salvage=0 cand_failover=1
+  [S=0F=1] temperature=0.0 state_chars=2400
+  [S=0F=1] cands=3 verify_static=2
+  [S=0F=1] READ_OK=True
+  [S=0F=1] BASE_OK=True
+  [S=3F=0] plan_salvage=3 cand_failover=0
+  [S=3F=0] temperature=0.0 state_chars=2400
+  [S=3F=0] cands=3 verify_static=2
+  [S=3F=0] READ_OK=True
+  [S=3F=0] BASE_OK=True
+  [S=3F=1] plan_salvage=3 cand_failover=1
+  [S=3F=1] temperature=0.0 state_chars=2400
+  [S=3F=1] cands=3 verify_static=2
+  [S=3F=1] READ_OK=True
+  [S=3F=1] BASE_OK=True
+  ✅ H0-i 四个臂的旋钮都读得到（含 =0 那两臂）
+  ✅ H0-d 四臂起点空
+  ✅ H0-e 代理已起（pid=47809，端口 8838）
+
+════════ 四臂（顺序：s0f0 → s0f1 → s3f0 → s3f1）════════
+  ▶ s0f0(salvage=0 failover=0) EXIT=0 耗时=632s 12:12:17
+       库 0B→110592B  口径 342580676f1afecd
+       让位 used=0 rescued=0 cf=0 no_more=0 rate=None
+       候选   19 候选=1 
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+         规划器    调用=19 失败=13（json=5 截断=7 无工具=0 空计划=1） 率=0.684 重问=2 补救=3/0 修复=0/0（补完=0）
+         候选让位  开关=0 用=0 救回=0（finish=0 外部=0） 率=n/a ｜代价：额外失败=0 无弹药=0
+  ▶ s0f1(salvage=0 failover=1) EXIT=0 耗时=550s 12:21:27
+       库 0B→110592B  口径 0a87c69b4111ea09
+       让位 used=0 rescued=0 cf=0 no_more=1 rate=None
+       候选   19 候选=1 
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+         规划器    调用=19 失败=13（json=5 截断=7 无工具=0 空计划=1） 率=0.684 重问=2 补救=3/0 修复=0/0（补完=0）
+         候选让位  开关=1 用=0 救回=0（finish=0 外部=0） 率=n/a ｜代价：额外失败=0 无弹药=1
+  ▶ s3f0(salvage=3 failover=0) EXIT=0 耗时=343s 12:27:10
+       库 0B→122880B  口径 813cd937da2b294c
+       让位 used=0 rescued=0 cf=0 no_more=0 rate=None
+       候选    9 候选=1    1 候选=2    1 候选=3 
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+         规划器    调用=11 失败=2（json=1 截断=1 无工具=0 空计划=0） 率=0.182 重问=1 补救=4/0 修复=5/2（补完=3）
+         候选让位  开关=0 用=0 救回=0（finish=0 外部=0） 率=n/a ｜代价：额外失败=0 无弹药=0
+  ▶ s3f1(salvage=3 failover=1) EXIT=0 耗时=286s 12:31:57
+       库 0B→122880B  口径 7bc25fac463253b2
+       让位 used=1 rescued=0 cf=0 no_more=3 rate=0.0
+       候选    7 候选=1    1 候选=2    1 候选=3 
+         内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.5000 std=0.0000 [0.5000,0.5000] 极差=0.0000
+         规划器    调用=9 失败=1（json=0 截断=1 无工具=0 空计划=0） 率=0.111 重问=0 补救=3/0 修复=5/1（补完=3）
+         候选让位  开关=1 用=1 救回=0（finish=1 外部=0） 率=0.0 ｜代价：额外失败=0 无弹药=3
+
+================ 结束 2026-11-02 12:31:57 ================
+代理台账 111 行
+累积台账（见 /tmp/v42/acc.txt）：
+  s0f0 sag=0 fo=0 0→110592B 耗时=632s sig=342580676f1afecd used=0 rescued=0 cf=0 no_more=0 rate=None 候选分布:   19 候选=1 
+  s0f1 sag=0 fo=1 0→110592B 耗时=550s sig=0a87c69b4111ea09 used=0 rescued=0 cf=0 no_more=1 rate=None 候选分布:   19 候选=1 
+  s3f0 sag=3 fo=0 0→122880B 耗时=343s sig=813cd937da2b294c used=0 rescued=0 cf=0 no_more=0 rate=None 候选分布:    9 候选=1    1 候选=2    1 候选=3 
+  s3f1 sag=3 fo=1 0→122880B 耗时=286s sig=7bc25fac463253b2 used=1 rescued=0 cf=0 no_more=3 rate=0.0 候选分布:    7 候选=1    1 候选=2    1 候选=3 
+EXIT=0

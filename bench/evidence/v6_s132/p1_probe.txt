@@ -1,0 +1,82 @@
+========================================================================================================
+V42 探针：交付候选被打回 ⇒ 换下一个？  两臂 = Limits.cand_failover ∈ {0,1}
+========================================================================================================
+  装置：verify_retries=2 max_consecutive_failures=3 max_candidates=3 max_steps=12
+  两臂：off=0 on=1（`Core(settings=…)` 注入，⛔ 不走 env）
+
+■ S1 三finish·首候选过闸
+  [off] 状态=done              交付= 237字 是谁=A        LLM=2
+        dispatch={1: ['finish(```python de)']}
+        自检 runs=1 passed=1 failed=0 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+  [on ] 状态=done              交付= 237字 是谁=A        LLM=2
+        dispatch={1: ['finish(```python de)']}
+        自检 runs=1 passed=1 failed=0 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+
+■ S2 首候选被跳过
+  [off] 状态=done              交付= 237字 是谁=A        LLM=2
+        dispatch={1: ['finish(```python de)']}
+        自检 runs=1 passed=1 failed=0 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+  [on ] 状态=done              交付= 237字 是谁=A        LLM=2
+        dispatch={1: ['finish(```python de)']}
+        自检 runs=1 passed=1 failed=0 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+
+■ S3 首候选被打回
+  [off] 状态=stalled           交付=  81字 是谁=真原文/其他   LLM=7
+        dispatch={1: ['finish(```python de)'], 2: ['finish(（规划降级：模型输出不可)']}
+        自检 runs=3 passed=0 failed=3 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+  [on ] 状态=done              交付= 237字 是谁=A        LLM=3
+        dispatch={1: ['finish(```python de)', 'finish(```python de)']}
+        自检 runs=2 passed=1 failed=1 exhausted=0 ｜让位 用=1 救回=1 额外失败=0 无弹药=0
+
+■ S5 三候选全坏
+  [off] 状态=stalled           交付=  81字 是谁=真原文/其他   LLM=7
+        dispatch={1: ['finish(```python de)'], 2: ['finish(（规划降级：模型输出不可)']}
+        自检 runs=3 passed=0 failed=3 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+  [on ] 状态=done_unverified   交付=  57字 是谁=BAD3     LLM=4
+        dispatch={1: ['finish(```python de)', 'finish(```python de)', 'finish(```python de)']}
+        自检 runs=3 passed=0 failed=3 exhausted=1 ｜让位 用=2 救回=1 额外失败=1 无弹药=0
+
+■ S6 单候选（H0 等价臂）
+  [off] 状态=stalled           交付=  81字 是谁=真原文/其他   LLM=7
+        dispatch={1: ['finish(```python de)'], 2: ['finish(（规划降级：模型输出不可)']}
+        自检 runs=3 passed=0 failed=3 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+  [on ] 状态=stalled           交付=  81字 是谁=真原文/其他   LLM=7
+        dispatch={1: ['finish(```python de)'], 2: ['finish(（规划降级：模型输出不可)']}
+        自检 runs=3 passed=0 failed=3 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=2
+
+■ S7 前两坏·第三个好
+  [off] 状态=stalled           交付=  81字 是谁=真原文/其他   LLM=7
+        dispatch={1: ['finish(```python de)'], 2: ['finish(（规划降级：模型输出不可)']}
+        自检 runs=3 passed=0 failed=3 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+  [on ] 状态=done              交付= 182字 是谁=B        LLM=4
+        dispatch={1: ['finish(```python de)', 'finish(```python de)', 'finish(```python de)']}
+        自检 runs=3 passed=1 failed=2 exhausted=0 ｜让位 用=2 救回=1 额外失败=1 无弹药=0
+
+■ S4 真原文·真题面
+  [off] 状态=done              交付= 449字 是谁=真原文/其他   LLM=2
+        dispatch={1: ['finish(import re de)']}
+        自检 runs=1 passed=1 failed=0 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+  [on ] 状态=done              交付= 449字 是谁=真原文/其他   LLM=2
+        dispatch={1: ['finish(import re de)']}
+        自检 runs=1 passed=1 failed=0 exhausted=0 ｜让位 用=0 救回=0 额外失败=0 无弹药=0
+
+========================================================================================================
+D1~D5 判据
+========================================================================================================
+  D1 off 臂复现 V41：S1 第1轮=['finish(```python de)']
+                    S2 第1轮=['finish(```python de)'] 交付=A
+                    S3 第1轮=['finish(```python de)'] 交付=None
+     ⇒ off 臂 S3 只 dispatch 1 次、无交付 ✅
+  D2 on 臂 S3：第1轮=['finish(```python de)', 'finish(```python de)'] 交付=A 让位=1 救回=1  ⇒ ✅ 通电
+  D3 代价面 S5：off 状态=stalled 第1轮=['finish(```python de)'] ｜on 状态=done_unverified 第1轮=['finish(```python de)', 'finish(```python de)', 'finish(```python de)']
+      on 自检 failed=3 exhausted=1 额外失败=1 ⇒ （未熔断，见 RESULTS）
+  D4 S6 单候选两臂：off=stalled/81字 on=stalled/81字 ⇒ ✅ 逐字节相同
+  D5 S7 on 臂：第1轮=['finish(```python de)', 'finish(```python de)', 'finish(```python de)'] 交付=B 让位=2 救回=1 ⇒ ✅ 走到第3个
+
+========================================================================================================
+S4 真原文（V39 的 449/443/411，走 e1wi 真题面）
+========================================================================================================
+  [off] 状态=done 交付=449字 让位=0 救回=0 自检 passed=1 failed=0
+        dispatch={1: ['finish(import re de)']}
+  [on ] 状态=done 交付=449字 让位=0 救回=0 自检 passed=1 failed=0
+        dispatch={1: ['finish(import re de)']}

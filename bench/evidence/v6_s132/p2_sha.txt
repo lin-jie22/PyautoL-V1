@@ -1,0 +1,4 @@
+649f7b07760efda3ef61a669178e0d64c6be450b  logs/run_s0f0.log
+8210d073b2b8f578c4df2c7b5d0fd91abf36bec3  logs/run_s0f1.log
+8b8b08160e5c40de4335861d28535c129ef61aa1  logs/run_s3f0.log
+73bdf9a43be63ace6d740cf6f23d028912b13b0e  logs/run_s3f1.log

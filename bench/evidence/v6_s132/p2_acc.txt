@@ -1,0 +1,4 @@
+s0f0 sag=0 fo=0 0→110592B 耗时=632s sig=342580676f1afecd used=0 rescued=0 cf=0 no_more=0 rate=None 候选分布:   19 候选=1 
+s0f1 sag=0 fo=1 0→110592B 耗时=550s sig=0a87c69b4111ea09 used=0 rescued=0 cf=0 no_more=1 rate=None 候选分布:   19 候选=1 
+s3f0 sag=3 fo=0 0→122880B 耗时=343s sig=813cd937da2b294c used=0 rescued=0 cf=0 no_more=0 rate=None 候选分布:    9 候选=1    1 候选=2    1 候选=3 
+s3f1 sag=3 fo=1 0→122880B 耗时=286s sig=7bc25fac463253b2 used=1 rescued=0 cf=0 no_more=3 rate=0.0 候选分布:    7 候选=1    1 候选=2    1 候选=3 

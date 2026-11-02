@@ -366,6 +366,53 @@ def _kpl_line(acc: dict) -> dict:
     return out
 
 
+def _kfo_zero() -> dict:
+    """候选让位读数的累加器零点（第一百三十二轮 / §108）。
+
+    ⛔ 为什么要落盘：`Core.failover_stats` 是**单轮**读数（与预算同源，
+    每轮清零）⇒ 不并入 `runs.jsonl` 的话，它只活在一行 stdout 里，
+    事后无法审计 —— 而本轮**全部判决**都压在这五个数上。
+
+    ⚠️ 与 `_kpl` 不同，这里**不用求差**：`failover_stats` 在每次 `run()` 开头
+    重建（`self.failover_stats = {...}`），所以 `stats()` 给的天然是**本轮**值。
+    V38 那个"累计值当增量"的坑不在这里 —— 但**必须在注释里说清为什么不是它**，
+    否则下一个读代码的人会照抄 `_kpl_absorb` 的求差写法，把本轮值减成 0。
+    """
+    return {"used": 0, "rescued": 0, "cf_extra": 0,
+            "finish": 0, "external": 0, "no_more": 0, "switch": 0}
+
+
+def _kfo_line(acc: dict) -> dict:
+    """派生量：`rescue_rate` 的分母是 `used`（**让位次数**），不是任务数。
+
+    ⛔ 只报 `rescued=1` 而不给分母 ⇒ 读者无法分开"让位 1 次救回 1 次"与
+    "让位 40 次救回 1 次"。V39 的 `hit_rate` 就是栽在分母上（§104.3）。
+    """
+    out = {k: int(acc.get(k, 0) or 0) for k in _kfo_zero()}
+    out["rescue_rate"] = (round(out["rescued"] / out["used"], 3)
+                          if out["used"] else None)
+    return out
+
+
+def _kfo_absorb(acc: dict, stats: dict) -> dict:
+    """把一次内核运行的让位读数并进累加器（就地修改并返回）。
+
+    ⚠️ **`switch` 不能求和**：它是**配置值**，不是计数。6 道题求和会印出
+    `开关=6` —— 而"开关"这个数在读者眼里是"0/1"。这正是本文件反复防的那类
+    混用（V38：把累计值当增量）。这里取 `max`，所以它恒等于"本轮跑过的最大档位"。
+    ⭐ 这条是**实测撞出来的**：第一版对所有键一视同仁地 `+=`，
+    单元自测立刻给出 `switch: 2`（两次 absorb 各 1）。
+    """
+    stats = stats or {}
+    for k in _kfo_zero():
+        if k == "switch":
+            acc["switch"] = max(int(acc.get("switch", 0) or 0),
+                                int(stats.get("switch", 0) or 0))
+            continue
+        acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
+    return acc
+
+
 def _kex_zero() -> dict:
     """外部能力读数的累加器零点（第二十三轮，路线①）。
 
@@ -1161,6 +1208,7 @@ def cmd_bench(args) -> int:
     #: 累加/派生逻辑在模块级（`_kwm_zero/_kwm_absorb/_kwm_line`），**不在这里重写一遍**。
     _kwm = _kwm_zero()
     _kpl = _kpl_zero()      # 规划器读数（V39）：降级四个分项必须可审计
+    _kfo = _kfo_zero()      # 候选让位（§108）：救回与代价必须并列报
     _kco = _kco_zero()      # 收尾兜底（第二十二轮）：与 _kwm 同源的落盘读数
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
     _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
@@ -1341,6 +1389,7 @@ def cmd_bench(args) -> int:
                                     features=_feat_of.get(t.id))
                         _kwm_absorb(_kwm, out.stats["worldmodel"], c)
                         _kpl_absorb(_kpl, out.stats.get("planner") or {}, c)
+                        _kfo_absorb(_kfo, out.stats.get("failover") or {})
                         _kco_absorb(_kco, out.stats.get("closeout") or {})
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
@@ -1373,6 +1422,7 @@ def cmd_bench(args) -> int:
                                 features=_feat_of.get(t.id))
                 _kwm_absorb(_kwm, out.stats["worldmodel"], _core)
                 _kpl_absorb(_kpl, out.stats.get("planner") or {}, _core)
+                _kfo_absorb(_kfo, out.stats.get("failover") or {})
                 _kco_absorb(_kco, out.stats.get("closeout") or {})
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
@@ -1562,6 +1612,19 @@ def cmd_bench(args) -> int:
           f" 修复={_kpl_p['salvage_ok']}/{_kpl_p['salvage_fail']}"
           f"（补完={_kpl_p['salvage_completed']}）")
 
+    # ── 候选让位（§108）──────────────────────────────────────────────────
+    # ⛔ **无条件**印，且**收益与代价同一行**：
+    #    `救回=N` 单独印会被读成"机制有用"；只印 `用=N` 会被读成"没效果"。
+    #    两者的比 `rescue_rate` 才是这一轮唯一的判决入口。
+    #    `无弹药=M` 必须显形 —— V41 量到的 8/64 窗口全是这一形态，
+    #    不印它，`用=0` 就等于"机制没通电"（而真相是"没有第二个候选可换"）。
+    _kfo_p = _kfo_line(_kfo)
+    print(f"  候选让位  开关={_kfo_p['switch']} 用={_kfo_p['used']}"
+          f" 救回={_kfo_p['rescued']}"
+          f"（finish={_kfo_p['finish']} 外部={_kfo_p['external']}）"
+          f" 率={'n/a' if _kfo_p['rescue_rate'] is None else _kfo_p['rescue_rate']}"
+          f" ｜代价：额外失败={_kfo_p['cf_extra']} 无弹药={_kfo_p['no_more']}")
+
     # ── 传输层读数（第二十五轮）：**只在出过事时**才占一行 ────────────────
     # 为什么要印：R2 主张"这次修复不改变正常路径"，而它的证据是
     # 正常端点上"放弃"类计数全程为 0（而"上限被裁短"会是 N ≡ 调用次数的常数
@@ -1644,6 +1707,9 @@ def cmd_bench(args) -> int:
         # 内核侧读数（规划器的**降级分项**，V39）。同一条理由：
         # 四个分项的修法完全不同，只报 `degraded` 一个总数就归不了因。
         "kernel_planner": _kpl_line(_kpl),
+        # 内核侧读数（候选让位，§108）：**救回与代价必须并列** ——
+        # 只落 `rescued` 而不落 `cf_extra`，等于把"多打几次换一次交付"藏起来。
+        "kernel_failover": _kfo_line(_kfo),
         # 收尾兜底读数（第二十二轮）：**不落盘的读数不可审计**。
         "kernel_closeout": _kco,
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。

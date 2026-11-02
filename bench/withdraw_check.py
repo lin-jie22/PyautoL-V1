@@ -1300,6 +1300,19 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ104", "mw/planner.py",
      "        if len(done) > len(struct) and not tail:",
      "        if False:  # 撤回态：补完不再受「有没有剩余闭合符」约束"),
+    # ★ 第一百三十二轮（§108）：撤掉"让位"这一个分支本身。
+    # ⚠️ 锚在**条件行**而不是 `continue`：`continue` 在 `for cand in cands` 里有
+    #    五处（重复闸 / 目标劫持 / 工具滥用 / 价值层 / 预演否决），只改一处等于
+    #    撤掉了别的机制 —— 那会把 AZ105 的"红"读成"让位没通电"，而真相是
+    #    "你把 guard 撤了"。锚必须唯一。
+    # ⚠️ 锚必须**整条条件**（两行）：第一版只换了第一行，剩下
+    #    "                                and ci < len(cands) - 1):"
+    #    成了孤儿 ⇒ **SyntaxError**，测试当场崩掉 ⇒ 报「红=无 Traceback=有」。
+    #    这正是本文件 R13 那条硬坑：**崩了不是判红**，而它看起来像"通过了"。
+    ("AZ105", "mw/core.py",
+     "                        if (bool(self.s.limits.cand_failover) and _produces\n"
+     "                                and ci < len(cands) - 1):",
+     "                        if False:  # 撤回态：交付被打回时不再让位"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

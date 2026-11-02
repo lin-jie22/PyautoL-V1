@@ -155,17 +155,33 @@ def _build(goal: str, args, *, allow_shell: bool = False,
            caliber_sig: str = "") -> Core:
     s = cfg.settings()
     mem_mode = str(getattr(args, "memory_mode", "raw") or "raw")
+    # ── ★ 第一百三十三轮（§109）：guard 必须在**两条分支之前**统一构造 ──────
+    # 修之前它只写在离线分支里（`if args.offline or not s.llm.usable():`），
+    # 于是**真模型路径上 `--allow-shell` 完全无效** —— 命令行带着
+    # `--allow-shell`，日志里照样是 `[guard:tool_misuse] shell 未开启`。
+    #
+    # 实测（2026-11-02 12:58，`sales.csv → report.md`）：这就是让位拿到的第 2 个
+    # 候选被拦掉的原因。它是「机制存在 ≠ 机制通电」的**第五种形态**：
+    #   前四种（§87/§99/§107）是"开关没开 / 载荷送不到 / 检测器失效 / 输出接在
+    #   记录仪上"，这一种是 **开关只在一条没人走的分支上通电** ——
+    #   而且那条分支恰好是"离线桩"，也就是**每一次门禁都在走它**，
+    #   所以契约测试永远是绿的，只有真模型路径是坏的。
+    #
+    # ⛔ 不改成"构造后 `core.guard = …` 覆盖"：`Core.__init__` 已经把 guard 传给了
+    #    内部的 tools/planner 路径（`self.guard = guard or Guard(...)`），
+    #    事后替换会让"谁拿着哪个 guard"取决于构造顺序 —— 那正是本轮在修的病。
+    from mw.guard import Guard
+    _guard = Guard(allow_shell=allow_shell, workspace=s.paths.workspace,
+                   max_consecutive_failures=s.limits.max_consecutive_failures)
     if args.offline or not s.llm.usable():
-        from mw.guard import Guard
         from mw.llm import StubLLM
-        core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger,
+        core = Core(s, llm=StubLLM(), guard=_guard,
+                    critique_ledger=critique_ledger,
                     score_ledger=score_ledger, caliber_sig=caliber_sig,
                     memory_mode=mem_mode,
                     wire_external=not getattr(args, "no_external", False))
-        core.guard = Guard(allow_shell=allow_shell, workspace=s.paths.workspace,
-                           max_consecutive_failures=s.limits.max_consecutive_failures)
     else:
-        core = Core(s, critique_ledger=critique_ledger,
+        core = Core(s, guard=_guard, critique_ledger=critique_ledger,
                     score_ledger=score_ledger, caliber_sig=caliber_sig,
                     memory_mode=mem_mode,
                     wire_external=not getattr(args, "no_external", False))

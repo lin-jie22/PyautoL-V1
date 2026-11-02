@@ -4041,6 +4041,61 @@ check(RS, "AZ105 ★★★★交付候选被打回时**让位给下一个**，�
       f"exhausted={_AZ105_A_ON.stats['verify']['exhausted']} "
       f"态={_AZ105_A_ON.status} ｜ 台账 switch={_AZ105_LINE['switch']}")
 
+# ── AZ106 的取证装置（V43）：`--allow-shell` 在**两条**构造路径上都要通电 ──────
+#  ⭐ 修之前的形态（`run.py:158-171`）：`Guard(allow_shell=…)` **只写在**
+#     `if args.offline or not s.llm.usable():` 这一支里。另一支（真模型）**不构造** guard
+#     ⇒ 落回 `Core.__init__` 的 `guard or Guard(...)` 默认值 ⇒ `allow_shell=False`。
+#     ⇒ 用户明明带了 `--allow-shell`，日志里永远是
+#       `[guard:tool_misuse] 拦截 —— shell 未开启（需显式 --allow-shell）`。
+#     实测现场：2026-11-02 12:58 的 `sales.csv → report.md`（`bench/evidence/v6_s133/`）。
+#
+#  ⛔ 为什么这条断言**必须四格**：门禁平时走的**就是**离线那一支，只测它永远绿 ——
+#     这正是它坏了两百多轮没人发现的原因（"开关只在一条没人走的分支上通电"）。
+#     只测联网那一支也证明不了"对照臂没被改"（`allow_shell=False` 必须仍为 False）。
+import argparse as _AZ106_AP                                     # noqa: E402
+from unittest import mock as _mock                               # noqa: E402
+
+_AZ106_RUN = _AZ102_RUN                                          # 同一个 `run` 模块
+
+
+def _az106_allow_shell(offline: bool, api_key: str, allow_shell: bool) -> bool:
+    """真的走一次 `run._build`，只读 `core.guard.allow_shell`。
+
+    ⛔ 不改 `V1_LLM_OFFLINE`：`cfg.settings()` 在 import 时求值（MEMORY 硬约束），
+       改 env 对同一进程无效 ⇒ 只能用 `dataclasses.replace` **注入** settings。
+    """
+    s = cfg.settings()
+    s2 = _AZ105_DC.replace(
+        s, llm=_AZ105_DC.replace(s.llm, offline=bool(offline), api_key=str(api_key)))
+    args = _AZ106_AP.Namespace(offline=bool(offline), memory_mode="raw",
+                               no_external=True)
+    with _mock.patch.object(cfg, "settings", lambda: s2):
+        core = _AZ106_RUN._build("probe", args, allow_shell=allow_shell)
+    return bool(core.guard.allow_shell)
+
+
+_AZ106_NET_ON = _az106_allow_shell(False, "probe-key", True)
+_AZ106_NET_OFF = _az106_allow_shell(False, "probe-key", False)
+_AZ106_LOC_ON = _az106_allow_shell(True, "probe-key", True)
+_AZ106_LOC_OFF = _az106_allow_shell(True, "probe-key", False)
+
+check(RS, "AZ106 ★★★★`--allow-shell` 在**两条**构造路径上都要通电（V43）\n"
+          "          —— 修之前 `Guard(...)` 只写在 `_build` 的离线分支里，\n"
+          "             真模型路径落回默认 `allow_shell=False` ⇒ 开关**存在但没接**。\n"
+          "         判据（四格，缺一即证明不了这条边）：\n"
+          "               ① 联网分支 + `allow_shell=True` ⇒ True（修前是 False，本条**必红**）\n"
+          "               ② 联网分支 + `allow_shell=False` ⇒ False（对照臂不许被顺手打开）\n"
+          "               ③ 离线分支 + `allow_shell=True` ⇒ True（老行为不许丢）\n"
+          "               ④ 离线分支 + `allow_shell=False` ⇒ False\n"
+          "         撤回语义：把 guard 构造挪回 `if` 里面 ⇒ ① 必红、③ 仍绿\n"
+          "                   （⇒ 只测 ③ 的断言无法发现这个缺陷）。",
+      _AZ106_NET_ON is True
+      and _AZ106_NET_OFF is False
+      and _AZ106_LOC_ON is True
+      and _AZ106_LOC_OFF is False,
+      f"联网 on/off={_AZ106_NET_ON}/{_AZ106_NET_OFF} "
+      f"｜ 离线 on/off={_AZ106_LOC_ON}/{_AZ106_LOC_OFF}")
+
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
       _AL_wm2.reward_guidance(features=None, task_id="x") == ""

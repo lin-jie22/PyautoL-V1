@@ -1,0 +1,20 @@
+========== V43 产品验收第一格：真实任务 + shell 通路已接通 ==========
+工作区=/tmp/v43/ws
+开始 2026-11-02 13:12:49
+RC=1 墙钟=71.1s
+
+--- 产物 ---
+✅ report.md 存在（44 字节）
+华北 2700
+华南 2000
+华东 700
+区域 0
+
+--- workspace 全部文件 ---
+total 8
+drwxr-xr-x 4 linshaojie wheel 128 2026-11-02 13:13 .
+drwxr-xr-x 6 linshaojie wheel 192 2026-11-02 13:12 ..
+-rw-r--r-- 1 linshaojie wheel  44 2026-11-02 13:13 report.md
+-rw-r--r-- 1 linshaojie staff 107 2026-11-02 13:12 sales.csv
+读到 {'华北': 2700, '华南': 2000, '华东': 700}  期望 {'华北': 2700, '华南': 2000, '华东': 700}
+判定 = PASS

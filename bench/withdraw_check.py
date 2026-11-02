@@ -1313,6 +1313,21 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      "                        if (bool(self.s.limits.cand_failover) and _produces\n"
      "                                and ci < len(cands) - 1):",
      "                        if False:  # 撤回态：交付被打回时不再让位"),
+    # ── AZ106：`--allow-shell` 在**两条**构造路径上都要通电（V43 / §109）────
+    #: 撤的语义：让**联网分支**退回"不传 guard" —— 也就是修之前的真实形态
+    #:   （`Core.__init__` 会 `self.guard = guard or Guard(...)`，默认 `allow_shell=False`）。
+    #: 后果**只**落在 ① 上：联网 + `allow_shell=True` 读到 False ⇒ 红；
+    #:   ③（离线 + on）**仍绿** —— 这正是本条断言不能只测一格的理由：
+    #:   门禁平时走的**就是**离线那一支，所以它坏了两百多轮没人发现。
+    #: ⚠️ 锚必须精确到**这一整行**：`guard=_guard` 在两支里都出现，只锚
+    #:   `guard=_guard` 三个词会同时改掉离线分支 ⇒ 撤回的不是"联网那一支"，
+    #:   而是"两条都撤" ⇒ ③ 也红 ⇒ 读成"AZ106 整个机制不存在"，归因跑偏。
+    #:   带上 `core = Core(s, ` 与下一行首参数才唯一。
+    ("AZ106", "run.py",
+     "        core = Core(s, guard=_guard, critique_ledger=critique_ledger,\n"
+     "                    score_ledger=score_ledger, caliber_sig=caliber_sig,",
+     "        core = Core(s, critique_ledger=critique_ledger,\n"
+     "                    score_ledger=score_ledger, caliber_sig=caliber_sig,"),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

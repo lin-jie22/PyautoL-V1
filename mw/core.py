@@ -502,6 +502,17 @@ def _plan_zero() -> dict:
         #     "上限太窄"和"能力不适配" —— 而修法相反（调 `n` vs 换能力）。
         "dropped_not_applicable": 0,   # 因适用性判据被丢掉的候选数（跨轮累计）
         "dropped_na_by_tool": {},      # tool -> 被丢次数（用于抓误杀）
+        # ★ 第一百三十八轮（§114）：**宽度 ≠ 手段种类**。
+        #   动机是 V47 一次真实读数：`n=2` 的两轮长得一样，含义相反 ——
+        #   第 2 轮 `{run_shell:2}` 是"同一路打两枪"（两条 shell 命令），
+        #   第 4 轮 `{run_shell:1, finish:1}` 是"两路"（干活 + 交付）。
+        #   现有读数（`n` / `by_tool_max_round` / `by_tool`）对这两轮**完全相同**，
+        #   而它们的修法相反：前者该问"为什么只会写 shell"，后者没有问题。
+        # ⛔ 不加进 `per_round` 的字典（已有三份冻结探针对那个字典做**整字典相等**
+        #   断言，塞键会让它们红，而红的原因不是行为变了 —— 纪律 20）。
+        "distinct_by_round": [],       # 第 i 轮有**几种**工具（与 produces_by_round 对齐）
+        "distinct_tools_max_round": 0,  # 所有轮里最多几种（与 by_tool_max_round 并列）
+        "rounds_same_tool_wide": 0,    # `n>=2` 且 `distinct==1` 的轮数（"一路多枪"）
     }
 
 
@@ -827,6 +838,16 @@ class Core:
                 ps["by_tool_max_round"] = k
         ps["produces_by_round"].append(produces)
         ps["per_round"].append({"n": len(cands), "tools": dict(tools)})
+        # ★ 第一百三十八轮（§114）：宽度之外再记一层 —— **几种**工具。
+        # ⛔ `n >= 2` 那道闸是判据的一部分，不是防御性编程：`n=1` 时 `distinct`
+        #    恒为 1，不写这个条件，"每轮只给一个候选"会被算成 100% 的
+        #    "一路多枪" —— 一个方向完全反了的读数（V41 纪律 14 的窗口病同宗）。
+        _kinds = len(tools)
+        ps["distinct_by_round"].append(_kinds)
+        if _kinds > ps["distinct_tools_max_round"]:
+            ps["distinct_tools_max_round"] = _kinds
+        if len(cands) >= 2 and _kinds == 1:
+            ps["rounds_same_tool_wide"] += 1
 
     # ------------------------------------------------------------------
     def _prime_counters(self, goal: str = "") -> None:
@@ -1189,7 +1210,8 @@ class Core:
                             detail=f"连续 {_na_rounds} 轮候选全部对本题结构上不适用")
                     continue
                 self.ledger.spend_candidate(len(cands))
-                self.log(f"  [{it}] 通道={'深' if complex_task else '快'} 候选={len(cands)}")
+                self.log(f"  [{it}] 通道={'深' if complex_task else '快'} 候选={len(cands)}"
+                         f" 种类={len({c.tool for c in cands})}")
                 # 通量：推理交了 N 个想法出去（下游是否真的做，看 `reason>act` 的消费）
                 self.flow.emit(it, "reason>act", len(cands), sum(len(c.as_line()) for c in cands))
 
@@ -2319,6 +2341,13 @@ class Core:
                 #    **并列**而不是合并：一个说"上限太窄"，一个说"能力不适配"。
                 "dropped_not_applicable": self.plan_stats["dropped_not_applicable"],
                 "dropped_na_by_tool": dict(self.plan_stats["dropped_na_by_tool"]),
+                # ★ 第一百三十八轮（§114）：宽度 ≠ 手段种类。
+                #   三个数**并列**而不是合成一个"有效宽度"：
+                #   `n` 说"打了几枪"、`distinct` 说"几条路"、
+                #   `dropped_na` 说"几条路本来就走不通"。
+                "distinct_by_round": list(self.plan_stats["distinct_by_round"]),
+                "distinct_tools_max_round": self.plan_stats["distinct_tools_max_round"],
+                "rounds_same_tool_wide": self.plan_stats["rounds_same_tool_wide"],
             },
             # ★ 第一百三十二轮（§108）：候选让位。**五项零值也在** ——
             # `used=0` 与"开关没装"是两件必须分得开的事（§66 同因）。

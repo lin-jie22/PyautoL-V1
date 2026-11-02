@@ -1,0 +1,14 @@
+==========================================================================
+V44 交付验收探针 —— 真 Core / 零模型 / 隔离状态目录
+tmp=<每次新建的隔离目录>
+==========================================================================
+✅ S1_nofile_has_answer: verdict=FAIL 期望=FAIL status=done outputs=['report.md'] found=[] missing=['report.md'] inputs_missing=[]
+✅ S2_file_exists: verdict=PASS 期望=PASS status=done outputs=['report.md'] found=['report.md'] missing=[] inputs_missing=[]
+✅ S3_no_artifact_has_answer: verdict=ANSWER 期望=ANSWER status=done outputs=[] found=[] missing=[] inputs_missing=[]
+✅ S4_no_artifact_empty: verdict=EMPTY 期望=EMPTY status=done outputs=[] found=[] missing=[] inputs_missing=[]
+✅ S5_partial: verdict=PARTIAL 期望=PARTIAL status=done outputs=['out/a.md', 'out/b.json'] found=['out/a.md'] missing=['out/b.json'] inputs_missing=[]
+✅ S6_input_only: verdict=ANSWER 期望=ANSWER status=done outputs=[] found=[] missing=[] inputs_missing=[]
+✅ S7_stalled_but_artifact: verdict=PASS 期望=PASS status=done outputs=['report.md'] found=['report.md'] missing=[] inputs_missing=[]
+✅ S8_empty_goal: verdict=EMPTY 期望=EMPTY outputs=[]
+
+结论: 全部符合预测

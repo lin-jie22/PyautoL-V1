@@ -1,0 +1,18 @@
+✅ S1 两个 run_shell（args 不同）⇒ n=2 / distinct=1 ⇒ 认作一路两枪
+   rounds=2 cands_total=3 by_tool_max_round=2 distinct_max=1 same_tool_wide=1
+   per_round = [{"n": 2, "tools": {"run_shell": 2}}, {"n": 1, "tools": {"finish": 1}}]
+   distinct  = [1, 1]  produces = [0, 1]
+✅ S2 finish + run_shell ⇒ n=2 但 distinct=2 ⇒ 不算一路多枪
+   rounds=1 cands_total=2 by_tool_max_round=1 distinct_max=2 same_tool_wide=0
+   per_round = [{"n": 2, "tools": {"finish": 1, "run_shell": 1}}]
+   distinct  = [2]  produces = [1]
+✅ S3 三个 recall（query 不同）⇒ n=3 / distinct=1 ⇒ 仍然是一路
+   rounds=2 cands_total=4 by_tool_max_round=3 distinct_max=1 same_tool_wide=1
+   per_round = [{"n": 3, "tools": {"recall": 3}}, {"n": 1, "tools": {"finish": 1}}]
+   distinct  = [1, 1]  produces = [0, 1]
+✅ S4 每轮单候选 ⇒ distinct 全 1 而 same_tool_wide=0（n>=2 那道闸）
+   rounds=2 cands_total=2 by_tool_max_round=1 distinct_max=1 same_tool_wide=0
+   per_round = [{"n": 1, "tools": {"recall": 1}}, {"n": 1, "tools": {"finish": 1}}]
+   distinct  = [1, 1]  produces = [0, 1]
+
+结论: 全部符合（宽度与手段种类已分列，且 n=1 不冒充一路多枪）

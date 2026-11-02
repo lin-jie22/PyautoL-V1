@@ -1,0 +1,17 @@
+✅ S1 真实形态 5 条 ⇒ 3 可用 / 1 重复 / 1 未注册（第 1 轮就交付）
+   plan  = {"rounds": 1, "cands_total": 3, "by_tool": {"finish": 1, "run_shell": 1, "agent:code_agent": 1}, "by_tool_max_round": 1, "produces_by_round": [2], "per_round": [{"n": 3, "tools": {"finish": 1, "run_shell": 1, "agent:code_agent": 1}}], "examined_total": 3, "truncated_total": 0, "dropped_not_applicable": 0, "dropped_na_by_tool": {}, "distinct_by_round": [3], "distinct_tools_max_round": 3, "rounds_same_tool_wide": 0}
+   width = {"offered": 5, "dropped_dup": 1, "dropped_unknown": 1, "dropped_shape": 0}
+✅ S2 两个 args 不同的 finish ⇒ by_tool_max_round=2
+   plan  = {"rounds": 1, "cands_total": 3, "by_tool": {"finish": 2, "run_shell": 1}, "by_tool_max_round": 2, "produces_by_round": [2], "per_round": [{"n": 3, "tools": {"finish": 2, "run_shell": 1}}], "examined_total": 3, "truncated_total": 0, "dropped_not_applicable": 0, "dropped_na_by_tool": {}, "distinct_by_round": [2], "distinct_tools_max_round": 2, "rounds_same_tool_wide": 0}
+   width = {"offered": 3, "dropped_dup": 0, "dropped_unknown": 0, "dropped_shape": 0}
+✅ S3 夹一条字符串 ⇒ dropped_shape=1（不算进 unknown）
+   plan  = {"rounds": 1, "cands_total": 2, "by_tool": {"finish": 1, "run_shell": 1}, "by_tool_max_round": 1, "produces_by_round": [1], "per_round": [{"n": 2, "tools": {"finish": 1, "run_shell": 1}}], "examined_total": 2, "truncated_total": 0, "dropped_not_applicable": 0, "dropped_na_by_tool": {}, "distinct_by_round": [2], "distinct_tools_max_round": 2, "rounds_same_tool_wide": 0}
+   width = {"offered": 3, "dropped_dup": 0, "dropped_unknown": 0, "dropped_shape": 1}
+✅ S4 三条全是未注册工具 ⇒ unknown 全记，兜底仍交出候选
+   plan  = {"rounds": 2, "cands_total": 2, "by_tool": {"recall": 1, "finish": 1}, "by_tool_max_round": 1, "produces_by_round": [0, 1], "per_round": [{"n": 1, "tools": {"recall": 1}}, {"n": 1, "tools": {"finish": 1}}], "examined_total": 2, "truncated_total": 0, "dropped_not_applicable": 0, "dropped_na_by_tool": {}, "distinct_by_round": [1, 1], "distinct_tools_max_round": 1, "rounds_same_tool_wide": 0}
+   width = {"offered": 6, "dropped_dup": 0, "dropped_unknown": 6, "dropped_shape": 0}
+✅ S5 短目标走快通道 ⇒ offered=3 但 cands_total=1（截断看得见了）
+   plan  = {"rounds": 1, "cands_total": 1, "by_tool": {"finish": 1}, "by_tool_max_round": 1, "produces_by_round": [1], "per_round": [{"n": 1, "tools": {"finish": 1}}], "examined_total": 3, "truncated_total": 2, "dropped_not_applicable": 0, "dropped_na_by_tool": {}, "distinct_by_round": [1], "distinct_tools_max_round": 1, "rounds_same_tool_wide": 0}
+   width = {"offered": 3, "dropped_dup": 0, "dropped_unknown": 0, "dropped_shape": 0}
+
+结论: 五景全部符合预注册（形状、守恒式、恒存在关系、截断恒等式都成立）

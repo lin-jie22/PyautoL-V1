@@ -1374,6 +1374,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #: ⭐ ⑥（截断恒等式）在撤回后**仍绿**：`dropped=0` 时它就是老的
     #:   `examined − cands == truncated`。同 V46 的教训：**守恒是必要条件，
     #:   不是通电证明** ⇒ 锚必须同时钉"能非零"（①⑤ 就是那两个非零）。
+    # ── AZ111：宽度 ≥ 2 ≠ 手段 ≥ 2（V48 / §114）──────────────────────────
+    #  ⛔ 锚必须**整段**撤：只删 `distinct_by_round.append` 会留下
+    #     `max` / `same_wide` 两个永远停在 0 的计数器 ⇒ 红的原因变成
+    #     "有两个数恒零"，与"读数整段不存在"混在一起（红得越多越分不清）。
+    ("AZ111", "mw/core.py",
+     '        _kinds = len(tools)\n'
+     '        ps["distinct_by_round"].append(_kinds)\n'
+     '        if _kinds > ps["distinct_tools_max_round"]:\n'
+     '            ps["distinct_tools_max_round"] = _kinds\n'
+     '        if len(cands) >= 2 and _kinds == 1:\n'
+     '            ps["rounds_same_tool_wide"] += 1',
+     '        pass  # 撤回态：不记"手段种类"'),
     ("AZ110", "mw/core.py",
      '                cands, _na_drop = self._drop_not_applicable(cands, goal)',
      '                cands, _na_drop = list(cands), []  # 撤回态：不做准入判定'),

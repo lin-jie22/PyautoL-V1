@@ -1,0 +1,48 @@
+V48 真实两臂 —— 唯一变量：agents.json 里 code_agent **有没有** applies_regex
+同一份内核 / 同题面（同 V45~V47）/ qwen2.5:7b / T=0 / max_tokens=1024 /
+宽=3 / cand_failover=1 / --allow-shell / --budget 2 / state_chars=2400
+
+读数                              off（无 applies_regex）          on（有）
+status                          stalled                       not_applicable
+verdict                         PASS                          PASS
+plan.rounds                     3                             6
+plan.cands_total                7                             5
+plan.by_tool_max_round          4                             2
+plan.distinct_tools_max_round   2                             2
+plan.rounds_same_tool_wide      0                             1
+plan.distinct_by_round          [2, 1, 1]                     [1, 1, 0, 2, 0, 0]
+plan.dropped_not_applicable     0                             9
+plan.by_tool                    {"agent:code_agent": 6, "run_shell": 1}{"run_shell": 4, "finish": 1}
+plan.per_round                  [{"n": 5, "tools": {"agent:code_agent": 4, "run_shell": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}][{"n": 1, "tools": {"run_shell": 1}}, {"n": 2, "tools": {"run_shell": 2}}, {"n": 0, "tools": {}}, {"n": 2, "tools": {"run_shell": 1, "finish": 1}}, {"n": 0, "tools": {}}, {"n": 0, "tools": {}}]
+plan.produces_by_round          [4, 1, 1]                     [0, 0, 0, 1, 0, 0]
+failover.used                   1                             0
+failover.rescued_answer         0                             0
+failover.rescued_step           1                             0
+external.calls                  1                             0
+external.err                    1                             0
+budget.wall_s                   78.92                         162.17
+budget.llm_calls                6/48                          11/48
+report.md 字节                    44                            44
+
+产物：两臂 report.md 都是 44 字节，sha256 逐字节相同
+  2054621802a8ce5c32bae00a45df33ad313e7e5c1ecfa121e1a849f5ffb10fc4
+  内容 = 华北 2700 / 华南 2000 / 华东 700 /『区域 0』（垃圾行，与 V43~V47 逐字相同）
+
+⭐ 判决：
+  J5 on 臂 distinct_by_round=[1,1,0,2,0,0]、max=2、same_wide=1     ← 预注册全中
+  J6 off 臂 distinct_by_round=[2,1,1]、max=2、same_wide=0          ← 预注册全中
+  J7 两臂 per_round 与 V47 **逐字段相同**（含那段 5 条/1 条/1 条的分布）← 押注命中
+  J8 off 臂 distinct=2，而第 1 轮 5 条里 4 条是必败的 code_agent
+     ⇒ **distinct 也不等于「可用的手段」**：它只数『出现了几种工具』，
+       不数『这几种能不能用』。两臂并列才说得清：
+         off：种类 2（其中 1 种永远失败，且 dropped_na=0 —— 因为它没声明）
+         on ：种类 2（两种都能用，run_shell + finish）
+
+⭐ 一处新事实：`n` 相同、`distinct` 也相同，形态仍可能不同
+  off 第 1 轮 n=5 / distinct=2 / by_tool_max_round=4 = 『4 枪一路 + 1 枪另一路』
+  on  第 4 轮 n=2 / distinct=2 / by_tool_max_round=1 = 『一路一枪』
+  ⇒ 宽度、种类、单轮重复**三个数缺一不可**，所以才要并列而不是合成。
+
+⚠️ 耗时：off 78.92s / on 162.17s（V47 同两臂是 61.95 / 151.46）。
+  轨迹、轮数、产物逐字未变 ⇒ 差的是 LLM 延迟（llm_calls 6 / 11 完全相同），
+  ⛔ 不许把这一轮写成性能结论：它连『同一轨迹耗时稳定』都证明不了。

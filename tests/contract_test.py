@@ -10972,6 +10972,198 @@ check(RS, "AZ110 ★★★★外部能力**结构上不适用**时不许占候�
       f" ｜ ⑧正则判同={_AZ110_SAME} ｜ ⑨非法正则={_AZ110_BAD_OK}")
 
 
+# ── AZ111 的取证装置（V48）：宽度 ≥ 2 ≠ 手段 ≥ 2（§114）───────────────────
+#  ⭐ 现场（V47 真实 on 臂 `v6_s137/p2_real.txt`）：两轮 `n=2` 长得**一模一样** ——
+#     第 2 轮 `{"n":2,"tools":{"run_shell":2}}`（同一路打两枪：两条 shell 命令）
+#     第 4 轮 `{"n":2,"tools":{"run_shell":1,"finish":1}}`（两路：干活 + 交付）
+#     在 `n` / `by_tool_max_round` / `by_tool` 上**完全相同**，而修法相反：
+#     前者该问"为什么只会写 shell"，后者没有问题。
+#  ⛔ 不许把两轮合成"平均宽度"之类的数：那正是 §112 那类"一个数回答两个问题"的病。
+#  ⛔ 不往 `per_round` 的字典里塞键：`v6_s135`/`v6_s136`/`v6_s137` 三份**已冻结**
+#     探针对那个字典做**整字典相等**断言，塞键会让它们红，而红的原因不是行为变了
+#     （纪律 20：证据脚本不许写回自己的证据路径）。
+_AZ111_RECALL = _az110_cand  # 同一套候选构造器（tool/args/intent 三字段）
+
+
+def _az111_payload(*items: dict) -> str:
+    return json.dumps({"candidates": list(items)}, ensure_ascii=False)
+
+
+class _AZ111LLM:
+    """按**轮**回放剧本 —— **只**对规划调用推进序列。
+
+    ⛔ 判别键用规划 prompt 独有的 `互不相同`（`planner.py:531`），不用
+      `max_tokens`：后者是旋钮，旋钮一调判据就失效。
+    ⛔ 不用 `StubLLM(scripts=...)`：它是"关键词命中即用"，同一句关键词在
+      **每一轮**都命中同一条 ⇒ 第 2 轮拿不到交付答案，多轮场景根本演不出来。
+    """
+
+    _PLAN_KEY = "互不相同"
+
+    def __init__(self, plans: list[str]) -> None:
+        self.plans = list(plans)
+        self.i = 0
+        self.calls = 0
+
+    def complete(self, messages, max_tokens=None, **kw):
+        self.calls += 1
+        blob = "\n".join(getattr(m, "content", str(m)) for m in messages)
+        if self._PLAN_KEY not in blob:
+            return "{}"
+        i = min(self.i, len(self.plans) - 1)
+        self.i += 1
+        return self.plans[i]
+
+
+def _az111_run(tag: str, plans: list[str]):
+    d = _TMP / f"az111_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "sales.csv").write_text(_AZ107_INPUT, encoding="utf-8")
+    s = cfg.settings()
+    s2 = _AZ105_DC.replace(s, paths=_AZ105_DC.replace(s.paths, workspace=ws))
+    core = Core(s2, llm=_AZ111LLM(plans),
+                memory=MemoryStore(d / "m.db"), memory_mode="raw")
+    with contextlib.redirect_stdout(io.StringIO()):
+        out = core.run(_AZ107_GOAL, budget_factor=1)
+    return core, out
+
+
+# ① **一路两枪**：两个 `recall`（query 不同 ⇒ sig 不同 ⇒ 都放行）。
+#    用 `recall` 而不是 `run_shell`：后者要 `Guard(allow_shell=True)`，
+#    而这一条要测的是"工具身份"，与"哪个工具"无关 —— 少一个开关就少一个变量。
+_AZ111_C1, _AZ111_O1 = _az111_run("two_same", [
+    _az111_payload(_AZ111_RECALL("recall", {"query": "sales"}, "查1"),
+                   _AZ111_RECALL("recall", {"query": "region"}, "查2")),
+    _az111_payload(_AZ111_RECALL("finish", {"answer": _AZ107_ANS}, "交付"))])
+
+# ② **两路**：同一条首轮宽度 `n=2`，但两种工具。
+_AZ111_C2, _AZ111_O2 = _az111_run("two_kinds", [
+    _az111_payload(_AZ111_RECALL("finish", {"answer": _AZ107_ANS}, "交付"),
+                   _AZ111_RECALL("recall", {"query": "sales"}, "顺手查"))])
+
+# ③ **单候选**：`distinct` 恒为 1，但"一路多枪"必须是 **0**（反向闸）。
+_AZ111_C3, _AZ111_O3 = _az111_run("single", [
+    _az111_payload(_AZ111_RECALL("recall", {"query": "sales"}, "查")),
+    _az111_payload(_AZ111_RECALL("finish", {"answer": _AZ107_ANS}, "交付"))])
+
+_AZ111_P1 = json.loads(json.dumps(_AZ111_O1.stats["plan"], ensure_ascii=False))
+_AZ111_P2 = json.loads(json.dumps(_AZ111_O2.stats["plan"], ensure_ascii=False))
+_AZ111_P3 = json.loads(json.dumps(_AZ111_O3.stats["plan"], ensure_ascii=False))
+
+
+def _az111_cons(p: dict) -> list[str]:
+    """守恒四式：逐轮对齐、种类 ≤ 宽度、max 与 count 两条算法一致。"""
+    bad: list[str] = []
+    dbr, pr = p["distinct_by_round"], p["per_round"]
+    if len(dbr) != p["rounds"] or len(pr) != p["rounds"]:
+        bad.append(f"len(dbr)={len(dbr)} len(pr)={len(pr)} rounds={p['rounds']}")
+        # ⛔ 立刻返回：**检测器不许在它要抓的那种病上崩溃**。
+        #    撤回态第一版就是这样：`distinct_by_round` 被整段删掉 ⇒ 长度 0，
+        #    而下面 `dbr[i]` 直接 IndexError ⇒ 契约测试崩在中途 ⇒
+        #    汇总行都没打出来（red=无 / 汇总行=无），撤回态被判"说不清"。
+        #    这正是纪律 4 的第三种「红=无」形态：**检测器自己失效**。
+        return bad
+    for i, (d, r) in enumerate(zip(dbr, pr)):
+        if d != len(r["tools"]):
+            bad.append(f"轮{i} distinct={d} != len(tools)={len(r['tools'])}")
+        if d > r["n"]:
+            bad.append(f"轮{i} distinct={d} > n={r['n']}")
+        if r["n"] == 0 and d != 0:
+            bad.append(f"轮{i} n=0 而 distinct={d}")
+    if p["distinct_tools_max_round"] != (max(dbr) if dbr else 0):
+        bad.append(f"max={p['distinct_tools_max_round']} != max(dbr)")
+    _same = sum(1 for i, r in enumerate(pr) if r["n"] >= 2 and dbr[i] == 1)
+    if p["rounds_same_tool_wide"] != _same:
+        bad.append(f"same_wide={p['rounds_same_tool_wide']} != 逐轮复算={_same}")
+    return bad
+
+
+_AZ111_CONS = [_az111_cons(p) for p in (_AZ111_P1, _AZ111_P2, _AZ111_P3)]
+
+# ⑥ `stats()` 必须是**深拷**：改返回值不许动内核（V45 踩过：同一引用，
+#    断言读到的是自己刚写进去的值 ⇒ 深拷测试恒绿）。
+_AZ111_ST = _AZ111_O1.stats
+_AZ111_ST["plan"]["distinct_by_round"].append(99)
+_AZ111_ST["plan"]["per_round"].append({"n": 99, "tools": {}})
+_AZ111_DEEP = (99 not in _AZ111_C1.plan_stats["distinct_by_round"]
+               and len(_AZ111_C1.plan_stats["per_round"]) == _AZ111_P1["rounds"])
+
+# ⑦ 三个键**恒存在**（⚠️ 缺席冒充零的反面：`absent` 与 `0` 必须分得开）。
+_AZ111_KEYS = all(k in _AZ111_P1 for k in
+                  ("distinct_by_round", "distinct_tools_max_round",
+                   "rounds_same_tool_wide"))
+
+
+def _az111_at(p: dict, i: int, key: str = "distinct_by_round",
+              default: int = -1) -> int:
+    """安全取第 i 个 —— ⛔ 断言不许写成 `p["distinct_by_round"][0]`。
+
+    撤回态删的正是这个数组：写成 `[0]` 就等于"要求读数非空"，
+    而"读数为空"恰恰是这条撤回态要抓的病 ⇒ 断言在**被测的那种病**上
+    IndexError 崩掉，契约测试崩在中途 ⇒ 汇总行都没打出来
+    （撤回态读到 `red=无 / 汇总行=无 / Traceback=有`，判成"说不清"）。
+    这是纪律 4 第三种「红=无」形态：**检测器自己失效**。两次都是同一个坑
+    （先是 `_az111_cons`，再是这里的 `[0]`），所以做成函数而不是就地判断。
+    """
+    seq = p.get(key) or []
+    return seq[i] if i < len(seq) else default
+
+check(RS, "AZ111 ★★★★宽度 ≥ 2 ≠ 手段 ≥ 2：`n=2` 的两轮形态相反（V48 / §114）\n"
+          "         —— 修之前（V47 实测）：`{run_shell:2}` 与 `{run_shell:1,finish:1}`\n"
+          "            在 `n` / `by_tool_max_round` / `by_tool` 上**完全相同**，\n"
+          "            而一个是「只会写 shell」、另一个没有问题。\n"
+          "         判据（七条，缺一即证明不了这条边）：\n"
+          "               ① 两个 `recall`（args 不同）⇒ 首轮 `n==2`、`by_tool_max_round==2`，\n"
+          "                  而 `distinct_tools_max_round==1`、`rounds_same_tool_wide==1`\n"
+          "                  （**宽而窄**在同一次运行里同时成立）；\n"
+          "               ② 同一条 `n==2`、`finish`+`recall` ⇒ `distinct==2`、`same_wide==0`\n"
+          "                  （两种形态被分开，而不是被平均）；\n"
+          "               ③ 单候选的轮 ⇒ `distinct` 恒 1 但 `same_wide==0`\n"
+          "                  （`n>=2` 那道闸：没有它，「每轮只给一个」会被读成\n"
+          "                   「100% 一路多枪」—— 方向完全反了）；\n"
+          "               ④ 守恒四式：`distinct_by_round[i]==len(per_round[i].tools)`、\n"
+          "                  种类 ≤ 宽度、`n=0 ⇒ distinct=0`；\n"
+          "               ⑤ `max` 与 `逐轮 count` 两条**不同算法**算出同一个数\n"
+          "                  （单独任一个都能自洽地撒谎）；\n"
+          "               ⑥ `stats()` 是深拷（改返回值不许动内核）；\n"
+          "               ⑦ 三个键恒存在（`absent` 与 `0` 必须分得开）。\n"
+          "         撤回语义：整段删掉 `_note_plan_round` 里那 6 行 ⇒ 本行转红\n"
+          "                   （实测 PASS=610 FAIL=1、只它红、无 Traceback）。\n"
+          "                   ⚠️ 我原先写的是「①⑤ 必红、④⑥⑦ 仍绿」，**实测 ④ 也红**：\n"
+          "                   守恒式里含 `len(distinct_by_round)==rounds`，读数整段\n"
+          "                   消失时它必然红 ⇒ 守恒**也能抓「读数整段不见了」**，\n"
+          "                   只是抓不出「读数在、但恒零」（那要 ① 的非零断言）。\n"
+          "                   ⛔ 所以本条的断言**不许直接下标** `dbr[0]`：撤回态删的\n"
+          "                   正是那个数组，`[0]` 会 IndexError 让契约崩在中途 ⇒\n"
+          "                   汇总行都没了（纪律 4 第三种「红=无」：检测器自己失效）。\n"
+          "                   本轮这条自踩了两次（`_az111_cons` 与 check 条件），\n"
+          "                   修法见 `_az111_at()`。",
+      _AZ111_P1["per_round"][0] == {"n": 2, "tools": {"recall": 2}}
+      and _az111_at(_AZ111_P1, 0) == 1
+      and _AZ111_P1["distinct_tools_max_round"] == 1
+      and _AZ111_P1["rounds_same_tool_wide"] == 1
+      and _AZ111_P1["by_tool_max_round"] == 2
+      and _AZ111_P2["per_round"][0] == {"n": 2, "tools": {"finish": 1, "recall": 1}}
+      and _AZ111_P2["distinct_tools_max_round"] == 2
+      and _AZ111_P2["rounds_same_tool_wide"] == 0
+      and _AZ111_P3["distinct_tools_max_round"] == 1
+      and _AZ111_P3["rounds_same_tool_wide"] == 0
+      and all(r["n"] == 1 for r in _AZ111_P3["per_round"])
+      and not any(_AZ111_CONS)
+      and _AZ111_DEEP and _AZ111_KEYS,
+      f"①n={_AZ111_P1['per_round'][0]['n']} distinct={_AZ111_P1['distinct_by_round']}"
+      f" max={_AZ111_P1['distinct_tools_max_round']}"
+      f" same_wide={_AZ111_P1['rounds_same_tool_wide']}"
+      f" by_tool_max_round={_AZ111_P1['by_tool_max_round']}"
+      f" ｜ ②distinct={_AZ111_P2['distinct_by_round']}"
+      f" same_wide={_AZ111_P2['rounds_same_tool_wide']}"
+      f" ｜ ③单候选 same_wide={_AZ111_P3['rounds_same_tool_wide']}"
+      f" distinct={_AZ111_P3['distinct_by_round']}"
+      f" ｜ ④⑤守恒={'ok' if not any(_AZ111_CONS) else _AZ111_CONS}"
+      f" ｜ ⑥深拷={'ok' if _AZ111_DEEP else '活引用！'}"
+      f" ｜ ⑦三键在={'ok' if _AZ111_KEYS else '缺！'}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

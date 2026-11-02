@@ -465,6 +465,18 @@ class Planner:
         self.last_error = ""
         #: 模型点名但未注册的工具名 —— 失败可归因的最小证据
         self.last_bad_tools: list[str] = []
+        # ── 第一百三十五轮（§111）：宽度的**分母** ─────────────────────────
+        # 为什么必须分三个数（V40 §106.2 的教训：**「候选数 3」≠「互不相同的候选 3」**）：
+        #   offered          模型原始给了几条 —— 这是"它想得多宽"
+        #   dropped_dup      `tool|sorted(args)` 重复被丢 —— 修法是改提示词（别重复）
+        #   dropped_unknown  工具未注册被丢 —— 修法是加工具/改工具描述
+        # 合并成一个 "去掉了几条" ⇒ 上面两种修法**再也分不开**（纪律 2）。
+        # ⛔ 刻意**不**把它们塞进 `degraded`：它们不改变"这次回答能不能用"
+        #    （`_extract` 只要还剩一条就返回可用步骤），与 `reseek` 同一条理由。
+        self.offered = 0
+        self.dropped_dup = 0
+        self.dropped_unknown = 0
+        self.dropped_shape = 0    # 非 dict 条目（格式问题，与"未注册工具"修法不同）
 
     # ------------------------------------------------------------------
     def _untried_tools(self, blocked: Sequence[str]) -> list[str]:
@@ -721,12 +733,23 @@ class Planner:
         out: list[Step] = []
         seen: set[str] = set()
         bad: list[str] = []
+        # ★ §111：`raw` 里**每一条**都要在分母里 —— 包括非 dict 的那些。
+        #   只数 dict 会低估 `offered`，于是"模型给了 5 条、可用 2 条"这种
+        #   真实形态会被读成"给了 2 条"，宽度问题直接消失。
+        self.offered += len(raw)
         for item in raw:
             if not isinstance(item, dict):
+                # ⚠️ 预注册只写了三键，实现时发现**非 dict 条目无处可归**：
+                #   算进 `dropped_unknown` 会把"模型想了不存在的工具"与
+                #   "模型给了个数组/字符串"混成一件事，而修法完全不同
+                #   （加工具 vs 改格式）。⇒ 新增 `dropped_shape`，
+                #   这是**撤销（更精确）**，不是改判据 —— 已登记进 RESULTS。
+                self.dropped_shape += 1
                 continue
             tool = str(item.get("tool", ""))
             if tool not in known:
                 bad.append(tool or "(空)")
+                self.dropped_unknown += 1
                 continue                      # 不许发明工具
             args = item.get("args")
             if not isinstance(args, dict):
@@ -734,6 +757,7 @@ class Planner:
             intent = str(item.get("intent", ""))[:300]
             sig = f"{tool}|{sorted(args.items())}"
             if sig in seen:                   # 去重：候选必须是不同的做法
+                self.dropped_dup += 1
                 continue
             seen.add(sig)
             out.append(Step(intent, tool, args, str(item.get("rationale", ""))[:200]))
@@ -794,6 +818,17 @@ class Planner:
             "salvage_fail": self.salvage_fail,
             "salvage_completed": self.salvage_completed,
             "last_bad_tools": list(self.last_bad_tools)[:5],
+            # ★ §111：宽度的**分母**。三个零值也进 stats ——
+            # `dropped_dup=0` 与"去重没接线"是同形的，必须能分开读。
+            # 不变量：`offered == 进入 out 的条数 + dropped_dup + dropped_unknown`。
+            # ⚠️ 这里**不**断言它（`out` 的长度不在这里）：断言在契约 AZ108 里，
+            #    用真跑一次 `_extract` 来证明，而不是靠本函数自说自话。
+            "width": {
+                "offered": self.offered,
+                "dropped_dup": self.dropped_dup,
+                "dropped_unknown": self.dropped_unknown,
+                "dropped_shape": self.dropped_shape,
+            },
             # 不变量：总分项数必须等于 degraded，否则说明有降级走了旁路（漏记）
             "cause_balances": causes == self.degraded,
         }

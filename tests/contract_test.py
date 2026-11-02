@@ -4183,6 +4183,111 @@ check(RS, "AZ107 ★★★★产物验收与 `status` **分列**：`done` 不等
       f"有产物: status={_AZ107_WITHFILE.status}/verdict={_AZ107_WITHFILE.verdict}")
 
 
+# ── AZ108 的取证装置（V45）：候选**宽度**的真实分布 ──────────────────────────
+#  ⭐ 修之前的形态：「每轮候选都是什么 tool」全项目**只有日志**一个来源。
+#     第一百三十三轮那句「第 1 轮 5 个候选里 3 个是同一个 `agent:code_agent`」
+#     是人看日志数出来的 —— 进不了台账、说不出是哪一轮、也没法 cross-check。
+#     §15 那条老账写得很清楚：**读数标签不是读数**。
+#  ⛔ 为什么必须与 `cands_total` **分列**两个数（`offered` / `cands_total`）：
+#     V40 §106.2 已经实测过「候选数 3」≠「互不相同的候选 3」；
+#     而这里还有第三种：`cands = plan.steps[:n]` 的**截断**。
+#     S5 实测"模型给 3 条、执行器拿 1 条"，旧读数（日志 `候选=1`）把它读成
+#     "模型只给了一个" —— 三个数（给了/可用/进执行器）少一个就归不了因。
+_AZ108_GOAL = _AZ107_GOAL
+_AZ108_ANS = ("已完成：按区域汇总的金额合计已写入工作目录下的 report.md，"
+              "三个区域从高到低为 华北 2700 / 华南 2000 / 华东 700。")
+
+
+def _az108_payload(*extra: object) -> str:
+    items: list = [
+        {"intent": "交付", "tool": "finish", "args": {"answer": _AZ108_ANS}},
+        {"intent": "跑一段", "tool": "run_shell", "args": {"cmd": "echo hi"}},
+        # ⚠️ 与第 1 条**同 tool 不同 args** ⇒ `_extract` 的 sig 去重**拦不住**它。
+        #    这正是 `by_tool_max_round` 存在的理由：宽度可以被同一个 tool 霸占。
+        {"intent": "再交一次", "tool": "finish",
+         "args": {"answer": _AZ108_ANS + "（第二版）"}},
+        # ⚠️ 与第 1 条**逐字节相同** ⇒ sig 重复，必须被丢并记进 `dropped_dup`。
+        {"intent": "重复", "tool": "finish", "args": {"answer": _AZ108_ANS}},
+        # ⚠️ 未注册的工具名 ⇒ `dropped_unknown`（修法是加工具，不是改提示词）。
+        {"intent": "想了没注册", "tool": "browser", "args": {}},
+    ]
+    items.extend(extra)
+    return json.dumps({"candidates": items}, ensure_ascii=False)
+
+
+def _az108_run(tag: str, payload: str):
+    """真 `Core` 跑一遍。⛔ 单轮：第 1 个候选就是能交付的 `finish`。"""
+    d = _TMP / f"az108_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "sales.csv").write_text(_AZ107_INPUT, encoding="utf-8")
+    s = cfg.settings()
+    s2 = _AZ105_DC.replace(s, paths=_AZ105_DC.replace(s.paths, workspace=ws))
+    core = Core(s2, llm=_AZ105LLM(payload),
+                memory=MemoryStore(d / "m.db"), memory_mode="raw")
+    with contextlib.redirect_stdout(io.StringIO()):
+        out = core.run(_AZ108_GOAL, budget_factor=1)
+    return core, out
+
+
+_AZ108_CORE, _AZ108_OUT = _az108_run("main", _az108_payload())
+#: 夹一条**非 dict**（格式问题）—— 它必须与"未注册工具"分开计，
+#: 因为修法相反：一个改提示词/解析器，一个加工具。
+_AZ108_CORE_S, _AZ108_OUT_S = _az108_run(
+    "shape", _az108_payload("这是一条字符串，不是候选对象"))
+# ⚠️ 断言用的必须是**快照**，不能是 `stats` 里的活引用 ——
+#    自踩（第一版就是这么红的）：下面 ⑥ 会**故意改写** `stats["plan"]` 来验深拷，
+#    而 `_AZ108_P` 只要指向同一个 dict，那一次改写就把自己的断言弄红了。
+#    与纪律 20 同宗：**证据脚本不许写回自己的证据路径**。
+_AZ108_P = json.loads(json.dumps(_AZ108_OUT.stats["plan"], ensure_ascii=False))
+_AZ108_W = dict(_AZ108_OUT.stats["planner"]["width"])
+_AZ108_WS = dict(_AZ108_OUT_S.stats["planner"]["width"])
+
+#: 深拷自检：拿到的 `stats` 不能是内核的活引用。
+#  ⚠️ 理由同 V44 自踩的 `_kfo_absorb`（把配置值当计数求和）：一处被改，
+#     另一处静默跟着变的读数，比没有读数更危险。
+_AZ108_OUT.stats["plan"]["by_tool"]["__probe__"] = 999
+_AZ108_OUT.stats["plan"]["per_round"][0]["tools"]["__probe__"] = 999
+_AZ108_DEEPCOPY_OK = ("__probe__" not in _AZ108_CORE.plan_stats["by_tool"]
+                      and "__probe__" not in _AZ108_CORE.plan_stats["per_round"][0]["tools"])
+
+check(RS, "AZ108 ★★★★候选宽度进 **stats**（不是日志）：给了多少 / 可用多少 /\n"
+          "         进执行器多少，三个数**分列**（V45）\n"
+          "         —— 修之前「每轮候选都是什么 tool」只有日志一个来源，\n"
+          "            于是 V39「候选数 3 ≠ 互不相同的候选 3」和 V45「模型给 3 条、\n"
+          "            执行器拿 1 条（`[:n]` 截断）」这两种病都读不出来。\n"
+          "         判据（六条，缺一即证明不了这条边）：\n"
+          "               ① `rounds == len(per_round)`（恒存在：每轮都记了）；\n"
+          "               ② `Σby_tool == cands_total == Σper_round.n`（三个口径相等）；\n"
+          "               ③ `examined_total − cands_total == truncated_total`（截断恒等式）；\n"
+          "               ④ `by_tool_max_round == 2`：两个 **args 不同** 的 `finish`\n"
+          "                  都被 sig 去重放行 ⇒ 宽度确实可能被同一个 tool 霸占；\n"
+          "               ⑤ `width` 三个丢弃原因**分列**且强守恒\n"
+          "                  （`offered − dup − unknown − shape == examined_total`）；\n"
+          "               ⑥ `stats` 是**深拷**：改它不许改到内核。\n"
+          "         撤回语义：`_note_plan_round` 里把 `ps['rounds'] += 1` 换回 `pass`\n"
+          "                   ⇒ ①②③④ 必红、⑤⑥ 仍绿（这一格正是本条不能只看\n"
+          "                   `width` 的原因：**模型给了几条** 与 **执行器拿到几条**\n"
+          "                   是两条独立的边）。",
+      _AZ108_P["rounds"] == len(_AZ108_P["per_round"]) == 1
+      and sum(_AZ108_P["by_tool"].values()) == _AZ108_P["cands_total"]
+      == sum(r["n"] for r in _AZ108_P["per_round"]) == 3
+      and (_AZ108_P["examined_total"] - _AZ108_P["cands_total"]
+           == _AZ108_P["truncated_total"])
+      and _AZ108_P["by_tool_max_round"] == 2
+      and _AZ108_P["by_tool"] == {"finish": 2, "run_shell": 1}
+      and _AZ108_P["produces_by_round"] == [2]
+      and _AZ108_W == {"offered": 5, "dropped_dup": 1, "dropped_unknown": 1,
+                       "dropped_shape": 0}
+      and (_AZ108_W["offered"] - _AZ108_W["dropped_dup"]
+           - _AZ108_W["dropped_unknown"] - _AZ108_W["dropped_shape"]
+           == _AZ108_P["examined_total"])
+      and _AZ108_WS["dropped_shape"] == 1 and _AZ108_WS["dropped_unknown"] == 1
+      and _AZ108_DEEPCOPY_OK,
+      f"plan={_AZ108_P} ｜ width={_AZ108_W} ｜ shape臂={_AZ108_WS} ｜ "
+      f"深拷={'ok' if _AZ108_DEEPCOPY_OK else '活引用！'}")
+
+
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
       _AL_wm2.reward_guidance(features=None, task_id="x") == ""

@@ -1,0 +1,16 @@
+═══ 臂 noshell ═══
+  退出码=1
+20:33:27 ▶ 任务开始: 工作目录里有 sales.csv（列为 月份,区域,金额）。请计算每个区域的金额合计，按合计从高到低生成一张 markdown 表格，写入工作目录下的 report.md。表格两列为 区域|合计。
+  工作目录: sales.csv 
+  status=done  verdict=FAIL
+  plan   = {"rounds": 2, "cands_total": 3, "by_tool": {"recall": 1, "agent:code_agent": 1, "finish": 1}, "by_tool_max_round": 1, "produces_by_round": [0, 2], "per_round": [{"n": 1, "tools": {"recall": 1}}, {"n": 2, "tools": {"agent:code_agent": 1, "finish": 1}}], "examined_total": 3, "truncated_total": 0}
+  width  = {"offered": 2, "dropped_dup": 0, "dropped_unknown": 0, "dropped_shape": 0}
+═══ 臂 shell ═══
+  退出码=0
+20:34:23 ▶ 任务开始: 工作目录里有 sales.csv（列为 月份,区域,金额）。请计算每个区域的金额合计，按合计从高到低生成一张 markdown 表格，写入工作目录下的 report.md。表格两列为 区域|合计。
+  工作目录: report.md sales.csv 
+  status=stalled  verdict=PASS
+  plan   = {"rounds": 3, "cands_total": 7, "by_tool": {"agent:code_agent": 6, "run_shell": 1}, "by_tool_max_round": 4, "produces_by_round": [4, 1, 1], "per_round": [{"n": 5, "tools": {"agent:code_agent": 4, "run_shell": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}], "examined_total": 7, "truncated_total": 0}
+  width  = {"offered": 8, "dropped_dup": 1, "dropped_unknown": 0, "dropped_shape": 0}
+
+（两臂的原始 stdout 在 /tmp/v45/out_*.txt；内核日志在 ./logs/core.log）

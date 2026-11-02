@@ -1341,6 +1341,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      "        return Outcome(status, answer, reason, len(history), stats,\n"
      '                       str(_dv.get("verdict") or ""))',
      '        return Outcome(status, answer, reason, len(history), stats, "")'),
+    # ── AZ108：候选宽度进 stats（V45 / §111）──────────────────────────────
+    #: 撤的语义：**只撤「这一轮算过」这件事**（`ps["rounds"] += 1` ⇒ `pass`），
+    #:   别的记录（`cands_total` / `by_tool` / `per_round`）一律留着。
+    #: ⇒ 后果**只**落在 ① 上：`rounds=0` 而 `len(per_round)=1`。
+    #: ⭐ 这正是本条要的形状：**"记了几条候选" 与 "记了几轮" 是两条独立的边** ——
+    #:   把整段调用撤掉（`_note_plan_round` 那行）会让 ①②④⑤ 一起红，
+    #:   那时读数只能说"宽度机制不存在"，说不出"轮数这个计数有没有接线"。
+    #:   ⛔ 多处红 = 无（纪律 4）：红得越多，越分不清是哪一格真的坏了。
+    ("AZ108", "mw/core.py",
+     '        ps["rounds"] += 1\n        ps["cands_total"] += len(cands)',
+     '        pass  # 撤回态：不记这一轮\n        ps["cands_total"] += len(cands)'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

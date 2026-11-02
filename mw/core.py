@@ -454,6 +454,46 @@ def answer_deadline(*, wall_s: float, elapsed: float, max_wall_s: float,
 _STALL_ANSWER_MIN_S = 20.0
 
 
+def _plan_zero() -> dict:
+    """候选宽度读数的零值。**整次运行**（与 `planner.calls` 同量级）。
+
+    ⚠️ 第一百三十五轮（§111）：这是一个**读数**，不是判据 ——
+
+    它存在的**唯一**理由：V43 现场"第 1 轮 5 个候选里 3 个是同一个
+    `agent:code_agent`"这句话，当时只有**人看日志**这一个来源。
+    而 §15 的老账写得很清楚：**读数标签不是读数**，日志里的手写数字
+    没法进台账、没法 cross-check、也没法证明"哪一轮"。
+
+    为什么 `by_tool_max_round` 必须单独存在（不能只用 `by_tool`）：
+        `by_tool = {"agent:code_agent": 3}` 说不出这是**一轮 3 个**（宽度被霸占）
+        还是**三轮各 1 个**（每轮都只想到它）。这两种病的修法相反 ——
+        前者是去重/换提示词，后者是"这个工具不该被选中"。
+        ⛔ 合并成一个数就等于把两种修法焊死在一起（纪律 2）。
+
+    为什么 `produces_by_round` 也存在：
+        V42 量到"让位 8/64 窗口、0 次使用"，而真实任务上第 1 轮就有 5 个候选。
+        若真实任务里**交付动作**恒为 0（全是 `run_shell`/`code_agent`），
+        那"让位没弹药"就有了真解释 —— 而且它同时说明
+        「候选数」这个指标本身是错的（V39 栽过一次）。
+    """
+    return {
+        "rounds": 0,              # 真正拿到 `cands` 的规划轮数
+        "cands_total": 0,         # 各轮候选数之和（**截断之后**，进执行器的）
+        "by_tool": {},            # tool -> 次数（跨轮汇总）
+        "by_tool_max_round": 0,   # **同一轮**里同一个 tool 出现的最大次数
+        "produces_by_round": [],  # 每轮有几个是交付动作（finish / produces_answer）
+        "per_round": [],          # [{"n": N, "tools": {tool: n}}]，按轮序
+        # ★ 实现时新增（预注册只写了上面几项）：**截断损失**。
+        # 理由：`cands = plan.steps[:n]` 是一处真实的宽度损耗 ——
+        #   S5 实测"模型给了 3 条，执行器只拿到 1 条"，而旧读数（日志里的
+        #   `候选=1`）把它读成"模型只给了一个"（§15：读数标签不是读数）。
+        #   没有这两个数，`cands_total` 小到底是"模型想得窄"还是"被截了"
+        #   永远分不开 —— 而这两种病一个要改提示词、一个要改 `n`。
+        "examined_total": 0,      # 规划器**交出**的步骤数之和（截断之前）
+        "truncated_total": 0,     # 其中被 `[:n]` 截掉的
+    }
+
+
 def _failover_zero() -> dict:
     """让位读数的零值。**单轮**（与预算同源）。
 
@@ -685,6 +725,49 @@ class Core:
         self.critique_ledger = critique_ledger
 
     # ------------------------------------------------------------------
+    def _note_plan_round(self, cands, plan=None) -> None:
+        """把**这一轮**的候选工具构成记进 `plan_stats`（§111）。
+
+        ⛔ 这是一个**读数**：只读 `cand.tool` 与 `spec.produces_answer`，
+           不改任何行为。判据见 `bench/evidence/v6_s135/PREREG.md` J4
+           （同一份探针改动前后逐字节相同）。
+
+        为什么在**这里**记（`cands` 算完、扣费之前）：
+            `cands` 在这一处之后被三处分叉消费（预演否决 / 闸拦 / 执行），
+            再往后就分不清"模型给的是什么"和"执行器用了什么"了。
+            §15「缺席冒充零」的反面：读数必须在**唯一**的汇聚点上取，
+            否则某个分叉上的 0 会被读成"没有候选"。
+
+        `plan` 是可选的：传进来才能算**截断损失**（`len(plan.steps) - len(cands)`）。
+        ⛔ 不传时 `examined_total` 不增长 —— 那会让"截断 0"与"没算过"混成一个 0。
+           所以调用方**必须**传；`plan=None` 只留给直接驱动 `_note_plan_round`
+           的单元自测，那种场合本来就没有"截断"这件事。
+        """
+        ps = self.plan_stats
+        tools: dict = {}
+        produces = 0
+        for c in cands:
+            tools[c.tool] = tools.get(c.tool, 0) + 1
+            spec = self.tools.get(c.tool)
+            if c.tool == "finish" or (spec is not None and spec.produces_answer):
+                produces += 1
+        ps["rounds"] += 1
+        ps["cands_total"] += len(cands)
+        if plan is not None:
+            _n = len(getattr(plan, "steps", []) or [])
+            ps["examined_total"] += _n
+            ps["truncated_total"] += max(0, _n - len(cands))
+        for t, k in tools.items():
+            ps["by_tool"][t] = ps["by_tool"].get(t, 0) + k
+            # 单轮内同一 tool 的重复次数 —— "宽度被霸占"的**唯一**直接读数。
+            # ⚠️ 与 `by_tool` 分开的理由见 `_plan_zero()` 的 docstring：
+            #    "一轮 3 个" 与 "三轮各 1 个" 的修法相反。
+            if k > ps["by_tool_max_round"]:
+                ps["by_tool_max_round"] = k
+        ps["produces_by_round"].append(produces)
+        ps["per_round"].append({"n": len(cands), "tools": dict(tools)})
+
+    # ------------------------------------------------------------------
     def _prime_counters(self, goal: str = "") -> None:
         """把**单轮**读数量零 —— `run()` 与"直接调 `_finish`"共用同一处。
 
@@ -738,6 +821,13 @@ class Core:
         # ★ 第一百三十二轮（§108）：候选让位读数。与预算同源 ⇒ **单轮**清零。
         #   ⚠️ 零值也进 stats（同 §66 的理由）：`used=0` 与"机制没装"必须分得开。
         self.failover_stats = _failover_zero()
+        # ★ 第一百三十五轮（§111）：候选宽度的真实分布。
+        # ⚠️ 与上面几项**不同**：这是**整次运行**的累计，不是单轮 ——
+        #   放到这里只因为它属于"一次运行的初始化"。`run()` 只在开头调
+        #   `_prime_counters`，轮内不再调，所以它事实上不会被中途清零。
+        # ⛔ 谁要是在轮内调一次 `_prime_counters`，这一块就只剩最后一轮 ——
+        #    那正是 `per_round` 想回答的问题被静默扔掉。
+        self.plan_stats: dict = _plan_zero()
 
     def run(self, goal: str, *, budget_factor: float = 1.0, tag: str | None = None,
             family: str | None = None, task_id: str | None = None,
@@ -988,6 +1078,10 @@ class Core:
                     else:
                         self.external_stats["skipped_no_budget"] = (
                             self.external_stats.get("skipped_no_budget", 0) + 1)
+                # ★ §111：这一轮**真的**能进执行器的候选长什么样 —— 落进 stats。
+                # ⛔ 位置选在 `spend_candidate` **之前**：那之后取到的是"扣过费"的
+                #    候选，而这里问的是"模型给了什么"，与预算无关。
+                self._note_plan_round(cands, plan)
                 self.ledger.spend_candidate(len(cands))
                 self.log(f"  [{it}] 通道={'深' if complex_task else '快'} 候选={len(cands)}")
                 # 通量：推理交了 N 个想法出去（下游是否真的做，看 `reason>act` 的消费）
@@ -2051,6 +2145,22 @@ class Core:
                          if self.critique_ledger else {}),
             "worldmodel": self.wm.stats(),
             "planner": self.planner.stats(),
+            # ★ 第一百三十五轮（§111）：候选宽度。**零值也在**（`rounds=0` 与
+            # "没接线"必须分得开）。
+            # ⚠️ 必须**深拷**：`per_round` 是列表、`by_tool` 是字典 ——
+            #    浅拷会把内核的活引用交给调用方，下一个用例写进去就串了。
+            #    （V44 自己踩过同形的坑：`_kfo_absorb` 把配置值当计数求和。）
+            "plan": {
+                "rounds": self.plan_stats["rounds"],
+                "cands_total": self.plan_stats["cands_total"],
+                "by_tool": dict(self.plan_stats["by_tool"]),
+                "by_tool_max_round": self.plan_stats["by_tool_max_round"],
+                "produces_by_round": list(self.plan_stats["produces_by_round"]),
+                "per_round": [{"n": r["n"], "tools": dict(r["tools"])}
+                              for r in self.plan_stats["per_round"]],
+                "examined_total": self.plan_stats["examined_total"],
+                "truncated_total": self.plan_stats["truncated_total"],
+            },
             # ★ 第一百三十二轮（§108）：候选让位。**五项零值也在** ——
             # `used=0` 与"开关没装"是两件必须分得开的事（§66 同因）。
             # ⚠️ `no_more` 是"条件成立但没弹药"：V41 量到的 8/64 窗口全是这一形态，

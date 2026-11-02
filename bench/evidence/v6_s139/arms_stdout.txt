@@ -1,0 +1,62 @@
+  old_no: desc=old applies=False
+  old_yes: desc=old applies=True
+  new_no: desc=new applies=False
+  new_yes: desc=new applies=True
+═══ 臂 a（配置=agents_old_no.json  题面=GOAL_UNFIT）═══
+  退出码=0  耗时=80s
+  工作目录: report.md sales.csv 
+  status=stalled  verdict=PASS  wall=79.7  llm_calls=6/48
+  plan.rounds=3 cands_total=7 by_tool_max_round=4 distinct_max=2 dropped_na=0
+  by_tool   = {"agent:code_agent": 6, "run_shell": 1}
+  per_round = [{"n": 5, "tools": {"agent:code_agent": 4, "run_shell": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}]
+  produces  = [4, 1, 1]
+  dropped_na_by_tool = {}
+  failover  = {"used": 1, "rescued_answer": 0, "rescued_step": 1}
+  ext       = {"calls": 1, "ok": 0, "err": 1, "skipped_no_budget": 0, "skipped_not_applicable": 0}
+═══ 臂 b（配置=agents_old_yes.json  题面=GOAL_UNFIT）═══
+  退出码=0  耗时=145s
+  工作目录: report.md sales.csv 
+  status=not_applicable  verdict=PASS  wall=144.68  llm_calls=11/48
+  plan.rounds=6 cands_total=5 by_tool_max_round=2 distinct_max=2 dropped_na=9
+  by_tool   = {"run_shell": 4, "finish": 1}
+  per_round = [{"n": 1, "tools": {"run_shell": 1}}, {"n": 2, "tools": {"run_shell": 2}}, {"n": 0, "tools": {}}, {"n": 2, "tools": {"run_shell": 1, "finish": 1}}, {"n": 0, "tools": {}}, {"n": 0, "tools": {}}]
+  produces  = [0, 0, 0, 1, 0, 0]
+  dropped_na_by_tool = {"agent:code_agent": 9}
+  failover  = {"used": 0, "rescued_answer": 0, "rescued_step": 0}
+  ext       = {"calls": 0, "ok": 0, "err": 0, "skipped_no_budget": 0, "skipped_not_applicable": 0}
+═══ 臂 c（配置=agents_new_yes.json  题面=GOAL_UNFIT）═══
+  退出码=0  耗时=44s
+  工作目录: sales.csv 
+  status=done  verdict=FAIL  wall=44.07  llm_calls=3/48
+  plan.rounds=1 cands_total=2 by_tool_max_round=1 distinct_max=2 dropped_na=1
+  by_tool   = {"finish": 1, "run_shell": 1}
+  per_round = [{"n": 2, "tools": {"finish": 1, "run_shell": 1}}]
+  produces  = [1]
+  dropped_na_by_tool = {"agent:code_agent": 1}
+  failover  = {"used": 0, "rescued_answer": 0, "rescued_step": 0}
+  ext       = {"calls": 0, "ok": 0, "err": 0, "skipped_no_budget": 0, "skipped_not_applicable": 0}
+═══ 臂 d（配置=agents_new_no.json  题面=GOAL_UNFIT）═══
+  退出码=0  耗时=40s
+  工作目录: sales.csv 
+  status=done  verdict=FAIL  wall=39.95  llm_calls=4/48
+  plan.rounds=1 cands_total=3 by_tool_max_round=1 distinct_max=3 dropped_na=0
+  by_tool   = {"agent:code_agent": 1, "finish": 1, "run_shell": 1}
+  per_round = [{"n": 3, "tools": {"agent:code_agent": 1, "finish": 1, "run_shell": 1}}]
+  produces  = [2]
+  dropped_na_by_tool = {}
+  failover  = {"used": 1, "rescued_answer": 1, "rescued_step": 0}
+  ext       = {"calls": 1, "ok": 0, "err": 1, "skipped_no_budget": 0, "skipped_not_applicable": 0}
+═══ 臂 e（配置=agents_new_yes.json  题面=GOAL_FIT）═══
+  退出码=0  耗时=68s
+  工作目录: 
+  status=done  verdict=ANSWER  wall=68.13  llm_calls=3/48
+  plan.rounds=1 cands_total=2 by_tool_max_round=1 distinct_max=2 dropped_na=0
+  by_tool   = {"agent:code_agent": 1, "finish": 1}
+  per_round = [{"n": 2, "tools": {"agent:code_agent": 1, "finish": 1}}]
+  produces  = [2]
+  dropped_na_by_tool = {}
+  failover  = {"used": 0, "rescued_answer": 0, "rescued_step": 0}
+  ext       = {"calls": 1, "ok": 1, "err": 0, "skipped_no_budget": 0, "skipped_not_applicable": 0}
+
+（五臂的原始 stdout 在 /tmp/v49/out_*.txt）
+（已恢复原 agents.json）

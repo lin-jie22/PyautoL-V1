@@ -48,6 +48,9 @@ BAK = Path("/tmp/v1_withdraw_bak")
 #: 变异登记表：{相对路径: {"mutated": 写进去那份内容的 sha}}。
 #: ⛔ 没有它就回到了"有备份就无条件还原"的老行为 —— 那个行为本轮真的删掉过工作。
 MANIFEST = BAK / "MANIFEST.json"
+#: 判"子进程崩了没有"的**唯一**形状。⛔ 不许退回裸 `"Traceback"`：
+#: 断言自己的说明文字里出现一次，就会让每一条撤回态都报"崩溃=有"（§115 实测）。
+_TRACEBACK = "Traceback (most recent call last)"
 
 #: (断言号, 文件, 原文, 变异成)
 #: `原文` 为空串 ⇒ **追加**到文件末尾。
@@ -1389,6 +1392,19 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ110", "mw/core.py",
      '                cands, _na_drop = self._drop_not_applicable(cands, goal)',
      '                cands, _na_drop = list(cands), []  # 撤回态：不做准入判定'),
+    # ── AZ112：改的是提示词，不是内核（V49 / §115）─────────────────────────
+    #  ⛔ 这条锚在**产品配置**上，不是测试里的常量：第一版把新文案硬编码进契约，
+    #     于是 ⑤ 检的是"两个常量一致"，而撤回态**撤不动常量** ⇒ 恒真断言
+    #     （纪律 4 第一种）。改成从 `agents.json` 读之后，撤掉那句负向声明
+    #     ⇒ 只 ⑤ 红、①②③④⑥ 仍绿（实测 `红=['AZ112'] 多红=无`、
+    #     汇总行 `('616','1')`、崩溃=无）。
+    #  ⚠️ 撤的是**尾句那 19 个字**，不是整行 description —— 实测过：
+    #     整行换回旧文案会让「两份配置是否不同」也跟着变假（①③ 一起红，
+    #     `红=3` 而目标只有一条 ⇒ "红得越多越分不清"）。
+    #     只删尾句 ⇒ 两份配置仍然不同、只有 ⑤ 的 marker 缺 ⇒ **单红**。
+    ("AZ112", "agents.json",
+     '生成 3 份实现、自写 assert、真跑后返回通过最多的一份。⛔ 题面没指定函数名时它一定失败，不要选它。',
+     '生成 3 份实现、自写 assert、真跑后返回通过最多的一份。'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1725,7 +1741,11 @@ def _run_suite() -> tuple[bool, set[str], str]:
     #:    只认"❌ 紧跟标签"的形状 —— 被撤掉的子进程自己打印的 `❌ 长度不等…`
     #:    不带标签，不会被误算进红集。
     red = set(re.findall(r"❌\s*([A-Z]{1,2}\d+)\b", out))
-    clean = summary_ok and "Traceback" not in out
+    #: ⚠️ 第四十九轮（§115）实测的假阳性：裸子串 `"Traceback"` 会被**断言自己的
+    #:    说明文字**命中 —— AZ111 的 detail 里写着「无 Traceback」，于是每一次
+    #:    撤回态都报 `Traceback=有`。**检测器的判据不许被它要读的输出里的一句
+    #:    说明命中**。改判完整首行：真崩溃一定带这一行，说明文字几乎不可能带。
+    clean = summary_ok and _TRACEBACK not in out
     return (p.returncode == 0 and failed == 0), red, out
 
 
@@ -1787,12 +1807,12 @@ def main(argv: list[str] | None = None) -> int:
             want_red = {tag} | set(COUPLED.get(tag, ()))
             extra = red - want_red
             _ok_s, _show_s = _summary(out)
-            clean = "Traceback" not in out and _ok_s
+            clean = _TRACEBACK not in out and _ok_s
             good = hit and not extra and clean
             ok_all = ok_all and good
             detail = (f"红={sorted(red) or '无'} 目标={'✔' if hit else '✘'}"
                       f" 多红={sorted(extra) or '无'} 汇总行={_show_s}"
-                      f" Traceback={'有' if 'Traceback' in out else '无'}")
+                      f" 崩溃={'有' if _TRACEBACK in out else '无'}")
             rows.append((tag, "✅" if good else "❌", detail))
         finally:
             src_bak = BAK / rel

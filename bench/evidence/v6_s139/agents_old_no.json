@@ -1,0 +1,14 @@
+{
+  "agents": {
+    "code_agent": {
+      "type": "shell",
+      "description": "会执行的编码 agent：同题多角度生成 3 份实现，自写 assert 用例，真跑后选通过最多的一份，返回可直接交付的代码。",
+      "command": [
+        "python3",
+        "external/code_agent.py"
+      ],
+      "timeout_s": 300,
+      "produces_answer": true
+    }
+  }
+}

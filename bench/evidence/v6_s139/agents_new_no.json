@@ -1,0 +1,14 @@
+{
+  "agents": {
+    "code_agent": {
+      "type": "shell",
+      "description": "只做「题面里明确指定了函数名」的编程题（如『函数名必须是 foo』）：生成 3 份实现、自写 assert、真跑后返回通过最多的一份。⛔ 题面没指定函数名时它一定失败，不要选它。",
+      "command": [
+        "python3",
+        "external/code_agent.py"
+      ],
+      "timeout_s": 300,
+      "produces_answer": true
+    }
+  }
+}

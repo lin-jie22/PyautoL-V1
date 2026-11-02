@@ -50,7 +50,8 @@ from mw.measure import (Report, check, ci95, noise_floor,         # noqa: E402
 from mw.memory import MemoryStore, fingerprint, fts_query         # noqa: E402
 from mw.planner import (Planner, Step, action_signature,              # noqa: E402
                         looks_complex)
-from mw.tools import (ToolRegistry, ToolSpec, external_agent_names,  # noqa: E402
+from mw.tools import (ToolRegistry, ToolSpec, catalog_sha,           # noqa: E402
+                      external_agent_names,
                       register_core_tools, register_external_agents,
                       spec_applies)
 from mw import tools as tools_module                            # noqa: E402
@@ -11163,6 +11164,120 @@ check(RS, "AZ111 ★★★★宽度 ≥ 2 ≠ 手段 ≥ 2：`n=2` 的两轮形�
       f" ｜ ④⑤守恒={'ok' if not any(_AZ111_CONS) else _AZ111_CONS}"
       f" ｜ ⑥深拷={'ok' if _AZ111_DEEP else '活引用！'}"
       f" ｜ ⑦三键在={'ok' if _AZ111_KEYS else '缺！'}")
+
+# ── AZ112 的取证装置（V49）：改的是**提示词**，不是内核（§115）───────────
+#  ⛔ 这一条**不**测"模型会不会少提它" —— `StubLLM` 不看提示词。
+#     它测的是"改的那一处确实是那一行、且只动该动的口径"。
+#  ⚠️ 为什么值得单独钉：V47 之后 `dropped_na=9` 说明「内核知道、模型不知道」。
+#     这一轮把同一信息写进 `description`（→ `catalog_line()` → planner 的
+#     「可用工具」块）。改的是提示词，所以必须证明：
+#       ① 只动了那一行（否则两臂说不清是谁的作用）；
+#       ② 96 格口径（`--no-external`）**没**跟着动（否则不许拿 96 格基线继续用）；
+#       ③ 真实口径（`--external`）**必须**跟着动（否则这个字段根本没进提示词）。
+_AZ112_OLD = ("会执行的编码 agent：同题多角度生成 3 份实现，自写 assert 用例，"
+              "真跑后选通过最多的一份，返回可直接交付的代码。")
+#: ⭐ **从仓库里那份真实配置读**，不在测试里另抄一份文案。
+#: 为什么必须这样：第一版把新描述硬编码成常量，于是 ⑤ 检的是"两个常量一致"
+#: —— 撤回态**撤不动常量** ⇒ 那是一条恒真断言（纪律 4 第一种）。
+#: 从 `agents.json` 读之后，撤掉产品里那句负向声明 ⇒ ⑤ 立刻红。
+_AZ112_REAL = json.loads((V1 / "agents.json").read_text(encoding="utf-8"))[
+    "agents"]["code_agent"]
+_AZ112_NEW = _AZ112_REAL.get("description", "")
+_AZ112_AP_JSON = _AZ112_REAL.get("applies_regex", "")
+#: 改前实测（PREREG §3，**改描述之前**跑的）—— 两个口径各一个定标值。
+_AZ112_SHA_EXT_BEFORE = "2cc3b0225ee03223"
+_AZ112_SHA_NOEXT_BEFORE = "8decb60895d4a972"
+_AZ112_DIR = Path(tempfile.mkdtemp(prefix="az112_"))
+
+
+def _az112_cfg(tag: str, desc: str, applies: bool) -> Path:
+    a = {"type": "shell", "description": desc,
+         "command": ["python3", "external/code_agent.py"],
+         "timeout_s": 300, "produces_answer": True}
+    if applies:
+        a["applies_regex"] = _AZ112_AP_JSON
+    p = _AZ112_DIR / f"agents_{tag}.json"
+    p.write_text(json.dumps({"agents": {"code_agent": a}}, ensure_ascii=False),
+                 encoding="utf-8")
+    return p
+
+
+def _az112_reg(p: Path) -> ToolRegistry:
+    r = ToolRegistry()
+    register_core_tools(r, memory=None, workspace=None, allow_note=True)
+    register_external_agents(r, p)
+    return r
+
+
+_AZ112 = {t: _az112_cfg(t, d, ap) for t, d, ap in (
+    ("old_no", _AZ112_OLD, False), ("old_yes", _AZ112_OLD, True),
+    ("new_no", _AZ112_NEW, False), ("new_yes", _AZ112_NEW, True))}
+_AZ112_LO = _az112_reg(_AZ112["old_yes"]).catalog().split("\n")
+_AZ112_LN = _az112_reg(_AZ112["new_yes"]).catalog().split("\n")
+_AZ112_DIFF = [i for i, (a, b) in enumerate(zip(_AZ112_LO, _AZ112_LN)) if a != b]
+#: ⚠️ **不许**写 `_AZ112_LO[_AZ112_DIFF[0]]`：diff 为空时那是 IndexError，
+#:    而"两行没差别"恰恰是本条要抓的病之一 ⇒ 检测器会在它要抓的病上自己崩掉
+#:    （V48 同一坑踩了两次，纪律 4 第三种「红=无」）。
+_AZ112_HIT_OLD = _AZ112_LO[_AZ112_DIFF[0]] if _AZ112_DIFF else ""
+_AZ112_HIT_NEW = _AZ112_LN[_AZ112_DIFF[0]] if _AZ112_DIFF else ""
+_AZ112_SHA_NOEXT = {t: catalog_sha(wire_external=False, agents_path=p)
+                    for t, p in _AZ112.items()}
+_AZ112_SHA_EXT = {t: catalog_sha(wire_external=True, agents_path=p)
+                  for t, p in _AZ112.items()}
+
+check(RS, "AZ112 ① 改 description 只动目录里的那一行（差 1 行，且差的是 agent:code_agent）",
+      len(_AZ112_LO) == len(_AZ112_LN) == 4 and len(_AZ112_DIFF) == 1
+      and _AZ112_HIT_OLD.startswith("- agent:code_agent")
+      and _AZ112_HIT_NEW.startswith("- agent:code_agent"),
+      f"行数={len(_AZ112_LO)}/{len(_AZ112_LN)} 差异行={len(_AZ112_DIFF)}"
+      f" 命中={_AZ112_HIT_NEW[:28]!r}")
+
+check(RS, "AZ112 ② 96 格口径（--no-external）**不**随描述变（四份同 sha 且等于改前）",
+      len(set(_AZ112_SHA_NOEXT.values())) == 1
+      and _AZ112_SHA_NOEXT["new_yes"] == _AZ112_SHA_NOEXT_BEFORE,
+      f"{_AZ112_SHA_NOEXT['new_yes'][:16]} 四份去重={len(set(_AZ112_SHA_NOEXT.values()))}")
+
+check(RS, "AZ112 ③ 真实口径（--external）**必须**随描述变，且与 applies_regex 无关",
+      _AZ112_SHA_EXT["old_no"] == _AZ112_SHA_EXT["old_yes"] == _AZ112_SHA_EXT_BEFORE
+      and _AZ112_SHA_EXT["new_no"] == _AZ112_SHA_EXT["new_yes"]
+      and _AZ112_SHA_EXT["new_no"] != _AZ112_SHA_EXT_BEFORE,
+      f"old={_AZ112_SHA_EXT['old_yes'][:16]} new={_AZ112_SHA_EXT['new_yes'][:16]}")
+
+check(RS, "AZ112 ④ 描述必须单行且 ≤200 字符（catalog_line 是一行一条）",
+      "\n" not in _AZ112_NEW and "\n" not in _AZ112_OLD
+      and 0 < len(_AZ112_NEW) <= 200 and len(_AZ112_OLD) <= 200,
+      f"new={len(_AZ112_NEW)} old={len(_AZ112_OLD)} 字符")
+
+#: ⑤ 是这一条的**防漂核心**，也是**唯一能撤回**的那条（锚在 `agents.json`）：
+#: `description` 与 `applies_regex` 必须锚在同一个词上。只改一处 ⇒
+#: 模型看到的是"A"、内核判的是"B" ⇒ 又回到 V47 的"内核知道、模型不知道"。
+#: ⛔ 撤回语义：把 `agents.json` 那句「⛔ 题面没指定函数名时它一定失败，不要选它。」
+#:    删掉（回到中性广告语）⇒ 本行红、其余六行仍绿。
+check(RS, "AZ112 ⑤ 描述与 applies_regex 同锚「函数名」，且新描述含负向声明",
+      "函数名" in _AZ112_NEW and "函数名" in _AZ112_AP_JSON
+      and "不要选" in _AZ112_NEW and "不要选" not in _AZ112_OLD,
+      f"desc 锚={'ok' if '函数名' in _AZ112_NEW else '缺'}"
+      f" ap 锚={'ok' if '函数名' in _AZ112_AP_JSON else '缺'}"
+      f" 负向={'ok' if '不要选' in _AZ112_NEW else '缺'}")
+
+#: ⑥ 描述只该影响**提示词**，不许影响**准入判定**（V47 的判据与它正交）。
+#: ⚠️ 必须分两组：`applies=False` 的配置走"没声明 = 恒适用"那一档（三态语义），
+#:    不适配题面也返回 True —— 第一版探针把四份当同一种语义，红了一次。
+_AZ112_G = "工作目录里有 sales.csv。请算每个区域的金额合计，写入 report.md。"
+_AZ112_F = "写一个函数解析 '1h30m'，函数名必须是 parse_duration。"
+_AZ112_GRANTED = [spec_applies(_az112_reg(_AZ112[t]).get("agent:code_agent"), _AZ112_G)
+                  for t in ("old_yes", "new_yes")]
+_AZ112_NEVER = [spec_applies(_az112_reg(_AZ112[t]).get("agent:code_agent"), _AZ112_G)
+                for t in ("old_no", "new_no")]
+_AZ112_FIT = [spec_applies(_az112_reg(_AZ112[t]).get("agent:code_agent"), _AZ112_F)
+              for t in ("old_no", "old_yes", "new_no", "new_yes")]
+check(RS, "AZ112 ⑥ 描述不动准入判定（有判据两份同判、无判据两份恒适用）",
+      _AZ112_GRANTED == [False, False] and _AZ112_NEVER == [True, True]
+      and _AZ112_FIT == [True] * 4,
+      f"有判据={_AZ112_GRANTED} 无判据={_AZ112_NEVER} fit={_AZ112_FIT}")
+
+print(f"  ⛔ AZ112 只证明「改的是提示词、且只动了该动的口径」；"
+      f"「模型会不会少提它」由真实五臂回答（v6_s139/p2_real.txt）")
 
 print()
 print("=" * 74)

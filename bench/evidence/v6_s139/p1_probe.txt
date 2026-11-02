@@ -1,0 +1,15 @@
+V49 离线探针 —— 改 description 动了什么、没动什么
+==========================================================================
+S1 目录恰好差 1 行、且差的那行是 agent:code_agent  ✅  行数=4/4 差异=1
+S2 --no-external 口径四份同一个 sha、且等于改前  8decb60895d4a972  ✅  四份去重=1
+S3 --external 口径 old=2cc3b0225ee03223 new=29091404966ca8e1  ✅  （old 必等于改前的 2cc3b0225ee03223，new 必不同）
+S4 描述单行且 ≤200 字符  ✅  new=89 字符 old=63 字符
+S5 新描述与 applies_regex 同锚「函数名」，且新增负向声明  ✅
+S6 仓库 agents.json 与探针常量逐字相同  ✅
+S7 有判据的两份：不适配=False/适配=True；无判据的两份：恒适用=True  ✅
+   有判据 unfit=[False, False]   无判据 unfit=[True, True]   全部 fit=[True, True, True, True]
+
+结论：✅ 七景全绿
+
+⛔ 本探针**不**回答「模型会不会少提它」—— `StubLLM` 不看提示词。
+   那个问题只能由真实两臂回答（见 PREREG §4/§5 J1~J4、J8）。

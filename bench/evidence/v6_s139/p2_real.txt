@@ -1,0 +1,91 @@
+V49 五臂 —— 唯一变量：`agents.json` 里 `code_agent.description` 的**方向**
+同一份内核 / qwen2.5:7b / T=0 / max_tokens=1024 / 宽=3 / cand_failover=1 /
+--allow-shell / --budget 2 / state_chars=2400；两提不同题面（E 臂是反向闸）
+
+命中矩阵（PREREG §5.1，押注写在读数之前）：
+  J1 dropped_na 9→≤2        ✅ 实测 9→1
+  J2 rounds 6→≤4            ✅ 实测 6→1
+  J3 D.by_tool[code_agent] < A  ✅ 实测 1 < 6
+  J4 C 无 code_agent、D 有   ✅ 实测 C={finish,run_shell} D=1 次
+  J5 --no-external sha 不变  ✅ 8decb60895d4a972（探针 S2）
+  J6 --external sha 必变     ✅ 2cc3b0225ee03223 → 29091404966ca8e1（探针 S3）
+  J7 verdict ∈ {PASS,PARTIAL} ❌ 实测 C/D 都是 **FAIL**（见下）
+  J8 反向闸：E 臂仍会用它     ✅ code_agent×1、ext 成=1 败=0 采用=1 763 字
+
+读数                              A 旧/无判据/不适配           B 旧/有判据/不适配           C 新/有判据/不适配           D 新/无判据/不适配           E 新/有判据/适配            
+verdict                         PASS                  PASS                  FAIL                  FAIL                  ANSWER                
+plan.rounds                     3                     6                     1                     1                     1                     
+plan.cands_total                7                     5                     2                     3                     2                     
+plan.by_tool_max_round          4                     2                     1                     1                     1                     
+plan.distinct_tools_max         2                     2                     2                     3                     2                     
+plan.dropped_not_applicable     0                     9                     1                     0                     0                     
+plan.by_tool                    {"agent:code_agent": 6, "run_shell": 1}{"run_shell": 4, "finish": 1}{"finish": 1, "run_shell": 1}{"agent:code_agent": 1, "finish": 1, "run_shell": 1}{"agent:code_agent": 1, "finish": 1}
+plan.produces_by_round          [4, 1, 1]             [0, 0, 0, 1, 0, 0]    [1]                   [2]                   [2]                   
+plan.dropped_na_by_tool         {}                    {"agent:code_agent": 9}{"agent:code_agent": 1}{}                    {}                    
+failover.used                   1                     0                     0                     1                     0                     
+failover.rescued_answer         0                     0                     0                     1                     0                     
+failover.rescued_step           1                     0                     0                     0                     0                     
+external.calls                  1                     0                     0                     1                     1                     
+external.ok                     0                     0                     0                     0                     1                     
+external.err                    1                     0                     0                     1                     0                     
+budget.wall_s                   79.7                  144.68                44.07                 39.95                 68.13                 
+budget.llm_calls                6/48                  11/48                 3/48                  4/48                  3/48                  
+
+plan.per_round（逐臂）：
+  A 旧/无判据              "[{'n': 5, 'tools': {'agent:code_agent': 4, 'run_shell': 1}}, {'n': 1, 'tools': {'agent:code_agent': 1}}, {'n': 1, 'tools': {'agent:code_agent': 1}}]"
+  B 旧/有判据              "[{'n': 1, 'tools': {'run_shell': 1}}, {'n': 2, 'tools': {'run_shell': 2}}, {'n': 0, 'tools': {}}, {'n': 2, 'tools': {'run_shell': 1, 'finish': 1}}, {'n': 0, 'tools': {}}, {'n': 0, 'tools': {}}]"
+  C 新/有判据              "[{'n': 2, 'tools': {'finish': 1, 'run_shell': 1}}]"
+  D 新/无判据              "[{'n': 3, 'tools': {'agent:code_agent': 1, 'finish': 1, 'run_shell': 1}}]"
+  E 新/有判据              "[{'n': 2, 'tools': {'agent:code_agent': 1, 'finish': 1}}]"
+
+产物：
+  A 旧/无判据              report.md 44B sha256=2054621802a8ce5c32bae00a45df33ad313e7e5c1ecfa121e1a849f5ffb10fc4
+  B 旧/有判据              report.md 44B sha256=2054621802a8ce5c32bae00a45df33ad313e7e5c1ecfa121e1a849f5ffb10fc4
+  C 新/有判据              无 report.md
+  D 新/无判据              无 report.md
+  E 新/有判据              无 report.md
+
+⭐ A 与 B 的 report.md **sha256 相同**（2054621802a8ce5c…）——
+   A 多跑 3 轮、B 多跑 6 轮，产物一个字节不差 ⇒ T=0 确定性重放的又一次实证。
+
+==========================================================================
+判决（三句话）
+==========================================================================
+
+① **改描述确实让模型不再想到它，而且效果是量级上的**：
+   B→C：dropped_na 9→1、rounds 6→1、llm_calls 11→3、wall 144.68→44.07s（快 3.3 倍）。
+   A→D：by_tool 里 code_agent 6→1（没有准入判据时也降了 5/6）。
+   ⇒ 提示词**单独**就够（J3），不是非靠内核拦（J4 也中：C 里它彻底不出现）。
+
+② **但代价立刻显形，而且比预想的严重：两个新描述臂的 verdict 都是 FAIL。**
+   C 臂轨迹（out_c.txt）：
+       ⊘ 丢弃 1 个结构上不适用的候选：agent:code_agent×1
+       [1] 候选=2 种类=2
+           ↳ finish ok=True 直接生成 Markdown 表格
+       ✅ 收尾: | 区域 | 合计 | / | 区域1 | 50000 | / | 区域2 | 45000 | / | 区域3 | 40000 |
+   ⇒ 模型第 1 轮就 finish，**编了一张假表**（区域1/2/3 这种占位名），
+     连 sales.csv 都没读（ext.calls=0，run_shell 在候选里但 finish 先成功 ⇒ break）。
+
+   D 臂更说明问题：它提了 3 个候选（code_agent / finish / run_shell），
+   code_agent 失败后**让位跳到了候选 2 的 finish**，而候选 3 的 run_shell 没轮到
+   —— 这就是 §112 那条『让位只挑交付动作』的第二个实例。
+
+③ **所以 V43~V48 的 PASS 是「探索的副产品」，不是「理解的结果」。**
+   旧描述下模型提 4~6 次 code_agent（全失败）⇒ 被迫转 3~6 轮 ⇒
+   期间 run_shell 把真数据跑出来了（A 臂 produces_by_round=[4,1,1]）⇒ 最后 finish 时手上有数。
+   新描述把这个「绕圈」拆掉了 ⇒ 也就把「顺带把活干了」一起拆掉了。
+   ⛔ 这不是「新描述更差」，而是**旧读数的 PASS 从来不代表模型想明白了**
+      （V48 已证：那 44 字节里还有一行垃圾 `区域 0`）。
+      两者都是「东西在、但不对」，只是失败形态从『格式脏』换成了『根本没有数』。
+
+④ 反向闸（J8）押中，且是本轮唯一的正面读数：
+   E 臂（适配题面）`agent:code_agent 调=1 成=1 败=0 采用=1 763字 份=2→2 用例=5`，
+   verdict=ANSWER、5 项判据全过（非空/函数名 parse_duration/语言标签/可编译/结构检查）。
+   ⇒ **这是 V43 之后第一次在真实任务里见到 `external.ok=1`。**
+   新描述没有废掉能力，反而让它在该用的时候**被准确调用**（旧描述下它 6 次全败）。
+
+⚠️ 不许说的三句话：
+   ⛔ 「改描述是性能优化」—— 44s vs 145s 是真的，但它买到的是**更早交付一个错的答案**。
+   ⛔ 「内核变强了」—— 这一轮内核零改动（只改了 `agents.json` 一行文案）。
+   ⛔ 「新描述更好/更差」—— 它把失败形态从「格式脏」换成「没数据」，
+      在 verdict 这一层两者都是 FAIL/PARTIAL 级别，**没有买到一格正确性**。

@@ -1,0 +1,39 @@
+V47 真实两臂 —— 唯一变量：agents.json 里 code_agent **有没有** applies_regex
+同一份内核 / 同题面（同 V45/V46）/ qwen2.5:7b / T=0 / max_tokens=1024 /
+宽=3 / cand_failover=1 / --allow-shell / --budget 2 / state_chars=2400
+
+读数                              off（无 applies_regex）        on（有）
+status                          stalled                     not_applicable
+verdict                         PASS                        PASS
+plan.rounds                     3                           6
+plan.cands_total                7                           5
+plan.by_tool_max_round          4                           2
+plan.dropped_not_applicable     0                           9
+plan.dropped_na_by_tool         {}                          {"agent:code_agent": 9}
+plan.by_tool                    {"agent:code_agent": 6, "run_shell": 1}{"run_shell": 4, "finish": 1}
+plan.per_round                  [{"n": 5, "tools": {"agent:code_agent": 4, "run_shell": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}][{"n": 1, "tools": {"run_shell": 1}}, {"n": 2, "tools": {"run_shell": 2}}, {"n": 0, "tools": {}}, {"n": 2, "tools": {"run_shell": 1, "finish": 1}}, {"n": 0, "tools": {}}, {"n": 0, "tools": {}}]
+plan.produces_by_round          [4, 1, 1]                   [0, 0, 0, 1, 0, 0]
+failover.used                   1                           0
+failover.rescued_answer         0                           0
+failover.rescued_step           1                           0
+external.calls                  1                           0
+external.err                    1                           0
+external.skipped_not_applicable 0                           0
+wall_s                          61.95                       151.46
+report.md 字节                    44                          44
+
+产物：两臂 report.md 都是 44 字节，sha256 逐字节相同
+  2054621802a8ce5c32bae00a45df33ad313e7e5c1ecfa121e1a849f5ffb10fc4
+  内容 = 华北 2700 / 华南 2000 / 华东 700 /『区域 0』（垃圾行，与 V43~V46 逐字相同）
+
+⭐ 判决：
+  J1 by_tool_max_round 4→2（降了，没到 1：第 2、4 轮各有 2 个 **都是 run_shell**，args 不同）
+  J2 丢弃 9 个，by_tool 里**没有** agent:code_agent（只丢它，没误杀）
+  J3 off 臂 dropped=0 ⇒ 开关不泄漏
+  J4 两臂 verdict 都 PASS、产物逐字节相同 ⇒ 删宽度没换来退化
+  J5 run_shell 被执行 4 次、全 ok=True ⇒ 唯一的真能力没被吃掉
+
+⭐ 代价（如实登记）：off 62s / on 152s ⇒ **慢 2.4 倍**。
+  省掉的是 off 臂那 1 次 40s 的必败外部调用；
+  付出的是 3 次额外规划（模型每轮都还会再提一次 code_agent，被丢掉但**规划费已付**）。
+  ⇒ 准入过滤解决的是『占宽度』，**没解决**『模型还在想它』（dropped_na=9 就是 9 次白付）。

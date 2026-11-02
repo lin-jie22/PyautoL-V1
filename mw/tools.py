@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shlex
 import subprocess
 import urllib.request
@@ -37,6 +38,19 @@ class ToolSpec:
     #: 第二十三轮（路线①）：外部能力要把"答案"交回来，而不是交一句"我做了"。
     #: ⚠️ 它只是**改变了交付的来源**，没有改变判据：这样的输出照样过 `_gate_finish`。
     produces_answer: bool = False
+    #: ★ 第一百三十七轮（§113）：**适用性判据**。`None` = 恒适用（旧行为）。
+    #:
+    #: 为什么它必须存在（V45 的实测）：`agent:code_agent` 的契约是
+    #: 「从题面里抽出『函数名必须是 X』再写实现」。真实任务（算 CSV 合计）
+    #: 的题面里没有那句话 ⇒ 它**结构上**必然拒答，而它照样占掉 5 个候选里的 4 个
+    #: （`by_tool_max_round=4`）。那不是模型想得宽，是**准入没判**。
+    #:
+    #: ⛔ 内核**不**认识任何具体能力：这里只存一个由外部能力**自己声明**的判据
+    #:    （`agents.json` 的 `applies_regex`），内核只负责 `bool(fn(goal))`。
+    #:    把 `code_agent` 的名字写进内核就违反了"内核不含能力"这条立身之本。
+    #: ⛔ 它**不**渲染进 `catalog_line()`：适用条件进提示词就是"改提示词"，
+    #:    而这一轮要量的是「在采纳/注入处判」，两件事必须分开（见 §113.2）。
+    applies: Callable[[str], bool] | None = None
 
     def catalog_line(self) -> str:
         args = ", ".join(self.params.keys()) or "无"
@@ -53,6 +67,36 @@ class ToolResult:
 
     def as_observation(self) -> str:
         return self.output if self.ok else f"[工具失败] {self.error}"
+
+
+#: 适用性判据自己炸了（正则写错、闭包抛异常）⇒ 记名字，**保守放行**。
+#: ⛔ 为什么是放行而不是拦：误杀一个真能跑的能力，读数上表现为"这个能力从没被用过"，
+#:    而那与"它不适用"在结果上**无法区分**（§15 缺席冒充零的镜像）。
+#:    漏杀的代价只是回到旧行为（它自己会拒答，已经有归因）。
+_EXT_APPLIES_ERR: dict[str, str] = {}
+
+
+def spec_applies(spec: "ToolSpec | None", goal: str) -> bool:
+    """这个工具的**自声明适用条件**对本题面成立吗 —— 唯一判定点。
+
+    三态语义（⛔ 不要合并成两态）：
+        · `spec is None`            ⇒ False（工具不在册，本来就不能执行）
+        · `spec.applies is None`    ⇒ True（**没声明** = 恒适用 = 旧行为）
+        · 判据抛异常 / 非法正则      ⇒ True + 记进 `_EXT_APPLIES_ERR`
+
+    ⚠️ 必须只有一处实现：注入点与采纳点各写一遍 `try/except`，
+       迟早有一处忘了兜异常，而那条路径只在某个 agent 上炸。
+    """
+    if spec is None:
+        return False
+    fn = getattr(spec, "applies", None)
+    if fn is None:
+        return True
+    try:
+        return bool(fn(str(goal or "")))
+    except Exception as e:  # noqa: BLE001
+        _EXT_APPLIES_ERR[spec.name] = f"{type(e).__name__}: {e}"
+        return True
 
 
 class ToolRegistry:
@@ -119,7 +163,10 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
             reg.register(spec)
             return
         same = (cur.description == spec.description and cur.params == spec.params
-                and cur.external == spec.external and cur.mutating == spec.mutating)
+                and cur.external == spec.external and cur.mutating == spec.mutating
+                # ★ §113：适用判据也是「定义」的一部分。两个同名工具给出不同的
+                #   适用条件，就是两处声明同一个事实 —— 必须炸，不许择一。
+                and cur.applies is spec.applies)
         if not same:
             reg.register(spec)          # 定义不一致 ⇒ 触发重名检查并抛错
 
@@ -229,6 +276,26 @@ def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
         desc = str(spec.get("description", "外部 agent"))
         cwd = str(spec.get("cwd") or anchor)
 
+        # ── 自声明适用条件（第一百三十七轮 / §113）─────────────────────────
+        # `applies_regex`: 可选。题面**不匹配** ⇒ 这个能力对本题结构上不适用，
+        # 内核不注入它、也把它从候选宽度里去掉（⛔ 不是"执行失败后再补救"）。
+        #
+        # ⛔ 缺省 / 空串 / 非法正则 ⇒ `applies=None`（恒适用 = 旧行为）。
+        #    保守方向是刻意选的：误杀一个真能跑的能力，读数上会与
+        #    "它不适用"完全同形（§15 缺席冒充零），而漏杀最多退回旧行为
+        #    —— 它自己会拒答，且拒答理由已经能归因。
+        _pat = str(spec.get("applies_regex") or "").strip()
+        _applies = None
+        if _pat:
+            try:
+                _rx = re.compile(_pat)
+            except re.error as e:
+                _EXT_APPLIES_ERR[tool_name] = f"applies_regex 非法（按恒适用处理）: {e}"
+            else:
+                # ⚠️ 默认参数绑定 `_rx`：直接闭包捕获循环变量会让所有 agent
+                #    共用最后一条正则（与上面 `_argv` 的 late binding 同病）。
+                _applies = (lambda goal, _r=_rx: _r.search(goal) is not None)
+
         if kind == "shell":
             argv = spec.get("command") or []
             if not isinstance(argv, list) or not argv:
@@ -291,7 +358,7 @@ def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
 
             reg.register(ToolSpec(tool_name, desc, {"task": "交给该 agent 的任务"},
                                   _handler, external=True, mutating=True,
-                                  produces_answer=wants_answer))
+                                  produces_answer=wants_answer, applies=_applies))
 
         elif kind == "http":
             url = str(spec.get("url", ""))
@@ -306,7 +373,8 @@ def register_external_agents(reg: ToolRegistry, path: Path | str) -> list[str]:
                     return r.read().decode("utf-8", "replace")[:8000]
 
             reg.register(ToolSpec(tool_name, desc, {"task": "交给该 agent 的任务"},
-                                  _handler, external=True, mutating=True))
+                                  _handler, external=True, mutating=True,
+                                  applies=_applies))
         else:
             continue
         added.append(tool_name)

@@ -447,6 +447,9 @@ def _kex_zero() -> dict:
             "samples": 0, "tests": 0, "fallback": 0, "discriminated": 0,
             #: 因为**额度不够**而根本没被注入（不是失败，是没试）
             "skipped_no_budget": 0,
+            #: ★ §113：因为**题面不满足它自己声明的适用条件**而没被注入。
+            #: ⛔ 与上一项分开：那个是"再等等"，这个是"永远不行"。
+            "skipped_not_applicable": 0,
             #: 理论要跑筛选、实际因为时间不够**没跑成**的次数
             "exec_skipped": 0,
             #: 逐次失败原因（去重、上限 6 条）。⛔ 只留 `last_error` 会让
@@ -461,7 +464,7 @@ def _kex_absorb(acc: dict, stats: dict) -> dict:
     if tool:
         acc["tool"] = tool
     for k in ("calls", "ok", "err", "used_as_answer", "chars",
-              "skipped_no_budget"):
+              "skipped_no_budget", "skipped_not_applicable"):
         acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
     if int(stats.get("calls") or 0) and not int(stats.get("ok") or 0):
         acc["last_error"] = str(stats.get("last_error") or "")[:200]

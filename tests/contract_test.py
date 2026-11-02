@@ -51,7 +51,9 @@ from mw.memory import MemoryStore, fingerprint, fts_query         # noqa: E402
 from mw.planner import (Planner, Step, action_signature,              # noqa: E402
                         looks_complex)
 from mw.tools import (ToolRegistry, ToolSpec, external_agent_names,  # noqa: E402
-                      register_core_tools, register_external_agents)
+                      register_core_tools, register_external_agents,
+                      spec_applies)
+from mw import tools as tools_module                            # noqa: E402
 from mw.worldmodel import Mismatch, Prediction, WorldModel, similarity  # noqa: E402
 
 RS = Report()
@@ -10766,6 +10768,208 @@ check(RS, "AZ99 ★★『自评优先』必须同时满足两件事，缺一即�
       f"①自评入块={_az99_has_self} 块={_az99_line_on[:90]!r} | "
       f"②无自评={_az99_off_has_self} 块={_az99_line_off[:90]!r} | "
       f"③静态锚={_AZ99_OK_NOREGRESS}")
+
+
+# ── AZ110 的取证装置（V47）：外部能力**不适配**时不该占宽度（§113）─────────
+#  ⭐ 修之前的形态（V45 实测 `v6_s135/p2_real.txt`）：
+#     B 臂第 1 轮 `cands=5`、`by_tool={code_agent:4, run_shell:1}`、
+#     `by_tool_max_round=4` —— 而 `code_agent` 对「算 CSV 合计」这道题
+#     **结构上必然拒答**：它自己报「题面里没有『函数名必须是 X』⇒ 本 agent 不适用」。
+#     ⇒ 那不是模型想得宽，是**准入没判**：宽度里塞了 4 个"永远不可能成功"的候选。
+#  ⛔ 修法是"在**采纳/注入**处判适配"，**不是**改提示词：
+#     提示词里写"不适用的别提"是自比对（§66 实测：连着两轮照提不误），
+#     而且改提示词会让两臂不可比。
+_AZ110_CSV = _AZ107_GOAL
+_AZ110_FUNC = ("请实现一个函数，函数名必须是 sum_by_region，输入二维列表"
+               "返回按区域汇总的字典。要求写成可直接导入的 Python 代码，并处理空输入。")
+_AZ110_CODE_ANS = ("```python\ndef sum_by_region(rows):\n"
+                   "    out = {}\n"
+                   "    for _m, _r, _v in rows:\n"
+                   "        out[_r] = out.get(_r, 0) + float(_v)\n"
+                   "    return out\n```\n"
+                   "函数名是 sum_by_region，可直接导入；空输入返回空字典，"
+                   "同一区域多次出现会被累加，金额按浮点相加且不改变原顺序。")
+
+
+def _az110_cand(tool: str, args: dict, intent: str = "用一下") -> dict:
+    return {"intent": intent, "tool": tool, "args": args}
+
+
+def _az110_payload(*items: dict) -> str:
+    return json.dumps({"candidates": list(items)}, ensure_ascii=False)
+
+
+class _AZ110LLM:
+    """每天都说同一句话 —— 这一条要测的是**多轮**（空轮出口），
+    所以不能像 `_AZ105LLM` 那样第 2 次起给空串（那会让"空轮"变成"规划失败"）。"""
+
+    def __init__(self, payload: str) -> None:
+        self.payload = payload
+        self.calls = 0
+
+    def complete(self, messages, max_tokens=None, **kw):
+        self.calls += 1
+        return self.payload
+
+
+def _az110_run(tag: str, goal: str, payload: str, *, ext_tool: str = ""):
+    d = _TMP / f"az110_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / "sales.csv").write_text(_AZ107_INPUT, encoding="utf-8")
+    s = cfg.settings()
+    s2 = _AZ105_DC.replace(s, paths=_AZ105_DC.replace(s.paths, workspace=ws))
+    if ext_tool:
+        s2 = _AZ105_DC.replace(s2, limits=_AZ105_DC.replace(
+            s2.limits, external_answer_tool=ext_tool))
+    core = Core(s2, llm=_AZ110LLM(payload),
+                memory=MemoryStore(d / "m.db"), memory_mode="raw")
+    with contextlib.redirect_stdout(io.StringIO()):
+        out = core.run(goal, budget_factor=1)
+    return core, out
+
+
+# ① **不适配**：CSV 题面 + 2 个 code_agent + finish。
+#    ⚠️ `finish` 必须排在前 3 位（深通道 `n=3`）：放到后面会被 `[:n]` 截掉，
+#       前 3 条全是 code_agent ⇒ 全丢 ⇒ 变成 ⑤ 的"空轮"形状，测不到"丢弃后仍有候选"。
+_AZ110_C1, _AZ110_O1 = _az110_run(
+    "drop", _AZ110_CSV,
+    _az110_payload(_az110_cand("agent:code_agent", {"task": "a"}, "外援1"),
+                   _az110_cand("agent:code_agent", {"task": "b"}, "外援2"),
+                   _az110_cand("finish", {"answer": _AZ107_ANS}, "交付")))
+# ② **适用**：同一条 `agent:code_agent`，函数题面 ⇒ 一个都不许丢。
+_AZ110_C2, _AZ110_O2 = _az110_run(
+    "keep", _AZ110_FUNC,
+    _az110_payload(_az110_cand("finish", {"answer": _AZ110_CODE_ANS}, "交付"),
+                   _az110_cand("agent:code_agent", {"task": "x"}, "外援")))
+# ③ 未注册工具 ≠ 不适配：两条路径各有读数。
+_AZ110_C3, _AZ110_O3 = _az110_run(
+    "unknown", _AZ110_CSV,
+    _az110_payload(_az110_cand("browser", {}, "想了没注册"),
+                   _az110_cand("agent:code_agent", {"task": "a"}, "外援"),
+                   _az110_cand("finish", {"answer": _AZ107_ANS}, "交付")))
+# ④ 注入点：配了 `external_answer_tool` 但题面不适配 ⇒ 根本不注入。
+_AZ110_C4, _AZ110_O4 = _az110_run(
+    "inject", _AZ110_CSV,
+    _az110_payload(_az110_cand("finish", {"answer": _AZ107_ANS}, "交付")),
+    ext_tool="agent:code_agent")
+# ⑤ 空轮：每轮只给不适配的候选 ⇒ 到 `max_stall` 走**自己的**出口。
+_AZ110_C5, _AZ110_O5 = _az110_run(
+    "empty", _AZ110_CSV,
+    _az110_payload(_az110_cand("agent:code_agent", {"task": "a"}, "外援")))
+
+_AZ110_P1 = json.loads(json.dumps(_AZ110_O1.stats["plan"], ensure_ascii=False))
+_AZ110_P2 = json.loads(json.dumps(_AZ110_O2.stats["plan"], ensure_ascii=False))
+_AZ110_P3 = json.loads(json.dumps(_AZ110_O3.stats["plan"], ensure_ascii=False))
+_AZ110_P5 = json.loads(json.dumps(_AZ110_O5.stats["plan"], ensure_ascii=False))
+_AZ110_X4 = dict(_AZ110_O4.stats["external"])
+_AZ110_MS = max(1, int(cfg.settings().limits.max_stall))
+
+
+def _az110_ident(p: dict) -> bool:
+    """截断恒等式：被**准入**丢掉的不许算进"被 n 截掉"的（否则记两次）。"""
+    return max(0, p["examined_total"] - p["cands_total"]
+               - p["dropped_not_applicable"]) == p["truncated_total"]
+
+
+# ⑦ `applies` 不许进 `catalog()` —— 进了就是"改提示词"，两臂立刻不可比。
+#    做法：同一份 agents 配置，只多一个 `applies_regex` 字段，两份 catalog 必须逐字节相同。
+_AZ110_CFG_A = {"agents": {"x": {
+    "type": "shell", "description": "示例能力",
+    "command": ["python3", "-c", "print(1)"], "produces_answer": True}}}
+_AZ110_CFG_B = {"agents": {"x": {
+    "type": "shell", "description": "示例能力",
+    "command": ["python3", "-c", "print(1)"], "produces_answer": True,
+    "applies_regex": "函数名(?:必须|应)(?:是|为)"}}}
+_AZ110_CAT = []
+for _i, _cfg in enumerate((_AZ110_CFG_A, _AZ110_CFG_B)):
+    _p = _TMP / f"az110_agents_{_i}.json"
+    _p.write_text(json.dumps(_cfg, ensure_ascii=False), encoding="utf-8")
+    _r = ToolRegistry()
+    register_external_agents(_r, _p)
+    _AZ110_CAT.append(_r.catalog())
+
+# ⑧ 两处实现必须判同：`agents.json` 的正则 vs `code_agent.py::_FUNC_NAME`。
+_AZ110_JSON_PAT = json.loads(
+    (V1 / "agents.json").read_text(encoding="utf-8"))["agents"]["code_agent"].get(
+        "applies_regex", "")
+_AZ110_AGENT_SRC = (V1 / "external" / "code_agent.py").read_text(encoding="utf-8")
+_AZ110_M = re.search(r"^_FUNC_NAME = re\.compile\(r\"(.+?)\"\)",
+                     _AZ110_AGENT_SRC, re.M)
+_AZ110_CASES = [
+    _AZ110_CSV, _AZ110_FUNC,
+    "实现一个函数，函数名应为 bar。",
+    "请写一个函数，函数名是 baz。",          # ⚠️ 缺「必须/应」⇒ 两边都该判假
+    "实现 add(a, b)。函数名必须是 add",
+    "",
+]
+_AZ110_SAME = bool(_AZ110_JSON_PAT) and _AZ110_M is not None and all(
+    bool(re.search(_AZ110_JSON_PAT, g)) == bool(re.search(_AZ110_M.group(1), g))
+    for g in _AZ110_CASES)
+
+# ⑨ 非法正则 ⇒ **恒适用**（保守）+ 留痕，⛔ 不许静默吞掉。
+_p_bad = _TMP / "az110_agents_bad.json"
+_p_bad.write_text(json.dumps({"agents": {"y": {
+    "type": "shell", "command": ["python3", "-c", "print(1)"],
+    "applies_regex": "函数名(必须"}}}, ensure_ascii=False), encoding="utf-8")
+_r_bad = ToolRegistry()
+register_external_agents(_r_bad, _p_bad)
+_AZ110_BAD_OK = (spec_applies(_r_bad.get("agent:y"), _AZ110_CSV) is True
+                 and "agent:y" in tools_module._EXT_APPLIES_ERR)
+
+check(RS, "AZ110 ★★★★外部能力**结构上不适用**时不许占候选宽度（V47 / §113）\n"
+          "         —— 修之前（V45 实测）：B 臂第 1 轮 5 个候选里 4 个是\n"
+          "            `agent:code_agent`，而它对「算 CSV 合计」这道题自己就报\n"
+          "            「题面里没有『函数名必须是 X』⇒ 不适用」⇒ 那不是模型想得宽，\n"
+          "            是**准入没判**：4 个候选永远不可能成功，还占着 80% 的宽度。\n"
+          "         判据（九条，缺一即证明不了这条边）：\n"
+          "               ① CSV 题面 + 2×code_agent ⇒ `dropped_not_applicable==2`、\n"
+          "                  `dropped_na_by_tool=={code_agent:2}`、cands 收敛到 1；\n"
+          "               ② **同一个** code_agent + 函数题面 ⇒ 丢弃 **0**（不误杀）；\n"
+          "               ③ 未注册工具走 `dropped_unknown`，**不**进 na（两条路径分列）；\n"
+          "               ④ 注入点也判：不适配 ⇒ `skipped_not_applicable==1` 且 calls==0；\n"
+          "               ⑤ 全不适配 ⇒ 走**自己的**出口 `status=='not_applicable'`\n"
+          "                  （⛔ 不是 stalled / cascade / closed：三种相反的事不许共用一格）；\n"
+          "               ⑥ 截断恒等式：`examined − cands − dropped_na == truncated`\n"
+          "                  （准入丢的不许算成被 n 截的，否则同一批候选记两次）；\n"
+          "               ⑦ `applies` **不进** `catalog()` ⇒ 提示词没变；\n"
+          "               ⑧ `agents.json` 的正则与 `code_agent.py::_FUNC_NAME` 判同（6 例）；\n"
+          "               ⑨ 非法正则 ⇒ 恒适用 + 留痕（误杀比漏杀贵）。\n"
+          "         撤回语义：把采纳点 `cands, _na_drop = self._drop_not_applicable(...)`\n"
+          "                   改回 `cands, _na_drop = list(cands), []` ⇒ ①③⑤⑥ 必红、\n"
+          "                   ④⑦⑧⑨ 仍绿（这一格正是本条要同时钉注入点与采纳点的原因：\n"
+          "                   **不注入** 与 **不占宽度** 是两条独立的边）。",
+      _AZ110_P1["dropped_not_applicable"] == 2
+      and _AZ110_P1["dropped_na_by_tool"] == {"agent:code_agent": 2}
+      and _AZ110_P1["cands_total"] == 1
+      and _AZ110_P1["by_tool_max_round"] == 1
+      and _AZ110_P1["by_tool"] == {"finish": 1}
+      and _AZ110_P1["produces_by_round"] == [1]
+      and _AZ110_P2["dropped_not_applicable"] == 0
+      and _AZ110_P2["dropped_na_by_tool"] == {}
+      and _AZ110_P3["dropped_not_applicable"] == 1
+      and _AZ110_P3["dropped_na_by_tool"] == {"agent:code_agent": 1}
+      and _AZ110_O3.stats["planner"]["width"]["dropped_unknown"] == 1
+      and _AZ110_X4["skipped_not_applicable"] == 1
+      and _AZ110_X4["calls"] == 0
+      and _AZ110_O5.status == "not_applicable"
+      and _AZ110_P5["cands_total"] == 0
+      and _AZ110_P5["rounds"] == _AZ110_MS
+      and _AZ110_P5["dropped_not_applicable"] == _AZ110_MS
+      and all(_az110_ident(p) for p in
+              (_AZ110_P1, _AZ110_P2, _AZ110_P3, _AZ110_P5))
+      and _AZ110_CAT[0] == _AZ110_CAT[1]
+      and _AZ110_SAME and _AZ110_BAD_OK,
+      f"①丢弃={_AZ110_P1['dropped_not_applicable']}/{_AZ110_P1['dropped_na_by_tool']}"
+      f" cands={_AZ110_P1['cands_total']} max_round={_AZ110_P1['by_tool_max_round']}"
+      f" ｜ ②不误杀={_AZ110_P2['dropped_not_applicable']}"
+      f" ｜ ③unknown={_AZ110_O3.stats['planner']['width']['dropped_unknown']}"
+      f" na={_AZ110_P3['dropped_not_applicable']}"
+      f" ｜ ④skipped_na={_AZ110_X4.get('skipped_not_applicable')}"
+      f" calls={_AZ110_X4.get('calls')}"
+      f" ｜ ⑤status={_AZ110_O5.status} rounds={_AZ110_P5['rounds']}/{_AZ110_MS}"
+      f" ｜ ⑦catalog同={_AZ110_CAT[0] == _AZ110_CAT[1]}"
+      f" ｜ ⑧正则判同={_AZ110_SAME} ｜ ⑨非法正则={_AZ110_BAD_OK}")
 
 
 print()

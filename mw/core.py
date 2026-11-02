@@ -43,7 +43,7 @@ from .metacog import SelfModel, load_evidence
 from .planner import Planner, Step, action_signature, looks_complex
 from .tools import (ToolRegistry, ToolResult, external_agent_names,
                     external_last_meta, register_core_tools,
-                    register_external_agents)
+                    register_external_agents, spec_applies)
 from .values import Values
 from . import verify as vfy
 from .worldmodel import WorldModel
@@ -389,6 +389,10 @@ def external_summary(stats: dict) -> str:
             line += " 生成提前停"
     if int(ex.get("skipped_no_budget") or 0):
         line += f" ⛔额度不足未注入={ex['skipped_no_budget']}次"
+    # ★ §113：不适配与额度不足**必须各占一格** —— 上面那行说"再等等就行"，
+    #   这一行说"等多久都不会成功"。
+    if int(ex.get("skipped_not_applicable") or 0):
+        line += f" ⊘题面不适用未注入={ex['skipped_not_applicable']}次"
     if ex.get("err"):
         _rs = ex.get("err_reasons") or []
         _head = (_rs[0] if _rs else str(ex.get("last_error") or ""))[:60]
@@ -491,6 +495,13 @@ def _plan_zero() -> dict:
         #   永远分不开 —— 而这两种病一个要改提示词、一个要改 `n`。
         "examined_total": 0,      # 规划器**交出**的步骤数之和（截断之前）
         "truncated_total": 0,     # 其中被 `[:n]` 截掉的
+        # ★ 第一百三十七轮（§113）：**准入损耗**。与上面两个数**不同源**：
+        #   `truncated_total` 是"规划器给了、被 `n` 截掉"（宽度上限的代价）；
+        #   这里是"候选本身对本题结构上不适用"（准入判据的代价）。
+        #   ⛔ 两者都表现为 `cands_total` 变小，混成一格就再也分不开
+        #     "上限太窄"和"能力不适配" —— 而修法相反（调 `n` vs 换能力）。
+        "dropped_not_applicable": 0,   # 因适用性判据被丢掉的候选数（跨轮累计）
+        "dropped_na_by_tool": {},      # tool -> 被丢次数（用于抓误杀）
     }
 
 
@@ -736,7 +747,42 @@ class Core:
         self.critique_ledger = critique_ledger
 
     # ------------------------------------------------------------------
-    def _note_plan_round(self, cands, plan=None) -> None:
+    def _drop_not_applicable(self, cands, goal):
+        """把**结构上不适用**的候选从宽度里去掉（§113）。返回 `(保留, 被丢)`。
+
+        为什么是"准入"而不是"执行后再补救"（V45 的实测）：
+            `agent:code_agent` 对「算 CSV 合计」这道题**必然**拒答
+            （它的契约是抽『函数名必须是 X』），而它占掉 5 个候选里的 4 个。
+            等它失败再让位，是拿一次 40s 的真实调用去买一个**已知的**负结果。
+
+        ⛔ **工具不在册 ≠ 不适用**：未知工具必须原样放行，让 `dispatch` 去报
+           `未知工具` —— 那条路径有自己的读数与归因（`unknown_tool` 计数）。
+           在这里顺手吞掉它，就是把两种完全不同的病合并成一格。
+
+        ⛔ 判据只读 `spec.applies`（能力**自己**声明的），不读工具名。
+           把 `code_agent` 写进内核 = 内核认识具体能力，违反立身之本。
+        """
+        keep, drop = [], []
+        for c in cands:
+            spec = self.tools.get(c.tool)
+            if spec is not None and not spec_applies(spec, goal):
+                drop.append(c)
+            else:
+                keep.append(c)
+        if drop:
+            ps = self.plan_stats
+            counts: dict = {}
+            for c in drop:
+                ps["dropped_not_applicable"] += 1
+                ps["dropped_na_by_tool"][c.tool] = (
+                    ps["dropped_na_by_tool"].get(c.tool, 0) + 1)
+                counts[c.tool] = counts.get(c.tool, 0) + 1
+            self.log(f"  ⊘ 丢弃 {len(drop)} 个**结构上不适用**的候选"
+                     f"（不是失败：能力自己声明了适用条件）："
+                     + "、".join(f"{t}×{k}" for t, k in counts.items()))
+        return keep, drop
+
+    def _note_plan_round(self, cands, plan=None, dropped: int = 0) -> None:
         """把**这一轮**的候选工具构成记进 `plan_stats`（§111）。
 
         ⛔ 这是一个**读数**：只读 `cand.tool` 与 `spec.produces_answer`，
@@ -767,7 +813,11 @@ class Core:
         if plan is not None:
             _n = len(getattr(plan, "steps", []) or [])
             ps["examined_total"] += _n
-            ps["truncated_total"] += max(0, _n - len(cands))
+            # ⚠️ 分母里要**加回** `dropped`：被准入丢掉的不算"被 `n` 截掉"。
+            #    不加回去同一批候选会被记两次（`dropped_not_applicable` 一次、
+            #    `truncated_total` 再一次），而这两个数的修法完全相反
+            #    （一个该去换能力、一个该去调宽度上限）。
+            ps["truncated_total"] += max(0, _n - len(cands) - int(dropped))
         for t, k in tools.items():
             ps["by_tool"][t] = ps["by_tool"].get(t, 0) + k
             # 单轮内同一 tool 的重复次数 —— "宽度被霸占"的**唯一**直接读数。
@@ -939,6 +989,12 @@ class Core:
         #: ⛔ 不含"额度不足"（`skipped_now`）：那是**没试**，不是被拒。
         blocked_skipped = 0
         stalled = 0
+        #: ★ 第一百三十七轮（§113）：**准入空轮**次数 —— 规划出的动作全部能跑通契约、
+        #: 但对本题**结构上不适用**（能力自己声明的适用条件不成立）。
+        #: ⛔ 与 `stalled` / `blocked_skipped` / `consecutive_failures` 三者**都**不同：
+        #:    停滞=在原地打转 / 被拦=不许做 / 失败=做错了 / 这个是**不该让这个能力做**。
+        #:    四种相反的事共用一格，就去修错东西（V44/V45/V46 的连续三笔学费）。
+        _na_rounds = 0
         #: 「本轮全灭」之后要**换形态**再问的载荷：被内核丢掉的那几个动作的原文行。
         #: 只活一轮（喂给下一次提问就清空）—— 不留着，否则它会变成又一段
         #: 永久提示词噪声，而噪声里没有一个字是"刚刚发生的事"。
@@ -1061,38 +1117,77 @@ class Core:
                 #    后面几步仍由规划器决定（它可以改写、可以收尾）。
                 _ext = self.s.limits.external_answer_tool
                 if _ext and it == 1 and self.tools.get(_ext) is not None:
-                    # ★ 把**剩余墙钟**一起交给外部能力：它必须知道现在几点了。
-                    #   `min(85, 剩余 − 收尾余量)`：85 是"外部能力最贵值多少"的上限，
-                    #   剩下的时间要留给自检、重规划与交付 —— 否则外部能力会
-                    #   把预算吃光并以"没答案"收场（k04 实测）。
-                    # ⚠️ 上限从 60 提到 85 是**实测逼出来的**：单次生成 ≈ 25 字符/秒，
-                    #   一道题输出 400~800 字 ⇒ 单次 16~32s；k=2 也要 2×32+8+2 ≈ 74s。
-                    #   60s 的上限会让 agent **恒**在 `gen_stopped_early` 或
-                    #   `tests=0` 状态交付 ⇒ 执行筛选从来跑不到。
-                    #   85 仍守得住 45s 收尾余量：it==1 时 wall_left≈117 ⇒ 117−45=72。
-                    # ★ 第二十四轮：上限**随预算档缩放**，不再写死 85。
-                    #   写死等于"2x 档的外部件仍然是 1x 的大小" —— 那样 2x 实验
-                    #   测的还是"1x 下的外部能力"，只不过内核自己多想了想。
-                    #   缩放基准取 `wall_s / max_wall_s`（1x ⇒ 恰好 85，与上一轮逐字相同）。
-                    # ★ 第六十七轮：额度与入参都挪进 `answer_deadline()` /
-                    #   `answer_task()` —— 与下面"执行处"共用同一对函数，
-                    #   否则这里改一个数、那里没改，就是又一次两处实现。
-                    _dl = answer_deadline(
-                        wall_s=budget.wall_s, elapsed=self.ledger.elapsed(),
-                        max_wall_s=self.s.limits.max_wall_s,
-                        close_reserve_s=self.s.limits.close_reserve_s)
-                    # ⛔ 额度不够时**根本不注入**：给 5s 的外部能力只会
-                    #    "准时地失败"并且白吃 5s。宁可让内核自己解（至少会交个答案）。
-                    if _dl is not None:
-                        cands = [Step("整题交给外部能力", _ext,
-                                      answer_task(goal, _dl))] + list(cands)
+                    # ★ 第一百三十七轮（§113）：**准入在注入之前判**。
+                    # 不适配的能力连"第一来源"都不该占位 —— 否则第 1 轮它的位置
+                    # 就白压在真能力前面（V45 实测：`run_shell` 因此排到候选 5，
+                    # 而排在前面的 4 个全是必然拒答的 `code_agent`）。
+                    # ⛔ 与"额度不够"分列：那一个是**时间**不够，这一格**永远**不会成功。
+                    if not spec_applies(self.tools.get(_ext), goal):
+                        self.external_stats["skipped_not_applicable"] = (
+                            self.external_stats.get("skipped_not_applicable", 0) + 1)
+                        self.log(f"  ⊘ 不注入外部能力 {_ext}：题面不满足它声明的"
+                                 f"适用条件（⛔ 不是额度不足，是结构上不适用）")
                     else:
-                        self.external_stats["skipped_no_budget"] = (
-                            self.external_stats.get("skipped_no_budget", 0) + 1)
+                        # ★ 把**剩余墙钟**一起交给外部能力：它必须知道现在几点了。
+                        #   `min(85, 剩余 − 收尾余量)`：85 是"外部能力最贵值多少"的上限，
+                        #   剩下的时间要留给自检、重规划与交付 —— 否则外部能力会
+                        #   把预算吃光并以"没答案"收场（k04 实测）。
+                        # ⚠️ 上限从 60 提到 85 是**实测逼出来的**：单次生成 ≈ 25 字符/秒，
+                        #   一道题输出 400~800 字 ⇒ 单次 16~32s；k=2 也要 2×32+8+2 ≈ 74s。
+                        #   60s 的上限会让 agent **恒**在 `gen_stopped_early` 或
+                        #   `tests=0` 状态交付 ⇒ 执行筛选从来跑不到。
+                        #   85 仍守得住 45s 收尾余量：it==1 时 wall_left≈117 ⇒ 117−45=72。
+                        # ★ 第二十四轮：上限**随预算档缩放**，不再写死 85。
+                        #   写死等于"2x 档的外部件仍然是 1x 的大小" —— 那样 2x 实验
+                        #   测的还是"1x 下的外部能力"，只不过内核自己多想了想。
+                        #   缩放基准取 `wall_s / max_wall_s`（1x ⇒ 恰好 85，与上一轮逐字相同）。
+                        # ★ 第六十七轮：额度与入参都挪进 `answer_deadline()` /
+                        #   `answer_task()` —— 与下面"执行处"共用同一对函数，
+                        #   否则这里改一个数、那里没改，就是又一次两处实现。
+                        _dl = answer_deadline(
+                            wall_s=budget.wall_s, elapsed=self.ledger.elapsed(),
+                            max_wall_s=self.s.limits.max_wall_s,
+                            close_reserve_s=self.s.limits.close_reserve_s)
+                        # ⛔ 额度不够时**根本不注入**：给 5s 的外部能力只会
+                        #    "准时地失败"并且白吃 5s。宁可让内核自己解（至少会交个答案）。
+                        if _dl is not None:
+                            cands = [Step("整题交给外部能力", _ext,
+                                          answer_task(goal, _dl))] + list(cands)
+                        else:
+                            self.external_stats["skipped_no_budget"] = (
+                                self.external_stats.get("skipped_no_budget", 0) + 1)
                 # ★ §111：这一轮**真的**能进执行器的候选长什么样 —— 落进 stats。
                 # ⛔ 位置选在 `spend_candidate` **之前**：那之后取到的是"扣过费"的
                 #    候选，而这里问的是"模型给了什么"，与预算无关。
-                self._note_plan_round(cands, plan)
+                #
+                # ★ §113：**先过滤，再记账** —— 次序不许反。
+                #   若先记 `_note_plan_round(cands)` 再过滤，`by_tool_max_round`
+                #   记的就是"过滤前"的值（仍是 4），这一轮就白改了：读数看起来
+                #   没变化，而真实宽度已经变了（纪律 15：读数标签不是读数）。
+                cands, _na_drop = self._drop_not_applicable(cands, goal)
+                self._note_plan_round(cands, plan, dropped=len(_na_drop))
+                if not cands and _na_drop:
+                    # ── 准入空轮：**不是失败、不是停滞、不是被拦**（§113）──────
+                    # 三种相反的事共用一格，是 V44/V45/V46 反复交学费的那条。
+                    # 这里第三种独立出口存在的理由：
+                    #   `stalled` 的语义是"模型在原地打转"（提了已试过的动作），
+                    #   而这里它提的是**没试过、但结构上不可能成功**的动作。
+                    #   把它记成停滞 ⇒ 会去修"重复闸"；记成失败 ⇒ 三轮熔断。
+                    _na_rounds += 1
+                    _ms = max(1, int(self.s.limits.max_stall))
+                    self.log(f"  ⊘ 本轮 {len(_na_drop)} 个候选**全部**结构上不适用"
+                             f" ⇒ 准入空轮 {_na_rounds}/{_ms}"
+                             f"（不是失败，也不是停滞）")
+                    history.append(f"[step {it}] 候选全部因适用性判据被挡下"
+                                   f"（不是失败：能力自己声明了适用条件）")
+                    # 把被挡下的动作**原文**喂给下一轮 —— 与 `reseek_lines` 同源：
+                    # 不给它这个信息，T=0 下它会**逐字**再提一遍（§66 实测）。
+                    reseek_lines = [c.as_line() for c in _na_drop]
+                    if _na_rounds >= _ms:
+                        return self._close_out(
+                            goal, history, _done, reason="not_applicable",
+                            detail=f"连续 {_na_rounds} 轮候选全部对本题结构上不适用")
+                    continue
                 self.ledger.spend_candidate(len(cands))
                 self.log(f"  [{it}] 通道={'深' if complex_task else '快'} 候选={len(cands)}")
                 # 通量：推理交了 N 个想法出去（下游是否真的做，看 `reason>act` 的消费）
@@ -1487,6 +1582,17 @@ class Core:
                     executed = True
                     break
 
+                # ★ §113：**有进展就归零** —— `_na_rounds` 的语义是**连续**空轮。
+                # 实测（V47 on 臂第一版，`v6_s137/logs_on_v1.txt`）：
+                #   第 3 轮空（1）、第 4 轮 `run_shell` 成功、第 5 轮空（2）⇒
+                #   到阈值转交付，日志与 `reason` 都写"**连续** 2 轮"。
+                #   ⛔ 它们并不连续 —— 那是**标签撒谎**（V44 的 `status=done` 同宗）：
+                #   读数会让人去修"模型一直想不到新动作"，
+                #   而真相是"它在两条腿走路，只是每次都被同一个必败工具分走一半"。
+                # ⚠️ 不归零的代价不是"多跑一轮"，是**归因错**：那一轮里
+                #   `run_shell` 明明成功了，却被算进"什么都没做成"的连续计数。
+                if executed:
+                    _na_rounds = 0
                 if not executed:
                     if skipped_now and skipped_now == len(cands):
                         # 一个候选都没跑起来，原因**不是**"失败"而是"没额度"。
@@ -1926,6 +2032,12 @@ class Core:
             #: 因为**额度不够**而根本没被注入的次数（不是失败，是没试）：
             #: 与 `err` 分开计 —— "没试"和"试了失败"的修法完全不同。
             "skipped_no_budget": 0,
+            #: ★ 第一百三十七轮（§113）：因为**题面不满足它自己声明的适用条件**
+            #: 而根本没被注入的次数。⛔ 与上面那个分开计：
+            #: 「额度不够」是一次**时间**问题（下轮可能就够），
+            #: 「结构上不适用」是**永远**不会成功的（等多久都一样）。
+            #: 合成一格，就会把"该换能力"读成"该加预算"。
+            "skipped_not_applicable": 0,
             #: 逐次失败的**原因原文**（去重、上限 `_ERR_REASON_CAP` 条）。
             #:
             #: ⛔ 为什么不能只留 `last_error`（第二十三轮实测代价）：ho_on 7 次调用
@@ -1993,8 +2105,16 @@ class Core:
         收尾是"最后一道网"，它自己的作用域绝不能再依赖调用栈。
         """
         _stalled_entry = (reason == "stalled")
+        #: ★ 第一百三十七轮（§113）：第三个入口 —— 候选**全部**结构上不适用。
+        #: ⛔ 它不是 `stalled`（模型没打转：它提的是**新的**动作，只是不可能成功），
+        #:    更不是 `closing_reserve`（额度还有）。落进后者的默认分支就是**假归因**，
+        #:    与 §29.7 那次"停滞时还剩 85s 却说预算不足"同一个病。
+        _na_entry = (reason == "not_applicable")
         if _stalled_entry:
             self.log("  🧊 停滞 ⇒ 探索到此为止，但**还有额度** ⇒ 转向交付（不是预算不足）")
+        elif _na_entry:
+            self.log("  ⊘ 准入空轮到阈值 ⇒ 探索到此为止，但**还有额度** ⇒ 转向交付"
+                     "（不是预算不足，也不是停滞）")
         else:
             self.log("  ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）")
         # ★ 把留给收尾的时间**放出来**（第二十五轮）：探索阶段扣下它是对的，
@@ -2013,7 +2133,8 @@ class Core:
         # ★ 第六十九轮：`stalled` 这个原因**来自调用方**，不来自 `_reserve_reason`
         #   —— 停滞时预算并没有进收尾区间，`_reserve_reason` 是空串，
         #   落到 `or "steps"` 就会把"停滞"记成"步数用尽"（假归因）。
-        _why = reason if _stalled_entry else (self._reserve_reason or "steps")
+        _why = (reason if (_stalled_entry or _na_entry)
+                else (self._reserve_reason or "steps"))
         co["by_reason"][_why] = int(co["by_reason"].get(_why, 0)) + 1
         best = ""
         origin = ""
@@ -2118,6 +2239,15 @@ class Core:
                         f"拒绝原地打转{('（' + detail + '）') if detail else ''}"
                         f"，但仍有 {_left_s:.0f}s 额度 ⇒ 走答案通道交付"
                         f"（不是预算不足）{_co_gate_note}")
+        if _na_entry:
+            # ⛔ 状态名必须自己说清：写成 `closed` 会让 `by_reason` 与日志
+            #    一起把"不适配"报成"预算不足"（`_reserve_reason` 也确实是空串）。
+            _left_s = (self.ledger.budget.wall_s - self.ledger.elapsed()
+                       if self.ledger is not None else 0.0)
+            return done("not_applicable", best,
+                        f"候选全部结构上不适用{('（' + detail + '）') if detail else ''}"
+                        f"，但仍有 {_left_s:.0f}s 额度 ⇒ 走答案通道交付"
+                        f"（不是失败，也不是预算不足）{_co_gate_note}")
         return done("closed", best,
                     f"closing_reserve：预算不足，交付已有材料{_co_gate_note}")
 
@@ -2185,6 +2315,10 @@ class Core:
                               for r in self.plan_stats["per_round"]],
                 "examined_total": self.plan_stats["examined_total"],
                 "truncated_total": self.plan_stats["truncated_total"],
+                # ★ 第一百三十七轮（§113）：准入损耗。⛔ 与 `truncated_total`
+                #    **并列**而不是合并：一个说"上限太窄"，一个说"能力不适配"。
+                "dropped_not_applicable": self.plan_stats["dropped_not_applicable"],
+                "dropped_na_by_tool": dict(self.plan_stats["dropped_na_by_tool"]),
             },
             # ★ 第一百三十二轮（§108）：候选让位。**五项零值也在** ——
             # `used=0` 与"开关没装"是两件必须分得开的事（§66 同因）。

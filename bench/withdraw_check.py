@@ -1366,6 +1366,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '                        self.failover_stats["rescued_step"] += 1\n'
      '                        self.failover_stats["rescued"] += 1',
      '                        pass  # 撤回态：步骤救回不再记账'),
+    # ── AZ110：外部能力**结构上不适用**时不许占宽度（V47 / §113）──────────
+    #: 撤的语义：**只撤采纳点那一次过滤**（注入点、`spec_applies`、
+    #:   空轮出口一律留着）。后果：
+    #:   ①（丢弃计数）→ 0、③（unknown 与 na 分列）→ na 变 0、⑤（空轮）→ 不发生
+    #:   ⇒ 三条必红；④⑦⑧⑨ 仍绿 —— 因为"不注入"与"不占宽度"是两条独立的边。
+    #: ⭐ ⑥（截断恒等式）在撤回后**仍绿**：`dropped=0` 时它就是老的
+    #:   `examined − cands == truncated`。同 V46 的教训：**守恒是必要条件，
+    #:   不是通电证明** ⇒ 锚必须同时钉"能非零"（①⑤ 就是那两个非零）。
+    ("AZ110", "mw/core.py",
+     '                cands, _na_drop = self._drop_not_applicable(cands, goal)',
+     '                cands, _na_drop = list(cands), []  # 撤回态：不做准入判定'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

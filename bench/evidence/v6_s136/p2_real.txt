@@ -1,0 +1,25 @@
+V46 真实两臂（唯一变量 --allow-shell；与 v6_s135/run_v45.sh 逐字同源）
+题面同 V45；模型 qwen2.5:7b / T=0 / max_tokens=1024 / cand_failover=1 / 宽=3(A) 3(B)
+
+读数                                A 无 shell                         B 有 shell
+status                            done                              stalled
+verdict                           FAIL                              PASS
+failover.used                     1                                 1
+failover.rescued_answer           1                                 0
+failover.rescued_step             0                                 1
+failover.rescued                  1                                 1
+failover.cf_extra                 0                                 0
+failover.finish                   0                                 0
+failover.external                 1                                 1
+failover.no_more                  0                                 0
+failover.switch                   1                                 1
+plan.rounds                       2                                 3
+plan.cands_total                  3                                 7
+plan.by_tool_max_round            1                                 4
+plan.produces_by_round            [0, 2]                            [4, 1, 1]
+plan.by_tool                      {"recall": 1, "agent:code_agent": 1, "finish": 1}{"agent:code_agent": 6, "run_shell": 1}
+plan.per_round                    [{"n": 1, "tools": {"recall": 1}}, {"n": 2, "tools": {"agent:code_agent": 1, "finish": 1}}][{"n": 5, "tools": {"agent:code_agent": 4, "run_shell": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}, {"n": 1, "tools": {"agent:code_agent": 1}}]
+plan.truncated_total              0                                 0
+
+产物：A 臂 ws 里只有 sales.csv（report.md 不存在）
+      B 臂 report.md 44 字节，内容 = V43/V44/V45 逐字相同的四行（含垃圾行『区域 0』）

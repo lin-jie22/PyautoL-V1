@@ -4288,6 +4288,80 @@ check(RS, "AZ108 ★★★★候选宽度进 **stats**（不是日志）：给�
       f"深拷={'ok' if _AZ108_DEEPCOPY_OK else '活引用！'}")
 
 
+# ── AZ109 的取证装置（V46）：让位救回的是**交付**还是**一个步骤** ────────────
+#  ⭐ 修之前的形态：`rescued` 只有一档，判据是「这一轮产生了**交付答案**」。
+#     V45 实测反例（`v6_s135/p2_real.txt`）：B 臂第 1 轮 5 个候选
+#     `{code_agent:4, run_shell:1}`；`code_agent` 在这道题上必败（它只认
+#     「函数名必须是 X」），`run_shell` 成功写出 `report.md` —— **那一臂的 PASS
+#     完全靠这次让位**，而台账记 `rescued=0`。
+#     ⇒ 这不是"机制没通电"，是**判据漏了一档**：`rescued` 判的是
+#        "产生了交付答案"，不是"任务被推进了"。
+#  ⛔ 为什么两档必须**同源判据**（`_fo_pending and ci > 0`）：
+#     只按 `ci > 0` 会把"首候选被 guard 拦掉"那条**老路径**（V41 S2 实测）
+#     记成让位的功劳 —— 纪律 24：判据的分辨率不得高于装置。
+_AZ109_STEP_PAYLOAD = _az105_cands(("先交一版", "finish", {"answer": _AZ105_BAD1}),
+                                   ("这一步会成功", "recall", {"query": "压平"}))
+
+#: D 景 = 交付救回（AZ105 的三候选 ON 臂就是它，**不再造第二份**：
+#:   同一场景两套装置 = 两处会漂移的实现）。
+_AZ109_D = _AZ105_T_ON
+#: S 景 = 步骤救回。`recall` 不是交付动作，但它真的被 dispatch 了。
+_AZ109_S, _AZ109_S_H = _az105_run(_AZ109_STEP_PAYLOAD, 1, "step")
+#: 单候选景（无弹药）—— 开关不许泄漏。
+_AZ109_ONE = _AZ105_S_ON
+
+_AZ109_FO = {k: dict(v.stats["failover"])
+             for k, v in (("D", _AZ109_D), ("S", _AZ109_S), ("ONE", _AZ109_ONE))}
+#: `rescue_rate` 的分子必须仍是**结果量**：救回一个步骤 ≠ 救回一次交付。
+#: 用一对**只能靠分子区分**的输入来钉：两臂 `used=2`、`rescued` 都是 2，
+#: 只有 `rescued_answer` 不同 ⇒ 率必须不同（0.5 vs 0.0）。
+_AZ109_LINE_A = _AZ102_RUN._kfo_line(
+    {"used": 2, "rescued": 2, "rescued_answer": 1, "rescued_step": 1,
+     "cf_extra": 0, "finish": 1, "external": 0, "no_more": 0, "switch": 1})
+_AZ109_LINE_B = _AZ102_RUN._kfo_line(
+    {"used": 2, "rescued": 2, "rescued_answer": 0, "rescued_step": 2,
+     "cf_extra": 0, "finish": 0, "external": 0, "no_more": 0, "switch": 1})
+_AZ109_SRC = (V1 / "run.py").read_text(encoding="utf-8")
+
+check(RS, "AZ109 ★★★★让位救回的**是交付还是一个步骤**，两个数分列（V46）\n"
+          "         —— 修之前只有一档 `rescued`，它判的是「这一轮产生了交付\n"
+          "            答案」。V45 实测：B 臂的 PASS 完全靠让位（`run_shell` 写出\n"
+          "            `report.md`），因为那不是交付动作 ⇒ 记 `rescued=0`。\n"
+          "            **一个「救了场却记成没救」的计数器，比没有更危险。**\n"
+          "         判据（六条，缺一即证明不了这条边）：\n"
+          "               ① 交付救回 ⇒ `rescued_answer=1` 而 `rescued_step=0`；\n"
+          "               ② 步骤救回 ⇒ `rescued_step=1` 而 `rescued_answer=0`，\n"
+          "                  且那一轮**真的 dispatch 了** `recall`（不是只加了个数）；\n"
+          "               ③ 强守恒 `rescued == rescued_answer + rescued_step`（三景）；\n"
+          "               ④ 单候选（无弹药）⇒ 两个子计数**都是 0**（开关不泄漏）；\n"
+          "               ⑤ `rescue_rate` 的分子仍是 `rescued_answer`\n"
+          "                  （两臂 `rescued` 相同、子计数不同 ⇒ 率必须不同）；\n"
+          "               ⑥ `run.py` 真的落 `rescued_answer`/`rescued_step`\n"
+          "                  （不落盘 = 不可审计）。\n"
+          "         撤回语义：删掉 `core.py` 里 `rescued_step += 1` 那两行 ⇒ **② 必红**，\n"
+          "                   ①③④⑤⑥ 仍绿。\n"
+          "                   ⭐ ③（守恒）在「两档都归零」时**仍然成立** —— 这是本条\n"
+          "                   必须同时钉「能非零」的原因：**守恒是必要条件，不是通电证明**\n"
+          "                   （同宗：V44 的 `status=done` 也永远自洽）。\n"
+          "                   这一格同时说明：**交付** 与 **推进** 是两条独立的边。",
+      _AZ109_FO["D"]["rescued_answer"] == 1
+      and _AZ109_FO["D"]["rescued_step"] == 0
+      and _AZ109_FO["S"]["rescued_step"] == 1
+      and _AZ109_FO["S"]["rescued_answer"] == 0
+      and _AZ109_FO["S"]["used"] == 1
+      and "recall" in [n for _st, n in _AZ109_S_H]
+      and all(v["rescued"] == v["rescued_answer"] + v["rescued_step"]
+              for v in _AZ109_FO.values())
+      and _AZ109_FO["ONE"]["rescued_answer"] == 0
+      and _AZ109_FO["ONE"]["rescued_step"] == 0
+      and _AZ109_LINE_A["rescue_rate"] == 0.5
+      and _AZ109_LINE_B["rescue_rate"] == 0.0
+      and '"rescued_answer"' in _AZ109_SRC and '"rescued_step"' in _AZ109_SRC,
+      f"D={_AZ109_FO['D']} ｜ S={_AZ109_FO['S']} 第1轮dispatch="
+      f"{_az105_r1(_AZ109_S_H)} ｜ ONE={_AZ109_FO['ONE']} ｜ "
+      f"率 A/B={_AZ109_LINE_A['rescue_rate']}/{_AZ109_LINE_B['rescue_rate']}")
+
+
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
       _AL_wm2.reward_guidance(features=None, task_id="x") == ""

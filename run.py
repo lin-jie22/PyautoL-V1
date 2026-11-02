@@ -394,7 +394,8 @@ def _kfo_zero() -> dict:
     V38 那个"累计值当增量"的坑不在这里 —— 但**必须在注释里说清为什么不是它**，
     否则下一个读代码的人会照抄 `_kpl_absorb` 的求差写法，把本轮值减成 0。
     """
-    return {"used": 0, "rescued": 0, "cf_extra": 0,
+    return {"used": 0, "rescued_answer": 0, "rescued_step": 0, "rescued": 0,
+            "cf_extra": 0,
             "finish": 0, "external": 0, "no_more": 0, "switch": 0}
 
 
@@ -405,7 +406,11 @@ def _kfo_line(acc: dict) -> dict:
     "让位 40 次救回 1 次"。V39 的 `hit_rate` 就是栽在分母上（§104.3）。
     """
     out = {k: int(acc.get(k, 0) or 0) for k in _kfo_zero()}
-    out["rescue_rate"] = (round(out["rescued"] / out["used"], 3)
+    # ★ 第一百三十六轮（§112）：`rescued` 拆两档之后，**判决入口只认结果量**。
+    # ⛔ 分子不许改成 `rescued_answer + rescued_step`：那样"救回一个中间步骤"
+    #    会被算成"救回一次交付" —— 正是 V39 `hit_rate` 栽过的分母病（§104.3）。
+    #    步骤那一档单独印，但**不进率**：它的分母根本不是"交付机会"。
+    out["rescue_rate"] = (round(out["rescued_answer"] / out["used"], 3)
                           if out["used"] else None)
     return out
 
@@ -1650,10 +1655,13 @@ def cmd_bench(args) -> int:
     #    `无弹药=M` 必须显形 —— V41 量到的 8/64 窗口全是这一形态，
     #    不印它，`用=0` 就等于"机制没通电"（而真相是"没有第二个候选可换"）。
     _kfo_p = _kfo_line(_kfo)
+    # ★ §112：**两档必须分开印在同一行**。`救回=1` 单独印，读者分不出
+    #   "救回一次交付"与"救回一个中间步骤" —— 而这两件事的下一步完全不同
+    #   （一个该找交付动作，一个该问"救回的一步为什么没被接成交付"）。
     print(f"  候选让位  开关={_kfo_p['switch']} 用={_kfo_p['used']}"
-          f" 救回={_kfo_p['rescued']}"
+          f" 救回=答案{_kfo_p['rescued_answer']}/步骤{_kfo_p['rescued_step']}"
           f"（finish={_kfo_p['finish']} 外部={_kfo_p['external']}）"
-          f" 率={'n/a' if _kfo_p['rescue_rate'] is None else _kfo_p['rescue_rate']}"
+          f" 答案率={'n/a' if _kfo_p['rescue_rate'] is None else _kfo_p['rescue_rate']}"
           f" ｜代价：额外失败={_kfo_p['cf_extra']} 无弹药={_kfo_p['no_more']}")
 
     # ── 传输层读数（第二十五轮）：**只在出过事时**才占一行 ────────────────

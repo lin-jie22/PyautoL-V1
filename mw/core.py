@@ -505,7 +505,18 @@ def _failover_zero() -> dict:
     """
     return {
         "used": 0,          # 交付候选被打回、且**真的**让位给下一个的次数
-        "rescued": 0,       # 其中"之后确实交付成功"的次数（救回）
+        #: ★ 第一百三十六轮（§112）：`rescued` **拆两档**。
+        #: V45 实测反例：B 臂的 PASS 完全靠让位（`run_shell` 是第 5 个候选、
+        #:   真写出 `report.md`），而旧 `rescued` 记的是 **0** ——
+        #:   因为它判的是「这一轮产生了**交付答案**」，不是「任务被推进了」。
+        #: 一个「救了场却记成没救」的计数器比没有更危险：它让人去修没坏的东西。
+        #: 两档的修法完全不同：
+        #:   `rescued_answer=0` ⇒ 让位选错了目标（该往后找交付动作）；
+        #:   `rescued_step>0` 而 `rescued_answer=0` ⇒ 让位救的是**中间步**，
+        #:     交付还得靠下一轮 ⇒ 该问的是"为什么救回的一步没被接成交付"。
+        "rescued_answer": 0,  # 让位后**交付动作**成功（= 旧 `rescued`）
+        "rescued_step": 0,    # 让位后**非交付动作**成功、任务被推进但没交付
+        "rescued": 0,       # 兼容字段 = 上面两档之和（AZ109 钉住守恒）
         "cf_extra": 0,      # 让位路径额外产生的 `consecutive_failures += 1` 次数
         "finish": 0,        # 其中来自内核 `finish` 的次数
         "external": 0,      # 其中来自 `produces_answer` 外部能力的次数
@@ -1443,6 +1454,7 @@ class Core:
                         #    记成新机制的功劳（纪律 24 的同构：判据分辨率高于装置）。
                         if _fo_pending and ci > 0:
                             self.failover_stats["rescued"] += 1
+                            self.failover_stats["rescued_answer"] += 1
                         # 两个来源（内核自己的 finish / 外部能力的答案）走**同一条**
                         # 交付路径：同一道自检闸、同一个 `done_unverified` 语义。
                         # ⛔ 外部能力**不许**有"免检通道" —— 那就成了"换个来源就换把尺子"。
@@ -1457,6 +1469,19 @@ class Core:
                         self.log(f"  ✅ 收尾: {answer[:120]}")
                         return _done("done", answer, "")
 
+                    # ★ 第一百三十六轮（§112）：**步骤救回** —— 让位之后一个
+                    # **非交付**动作成功了。
+                    # V45 现场：`run_shell` 真写出 `report.md`（任务被推进了），
+                    #   但它不是交付动作 ⇒ 上面 `if _produces:` 那一支根本不走
+                    #   ⇒ 旧 `rescued` 记 **0**，而那一臂的 PASS 完全靠它。
+                    # ⛔ 判据与 `rescued_answer` **同源**（`_fo_pending and ci > 0`）：
+                    #   只按 `ci > 0` 会把"首候选被 guard 拦掉"那条**老路径**
+                    #   （V41 S2 实测）记成新机制的功劳 —— 纪律 24 的同构。
+                    if _fo_pending and ci > 0:
+                        self.failover_stats["rescued_step"] += 1
+                        self.failover_stats["rescued"] += 1
+                        self.log(f"      ↪ 让位救回一个**步骤**（非交付动作）："
+                                 f"{cand.tool}")
                     self.memory.record("outcome", result.as_observation()[:1000],
                                        tool=cand.tool, intent=cand.intent[:200])
                     executed = True

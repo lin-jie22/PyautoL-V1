@@ -1,0 +1,12 @@
+[D 交付救回] status=done verdict=ANSWER
+    used=1 救回: 答案=1 步骤=0 合计=1 无弹药=0
+    第 1 轮 dispatch=['finish', 'finish']
+[S 步骤救回] status=stalled verdict=ANSWER
+    used=1 救回: 答案=0 步骤=1 合计=1 无弹药=0
+    第 1 轮 dispatch=['finish', 'recall']
+[ONE 单候选] status=stalled verdict=ANSWER
+    used=0 救回: 答案=0 步骤=0 合计=0 无弹药=1
+    第 1 轮 dispatch=['finish']
+[R 判决入口] rescue_rate 分子=答案档 ⇒ A(1/2)=0.5 B(0/2)=0.0
+
+判据 J1/J2/J7：PASS（两档互不冒充 · 都能非零 · 守恒 · 率只认结果量）

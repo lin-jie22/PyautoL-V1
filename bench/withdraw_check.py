@@ -1352,6 +1352,20 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ108", "mw/core.py",
      '        ps["rounds"] += 1\n        ps["cands_total"] += len(cands)',
      '        pass  # 撤回态：不记这一轮\n        ps["cands_total"] += len(cands)'),
+    # ── AZ109：让位救回的**是交付还是一个步骤**（V46 / §112）──────────────
+    #: 撤的语义：**只撤「步骤救回」这一档的记账**（两行 `+= 1` ⇒ `pass`），
+    #:   交付那一档、`used`、`cf_extra` 一律留着。
+    #: ⇒ 后果**只**落在 ② 上（S 景 `rescued_step` 由 1 变 0）。
+    #: ⭐ ③（守恒 `rescued == answer + step`）**仍绿** —— 两档同时归零时守恒
+    #:   当然成立。这正是本条必须同时钉「能非零」的理由：
+    #:   **守恒是必要条件，不是通电证明**（V44 `status=done` 永远自洽，同宗）。
+    #: ⚠️ 锚必须**两行一起**：只撤 `rescued_step += 1` 会留下孤立的
+    #:   `rescued += 1`（S 景里 `rescued=1` 而两档都是 0）⇒ ③ 转红 ⇒
+    #:   读成"守恒被破坏"，而真因是"你把一档拆掉了"。红得越多越分不清（纪律 4）。
+    ("AZ109", "mw/core.py",
+     '                        self.failover_stats["rescued_step"] += 1\n'
+     '                        self.failover_stats["rescued"] += 1',
+     '                        pass  # 撤回态：步骤救回不再记账'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

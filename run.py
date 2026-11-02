@@ -659,10 +659,25 @@ def cmd_selftest(args) -> int:
 def cmd_run(args) -> int:
     core = _build(args.goal, args, allow_shell=args.allow_shell)
     out = core.run(args.goal, budget_factor=args.budget)
-    print(json.dumps({"status": out.status, "answer": out.answer,
+    dv = (out.stats or {}).get("delivery") or {}
+    # ★ §110：给用户看的**第一行**是 verdict，不是 status。
+    # 第一百三十三轮实测：`status=done` 而 `report.md` 不存在、`status=stalled`
+    # 而产物三行全对 —— 用户唯一能看的那个词两个方向都在撒谎。
+    # ⛔ 两个都印，但顺序写死：结果量在前、过程量在后。
+    print(f"■ 验收 {out.verdict or '?'}"
+          + (f"（产物 {len(dv.get('found') or [])}/{len(dv.get('outputs') or [])}"
+             + (f"，缺 {','.join(dv.get('missing') or [])}" if dv.get("missing") else "")
+             + "）" if dv.get("outputs") else "（题面未约定产物，仅验了答案非空）")
+          + f" ｜ 过程 status={out.status}")
+    if dv.get("inputs_missing"):
+        print(f"⚠️ 题面点名的输入文件不存在：{','.join(dv['inputs_missing'])}")
+    print(json.dumps({"status": out.status, "verdict": out.verdict,
+                      "answer": out.answer,
                       "reason": out.reason, "iterations": out.iterations,
+                      "delivery": dv,
                       "stats": out.stats}, ensure_ascii=False, indent=2))
-    return 0 if out.status == "done" else 1
+    # 退出码由**结果量**决定：只有"东西在"或"交了文本"才算成功。
+    return 0 if out.verdict in ("PASS", "ANSWER") else 1
 
 
 def cmd_measure(args) -> int:

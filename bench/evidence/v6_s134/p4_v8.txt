@@ -1,0 +1,15 @@
+e1wi: 产物=[] 输入=[] verdict(有答案)=ANSWER
+e1wi: verdict(空答案)=EMPTY
+e1ni: 产物=[] 输入=[] verdict(有答案)=ANSWER
+e1ni: verdict(空答案)=EMPTY
+e2wi: 产物=[] 输入=[] verdict(有答案)=ANSWER
+e2wi: verdict(空答案)=EMPTY
+e2ni: 产物=[] 输入=[] verdict(有答案)=ANSWER
+e2ni: verdict(空答案)=EMPTY
+e3wi: 产物=[] 输入=[] verdict(有答案)=ANSWER
+e3wi: verdict(空答案)=EMPTY
+e3ni: 产物=[] 输入=[] verdict(有答案)=ANSWER
+e3ni: verdict(空答案)=EMPTY
+
+六题里抽出产物的题数 = 0
+⇒ 验收层对这六道题**没有产物可核**（全部 ANSWER/EMPTY），96 格不受影响

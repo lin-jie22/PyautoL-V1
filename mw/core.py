@@ -454,6 +454,25 @@ def answer_deadline(*, wall_s: float, elapsed: float, max_wall_s: float,
 _STALL_ANSWER_MIN_S = 20.0
 
 
+def _failover_zero() -> dict:
+    """让位读数的零值。**单轮**（与预算同源）。
+
+    ⚠️ 第一百三十四轮把它提成函数：`_finish` 是**可独立调用**的
+    （离线探针就只驱动它），而这份字典原本只在 `run()` 里建 ⇒ 探针一调
+    `_finish` 就 `AttributeError`。这不是探针的问题：
+    一个"必须先跑完整轮才敢读"的收尾函数，等于把观测装置绑死在执行器上
+    （§76 的老病：量具与被测对象共命运，量不出来的时候也说不清是没东西还是装置坏了）。
+    """
+    return {
+        "used": 0,          # 交付候选被打回、且**真的**让位给下一个的次数
+        "rescued": 0,       # 其中"之后确实交付成功"的次数（救回）
+        "cf_extra": 0,      # 让位路径额外产生的 `consecutive_failures += 1` 次数
+        "finish": 0,        # 其中来自内核 `finish` 的次数
+        "external": 0,      # 其中来自 `produces_answer` 外部能力的次数
+        "no_more": 0,       # 条件成立但**没有**剩余候选 ⇒ 与 `0` 臂同路径
+    }
+
+
 def stall_verdict(*, stalled: int, max_stall: int, wall_left: float,
                   min_answer_s: float = _STALL_ANSWER_MIN_S) -> str:
     """停滞到这个份上，下一步做什么 —— **唯一**的判定点。
@@ -487,9 +506,15 @@ class Outcome:
     reason: str = ""
     iterations: int = 0
     stats: dict = field(default_factory=dict)
+    #: ★ §110：**结果量**，与 `status`（过程量）分列。
+    #: PASS | PARTIAL | FAIL | ANSWER | EMPTY（见 `verify.check_delivery`）。
+    #: ⛔ 不给默认值以外的兜底：空串只出现在"没走 `_finish`"这种不该发生的情形，
+    #:    而它到了汇总行会显示 `验收=?`，比猜一个 `PASS` 诚实。
+    verdict: str = ""
 
     def as_line(self) -> str:
-        return (f"status={self.status} iter={self.iterations} "
+        _v = f" verdict={self.verdict}" if self.verdict else ""
+        return (f"status={self.status}{_v} iter={self.iterations} "
                 f"{('answer=' + self.answer[:60]) if self.answer else ('reason=' + self.reason[:80])}")
 
 
@@ -614,6 +639,14 @@ class Core:
                              allow_learn=self.s.limits.allow_learn,
                              reward_echo=self.s.limits.reward_echo)
 
+        # ★ §110：单轮计数器的**权威**声明点。上面 `values`/`flow` 与三条
+        #   `_reset_*` 已各自声明过一遍（它们有各自的"为什么必须在这里"），
+        #   这里再调一次是**幂等**的 —— 换来的是下面这条不变量：
+        #   **`_finish` 可以被单独驱动**（它是收尾的唯一出口，离线验收探针
+        #   就是只调它）。实测撞出 `failover_stats` / `expand_stats` 两个
+        #   AttributeError，都是"只建在 `run()` 里"造成的（AS20 同宗）。
+        self._prime_counters("")
+
         # ── 三个"调制层"（不是相位）────────────────────────────────────
         # 相位是环上的必经点，缺了就断流；调制层只改变**怎么走**。
         # 这个区分是本轮对"模块是否必要"的答案，写在这里是因为代码结构
@@ -643,11 +676,69 @@ class Core:
         self._ledger_snapshot: tuple[dict, ...] = (
             score_ledger.snapshot(self.caliber_sig) if score_ledger is not None else ())
         self.selfmodel = SelfModel(load_evidence(list(self._ledger_snapshot)))
+        #: §110：题面原文与最近一次交付验收。`run()` 每轮覆写；
+        #: 在这里先给出类型与零值，免得"没跑过 run 就调 stats()"炸掉。
+        self._goal_text: str = ""
+        self._delivery: dict = {}
         #: 外部评审账本：他者的过程性反馈，**只读输入**。
         #: None = 本次运行不启用（默认）—— 见 `run(task_id=...)` 的说明。
         self.critique_ledger = critique_ledger
 
     # ------------------------------------------------------------------
+    def _prime_counters(self, goal: str = "") -> None:
+        """把**单轮**读数量零 —— `run()` 与"直接调 `_finish`"共用同一处。
+
+        ⚠️ 第一百三十四轮提出来的理由（与前几轮 `_reset_verify` 同一个洞）：
+            `_finish` 是收尾的**唯一**出口，而它读取的单轮计数器原本只在 `run()`
+            里建 ⇒ 任何"不跑完整轮、只驱动收尾"的观测装置一调就 `AttributeError`。
+            离线验收探针当场撞上了（`failover_stats` → `expand_stats` 连着两个）。
+        ⛔ 不在探针里手工补赋值：AS20 那次的教训就是"探针自己把洞挡住了"，
+           于是断言全绿而洞还在。
+        """
+        # 通量与价值层的计数是**单轮**读数（预算也是单轮的）；
+        # 自我模型是**跨轮资产**，所以它不在这里重置。
+        # 混在一起会出现"这一轮 0 次否决"而那个 0 是上一轮留下的。
+        self.flow = FlowMeter()
+        self.values = Values()
+        # 第二十轮：按需回看是**单轮**读数（预算也是单轮的）。
+        #: 因预算不足被丢掉的块/条目数（单轮）。**有消费者**：进 stats。
+        #: 没有这个计数，"预算吃紧"就是静默的 —— 而静默的降级正是最常见的病。
+        self.state_trimmed = 0
+        # ★单轮读数：每次 `_state()` 的产物属于**这一轮**（与预算同源）。
+        # 不清空的话，第 k 题的 dump 里会混进第 k−1 题的 state ——
+        # 那正是第三十六轮在修的同一类错误（跨题残留），不能在新字段上重演一遍。
+        self.state_log = []
+        # 同一条理由：附加证据也必须按轮清空，否则上一题的 `guidance` 会挂到本题的 state 上。
+        self.state_meta = []
+        self.expand_stats: dict = {
+            "calls": 0, "chars": 0, "errors": 0,
+            "by_trigger": {"mismatch": 0, "fail_tail": 0},
+            "skipped": {"mode": 0, "budget": 0, "no_entry": 0},
+        }
+
+        # ── 校验（第二十一轮）：判据从**目标文本**派生，一次，之后不变 ──────
+        # ⛔ 必须在这里派生、而不是每次 finish 时现算：
+        #    现算就给了"答案反过来影响判据"的入口 —— 那正是自评分的形态。
+        #    判据只认目标，与答案无关；`V1_VERIFY_RETRIES=0` ⇒ 判据为空 ⇒ 整条闸不存在。
+        # ⚠️ `verify_static`（第八十轮）只是**多派生一条**判据，不是一个新分叉：
+        #    0=不派生（默认，与之前逐位相同）/1=报名字/2=盲报（等长安慰剂臂）。
+        # ⚠️ `_salvage` / `_unverified` 也在 `_reset_verify()` 里（第九十一轮）：
+        #    `_close_out` 本来就读 `self._salvage`，而它可以被单独调用（AS20）
+        #    ⇒ 只建在 `run()` 里，直接构造的实例一调收尾就 AttributeError。
+        self._reset_verify(goal)
+        # ── 收尾兜底（第二十二轮）：把一条**一直在跑、却只有日志没有读数**的路接上
+        # ⛔ 为什么必须结构化：第二十一轮的整条位移都来自这条路（`finish` 被打回 ⇒
+        #    重规划 ⇒ 价值层否决 ⇒ 收尾余量 ⇒ `_close_out` ⇒ 交付），而当时
+        #    全项目对它的记录**只有两句中文日志**。日志能证明"走到过"，不能回答
+        #    "走到过几次、几次真的改了交付物"。而后者才是"它有没有用"的第一个问题。
+        self._reset_closeout()
+        # 外部能力读数是**单轮**的（与预算同源）：跨轮累计会让"这一轮 0 次调用"
+        # 显示成上一轮的数字（读数混了时间维度）。
+        self._reset_external()
+        # ★ 第一百三十二轮（§108）：候选让位读数。与预算同源 ⇒ **单轮**清零。
+        #   ⚠️ 零值也进 stats（同 §66 的理由）：`used=0` 与"机制没装"必须分得开。
+        self.failover_stats = _failover_zero()
+
     def run(self, goal: str, *, budget_factor: float = 1.0, tag: str | None = None,
             family: str | None = None, task_id: str | None = None,
             scorer_sha: str = "", suite_sha: str = "",
@@ -678,64 +769,17 @@ class Core:
         )
         budget = base.scaled(budget_factor, tag or ("1x" if budget_factor == 1 else f"{budget_factor:g}x"))
         self.ledger = Ledger(budget)
+        # ★ §110：交付验收要**题面原文**（判据只能来自题面，不能来自答案）。
+        # 存在实例上而不是一路传参：`_finish` 有 6 个调用点，
+        # 每处补一个参数就是"同一事实声明六处"，漏一处即静默退化成 `ANSWER`。
+        self._goal_text = goal
+        self._delivery = {}
         # 通量与价值层的计数是**单轮**读数（预算也是单轮的）；
         # 自我模型是**跨轮资产**，所以它不在这里重置。
         # 混在一起会出现"这一轮 0 次否决"而那个 0 是上一轮留下的。
-        self.flow = FlowMeter()
-        self.values = Values()
-        # 第二十轮：按需回看是**单轮**读数（预算也是单轮的）。
-        #: 因预算不足被丢掉的块/条目数（单轮）。**有消费者**：进 stats。
-        #: 没有这个计数，"预算吃紧"就是静默的 —— 而静默的降级正是最常见的病。
-        self.state_trimmed = 0
-        # ★单轮读数：每次 `_state()` 的产物属于**这一轮**（与预算同源）。
-        # 不清空的话，第 k 题的 dump 里会混进第 k−1 题的 state ——
-        # 那正是本轮在修的同一类错误（跨题残留），不能在新字段上重演一遍。
-        self.state_log = []
-        # 同一条理由：附加证据也必须按轮清空，否则上一题的 `guidance` 会挂到本题的 state 上。
-        self.state_meta = []
-        self.expand_stats: dict = {
-            "calls": 0, "chars": 0, "errors": 0,
-            "by_trigger": {"mismatch": 0, "fail_tail": 0},
-            "skipped": {"mode": 0, "budget": 0, "no_entry": 0},
-        }
-
-        # ── 校验（第二十一轮）：判据从**目标文本**派生，一次，之后不变 ──────
-        # ⛔ 必须在这里派生、而不是每次 finish 时现算：
-        #    现算就给了"答案反过来影响判据"的入口 —— 那正是自评分的形态。
-        #    判据只认目标，与答案无关；`V1_VERIFY_RETRIES=0` ⇒ 判据为空 ⇒ 整条闸不存在。
-        # ⚠️ `verify_static`（第八十轮）只是**多派生一条**判据，不是一个新分叉：
-        #    0=不派生（默认，与之前逐位相同）/1=报名字/2=盲报（等长安慰剂臂）。
-        # ⚠️ 第九十一轮：判据与读数收进 `_reset_verify()` **一处**声明。
-        #    `_close_out` 现在要在交付前跑闸，而它可以被单独调用（AS20）⇒
-        #    属性只建在 `run()` 里的话，收尾路径会 AttributeError，
-        #    而那条路径存在的唯一目的就是"别交付零"。
-        self._reset_verify(goal)
-        # ⚠️ `_salvage` / `_unverified` 也挪进了 `_reset_verify()`（第九十一轮）：
-        #    `_close_out` 本来就读 `self._salvage`（`overrode_rejected` 的比较基准），
-        #    而它只建在 `run()` 里 ⇒ **直接构造的实例一调收尾就 AttributeError**。
-        #    这个洞是第九十一轮写 AZ92 时当场撞出来的（`'Core' object has no
-        #    attribute '_salvage'`），不是推理出来的：AS20 一直绿，是因为它自己
-        #    先手工赋了 `_salvage` —— 那条断言顺带把洞挡住了。
-        # ── 收尾兜底（第二十二轮）：把一条**一直在跑、却只有日志没有读数**的路接上
-        # ⛔ 为什么必须结构化：第二十一轮的整条位移都来自这条路（`finish` 被打回 ⇒
-        #    重规划 ⇒ 价值层否决 ⇒ 收尾余量 ⇒ `_close_out` ⇒ 交付），而当时
-        #    全项目对它的记录**只有两句中文日志**。日志能证明"走到过"，不能回答
-        #    "走到过几次、几次真的改了交付物"。而后者才是"它有没有用"的第一个问题。
-        self._reset_closeout()
-        # 外部能力读数是**单轮**的（与预算同源）：跨轮累计会让"这一轮 0 次调用"
-        # 显示成上一轮的数字（读数混了时间维度）。
-        self._reset_external()
-        # ★ 第一百三十二轮（§108）：候选让位读数。与预算同源 ⇒ **单轮**清零，
-        #   否则"这一轮一次没让位"会显示成上一轮的数字。
-        #   ⚠️ 零值也进 stats（同 §66 的理由）：`used=0` 与"机制没装"必须分得开。
-        self.failover_stats = {
-            "used": 0,          # 交付候选被打回、且**真的**让位给下一个的次数
-            "rescued": 0,       # 其中"之后确实交付成功"的次数（救回）
-            "cf_extra": 0,      # 让位路径额外产生的 `consecutive_failures += 1` 次数
-            "finish": 0,        # 其中来自内核 `finish` 的次数
-            "external": 0,      # 其中来自 `produces_answer` 外部能力的次数
-            "no_more": 0,       # 条件成立但**没有**剩余候选 ⇒ 与 `0` 臂同路径
-        }
+        # ★ 第一百三十四轮：单轮计数器**一处**声明（`_prime_counters`）——
+        #   理由见该方法的 docstring：`_finish` 必须能被单独驱动。
+        self._prime_counters(goal)
 
         # 预算/账本变了 ⇒ planner 与 wm 要看到同一个 LLM 计数口径
         counted = _LedgeredLLM(self.llm, self.ledger,
@@ -1971,6 +2015,21 @@ class Core:
             reason = f"{reason} ｜ {note}" if reason else note
             if not self._unverified:
                 self._unverified = note
+        # ★ §110：产物验收 —— **结果量**，与 `status`（过程量）并列报。
+        # 判据只从题面派生（`vfy.expected_artifacts`），绝不读答案、不读分数。
+        # ⚠️ 放在 stats 之前：`stats` 里要带上它，而 `■` 行与 `Outcome.verdict`
+        #    必须来自**同一次**计算结果 —— 分两次算就会出现"日志说 PASS、
+        #    返回值说 FAIL"这种最难查的读数分裂（§98 同因）。
+        try:
+            self._delivery = vfy.check_delivery(
+                self._goal_text, self.s.paths.workspace, answer)
+        except Exception as exc:                      # noqa: BLE001
+            # 验收层自己炸掉时**不许**冒充任何一种结论 —— 报 ERROR 并显形。
+            # 静默 fallback 成 ANSWER 会让"核不了"变成"核过了"。
+            self._delivery = {"verdict": "ERROR", "outputs": [], "found": [],
+                              "missing": [], "inputs": [], "inputs_missing": [],
+                              "dir": str(self.s.paths.workspace),
+                              "error": f"{type(exc).__name__}: {exc}"}
         stats = {
             "budget": self.ledger.snapshot() if self.ledger else {},
             "guard": self.guard.report(),
@@ -2028,6 +2087,9 @@ class Core:
             "external_agents": self.external_agents,
             # 停滞/重复 —— "重复的成功不是进展"这条的读数出口
             "loop": dict(extra or {}),
+            # ★ §110：交付验收。**零值也进 stats**（老读法里没这个键 ⇒ 读不到
+            # 与"验过了但没产物"是同形的，必须显式给 `ANSWER`/`EMPTY`）。
+            "delivery": dict(self._delivery),
             # ★ 题边界清掉的上一题残留工作记忆（第三十六轮 §17-7h）。
             # 零值也要进 stats：没有这个计数，"清干净了"与"没接线"完全同形。
             "working_cross_task": self.working_cross_task,
@@ -2173,7 +2235,24 @@ class Core:
         # 判据搬进 `external_summary()` 是为了**能被契约直接钉住** ——
         # 放在 `_finish` 的函数体里只能靠读源码，读源码的断言恒真。
         _ex2_line = external_summary(stats)
-        self.log(f"■ {status} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
+        # ★ §110：验收行。**必须紧跟 status 念**，不能塞到行尾 ——
+        # 第一百三十三轮的两个谎（`done` 无产物 / `stalled` 有产物）之所以
+        # 活得那么久，正因为唯一能一眼看到的那个词在撒谎；真相被压到第
+        # 300 个字符之后，就没人会读到它。
+        _dv = stats["delivery"]
+        _dv_line = f" 验收={_dv.get('verdict', '?')}"
+        if _dv.get("outputs"):
+            _dv_line += (f"({len(_dv['found'])}/{len(_dv['outputs'])}"
+                         + (f"，缺 {','.join(_dv['missing'])}" if _dv["missing"] else "")
+                         + ")")
+        else:
+            _dv_line += "(无约定产物)"
+        if _dv.get("inputs_missing"):
+            _dv_line += f" ⚠️题面点的输入不存在:{','.join(_dv['inputs_missing'])}"
+        if _dv.get("error"):
+            _dv_line += f" ⚠️验收层异常:{_dv['error'][:60]}"
+        self.log(f"■ {status}{_dv_line} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}{_ex2_line}")
-        return Outcome(status, answer, reason, len(history), stats)
+        return Outcome(status, answer, reason, len(history), stats,
+                       str(_dv.get("verdict") or ""))

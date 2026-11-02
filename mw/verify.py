@@ -78,9 +78,11 @@
 from __future__ import annotations
 
 import builtins
+import os
 import re
 import symtable
 from dataclasses import dataclass
+from pathlib import Path
 
 #: 从 Markdown 围栏里抽代码。**必须与外部打分器同构** —— 否则自检比尺子更严，
 #: 就会把"打分器本来会接受的答案"判成失败，那不是自检，那是自造假失败。
@@ -312,3 +314,146 @@ def run(answer: str, checks: tuple[Check, ...] | list[Check]) -> Verdict:
         return Verdict(True, (), "")
     return Verdict(False, tuple(failed),
                    f"{len(failed)}/{len(checks)} 项未过：" + "；".join(reports))
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# 交付验收（第一百三十四轮 §110）—— 答案之外，**产物**也得有人核
+#
+# 第一百三十三轮的现场（三臂同一道真实任务，同一个模型）：
+#
+#   | 臂 | status   | 产物 report.md | 产物内容           |
+#   |----|----------|----------------|--------------------|
+#   | A  | stalled  | 不存在         | —                  |
+#   | B  | **done** | **不存在**     | —                  |
+#   | C  | stalled  | 存在 44 字节   | 三个数字全对       |
+#
+# ⇒ 状态词两个方向都在撒谎。`done` 的语义一直是"模型**说**它做完了"
+#   （`finish` 工具被成功调用过），从来不是"用户要的东西**在**"。
+#   这两个命题之间的差，恰好是"能不能当产品"的差。
+#
+# ⛔ 为什么不在 `status` 里再加一个值：`status` 是**主循环怎么结束的**
+#   （done/stalled/cascade/budget/error），它是过程量；"东西在不在"是结果量。
+#   把结果塞进过程量的枚举里，下一次加结果维度又要改一次枚举 ——
+#   而且历史 `answers.jsonl` 里的 status 会立刻失去可比性。
+#   ⇒ 分列：`status` 不动，新增 `verdict`，两者都由 `■` 行与 stats 同时给出。
+# ══════════════════════════════════════════════════════════════════════════
+
+#: 题面里"像文件"的 token。**只在题面里找**，不在答案里找 ——
+#: 从答案里找等于让模型自己给自己出验收题（§16.9：判据来源比判据松紧更重要）。
+_ARTIFACT_RE = re.compile(
+    r"(?<![A-Za-z0-9_./\-])"
+    r"((?:[A-Za-z0-9_.\-]+/)*[A-Za-z0-9_.\-]+\.(?:md|csv|tsv|json|jsonl|txt|py"
+    r"|html?|ya?ml|log|xlsx|sh|toml|ini))"
+    r"(?![A-Za-z0-9_])", re.I)
+
+#: "这个 token 是被**写出来**的"证据 —— 只在它前面 12 个字符里找。
+#: ⚠️ 中文没有空格，窗口按**字符**算，不按词算。
+_WRITE_WORDS = ("写入", "写到", "写进", "写在", "保存", "生成", "输出", "导出",
+                "创建", "落盘", "存到", "放到", "放进", "写")
+_WRITE_WORDS_EN = ("write", "save", "create", "output", "generate", "produce")
+_WRITE_WINDOW = 12
+
+#: 并列列举的连接词 —— 用来把"被写出来的"这个身份**传递**给后一个 token。
+#: ⚠️ 第十二个字符的窗口在**并列列举**上不成立，这是 V44 的 S5 抓到的：
+#:    `请生成 out/a.md 与 out/b.json 两个文件。` ⇒ `out/b.json` 前面只有
+#:    「 与 」（3 个字符，没有写动作）⇒ 被判成**输入** ⇒ 分母只剩 1 个产物
+#:    ⇒ 少写一个文件也会读成 `PASS`。**预注册押 PARTIAL、实测 PASS**，
+#:    按纪律改分类器（不是改预测）。
+_SEP_ONLY = re.compile(r"^[\s\u3000与和、,，/及并且以及+＆&]+$")
+_SEP_WORDS = re.compile(r"^\s*(?:and|or|plus)\s*$", re.I)
+
+
+def expected_artifacts(goal: str) -> tuple[list[str], list[str]]:
+    """从题面抽 `(产物, 输入)`，各自去重保序。
+
+    为什么要分两类（第一百三十三轮 B 臂的教训）：
+        题面里同时有 `sales.csv`（**输入**，本来就在）与 `report.md`（**产物**）。
+        不分的话，"找到了输入"会被记成"部分完成" —— 而用户要的东西一个字都没有。
+        B 臂现场：`status=done`、`report.md` 不存在、交出去的是 pandas 代码片段。
+        若把输入算进分母，这一格会读成 `PARTIAL`（半成功），
+        真相是 **`FAIL`（零产物）**。
+
+    分类规则只有一条：token **前面 12 个字符**里有没有写动作。
+    `写入工作目录下的 report.md` ⇒ 产物；`工作目录里有 sales.csv` ⇒ 输入。
+    同一 token 若两次出现、其中一次带写动作 ⇒ **按产物算**（升级，不降级）。
+    """
+    g = goal or ""
+    #: [start, end, token, 是不是产物]
+    marks: list[list] = []
+    for m in _ARTIFACT_RE.finditer(g):
+        head = g[max(0, m.start() - _WRITE_WINDOW):m.start()].lower()
+        is_out = (any(w in head for w in _WRITE_WORDS)
+                  or any(w in head for w in _WRITE_WORDS_EN))
+        marks.append([m.start(), m.end(), m.group(1), is_out])
+
+    # 第二遍：**并列列举传递** —— 上一个产物与这个 token 之间只有连接词
+    # （`与`/`和`/`、`/`,`/`and`…）⇒ 这个也是产物。
+    # ⛔ 不把窗口从 12 放大到 40 来"顺手解决"：窗口放大到能覆盖任意列举，
+    #    就一定会盖到"读取 a.csv，生成 b.md"里的 `a.csv` ——
+    #    那是**输入**，而把输入算进产物分母会让"零产物"读成 `PARTIAL`。
+    last_out_end: int | None = None
+    for mk in marks:
+        if mk[3]:
+            last_out_end = mk[1]
+            continue
+        if last_out_end is None:
+            continue
+        gap = g[last_out_end:mk[0]]
+        if _SEP_ONLY.match(gap) or _SEP_WORDS.match(gap):
+            mk[3] = True
+            last_out_end = mk[1]
+
+    outs: list[str] = []
+    ins: list[str] = []
+    for _s, _e, tok, is_out in marks:
+        if is_out:
+            if tok not in outs:
+                outs.append(tok)
+            if tok in ins:                   # 升级：产物优先于输入
+                ins.remove(tok)
+        elif tok not in outs and tok not in ins:
+            ins.append(tok)
+    return outs, ins
+
+
+def check_delivery(goal: str, workspace: str | os.PathLike | None,
+                   answer: str = "") -> dict:
+    """核**约定产物**在不在工作目录里，给出五值之一的 `verdict`。
+
+    | 条件 | verdict | 含义 |
+    |---|---|---|
+    | 有产物 ∧ 全部存在 | `PASS` | 用户要的东西在 |
+    | 有产物 ∧ 部分存在 | `PARTIAL` | 只做了一半，**并列出缺哪些** |
+    | 有产物 ∧ 一个都没有 | `FAIL` | 零产物 |
+    | 无产物 ∧ 答案非空 | `ANSWER` | 这题交付的是**文本**，只验了它非空 |
+    | 无产物 ∧ 答案为空 | `EMPTY` | 什么都没交 |
+
+    ⛔ 故意**没有** `NONE`/`UNKNOWN`：任何"说不清"的值到了汇总行都会被读成"成功"。
+    `ANSWER` 明说"没约定产物"，让"验不了"与"验过了"在读数上分得开
+    （`verify.run()` 在无判据时返回"没检查"而不是"通过"，同一条理由）。
+    """
+    outs, ins = expected_artifacts(goal)
+    root = Path(workspace) if workspace else None
+
+    def _exists(tok: str) -> bool:
+        p = Path(tok)
+        if p.is_absolute():
+            return p.exists()
+        return bool(root is not None and (root / p).exists())
+
+    found = [t for t in outs if _exists(t)]
+    missing = [t for t in outs if t not in found]
+    if outs:
+        v = "PASS" if not missing else ("PARTIAL" if found else "FAIL")
+    else:
+        v = "ANSWER" if (answer or "").strip() else "EMPTY"
+    return {
+        "verdict": v,
+        "outputs": outs,
+        "found": found,
+        "missing": missing,
+        "inputs": ins,
+        # 输入缺失是**另一件事**（题面前提不成立 ≠ 模型没做完），分开报。
+        "inputs_missing": [t for t in ins if not _exists(t)],
+        "dir": (str(root) if root is not None else ""),
+    }

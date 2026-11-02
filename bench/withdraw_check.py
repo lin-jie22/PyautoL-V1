@@ -1328,6 +1328,19 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      "                    score_ledger=score_ledger, caliber_sig=caliber_sig,",
      "        core = Core(s, critique_ledger=critique_ledger,\n"
      "                    score_ledger=score_ledger, caliber_sig=caliber_sig,"),
+    # ── AZ107：产物验收与 `status` 分列（V44 / §110）──────────────────────
+    #: 撤的语义：让 `Outcome.verdict` 退回"没有这个字段"（修之前的真实形态）——
+    #:   `status` 独自承担"成没成功"，`done` 就等于成功。
+    #: 后果**只**落在 ②③④ 上：五值表（纯函数）仍然绿 —— 这正是本条不能只看
+    #:   纯函数的原因：**机制算了，但没接进返回值**，天底下没有比这更难发现的形态
+    #:   （V35 §102、§67 同宗：机制存在 ≠ 机制通电）。
+    #: ⚠️ 锚必须带上前一行 `return Outcome(` 的两个参数与折行：只锚
+    #:   `str(_dv.get("verdict") or "")` 会连 `stats["delivery"]` 的赋值一起撤掉
+    #:   ⇒ ④ 读成"字段不存在"而不是"两处不同源"，归因跑偏（AZ106 同宗教训）。
+    ("AZ107", "mw/core.py",
+     "        return Outcome(status, answer, reason, len(history), stats,\n"
+     '                       str(_dv.get("verdict") or ""))',
+     '        return Outcome(status, answer, reason, len(history), stats, "")'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

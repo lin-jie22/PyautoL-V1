@@ -4096,6 +4096,93 @@ check(RS, "AZ106 ★★★★`--allow-shell` 在**两条**构造路径上都要�
       f"联网 on/off={_AZ106_NET_ON}/{_AZ106_NET_OFF} "
       f"｜ 离线 on/off={_AZ106_LOC_ON}/{_AZ106_LOC_OFF}")
 
+# ── AZ107 的取证装置（V44）：**产物**验收，与 `status` 分列 ────────────────────
+#  ⭐ 修之前的形态：`status` 是**过程量**（主循环怎么结束的），却一直被当成
+#     结果量用（`cmd_run` 的退出码就是 `status == "done"`）。第一百三十三轮的三臂实测：
+#       A `stalled` / 无产物 ｜ B `done` / **无产物** ｜ C `stalled` / 产物正确
+#     ⇒ 两个方向都在撒谎：`done` 不等于"东西在"，`stalled` 不等于"东西不在"。
+#  ⛔ 为什么不在 `status` 里加值：那会改 `answers.jsonl` 的历史可比性，
+#     而且下一次加结果维度又要改一次枚举（§110）。
+import mw.verify as _AZ107_VFY                                    # noqa: E402
+
+_AZ107_GOAL = ("工作目录里有 sales.csv（列为 月份,区域,金额）。请计算每个区域的金额合计，"
+               "按合计从高到低生成一张 markdown 表格，写入工作目录下的 report.md。"
+               "表格两列为 区域|合计。")
+_AZ107_ANS = "已完成，报告已写入 report.md。"
+_AZ107_INPUT = "月份,区域,金额\n1月,华北,1200\n"
+_AZ107_REPORT = "| 区域 | 合计 |\n|---|---|\n| 华北 | 2700 |\n"
+
+
+def _az107_run(tag: str, files: dict) -> object:
+    """真 `Core` 跑一遍：唯一变量是**工作目录里有没有那个产物**。
+
+    ⛔ 两臂用同一个 `payload`、同一个桩：这不是"两个实验"，是**同一个实验**
+       的两次落点（产物在 / 不在）。差别只要不是那一件事，读数就归不了因。
+    """
+    d = _TMP / f"az107_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    for name, body in files.items():
+        p = ws / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(body, encoding="utf-8")
+    s = cfg.settings()
+    s2 = _AZ105_DC.replace(s, paths=_AZ105_DC.replace(s.paths, workspace=ws))
+    payload = _az105_cands(("交付", "finish", {"answer": _AZ107_ANS}))
+    core = Core(s2, llm=_AZ105LLM(payload),
+                memory=MemoryStore(d / "m.db"), memory_mode="raw")
+    with contextlib.redirect_stdout(io.StringIO()):
+        return core.run(_AZ107_GOAL, budget_factor=1)
+
+
+_AZ107_NOFILE = _az107_run("nofile", {"sales.csv": _AZ107_INPUT})
+_AZ107_WITHFILE = _az107_run("withfile", {"sales.csv": _AZ107_INPUT,
+                                          "report.md": _AZ107_REPORT})
+
+#: 纯函数的五值表 —— 不走 `Core`，逐值钉死（`NONE`/`UNKNOWN` 故意不存在）。
+_AZ107_DIR = _TMP / "az107_table"
+(_AZ107_DIR / "a.md").parent.mkdir(parents=True, exist_ok=True)
+(_AZ107_DIR / "a.md").write_text("x", encoding="utf-8")
+_AZ107_TABLE = {
+    "PASS": _AZ107_VFY.check_delivery("请生成 a.md", _AZ107_DIR, "")["verdict"],
+    "FAIL": _AZ107_VFY.check_delivery("请生成 only.md", _AZ107_DIR, "")["verdict"],
+    "PARTIAL": _AZ107_VFY.check_delivery("请生成 a.md 与 b.json", _AZ107_DIR, "")["verdict"],
+    "ANSWER": _AZ107_VFY.check_delivery("解释快排的复杂度", _AZ107_DIR, "O(n log n)")["verdict"],
+    "EMPTY": _AZ107_VFY.check_delivery("解释快排的复杂度", _AZ107_DIR, "")["verdict"],
+}
+#: 并列列举的传递：`与` 后面的第二个 token 也必须是**产物**（V44 的 S5 抓到的）。
+_AZ107_ENUM = _AZ107_VFY.expected_artifacts("请生成 out/a.md 与 out/b.json 两个文件。")
+#: 输入/产物**不许**混：`sales.csv` 是输入，`report.md` 是产物。
+_AZ107_SPLIT = _AZ107_VFY.expected_artifacts(_AZ107_GOAL)
+
+check(RS, "AZ107 ★★★★产物验收与 `status` **分列**：`done` 不等于「东西在」（V44）\n"
+          "          —— 修之前 `cmd_run` 的退出码是 `status == \"done\"`，\n"
+          "             而 `status` 只是「主循环怎么结束的」。实测两向皆谎：\n"
+          "             `done`/无产物（12:58 B 臂）、`stalled`/产物正确（13:13 C 臂）。\n"
+          "         判据（四条，缺一即证明不了这条边）：\n"
+          "               ① 五值判定表逐个相等（PASS/FAIL/PARTIAL/ANSWER/EMPTY，\n"
+          "                  且 `NONE`/`UNKNOWN` 故意不存在 —— 说不清的值会被读成成功）；\n"
+          "               ② 同一 payload、同一桩，**只有产物不在** ⇒ `status=done`\n"
+          "                  而 `verdict=FAIL`（两个词方向相反，正是修好前被读成成功的那一格）；\n"
+          "               ③ 产物在 ⇒ `verdict=PASS`（开关不只有『报错』那一档）；\n"
+          "               ④ `Outcome.verdict` 与 `stats['delivery']['verdict']` **逐字相等**\n"
+          "                  （两处各算一遍 ⇒ 会出现『日志说 PASS、返回值说 FAIL』）。\n"
+          "         撤回语义：`_finish` 里把 `str(_dv.get('verdict') or '')` 改成 `''`\n"
+          "                   ⇒ ②③ 必红；把 `if outs:` 那一支改成恒 `PASS` ⇒ ①② 必红。",
+      _AZ107_TABLE == {"PASS": "PASS", "FAIL": "FAIL", "PARTIAL": "PARTIAL",
+                       "ANSWER": "ANSWER", "EMPTY": "EMPTY"}
+      and _AZ107_ENUM[0] == ["out/a.md", "out/b.json"]
+      and _AZ107_SPLIT[0] == ["report.md"] and _AZ107_SPLIT[1] == ["sales.csv"]
+      and _AZ107_NOFILE.status == "done"
+      and _AZ107_NOFILE.verdict == "FAIL"
+      and _AZ107_WITHFILE.verdict == "PASS"
+      and _AZ107_NOFILE.verdict == _AZ107_NOFILE.stats["delivery"]["verdict"]
+      and _AZ107_WITHFILE.verdict == _AZ107_WITHFILE.stats["delivery"]["verdict"],
+      f"五值={_AZ107_TABLE} ｜ 抽取={_AZ107_SPLIT} ｜ 列举={_AZ107_ENUM} ｜ "
+      f"无产物: status={_AZ107_NOFILE.status}/verdict={_AZ107_NOFILE.verdict} ｜ "
+      f"有产物: status={_AZ107_WITHFILE.status}/verdict={_AZ107_WITHFILE.verdict}")
+
+
 check(RS, "AL7 奖励通道**默认关闭**：不给 features ⇒ guidance 不含奖励\n"
           "         —— 否则它会污染所有既有测量（那是一次未声明的条件变更）",
       _AL_wm2.reward_guidance(features=None, task_id="x") == ""

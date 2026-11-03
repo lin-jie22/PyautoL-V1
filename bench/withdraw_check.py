@@ -1488,10 +1488,22 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #: ⚠️ 不许改成"删掉 `_reset_offer`"：`offer_stats` 会 `AttributeError`
     #:   ⇒ 整轮跑批炸掉，那就不是单变量，而是把装置砸了（AZ118 同一条禁忌）。
     ("AZ120", "mw/core.py",
-     '''                        self._note_unreached(cands, ci)
+     '''                        self._note_unreached(cands, ci, "answer")
                         if self._unverified:''',
      '''                        pass  # 撤回态：交付成功不再记「未轮到」
                         if self._unverified:'''),
+    # ── AZ121：候选**顺序**（V58 / §124）────────────────────────────────
+    #: 撤的语义：**只让出口分项停止累加**（总数 `unreached` 照记）。
+    #:   ⇒ 守恒 `Σ by_stop == unreached` 当场断（0 vs 2），而 `unreached`
+    #:   本身一个字都没变 —— 这一条同时证明"分项不是总和的别名"。
+    #: ⇒ AZ121 ① 必红（守恒）、②③④⑤ 必红（三格全 0）。
+    #: ⚠️ 不动 `_note_unreached` 的**调用点**：删调用会让 `unreached` 也变 0，
+    #:   那就同时撤掉了 V57 的整条漏斗（两个变量），AZ120 也会连带红。
+    ("AZ121", "mw/core.py",
+     '''        _by_stop = self.offer_stats["unreached_by_stop"]
+        _by_stop[stop] += len(_skipped)          # 越界的 `stop` 在这里炸掉，不建新键''',
+     '''        _by_stop = self.offer_stats["unreached_by_stop"]
+        pass  # 撤回态：未轮到不再按出口分列'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1507,6 +1519,10 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   ⚠️ 这同时补上一个真漏洞：上一轮把 AX5/AX6 写进 CASES 却没有同名契约，
     #:      而驱动器判据是 `hit = tag in red` ⇒ 它们只可能报「目标=✘」。
     "AX5": frozenset({"AZ96"}),
+    #: ★ V58：AZ120 撤掉「交付成功那一处的计数」⇒ `unreached_by_stop["answer"]`
+    #:   一起归零 ⇒ AZ121 ② 的 `answer=2` 不成立。**同一处实现的两个面**，合理连带。
+    #:   ⚠️ 反向不成立（AZ121 只停分项、总数照记）⇒ 单向，已实测。
+    "AZ120": frozenset({"AZ121"}),
     #: ⚠️ AX6 的连带是**结构性的，解不开**：`commit_fact` 的 `key = fingerprint(text)`
     #:   ⇒ **文本就是身份**。文本一旦退化成常量，所有失配事实合并成同一行，
     #:   而 V3/V4/V6 断言的正是「某条特定的失配能被检索回来 / 真的进了提示词」。

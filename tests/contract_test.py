@@ -12034,7 +12034,13 @@ class _AZ120Out:
             "exec": {"dispatched": dispatched, "ok": dispatched, "fail": 0,
                      "answer": dispatched - step, "step": step},
             "loop": {"blocked_skipped": blocked},
-            "offer": {"unreached": unreached},
+            # ★ V58（§124）：分项必须与总数**自洽**地出现在替身里 ——
+            #   替身不写 `by_stop`，`unreached_stop_gap` 就会在这些格上
+            #   变成一个假的 2，而"检测器报错"与"替身偷懒"会长得一模一样。
+            "offer": {"unreached": unreached,
+                      "unreached_by_stop": {"answer": unreached, "step_ok": 0,
+                                            "fail": 0},
+                      "unreached_by_tool": {}},
         }
 
 
@@ -12056,14 +12062,20 @@ _AZ120_Z0 = _AZ120_ZERO()
 _AZ120_Z1 = _AZ120_ZERO()
 _AZ120_CODE = _code_only(_RUN_SRC)
 #: 账本累加器的键集（**全等**）：少一个键会红、多一个键也会红。
-#: ⚠️ 这里钉的是 `_koff_zero()` 的字典，与内核侧 `stats["offer"]`（只有
-#:    `unreached` 一个键）是**两份不同的东西** —— 第一次写这条判据时把两者
-#:    当成一个，于是拿 `["unreached"]` 去比 14 个键，当场红（自踩，已记）。
+#: ⚠️ 这里钉的是 `_koff_zero()` 的字典，与内核侧 `stats["offer"]`
+#:    （★ V58 起三个键：`unreached` + 两个分项）是**两份不同的东西** ——
+#:    第一次写这条判据时把两者当成一个，于是拿 `["unreached"]` 去比 14 个键，
+#:    当场红（自踩，已记）。
 _AZ120_KEYS = sorted(["tasks", "rounds", "offered", "produces_offered",
                       "step_offered", "dispatched", "blocked", "unreached",
                       "no_rounds", "only_delivery", "offered_not_done",
                       "done_without_offer", "offered_and_done",
-                      "offered_not_done_blocked"])
+                      "offered_not_done_blocked",
+                      # ★ V58（§124）：`unreached` 的出口分项 + 被跳过的工具。
+                      #   ⛔ `unreached_stop_gap` **不在这里**：它是 `_koff_line`
+                      #   派生出来的（与 `unaccounted` 同宗），零点里没有它 ——
+                      #   第一次就是把派生量也写进零点，于是 16 键比 17 键，当场红。
+                      "unreached_by_stop", "unreached_by_tool"])
 
 _AZ120_OK = {
     "①守恒：`offered == dispatched + blocked + unreached`（四格都成立）": all(
@@ -12101,9 +12113,10 @@ _AZ120_OK = {
     "⑨`■` 行带「未轮到=」（读数必须人眼可见，不能只活在账本里）": (
         all(any("未轮到=" in ln for ln in ls) for ls in
             (_AZ120_LS, _AZ120_L3, _AZ120_LT, _AZ120_LB))),
-    "⑩键集两侧全等（累加器 14 键 / 内核 `offer` 1 键）+ 两处并入 + 零点每次新建": (
+    "⑩键集两侧全等（累加器 16 键 / 内核 `offer` 3 键）+ 两处并入 + 零点每次新建": (
         sorted(_AZ120_Z0) == _AZ120_KEYS and _AZ120_Z0 is not _AZ120_Z1
-        and sorted(_az120_st(_AZ120_OS)["offer"]) == ["unreached"]
+        and sorted(_az120_st(_AZ120_OS)["offer"])
+        == ["unreached", "unreached_by_stop", "unreached_by_tool"]
         and _AZ120_CODE.count("_koff_absorb(_koff, out)") == 2
         and _AZ120_CODE.count("def _koff_absorb(") == 1
         and '"kernel_offer": _koff_line(_koff)' in _RUN_SRC),
@@ -12139,6 +12152,263 @@ check(RS, "AZ120 ★★★候选漏斗：把「提了什么」与「做了什么
         + f"{_AZ120_ACC['no_rounds']}/{_AZ120_ACC['only_delivery']}/"
           f"{_AZ120_ACC['offered_not_done']}/{_AZ120_ACC['done_without_offer']}/"
           f"{_AZ120_ACC['offered_and_done']}")
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ121（V58，§124）：候选的**顺序** —— 交付动作排第几、它后面还剩什么
+#
+# 为什么必须有这一条：V57 的账本里有 `unreached=8`，但**没有任何一格**
+# 记录这 8 个在同轮候选里排第几。于是「8 个死在 `finish` 成功之后」在账本上
+# 是一次**手推**（要求读者相信"交付动作总排第一"），不是读数。
+#
+# 判据（十条，缺一即证明不了这条边）：
+#   ① 守恒 `Σ unreached_by_stop == unreached`（四格都成立）；
+#   ② `[finish, recall, recall]` ⇒ 交付在第 0 位、尾 2、`answer` 丢 2、存活 0；
+#   ③ `[recall, finish]`（第 1 个成功）⇒ 交付在第 **1** 位、**尾 0**、
+#      但 `未轮到=1` 且落在 `step_ok` 上 —— 这一格证明「尾」与「未轮到」
+#      **不是同一个数**（V57 一行日志两个分母的同宗病）；
+#   ④ `[被拦, finish]` ⇒ 交付在第 1 位、`blocked=1`、`answer` 丢 0
+#      （被拦与没轮到两格不互相冒充）；
+#   ⑤ 交付候选**失败** ⇒ 落在 `fail` 上，且 `尾 1 / 存活 1`
+#      （这是 `tail_survived>0` 唯一的真分母）；
+#   ⑥ `unreached_by_tool` 逐名相等（②= `{recall:2}`、③= `{finish:1}`）；
+#   ⑦ `kernel_order` 键集全等 + 两个 solver 分支各并一次 + 零点每次新建；
+#   ⑧ 两个来源**矛盾**时 `tail_negative_tasks` 必须显形（检测器非死代码）；
+#   ⑨ 深拷：改写 `stats["plan"]["tail_tools_by_round"][0]` 不许污染内核；
+#   ⑩ `■` 行带「尾=」，且 ②格 `尾=2`、③格 `尾=0`（一正一反）。
+#
+# ⛔ ①②只是必要条件：三格全抄 `unreached` 也守恒。能证明拆对了的是 ②③④⑤
+#    四个**精确整数格**，其中 ② 与 ③ 的形态**相反**（交付第一 / 交付最后）。
+# ══════════════════════════════════════════════════════════════════════════
+_AZ121_GOAL = _AZ120_GOAL          # 题面与 AZ120 同源：`looks_complex` 必须为真，
+#                                    否则快通道 `n=1` 会把第 2/3 个候选当场截掉
+#                                    （V57 自踩：判据没写错，是装置够不着那一格）。
+
+
+class _AZ121LLM:
+    def __init__(self, mode: str) -> None:
+        self.mode = mode
+        self.planning = 0
+
+    @staticmethod
+    def _txt(m) -> str:                                       # noqa: ANN001
+        return (str(m.get("content", "")) if isinstance(m, dict)
+                else str(getattr(m, "content", "")))
+
+    def complete(self, messages, max_tokens=None):             # noqa: ANN001, ARG002
+        sysmsg = self._txt(messages[0]) if messages else ""
+        if sysmsg == _AZ117_ANS_SYS:                          # `planner.answer()`
+            return _AZ119_ANS
+        if "规划器" not in sysmsg:
+            return ""
+        self.planning += 1
+        if self.planning > 1:
+            return json.dumps({"candidates": [
+                {"intent": "交给一个恒不适用的能力", "tool": "never",
+                 "args": {"x": "1"}}]}, ensure_ascii=False)
+        _fin = {"intent": "直接给出答案", "tool": "finish",
+                "args": {"answer": _AZ119_ANS}}
+        if self.mode == "finish_first":
+            return json.dumps({"candidates": [
+                _fin,
+                {"intent": "先查一条记忆", "tool": "recall", "args": {"query": "az121-a"}},
+                {"intent": "再查一条记忆", "tool": "recall", "args": {"query": "az121-b"}},
+            ]}, ensure_ascii=False)
+        if self.mode == "step_first":
+            #: 交付排在**第 1 位**：第 1 个 `recall` 成功就 `break`。
+            #: ⚠️ 这一格是「尾」与「未轮到」分道扬镳的地方：尾 0，未轮到 1。
+            return json.dumps({"candidates": [
+                {"intent": "先查一条记忆", "tool": "recall", "args": {"query": "az121-s"}},
+                _fin,
+            ]}, ensure_ascii=False)
+        if self.mode == "blocked_first":
+            return json.dumps({"candidates": [
+                {"intent": "跑一条 shell 验证", "tool": "run_shell",
+                 "args": {"cmd": "echo az121", "timeout_s": 5}},
+                _fin,
+            ]}, ensure_ascii=False)
+        if self.mode == "boom_first":
+            #: 交付候选**失败**（`produces_answer` 的 handler 抛异常）。
+            #: ⛔ 只有这一格能证明 `tail_survived>0` 不是死代码。
+            return json.dumps({"candidates": [
+                {"intent": "交给一个总是失败的交付能力", "tool": "boom", "args": {"x": "1"}},
+                {"intent": "再查一条记忆", "tool": "recall", "args": {"query": "az121-x"}},
+            ]}, ensure_ascii=False)
+        return json.dumps({"candidates": [
+            {"intent": "交给一个恒不适用的能力", "tool": "never",
+             "args": {"x": "1"}}]}, ensure_ascii=False)
+
+
+def _az121_run(tag: str, mode: str):
+    d = _TMP / f"az121_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    (d / "state").mkdir(parents=True, exist_ok=True)
+    # ⚠️ 与 `_az120_run` 同一条纪律：`Paths` 是 frozen dataclass、构造时给全；
+    #    **不许**裸调 `cfg.settings()`（同一进程里前序断言改过 `os.environ`，
+    #    新 fixture 会继承它 —— V52 的 AZ115 就是这么把读数读成 0 的）。
+    #    `cand_failover` 必须为 0（默认值）：让位会把 `fail` 出口变成
+    #    「换下一个候选」，那一格就永远数不到。
+    s = cfg.Settings(
+        paths=cfg.Paths(root=d, state=d / "state", logs=d / "logs",
+                        workspace=ws, bench=d / "bench"),
+        limits=cfg.Limits(max_steps=8, close_reserve_steps=1, verify_retries=2,
+                          cand_failover=0))
+    c = Core(settings=s, llm=_AZ121LLM(mode),
+             memory=MemoryStore(d / "state" / "memory.db"))
+    c.tools.register(ToolSpec("never", "对任何题面都不适用", {"x": "参数"},
+                              lambda a: "y", applies=lambda g: False))
+
+    def _boom(_a):                                            # noqa: ANN001, ANN202
+        raise RuntimeError("az121-boom")
+    c.tools.register(ToolSpec("boom", "总是失败的交付能力", {"x": "参数"},
+                              _boom, produces_answer=True))
+    lines: list[str] = []
+    c.log = lines.append                                      # noqa: ARG005
+    out = c.run(_AZ121_GOAL, budget_factor=1)
+    return out, lines, c
+
+
+_AZ121_O2, _AZ121_L2, _AZ121_C2 = _az121_run("finish_first", "finish_first")
+_AZ121_O3, _AZ121_L3, _ = _az121_run("step_first", "step_first")
+_AZ121_O4, _AZ121_L4, _ = _az121_run("blocked_first", "blocked_first")
+_AZ121_O5, _AZ121_L5, _ = _az121_run("boom_first", "boom_first")
+_AZ121_ALL = (_AZ121_O2, _AZ121_O3, _AZ121_O4, _AZ121_O5)
+
+
+def _az121_st(o) -> dict:                                     # noqa: ANN001
+    return getattr(o, "stats", None) or {}
+
+
+def _az121_order(o):                                          # noqa: ANN001
+    """`(pos列表, 尾列表, 未轮到, by_stop, by_tool)` —— 五件一个不少。"""
+    st = _az121_st(o)
+    pl, of = (st.get("plan") or {}), (st.get("offer") or {})
+    return (list(pl.get("delivery_pos_by_round") or []),
+            [list(x) for x in (pl.get("tail_tools_by_round") or [])],
+            int(of.get("unreached") or 0),
+            dict(of.get("unreached_by_stop") or {}),
+            dict(of.get("unreached_by_tool") or {}))
+
+
+class _AZ121Out:
+    """最小 Outcome 替身：只带 `_kord_absorb` **真的读**的三个字典。
+
+    ⛔ 两个来源**故意矛盾**（尾 1、却声称因交付成功丢了 2）——
+       `tail_negative_tasks` 是检测器，检测器必须被证明**活着**（纪律 2 的反证组）。
+    """
+
+    def __init__(self, pos=(0,), tails=(["recall"],), dropped=2) -> None:
+        self.stats = {
+            "plan": {"per_round": [{"n": 1 + len(t), "tools": {}}
+                                   for t in tails],
+                     "delivery_pos_by_round": list(pos),
+                     "tail_tools_by_round": [list(t) for t in tails]},
+            "offer": {"unreached": dropped,
+                      "unreached_by_stop": {"answer": dropped, "step_ok": 0,
+                                            "fail": 0},
+                      "unreached_by_tool": {}},
+        }
+
+
+_AZ121_ACC = _run._kord_zero()
+for _o in _AZ121_ALL:
+    _run._kord_absorb(_AZ121_ACC, _o)
+_AZ121_BAD = _run._kord_absorb(_run._kord_zero(), _AZ121Out())
+
+#: ⑨ 深拷：往**导出出去**的 `tail_tools_by_round` 里塞一个假工具名，
+#:    内核的活引用**不许**跟着变。⚠️ 之后的判据与消息要用原值 ⇒ 探完就复原。
+_AZ121_DEEP_LIST = _AZ121_O2.stats["plan"]["tail_tools_by_round"][0]
+_AZ121_DEEP_LIST.append("__probe__")
+_AZ121_DEEP = "__probe__" not in _AZ121_C2.plan_stats["tail_tools_by_round"][0]
+_AZ121_DEEP_LIST.pop()
+
+_AZ121_KEYS = sorted(["tasks", "rounds", "with_delivery", "delivery_first",
+                      "delivery_last", "pos_hist", "tail_total", "tail_by_tool",
+                      "tail_survived", "tail_negative_tasks", "rounds_unpaired"])
+
+_AZ121_OK = {
+    "①守恒：`Σ unreached_by_stop == unreached`（四格都成立）": all(
+        sum(v for k, v in _az121_order(o)[3].items() if k in
+            ("answer", "step_ok", "fail")) == _az121_order(o)[2]
+        and _az121_order(o)[2] == sum(_az121_order(o)[4].values())
+        for o in _AZ121_ALL),
+    "②`[finish, recall, recall]` ⇒ 位置 0 / 尾 2 / answer 丢 2 / 存活 0": (
+        _az121_order(_AZ121_O2)[0][0] == 0
+        and len(_az121_order(_AZ121_O2)[1][0]) == 2
+        and _az121_order(_AZ121_O2)[3] == {"answer": 2, "step_ok": 0, "fail": 0}),
+    # ⛔ 这一格是本轮的新东西：「尾」说 0、「未轮到」说 1，两个数**同时成立**。
+    "③`[recall, finish]` ⇒ 位置 **1** / **尾 0** / 未轮到 1 落在 `step_ok`": (
+        _az121_order(_AZ121_O3)[0][0] == 1
+        and _az121_order(_AZ121_O3)[1][0] == []
+        and _az121_order(_AZ121_O3)[2] == 1
+        and _az121_order(_AZ121_O3)[3] == {"answer": 0, "step_ok": 1, "fail": 0}),
+    "④`[被拦, finish]` ⇒ 位置 1 / blocked 1 / `answer` 丢 0（两格不互相冒充）": (
+        _az121_order(_AZ121_O4)[0][0] == 1
+        and int((_az121_st(_AZ121_O4).get("loop") or {}).get("blocked_skipped") or 0) == 1
+        and _az121_order(_AZ121_O4)[2] == 0
+        and _az121_order(_AZ121_O4)[3] == {"answer": 0, "step_ok": 0, "fail": 0}),
+    "⑤交付候选失败 ⇒ 落在 `fail` 上，`尾 1 / 存活 1`（`tail_survived>0` 的真分母）": (
+        _az121_order(_AZ121_O5)[0][0] == 0
+        and len(_az121_order(_AZ121_O5)[1][0]) == 1
+        and _az121_order(_AZ121_O5)[3] == {"answer": 0, "step_ok": 0, "fail": 1}
+        and _AZ121_ACC["tail_total"] == 3
+        and _AZ121_ACC["tail_survived"] == 1),
+    "⑥`unreached_by_tool` 逐名相等（②= `{recall:2}`、③= `{finish:1}`）": (
+        _az121_order(_AZ121_O2)[4] == {"recall": 2}
+        and _az121_order(_AZ121_O3)[4] == {"finish": 1}),
+    "⑦`kernel_order` 键集全等 + 两个 solver 分支各并一次 + 零点每次新建": (
+        sorted(_AZ121_ACC) == _AZ121_KEYS
+        and _run._kord_zero() is not _run._kord_zero()
+        and _code_only(_RUN_SRC).count("_kord_absorb(_kord, out)") == 2
+        and _code_only(_RUN_SRC).count("def _kord_absorb(") == 1
+        and '"kernel_order": _kord' in _RUN_SRC),
+    "⑧两个来源矛盾 ⇒ `tail_negative_tasks` 显形（检测器非死代码）": (
+        _AZ121_BAD["tail_negative_tasks"] == 1
+        and _AZ121_BAD["tail_survived"] == -1
+        and _AZ121_ACC["tail_negative_tasks"] == 0
+        and _AZ121_ACC["rounds_unpaired"] == 0),
+    "⑨深拷：改写导出的 `tail_tools_by_round` 不许污染内核": _AZ121_DEEP,
+    "⑩`■` 行带「尾=」，②格 `尾=2`、③格 `尾=0`（一正一反）": (
+        any("尾=2" in ln for ln in _AZ121_L2 if ln.startswith("■ "))
+        and any("尾=0" in ln for ln in _AZ121_L3 if ln.startswith("■ "))),
+}
+
+_AZ121_LEDGER = " ".join(
+    f"{k}={_AZ121_ACC[k]}" for k in ("rounds", "with_delivery", "delivery_first",
+                                     "delivery_last", "tail_total",
+                                     "tail_survived"))
+
+check(RS, "AZ121 ★★★候选的**顺序**：交付动作排第几、它后面还剩什么\n"
+          "          —— V57 的 `unreached=8` 没有任何一格记录这 8 个排第几，\n"
+          "             于是「8 个死在 `finish` 成功之后」在账本上是一次**手推**。\n"
+          "             本轮把「第几」与「后面剩什么」变成可数的两个量。\n"
+          "          判据（十条，缺一即证明不了这条边）：\n"
+          "               ① 守恒 `Σ unreached_by_stop == unreached`；\n"
+          "               ② `[finish, recall, recall]` ⇒ 位置 0 / 尾 2 / answer 丢 2；\n"
+          "               ③ `[recall, finish]` ⇒ 位置 **1** / **尾 0** / 未轮到 1 ——\n"
+          "                  「尾」与「未轮到」不是同一个数（本轮的核心）；\n"
+          "               ④ `[被拦, finish]` ⇒ 位置 1 / blocked 1 / answer 丢 0；\n"
+          "               ⑤ 交付候选失败 ⇒ 落 `fail`，且尾 1 / 存活 1；\n"
+          "               ⑥ `unreached_by_tool` 逐名相等；\n"
+          "               ⑦ `kernel_order` 键集全等 + 两处并入；\n"
+          "               ⑧ 来源矛盾时 `tail_negative_tasks` 必须显形；\n"
+          "               ⑨ 深拷（内层列表也是活引用）；\n"
+          "               ⑩ `■` 行带「尾=」。\n"
+          "          撤回语义：`_note_unreached` 去掉 `stop` 分项 ⇒ ②③④⑤ 必红；\n"
+          "                    `_note_plan_round` 去掉 pos/tail 那几行 ⇒ ②③⑦ 必红；\n"
+          "                    `tail_survived` 写成恒 0 ⇒ ⑤⑧ 必红；\n"
+          "                    `tail_negative_tasks` 去掉那支 ⇒ ⑧ 必红；\n"
+          "                    `tail_tools_by_round` 改浅拷 ⇒ ⑨ 必红；\n"
+          "                    `■` 行去掉「尾=」⇒ ⑩ 必红。",
+      all(_AZ121_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ121_OK.items())
+      + " ｜ 四格 (pos,尾,未,answer,step_ok,fail)="
+      + "/".join(f"({_az121_order(o)[0]},{len(_az121_order(o)[1][0])},"
+                 f"{_az121_order(o)[2]},"
+                 f"{_az121_order(o)[3].get('answer')},"
+                 f"{_az121_order(o)[3].get('step_ok')},"
+                 f"{_az121_order(o)[3].get('fail')})" for o in _AZ121_ALL)
+      + f" ｜ 账本={_AZ121_LEDGER}")
 
 print()
 print("=" * 74)

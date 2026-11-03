@@ -513,6 +513,17 @@ def _plan_zero() -> dict:
         "distinct_by_round": [],       # 第 i 轮有**几种**工具（与 produces_by_round 对齐）
         "distinct_tools_max_round": 0,  # 所有轮里最多几种（与 by_tool_max_round 并列）
         "rounds_same_tool_wide": 0,    # `n>=2` 且 `distinct==1` 的轮数（"一路多枪"）
+        # ★ V58（§124）：**顺序**。上面所有读数都只回答"几个/几种"，
+        #   没有一格回答"第几个是交付动作"。于是 V57 的「8 个未轮到死在
+        #   `finish` 成功之后」在账本上是一次**手推**，不是读数。
+        # ⛔ 不开进 `per_round` 的字典（三份冻结探针在那里做整字典相等，纪律 20/27）
+        #   ⇒ 另立两个与 `per_round` **等长对齐**的平行列表，与
+        #   `produces_by_round` / `distinct_by_round` 同一个模式。
+        "delivery_pos_by_round": [],   # 第 i 轮**第一个交付候选**的下标；-1 = 本轮没有
+        # ⛔ 存**工具名**而不只存个数：个数已经等于 `n - pos - 1`（可算），
+        #   而"被跳过的是什么"（`recall` 还是 `run_shell`）**算不出来**。
+        #   只存个数就是又造一个能推出来的冗余字段（§122 同因）。
+        "tail_tools_by_round": [],     # 第 i 轮交付候选**之后**那些候选的工具名
     }
 
 
@@ -854,6 +865,19 @@ class Core:
             ps["distinct_tools_max_round"] = _kinds
         if len(cands) >= 2 and _kinds == 1:
             ps["rounds_same_tool_wide"] += 1
+        # ★ V58（§124）：**顺序** —— 第一个交付候选在第几位、它后面还剩什么。
+        # ⚠️ 谓词与上面 `produces` 那个循环**同源**（都在这一处声明）：
+        #    `c.tool == "finish" or spec.produces_answer`。抄第二份就会与
+        #    `produces_by_round` 对不上 —— 而那两个数在账本里是要相减的。
+        _pos = -1
+        for i, c in enumerate(cands):
+            _sp = self.tools.get(c.tool)
+            if c.tool == "finish" or (_sp is not None and _sp.produces_answer):
+                _pos = i
+                break
+        ps["delivery_pos_by_round"].append(_pos)
+        ps["tail_tools_by_round"].append(
+            [c.tool for c in cands[_pos + 1:]] if _pos >= 0 else [])
 
     # ------------------------------------------------------------------
     def _prime_counters(self, goal: str = "") -> None:
@@ -1609,7 +1633,9 @@ class Core:
                         #    同轮剩下的候选**再没被考虑过**。这一格是"未轮到"
                         #    的第一种来源（第二种是成功后的 `break`，第三种是
                         #    交付成功后的 `return`）。
-                        self._note_unreached(cands, ci)
+                        # ★ V58：出口名 `fail` —— 这一格丢掉的是"预算/让位"问题，
+                        #    不是"想不想得到别的"问题。
+                        self._note_unreached(cands, ci, "fail")
                         executed = True
                         break
                     consecutive_failures = 0
@@ -1634,7 +1660,9 @@ class Core:
                         # ⚠️ 这是**设计**（拿到答案就收工），不是缺陷；但如果不记，
                         #    "12 题里 6 题只提交付动作"就会被读成"模型想不出别的"。
                         #    真实读数（§123）：30 个候选进执行器，其中 8 个死在这里。
-                        self._note_unreached(cands, ci)
+                        # ★ V58：出口名 `answer` —— 这是**唯一**"损失候选"的出口，
+                        #    另外两格（`step_ok` / `fail`）与"答案够不够好"无关。
+                        self._note_unreached(cands, ci, "answer")
                         if self._unverified:
                             # 自检反复不过 ⇒ 交付内容是真的，但**没过闸**。
                             # 状态必须说出来：报 done 就等于把"没检查过"说成"检查过了"。
@@ -1661,7 +1689,9 @@ class Core:
                     # ★ V57（§123）：非交付动作成功 ⇒ 同样 `break`。
                     # ⛔ 这一格最容易被漏：它看起来"成功了一件事，没问题"，
                     #    但同一轮里第 2/3 个候选一样一次都没被考虑过。
-                    self._note_unreached(cands, ci)
+                    # ★ V58：出口名 `step_ok` —— 它与 `answer` 的差别就是
+                    #    "丢掉的是不是更好的答案" 的全部内容（V58 §3.2 P8 押它全 0）。
+                    self._note_unreached(cands, ci, "step_ok")
                     executed = True
                     break
 
@@ -2164,17 +2194,47 @@ class Core:
             #:    混进这一格会让"被 guard 拦"看起来像"没轮到"——
             #:    而两者的修法完全相反（放宽闸 vs 别在同一轮塞多个候选）。
             "unreached": 0,
+            #: ★ V58（§124）：`unreached` 按**出口**分列。三个出口的修法相反：
+            #:   `answer` = 交付动作成功后才丢的（**损失候选**：被跳过的可能是更好的答案）
+            #:   `step_ok` = 步骤动作成功后丢的（大概率冗余：同一轮的第二枪）
+            #:   `fail`    = 动作失败后丢的（预算/让位问题，不是"想不想"问题）
+            #: ⛔ 三格必须与 `unreached` 守恒（`Σ == unreached`）：只留分项会让
+            #:    "总数 8" 与 "分项和 6" 长期并存 —— V56 的 `by_verdict` 同宗。
+            "unreached_by_stop": {"answer": 0, "step_ok": 0, "fail": 0},
+            #: 被跳过的候选**是什么工具**。⛔ 只有 `blocked` 有 `by_tool`，
+            #:   于是"8 个未轮到里有几个是 recall"此前只能 grep 日志猜
+            #:   （而 V57 已证：日志里的 `↳` 行带时间戳前缀，`startswith` 会全判错）。
+            "unreached_by_tool": {},
         }
 
-    def _note_unreached(self, cands, ci: int) -> None:
-        """记下**这一轮提前退出**时被跳过的候选数（V57，§123）。
+    def _note_unreached(self, cands, ci: int, stop: str) -> None:
+        """记下**这一轮提前退出**时被跳过的候选数（V57，§123；V58 加出口与工具）。
 
         ⚠️ 只在**真的提前退出**的三个点调用（交付成功 `return`、成功 `break`、
            失败 `break`）；循环正常跑完时一个都不该记 —— 那种场合没有"没轮到"。
         ⛔ 不用 `max(0, …)` 掩盖算错：`ci` 越界只可能是调用点写错，
            钳位会让一个真 bug 变成"读数是 0"（缺席冒充零，纪律 5）。
+
+        `stop` 是**出口名**，不是"这一轮的结局"：同一次运行里三个出口都可能出现。
+        ⛔ 传错一个字符串，`by_stop` 就整格错位 —— 而总数仍然守恒（守恒只是必要条件，
+           §46）。所以 `stop` 只许取三个字面量，越界当场 `KeyError`（不静默建键）。
         """
-        self.offer_stats["unreached"] += len(cands) - ci - 1
+        _skipped = cands[ci + 1:]
+        self.offer_stats["unreached"] += len(_skipped)
+        _by_stop = self.offer_stats["unreached_by_stop"]
+        _by_stop[stop] += len(_skipped)          # 越界的 `stop` 在这里炸掉，不建新键
+        if _skipped:
+            _bt = self.offer_stats["unreached_by_tool"]
+            _cnt: dict = {}
+            for c in _skipped:
+                _bt[c.tool] = _bt.get(c.tool, 0) + 1
+                _cnt[c.tool] = _cnt.get(c.tool, 0) + 1
+            # ★ 人读的一行：**只在交付成功后丢东西时**打（那是唯一的"损失候选"）。
+            #   ⛔ 不是给判据用的（判据读 `unreached_by_tool`）：一行日志里再放
+            #   一个可数的量，就是 V57 那个"一行两个分母"的坑。
+            if stop == "answer":
+                self.log(f"  ⏭ 交付成功 ⇒ 本轮剩余 {len(_skipped)} 个候选未轮到："
+                         + "、".join(f"{t}×{k}" for t, k in _cnt.items()))
 
     def _reset_external(self) -> None:
         """外部能力读数的**唯一**初始化处（`__init__` 与 `run()` 都调它）。
@@ -2587,6 +2647,13 @@ class Core:
                 "distinct_by_round": list(self.plan_stats["distinct_by_round"]),
                 "distinct_tools_max_round": self.plan_stats["distinct_tools_max_round"],
                 "rounds_same_tool_wide": self.plan_stats["rounds_same_tool_wide"],
+                # ★ V58（§124）：顺序。两个列表与 `per_round` **等长对齐**
+                #   （同一个 `_note_plan_round` 里 append）⇒ 可以直接按下标对读。
+                # ⚠️ 同样必须深拷：`tail_tools_by_round` 是"列表的列表"，
+                #   浅拷会把内层列表的**活引用**交出去，调用方 append 一次就串味。
+                "delivery_pos_by_round": list(self.plan_stats["delivery_pos_by_round"]),
+                "tail_tools_by_round": [list(x) for x in
+                                        self.plan_stats["tail_tools_by_round"]],
             },
             # ★ 第一百三十二轮（§108）：候选让位。**五项零值也在** ——
             # `used=0` 与"开关没装"是两件必须分得开的事（§66 同因）。
@@ -2822,6 +2889,11 @@ class Core:
                  #   并列而不是相加：那两个是"做了几次"，这个是"提了没做几个"
                  #   —— 加起来会得到一个既不表示做也不表示提的数。
                  f"/未轮到={stats['offer']['unreached']}）"
+                 # ★ V58（§124）：交付候选**之后**还剩几个候选（= 顺序读数）。
+                 # ⚠️ 与「未轮到」并列而**不是**替代：`尾` 是**计划侧的上界**
+                 #   （按位置算），`未轮到` 是**执行侧的事实**（真的提前退出了）。
+                 #   尾 > 未轮到 ⇒ 尾里那些**真的被执行到过**（`finish` 被打回后继续）。
+                 f" 尾={sum(len(x) for x in stats['plan']['tail_tools_by_round'])}"
                  f" | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}{_ex2_line}")

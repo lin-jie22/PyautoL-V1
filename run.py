@@ -668,7 +668,15 @@ def _koff_zero() -> dict:
             #: `offered_not_done` 里**同时**有候选被 guard 拦的题数。
             #: ⚠️ 这是**子集**，不是互补：没有它，`offered_not_done=4` 无法区分
             #:    "被拦掉了 2 题"与"没轮到 4 题"—— 而两者修法相反。
-            "offered_not_done_blocked": 0}
+            "offered_not_done_blocked": 0,
+            #: ★ V58（§124）：`unreached` 按**出口**分列。三格合起来必须等于
+            #:    `unreached`（守恒）。⛔ 它不是"更细的同一件事"：
+            #:    `answer` 是**损失候选**（交付已经成了，被跳过的可能是更好的答案），
+            #:    `step_ok` 两条大概率冗余、`fail` 是预算问题。修法三样。
+            "unreached_by_stop": {"answer": 0, "step_ok": 0, "fail": 0},
+            #: 被跳过的候选是什么工具。⛔ 与 `blocked` 的 `by_tool` 分列：
+            #:    同名合并会让"被闸拦"和"没轮到"重新混成一格。
+            "unreached_by_tool": {}}
 
 
 def _koff_absorb(acc: dict, out) -> dict:
@@ -708,6 +716,15 @@ def _koff_absorb(acc: dict, out) -> dict:
     acc["dispatched"] = int(acc.get("dispatched", 0)) + disp
     acc["blocked"] = int(acc.get("blocked", 0)) + blk
     acc["unreached"] = int(acc.get("unreached", 0)) + unr
+    # ★ V58（§124）：分项并入。⛔ 三个键**逐个**并，不 `update()` 覆盖 ——
+    #   覆盖会让第二题的分项顶掉第一题的（`_kfo_absorb` 踩过同形的坑）。
+    _bs = of.get("unreached_by_stop") or {}
+    _bst = acc["unreached_by_stop"]
+    for _sk in ("answer", "step_ok", "fail"):
+        _bst[_sk] = int(_bst.get(_sk, 0)) + int(_bs.get(_sk) or 0)
+    _but = acc["unreached_by_tool"]
+    for _tk, _tn in (of.get("unreached_by_tool") or {}).items():
+        _but[_tk] = int(_but.get(_tk, 0)) + int(_tn or 0)
 
     #: 五格互斥且穷尽。⛔ `rounds == 0` 必须**先**判：没有候选的题
     #:    `step_off == 0 and step_done == 0` 也成立，落进 `only_delivery`
@@ -746,7 +763,124 @@ def _koff_line(acc: dict) -> dict:
     out = dict(acc)
     out["unaccounted"] = (int(out.get("offered", 0)) - int(out.get("dispatched", 0))
                           - int(out.get("blocked", 0)) - int(out.get("unreached", 0)))
+    # ★ V58（§124）：**分项**的检测器。与 `unaccounted` 同一思路、不同分母：
+    #   `unaccounted` 问「三个大出口之外还有没有候选消失」，
+    #   这一条问「`unreached` 的分项有没有漏一个出口」。
+    # ⛔ 必须为 0：加进第四个出口却忘了在 `_note_unreached` 里登记，
+    #   就会在这里显形，而不是让分项和长期小于总数（V56 `by_verdict` 的老病）。
+    _bs_sum = sum(int(v or 0) for v in (out.get("unreached_by_stop") or {}).values())
+    out["unreached_stop_gap"] = int(out.get("unreached", 0)) - _bs_sum
     return out
+
+
+def _kord_zero() -> dict:
+    """**顺序**读数的累加器零点（V58，§124）。
+
+    ## 为什么需要它
+
+    V57 的账本里有 `unreached=8`，但**没有任何一格**记录这 8 个在同轮候选里
+    排在第几个、在什么之后。于是 V57 那句「8 个死在 `finish` 成功之后」
+    在账本上是一次**手推**：它需要读者相信"交付动作总排在第一个"。
+    本轮把这件事变成两个可数的量：
+
+    | 量 | 分母 | 回答 |
+    |---|---|---|
+    | `delivery_first` / `delivery_last` / `pos_hist` | **轮** | 交付动作排第几 |
+    | `tail_total` / `tail_by_tool` | **候选** | 它后面还剩几个、是什么 |
+    | `tail_survived` | **候选** | 尾里**没有**被「交付成功就 return」丢掉的 |
+
+    ⛔ `tail_survived` 不是"浪费"的补集：尾里被 guard 拦下、被跳过、
+    被真的执行到，都会落进它。"没被丢"与"被执行"是两件事 ——
+    这正是 V57 那个 `■` 行里两个分母的教训。
+
+    ## 与 `_koff` 的分工（不许合并）
+
+    `_koff` 的主分母是**题**（`offered` 已按题累加），`_kord` 的主分母是**轮**。
+    合成一个字典就会出现"轮数被当成题数"的读数 —— 而两者相差 18 vs 12。
+    """
+    return {
+        "tasks": 0,            # 题数（与 `_koff.tasks` 必须相等）
+        "rounds": 0,           # 轮数（与 `_koff.rounds` 必须相等）
+        "with_delivery": 0,    # 有**交付候选**的轮数
+        "delivery_first": 0,   # 交付候选在**第 0 位**的轮数
+        "delivery_last": 0,    # 交付候选在**最后一位**的轮数（`n=1` 时两者同时成立）
+        "pos_hist": {},        # 下标 -> 轮数（字符串键，JSON 稳定）
+        "tail_total": 0,       # 交付候选**之后**的候选总数
+        "tail_by_tool": {},    # 那些候选是什么工具
+        #: 尾里**没有**死在「交付动作成功 ⇒ `return`」上的候选数。
+        #: ⛔ 结构上 `0 <= tail_survived <= tail_total`：前者越界说明两个来源
+        #:    （plan 的位置 / offer 的出口）至少有一个算错，红比好看重要。
+        "tail_survived": 0,
+        #: 尾比"被交付成功丢掉的"还少的题数（两个来源互相矛盾的检测器）。
+        #: ⛔ 必须为 0；非 0 时 `tail_survived` 整列不可信（正负互相抵消）。
+        "tail_negative_tasks": 0,
+        #: 两个平行列表**长度不等**的轮数。⛔ 它是装置检测器，不是业务量：
+        #: `delivery_pos_by_round` 与 `per_round` 靠同一个 append 对齐，
+        #: 一旦有一处漏 append，按下标对读会**静默错位**（读到别的轮）。
+        #: 必须为 0；不为 0 时 `pos_hist` 整张表都不可信。
+        "rounds_unpaired": 0,
+    }
+
+
+def _kord_absorb(acc: dict, out) -> dict:
+    """把**一道题**的顺序读数并进累加器（就地修改并返回）。
+
+    ⚠️ 两个来源都在 `out.stats` 里，各有唯一的声明处：
+        `plan.delivery_pos_by_round` / `plan.tail_tools_by_round`（位置与尾）
+        `offer.unreached_by_stop["answer"]`（尾里**真的**被丢了多少）
+    ⛔ 不在这里重新判断"哪个是交付动作"：谓词在内核 `_note_plan_round` 里
+       只声明一处（`c.tool == "finish" or spec.produces_answer`）。抄一份过来，
+       两份迟早对不上，而这两个数在判据里是要相减的。
+    """
+    st = getattr(out, "stats", None) or {}
+    pl = st.get("plan") or {}
+    of = st.get("offer") or {}
+    pr = pl.get("per_round") or []
+    pos = pl.get("delivery_pos_by_round") or []
+    tails = pl.get("tail_tools_by_round") or []
+
+    acc["tasks"] = int(acc.get("tasks", 0)) + 1
+    acc["rounds"] = int(acc.get("rounds", 0)) + len(pr)
+    acc["rounds_unpaired"] = int(acc.get("rounds_unpaired", 0)) + (
+        1 if len(pos) != len(pr) or len(tails) != len(pr) else 0)
+
+    _tail_task = 0
+    for i, r in enumerate(pr):
+        # ⚠️ 越界就是装置问题（上面那格已经记账），这里**跳过**而不是
+        #    猜一个位置：猜出来的 `pos` 会让 `pos_hist` 整张表带毒。
+        if i >= len(pos) or i >= len(tails):
+            continue
+        p = int(pos[i])
+        if p < 0:
+            continue
+        n = int(r.get("n") or 0)
+        acc["with_delivery"] = int(acc.get("with_delivery", 0)) + 1
+        if p == 0:
+            acc["delivery_first"] = int(acc.get("delivery_first", 0)) + 1
+        if p == n - 1:
+            acc["delivery_last"] = int(acc.get("delivery_last", 0)) + 1
+        _ph = acc["pos_hist"]
+        _pk = str(p)
+        _ph[_pk] = int(_ph.get(_pk, 0)) + 1
+        _tl = list(tails[i])
+        acc["tail_total"] = int(acc.get("tail_total", 0)) + len(_tl)
+        _tail_task += len(_tl)
+        _bt = acc["tail_by_tool"]
+        for t in _tl:
+            _bt[t] = int(_bt.get(t, 0)) + 1
+
+    #: 尾里**没被**「交付成功就 return」丢掉的候选数。
+    #: ⚠️ 只在**这一题**内相减（两边的分母都是"这一题"）：跨题相减会让
+    #:    一题的负值与另一题的正值互相抵消 —— 而负值本身就是装置故障。
+    _dropped_by_answer = int((of.get("unreached_by_stop") or {}).get("answer") or 0)
+    _surv = _tail_task - _dropped_by_answer
+    acc["tail_survived"] = int(acc.get("tail_survived", 0)) + _surv
+    #: 这一题的尾**比**"被交付成功丢掉的"还少 —— 两个来源（plan 的位置 /
+    #: offer 的出口）互相矛盾。⛔ 必须为 0；它一旦非 0，`tail_survived`
+    #: 的正值就是另一题的负值抵消出来的，整列不可信（不许让它悄悄抵消）。
+    if _surv < 0:
+        acc["tail_negative_tasks"] = int(acc.get("tail_negative_tasks", 0)) + 1
+    return acc
 
 
 def _ktx_zero() -> dict:
@@ -1483,6 +1617,10 @@ def cmd_bench(args) -> int:
     _koff = _koff_zero()    # ★ V57（§123）：候选漏斗。与 `_kexec` **并列**：
     #                         `exec` 说"做了几次"，`offer` 说"提了几个、剩下去了哪"。
     #                         ⛔ 合成一个字典那一格就再也分不开"没提"与"提了没做"。
+    _kord = _kord_zero()    # ★ V58（§124）：**顺序**。`offer` 说"剩下几个"，
+    #                         它说"剩下那些在第几个交付动作之后"——
+    #                         ⛔ 与 `_koff` 分列：位置是**轮**的属性，
+    #                         而 `_koff` 的主分母是**题**（V57 的 `offered` 已按题计）。
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
     _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
 
@@ -1671,6 +1809,9 @@ def cmd_bench(args) -> int:
                         # ★ V57（§123）：候选漏斗。⛔ 必须与 `_kexec_absorb` 紧挨着 ——
                         #   两个数共用"这一题"这个分母，分开写会有一处漏掉。
                         _koff_absorb(_koff, out)
+                        # ★ V58（§124）：顺序。**必须与 `_koff_absorb` 紧挨** ——
+                        #   它读的是同一份 `plan`/`offer`，分开写就会有一处漏。
+                        _kord_absorb(_kord, out)
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
                         _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -1709,6 +1850,8 @@ def cmd_bench(args) -> int:
                 _kexec_absorb(_kexec, out)
                 # ★ V57（§123）：两处都接 —— 漏一处 = 静默少计一题的漏斗。
                 _koff_absorb(_koff, out)
+                # ★ V58（§124）：与 `--fresh` 那支同一条理由。
+                _kord_absorb(_kord, out)
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
                 _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -2007,6 +2150,12 @@ def cmd_bench(args) -> int:
         #   `exec.dispatched` 回答"做了几次"，`offer.offered` 回答"提了几个"，
         #   差值 `unaccounted` 必须为 0 —— 不为 0 就说明还有第三个出口没被数到。
         "kernel_offer": _koff_line(_koff),
+        # ★ V58（§124）：**顺序**。⛔ 与 `kernel_offer` 并列、不并进去：
+        #   `offer` 的分母是**题**，这里的主分母是**轮**（18 vs 12）；
+        #   合成一个字典，`pos_hist` 的合计就会被当成题数读。
+        #   `tail_survived` 与 `unreached_by_stop.answer` 合起来必须等于 `tail_total`
+        #   （两个来源独立累加，对不上就是装置故障 —— `tail_negative_tasks` 兜底）。
+        "kernel_order": _kord,
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。
         "kernel_external": _kex,
         # 传输层 / 墙钟读数（第二十五轮）：重试链有没有超支预算，必须可事后审计。

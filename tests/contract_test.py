@@ -11621,6 +11621,82 @@ check(RS, "AZ117 ★★收尾出口必须说得出「此前下发过几次」\n"
       all(_AZ117_OK.values()),
       " ｜ ".join(f"{k}={v}" for k, v in _AZ117_OK.items()))
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ118（第一百四十四轮 §121）：按题的「下发次数 × 验收结论」进没进账本
+#
+# 为什么需要这条边：「零下发的文本交付算不算交付」这个问题，**手上答不了**。
+#   · `kernel_closeout.zero_exec` 只覆盖**收尾出口**（`_close_out`）；
+#   · `finish` 出口（`status=done`）占真实判定行的 12/26，它一条都没数过；
+#   · `report.per_task` 只有 `{id, rep, score, why}` —— 没有 `verdict`，没有 `exec`。
+# ⇒ 这个交叉表只能 grep stdout 的 `■` 行。V55 第一次回溯就因为
+#   `startswith("↳ ")` 撞上 `HH:MM:SS` 前缀，把 14/14 全判成「零调用」。
+#   同一个问题两次读不一样 ⇒ 它就不是读数。
+#
+# 判据（六条）：
+#   ① 账本行里有 `kernel_exec`（不落盘的读数不可审计）
+#   ② 三个累加点都接上（`_kexec_absorb` 在**两个** solver 分支各一次 + 定义一次）
+#   ③ 合计对得上：tasks / dispatched / ok / fail
+#   ④ **反向闸**：0 下发那格记进 `zero_dispatch_tasks`，有下发那格**不许**记
+#   ⑤ 两个字典**分列**，且 `by_verdict` 的合计必须等于 `tasks`（缺席冒充零）
+#   ⑥ 零点每次都是**新**字典（共享可变默认值会让两轮串味）
+# ══════════════════════════════════════════════════════════════════════════
+from run import _kexec_absorb as _AZ118_ABS, _kexec_zero as _AZ118_ZERO  # noqa: E402
+
+
+class _AZ118Out:
+    """最小 Outcome 替身：只带 `_kexec_absorb` **真的读**的两个字段。"""
+
+    def __init__(self, dispatched: int, verdict: str) -> None:
+        self.stats = {"exec": {"dispatched": dispatched, "ok": dispatched, "fail": 0}}
+        self.verdict = verdict
+
+
+_AZ118_KEYS = sorted(["tasks", "dispatched", "ok", "fail",
+                      "zero_dispatch_tasks", "by_verdict", "zero_dispatch_by_verdict"])
+_Z0 = _AZ118_ZERO()
+_Z1 = _AZ118_ZERO()
+_AZ118_FRESH = (_Z0 is not _Z1
+                and _Z0["by_verdict"] is not _Z1["by_verdict"]
+                and _Z0["zero_dispatch_by_verdict"] is not _Z1["zero_dispatch_by_verdict"])
+_ACC = _AZ118_ZERO()
+_AZ118_ABS(_ACC, _AZ118Out(0, "ANSWER"))      # 零下发
+_AZ118_ABS(_ACC, _AZ118Out(3, "FAIL"))        # 三次下发（反向闸的格）
+_AZ118_ABS(_ACC, _AZ118Out(1, ""))            # verdict 空 ⇒ 记成 `?`，不许丢掉这一题
+_AZ118_CODE = _code_only(_RUN_SRC)
+
+_AZ118_OK = {
+    "①账本行里有 `kernel_exec`": '"kernel_exec": _kexec' in _RUN_SRC,
+    "②两个 solver 分支都接了累加（+定义共三处）": (
+        _AZ118_CODE.count("_kexec_absorb(_kexec, out)") == 2
+        and _AZ118_CODE.count("def _kexec_absorb(") == 1),
+    "③合计对得上（tasks/dispatched/ok/fail）": (
+        (_ACC["tasks"], _ACC["dispatched"], _ACC["ok"], _ACC["fail"]) == (3, 4, 4, 0)),
+    "④反向闸：0 下发记 1 题、有下发不记": _ACC["zero_dispatch_tasks"] == 1,
+    "⑤两个字典分列且 by_verdict 合计 == tasks": (
+        sum(_ACC["by_verdict"].values()) == _ACC["tasks"]
+        and sum(_ACC["zero_dispatch_by_verdict"].values()) == 1
+        and _ACC["by_verdict"] == {"ANSWER": 1, "FAIL": 1, "?": 1}
+        and _ACC["zero_dispatch_by_verdict"] == {"ANSWER": 1}),
+    "⑥零点每次都是新字典（不共享可变默认值）": _AZ118_FRESH and sorted(_Z0) == _AZ118_KEYS,
+}
+
+check(RS, "AZ118 ★★「零下发」是**题**的属性，不是收尾的属性：\n"
+          "          —— `kernel_closeout.zero_exec` 只数收尾出口，`status=done`\n"
+          "             那一半（真实判定行 12/26）它一条都没数过；`per_task` 里\n"
+          "             既没有 `verdict` 也没有 `exec` ⇒ 交叉表只能 grep 日志。\n"
+          "          判据（六条，缺一即证明不了这条边）：\n"
+          "               ① 账本行含 `kernel_exec`；\n"
+          "               ② 两个 solver 分支各接一次（漏一处 = 静默少计一题）；\n"
+          "               ③ tasks/dispatched/ok/fail 四个合计对得上；\n"
+          "               ④ **反向闸**：0 下发记 1、3 次下发不记（排除常量计数器）；\n"
+          "               ⑤ 两个 `by_*` 分列，且 `by_verdict` 合计 == `tasks`；\n"
+          "               ⑥ 零点每次新建（共享可变默认值会让两轮串味）。\n"
+          "          撤回语义：拿掉 `if d == 0:` 那支 ⇒ ④ 必红；\n"
+          "                    `by_verdict` 合计漏记空 verdict ⇒ ⑤ 必红；\n"
+          "                    把 `_kexec_zero` 的字典提到模块级常量 ⇒ ⑥ 必红。",
+      all(_AZ118_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ118_OK.items()))
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

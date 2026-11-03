@@ -530,6 +530,67 @@ def _kco_absorb(acc: dict, stats: dict) -> dict:
     return acc
 
 
+def _kexec_zero() -> dict:
+    """按题的「下发次数 × 验收结论」累加器零点（V55，§121）。
+
+    ## 为什么必须落盘
+
+    「零下发的文本交付算不算交付」这个问题，**手上 26 条真实判定行答不了**：
+    `kernel_closeout.zero_exec` 只覆盖**收尾出口**，而 `finish` 出口
+    （`status=done`，占真实判定行的 12/26）一条都没被它数过；`report.per_task`
+    只有 `{id, rep, score, why}`，既没有 `verdict` 也没有 `exec`。
+    于是这个交叉表只能靠 grep stdout 的 `■` 行 —— 而 V55 第一次回溯就因为
+    `startswith("↳ ")` 撞上 `HH:MM:SS` 前缀，把 14/14 全判成"零调用"。
+    **同一个问题两次读不一样**，那它就不是读数。
+
+    ## 与 `kernel_closeout.zero_exec` 的区别（⛔ 两个分母，不许合并）
+
+    | 字段 | 分母 | 回答 |
+    |---|---|---|
+    | `kernel_closeout.zero_exec` | 进过收尾的**次数** | 收尾之前动过手没有 |
+    | `kernel_exec.zero_dispatch_tasks` | **题数**（全部出口） | 这题一次都没下发就交了 |
+
+    前者是"收尾这个出口"的属性，后者是"这一题"的属性。合成一个数，
+    `done` 出口的零下发就会被永久藏起来 —— 而那正是 §116/§118 的病位。
+    """
+    return {"tasks": 0, "dispatched": 0, "ok": 0, "fail": 0,
+            "zero_dispatch_tasks": 0,
+            #: 两个字典**分列**：`by_verdict` 是"每题验收结论的分布"，
+            #: `zero_dispatch_by_verdict` 是"零下发那几题的验收结论分布"。
+            #: 只看后者会读成"零下发只发生在 ANSWER 上"（样例里确实如此），
+            #: 但那是**交集**，不是全集 —— 并列才有分母。
+            "by_verdict": {}, "zero_dispatch_by_verdict": {}}
+
+
+def _kexec_absorb(acc: dict, out) -> dict:
+    """把**一道题**的下发读数并进累加器（就地修改并返回）。
+
+    ⚠️ `tasks` 在**这里**加，不由调用方另写一句：调用点有两处（每题新建内核 /
+        复用内核），两处各写一遍就是"同一事实声明两处"，漏一处即静默少计一题
+        —— 与 `_ktx_absorb` 同一条理由。
+    """
+    ex = (getattr(out, "stats", None) or {}).get("exec") or {}
+    d = int(ex.get("dispatched") or 0)
+    acc["tasks"] = int(acc.get("tasks", 0)) + 1
+    acc["dispatched"] = int(acc.get("dispatched", 0)) + d
+    acc["ok"] = int(acc.get("ok", 0)) + int(ex.get("ok") or 0)
+    acc["fail"] = int(acc.get("fail", 0)) + int(ex.get("fail") or 0)
+    #: `verdict` 空串表示"没算过"（例如 `_finish` 之前异常）⇒ 记成 `?` 而不是丢掉：
+    #: 丢一题会让 `by_verdict` 的合计对不上 `tasks`，而那正是"缺席冒充零"。
+    _v = str(getattr(out, "verdict", "") or "?")
+    _bv = acc.get("by_verdict")
+    if not isinstance(_bv, dict):
+        _bv = acc["by_verdict"] = {}
+    _bv[_v] = int(_bv.get(_v, 0)) + 1
+    if d == 0:
+        acc["zero_dispatch_tasks"] = int(acc.get("zero_dispatch_tasks", 0)) + 1
+        _zv = acc.get("zero_dispatch_by_verdict")
+        if not isinstance(_zv, dict):
+            _zv = acc["zero_dispatch_by_verdict"] = {}
+        _zv[_v] = int(_zv.get(_v, 0)) + 1
+    return acc
+
+
 def _ktx_zero() -> dict:
     """传输层 / 墙钟读数的累加器零点（第二十五轮，DESIGN §16.24）。
 
@@ -1260,6 +1321,7 @@ def cmd_bench(args) -> int:
     _kpl = _kpl_zero()      # 规划器读数（V39）：降级四个分项必须可审计
     _kfo = _kfo_zero()      # 候选让位（§108）：救回与代价必须并列报
     _kco = _kco_zero()      # 收尾兜底（第二十二轮）：与 _kwm 同源的落盘读数
+    _kexec = _kexec_zero()  # 下发 × 验收（V55）：零下发是「题」的属性，不是收尾的属性
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
     _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
 
@@ -1441,6 +1503,10 @@ def cmd_bench(args) -> int:
                         _kpl_absorb(_kpl, out.stats.get("planner") or {}, c)
                         _kfo_absorb(_kfo, out.stats.get("failover") or {})
                         _kco_absorb(_kco, out.stats.get("closeout") or {})
+                        # ★ V55（§121）：按题记「下发次数 × 验收结论」。
+                        #   与 `_kco_absorb` 并列放，不并进去：那个按**收尾次数**数，
+                        #   这个按**题**数 —— 两个分母（见 `_kexec_zero` 的文档）。
+                        _kexec_absorb(_kexec, out)
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
                         _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -1474,6 +1540,9 @@ def cmd_bench(args) -> int:
                 _kpl_absorb(_kpl, out.stats.get("planner") or {}, _core)
                 _kfo_absorb(_kfo, out.stats.get("failover") or {})
                 _kco_absorb(_kco, out.stats.get("closeout") or {})
+                # ★ V55（§121）：与 `--fresh` 那支同一条理由 —— 两处各写一遍
+                #   "同一事实"，漏一处就会静默少计一题的零下发。
+                _kexec_absorb(_kexec, out)
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
                 _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -1765,6 +1834,9 @@ def cmd_bench(args) -> int:
         "kernel_failover": _kfo_line(_kfo),
         # 收尾兜底读数（第二十二轮）：**不落盘的读数不可审计**。
         "kernel_closeout": _kco,
+        # ★ V55（§121）：按题的「下发次数 × 验收结论」。与 `kernel_closeout`
+        #    **并列**而不是并进去 —— 那个按收尾次数数，这个按题数（两个分母）。
+        "kernel_exec": _kexec,
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。
         "kernel_external": _kex,
         # 传输层 / 墙钟读数（第二十五轮）：重试链有没有超支预算，必须可事后审计。

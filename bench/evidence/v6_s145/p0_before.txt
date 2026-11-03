@@ -1,0 +1,26 @@
+ROOT=/private/tmp/v55/wtA
+run.py 有 `_kexec_absorb`? False
+── 三格读数（真实 Core.run，模型换桩）──
+  [s1] status=not_applicable verdict=ANSWER exec={"dispatched": 0, "ok": 0, "fail": 0} 规划=2次 答案=47字 sha=8d77710519debdd2
+  [s2] status=not_applicable verdict=FAIL exec={"dispatched": 3, "ok": 3, "fail": 0} 规划=5次 答案=47字 sha=8d77710519debdd2
+  [s3] 累加器={} err=AttributeError: module 'run' has no attribute '_kexec_zero'
+       零点键=[]
+
+── 判定 ──
+  ✅ S1 0 下发（装置给的格）  ({"dispatched": 0, "ok": 0, "fail": 0})
+  ✅ S2 3 次下发（反向闸的格）  ({"dispatched": 3, "ok": 3, "fail": 0})
+  ❌ C1 `run` 模块有 `_kexec_zero` / `_kexec_absorb`  (缺函数)
+  ❌ C1 零点含六个键（tasks/dispatched/ok/fail/zero/两个字典）  ([])
+  ❌ C2 合计：tasks=2 dispatched=3 ok=3 fail=0  ({})
+  ❌ C3 反向闸：0 下发那格被记成 zero_dispatch_tasks=1  (None)
+  ❌ C3 零下发按验收结论分列（ANSWER:1）  ({})
+  ❌ C4 两个字典**分列**：by_verdict 记两题、zero_dispatch_by_verdict 只记一题  (None / None)
+  ❌ C4 有下发的那题也进了 by_verdict（否则合计对不上 tasks）  ({})
+
+── C5 交付物指纹（两态必须逐字节相同）──
+  s1 answer_sha=8d77710519debdd2 len=47 verdict=ANSWER status=not_applicable
+  s2 answer_sha=8d77710519debdd2 len=47 verdict=FAIL status=not_applicable
+
+  ✅ C6 catalog_sha 两个口径不变（⇒ 这不是「改提示词」）  (8decb60895d4a972 / 29091404966ca8e1)
+
+⛔ 未通过（7 条）：['C1 `run` 模块有 `_kexec_zero` / `_kexec_absorb`', 'C1 零点含六个键（tasks/dispatched/ok/fail/zero/两个字典）', 'C2 合计：tasks=2 dispatched=3 ok=3 fail=0', 'C3 反向闸：0 下发那格被记成 zero_dispatch_tasks=1', 'C3 零下发按验收结论分列（ANSWER:1）', 'C4 两个字典**分列**：by_verdict 记两题、zero_dispatch_by_verdict 只记一题', 'C4 有下发的那题也进了 by_verdict（否则合计对不上 tasks）']

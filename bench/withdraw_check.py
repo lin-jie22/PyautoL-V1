@@ -1452,6 +1452,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
                     else:
                         self.exec_stats["fail"] += 1''',
      '''                    pass  # 撤回态：下发次数不再计数'''),
+    # ── AZ118：按题的「下发次数 × 验收结论」进没进账本（V55 / §121）──────────
+    #: 撤的语义：**只把"零下发"这一支关掉**（`if d == 0:` → `if False:`），
+    #:   `by_verdict` 与合计三项原样保留 ⇒ ③⑤ 中与"合计"有关的部分仍绿，
+    #:   但 ④「0 下发被记成 1 题」与 ⑤ 的 `zero_dispatch_by_verdict` 必红。
+    #: ⚠️ 不许改成"删掉整个 `_kexec_absorb`"：AZ118 ② 会一并红（那没问题），
+    #:   但 `run.py` 两处调用点会 `NameError` ⇒ **整轮跑批炸掉**，
+    #:   那就不是单变量，而是把装置砸了。
+    ("AZ118", "run.py",
+     '''    if d == 0:
+        acc["zero_dispatch_tasks"] = int(acc.get("zero_dispatch_tasks", 0)) + 1''',
+     '''    if False:  # 撤回态：零下发不再计数
+        acc["zero_dispatch_tasks"] = int(acc.get("zero_dispatch_tasks", 0)) + 1'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

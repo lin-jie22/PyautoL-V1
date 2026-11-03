@@ -549,17 +549,33 @@ def _kexec_zero() -> dict:
     |---|---|---|
     | `kernel_closeout.zero_exec` | 进过收尾的**次数** | 收尾之前动过手没有 |
     | `kernel_exec.zero_dispatch_tasks` | **题数**（全部出口） | 这题一次都没下发就交了 |
+    | `kernel_exec.zero_step_tasks` | **题数**（全部出口） | 这题**一次非交付动作都没有**（V56） |
 
-    前者是"收尾这个出口"的属性，后者是"这一题"的属性。合成一个数，
+    前两者是"收尾这个出口"与"这一题"的属性。合成一个数，
     `done` 出口的零下发就会被永久藏起来 —— 而那正是 §116/§118 的病位。
+
+    ⛔ 第三个（V56）**不是**第二个的同义词：`finish` 本身也是一次下发，所以
+    「零下发」只等于"连答案都没提"；真正有分母的病位是「**12 题里有 6 题只提了
+    `finish`**」，那个数只有 `zero_step_tasks` 答得了（V55 的 `finish×12 + recall×6`）。
     """
     return {"tasks": 0, "dispatched": 0, "ok": 0, "fail": 0,
+            #: ★ V56（§122）：`answer` = 交付动作（`finish` / `produces_answer`）
+            #: 的下发次数，`step` = 其余。⛔ 两个都要：`finish` 本身也是一次下发，
+            #: 只报总数会把「12 题 18 次」读成"做了十八件事"，其实是 12 次交答案
+            #: + 6 次做事（V55 实测）。
+            "answer": 0, "step": 0,
             "zero_dispatch_tasks": 0,
-            #: 两个字典**分列**：`by_verdict` 是"每题验收结论的分布"，
-            #: `zero_dispatch_by_verdict` 是"零下发那几题的验收结论分布"。
-            #: 只看后者会读成"零下发只发生在 ANSWER 上"（样例里确实如此），
+            #: ★ V56（§122）：**这题一次非交付动作都没有**的题数。分母是**题数**
+            #: （与 `zero_dispatch_tasks` 同分母）⇒ 可以直接对着 V55 的 6/12。
+            #: ⚠️ 两者是**超集**关系（零下发 ⇒ 零步骤）：差值 = 「只提了交付动作」
+            #: 的题数。⛔ 不另存派生字段：派生量要么由一处算式产生、要么不存。
+            "zero_step_tasks": 0,
+            #: 三个字典**分列**：`by_verdict` 是"每题验收结论的分布"，
+            #: `zero_dispatch_by_verdict` / `zero_step_by_verdict` 是两个**子集**的
+            #: 分布。只看子集会读成"零下发只发生在 ANSWER 上"（样例里确实如此），
             #: 但那是**交集**，不是全集 —— 并列才有分母。
-            "by_verdict": {}, "zero_dispatch_by_verdict": {}}
+            "by_verdict": {}, "zero_dispatch_by_verdict": {},
+            "zero_step_by_verdict": {}}
 
 
 def _kexec_absorb(acc: dict, out) -> dict:
@@ -575,6 +591,14 @@ def _kexec_absorb(acc: dict, out) -> dict:
     acc["dispatched"] = int(acc.get("dispatched", 0)) + d
     acc["ok"] = int(acc.get("ok", 0)) + int(ex.get("ok") or 0)
     acc["fail"] = int(acc.get("fail", 0)) + int(ex.get("fail") or 0)
+    # ★ V56（§122）：交付/步骤两个分项按题累加。
+    # ⚠️ 用 `.get(..., 0)` 而不是 `ex[...]`：这里的 `ex` 可能来自**旧**的冻结产物
+    #    （V54 之前的账本没有这两个键），缺键就炸会把"读旧数据"变成"跑不动"。
+    #    ⛔ 但这与 `core.py` 里 `■` 行的写法**故意不同**：那里缺键必须炸
+    #    （缺席冒充零），这里缺键只可能是旧产物（兼容）。
+    acc["answer"] = int(acc.get("answer", 0)) + int(ex.get("answer") or 0)
+    acc["step"] = int(acc.get("step", 0)) + int(ex.get("step") or 0)
+    _s = int(ex.get("step") or 0)
     #: `verdict` 空串表示"没算过"（例如 `_finish` 之前异常）⇒ 记成 `?` 而不是丢掉：
     #: 丢一题会让 `by_verdict` 的合计对不上 `tasks`，而那正是"缺席冒充零"。
     _v = str(getattr(out, "verdict", "") or "?")
@@ -588,6 +612,16 @@ def _kexec_absorb(acc: dict, out) -> dict:
         if not isinstance(_zv, dict):
             _zv = acc["zero_dispatch_by_verdict"] = {}
         _zv[_v] = int(_zv.get(_v, 0)) + 1
+    # ★ V56（§122）：零**步骤**动作（**不是**零下发）—— 分母仍是题数。
+    # 两者必须是**两个** `if`，不许写成 `if d == 0: ... elif _s == 0:`：
+    # 零下发的题必然同时零步骤，写成一个分支就会把它从 `zero_step` 里漏掉
+    # ⇒ 超集关系断掉，而"差 6 题"正是这一轮要看的东西（缺席冒充零）。
+    if _s == 0:
+        acc["zero_step_tasks"] = int(acc.get("zero_step_tasks", 0)) + 1
+        _zs = acc.get("zero_step_by_verdict")
+        if not isinstance(_zs, dict):
+            _zs = acc["zero_step_by_verdict"] = {}
+        _zs[_v] = int(_zs.get(_v, 0)) + 1
     return acc
 
 

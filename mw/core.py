@@ -1246,6 +1246,13 @@ class Core:
                 _fo_pending = 0
                 for ci, cand in enumerate(cands):
                     spec = self.tools.get(cand.tool)
+                    # ★ V56（§122）：**这个候选是不是交付动作** —— 谓词只声明这一处。
+                    # 为什么必须提到这里：此前同一件事在三处各写一遍（预演豁免
+                    # `_produces_early`、校验闸 `_produces`），而本轮要在**下发计数点**
+                    # 用它把下发拆成 `answer`/`step`。再就地写第三/第四遍，就是
+                    # 「同一句话在代码里有多处实现」—— 改一处等于没改（纪律 14）。
+                    _is_delivery = (cand.tool == "finish"
+                                    or bool(spec is not None and spec.produces_answer))
 
                     # ── 同一扇门（第六十七轮）──────────────────────────────
                     # 上面那条"内核注入"是门 B；规划器**自己**从工具目录里挑中
@@ -1375,12 +1382,11 @@ class Core:
                     _vetoed = False
                     if complex_task:
                         pred = self.wm.predict(state=state, action=cand.as_line(), use_llm=True)
-                        _produces_early = (cand.tool == "finish"
-                                           or bool(spec is not None and spec.produces_answer))
+                        # ★ V56（§122）：与下发计数点共用同一个谓词（原来是第三份拷贝）。
                         _want = (bool(self.s.limits.foresight_veto)
                                  and pred.trustworthy
                                  and pred.expect_ok is False
-                                 and not _produces_early)
+                                 and not _is_delivery)
                         if _want:
                             _vetoed = True
                             self.wm.vetoed += 1
@@ -1420,6 +1426,17 @@ class Core:
                         self.exec_stats["ok"] += 1
                     else:
                         self.exec_stats["fail"] += 1
+                    # ★ V56（§122）：把下发**按交付/非交付拆开**。为什么必须拆：
+                    #   `finish` 本身就是一次下发（V55 实测 B 臂 18 次 = `finish×12`
+                    #   + `recall×6`）⇒ 一个加起来的总数只能捕获"连答案都没提"，
+                    #   而真正有分母的病位是「**12 题里有 6 题只提了 `finish`**」。
+                    # ⚠️ 与 `dispatched` **并列**、不是替换：`answer + step` 恒等于
+                    #   `dispatched`，守恒本身只是必要条件，不是"拆对了"的证明
+                    #   （§46）—— 证明靠的是两侧各有反向闸格（只提 finish / 三次 recall）。
+                    if _is_delivery:
+                        self.exec_stats["answer"] += 1
+                    else:
+                        self.exec_stats["step"] += 1
                     self.log(tool_result_line(cand.tool, result.ok,
                                               cand.intent, result.error))
 
@@ -1431,8 +1448,9 @@ class Core:
                     #    否则一个本来能拿 0.2 分的答案会被装置变成 0 分。
                     # ★ 第二十三轮：`produces_answer` 的外部能力走**同一道闸**。
                     #   外部能力换的是"答案从哪来"，不是"判据松不松"。
-                    _produces = cand.tool == "finish" or bool(
-                        spec is not None and spec.produces_answer)
+                    # ★ V56（§122）：原来是本谓词的**第二份**拷贝，现改为引用上面
+                    #   那一处；`_produces` 这个名字保留（下游 4 处读它）。
+                    _produces = _is_delivery
                     if spec is not None and spec.produces_answer:
                         # 外部能力的读数：**尝试**次数与成功次数分开记 ——
                         # 只记成功会让"它一直在失败"看起来像"它没被调用"。
@@ -2082,8 +2100,20 @@ class Core:
            `dispatched` = 真的调用了几次（含失败）；
            `ok` / `fail` = 其中成了几次/错了几次 —— 「试过 3 次全错」与
            「试过 3 次全成」对"这件事有没有发生"是两个相反的答案。
+
+        ★ V56（§122）：再加**两个**键，把 `dispatched` 按「是不是交付动作」拆开 ——
+           `answer` = `finish` / `produces_answer` 外部能力的下发次数；
+           `step`   = 其余（真正"做了点什么"）的下发次数。
+        ⛔ 为什么之前的三个键不够：`finish` 本身也是一次下发，所以
+           「12 题 18 次下发」里 12 次是"交答案"、只有 6 次是"做事情"。
+           一个总数会把「只提了 finish」与「做了六件事」读成同一类
+           （V55 实测：`finish×12 + recall×6`）。
+        ⚠️ 恒有 `answer + step == dispatched`。⛔ 守恒只是**必要条件**：
+           两侧写成同一个变量的两份副本也守恒 —— 证明靠反向闸格
+           （只提 finish ⇒ `answer=1, step=0`；三次 recall ⇒ `answer=0, step=3`）。
         """
-        self.exec_stats: dict = {"dispatched": 0, "ok": 0, "fail": 0}
+        self.exec_stats: dict = {"dispatched": 0, "ok": 0, "fail": 0,
+                                 "answer": 0, "step": 0}
 
     def _reset_external(self) -> None:
         """外部能力读数的**唯一**初始化处（`__init__` 与 `run()` 都调它）。
@@ -2195,8 +2225,15 @@ class Core:
         #    不回答"该不该交付"。⛔ `best` / `status` / `verdict` 一个都不动。
         _co_e = dict(self.exec_stats)
         if _co_e["dispatched"]:
+            # ★ V56（§122）：总数后面必须跟拆分。`finish` 也是一次下发，
+            #    所以「下发过 3 次」既可能是"做了三件事"，也可能是"三次都在交答案"。
             self.log(f"  ⊞ 此前已下发 {_co_e['dispatched']} 次"
-                     f"（成功 {_co_e['ok']}、失败 {_co_e['fail']}）")
+                     f"（成功 {_co_e['ok']}、失败 {_co_e['fail']}）"
+                     f"｜交付={_co_e['answer']} 步骤={_co_e['step']}")
+            if not _co_e["step"]:
+                # 6/12 那个病位就在这里显形：交付动作有、步骤动作为 0。
+                self.log("  ⊞ ⚠️ 其中**一次步骤动作都没有**"
+                         "（下面这段文本只由交付动作撑着）")
         else:
             self.log("  ⊞ 此前**一次都没下发**（下面这段文本没有任何执行支撑）")
         if _stalled_entry:
@@ -2370,8 +2407,13 @@ class Core:
         #: ★ V54（§120）：**这次收尾之前下发过几次**。⛔ 与 `status` 分列：
         #: `status` 说"怎么结束的"，这句说"结束之前到底动过手没有"。
         #: 零下发必须显形 —— 否则"交了一段文本"与"这段文本有执行支撑"同一句话。
+        #: ★ V56（§122）：`reason` 也要带拆分 —— 账本之外唯一会被人读到的地方。
+        #: ⛔ 前半个分句逐字保留（V54 的契约按它取证），拆分只往后加。
         _co_exec_note = ((f"，此前已下发 {_co_e['dispatched']} 次"
-                          f"（成功 {_co_e['ok']}、失败 {_co_e['fail']}）")
+                          f"（成功 {_co_e['ok']}、失败 {_co_e['fail']}）"
+                          + (f"，交付={_co_e['answer']} 步骤={_co_e['step']}"
+                             if _co_e["step"]
+                             else "，**一次步骤动作都没有**"))
                          if _co_e["dispatched"] else "，此前**一次都没下发**")
         # ── 读数（第二十二轮）：来源分布 + 交付量 + **有没有改掉被打回的那一版** ──
         # ⚠️ `overrode_rejected` 的语义严格限定为"不同"：它与 `_salvage` 逐字比较，
@@ -2704,6 +2746,10 @@ class Core:
         self.log(f"■ {status}{_dv_line} | steps={len(history)}"
                  f" 执行={stats['exec']['dispatched']}下发"
                  f"/{stats['exec']['ok']}成/{stats['exec']['fail']}败"
+                 # ★ V56（§122）：总数旁边的拆分。⛔ 不用 `.get`：这个键是本轮
+                 #   的产物，缺了就该 `KeyError` 炸掉 —— 静默补 0 会把"没接线"
+                 #   读成"一次步骤动作都没有"（缺席冒充零）。
+                 f"（交付={stats['exec']['answer']}/步骤={stats['exec']['step']}）"
                  f" | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}{_ex2_line}")

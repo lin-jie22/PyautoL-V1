@@ -5968,7 +5968,13 @@ check(RS, "AS12 ★`verify_retries` 必须在 `Limits.as_dict()` 里，且允许
 _AS_GATE_CALLS = _code_only(_CORE_SRC).count("self._gate_finish(result)")
 _AS_GATE_GUARDED = ('if _produces and result.ok and self._checks:'
                     in _code_only(_CORE_SRC))
-_AS_PRODUCES = '_produces = cand.tool == "finish" or bool(' in _code_only(_CORE_SRC)
+#: ★ V56（§122）：谓词的**定义**搬到了 `_is_delivery`（下发计数点也要用它把
+#: 下发拆成交付/步骤），`_produces` 变成它的**别名**。不变量没有变松，反而更紧：
+#:   ① 定义里仍必须含 `cand.tool == "finish"`；② `_produces` 必须**就是**它
+#:      —— 两处各写一份拷贝正是本轮要消灭的东西（纪律 14）。
+_AS_CORE_CODE = _code_only(_CORE_SRC)
+_AS_PRODUCES = ('_is_delivery = (cand.tool == "finish"' in _AS_CORE_CODE
+                and '_produces = _is_delivery' in _AS_CORE_CODE)
 check(RS, "AS13 ★`_gate_finish` 只许有**一处**调用，且必须被「答案来源」守住\n"
           "          —— 本轮只加一条腿，不加一个相位：主循环仍然只有一个 `while`（J6），\n"
           "            校验是答案出口上的一道闸，不是第二次推理。\n"
@@ -5976,7 +5982,7 @@ check(RS, "AS13 ★`_gate_finish` 只许有**一处**调用，且必须被「答
           "            但 `_produces` 的定义里必须仍含 `finish` —— 否则闸会变成外部专用。",
       _AS_GATE_CALLS == 1 and _AS_GATE_GUARDED and _AS_PRODUCES,
       f"调用点={_AS_GATE_CALLS} 被 _produces 守住={_AS_GATE_GUARDED} "
-      f"含 finish={_AS_PRODUCES}")
+      f"定义含 finish 且 _produces 是它的别名={_AS_PRODUCES}")
 
 # ── AS14：salvage 只在**答案为空**时顶替 ───────────────────────────────
 _AS_FIN_BODY = _code_only(_func_body(ast.parse(_CORE_SRC), "_finish"))
@@ -11594,8 +11600,13 @@ _AZ117_OK = {
     "③`reason` 与日志都写明「一次都没下发」": (
         "一次都没下发" in str(_AZ117_OUT0.reason or "")
         and any("一次都没下发" in ln for ln in _AZ117_LOG0)),
+    # ★ V56（§122）：这里从「整字典相等」**退回三个键**，不是为了放松，
+    #   而是把「交付/步骤」这件事整个交给 AZ119 —— 否则撤任一侧的实现都会
+    #   让两条断言一起红，而"多红"是撤回态里最容易被当成噪声吞掉的东西。
+    #   `exec` 的**键集全等**由 AZ119 ⑨ 钉住（那边才是这套键的主）。
     "④反向闸：三次成功下发 ⇒ 不许记成零下发": (
-        _AZ117_EX3 == {"dispatched": 3, "ok": 3, "fail": 0}
+        (_AZ117_EX3.get("dispatched"), _AZ117_EX3.get("ok"),
+         _AZ117_EX3.get("fail")) == (3, 3, 0)
         and _AZ117_CO3.get("zero_exec") == 0
         and "此前已下发 3 次" in str(_AZ117_OUT3.reason or "")),
     "⑤`■` 行带「执行=」段（`steps` 一个数会被读成「做了几步」）": any(
@@ -11651,13 +11662,18 @@ class _AZ118Out:
         self.verdict = verdict
 
 
-_AZ118_KEYS = sorted(["tasks", "dispatched", "ok", "fail",
-                      "zero_dispatch_tasks", "by_verdict", "zero_dispatch_by_verdict"])
+#: ★ V56（§122）：7 → **11** 个键（`answer` / `step` / `zero_step_tasks` /
+#: `zero_step_by_verdict`）。⛔ 这里是**全等**比较：少一个键会红、多一个键也会红。
+_AZ118_KEYS = sorted(["tasks", "dispatched", "ok", "fail", "answer", "step",
+                      "zero_dispatch_tasks", "zero_step_tasks",
+                      "by_verdict", "zero_dispatch_by_verdict",
+                      "zero_step_by_verdict"])
 _Z0 = _AZ118_ZERO()
 _Z1 = _AZ118_ZERO()
 _AZ118_FRESH = (_Z0 is not _Z1
                 and _Z0["by_verdict"] is not _Z1["by_verdict"]
-                and _Z0["zero_dispatch_by_verdict"] is not _Z1["zero_dispatch_by_verdict"])
+                and _Z0["zero_dispatch_by_verdict"] is not _Z1["zero_dispatch_by_verdict"]
+                and _Z0["zero_step_by_verdict"] is not _Z1["zero_step_by_verdict"])
 _ACC = _AZ118_ZERO()
 _AZ118_ABS(_ACC, _AZ118Out(0, "ANSWER"))      # 零下发
 _AZ118_ABS(_ACC, _AZ118Out(3, "FAIL"))        # 三次下发（反向闸的格）
@@ -11696,6 +11712,187 @@ check(RS, "AZ118 ★★「零下发」是**题**的属性，不是收尾的属�
           "                    把 `_kexec_zero` 的字典提到模块级常量 ⇒ ⑥ 必红。",
       all(_AZ118_OK.values()),
       " ｜ ".join(f"{k}={v}" for k, v in _AZ118_OK.items()))
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ119（第一百四十五轮 §122）：下发必须按「交付动作 / 步骤动作」拆开
+#
+# 为什么需要这条边（V55 §121 的结论）：`finish` **本身也是一次下发**，所以
+#   「12 题 18 次下发」里 12 次是"交答案"、只有 6 次是"做事情"。
+#   `dispatched` 与 `zero_dispatch_tasks` 因此只能捕获「**连答案都没提**」；
+#   真正有分母的病位是「**12 题里有 6 题只提了 `finish`**」——
+#   一个把交付与步骤加在一起的总数，永远读不出那 6 题。
+#
+# 三格（每格一种形态，**不是**三份拷贝）：
+#   `answer_only` 第 1 轮就 `finish` ⇒ 交付 1、步骤 0（= 6/12 的病位形态）
+#   `steps`       3 次 `recall` 之后恒不适用 ⇒ 交付 0、步骤 3（反向闸）
+#   `zero`        从头到尾恒不适用 ⇒ 0/0（证明计数器不是常量）
+# ⛔ 三格都断言守恒 `answer + step == dispatched`：守恒是必要条件，不是通电证明
+#   （§46）；能证明"拆对了"的是两侧各有精确整数对的反向闸。
+# ══════════════════════════════════════════════════════════════════════════
+from run import _kexec_absorb as _AZ119_ABS, _kexec_zero as _AZ119_ZERO  # noqa: E402
+
+_AZ119_GOAL = "用一段话说明为什么哈希表的平均查找是 O(1)。"
+_AZ119_ANS = "键经哈希函数映射到桶，平均冲突链长为常数，所以平均 O(1)。"
+
+
+class _AZ119LLM:
+    """规划桩：`mode` 决定这一格下发什么。
+
+    ⚠️ 一轮**一个**候选：主循环一旦有候选成功就停在本轮（V54 实测过
+       「一轮塞三个只执行一个」）。要三次下发就得给三轮。
+    """
+
+    def __init__(self, mode: str) -> None:
+        self.mode = mode
+        self.planning = 0
+
+    @staticmethod
+    def _txt(m) -> str:                                       # noqa: ANN001
+        return (str(m.get("content", "")) if isinstance(m, dict)
+                else str(getattr(m, "content", "")))
+
+    def complete(self, messages, max_tokens=None):             # noqa: ANN001, ARG002
+        sysmsg = self._txt(messages[0]) if messages else ""
+        if sysmsg == _AZ117_ANS_SYS:                          # `planner.answer()`
+            return _AZ119_ANS
+        if "规划器" not in sysmsg:
+            return ""
+        self.planning += 1
+        if self.mode == "answer_only":
+            # 第 1 轮就交答案 —— 这就是 6/12 的形态：交付动作有、步骤动作零。
+            return json.dumps({"candidates": [
+                {"intent": "直接给出答案", "tool": "finish",
+                 "args": {"answer": _AZ119_ANS}}]}, ensure_ascii=False)
+        if self.mode == "steps" and self.planning <= 3:
+            return json.dumps({"candidates": [
+                {"intent": f"检索第{self.planning}条相关记忆", "tool": "recall",
+                 "args": {"query": f"az119-{self.planning}"}}]}, ensure_ascii=False)
+        if self.mode == "ansfail":
+            # 交付动作**失败** ⇒ 唯一的候选 ⇒ `break` ⇒ 下一轮同签名被重复闸拦
+            # ⇒ 停滞 ⇒ 走收尾。这一格是 `⊞`「一次步骤动作都没有」的唯一活路径：
+            # 真实跑批里 answer-only 的题是从 `finish` 出口走的，**不进收尾**。
+            return json.dumps({"candidates": [
+                {"intent": "用一个坏掉的交付能力交答案", "tool": "badans",
+                 "args": {"x": "1"}}]}, ensure_ascii=False)
+        return json.dumps({"candidates": [
+            {"intent": "交给一个恒不适用的能力", "tool": "never",
+             "args": {"x": "1"}}]}, ensure_ascii=False)
+
+
+def _az119_run(tag: str, mode: str):
+    d = _TMP / f"az119_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    (d / "state").mkdir(parents=True, exist_ok=True)
+    # ⚠️ `Paths` 是 frozen dataclass ⇒ **构造时**给全（V51 现场）。
+    # ⚠️ 不靠 `cfg.settings()`：前序断言改过 `os.environ`，本 fixture 会继承它。
+    s = cfg.Settings(
+        paths=cfg.Paths(root=d, state=d / "state", logs=d / "logs",
+                        workspace=ws, bench=d / "bench"),
+        limits=cfg.Limits(max_steps=8, close_reserve_steps=1, verify_retries=2))
+    c = Core(settings=s, llm=_AZ119LLM(mode),
+             memory=MemoryStore(d / "state" / "memory.db"))
+    c.tools.register(ToolSpec("never", "对任何题面都不适用", {"x": "参数"},
+                              lambda a: "y", applies=lambda g: False))
+
+    def _badans(_a):                                          # noqa: ANN001
+        raise RuntimeError("交付能力坏了（探针造）")
+
+    #: 交付动作但**必然失败**：用来让「有交付、零步骤」这一格走到收尾。
+    c.tools.register(ToolSpec("badans", "一个必然失败的交付能力", {"x": "参数"},
+                              _badans, produces_answer=True))
+    lines: list[str] = []
+    c.log = lines.append                                      # noqa: ARG005
+    out = c.run(_AZ119_GOAL, budget_factor=1)
+    return out, lines
+
+
+_AZ119_OA, _AZ119_LA = _az119_run("answer_only", "answer_only")
+_AZ119_OS, _AZ119_LS = _az119_run("steps", "steps")
+_AZ119_OE, _AZ119_LE = _az119_run("zero", "zero")
+_AZ119_OF, _AZ119_LF = _az119_run("ansfail", "ansfail")
+
+
+def _az119_ex(o) -> dict:                                     # noqa: ANN001
+    return ((getattr(o, "stats", None) or {}).get("exec") or {})
+
+
+def _az119_pair(o):                                           # noqa: ANN001
+    """`(answer, step)` 的整数对。⛔ 缺键即 `KeyError`：静默补 0 会把
+    「没接线」读成「一步都没做」（缺席冒充零，纪律 5）。"""
+    e = _az119_ex(o)
+    return int(e["answer"]), int(e["step"])
+
+
+_AZ119_ACC = _AZ119_ZERO()
+for _o in (_AZ119_OA, _AZ119_OS, _AZ119_OE, _AZ119_OF):
+    _AZ119_ABS(_AZ119_ACC, _o)
+_AZ119_ALL = (_AZ119_OA, _AZ119_OS, _AZ119_OE, _AZ119_OF)
+_AZ119_BARS = [ln for ln in (_AZ119_LA + _AZ119_LS + _AZ119_LE + _AZ119_LF)
+               if ln.startswith("■ ")]
+_AZ119_OK = {
+    "①守恒：四格 `answer + step == dispatched`": all(
+        sum(_az119_pair(o)) == int(_az119_ex(o)["dispatched"])
+        for o in _AZ119_ALL),
+    "②反向闸·第 1 轮就 finish ⇒ 交付 1、步骤 0": _az119_pair(_AZ119_OA) == (1, 0),
+    "③反向闸·三次 recall ⇒ 交付 0、步骤 3": _az119_pair(_AZ119_OS) == (0, 3),
+    "④常量计数器排除：零下发格是 0/0": (
+        _az119_pair(_AZ119_OE) == (0, 0)
+        and int(_az119_ex(_AZ119_OE)["dispatched"]) == 0),
+    "⑤账本：`zero_step_tasks` = 3（只提 finish + 交付失败 + 零下发），"
+    "`zero_dispatch_tasks` = 1": (
+        _AZ119_ACC["zero_step_tasks"] == 3
+        and _AZ119_ACC["zero_dispatch_tasks"] == 1
+        and sum(_AZ119_ACC["zero_step_by_verdict"].values()) == 3
+        # 超集关系：零下发那题必须**同时**进 zero_step（写成一个 if/elif 就会漏）
+        and _AZ119_ACC["zero_step_tasks"] >= _AZ119_ACC["zero_dispatch_tasks"]),
+    "⑥形态：`■` 四格都带「交付=/步骤=」，且「交付=0/步骤=3」只出现在 steps 格": (
+        len(_AZ119_BARS) == 4
+        and all("交付=" in ln and "步骤=" in ln and "执行=" in ln
+                for ln in _AZ119_BARS)
+        and any("交付=0/步骤=3" in ln for ln in _AZ119_LS)
+        and not any("交付=0/步骤=3" in ln for ln in _AZ119_LA)),
+    "⑦计数发生在**真交付**上（不是给 finish 单独开的路）：交付物 == 模型给的答案": (
+        str(_AZ119_OA.answer or "") == _AZ119_ANS),
+    "⑧收尾显形：「一次步骤动作都没有」只出现在「有交付、零步骤」的收尾格": (
+        any("一次步骤动作都没有" in ln for ln in _AZ119_LF)
+        and not any("一次步骤动作都没有" in ln for ln in _AZ119_LS)),
+    #: ⛔ 键集**全等**：多一个键会红、少一个键也会红。AZ117 ④ 已经从整字典
+    #:    相等退回三个键（避免撤回时两处一起红）⇒ 那件事由这里接手。
+    "⑨`exec` 的键集恰好是这五个": (
+        sorted(_az119_ex(_AZ119_OA)) == ["answer", "dispatched", "fail", "ok", "step"]
+        and sorted(_az119_ex(_AZ119_OS)) == sorted(_az119_ex(_AZ119_OA))),
+}
+
+check(RS, "AZ119 ★★★下发必须按「交付动作 / 步骤动作」拆开：\n"
+          "          —— `finish` 本身也是一次下发（V55：B 臂 18 次 = `finish×12`\n"
+          "             + `recall×6`）⇒ 一个总数只能捕获「连答案都没提」，而\n"
+          "             真正有分母的病位是「**12 题里 6 题只提了 `finish`**」。\n"
+          "          判据（九条，缺一即证明不了这条边）：\n"
+          "               ① 守恒 `answer + step == dispatched`（四格都成立）；\n"
+          "               ② **反向闸·只提 finish** ⇒ `(answer, step) == (1, 0)`；\n"
+          "               ③ **反向闸·三次 recall** ⇒ `(0, 3)`（排除常量计数器）；\n"
+          "               ④ 零下发格是 `(0, 0)` 且 `dispatched == 0`；\n"
+          "               ⑤ 账本 `zero_step_tasks`：三题记 1、`steps` 那题不记，\n"
+          "                  且与 `zero_dispatch_tasks` 保持**超集**关系；\n"
+          "               ⑥ `■` 四格都带「交付=/步骤=」；`交付=0/步骤=3` 只出现在\n"
+          "                  `steps` 格（反向闸：不是恒打印）；\n"
+          "               ⑦ 计数落在**真交付**上（`finish` 的答案逐字送达）；\n"
+          "               ⑧ 收尾 `⊞` 的「一次步骤动作都没有」只在「有交付、零步骤」\n"
+          "                  的收尾格出现 —— 那一格必须**真走到收尾**才有分母；\n"
+          "               ⑨ `exec` 的键集恰好是五个（多一个/少一个都红）——\n"
+          "                  AZ117 ④ 已从整字典相等退回三个键，键集由这条接手。\n"
+          "          撤回语义：删掉计数点 `if _is_delivery:` 那支 ⇒ ② 必红；\n"
+          "                    `step` 写成恒 `+= 1` ⇒ ② 必红；`answer`/`step`\n"
+          "                    都抄 `dispatched` ⇒ ① 必红；`_kexec_absorb` 去掉\n"
+          "                    `zero_step` 那支 ⇒ ⑤ 必红；`■` 行去掉「交付=」⇒ ⑥ 必红；\n"
+          "                    删掉收尾那条「一次步骤动作都没有」⇒ ⑧ 必红。",
+      all(_AZ119_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ119_OK.items())
+      + f" ｜ 四格 (answer,step)="
+        + "/".join(str(_az119_pair(o)) for o in _AZ119_ALL)
+        + f" ｜ dispatched={[int(_az119_ex(o)['dispatched']) for o in _AZ119_ALL]}"
+        + f" ｜ verdict={'/'.join(str(o.verdict) for o in _AZ119_ALL)}")
 
 print()
 print("=" * 74)

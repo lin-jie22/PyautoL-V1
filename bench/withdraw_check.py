@@ -1464,6 +1464,20 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
         acc["zero_dispatch_tasks"] = int(acc.get("zero_dispatch_tasks", 0)) + 1''',
      '''    if False:  # 撤回态：零下发不再计数
         acc["zero_dispatch_tasks"] = int(acc.get("zero_dispatch_tasks", 0)) + 1'''),
+    # ── AZ119：下发必须按「交付动作 / 步骤动作」拆开（V56 / §122）────────────
+    #: 撤的语义：**只把两边分列那一支删掉**（`dispatched/ok/fail` 照旧计数、
+    #:   `exec` 的五个键仍在、`■` 行的「交付=/步骤=」段仍在）⇒ `answer`/`step`
+    #:   恒 0，而 `dispatched` 仍在涨 ⇒ 守恒 `answer + step == dispatched` 当场断。
+    #: ⇒ AZ119 ② 必红（只提 finish 的格子读成 0 交 0 步）、① 必红（守恒）、
+    #:   ⑤ 必红（三题都变成"零步骤"）。
+    #: ⚠️ 不许改成"删掉 `answer`/`step` 两个键"：AZ117 ④ 逐键读 `dispatched`，
+    #:   而 `■` 行会 `KeyError` ⇒ 整条汇总行崩、一片红，那就不是单变量了。
+    ("AZ119", "mw/core.py",
+     '''                    if _is_delivery:
+                        self.exec_stats["answer"] += 1
+                    else:
+                        self.exec_stats["step"] += 1''',
+     '''                    pass  # 撤回态：交付/步骤不再分列'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1517,6 +1531,12 @@ COUPLED: dict[str, frozenset[str]] = {
     "AZ3": frozenset({"AZ28", "AZ30"}),
     #: AZ5（惯例写到 138 字）⇒ 注入被 core.py 截断 ⇒ 7j 预检 rc=2 ⇒ AZ30 红。
     "AZ5": frozenset({"AZ30"}),
+    #: ★V56（§122）：AZ117 撤的是「下发次数不再计数」⇒ `dispatched` 恒 0，而
+    #:   `answer`/`step` 仍在涨 ⇒ AZ119 ①（守恒 `answer + step == dispatched`）
+    #:   必红。⛔ 这不是锚定跑偏：守恒这条等式**本来就跨这两个计数器**，
+    #:   撤掉任何一侧它都断 —— 想让它单红就得让守恒不成立，那是另一个设计。
+    #:   反向已核对：AZ119 的撤回态**不**连带 AZ117（④ 只读 dispatched/ok/fail）。
+    "AZ117": frozenset({"AZ119"}),
     #: ⚠️ flaky 观察（第三十八轮，实测 1 + 3）：第三轮 R13 里 AT1 撤回多红
     #: AU7/AU8/AU9/AU10；单独复现 4 次（1 + 3 连跑）**全部只红 AT1 自己**。
     #: ⇒ 那次多红是负载下的假红（时序敏感的 AU 组在机器忙时翻红），与 7g

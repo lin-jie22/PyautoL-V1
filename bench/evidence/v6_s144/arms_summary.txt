@@ -1,0 +1,2 @@
+[a] 21:26:49 ■ done 验收=FAIL(0/1，缺 report.md) | steps=1 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.267 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=1 | 回看=1次/86字(失配1/报错0) 跳过=0(超限)0(模式) 错
+[b] 21:27:19 ■ done 验收=FAIL(0/1，缺 report.md) | steps=1 执行=1下发/1成/0败 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.203 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=1 | 回看=1次/118字(失配1/报错0) 跳

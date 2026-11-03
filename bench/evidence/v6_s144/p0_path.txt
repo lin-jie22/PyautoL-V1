@@ -1,0 +1,16 @@
+── P0：下发路径与计数器的存在性（改前）──
+tools.dispatch 调用点：
+1409:                    result = self.tools.dispatch(cand.tool, cand.args)
+self.tools 其它可能下发：
+778:            spec = self.tools.get(c.tool)
+819:            spec = self.tools.get(c.tool)
+1151:                if _ext and it == 1 and self.tools.get(_ext) is not None:
+1157:                    if not spec_applies(self.tools.get(_ext), goal):
+1243:                    spec = self.tools.get(cand.tool)
+exec 类计数器（应为空）：
+  (无)
+flow.reason>act 的两个点：
+1226:                # 通量：推理交了 N 个想法出去（下游是否真的做，看 `reason>act` 的消费）
+1227:                self.flow.emit(it, "reason>act", len(cands), sum(len(c.as_line()) for c in cands))
+1453:                    # 通量：N 个想法里，这一个真的被执行了（`reason>act` 的消费端）
+1454:                    self.flow.take("reason>act", 1, len(cand.as_line()))

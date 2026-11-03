@@ -1,0 +1,38 @@
+ROOT=/private/tmp/v54/wtA
+── 四格读数 ──
+  [s1] status=not_applicable verdict=ANSWER exec={} zero_exec=None by_reason=null 规划=2次 答案=47字 sha=8d77710519debdd2
+        reason=候选全部结构上不适用（连续 2 轮候选全部对本题结构上不适用），但仍有 240s 额度 ⇒ 走答案通道交付（不是失败，也不是预算不足）
+  [s2] status=not_applicable verdict=FAIL exec={} zero_exec=None by_reason=null 规划=2次 答案=47字 sha=8d77710519debdd2
+        reason=候选全部结构上不适用（连续 2 轮候选全部对本题结构上不适用），但仍有 240s 额度 ⇒ 走答案通道交付（不是失败，也不是预算不足） ｜ 约定产物**缺失**：report.md
+  [s3] status=not_applicable verdict=ANSWER exec={} zero_exec=None by_reason=null 规划=5次 答案=47字 sha=8d77710519debdd2
+        reason=候选全部结构上不适用（连续 2 轮候选全部对本题结构上不适用），但仍有 240s 额度 ⇒ 走答案通道交付（不是失败，也不是预算不足）
+  [s4] status=not_applicable verdict=ANSWER zero_exec=None err=无
+        reason=候选全部结构上不适用（单元级），但仍有 0s 额度 ⇒ 走答案通道交付（不是失败，也不是预算不足）
+
+── 日志锚点 ──
+  [s1] ■ not_applicable 验收=ANSWER(无约定产物) | steps=2 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=0 否决=0(-) | 通量[perceive>memory=n/a memory>reason=n/a reason>act=n/a] 回流=
+  [s3] ■ not_applicable 验收=ANSWER(无约定产物) | steps=5 | guard_blocked=0 | 预演=0 检验=0 命中=0 命中率=n/a 失配=0(成败0/文本0) | 价值判定=3 否决=0(-) | 通量[perceive>memory=2.0 memory>reason=1.0 reason>act=1.0] 回流=
+
+── 判定 ──
+  ✅ S1 verdict 仍是 ANSWER（本轮**不改判据**）  (verdict=ANSWER)
+  ❌ S1 零下发被记成一次计数  (zero_exec=None)
+  ❌ S1 零下发按入口分列到 not_applicable  (None)
+  ❌ S1 reason 写明「一次都没下发」  (候选全部结构上不适用（连续 2 轮候选全部对本题结构上不适用），但仍有 240s 额度 ⇒ 走答案通道交付（不是失败，也不是预算不足）)
+  ❌ S1 收尾入口日志写着「一次都没下发」  (一个字都没有)
+  ✅ S2 有约定产物时 verdict 仍是 FAIL（判据不动）  (verdict=FAIL)
+  ❌ S2 零下发同样计数  (zero_exec=None)
+  ❌ S3 三次成功下发 ⇒ exec=3/3/0  ({})
+  ❌ S3 反向闸：做过事就不许记成零下发的收尾  (zero_exec=None)
+  ❌ S3 reason 写明下发次数与成败  (候选全部结构上不适用（连续 2 轮候选全部对本题结构上不适用），但仍有 240s 额度 ⇒ 走答案通道交付（不是失败，也不是预算不足）)
+  ❌ S3 `■` 行有「执行=」段  (没有这一段)
+  ✅ S4 单元级入口（ledger=None）不炸  (ok)
+  ❌ S4 也写出「一次都没下发」  (候选全部结构上不适用（单元级），但仍有 0s 额度 ⇒ 走答案通道交付（不是失败，也不是预算不足）)
+
+── P5 交付物指纹（两态必须逐字节相同）──
+  s1 answer_sha=8d77710519debdd2 len=47
+  s2 answer_sha=8d77710519debdd2 len=47
+  s3 answer_sha=8d77710519debdd2 len=47
+
+  ✅ catalog_sha 两个口径不变（⇒ 这不是「改提示词」）  (8decb60895d4a972 / 29091404966ca8e1)
+
+⛔ 未通过（10 条）：['S1 零下发被记成一次计数', 'S1 零下发按入口分列到 not_applicable', 'S1 reason 写明「一次都没下发」', 'S1 收尾入口日志写着「一次都没下发」', 'S2 零下发同样计数', 'S3 三次成功下发 ⇒ exec=3/3/0', 'S3 反向闸：做过事就不许记成零下发的收尾', 'S3 reason 写明下发次数与成败', 'S3 `■` 行有「执行=」段', 'S4 也写出「一次都没下发」']

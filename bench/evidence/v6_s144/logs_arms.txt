@@ -1,0 +1,29 @@
+═══ 臂 a（内核=/tmp/v54/wtA）═══
+  退出码=1  耗时=33s
+  status=done  verdict=FAIL
+  reason=
+  exec=null
+  closeout.triggered=0 by_reason={"steps": 0, "wall": 0} zero_exec=None zero_exec_by_reason={}
+  plan.rounds=1 cands_total=3 dropped_na=3
+  verify: runs=1 passed=1 failed=0
+  report.md = 不存在
+  （原始 stdout：/tmp/v54/out_a.txt）
+
+═══ 臂 b（内核=/Users/linshaojie/V1）═══
+  退出码=1  耗时=29s
+  status=done  verdict=FAIL
+  reason=
+  exec={"dispatched": 1, "ok": 1, "fail": 0}
+  closeout.triggered=0 by_reason={"steps": 0, "wall": 0} zero_exec=0 zero_exec_by_reason={}
+  plan.rounds=1 cands_total=3 dropped_na=3
+  verify: runs=1 passed=1 failed=0
+  report.md = 不存在
+  （原始 stdout：/tmp/v54/out_b.txt）
+
+── 两臂对比（只比行为，不比措辞）──
+  status      A=done  B=done  相同=True
+  verdict     A=FAIL  B=FAIL  相同=True
+  report.md   A=无  B=无  相同=True
+  plan.rounds A=1  B=1
+  exec        A=null  B={"dispatched": 1, "ok": 1, "fail": 0}
+  zero_exec   A=None  B=0

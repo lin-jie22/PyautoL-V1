@@ -682,6 +682,9 @@ class Core:
         # `_close_out` 是一个可以**单独调用**的单元（契约 AS20 正是这么测它的语义的），
         # 只把状态建在 `run()` 里会让"没跑过 run 的实例"一调就 AttributeError。
         self._reset_closeout()
+        #: ★ V54（§120）：**下发次数**计数器。建在 `__init__` 与 `_reset_closeout`
+        #: 同宗理由（AS20）：`_close_out` 可以被单独调用，而那正是最需要读到它的人。
+        self._reset_exec()
         #: 外部能力读数（第二十三轮，路线①）。与收尾读数同宗理由建在 `__init__`：
         #: 单轮读数也要能被单独构造的实例读到，否则一处 AttributeError 就会
         #: 把整条汇总行带走（AS20 那条教训）。
@@ -897,6 +900,8 @@ class Core:
         #    全项目对它的记录**只有两句中文日志**。日志能证明"走到过"，不能回答
         #    "走到过几次、几次真的改了交付物"。而后者才是"它有没有用"的第一个问题。
         self._reset_closeout()
+        # ★ V54（§120）：下发次数与预算同源 ⇒ **单轮**清零。
+        self._reset_exec()
         # 外部能力读数是**单轮**的（与预算同源）：跨轮累计会让"这一轮 0 次调用"
         # 显示成上一轮的数字（读数混了时间维度）。
         self._reset_external()
@@ -1407,6 +1412,14 @@ class Core:
                         continue
 
                     result = self.tools.dispatch(cand.tool, cand.args)
+                    # ★ V54（§120）：**唯一**下发点的计数。位置在 `dispatch`
+                    #   返回之后一行不差 —— 放到闸/预演/跳过那些分支里就会漏记，
+                    #   而漏记的形态恰好是"看起来一次都没做"（缺席冒充零）。
+                    self.exec_stats["dispatched"] += 1
+                    if result.ok:
+                        self.exec_stats["ok"] += 1
+                    else:
+                        self.exec_stats["fail"] += 1
                     self.log(tool_result_line(cand.tool, result.ok,
                                               cand.intent, result.error))
 
@@ -2045,10 +2058,32 @@ class Core:
             #:    （那把主循环的闸也算进来，而主循环根本没走到收尾）。
             "artifact_fail": 0, "artifact_partial": 0, "artifact_error": 0,
             "gate_failed": 0,
+            #: ★V54（§120）：收尾那一刻**一次都没下发过**的次数，以及按入口分列。
+            #: ⛔ 为什么必须与 `triggered` 分列：`triggered=1` 只说"进了收尾"，
+            #:    说不出"进收尾之前到底做过事没有"。实测这两种收尾在读数上原本
+            #:    完全同形（`v6_s139` 是"做了三件再走神"，`v6_s142` 是"一件没成"）。
+            #: ⚠️ 分母是 `triggered`，不是题数 —— 一题可能进两次收尾。
+            "zero_exec": 0,
+            "zero_exec_by_reason": {},
         }
         #: 本次进入收尾余量是哪条阈值触发的（`steps` / `wall`）。由
         #: `_closing_reserve_hit()` 写、`_close_out()` 读 —— 条件只在**一处**声明。
         self._reserve_reason: str = ""
+
+    def _reset_exec(self) -> None:
+        """**下发次数**读数的唯一初始化处（`__init__` 与 `run()` 都调它）。
+
+        ⛔ 为什么需要这个数（V54，§120）：`■` 行的 `steps=N` 是 `len(history)`，
+           数的是**规划轮**——让位、预演否决、跳过、准入空轮都会往 `history`
+           写行。于是「做过三件事之后走神」与「一件事都没做成」在读数上**同形**。
+           `flow.consumed["reason>act"]` 只有条数、没有成败，且只以**比值**露面。
+
+        ⚠️ 三个键必须并列，不许合成一个"执行次数"：
+           `dispatched` = 真的调用了几次（含失败）；
+           `ok` / `fail` = 其中成了几次/错了几次 —— 「试过 3 次全错」与
+           「试过 3 次全成」对"这件事有没有发生"是两个相反的答案。
+        """
+        self.exec_stats: dict = {"dispatched": 0, "ok": 0, "fail": 0}
 
     def _reset_external(self) -> None:
         """外部能力读数的**唯一**初始化处（`__init__` 与 `run()` 都调它）。
@@ -2150,6 +2185,20 @@ class Core:
         #:    更不是 `closing_reserve`（额度还有）。落进后者的默认分支就是**假归因**，
         #:    与 §29.7 那次"停滞时还剩 85s 却说预算不足"同一个病。
         _na_entry = (reason == "not_applicable")
+        # ★ V54（§120）：**进收尾之前到底做过事没有** —— 这句话在此之前不存在。
+        # 为什么必须在入口就说：`steps=N` 数的是规划轮，不是动作数
+        # （`history` 里"让位""预演否决""跳过""准入空轮"都占一行）⇒
+        # 「做了三件再走神」与「一件没成」在读数上完全同形。实测两例：
+        #   `v6_s139/logs_b.txt`：3 次 `run_shell ok=True` 之后进收尾 ⇒ 产物在（PASS）
+        #   `v6_s142/logs_{a,b}.txt`：0 次成功之后进收尾 ⇒ 交付 77 字，产物为零
+        # ⚠️ 只用 `exec_stats`，**不新造判据**：它只回答"下发过几次"，
+        #    不回答"该不该交付"。⛔ `best` / `status` / `verdict` 一个都不动。
+        _co_e = dict(self.exec_stats)
+        if _co_e["dispatched"]:
+            self.log(f"  ⊞ 此前已下发 {_co_e['dispatched']} 次"
+                     f"（成功 {_co_e['ok']}、失败 {_co_e['fail']}）")
+        else:
+            self.log("  ⊞ 此前**一次都没下发**（下面这段文本没有任何执行支撑）")
         if _stalled_entry:
             self.log("  🧊 停滞 ⇒ 探索到此为止，但**还有额度** ⇒ 转向交付（不是预算不足）")
         elif _na_entry:
@@ -2176,6 +2225,15 @@ class Core:
         _why = (reason if (_stalled_entry or _na_entry)
                 else (self._reserve_reason or "steps"))
         co["by_reason"][_why] = int(co["by_reason"].get(_why, 0)) + 1
+        # ★ V54（§120）：零下发**按入口分列**计数。⛔ 必须与 `triggered` 并列：
+        #    `triggered=1` 只说"进了收尾"，说不出"进收尾之前做过事没有"——
+        #    而这两种收尾的修法相反（一个要"别乱想"，一个要"根本没动手"）。
+        if not _co_e["dispatched"]:
+            co["zero_exec"] = int(co.get("zero_exec", 0)) + 1
+            _co_zer = co.get("zero_exec_by_reason")
+            if not isinstance(_co_zer, dict):
+                _co_zer = co["zero_exec_by_reason"] = {}
+            _co_zer[_why] = int(_co_zer.get(_why, 0)) + 1
         best = ""
         origin = ""
         try:
@@ -2309,6 +2367,12 @@ class Core:
         if _co_art_bad:
             # 与状态词分列：`status` 说的是"怎么结束的"，这句说的是"东西在不在"。
             _co_gate_note += f" ｜ 约定产物**缺失**：{'、'.join(_co_miss)}"
+        #: ★ V54（§120）：**这次收尾之前下发过几次**。⛔ 与 `status` 分列：
+        #: `status` 说"怎么结束的"，这句说"结束之前到底动过手没有"。
+        #: 零下发必须显形 —— 否则"交了一段文本"与"这段文本有执行支撑"同一句话。
+        _co_exec_note = ((f"，此前已下发 {_co_e['dispatched']} 次"
+                          f"（成功 {_co_e['ok']}、失败 {_co_e['fail']}）")
+                         if _co_e["dispatched"] else "，此前**一次都没下发**")
         # ── 读数（第二十二轮）：来源分布 + 交付量 + **有没有改掉被打回的那一版** ──
         # ⚠️ `overrode_rejected` 的语义严格限定为"不同"：它与 `_salvage` 逐字比较，
         #    只能说"收尾让交付物变了"，**不能说**"收尾救回了这道题"。
@@ -2331,7 +2395,7 @@ class Core:
             return done("stalled", best,
                         f"拒绝原地打转{('（' + detail + '）') if detail else ''}"
                         f"，但仍有 {_left_s:.0f}s 额度 ⇒ 走答案通道交付"
-                        f"（不是预算不足）{_co_gate_note}")
+                        f"（不是预算不足）{_co_exec_note}{_co_gate_note}")
         if _na_entry:
             # ⛔ 状态名必须自己说清：写成 `closed` 会让 `by_reason` 与日志
             #    一起把"不适配"报成"预算不足"（`_reserve_reason` 也确实是空串）。
@@ -2340,9 +2404,10 @@ class Core:
             return done("not_applicable", best,
                         f"候选全部结构上不适用{('（' + detail + '）') if detail else ''}"
                         f"，但仍有 {_left_s:.0f}s 额度 ⇒ 走答案通道交付"
-                        f"（不是失败，也不是预算不足）{_co_gate_note}")
+                        f"（不是失败，也不是预算不足）{_co_exec_note}{_co_gate_note}")
         return done("closed", best,
-                    f"closing_reserve：预算不足，交付已有材料{_co_gate_note}")
+                    f"closing_reserve：预算不足，交付已有材料"
+                    f"{_co_exec_note}{_co_gate_note}")
 
     # ------------------------------------------------------------------
     def _finish(self, status: str, answer: str, reason: str, history: Sequence[str],
@@ -2442,7 +2507,11 @@ class Core:
             # "三次里两次退到 history"这种退化（那是"绝不返回空"的代价面）。
             "closeout": {**dict(self.closeout_stats),
                          "origin": dict(self.closeout_stats["origin"]),
-                         "by_reason": dict(self.closeout_stats["by_reason"])},
+                         "by_reason": dict(self.closeout_stats["by_reason"]),
+                         # ★ V54（§120）：零下发的入口分列。与 `by_reason` 同宗理由
+                         # 必须**深拷**：浅拷交给调用方的是内核的活引用。
+                         "zero_exec_by_reason": dict(
+                             self.closeout_stats.get("zero_exec_by_reason") or {})},
             # 第二十三轮（路线①）：外部能力。**零值也进 stats**，但汇总行只在
             # 配了外部能力时念 —— 没配的时候印"外部=0次"是噪声。
             # ⛔ `used_as_answer` 必须与 `ok` 分列：调用成功但答案没被采用
@@ -2456,6 +2525,10 @@ class Core:
             "external_agents": self.external_agents,
             # 停滞/重复 —— "重复的成功不是进展"这条的读数出口
             "loop": dict(extra or {}),
+            # ★ V54（§120）：**下发次数**。⛔ 位置在 `loop` 之后、`delivery` 之前
+            #   是随意的；不许的是**不出现** —— `steps` 单独一个数会被读成"做了几步"。
+            #    零值也在：一次没下发本身就是一条读数（V52 两臂就是这个形态）。
+            "exec": dict(self.exec_stats),
             # ★ §110：交付验收。**零值也进 stats**（老读法里没这个键 ⇒ 读不到
             # 与"验过了但没产物"是同形的，必须显式给 `ANSWER`/`EMPTY`）。
             "delivery": dict(self._delivery),
@@ -2591,6 +2664,14 @@ class Core:
                              f"(与被闸打回那版同={_co['same_as_rejected']})")
             if _co["empty"]:
                 _co_line += f" ⚠️交了空={_co['empty']}"
+            # ★ V54（§120）：**零下发**的收尾次数必须念出来，并按入口分列。
+            # ⛔ 与 `收尾=N次` 并列而不是并进去：那个数说"进过几次收尾"，
+            #    这个说"其中几次进收尾之前一次都没动过手" —— 前者是流程，后者是真相。
+            if _co.get("zero_exec"):
+                _co_zer = _co.get("zero_exec_by_reason") or {}
+                _co_line += (f" ⚠️零下发={_co['zero_exec']}次"
+                             + (f"({','.join(f'{k}:{v}' for k, v in _co_zer.items() if v)})"
+                                if _co_zer else ""))
             # ★第九十一轮（§57）：收尾那一次闸的读数。
             # ⛔ 与上面的 `校验=` **分列**念：那个是"全轮跑了多少次闸"，这个是
             #    "交出去的那一份过没过"。第九十轮的实况是"11 次收尾交付、0 次过闸"，
@@ -2620,7 +2701,10 @@ class Core:
             _dv_line += f" ⚠️题面点的输入不存在:{','.join(_dv['inputs_missing'])}"
         if _dv.get("error"):
             _dv_line += f" ⚠️验收层异常:{_dv['error'][:60]}"
-        self.log(f"■ {status}{_dv_line} | steps={len(history)} | guard_blocked={stats['guard']['total']}"
+        self.log(f"■ {status}{_dv_line} | steps={len(history)}"
+                 f" 执行={stats['exec']['dispatched']}下发"
+                 f"/{stats['exec']['ok']}成/{stats['exec']['fail']}败"
+                 f" | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}{_ex2_line}")
         return Outcome(status, answer, reason, len(history), stats,

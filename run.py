@@ -508,18 +508,25 @@ def _kco_zero() -> dict:
             #: ★V53（§119）：收尾交付的**产物问**。不并进上面两个数：
             #: 「答案改没改」与「东西在不在」是两个独立的边（§110 分列的延续）。
             "artifact_fail": 0, "artifact_partial": 0, "artifact_error": 0,
+            #: ★ V54（§120）：进收尾之前**一次都没下发**的次数（按入口分列）。
+            #: ⛔ 与 `triggered` 分列：`triggered` 说"进过几次收尾"，
+            #:    这个说"其中几次连一个动作都没做" —— 后者原来在落盘产物里不可见。
+            "zero_exec": 0, "zero_exec_by_reason": {},
             "origin": {}, "by_reason": {"steps": 0, "wall": 0}}
 
 
 def _kco_absorb(acc: dict, stats: dict) -> dict:
     """把一次内核运行的收尾读数并进累加器（就地修改并返回）。"""
     for k in ("triggered", "chars", "empty", "overrode_rejected", "same_as_rejected",
-              "artifact_fail", "artifact_partial", "artifact_error"):
+              "artifact_fail", "artifact_partial", "artifact_error", "zero_exec"):
         acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
     for k, v in (stats.get("origin") or {}).items():
         acc["origin"][k] = int(acc["origin"].get(k, 0)) + int(v or 0)
     for k, v in (stats.get("by_reason") or {}).items():
         acc["by_reason"][k] = int(acc["by_reason"].get(k, 0)) + int(v or 0)
+    for k, v in (stats.get("zero_exec_by_reason") or {}).items():
+        acc["zero_exec_by_reason"][k] = (
+            int(acc["zero_exec_by_reason"].get(k, 0)) + int(v or 0))
     return acc
 
 

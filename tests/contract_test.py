@@ -11502,6 +11502,125 @@ check(RS, "AZ116 ★★收尾出口说「过闸」之前，**必须**先问产�
       " ｜ ".join(f"{k}={v}" for k, v in _AZ116_OK.items())
       + f" ｜ 闸行S1={[ln.strip()[:28] for ln in _AZ116_S1['lines'] if '🧪' in ln]}")
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ117（第一百四十三轮 §120）：进收尾之前**到底下发过几次**
+#
+# 为什么需要这条边：`■` 行的 `steps=N` 是 `len(history)`，数的是**规划轮**
+# （让位 / 预演否决 / 跳过 / 准入空轮都往 `history` 写行）。于是同一句
+# `■ not_applicable` 底下可能是两件完全相反的事：
+#   `v6_s139/logs_b.txt`：3 次 `run_shell ok=True` 之后进收尾 ⇒ 产物在（PASS）
+#   `v6_s142/logs_{a,b}.txt`：0 次成功之后进收尾 ⇒ 交付 77 字、产物为零（FAIL）
+# 没有计数器，这两种收尾在读数上**完全同形** —— 而它们的修法相反。
+#
+# 单元格（与 `bench/evidence/v6_s144/PREREG.md` §5 一一对应）：
+#   `never`（自声明恒不适用）⇒ 零下发；3 次 `recall` 成功 ⇒ 三次下发。
+# ⛔ 反向闸必须有：只测零下发格，把计数器写成恒 0 也能全绿。
+# ⛔ 交付物必须逐字相同（本轮只许记账）。
+# ══════════════════════════════════════════════════════════════════════════
+from mw.planner import _ANSWER_SYS as _AZ117_ANS_SYS           # noqa: E402
+
+_AZ117_GOAL = "用一段话说明快速排序的平均时间复杂度为什么是 O(n log n)。"
+
+
+class _AZ117LLM:
+    """规划桩：前 `n_ok` 轮给一个能跑通的 `recall`，之后只给**恒不适用**的候选。"""
+
+    def __init__(self, n_ok: int) -> None:
+        self.n_ok = n_ok
+        self.planning = 0
+
+    @staticmethod
+    def _txt(m) -> str:                                       # noqa: ANN001
+        return (str(m.get("content", "")) if isinstance(m, dict)
+                else str(getattr(m, "content", "")))
+
+    def complete(self, messages, max_tokens=None):             # noqa: ANN001, ARG002
+        sysmsg = self._txt(messages[0]) if messages else ""
+        if sysmsg == _AZ117_ANS_SYS:                          # `planner.answer()`
+            return "平均 O(n log n)：每次划分 O(n)，期望递归深度 O(log n)。"
+        if "规划器" not in sysmsg:
+            return ""
+        self.planning += 1
+        k = self.planning
+        if k <= self.n_ok:
+            # ⚠️ 一轮**一个**候选：主循环一旦有候选成功就停在本轮，
+            #    一轮塞三个只会执行一个（实测：`dispatched=1` 而不是 3）。
+            return json.dumps({"candidates": [
+                {"intent": f"检索第{k}条相关记忆", "tool": "recall",
+                 "args": {"query": f"az117-{k}"}}]}, ensure_ascii=False)
+        return json.dumps({"candidates": [
+            {"intent": "交给一个恒不适用的能力", "tool": "never",
+             "args": {"x": "1"}}]}, ensure_ascii=False)
+
+
+def _az117_run(tag: str, n_ok: int):
+    d = _TMP / f"az117_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    (d / "state").mkdir(parents=True, exist_ok=True)
+    # ⚠️ `Paths` 是 frozen dataclass ⇒ **构造时**给全（V51 现场）。
+    # ⚠️ 不靠 `cfg.settings()`：前序断言改过 `os.environ`，本 fixture 会继承它。
+    s = cfg.Settings(
+        paths=cfg.Paths(root=d, state=d / "state", logs=d / "logs",
+                        workspace=ws, bench=d / "bench"),
+        limits=cfg.Limits(max_steps=8, close_reserve_steps=1, verify_retries=2))
+    c = Core(settings=s, llm=_AZ117LLM(n_ok),
+             memory=MemoryStore(d / "state" / "memory.db"))
+    # 恒不适用的工具：`applies` 是能力**自己**声明的，内核只负责 `bool(fn(goal))`。
+    c.tools.register(ToolSpec("never", "对任何题面都不适用", {"x": "参数"},
+                              lambda a: "y", applies=lambda g: False))
+    lines: list[str] = []
+    c.log = lines.append                                      # noqa: ARG005
+    out = c.run(_AZ117_GOAL, budget_factor=1)
+    return out, lines
+
+
+_AZ117_OUT0, _AZ117_LOG0 = _az117_run("zero", 0)
+_AZ117_OUT3, _AZ117_LOG3 = _az117_run("three", 3)
+_AZ117_ST0 = getattr(_AZ117_OUT0, "stats", None) or {}
+_AZ117_ST3 = getattr(_AZ117_OUT3, "stats", None) or {}
+_AZ117_CO0 = _AZ117_ST0.get("closeout") or {}
+_AZ117_CO3 = _AZ117_ST3.get("closeout") or {}
+_AZ117_EX0 = _AZ117_ST0.get("exec") or {}
+_AZ117_EX3 = _AZ117_ST3.get("exec") or {}
+
+_AZ117_OK = {
+    "①零下发格真的走了准入空轮出口": (_AZ117_OUT0.status == "not_applicable"
+                          and _AZ117_OUT0.verdict == "ANSWER"),
+    "②零下发被记成计数并按入口分列": (
+        _AZ117_EX0.get("dispatched") == 0
+        and _AZ117_CO0.get("zero_exec") == 1
+        and (_AZ117_CO0.get("zero_exec_by_reason") or {}).get("not_applicable") == 1),
+    "③`reason` 与日志都写明「一次都没下发」": (
+        "一次都没下发" in str(_AZ117_OUT0.reason or "")
+        and any("一次都没下发" in ln for ln in _AZ117_LOG0)),
+    "④反向闸：三次成功下发 ⇒ 不许记成零下发": (
+        _AZ117_EX3 == {"dispatched": 3, "ok": 3, "fail": 0}
+        and _AZ117_CO3.get("zero_exec") == 0
+        and "此前已下发 3 次" in str(_AZ117_OUT3.reason or "")),
+    "⑤`■` 行带「执行=」段（`steps` 一个数会被读成「做了几步」）": any(
+        "执行=" in ln for ln in _AZ117_LOG3),
+    "⑥判据未变：同一道题的 `verdict` 与改前一致（ANSWER）": (
+        _AZ117_OUT3.verdict == "ANSWER"),
+}
+
+check(RS, "AZ117 ★★收尾出口必须说得出「此前下发过几次」\n"
+          "          —— `■` 行的 `steps=N` 是 `len(history)`，数的是**规划轮**：\n"
+          "             `v6_s139` 是「3 次成功之后走神」（产物在），`v6_s142` 是\n"
+          "             「一次都没成」（交付 77 字、产物为零）—— 两者读数**完全同形**。\n"
+          "          判据（六条，缺一即证明不了这条边）：\n"
+          "               ① 零下发格确实走准入空轮出口（否则这条边没有分母）；\n"
+          "               ② 零下发被记成计数，且**按入口分列**（修法不同 ⇒ 不许合并）；\n"
+          "               ③ `reason` 与入口日志都写明「一次都没下发」；\n"
+          "               ④ **反向闸**：三次成功下发 ⇒ `zero_exec=0` 且写出次数；\n"
+          "               ⑤ `■` 行带「执行=N下发/M成/K败」段；\n"
+          "               ⑥ 判据未变（`verdict` 仍是 ANSWER：本轮只记账不改判）。\n"
+          "         撤回语义：删掉 `_close_out` 里 `⊞` 那两句 ⇒ ③ 必红；\n"
+          "                    计数器写在 `if result.ok:` 里 ⇒ ②④ 必红；\n"
+          "                    `zero_exec` 恒 0 ⇒ ② 必红；`■` 行去掉「执行=」⇒ ⑤ 必红。",
+      all(_AZ117_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ117_OK.items()))
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

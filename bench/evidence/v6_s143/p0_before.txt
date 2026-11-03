@@ -1,0 +1,31 @@
+==============================================================================
+V53 收尾出口：产物问有没有在「过闸」之前发生
+==============================================================================
+
+[S1 产物缺失(FAIL)]
+  {"answer_chars": 26, "answer_sha": "62b2e686", "artifact_fail": 0, "artifact_partial": 0, "checks": 1, "closeout_runs": 1, "files": [], "gate_failed": 0, "gate_lines": ["  🧪 收尾交付过闸"], "goal": "工作目录里有 sales.csv（列为 ", "reason": "closing_reserve：预算不足，交付已有材料", "retries": 2, "said_passed": true, "status": "closed"}
+
+[S2 产物存在(PASS)]
+  {"answer_chars": 26, "answer_sha": "62b2e686", "artifact_fail": 0, "artifact_partial": 0, "checks": 1, "closeout_runs": 1, "files": ["report.md"], "gate_failed": 0, "gate_lines": ["  🧪 收尾交付过闸"], "goal": "工作目录里有 sales.csv（列为 ", "reason": "closing_reserve：预算不足，交付已有材料", "retries": 2, "said_passed": true, "status": "closed"}
+
+[S3 半产物(PARTIAL)]
+  {"answer_chars": 26, "answer_sha": "62b2e686", "artifact_fail": 0, "artifact_partial": 0, "checks": 1, "closeout_runs": 1, "files": ["out/a.md"], "gate_failed": 0, "gate_lines": ["  🧪 收尾交付过闸"], "goal": "请生成 out/a.md 与 out/b", "reason": "closing_reserve：预算不足，交付已有材料", "retries": 2, "said_passed": true, "status": "closed"}
+
+[S4 无文本判据]
+  {"answer_chars": 26, "answer_sha": "62b2e686", "artifact_fail": 0, "artifact_partial": 0, "checks": 0, "closeout_runs": 0, "files": [], "gate_failed": 0, "gate_lines": [], "goal": "工作目录里有 sales.csv（列为 ", "reason": "closing_reserve：预算不足，交付已有材料", "retries": 0, "said_passed": false, "status": "closed"}
+
+------------------------------------------------------------------------------
+判定（PREREG §3）
+  ❌ J1 产物缺失 ⇒ 日志**不含**「收尾交付过闸」  (过闸=True 闸行=['  🧪 收尾交付过闸'])
+  ❌ J1b 产物缺失 ⇒ `artifact_fail=1`（可计数）  (artifact_fail=0)
+  ✅ J2 产物存在 ⇒ 日志**含**「收尾交付过闸」  (闸行=['  🧪 收尾交付过闸'])
+  ✅ J2b 产物存在 ⇒ FAIL/PARTIAL 都是 0  (F=0 P=0)
+  ❌ J3 半产物 ⇒ `artifact_partial=1` 且 `artifact_fail=0`（与 FAIL 分列）  (F=0 P=0)
+  ❌ J3b 半产物 ⇒ 也不许说「过闸」  (过闸=True)
+  ❌ J4 关掉文本判据 ⇒ 文本闸零跑但产物问仍在  (checks=0 closeout_runs=0 artifact_fail=0)
+  ✅ J4b 关掉文本判据 ⇒ 同样不许说「过闸」  (过闸=False)
+  ✅ P1 交付物逐字不变（四格同 sha）  (shas=['62b2e686'])
+  ✅ P2 状态词不变（都走 `closed`）  (status=['closed'])
+
+==============================================================================
+结果：FAIL  失败项=5 ['J1 产物缺失 ⇒ 日志**不含**「收尾交付过闸」', 'J1b 产物缺失 ⇒ `artifact_fail=1`（可计数）', 'J3 半产物 ⇒ `artifact_partial=1` 且 `artifact_fail=0`（与 FAIL 分列）', 'J3b 半产物 ⇒ 也不许说「过闸」', 'J4 关掉文本判据 ⇒ 文本闸零跑但产物问仍在']

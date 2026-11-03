@@ -505,12 +505,16 @@ def _kco_zero() -> dict:
     """
     return {"triggered": 0, "chars": 0, "empty": 0,
             "overrode_rejected": 0, "same_as_rejected": 0,
+            #: ★V53（§119）：收尾交付的**产物问**。不并进上面两个数：
+            #: 「答案改没改」与「东西在不在」是两个独立的边（§110 分列的延续）。
+            "artifact_fail": 0, "artifact_partial": 0, "artifact_error": 0,
             "origin": {}, "by_reason": {"steps": 0, "wall": 0}}
 
 
 def _kco_absorb(acc: dict, stats: dict) -> dict:
     """把一次内核运行的收尾读数并进累加器（就地修改并返回）。"""
-    for k in ("triggered", "chars", "empty", "overrode_rejected", "same_as_rejected"):
+    for k in ("triggered", "chars", "empty", "overrode_rejected", "same_as_rejected",
+              "artifact_fail", "artifact_partial", "artifact_error"):
         acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
     for k, v in (stats.get("origin") or {}).items():
         acc["origin"][k] = int(acc["origin"].get(k, 0)) + int(v or 0)

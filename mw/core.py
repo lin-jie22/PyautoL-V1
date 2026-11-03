@@ -2037,6 +2037,13 @@ class Core:
             #: "本轮一共跑了几次闸"，这里回答"交出去的那一份过没过"——
             #: 第九十轮的病正是**前者的数字看着正常、后者根本没有**。
             "gate_checked": 0,
+            #: ★V53（§119）：收尾交付的**产物问**结果，按 `verdict` 形态分列。
+            #: ⛔ 为什么必须分列：`Failed`（零产物）与 `PARTIAL`（写了一半）
+            #:    修法不同 —— 一个要"从没有到有"，一个要"补齐剩下的"。
+            #:    合成一个 `artifact_missing` 就把这两种病记成同一种。
+            #: ⚠️ 分母是 `triggered`（收尾真的交付了几次），不是 `verify_stats["runs"]`
+            #:    （那把主循环的闸也算进来，而主循环根本没走到收尾）。
+            "artifact_fail": 0, "artifact_partial": 0, "artifact_error": 0,
             "gate_failed": 0,
         }
         #: 本次进入收尾余量是哪条阈值触发的（`steps` / `wall`）。由
@@ -2220,6 +2227,45 @@ class Core:
         #    · `not self._checks`：`vfy.run(x, ())` 返回 **ok=False**（"无判据"≠通过）
         #      ⇒ 关掉 `verify_retries` 的用户会拿到一个**假失败**（自造假失败，
         #      与"关掉判据也能刷出 100% 通过率"是同一枚硬币的两面）。
+        # ── 产物问（V53，§119）：必须在「过闸」这句话**之前**问 ─────────────
+        # ⛔ 修的是什么：`_close_out` 下面那道闸是 `vfy.run(best, self._checks)`，
+        #    判据由**题面的静态形态**派生（`derive(goal)`），它只问"这段文本像不像
+        #    能跑的代码 / 是不是空的"。产物问（`vfy.check_delivery`）原来**只在
+        #    `_finish` 里**算，而 `_finish` 在 `_close_out` **返回之后**才跑
+        #    ⇒ 「🧪 收尾交付过闸」是在产物还没被问过的时候说出来的。
+        #    现场（V52 两臂，`v6_s142/logs_{a,b}.txt`，2/2 格）：
+        #      `🧪 收尾交付过闸` … `收尾闸=1跑/1过/0未过`
+        #      `■ not_applicable 验收=FAIL(0/1，缺 report.md)`
+        #    两句话说的是同一份交付物 —— 这就是要修的那句假话。
+        #
+        # ⛔ 这里**只记账**：不动 `best`、不拦截、不重试、不重新要答案。
+        #    V51 已经证明"在交付前拦"净负（+35s/+6 calls、打红三张老契约），
+        #    本轮只让出口在说"过闸"之前先问一句"东西在不在"。
+        #
+        # ⚠️ 不在 `if self._checks:` 里面：产物问与**文本判据开没开**无关。
+        #    关掉 `verify_retries` 的用户同样有权知道"产物在不在" ——
+        #    把两者绑在一起，"没问"会被读成"没问题"（缺席冒充零）。
+        _co_del: dict = {}
+        _co_art_v = ""
+        if best:
+            try:
+                _co_del = vfy.check_delivery(
+                    self._goal_text or goal, self.s.paths.workspace, best)
+                _co_art_v = str(_co_del.get("verdict") or "")
+            except Exception as e:  # noqa: BLE001
+                # ⛔ 核不了**不许**冒充任何一种结论（§110 的 ERROR 形态）：
+                #    静默当 PASS 就是"核不了"变"核过了"。
+                _co_del = {"verdict": "ERROR", "missing": [],
+                           "error": f"{type(e).__name__}: {e}"}
+                _co_art_v = "ERROR"
+        _co_art_bad = _co_art_v in ("FAIL", "PARTIAL", "ERROR")
+        _co_miss = [str(t) for t in (_co_del.get("missing") or [])] or ["?"]
+        if _co_art_v == "FAIL":
+            co["artifact_fail"] += 1
+        elif _co_art_v == "PARTIAL":
+            co["artifact_partial"] += 1
+        elif _co_art_v == "ERROR":
+            co["artifact_error"] += 1
         if best and self._checks:
             _co_v = vfy.run(best, self._checks)
             self.verify_stats["runs"] += 1
@@ -2233,7 +2279,13 @@ class Core:
                 #   "交了坏答案"。假指控与假绿是同一种病（§21 的 `_salvage`
                 #   那次教训的另一面）。
                 self._unverified = ""
-                self.log("  🧪 收尾交付过闸")
+                if _co_art_bad:
+                    # ⛔ 这句话不许出现「收尾交付过闸」子串：它会被读成
+                    #    "交付过了闸"，而产物问刚说东西不在。
+                    self.log(f"  🧪 收尾交付**只过了文本闸**，约定产物缺失："
+                             f"{'、'.join(_co_miss)}")
+                else:
+                    self.log("  🧪 收尾交付过闸")
             else:
                 self.verify_stats["failed"] += 1
                 self.verify_stats["closeout_failed"] += 1
@@ -2246,9 +2298,17 @@ class Core:
                     "failure", f"收尾交付未过自检 — {_co_v.report[:200]}",
                     error=_co_v.report[:300])
                 self.log(f"  🧪 收尾交付**未过闸**：{_co_v.report[:120]}")
+        elif best and _co_art_bad:
+            # 文本判据关掉（`verify_retries=0`）也**必须**如实说产物状态：
+            # 否则这条路上"产物不在"在日志上是零痕迹。
+            self.log(f"  🧪 收尾交付**产物缺失**（本次无文本判据）："
+                     f"{'、'.join(_co_miss)}")
         #: 交付物过没过闸，必须写进 `reason` —— 状态名仍然说"怎么结束的"
         #: （`closed` / `stalled` 本来就没说"已校验"），这句话补的是"过没过"。
         _co_gate_note = " ｜ 该答案**未通过自检**" if self._unverified else ""
+        if _co_art_bad:
+            # 与状态词分列：`status` 说的是"怎么结束的"，这句说的是"东西在不在"。
+            _co_gate_note += f" ｜ 约定产物**缺失**：{'、'.join(_co_miss)}"
         # ── 读数（第二十二轮）：来源分布 + 交付量 + **有没有改掉被打回的那一版** ──
         # ⚠️ `overrode_rejected` 的语义严格限定为"不同"：它与 `_salvage` 逐字比较，
         #    只能说"收尾让交付物变了"，**不能说**"收尾救回了这道题"。

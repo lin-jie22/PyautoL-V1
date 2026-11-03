@@ -11388,6 +11388,120 @@ check(RS, "AZ115 ★★`replan` 与 `propose` 在 `stats` 上完全同形 ⇒ �
       f"{any('自检未通过' in ln for ln in _AZ115_LINES)} ｜ "
       f"样本={(_AZ115_LINES[0][:48] if _AZ115_LINES else '（无）')!r}")
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ116（第一百四十二轮 §119）：收尾出口的「过闸」必须先问**产物**
+#
+# V52 两臂的现场（`bench/evidence/v6_s142/logs_{a,b}.txt`，2/2 格）：
+#     🧪 收尾交付过闸
+#     ■ not_applicable 验收=FAIL(0/1，缺 report.md) | ... 收尾闸=1跑/1过/0未过
+# 同一份交付物、同一时刻、两句话相反。病因：`_close_out` 那道闸只跑
+# `vfy.run(best, self._checks)`（判据由题面的**静态形态**派生，只问"这段文本
+# 像不像能跑的代码"），而产物问 `vfy.check_delivery` 原来**只在 `_finish` 里**算
+# —— 而 `_finish` 在 `_close_out` **返回之后**才跑 ⇒ 「过闸」是在产物还没被
+# 问过的时候说出来的。
+#
+# 四格（与 `bench/evidence/v6_s143/PREREG.md` §3 一一对应）：
+#   S1 零产物(FAIL) / S2 产物在(PASS) / S3 半产物(PARTIAL) / S4 关掉文本判据
+# ⛔ S2 是**反向闸**：只测 S1 的话，"把闸改成恒不打印"也能全绿。
+# ⛔ 四格交付物必须逐字相同 —— 本轮只许记账，不许改分（§45.9）。
+# ══════════════════════════════════════════════════════════════════════════
+from mw import verify as _AZ116_V                              # noqa: E402
+
+_AZ116_GOAL1 = ("工作目录里有 sales.csv。请计算每个区域的合计，"
+                "写入工作目录下的 report.md。")
+_AZ116_GOAL2 = "请生成 out/a.md 与 out/b.md 两个文件，各写一句话。"
+_AZ116_ANS = "华北 2700 ｜ 华南 2000 ｜ 华东 700"
+
+
+class _AZ116LLM:
+    """收尾答案的桩：任何请求都回同一段文本 ⇒ 四格交付物可逐字比对。"""
+
+    def complete(self, messages, max_tokens=None):      # noqa: ANN001, ARG002
+        return _AZ116_ANS
+
+
+def _az116_run(tag: str, goal: str, files: dict, *, retries: int = 2) -> dict:
+    d = _TMP / f"az116_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    for name, body in files.items():
+        p = ws / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(body, encoding="utf-8")
+    # ⚠️ `Paths` 是 frozen dataclass ⇒ **构造时**给全（构造后赋值必炸，V51 现场）。
+    # ⚠️ 不靠 `cfg.settings()` 读 env：本进程里前序断言改过 `os.environ`
+    #    （AZ115 的坑：`verify_retries` 被继承成 0 ⇒ 一次闸都没跑）。
+    s = cfg.Settings(
+        paths=cfg.Paths(root=d, state=d / "state", logs=d / "logs",
+                        workspace=ws, bench=d / "bench"),
+        limits=cfg.Limits(max_steps=3, close_reserve_steps=1,
+                          verify_retries=retries, verify_static=2))
+    c = Core(settings=s, llm=_AZ116LLM(),
+             memory=MemoryStore(d / "state" / "memory.db"))
+    lines: list[str] = []
+    c.log = lines.append                              # noqa: ARG005
+    c._reset_verify(goal)
+    c._checks = (tuple(_AZ116_V.derive(goal, 2)) if retries > 0 else ())
+    seen: dict = {}
+
+    def _done(status: str, answer: str, reason: str) -> str:     # noqa: ANN001
+        seen.update(status=status, answer=answer, reason=reason)
+        return "ok"
+
+    c._close_out(goal, ["h1"], _done)
+    return {"lines": lines, "seen": seen, "co": dict(c.closeout_stats),
+            "vs": dict(c.verify_stats), "checks": len(c._checks)}
+
+
+_AZ116_S1 = _az116_run("s1", _AZ116_GOAL1, {})
+_AZ116_S2 = _az116_run("s2", _AZ116_GOAL1,
+                       {"report.md": "| 区域 | 合计 |\n|---|---|\n| 华北 | 2700 |\n"})
+_AZ116_S3 = _az116_run("s3", _AZ116_GOAL2, {"out/a.md": "第一句\n"})
+_AZ116_S4 = _az116_run("s4", _AZ116_GOAL1, {}, retries=0)
+
+
+def _az116_passed(r: dict) -> bool:
+    return any("收尾交付过闸" in ln for ln in r["lines"])
+
+
+_AZ116_OK = {
+    "①零产物不说「过闸」": (not _az116_passed(_AZ116_S1)
+                     and _AZ116_S1["co"].get("artifact_fail") == 1),
+    "②产物在**仍**说「过闸」（反向闸）": (_az116_passed(_AZ116_S2)
+                               and _AZ116_S2["co"].get("artifact_fail") == 0
+                               and _AZ116_S2["co"].get("artifact_partial") == 0),
+    "③半产物与零产物**分列**": (not _az116_passed(_AZ116_S3)
+                        and _AZ116_S3["co"].get("artifact_partial") == 1
+                        and _AZ116_S3["co"].get("artifact_fail") == 0),
+    "④关掉文本判据仍问产物": (_AZ116_S4["checks"] == 0
+                      and _AZ116_S4["vs"].get("closeout_runs") == 0
+                      and _AZ116_S4["co"].get("artifact_fail") == 1
+                      and not _az116_passed(_AZ116_S4)),
+    "⑤交付物逐字不变": ({r["seen"].get("answer") for r in
+                  (_AZ116_S1, _AZ116_S2, _AZ116_S3, _AZ116_S4)} == {_AZ116_ANS}),
+    "⑥状态词不变": ({r["seen"].get("status") for r in
+                (_AZ116_S1, _AZ116_S2, _AZ116_S3, _AZ116_S4)} == {"closed"}),
+    "⑦reason 如实写缺哪个产物": ("report.md" in str(_AZ116_S1["seen"].get("reason"))),
+}
+
+check(RS, "AZ116 ★★收尾出口说「过闸」之前，**必须**先问产物\n"
+          "          —— V52 两臂 2/2 格：日志 `🧪 收尾交付过闸` 与 `验收=FAIL(缺 report.md)`\n"
+          "            说的是同一份交付物。病因不是判据错，是**顺序**：产物问原来只在\n"
+          "            `_finish` 里算，而 `_finish` 在 `_close_out` 返回之后才跑。\n"
+          "          判据（七条，缺一即证明不了这条边）：\n"
+          "               ① 零产物(FAIL) ⇒ 日志无「收尾交付过闸」且 `artifact_fail=1`；\n"
+          "               ② 产物在(PASS) ⇒ **仍**说「过闸」（反向闸：证明不是把闸改成恒不打印）；\n"
+          "               ③ 半产物(PARTIAL) 与零产物**分列计数**（修法不同，不能合并）；\n"
+          "               ④ `verify_retries=0` ⇒ 文本闸零跑，但产物问**仍在**（不依赖开关）；\n"
+          "               ⑤ 四格交付物**逐字相同**（只许记账不许改分）；\n"
+          "               ⑥ 状态词不变（`closed`）；⑦ `reason` 写出缺哪个产物。\n"
+          "         撤回语义：删掉 `if _co_art_bad:` 那一支（恢复无条件打过闸）⇒ ① 必红；\n"
+          "                    产物问改成恒 PASS ⇒ ①③ 必红；FAIL/PARTIAL 并成一个键 ⇒ ③ 必红；\n"
+          "                    把产物问挪回 `if self._checks:` 里 ⇒ ④ 必红。",
+      all(_AZ116_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ116_OK.items())
+      + f" ｜ 闸行S1={[ln.strip()[:28] for ln in _AZ116_S1['lines'] if '🧪' in ln]}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

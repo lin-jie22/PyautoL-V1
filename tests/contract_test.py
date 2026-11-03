@@ -11279,6 +11279,46 @@ check(RS, "AZ112 ⑥ 描述不动准入判定（有判据两份同判、无判�
 print(f"  ⛔ AZ112 只证明「改的是提示词、且只动了该动的口径」；"
       f"「模型会不会少提它」由真实五臂回答（v6_s139/p2_real.txt）")
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ114（第一百四十轮 §117）：工具的**参数契约**不许对模型撒谎
+#
+# V51 主押注（交付闸）判负并**已撤回**（`v6_s141/RESULTS.md` §3/§4）：
+# 它把答案打回、让位也通电了，但让位复用的是"以为已经做完"时想的候选，
+# 且 `_close_out` 只有自检、没有产物问 ⇒ 三臂 `verdict` 全 FAIL，
+# 代价 +35s/+6 calls，还扰动 AZ107/AZ108/AZ110 三张老契约。
+# ⇒ 按「没证据更好 = 不改」撤回，留下的是**被单独隔离出来**的这条 bug：
+#   目录写着「(可选)」、handler 也有默认值，而 `dispatch` 把 `params` 的每个键
+#   都当必填 ⇒ 让位到 `run_shell({"cmd": …})` 时一条命令都没执行。
+# ══════════════════════════════════════════════════════════════════════════
+
+_AZ114_WS = _TMP / "az114_ws"
+_AZ114_WS.mkdir(parents=True, exist_ok=True)
+
+# ── AZ114：目录说「可选」，执行器就必须真可选 ────────────────────────────
+# V51 B 臂现场（`v6_s141/logs_b.txt`）：模型照目录给的 `run_shell({"cmd": …})`
+# 被 `dispatch` 判「缺参数 ['timeout_s']」，一条命令都没执行。
+# ⛔ 断言必须同时钉三件事：① 缺省能跑 ② `cmd` 仍必填 ③ **目录行一个字符没变**
+#    （第三件是为了守住 `catalog_sha`：改这处不许顺手把口径断掉）。
+_AZ114_REG = ToolRegistry()
+register_core_tools(_AZ114_REG, memory=None, workspace=_AZ114_WS, allow_note=True)
+_AZ114_ONLY_CMD = _AZ114_REG.dispatch("run_shell", {"cmd": "echo v51-ok"})
+_AZ114_NO_CMD = _AZ114_REG.dispatch("run_shell", {})
+_AZ114_SPEC = _AZ114_REG.get("run_shell")
+_AZ114_LINE = next((ln for ln in _AZ114_REG.catalog().splitlines()
+                    if ln.startswith("- run_shell")), "")
+
+check(RS, "AZ114 ★`ToolSpec.optional`：目录写「可选」的参数，`dispatch` 不许当必填\n"
+          "          ① `run_shell({'cmd': …})`（不给 timeout_s）⇒ ok=True 且真跑；\n"
+          "          ② 连 `cmd` 都不给 ⇒ 仍 ok=False 且报「缺参数」（必填没被一起放开）；\n"
+          "          ③ 目录行仍是 `run_shell(cmd, timeout_s)` —— 该项**不进目录**，\n"
+          "             `catalog_sha` 不变（V50 已为改描述断口径交过学费）。",
+      (_AZ114_ONLY_CMD.ok is True and "v51-ok" in (_AZ114_ONLY_CMD.output or "")
+       and _AZ114_NO_CMD.ok is False and "缺参数" in (_AZ114_NO_CMD.error or "")
+       and _AZ114_SPEC is not None and "timeout_s" in _AZ114_SPEC.optional
+       and _AZ114_LINE.startswith("- run_shell(cmd, timeout_s)")),
+      f"①ok={_AZ114_ONLY_CMD.ok} ｜ ②ok={_AZ114_NO_CMD.ok} "
+      f"err={(_AZ114_NO_CMD.error or '')[:24]!r} ｜ ③行={_AZ114_LINE[:34]!r}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

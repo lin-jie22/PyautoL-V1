@@ -51,6 +51,19 @@ class ToolSpec:
     #: ⛔ 它**不**渲染进 `catalog_line()`：适用条件进提示词就是"改提示词"，
     #:    而这一轮要量的是「在采纳/注入处判」，两件事必须分开（见 §113.2）。
     applies: Callable[[str], bool] | None = None
+    #: ★ 第一百四十轮（§117）：**哪些参数是可选的**（缺省用 handler 自己的默认值）。
+    #:
+    #: 为什么必须显式声明（V51 现场，`v6_s141/logs_b.txt`）：
+    #:   `run_shell` 的目录行是 `run_shell(cmd, timeout_s)`，描述里写着「(可选)」，
+    #:   handler 也写着 `args.get("timeout_s", 30)` —— 但 `dispatch()` 用
+    #:   `[k for k in spec.params if k not in args]` 判缺参 ⇒ **可选参数被当必填**。
+    #:   实测：让位到候选 2 的 `run_shell({"cmd": "test -f sales.csv && echo exists"})`
+    #:   ⇒ `run_shell 缺参数 ['timeout_s']`，一条命令都没执行。
+    #:   ⛔ 这不是模型不会用工具，是**目录对模型撒了谎**（说可选、判必填）。
+    #:
+    #: ⛔ 它**不进** `catalog_line()`：目录行渲染的是 `params` 的键，一个字符都不变
+    #:   ⇒ `catalog_sha` 不变，96 格口径不破（V50 已经为"改描述断口径"交过一次学费）。
+    optional: frozenset[str] = frozenset()
 
     def catalog_line(self) -> str:
         args = ", ".join(self.params.keys()) or "无"
@@ -122,7 +135,8 @@ class ToolRegistry:
         spec = self._specs.get(name)
         if spec is None:
             return ToolResult(False, error=f"未知工具 {name!r}（已注册: {self.names()}）")
-        missing = [k for k in spec.params if k not in args]
+        missing = [k for k in spec.params
+                   if k not in args and k not in spec.optional]
         if missing:
             return ToolResult(False, error=f"{name} 缺参数 {missing}")
         try:
@@ -224,7 +238,7 @@ def register_core_tools(reg: ToolRegistry, *, memory: Any = None,
     _put(ToolSpec(
         "run_shell", "在工作目录执行 shell 命令（受 guard 白名单约束）",
         {"cmd": "命令", "timeout_s": "超时秒数(可选)"}, _run_shell,
-        external=True, mutating=True,
+        external=True, mutating=True, optional=frozenset({"timeout_s"}),
     ))
 
     def _http_get(args: dict) -> str:

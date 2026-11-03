@@ -1,0 +1,66 @@
+diff -r /tmp/v51/wtA/mw/core.py /tmp/v51/wtB/mw/core.py
+1782c1782,1811
+<         if v.ok:
+---
+>         # ★ V51（§117）：交付闸的**第二问** —— 题面要求的产物在不在。
+>         #
+>         # 为什么在这里（而不是在 `_finish` 的收尾里再加一道）：
+>         #   V50 §116.9 实测 `finish` 成功 ⇒ `return _done`，**让位唯一没接线的地方**。
+>         #   把产物判据放进闸里，**一次改动拿到三个后果**：
+>         #     ① 打回（`ok=False`）② 自动走已有的 `cand_failover` 让位（§107/§108 的插线）
+>         #     ③ 世界模型第一次拿到 `ok=False` —— V50 §116.5 实测它此前学到的
+>         #        正是"编造是成功的"（C 臂预演命中率 1.0）。
+>         #
+>         # ⛔ 三条边界：
+>         #   ① **判据只有一份实现**：`vfy.check_delivery` 就是 `verdict` 在用的那一份
+>         #      （`core.py:2295`），这里不复制分类器、不改它的窗口。
+>         #   ② **与自检分列计数**：`artifact_failed` 单独记。混进 `failed` 会让
+>         #      "答案结构不过"与"东西没写出来"在读数上同形（V44 的 `status` 同宗）。
+>         #   ③ **产物为空 ⇒ 不拦**：`outs=[]` 是 `ANSWER` 通道（这题交付的是文本），
+>         #      拦它等于逼所有纯文本题去造文件。`missing` 非空才算数。
+>         _missing: list[str] = []
+>         try:
+>             _d = vfy.check_delivery(self._goal_text, self.s.paths.workspace,
+>                                     result.output)
+>             _missing = list(_d.get("missing") or [])
+>         except Exception as exc:                      # noqa: BLE001
+>             # 判据自己炸掉时**不许**冒充任何一种结论：计数 + 明说，且**不拦交付**
+>             # （拦 = 用一个坏掉的判据去否决一个可能正确的答案）。
+>             self.verify_stats["artifact_error"] += 1
+>             self.log(f"      ⚠️ 产物判据异常[{type(exc).__name__}] {exc} ⇒ 本次不拦")
+>         self.verify_stats["artifact_checks"] += 1
+>         if _missing:
+>             self.verify_stats["artifact_failed"] += 1
+>         if v.ok and not _missing:
+1785a1815,1820
+>         #: 打回的**原因原文**：自检与产物两问合并成一句，但两个计数分列。
+>         _why = "" if v.ok else v.report
+>         if _missing:
+>             _art = "题面要求的产物不存在：" + "、".join(_missing)
+>             _why = f"{_why}；{_art}" if _why else _art
+> 
+1792c1827
+<             self._unverified = v.report
+---
+>             self._unverified = _why
+1798,1799c1833,1834
+<                 "failure", f"自检超限未过（{self.verify_stats['failed']}次）— {v.report[:200]}",
+<                 error=v.report[:300])
+---
+>                 "failure", f"自检超限未过（{self.verify_stats['failed']}次）— {_why[:200]}",
+>                 error=_why[:300])
+1802a1838,1839
+>         #: 打回的原因**必须区分两问**：产物缺失时把"缺哪个文件"原样带回去，
+>         #: 否则下一轮模型只会看到一句结构报告，仍然不知道要 `run_shell` 真写一次。
+1804,1805c1841,1842
+<                  f" ⇒ 退回重写：{v.report[:120]}")
+<         return ToolResult(False, error=f"自检未通过：{v.report}")
+---
+>                  f" ⇒ 退回重写：{_why[:120]}")
+>         return ToolResult(False, error=f"自检未通过：{_why}")
+1986a2024,2028
+>             #: ★V51（§117）：产物那一问的读数。⛔ 必须与 `failed` 分列：
+>             #:   `failed` 回答"答案过不过得了自检"，这三个回答"用户要的东西在不在"。
+>             #:   `artifact_checks` 是分母（闸被调用的次数里，有几次真的问了产物），
+>             #:   `artifact_error` 是判据自己炸掉的次数（**不是**"缺产物"）。
+>             "artifact_checks": 0, "artifact_failed": 0, "artifact_error": 0,

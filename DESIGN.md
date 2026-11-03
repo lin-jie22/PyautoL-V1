@@ -20762,3 +20762,141 @@ M bench/build_g7d_seed.py
 本轮因此拿到一个更硬的结论：**撤回态这套装置本身还没有"崩溃安全"**。
 在它能自己保证「被杀也还原」之前，它的读数（198/9）都带着一个前提：
 **跑完之后有人核过账**。V50 这次没跑完，也就没有这个前提。
+
+---
+
+## 117. V51：闸通了，但它拦下的东西**没有下一跳**
+
+上游：§116.9（V50 把病根指到 `core.py:1587` 那条 `return _done`）。
+证据：`bench/evidence/v6_s141/`（`PREREG.md`（含 §10 POST-HOC）/ `probe_v51_gate.py` /
+`p1_probe.txt`（sha `c1c588b7…`）/ `run_v51.sh` / `run_v51c.sh` / `logs_a~c.txt` /
+`mount_diff.txt` / `RESULTS.md`）。
+
+### 117.1 押注结算
+
+三臂（唯一变量递进）：A=HEAD；B=+交付闸；C（POST-HOC）=B+`ToolSpec.optional`。
+
+| # | 押注 | 结果 |
+|---|---|---|
+| J1 | `verdict` FAIL→PASS | ❌ 错 |
+| J2 | `verify.failed ≥ 1`（闸真打回） | ✅ 1 / 2 |
+| J3 | `artifact_failed ≥ 1`（产物问单列） | ✅ 1 / 2 |
+| J4 | `failover.used ≥ 1`（让位真发生） | ✅ 1 / 1 |
+| J5 | `report.md` 真的存在 | ❌ 错 |
+| J6 | 单函数题上不许开火 | ✅ 12 格整卷相同（逐题不可得，见 §117.4） |
+
+⇒ **闸和让位都通电了，产物一个都没出来。** 这一轮的价值不在"通过"，在**断点定位**。
+
+### 117.2 三层链条
+
+**第一层：闸按预期工作**（B 臂）
+
+```
+↳ finish ok=True 直接生成report.md文件
+🧪 自检未过（第 1/2 次打回） ⇒ 退回重写：题面要求的产物不存在：report.md
+↪ 交付被打回 ⇒ 让位给候选 2/3（不重规划，直接用已有的）
+```
+
+`artifact_failed=1` 是结构化计数，不是从日志里数的。⇒ §116.9 那条边**第一次接上**。
+
+**第二层：下一跳在 `dispatch` 里被拒**（B 臂）
+
+```
+↳ run_shell ok=False 原因=run_shell 缺参数 ['timeout_s'] 检查sales.csv文件是否存在
+```
+
+`run_shell` 的目录行 `run_shell(cmd, timeout_s)`、描述写「(可选)」、handler 写
+`args.get("timeout_s", 30)` —— 而 `dispatch()` 用
+`[k for k in spec.params if k not in args]` 判缺参。**目录对模型撒了谎**：
+说可选，判必填。⇒ 它给 V45/V50 反复出现的「让位了但没救回」提供了第一层解释。
+
+**第三层：让位复用的是「以为已经做完」时想的候选**（C 臂，修好参数之后）
+
+```
+↳ run_shell ok=True 检查sales.csv文件是否存在
+↪ 让位救回一个**步骤**（非交付动作）：run_shell
+```
+
+命令成功了，但它是 `test -f`，不是写文件。之后的轮次：
+
+| 轮 | 候选 | 结果 |
+|---|---|---|
+| 1 | finish / **run_shell(检查存在)** | finish 打回 → 让位 → 检查成功，产物仍无 |
+| 2 | finish | `⏭ 重复动作已跳过` |
+| 3 | finish（"手动计算并生成报告"） | 第 2/2 次打回 |
+| 4~5 | `code_agent`×1 | 全被准入判据丢掉 ⇒ 准入空轮 2/2 |
+| 收尾 | — | `🧪 收尾交付过闸` + `📦 收尾交付 77 字符` |
+
+⇒ **让位省掉的是"重规划"，而重规划正是唯一能让模型知道"报告还不存在"的地方。**
+旧候选是在"finish 已经算交付"的信念下提出的，它们回答的是"还要不要确认一下"，
+不是"怎么把文件真写出来"。
+
+### 117.3 顺带打出的两个洞（登记，未修）
+
+1. **`_close_out` 的闸只有自检，没有产物问**（`core.py:2256`，跑 `vfy.run` 而不是
+   `_gate_finish`）⇒ B/C 两臂都出现「收尾交付过闸」而 `report.md` 不存在。
+   `verdict` 仍诚实（`_finish` 里另算一次），但**"过闸"这个词撒谎了**。
+2. **准入空轮转向交付**：`code_agent` 全被判不适用 ⇒ `not_applicable` ⇒ 交一段文字。
+   对一个产物缺失的任务，这条出口等于"没有手段时交文字"。
+
+### 117.4 为什么撤回交付闸
+
+| 项 | 读数 |
+|---|---|
+| `verdict` | A/B/C 全 FAIL |
+| 耗时 / `llm_calls` | 33.0 → 68.2 → 89.1s ／ 3 → 9 → 12 |
+| 老契约 | AZ107 / AZ108 / AZ110 **同时变红** |
+
+单独撤 `core.py`（只留 `tools.py`）之后三条老契约**全部回绿**，AZ108 的 `plan` 逐字段回到
+`rounds=1 / by_tool={finish:2, run_shell:1}` ⇒ **扰动源是交付闸**。
+
+按「没证据更好 = 不改」⇒ **撤回**。这不是"这条边不存在"：它仍然是"`finish` 的 `ok`
+不问产物"的实证，只是**单独上它净效应为负**（多 35s、多 6 次调用、扰动三张无关断言、
+产物还是没有）。要它有用，必须同时解决 §117.2 第三层。
+
+⚠️ J6 的判据写的是"逐题相同"，实际只读到整卷（`--no-answers` 不落逐题明细）⇒
+只能说"整卷均值与离散度完全相同"，**不许写成逐题相同**。
+
+### 117.5 落地：`ToolSpec.optional`（唯一保留的改动）
+
+```python
+@dataclass(frozen=True)
+class ToolSpec:
+    ...
+    optional: frozenset[str] = frozenset()      # 缺省用 handler 自己的默认值
+
+# dispatch
+missing = [k for k in spec.params if k not in args and k not in spec.optional]
+```
+
+- 同一条候选：`run_shell({"cmd": "test -f …"})` 从 `ok=False 缺参数 ['timeout_s']`
+  变成 **`ok=True、rc=0`**（B 臂 → C 臂，唯一变量就是这一行）；
+- `catalog_sha` **一个字符没变**（`8decb60895d4a972` / `29091404966ca8e1`）——
+  `optional` 不渲染进 `catalog_line()`，所以这不是"改提示词"；
+- ⛔ 它不改变任何 `verdict`。落地理由是"目录不能对模型撒谎"，不是"任务能做完"。
+
+### 117.6 自踩四条
+
+1. **`Paths` 是 frozen dataclass**：探针第一版写 `c.s.paths.workspace = …` ⇒
+   `FrozenInstanceError`。改成构造前设 `V1_WORKSPACE`。
+2. **S6 第一版测不到异常分支**：想用非法 workspace 触发 except，但 `_env_path`
+   会把任何字符串变成合法 `Path` ⇒ **"没测到"不等于"没坏"**。改成 monkeypatch
+   `vfy.check_delivery` 抛一次。
+3. **改撤回态时把 AZ112 整条删了**（`old_string` 带上了它的收尾括号），加完新条目
+   才发现 `CASES` 少一条。已补回（`198 → 199` 恰好 +1）。
+4. **把"慢"读成"卡住"**（V50 遗留）：200 条 × ~38s ≈ 2 小时，而 0 字节日志只是
+   Python 块缓冲。本轮起：长跑一律 `python3 -u`，先算成本再决定跑不跑。
+
+### 117.7 下一步（V52）：一处一个，且**先解决候选新鲜度**
+
+按证据强度排序，⛔ 不许同轮做两项：
+
+1. ⭐⭐⭐⭐ **闸打回之后必须重规划，不许复用旧候选**：
+   `cand_failover` 在"交付被打回"这一支上应改成 `break`（让 `last_error` 进下一轮
+   `replan`），或显式把 `_missing` 塞进 `replan(error=…)` 的载荷里。
+   判据：`run_shell` 的 `cmd` 里出现写动作（`>` / `tee` / `python3 - <<`），
+   而不是 `test -f`。
+2. ⭐⭐⭐ **`_close_out` 的闸补上产物问**（§117.3-1），否则"收尾交付过闸"永远可能是假的。
+3. ⭐⭐⭐ **准入空轮不许转向交付**（§117.3-2）：没有手段时应该报 `not_applicable`，
+   而不是交一段文字。
+4. ⭐⭐ 上述三步都落地之后，**再**把交付闸装回来（它现在是负净效应的，因为下一跳是断的）。

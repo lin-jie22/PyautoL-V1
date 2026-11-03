@@ -1,0 +1,8 @@
+✅ S1 打回: ok=False err='自检未通过：题面要求的产物不存在：report.md' art_failed=1 failed=1
+✅ S2 通过: ok=True passed=1 art_failed=1 salvage=有
+✅ S3 不乱开火: ok=True art_failed=0 checks=1
+✅ S4 点名缺失: ok=False err='自检未通过：题面要求的产物不存在：out/b.json'
+✅ S5 超限如实交付: 三次 ok=[False, False, True] exhausted=1 unverified='题面要求的产物不存在：report.md'
+✅ S6 判据异常不拦: ok=True err_cnt=1
+
+六景：6/6 绿

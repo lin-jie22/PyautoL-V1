@@ -1405,6 +1405,15 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ112", "agents.json",
      '生成 3 份实现、自写 assert、真跑后返回通过最多的一份。⛔ 题面没指定函数名时它一定失败，不要选它。',
      '生成 3 份实现、自写 assert、真跑后返回通过最多的一份。'),
+    # ── AZ114：目录说「可选」，执行器就必须真可选（V51 / §117）──────────────
+    #: 撤的语义：只把 `run_shell` 的 `optional=` 去掉（`dispatch` 的判定、
+    #:   `ToolSpec.optional` 字段本身都留着）。
+    #: ⇒ AZ114 ① 变红（`run_shell({"cmd": …})` 又被判缺 `timeout_s`），②③ 仍绿。
+    #: ⚠️ 这正是不许"改 `params` 来顺手修"的理由：删键会改 `catalog_line()`
+    #:   ⇒ `catalog_sha` 断掉，而那是**另一件事**（提示词口径）。
+    ("AZ114", "mw/tools.py",
+     '        external=True, mutating=True, optional=frozenset({"timeout_s"}),',
+     '        external=True, mutating=True,'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

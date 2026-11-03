@@ -1,0 +1,18 @@
+── 读数 ──
+  status=done_unverified verdict=FAIL
+  verify.artifact_checks=3 artifact_failed=3 failed=3 exhausted=1
+  plan.rounds=3 cands_total=7 by_tool={"finish": 7}
+  failover.used=0 rescued_step=0
+  规划调用次数=3  含错误原文的规划请求=2
+  dispatch 序列=[(1, 'finish'), (2, 'finish'), (3, 'finish')]
+  finish 的步号=[1, 2, 3]  run_shell=0
+  report.md 存在=False
+
+  ✅ S1 闸真的打回  (artifact_failed=3)
+  ✅ S2/S3 两态互斥（同一轮多候选 ⇔ 每打回一次问一次）  (same_round=False used=0 规划=3)
+     ⇒ 本态 = B（重规划）：3 次规划，finish 分布在步 [1, 2, 3]
+  ✅ S4 重规划请求里带着**缺哪个产物**  (命中 2/3)
+  ✅ S6 catalog_sha 两个口径逐字符不变（⇒ 这不是「改提示词」）  (8decb60895d4a972 / 29091404966ca8e1)
+  ✅ S5 判据异常不拦（计数 + 放行）  (ok=True err=1 failed=0)
+
+✅ 本态全部断言通过

@@ -11319,6 +11319,75 @@ check(RS, "AZ114 ★`ToolSpec.optional`：目录写「可选」的参数，`disp
       f"①ok={_AZ114_ONLY_CMD.ok} ｜ ②ok={_AZ114_NO_CMD.ok} "
       f"err={(_AZ114_NO_CMD.error or '')[:24]!r} ｜ ③行={_AZ114_LINE[:34]!r}")
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ115（第一百四十一轮 §118）：**重规划必须看得见**
+#
+# V52 的因变量是「交付被打回之后，是让位还是重规划」。而 `replan()` 内部就是
+#   `propose(history=history + [失败行])` ⇒ 两者产出的 `stats` **完全同形**：
+#   轮数、候选数、工具分布一模一样。没有一行日志，`failover.used=0` 既可能是
+#   "按新规矩重规划"、也可能是"根本没打回" —— 缺席冒充零（纪律 5）。
+#
+# ⛔ 断言必须钉**内容**不是钉子串：那一行里带着 `last_error` 的原文。
+#   只断言"有 ↻ 这个字符"的写法，删掉 `{last_error}` 仍然绿（恒真断言的变体）。
+# ⛔ 本契约**不**依赖交付闸：它靠自检打回（V51 已把闸撤回，见 §117.4）。
+# ══════════════════════════════════════════════════════════════════════════
+import contextlib as _AZ115_CTX                                # noqa: E402
+import dataclasses as _AZ115_DC                                # noqa: E402
+import io as _AZ115_IO                                         # noqa: E402
+import json as _AZ115_JSON                                     # noqa: E402
+
+_AZ115_BAD = "```python\ndef other(xs):\n    return xs\n```"
+_AZ115_PAYLOAD = _AZ115_JSON.dumps(
+    {"candidates": [{"intent": "先交一版", "tool": "finish",
+                     "args": {"answer": _AZ115_BAD}}]}, ensure_ascii=False)
+
+
+class _AZ115LLM:
+    """每次都交同一份**过不了自检**的答案 ⇒ 必然打回 ⇒ 下一轮必然 replan。"""
+
+    def complete(self, messages, max_tokens=None):
+        return _AZ115_PAYLOAD
+
+
+def _az115_run(tag: str) -> str:
+    d = _TMP / f"az115_{tag}"
+    d.mkdir(parents=True, exist_ok=True)
+    s = cfg.settings()
+    # ⛔ 不许靠"当前 env 恰好是什么"：契约进程里前面的断言会改 `os.environ`
+    #    （`V1_VERIFY_RETRIES` 一类），本 fixture 一读 `settings()` 就继承了它 ——
+    #    实测第一版 `verify_retries` 被前序断言改成 0 ⇒ 首次打回直接 `exhausted`
+    #    ⇒ 一次重规划都没发生，而断言只会说"那行日志没出现"（把装置故障读成缺陷）。
+    s2 = _AZ115_DC.replace(
+        s, limits=_AZ115_DC.replace(s.limits, max_steps=5, verify_retries=2))
+    core = Core(s2, llm=_AZ115LLM(), memory=MemoryStore(d / "m.db"), memory_mode="raw")
+    buf = _AZ115_IO.StringIO()
+    with _AZ115_CTX.redirect_stdout(buf):
+        core.run(_AZ105_GOAL, budget_factor=1)
+    return buf.getvalue()
+
+
+_AZ115_LOG = _az115_run("a")
+_AZ115_LINES = [ln.strip() for ln in _AZ115_LOG.splitlines() if "↻ 带错误原文重规划" in ln]
+#: 那一行里的错误原文（取自同一次运行里自检打回的那句）。
+_AZ115_REJ = [ln for ln in _AZ115_LOG.splitlines() if "自检未过" in ln]
+
+check(RS, "AZ115 ★★`replan` 与 `propose` 在 `stats` 上完全同形 ⇒ 重规划必须有**一行**日志\n"
+          "          —— V52 的因变量是「被打回之后让位还是重规划」，而两者的读数一模一样：\n"
+          "             `failover.used=0` 既可能是「按新规矩重规划」，也可能是「根本没打回」。\n"
+          "         判据（三条，缺一即证明不了这条边）：\n"
+          "               ① 打回之后**确实**打印了 `↻ 带错误原文重规划`（且有 ≥1 行）；\n"
+          "               ② 那一行里带着**错误原文**（不是一句固定文案）——\n"
+          "                  否则删掉 `{last_error}` 也能绿；\n"
+          "               ③ 它只出现在**重规划**那一支：首次 `propose` 的那一轮日志里没有。\n"
+          "         撤回语义：删掉 `core.py` 里那行 `self.log` ⇒ ① 必红。",
+      (len(_AZ115_LINES) >= 1
+       and any("自检未通过" in ln for ln in _AZ115_LINES)
+       and bool(_AZ115_REJ)
+       and _AZ115_LINES[0].find("连续失败") >= 0),
+      f"①行数={len(_AZ115_LINES)} ｜ ②带原文="
+      f"{any('自检未通过' in ln for ln in _AZ115_LINES)} ｜ "
+      f"样本={(_AZ115_LINES[0][:48] if _AZ115_LINES else '（无）')!r}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

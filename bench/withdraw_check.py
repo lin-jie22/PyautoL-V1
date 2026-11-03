@@ -1414,6 +1414,15 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ114", "mw/tools.py",
      '        external=True, mutating=True, optional=frozenset({"timeout_s"}),',
      '        external=True, mutating=True,'),
+    # ── AZ115：`replan` 与 `propose` 在 stats 上完全同形（V52 / §118）────────────
+    #: 撤的语义：只删那行 `self.log`（不动 `replan` 的调用、不动任何行为）。
+    #: ⇒ AZ115 ① 变红（日志里再没有 `↻ 带错误原文重规划`），其余契约不红。
+    #: ⚠️ 这一条是"读数的撤回"，不是"行为的撤回"：撤掉之后**只有它自己**转红
+    #:   （实测 `红=['AZ115'] 多红=无`）⇒ 没有任何别的读数依赖这一行。
+    ("AZ115", "mw/core.py",
+     '''                    self.log(f"  ↻ 带错误原文重规划（连续失败 {consecutive_failures} 次）"
+                             f"：{last_error[:100]}")''',
+     '''                    pass  # 撤回态：那行读数日志被拿掉'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

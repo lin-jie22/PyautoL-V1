@@ -1096,6 +1096,17 @@ class Core:
                     self.state_meta[-1]["n"] = int(n)
                     self.state_meta[-1]["guidance"] = guidance_text
                 if consecutive_failures and last_error:
+                    # ★ V52（§118）：这一行是**读数**，不是行为。
+                    #
+                    # `replan` 内部就是 `propose(history=history + [失败行])` ⇒ 两者在
+                    # `stats` 上**完全同形**：轮数、候选数、工具分布一模一样。
+                    # 没有这一行，"带了错误原文重规划"与"又从头规划了一次"在日志上
+                    # 无法区分，而 V52 的因变量恰好就是这件事（`failover.used=0` 既可能是
+                    # "按新规矩重规划"也可能是"根本没打回"）。
+                    # ⛔ 不进 prompt / 不进 `catalog()` / 不动任何 sha；`self.log` 只打印。
+                    # ⛔ 断言的撤回语义见 `AZ115`：删掉这一行 ⇒ 那条契约必红。
+                    self.log(f"  ↻ 带错误原文重规划（连续失败 {consecutive_failures} 次）"
+                             f"：{last_error[:100]}")
                     plan = self.planner.replan(
                         goal=goal, failed=Step("(上一步)", "?", {}),
                         error=last_error, history=history, n=n,

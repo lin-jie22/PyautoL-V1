@@ -1,0 +1,17 @@
+── 读数 ──
+  status=done_unverified verdict=FAIL
+  verify.artifact_checks=3 artifact_failed=3 failed=3 exhausted=1
+  plan.rounds=1 cands_total=3 by_tool={"finish": 3}
+  failover.used=2 rescued_step=0
+  规划调用次数=1  含错误原文的规划请求=0
+  dispatch 序列=[(1, 'finish'), (1, 'finish'), (1, 'finish')]
+  finish 的步号=[1, 1, 1]  run_shell=0
+  report.md 存在=False
+
+  ✅ S1 闸真的打回  (artifact_failed=3)
+  ✅ S2/S3 两态互斥（同一轮多候选 ⇔ 每打回一次问一次）  (same_round=True used=2 规划=1)
+     ⇒ 本态 = A（让位）：同一轮里 dispatch 了 3 次 finish，步号 [1, 1, 1]
+  ✅ S6 catalog_sha 两个口径逐字符不变（⇒ 这不是「改提示词」）  (8decb60895d4a972 / 29091404966ca8e1)
+  ✅ S5 判据异常不拦（计数 + 放行）  (ok=True err=1 failed=0)
+
+✅ 本态全部断言通过

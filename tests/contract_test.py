@@ -11894,6 +11894,252 @@ check(RS, "AZ119 ★★★下发必须按「交付动作 / 步骤动作」拆开
         + f" ｜ dispatched={[int(_az119_ex(o)['dispatched']) for o in _AZ119_ALL]}"
         + f" ｜ verdict={'/'.join(str(o.verdict) for o in _AZ119_ALL)}")
 
+# ══════════════════════════════════════════════════════════════════════════
+# AZ120（第一百四十六轮 §123）：候选漏斗 —— 「提了几个、剩下去了哪」
+#
+# 为什么需要这条边（V56 §122 的结论是**错的**）：`zero_step_tasks=6` 被写成
+#   「**12 题里 6 题只提了 `finish`**」。而 `v6_s146/logs_b.txt` 的
+#   `[i] 候选=N` 行逐题数下来是 **30 个候选进执行器、只下发 18 个**：
+#   「提」与「做」是两个数，合成一个就会把 6/12 读成"模型想不出别的"。
+#
+# 四格（每格一种出口，**不是**四份拷贝）：
+#   `single`              一轮一个候选 = finish ⇒ 未轮到 0（反向闸：不许恒记）
+#   `three_finish_first`  三个候选、第 1 个 finish 成功 ⇒ 未轮到 **2**
+#   `three_step`          三个 recall、第 1 个成功 ⇒ 未轮到 **2**（成功也 break）
+#   `blocked_then_finish` [被 guard 拦, finish] ⇒ 拦 1 / 未轮到 **0**
+# ⛔ 第四格是**互不冒充**的证明：把 `blocked` 也并进 `unreached` ⇒ ④ 必红。
+# ══════════════════════════════════════════════════════════════════════════
+from run import (_koff_absorb as _AZ120_ABS,      # noqa: E402
+                 _koff_line as _AZ120_LINE,
+                 _koff_zero as _AZ120_ZERO)
+
+#: ⛔ 题面必须**够复杂**，否则 `looks_complex` 走快通道 ⇒ `n=1` ⇒
+#:    `plan.steps[:1]` 把第 2/3 个候选当场截掉，四格全变成"1 提 1 做"。
+#:    第一次跑就是这么红的（实测 `(1,1,0,0)/(1,1,0,0)/(1,1,0,0)/(1,0,1,0)`）——
+#:    **判据本身没写错，是装置到不了那一格**（纪律 6：判据分辨率不得高于装置）。
+#:    这里的两个逗号 + `然后` 让 `multi >= 2` 成立。
+_AZ120_GOAL = "说明为什么哈希表的平均查找是 O(1)，然后举一个冲突变多的反例，接着指出它依赖的前提。"
+
+
+class _AZ120LLM:
+    """规划桩：`mode` 决定**第 1 轮**塞几个候选进去。
+
+    ⚠️ 第 2 轮一律换成恒不适用的能力（`never`）⇒ 准入空轮 ⇒ 走收尾：
+       否则 `three_step` 会在第 2 轮把上一轮**没轮到**的两个 recall 再提一遍
+       （它们没进 `attempted_sigs`，不会被重复闸挡），"未轮到 2"就被洗掉了。
+    """
+
+    def __init__(self, mode: str) -> None:
+        self.mode = mode
+        self.planning = 0
+
+    @staticmethod
+    def _txt(m) -> str:                                       # noqa: ANN001
+        return (str(m.get("content", "")) if isinstance(m, dict)
+                else str(getattr(m, "content", "")))
+
+    def complete(self, messages, max_tokens=None):             # noqa: ANN001, ARG002
+        sysmsg = self._txt(messages[0]) if messages else ""
+        if sysmsg == _AZ117_ANS_SYS:                          # `planner.answer()`
+            return _AZ119_ANS
+        if "规划器" not in sysmsg:
+            return ""
+        self.planning += 1
+        if self.planning > 1:
+            return json.dumps({"candidates": [
+                {"intent": "交给一个恒不适用的能力", "tool": "never",
+                 "args": {"x": "1"}}]}, ensure_ascii=False)
+        _fin = {"intent": "直接给出答案", "tool": "finish",
+                "args": {"answer": _AZ119_ANS}}
+        if self.mode == "single":
+            return json.dumps({"candidates": [_fin]}, ensure_ascii=False)
+        if self.mode == "three_finish_first":
+            #: 交付动作**排在第一个** —— 它成功就 `return`，后两个一次都没被考虑。
+            return json.dumps({"candidates": [
+                _fin,
+                {"intent": "先查一条记忆", "tool": "recall", "args": {"query": "az120-a"}},
+                {"intent": "再查一条记忆", "tool": "recall", "args": {"query": "az120-b"}},
+            ]}, ensure_ascii=False)
+        if self.mode == "three_step":
+            return json.dumps({"candidates": [
+                {"intent": f"查记忆 {i}", "tool": "recall", "args": {"query": f"az120-{i}"}}
+                for i in (1, 2, 3)]}, ensure_ascii=False)
+        if self.mode == "blocked_then_finish":
+            #: 第 1 个是**会改变外部世界**的动作（`mutating`）⇒ 先过 guard；
+            #: 探针里没开 `--allow-shell` ⇒ 必被拦。它被拦**不是**"没轮到"。
+            return json.dumps({"candidates": [
+                {"intent": "跑一条 shell 验证", "tool": "run_shell",
+                 "args": {"cmd": "echo az120", "timeout_s": 5}},
+                _fin,
+            ]}, ensure_ascii=False)
+        return json.dumps({"candidates": [
+            {"intent": "交给一个恒不适用的能力", "tool": "never",
+             "args": {"x": "1"}}]}, ensure_ascii=False)
+
+
+def _az120_run(tag: str, mode: str):
+    d = _TMP / f"az120_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    (d / "state").mkdir(parents=True, exist_ok=True)
+    # ⚠️ 与 `_az119_run` 同一条纪律：`Paths` 是 frozen dataclass，构造时给全；
+    #    也不调 `cfg.settings()`（前序断言改过 `os.environ`，这里会继承）。
+    s = cfg.Settings(
+        paths=cfg.Paths(root=d, state=d / "state", logs=d / "logs",
+                        workspace=ws, bench=d / "bench"),
+        limits=cfg.Limits(max_steps=8, close_reserve_steps=1, verify_retries=2))
+    c = Core(settings=s, llm=_AZ120LLM(mode),
+             memory=MemoryStore(d / "state" / "memory.db"))
+    c.tools.register(ToolSpec("never", "对任何题面都不适用", {"x": "参数"},
+                              lambda a: "y", applies=lambda g: False))
+    lines: list[str] = []
+    c.log = lines.append                                      # noqa: ARG005
+    out = c.run(_AZ120_GOAL, budget_factor=1)
+    return out, lines
+
+
+_AZ120_OS, _AZ120_LS = _az120_run("single", "single")
+_AZ120_O3, _AZ120_L3 = _az120_run("three_finish_first", "three_finish_first")
+_AZ120_OT, _AZ120_LT = _az120_run("three_step", "three_step")
+_AZ120_OB, _AZ120_LB = _az120_run("blocked_then_finish", "blocked_then_finish")
+_AZ120_ALL = (_AZ120_OS, _AZ120_O3, _AZ120_OT, _AZ120_OB)
+
+
+def _az120_st(o) -> dict:                                     # noqa: ANN001
+    return getattr(o, "stats", None) or {}
+
+
+def _az120_funnel(o):                                         # noqa: ANN001
+    """`(cands_total, dispatched, blocked, unreached)` —— 四个数一个不少。"""
+    st = _az120_st(o)
+    return (int((st.get("plan") or {})["cands_total"]),
+            int((st.get("exec") or {})["dispatched"]),
+            int((st.get("loop") or {}).get("blocked_skipped") or 0),
+            int((st.get("offer") or {})["unreached"]))
+
+
+class _AZ120Out:
+    """最小 Outcome 替身：只带 `_koff_absorb` **真的读**的四个子字典。
+
+    ⛔ 不是"顺便造一个"：账本侧的五格分类**只能**用这种格造出来 ——
+       `done_without_offer`（做了却没提过）在真内核上结构上不可能发生，
+       而"一个永远不会发生的格子"必须能被证明**不是死代码**。
+    """
+
+    def __init__(self, rounds=1, cands=1, produces=(1,), step=0,
+                 dispatched=1, blocked=0, unreached=0) -> None:
+        self.stats = {
+            "plan": {"rounds": rounds, "cands_total": cands,
+                     "produces_by_round": list(produces)},
+            "exec": {"dispatched": dispatched, "ok": dispatched, "fail": 0,
+                     "answer": dispatched - step, "step": step},
+            "loop": {"blocked_skipped": blocked},
+            "offer": {"unreached": unreached},
+        }
+
+
+_AZ120_ACC = _AZ120_ZERO()
+for _o in (_AZ120Out(),                                              # 只提交付
+           _AZ120Out(cands=2, blocked=1),                            # 提了、被拦
+           _AZ120Out(cands=3, unreached=2),                          # 提了、没轮到
+           _AZ120Out(rounds=0, cands=0, produces=(), dispatched=0),  # 没规划成功
+           _AZ120Out(rounds=2, cands=3, produces=(1, 0), step=1,
+                     dispatched=2, unreached=1)):                    # 提了也做了
+    _AZ120_ABS(_AZ120_ACC, _o)
+#: 违规格：**做了非交付动作却没提过**。结构上不可能 ⇒ 只用来证明检测器活着。
+_AZ120_BAD = _AZ120_ABS(_AZ120_ZERO(),
+                        _AZ120Out(cands=1, produces=(1,), step=1, dispatched=1))
+#: 残差格：3 个候选只解释了 1 个 ⇒ `unaccounted` 必须说出 2，**不许钳成 0**。
+_AZ120_UNACC = _AZ120_LINE(_AZ120_ABS(
+    _AZ120_ZERO(), _AZ120Out(cands=3, unreached=0, blocked=0, dispatched=1)))
+_AZ120_Z0 = _AZ120_ZERO()
+_AZ120_Z1 = _AZ120_ZERO()
+_AZ120_CODE = _code_only(_RUN_SRC)
+#: 账本累加器的键集（**全等**）：少一个键会红、多一个键也会红。
+#: ⚠️ 这里钉的是 `_koff_zero()` 的字典，与内核侧 `stats["offer"]`（只有
+#:    `unreached` 一个键）是**两份不同的东西** —— 第一次写这条判据时把两者
+#:    当成一个，于是拿 `["unreached"]` 去比 14 个键，当场红（自踩，已记）。
+_AZ120_KEYS = sorted(["tasks", "rounds", "offered", "produces_offered",
+                      "step_offered", "dispatched", "blocked", "unreached",
+                      "no_rounds", "only_delivery", "offered_not_done",
+                      "done_without_offer", "offered_and_done",
+                      "offered_not_done_blocked"])
+
+_AZ120_OK = {
+    "①守恒：`offered == dispatched + blocked + unreached`（四格都成立）": all(
+        sum(f[1:]) == f[0] for f in (_az120_funnel(o) for o in _AZ120_ALL)),
+    "②反向闸·一轮只提 finish ⇒ 未轮到 0（不许把\"没下发\"一律记成没轮到）": (
+        _az120_funnel(_AZ120_OS) == (1, 1, 0, 0)),
+    "③三个候选、第 1 个 finish 成功 ⇒ 未轮到 **2**": (
+        _az120_funnel(_AZ120_O3) == (3, 1, 0, 2)),
+    "④[被拦, finish] ⇒ 拦 1 / 未轮到 0（两格**不互相冒充**）": (
+        _az120_funnel(_AZ120_OB) == (2, 1, 1, 0)),
+    #: ★ 实现时新增（预注册只写了"守恒"）：**成功路径**也要记 ——
+    #:   非交付动作成功后同样 `break`，同轮剩下的候选一样没被考虑过。
+    #:   ⛔ 这一格与 ③ 的形态**相反**（那里第 1 个是交付、这里是步骤），
+    #:   只钉 ③ 的话，"只在 `if _produces:` 里记"这条实现也能全绿。
+    "⑤三个 recall、第 1 个成功 ⇒ 未轮到 **2**（成功也 break）": (
+        _az120_funnel(_AZ120_OT) == (3, 1, 0, 2)),
+    "⑥账本五格互斥且穷尽：合计 == tasks，且 `done_without_offer` == 0": (
+        _AZ120_ACC["tasks"] == 5
+        and sum(_AZ120_ACC[k] for k in ("no_rounds", "only_delivery",
+                                        "offered_not_done", "done_without_offer",
+                                        "offered_and_done")) == 5
+        and (_AZ120_ACC["no_rounds"], _AZ120_ACC["only_delivery"],
+             _AZ120_ACC["offered_not_done"], _AZ120_ACC["done_without_offer"],
+             _AZ120_ACC["offered_and_done"]) == (1, 1, 2, 0, 1)
+        and _AZ120_ACC["offered_not_done_blocked"] == 1
+        #: 分母：漏斗的四个数在账本里合得上（`offered` 是分母，不参与相加）
+        and _AZ120_ACC["offered"] == 9
+        and (_AZ120_ACC["dispatched"] + _AZ120_ACC["blocked"]
+             + _AZ120_ACC["unreached"]) == 9),
+    "⑦漏记检测器**不是死代码**：喂一个「做了却没提过」的题 ⇒ 必须落进那一格": (
+        _AZ120_BAD["done_without_offer"] == 1
+        and _AZ120_BAD["offered_and_done"] == 0),
+    "⑧残差显形：3 提 1 做 ⇒ `unaccounted` == 2（不许钳成 0）": (
+        _AZ120_UNACC["unaccounted"] == 2),
+    "⑨`■` 行带「未轮到=」（读数必须人眼可见，不能只活在账本里）": (
+        all(any("未轮到=" in ln for ln in ls) for ls in
+            (_AZ120_LS, _AZ120_L3, _AZ120_LT, _AZ120_LB))),
+    "⑩键集两侧全等（累加器 14 键 / 内核 `offer` 1 键）+ 两处并入 + 零点每次新建": (
+        sorted(_AZ120_Z0) == _AZ120_KEYS and _AZ120_Z0 is not _AZ120_Z1
+        and sorted(_az120_st(_AZ120_OS)["offer"]) == ["unreached"]
+        and _AZ120_CODE.count("_koff_absorb(_koff, out)") == 2
+        and _AZ120_CODE.count("def _koff_absorb(") == 1
+        and '"kernel_offer": _koff_line(_koff)' in _RUN_SRC),
+}
+
+check(RS, "AZ120 ★★★候选漏斗：把「提了什么」与「做了什么」分开记\n"
+          "          —— V56 的 `zero_step_tasks=6` 被写成「6 题**只提了** `finish`」，\n"
+          "             而冻结日志逐题数是 **30 个候选进执行器、只下发 18 个**。\n"
+          "             「提」与「做」是两个数，合成一个就把 6/12 读成\"想不出别的\"。\n"
+          "          判据（十条，缺一即证明不了这条边）：\n"
+          "               ① 守恒 `offered == dispatched + blocked + unreached`；\n"
+          "               ② 反向闸·只提 finish ⇒ 未轮到 0；\n"
+          "               ③ 三个候选、finish 第一 ⇒ 未轮到 2；\n"
+          "               ④ [被拦, finish] ⇒ 拦 1 / 未轮到 0（两格不互相冒充）；\n"
+          "               ⑤ 三个 recall、第 1 个成功 ⇒ 未轮到 2（**成功路径**也记）；\n"
+          "               ⑥ 账本五格互斥穷尽、合计 == tasks，`done_without_offer` == 0；\n"
+          "               ⑦ 漏记检测器非死代码（喂一格违规 ⇒ 必须落进去）；\n"
+          "               ⑧ 残差 `unaccounted` 显形，不许钳成 0；\n"
+          "               ⑨ `■` 行带「未轮到=」；\n"
+          "               ⑩ `offer` 键集全等 + 两个 solver 分支各并一次。\n"
+          "          撤回语义：删 `_note_unreached` 的调用 ⇒ ③⑤ 必红；\n"
+          "                    `unreached` 写成恒 `+= 1` ⇒ ② 必红；\n"
+          "                    把 `blocked` 并进 `unreached` ⇒ ④ 必红；\n"
+          "                    只交付分支记 ⇒ ⑤ 必红；`_koff_absorb` 去掉\n"
+          "                    `done_without_offer` 那支 ⇒ ⑦ 必红；`unaccounted`\n"
+          "                    写成 `max(0, …)` 或恒 0 ⇒ ⑧ 必红；`■` 行去掉\n"
+          "                    「未轮到=」⇒ ⑨ 必红。",
+      all(_AZ120_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ120_OK.items())
+      + f" ｜ 四格 (提,做,拦,未)="
+        + "/".join(str(_az120_funnel(o)) for o in _AZ120_ALL)
+        + f" ｜ 账本格="
+        + f"{_AZ120_ACC['no_rounds']}/{_AZ120_ACC['only_delivery']}/"
+          f"{_AZ120_ACC['offered_not_done']}/{_AZ120_ACC['done_without_offer']}/"
+          f"{_AZ120_ACC['offered_and_done']}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

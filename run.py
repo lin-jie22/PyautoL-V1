@@ -625,6 +625,130 @@ def _kexec_absorb(acc: dict, out) -> dict:
     return acc
 
 
+def _koff_zero() -> dict:
+    """候选漏斗读数的累加器零点（V57，§123）。
+
+    ## 为什么必须有这一行
+
+    V56 把下发拆成 `answer`/`step` 之后，`zero_step_tasks=6` 被写成一句话：
+    「**12 题里有 6 题只提了 `finish`**」。而 `v6_s146/logs_b.txt` 的
+    `[i] 候选=N` 行逐题数下来是 **30 个候选进执行器、只下发 18 个** ——
+    「提」与「做」是两个数。把它们合成一个，`6/12` 就会被读成
+    "模型想不出别的"，而真相是"提了，但没轮到/被拦"。
+
+    ⛔ 这四个数**不许**合成一个"效率"：`offered` 是分母，
+    `dispatched` / `blocked` / `unreached` 是三条**修法相反**的出口
+    （调宽度 / 放宽闸 / 别在一轮里塞多个候选）。
+
+    ## 五个格子（必须合起来等于 `tasks`）
+
+    | 格 | 含义 | 结构约束 |
+    |---|---|---|
+    | `no_rounds` | 一次规划都没拿到候选 | 不是"只提了交付"，是**没有分母** |
+    | `only_delivery` | 提的全是交付动作 | 真的"只想到 finish" |
+    | `offered_not_done` | 提过非交付动作、一次没做成 | **病位** |
+    | `done_without_offer` | 做了非交付动作却没提过 | **结构上不可能** ⇒ 漏记检测器 |
+    | `offered_and_done` | 提了也做了 | — |
+
+    ⛔ `no_rounds` 单独一格不是洁癖：没有它，一道"压根没规划成功"的题会被
+    算进 `only_delivery`，而后者正是本轮要解释的那 2/12 —— 分母就被污染了。
+    """
+    return {"tasks": 0, "rounds": 0,
+            # ── 生成端（分母）──
+            "offered": 0,            # Σ 进执行器的候选数（截断 + 准入之后）
+            "produces_offered": 0,   # 其中交付动作
+            "step_offered": 0,       # 其中非交付动作（= offered - produces_offered）
+            # ── 执行端的三条出口 ──
+            "dispatched": 0,         # 真的调用了
+            "blocked": 0,            # 被 guard / 价值层拦下
+            "unreached": 0,          # 同轮提前退出、再没被考虑过
+            # ── 五格（分母 = 题数）──
+            "no_rounds": 0, "only_delivery": 0, "offered_not_done": 0,
+            "done_without_offer": 0, "offered_and_done": 0,
+            #: `offered_not_done` 里**同时**有候选被 guard 拦的题数。
+            #: ⚠️ 这是**子集**，不是互补：没有它，`offered_not_done=4` 无法区分
+            #:    "被拦掉了 2 题"与"没轮到 4 题"—— 而两者修法相反。
+            "offered_not_done_blocked": 0}
+
+
+def _koff_absorb(acc: dict, out) -> dict:
+    """把**一道题**的候选漏斗并进累加器（就地修改并返回）。
+
+    ⚠️ 四个来源**都是已有的**，本轮只新增 `offer.unreached`：
+        `plan`（生成端，§111 就有）/ `exec`（下发，§120）/ `loop`（被拦/重复，
+        §66 就有）/ `offer`（未轮到，V57）。⛔ 不在这里重新数一遍 ——
+        抄一份就是同一事实两处声明，而两处迟早对不上（§122 的两个 `by_verdict`）。
+
+    ⚠️ `tasks` 也在这里加：调用点有两处（每题新建内核 / 复用内核），
+        两处各写一句就是"漏一处静默少计一题"（与 `_kexec_absorb` 同因）。
+    """
+    st = getattr(out, "stats", None) or {}
+    pl = st.get("plan") or {}
+    ex = st.get("exec") or {}
+    lp = st.get("loop") or {}
+    of = st.get("offer") or {}
+    offered = int(pl.get("cands_total") or 0)
+    prod = sum(int(x or 0) for x in (pl.get("produces_by_round") or []))
+    step_off = offered - prod
+    disp = int(ex.get("dispatched") or 0)
+    #: ⛔ `blocked` 只认 `loop.blocked_skipped`，**不认** `guard.report()["total"]`：
+    #:    后者是 `Guard` 的**生命周期累计**，复用内核时会跨题相加
+    #:    （V56 的 `■` 行实测 `guard_blocked=1,2,2,2,2,2,3,4`）。
+    #:    用错这一个键，"每题拦了几个"就会读成"到这一题为止一共拦了几个"。
+    blk = int(lp.get("blocked_skipped") or 0)
+    unr = int(of.get("unreached") or 0)
+    step_done = int(ex.get("step") or 0)
+    rounds = int(pl.get("rounds") or 0)
+
+    acc["tasks"] = int(acc.get("tasks", 0)) + 1
+    acc["rounds"] = int(acc.get("rounds", 0)) + rounds
+    acc["offered"] = int(acc.get("offered", 0)) + offered
+    acc["produces_offered"] = int(acc.get("produces_offered", 0)) + prod
+    acc["step_offered"] = int(acc.get("step_offered", 0)) + step_off
+    acc["dispatched"] = int(acc.get("dispatched", 0)) + disp
+    acc["blocked"] = int(acc.get("blocked", 0)) + blk
+    acc["unreached"] = int(acc.get("unreached", 0)) + unr
+
+    #: 五格互斥且穷尽。⛔ `rounds == 0` 必须**先**判：没有候选的题
+    #:    `step_off == 0 and step_done == 0` 也成立，落进 `only_delivery`
+    #:    就是一次"缺席冒充零"（§15）—— 那 2/12 的分母当场被污染。
+    if rounds == 0:
+        _cell = "no_rounds"
+    elif step_off <= 0 and step_done <= 0:
+        _cell = "only_delivery"
+    elif step_off > 0 and step_done <= 0:
+        _cell = "offered_not_done"
+        if blk > 0:
+            acc["offered_not_done_blocked"] = (
+                int(acc.get("offered_not_done_blocked", 0)) + 1)
+    elif step_off <= 0:
+        _cell = "done_without_offer"
+    else:
+        _cell = "offered_and_done"
+    acc[_cell] = int(acc.get(_cell, 0)) + 1
+    return acc
+
+
+def _koff_line(acc: dict) -> dict:
+    """落盘前的**唯一**派生量：残差 `unaccounted`。
+
+    `unaccounted = offered - dispatched - blocked - unreached`
+
+    ⛔ 它是**检测器**，不是"其它"垃圾桶：三个已知出口之外只要还有候选消失，
+       它就会 > 0，而"被跳过的那些候选去哪了"必须能归到某一条上。
+
+    ⛔ 必须为 0 的三条理由（缺一条它就不该是 0）：
+       ① `skipped`（没额度）与 `repeats`（重复动作）与 `vetoed`（预演否决）
+          在这条流水线里都能发生 —— 真发生了，它就是正数，
+          **不许**为了好看去钳成 0（§104.2 第 3 条：读数要显形）。
+       ② 所以本轮的真实断言只有一条：**它现在应当是 0，且如果不为 0 就必须有人解释**。
+    """
+    out = dict(acc)
+    out["unaccounted"] = (int(out.get("offered", 0)) - int(out.get("dispatched", 0))
+                          - int(out.get("blocked", 0)) - int(out.get("unreached", 0)))
+    return out
+
+
 def _ktx_zero() -> dict:
     """传输层 / 墙钟读数的累加器零点（第二十五轮，DESIGN §16.24）。
 
@@ -1356,6 +1480,9 @@ def cmd_bench(args) -> int:
     _kfo = _kfo_zero()      # 候选让位（§108）：救回与代价必须并列报
     _kco = _kco_zero()      # 收尾兜底（第二十二轮）：与 _kwm 同源的落盘读数
     _kexec = _kexec_zero()  # 下发 × 验收（V55）：零下发是「题」的属性，不是收尾的属性
+    _koff = _koff_zero()    # ★ V57（§123）：候选漏斗。与 `_kexec` **并列**：
+    #                         `exec` 说"做了几次"，`offer` 说"提了几个、剩下去了哪"。
+    #                         ⛔ 合成一个字典那一格就再也分不开"没提"与"提了没做"。
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
     _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
 
@@ -1541,6 +1668,9 @@ def cmd_bench(args) -> int:
                         #   与 `_kco_absorb` 并列放，不并进去：那个按**收尾次数**数，
                         #   这个按**题**数 —— 两个分母（见 `_kexec_zero` 的文档）。
                         _kexec_absorb(_kexec, out)
+                        # ★ V57（§123）：候选漏斗。⛔ 必须与 `_kexec_absorb` 紧挨着 ——
+                        #   两个数共用"这一题"这个分母，分开写会有一处漏掉。
+                        _koff_absorb(_koff, out)
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
                         _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -1577,6 +1707,8 @@ def cmd_bench(args) -> int:
                 # ★ V55（§121）：与 `--fresh` 那支同一条理由 —— 两处各写一遍
                 #   "同一事实"，漏一处就会静默少计一题的零下发。
                 _kexec_absorb(_kexec, out)
+                # ★ V57（§123）：两处都接 —— 漏一处 = 静默少计一题的漏斗。
+                _koff_absorb(_koff, out)
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
                 _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -1871,6 +2003,10 @@ def cmd_bench(args) -> int:
         # ★ V55（§121）：按题的「下发次数 × 验收结论」。与 `kernel_closeout`
         #    **并列**而不是并进去 —— 那个按收尾次数数，这个按题数（两个分母）。
         "kernel_exec": _kexec,
+        # ★ V57（§123）：候选漏斗。⛔ 与 `kernel_exec` **并列**、不并进去：
+        #   `exec.dispatched` 回答"做了几次"，`offer.offered` 回答"提了几个"，
+        #   差值 `unaccounted` 必须为 0 —— 不为 0 就说明还有第三个出口没被数到。
+        "kernel_offer": _koff_line(_koff),
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。
         "kernel_external": _kex,
         # 传输层 / 墙钟读数（第二十五轮）：重试链有没有超支预算，必须可事后审计。

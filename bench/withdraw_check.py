@@ -1478,6 +1478,20 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
                     else:
                         self.exec_stats["step"] += 1''',
      '''                    pass  # 撤回态：交付/步骤不再分列'''),
+    # ── AZ120：候选漏斗（V57 / §123）──────────────────────────────────────
+    #: 撤的语义：**只删交付成功那一处的计数**（另外两个 `break` 点照记）。
+    #:   ⇒ "三个候选、第 1 个是 finish"那一格 `unreached` 从 2 变 0，
+    #:   守恒 `offered == dispatched + blocked + unreached` 当场断。
+    #: ⇒ AZ120 ③ 必红（未轮到 2 → 0）、① 必红（守恒）、⑤ 仍绿（那一格走 `break`）。
+    #:   ⚠️ ⑤ 仍绿是**故意**的：只钉 ③ 的话，"只在 `break` 里记"这条实现能全绿；
+    #:      反过来"只删 `break` 那两处"会让 ⑤ 红而 ③ 绿 —— 两侧各有一格。
+    #: ⚠️ 不许改成"删掉 `_reset_offer`"：`offer_stats` 会 `AttributeError`
+    #:   ⇒ 整轮跑批炸掉，那就不是单变量，而是把装置砸了（AZ118 同一条禁忌）。
+    ("AZ120", "mw/core.py",
+     '''                        self._note_unreached(cands, ci)
+                        if self._unverified:''',
+     '''                        pass  # 撤回态：交付成功不再记「未轮到」
+                        if self._unverified:'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

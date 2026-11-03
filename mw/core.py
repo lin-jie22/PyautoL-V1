@@ -685,6 +685,9 @@ class Core:
         #: ★ V54（§120）：**下发次数**计数器。建在 `__init__` 与 `_reset_closeout`
         #: 同宗理由（AS20）：`_close_out` 可以被单独调用，而那正是最需要读到它的人。
         self._reset_exec()
+        #: ★ V57（§123）：候选漏斗。与 `_reset_exec` **同时同地**建 ——
+        #: 两个字典各建一处，漏一处就是"某一种出口读不到"（AS20 的老病）。
+        self._reset_offer()
         #: 外部能力读数（第二十三轮，路线①）。与收尾读数同宗理由建在 `__init__`：
         #: 单轮读数也要能被单独构造的实例读到，否则一处 AttributeError 就会
         #: 把整条汇总行带走（AS20 那条教训）。
@@ -902,6 +905,8 @@ class Core:
         self._reset_closeout()
         # ★ V54（§120）：下发次数与预算同源 ⇒ **单轮**清零。
         self._reset_exec()
+        # ★ V57（§123）：候选漏斗同源同理 —— 它数的是"这一题提了多少、剩下去了哪"。
+        self._reset_offer()
         # 外部能力读数是**单轮**的（与预算同源）：跨轮累计会让"这一轮 0 次调用"
         # 显示成上一轮的数字（读数混了时间维度）。
         self._reset_external()
@@ -1600,6 +1605,11 @@ class Core:
                             # 条件成立但没弹药：必须**显形**，否则"fire 0 次"
                             # 会被读成"机制没装"（§107 的老病）。
                             self.failover_stats["no_more"] += 1
+                        # ★ V57（§123）：一轮一个动作 —— 失败后 `break`，
+                        #    同轮剩下的候选**再没被考虑过**。这一格是"未轮到"
+                        #    的第一种来源（第二种是成功后的 `break`，第三种是
+                        #    交付成功后的 `return`）。
+                        self._note_unreached(cands, ci)
                         executed = True
                         break
                     consecutive_failures = 0
@@ -1620,6 +1630,11 @@ class Core:
                         answer = result.output
                         if spec is not None and spec.produces_answer:
                             self.external_stats["used_as_answer"] += 1
+                        # ★ V57（§123）：交付成功 ⇒ 直接 `return`。
+                        # ⚠️ 这是**设计**（拿到答案就收工），不是缺陷；但如果不记，
+                        #    "12 题里 6 题只提交付动作"就会被读成"模型想不出别的"。
+                        #    真实读数（§123）：30 个候选进执行器，其中 8 个死在这里。
+                        self._note_unreached(cands, ci)
                         if self._unverified:
                             # 自检反复不过 ⇒ 交付内容是真的，但**没过闸**。
                             # 状态必须说出来：报 done 就等于把"没检查过"说成"检查过了"。
@@ -1643,6 +1658,10 @@ class Core:
                                  f"{cand.tool}")
                     self.memory.record("outcome", result.as_observation()[:1000],
                                        tool=cand.tool, intent=cand.intent[:200])
+                    # ★ V57（§123）：非交付动作成功 ⇒ 同样 `break`。
+                    # ⛔ 这一格最容易被漏：它看起来"成功了一件事，没问题"，
+                    #    但同一轮里第 2/3 个候选一样一次都没被考虑过。
+                    self._note_unreached(cands, ci)
                     executed = True
                     break
 
@@ -2115,6 +2134,48 @@ class Core:
         self.exec_stats: dict = {"dispatched": 0, "ok": 0, "fail": 0,
                                  "answer": 0, "step": 0}
 
+    def _reset_offer(self) -> None:
+        """**候选漏斗**读数的唯一初始化处（`__init__` 与 `_prime_counters` 都调它）。
+
+        ⛔ 为什么必须有这个数（V57，§123）：V56 把下发拆成 `answer`/`step`
+           之后，`zero_step_tasks=6` 被写成一句话 ——「**12 题里 6 题只提了
+           `finish`**」。而 `v6_s146/logs_b.txt` 的 `[i] 候选=N` 行逐题数下来是
+           **30 个候选进执行器、只下发 18 个** ⇒ 「提」与「做」是两个数，
+           把它们合成一个，`6/12` 就会被读成"模型想不出别的"。
+
+        ⚠️ 与 `exec_stats` **分列而不合并**：
+           `exec` 回答「做了什么」，`offer` 回答「提了什么、剩下的去了哪」。
+           合成一个字典会让 AZ119 ⑨（`exec` 键集全等）连带改口径，
+           而那条断言钉的是**另一件事**（纪律 27：整字典相等会双向连带）。
+
+        ★ 只放**新增**的那一格 `unreached`：另外三个"没下发"的出口
+           （`blocked` / `repeats` / `skipped`）在内核里早已各有计数器，
+           而且它们**必须**留在原处（`blocked` 是停滞闸的判据、
+           `repeats` 是"原地打转"的判据）—— 抄一份到这里，就是同一事实两处声明。
+           漏斗在 `run.py` 的 `_koff_absorb` 里组装，残差 `unaccounted`
+           就是"这三处之外还有别的出口"的检测器。
+        """
+        self.offer_stats: dict = {
+            #: 本轮**提前退出**时，同一个 `cands` 里再没被考虑过的候选数。
+            #: 两个来源，都是真实的、有分母的出口：
+            #:   ① 交付动作**成功** ⇒ 直接 `return`（这是设计，不是缺陷）；
+            #:   ② 非交付动作成功/失败 ⇒ `break`（一步一轮）。
+            #: ⛔ 不含"被拦/重复/没额度"：那三个各有自己的计数器，
+            #:    混进这一格会让"被 guard 拦"看起来像"没轮到"——
+            #:    而两者的修法完全相反（放宽闸 vs 别在同一轮塞多个候选）。
+            "unreached": 0,
+        }
+
+    def _note_unreached(self, cands, ci: int) -> None:
+        """记下**这一轮提前退出**时被跳过的候选数（V57，§123）。
+
+        ⚠️ 只在**真的提前退出**的三个点调用（交付成功 `return`、成功 `break`、
+           失败 `break`）；循环正常跑完时一个都不该记 —— 那种场合没有"没轮到"。
+        ⛔ 不用 `max(0, …)` 掩盖算错：`ci` 越界只可能是调用点写错，
+           钳位会让一个真 bug 变成"读数是 0"（缺席冒充零，纪律 5）。
+        """
+        self.offer_stats["unreached"] += len(cands) - ci - 1
+
     def _reset_external(self) -> None:
         """外部能力读数的**唯一**初始化处（`__init__` 与 `run()` 都调它）。
 
@@ -2571,6 +2632,13 @@ class Core:
             #   是随意的；不许的是**不出现** —— `steps` 单独一个数会被读成"做了几步"。
             #    零值也在：一次没下发本身就是一条读数（V52 两臂就是这个形态）。
             "exec": dict(self.exec_stats),
+            # ★ V57（§123）：**候选漏斗**。与 `exec` 分列：
+            # `exec.dispatched` 回答「做了几次」，这里回答「提了几个、剩下去了哪」。
+            # ⛔ 只有 `unreached` 是真新加的：`blocked` / `repeats` / `skipped`
+            #    早就各有计数器（在 `loop` 里），抄一份到这里就是同一事实两处声明。
+            #    ⇒ 漏斗在 `run.py` 的 `_koff_absorb` 里组装，残差 `unaccounted`
+            #    必须为 0 —— 不为 0 就说明"还有第三个出口没被数到"。
+            "offer": dict(self.offer_stats),
             # ★ §110：交付验收。**零值也进 stats**（老读法里没这个键 ⇒ 读不到
             # 与"验过了但没产物"是同形的，必须显式给 `ANSWER`/`EMPTY`）。
             "delivery": dict(self._delivery),
@@ -2749,7 +2817,11 @@ class Core:
                  # ★ V56（§122）：总数旁边的拆分。⛔ 不用 `.get`：这个键是本轮
                  #   的产物，缺了就该 `KeyError` 炸掉 —— 静默补 0 会把"没接线"
                  #   读成"一次步骤动作都没有"（缺席冒充零）。
-                 f"（交付={stats['exec']['answer']}/步骤={stats['exec']['step']}）"
+                 f"（交付={stats['exec']['answer']}/步骤={stats['exec']['step']}"
+                 # ★ V57（§123）：同一轮里**没轮到**的候选数。⛔ 与「交付/步骤」
+                 #   并列而不是相加：那两个是"做了几次"，这个是"提了没做几个"
+                 #   —— 加起来会得到一个既不表示做也不表示提的数。
+                 f"/未轮到={stats['offer']['unreached']}）"
                  f" | guard_blocked={stats['guard']['total']}"
                  f"{wm_line}{v_line}{f_line} | 语义记忆={stats['memory']['facts']}"
                  f"{tx_line}{_sl_line}{_sm_line}{_ex_line}{_vf_line}{_co_line}{_ex2_line}")

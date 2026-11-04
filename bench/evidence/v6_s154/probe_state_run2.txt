@@ -1,0 +1,41 @@
+==============================================================================
+model=qwen2.5:7b max_tokens=1024 T=0 runs/臂=2 判据=6 条 tests  system=当前内核（25 字符）
+真实 state=2329 字符；各派生 state 长度见下
+==============================================================================
+
+--- H_orig  state=2329字符 user=2557字符 finish载荷处数=3 ---
+  run1  2/6    7.5s   489字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6    7.6s   489字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- F_strip_dups  state=1325字符 user=1553字符 finish载荷处数=1 ---
+  run1  2/6    7.7s   489字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6    7.9s   489字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- G_no_traj  state=444字符 user=672字符 finish载荷处数=0 ---
+  run1  2/6    8.8s   487字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6    8.6s   487字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- J_all_placeholder  state=823字符 user=1051字符 finish载荷处数=0 ---
+  run1  2/6    9.7s   487字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6    8.6s   487字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- K_no_error  state=2247字符 user=2475字符 finish载荷处数=3 ---
+  run1  2/6   13.6s   489字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6   35.2s   489字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+==============================================================================
+汇总
+==============================================================================
+臂                          分              字符   state   载荷    同码  首错
+H_orig                   2/2         489/489    2329    3  True  TypeError: 'tuple' object does not suppo
+F_strip_dups             2/2         489/489    1325    1  True  TypeError: 'tuple' object does not suppo
+G_no_traj                2/2         487/487     444    0  True  TypeError: 'tuple' object does not suppo
+J_all_placeholder        2/2         487/487     823    0  True  TypeError: 'tuple' object does not suppo
+K_no_error               2/2         489/489    2247    3  True  TypeError: 'tuple' object does not suppo
+
+JSON: {"H_orig": {"ok": [2, 2], "chars": [489, 489], "state": 2329, "payloads": 3, "same": true}, "F_strip_dups": {"ok": [2, 2], "chars": [489, 489], "state": 1325, "payloads": 1, "same": true}, "G_no_traj": {"ok": [2, 2], "chars": [487, 487], "state": 444, "payloads": 0, "same": true}, "J_all_placeholder": {"ok": [2, 2], "chars": [487, 487], "state": 823, "payloads": 0, "same": true}, "K_no_error": {"ok": [2, 2], "chars": [489, 489], "state": 2247, "payloads": 3, "same": true}}

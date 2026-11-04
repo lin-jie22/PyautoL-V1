@@ -1,0 +1,53 @@
+==============================================================================
+model=qwen2.5:7b max_tokens=1024 T=0 runs/臂=2 判据=6 条 tests  system=当前内核（25）
+真实 state=2329 字符（只用来**原样切块**，不重写）
+==============================================================================
+
+--- D_empty  state=0字符 user=186字符 ---
+  run1  6/6   16.4s   515字符  
+  run2  6/6   12.6s   515字符  
+  ⇒ 两次输出代码逐字相同
+
+--- P0_step  state=10字符 user=238字符 ---
+  run1  2/6   10.7s   489字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6    9.9s   489字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- P1_goal  state=177字符 user=405字符 ---
+  run1  2/6   10.3s   487字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6   10.3s   487字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- P2_goal+step  state=188字符 user=416字符 ---
+  run1  2/6   10.7s   487字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6   11.0s   487字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- P3_wm  state=107字符 user=335字符 ---
+  run1  2/6   12.1s   460字符  TypeError: 'tuple' object does not support item assi
+  run2  2/6   12.3s   460字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- P4_filler400  state=400字符 user=628字符 ---
+  run1  4/6   11.2s   352字符  TypeError: 'tuple' object does not support item assi
+  run2  4/6    8.9s   352字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+--- P5_filler2300  state=2300字符 user=2528字符 ---
+  run1  4/6   21.1s   365字符  TypeError: 'tuple' object does not support item assi
+  run2  4/6    9.7s   365字符  TypeError: 'tuple' object does not support item assi
+  ⇒ 两次输出代码逐字相同
+
+==============================================================================
+汇总
+==============================================================================
+臂                        分              字符   state    同码  首错
+D_empty                6/6         515/515       0  True  
+P0_step                2/2         489/489      10  True  TypeError: 'tuple' object does not suppo
+P1_goal                2/2         487/487     177  True  TypeError: 'tuple' object does not suppo
+P2_goal+step           2/2         487/487     188  True  TypeError: 'tuple' object does not suppo
+P3_wm                  2/2         460/460     107  True  TypeError: 'tuple' object does not suppo
+P4_filler400           4/4         352/352     400  True  TypeError: 'tuple' object does not suppo
+P5_filler2300          4/4         365/365    2300  True  TypeError: 'tuple' object does not suppo
+
+JSON: {"D_empty": {"ok": [6, 6], "chars": [515, 515], "state": 0, "same": true}, "P0_step": {"ok": [2, 2], "chars": [489, 489], "state": 10, "same": true}, "P1_goal": {"ok": [2, 2], "chars": [487, 487], "state": 177, "same": true}, "P2_goal+step": {"ok": [2, 2], "chars": [487, 487], "state": 188, "same": true}, "P3_wm": {"ok": [2, 2], "chars": [460, 460], "state": 107, "same": true}, "P4_filler400": {"ok": [4, 4], "chars": [352, 352], "state": 400, "same": true}, "P5_filler2300": {"ok": [4, 4], "chars": [365, 365], "state": 2300, "same": true}}

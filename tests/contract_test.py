@@ -48,6 +48,7 @@ from mw.llm import (ANSWER_MARK, PARSE_MODES, HTTPLLM, Message, StubLLM,  # noqa
 from mw.measure import (Report, check, ci95, noise_floor,         # noqa: E402
                         paired_compare, repeat, summarize)
 from mw.memory import MemoryStore, fingerprint, fts_query         # noqa: E402
+from mw.planner import _ANSWER_SYS as _planner_ANSWER_SYS   # noqa: E402
 from mw.planner import (Planner, Step, action_signature,              # noqa: E402
                         looks_complex)
 from mw.tools import (ToolRegistry, ToolSpec, ToolResult, catalog_sha,  # noqa: E402
@@ -942,6 +943,7 @@ print("=" * 74)
 # 实测（2026-10-17 内核 6 题真模型）：有一题把 120s 预算全花在 recall 上，
 # 以 budget_exhausted 收场 —— **交付了零东西**。如实报告"没做完"是对的，
 # 但"探索把交付的配额也吃了"是设计缺陷：手段吃掉了目的。
+_ANS_SYS = _planner_ANSWER_SYS   # noqa: N816
 _Q_PLAN = '{"candidates": [{"intent": "查一下", "tool": "recall", "args": {"query": "x"}}]}'
 
 
@@ -950,7 +952,7 @@ class _QLLM(StubLLM):
 
     def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
         blob = "\n".join(m.content for m in messages)
-        if "只输出最终答案本身" in blob:
+        if _ANS_SYS in blob:
             return "最终答案：42"
         return _Q_PLAN
 
@@ -978,7 +980,7 @@ check(RS, "Q4 收尾是第一步就触发（日志里收尾信号排在第一条
 class _QBadLLM(StubLLM):
     def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
         blob = "\n".join(m.content for m in messages)
-        if "只输出最终答案本身" in blob:
+        if _ANS_SYS in blob:
             raise RuntimeError("收尾调用炸了")
         return _Q_PLAN
 
@@ -1006,7 +1008,7 @@ class _QHistLLM(StubLLM):
 
     def complete(self, messages, **kw):                            # noqa: ANN001, ANN003
         blob = "\n".join(m.content for m in messages)
-        if "只输出最终答案本身" in blob:
+        if _ANS_SYS in blob:
             raise RuntimeError("答案调用炸了")
         return ('{"candidates": [{"intent": "跑一条命令", "tool": "run_shell",'
                 ' "args": {"cmd": "echo hi"}}]}')
@@ -10379,7 +10381,7 @@ _AZ95_MARK_PREDICT = "准备执行的动作"
 #: 也含有 `---ANSWER---`**。用它当判据，规划调用会被当成答案调用、返回一段
 #: 代码给 JSON 解析器 ⇒ `⚠️ 模型输出不是合法 JSON` ⇒ 整轮 `done`（本轮真踩了）。
 #: 正确的锚是答案提示词**独有**的那句（`planner.py:150`）。
-_AZ95_MARK_ANSWER = "只输出最终答案本身"
+_AZ95_MARK_ANSWER = _ANS_SYS
 
 
 class _AZ95LLM(StubLLM):

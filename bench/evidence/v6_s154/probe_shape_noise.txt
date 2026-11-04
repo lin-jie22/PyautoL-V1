@@ -1,0 +1,21 @@
+==============================================================================
+model=qwen2.5:7b max_tokens=1024 T=0 system=当前内核（25 字符）
+题数=6；三档形状只差 user prompt 的尾部块，system/题面/判据全同
+==============================================================================
+t01_parse_duration      S0_empty=5/6  S1_step=5/6  S2_filler400=6/6  ← 三档不全同
+t02_dedupe              S0_empty=5/5  S1_step=5/5  S2_filler400=5/5
+t03_commas              S0_empty=5/5  S1_step=5/5  S2_filler400=5/5
+t04_merge_ranges        S0_empty=6/6  S1_step=2/6  S2_filler400=4/6  ← 三档不全同
+t05_top_k               S0_empty=4/4  S1_step=4/4  S2_filler400=4/4
+t06_rle                 S0_empty=5/5  S1_step=5/5  S2_filler400=5/5
+
+==============================================================================
+形状                        总分        题级均值
+S0_empty               30/31      0.9677
+S1_step                26/31      0.8387
+S2_filler400           29/31      0.9355
+
+三档极差 = 0.1290（分母 31 条断言）
+⚠️ 这个极差就是**形状噪声下限**：任何 Δ 小于它，本装置都分辨不出。
+
+JSON: {"tot": {"S0_empty": 30, "S1_step": 26, "S2_filler400": 29}, "den": 31, "per_task": {"t01_parse_duration": {"S0_empty": 5, "S1_step": 5, "S2_filler400": 6}, "t02_dedupe": {"S0_empty": 5, "S1_step": 5, "S2_filler400": 5}, "t03_commas": {"S0_empty": 5, "S1_step": 5, "S2_filler400": 5}, "t04_merge_ranges": {"S0_empty": 6, "S1_step": 2, "S2_filler400": 4}, "t05_top_k": {"S0_empty": 4, "S1_step": 4, "S2_filler400": 4}, "t06_rle": {"S0_empty": 5, "S1_step": 5, "S2_filler400": 5}}}

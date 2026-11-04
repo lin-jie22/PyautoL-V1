@@ -1,0 +1,43 @@
+==============================================================================
+model=qwen2.5:7b max_tokens=1024 T=0 runs/臂=2 判据=6 条 tests
+真实 state=2329 字符（取自 /tmp/v65sd/state.jsonl 的 t04 最后一条）
+内核 prompt: user=2557 字符  system=25 字符 max_tokens=1024
+★ 内核 user prompt 里 **重复出现** 了任务原文：先 `目标：` 一次，state 的 `[目标]` 再一次
+==============================================================================
+
+--- A_orig+state  system=51字符 user=2557字符 ---
+  run1  2/6   11.7s   489字符  TypeError: 'tuple' object does not support item assignme
+  run2  2/6    7.7s   489字符  TypeError: 'tuple' object does not support item assignme
+  ⇒ 两次输出代码逐字相同
+
+--- B_pos+state  system=25字符 user=2557字符 ---
+  run1  2/6    7.7s   489字符  TypeError: 'tuple' object does not support item assignme
+  run2  2/6    7.6s   489字符  TypeError: 'tuple' object does not support item assignme
+  ⇒ 两次输出代码逐字相同
+
+--- C_pos+state-nofid  system=25字符 user=2522字符 ---
+  run1  2/6    7.8s   489字符  TypeError: 'tuple' object does not support item assignme
+  run2  2/6    7.6s   489字符  TypeError: 'tuple' object does not support item assignme
+  ⇒ 两次输出代码逐字相同
+
+--- D_pos+nostate  system=25字符 user=186字符 ---
+  run1  6/6    8.1s   515字符  
+  run2  6/6    8.0s   515字符  
+  ⇒ 两次输出代码逐字相同
+
+--- E_orig+nostate  system=51字符 user=186字符 ---
+  run1  2/6    5.6s   396字符  TypeError: 'tuple' object does not support item assignme
+  run2  2/6    5.7s   396字符  TypeError: 'tuple' object does not support item assignme
+  ⇒ 两次输出代码逐字相同
+
+==============================================================================
+汇总
+==============================================================================
+臂                            分                字符    同码  首错
+A_orig+state               2/2           489/489  True  TypeError: 'tuple' object does not support i
+B_pos+state                2/2           489/489  True  TypeError: 'tuple' object does not support i
+C_pos+state-nofid          2/2           489/489  True  TypeError: 'tuple' object does not support i
+D_pos+nostate              6/6           515/515  True  
+E_orig+nostate             2/2           396/396  True  TypeError: 'tuple' object does not support i
+
+JSON: {"A_orig+state": {"ok": [2, 2], "chars": [489, 489], "same": true}, "B_pos+state": {"ok": [2, 2], "chars": [489, 489], "same": true}, "C_pos+state-nofid": {"ok": [2, 2], "chars": [489, 489], "same": true}, "D_pos+nostate": {"ok": [6, 6], "chars": [515, 515], "same": true}, "E_orig+nostate": {"ok": [2, 2], "chars": [396, 396], "same": true}}

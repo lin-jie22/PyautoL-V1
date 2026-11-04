@@ -12718,9 +12718,17 @@ _AZ123_V_ACT = _AS_V.run("def commas(n):\n    return 42\n",
                          _AS_V.derive(_AZ123_GOAL_3, 0, 1))
 
 #: ⑧ 账本键集：零点 9 键 / 落盘 10 键（派生量只在落盘行）。
-_AZ123_KEYS_ZERO = sorted(["tasks", "example_tasks", "runs", "passed", "failed",
+#: ★ V63（§129）：`example_tasks` → `example_task_runs`（单位进名字，欠了两轮）。
+_AZ123_KEYS_ZERO = sorted(["tasks", "example_task_runs", "runs", "passed", "failed",
                            "exhausted", "example_runs", "example_failed", "exec_err"])
 _AZ123_KEYS_LINE = sorted(_AZ123_KEYS_ZERO + ["verify_gap"])
+#: ⭐ 键名同源：账本侧读 `vf.get("has_example")`，内核侧必须真的写 `"has_example":`。
+#: ⛔ 只改一边 ⇒ 账本永远读到 `None` ⇒ `example_task_runs` 恒 0 ⇒ 静默冒充
+#:    "这条判据不适用"（缺席冒充零）。这正是本次改名的**唯一**真风险。
+_AZ123_CORE_SRC = (V1 / "mw" / "core.py").read_text(encoding="utf-8")
+_AZ123_RUN_SRC = (V1 / "run.py").read_text(encoding="utf-8")
+_AZ123_SAME_KEY = ('"has_example": 1 if self._ex_checks else 0' in _AZ123_CORE_SRC
+                   and 'vf.get("has_example")' in _AZ123_RUN_SRC)
 
 
 class _AZ123Out:
@@ -12730,14 +12738,14 @@ class _AZ123Out:
 
 _AZ123_A = _run._kvf_zero()
 _run._kvf_absorb(_AZ123_A, _AZ123Out({"verify": {
-    "example_tasks": 1, "runs": 3, "passed": 1, "failed": 2, "exhausted": 0,
+    "has_example": 1, "runs": 3, "passed": 1, "failed": 2, "exhausted": 0,
     "example_runs": 3, "example_failed": 2, "exec_err": 1}}))
 _run._kvf_absorb(_AZ123_A, _AZ123Out({"verify": {
-    "example_tasks": 0, "runs": 1, "passed": 1, "failed": 0, "exhausted": 0,
+    "has_example": 0, "runs": 1, "passed": 1, "failed": 0, "exhausted": 0,
     "example_runs": 0, "example_failed": 0, "exec_err": 0}}))
 _AZ123_B = _run._kvf_zero()
 _run._kvf_absorb(_AZ123_B, _AZ123Out({"verify": {
-    "example_tasks": 1, "runs": 2, "passed": 0, "failed": 2, "exhausted": 1,
+    "has_example": 1, "runs": 2, "passed": 0, "failed": 2, "exhausted": 1,
     "example_runs": 2, "example_failed": 2, "exec_err": 0}}))
 #: ⑨ 检测器：声称跑过 3 次、只归类 2 次 ⇒ `verify_gap` 必须 ≠ 0（⛔ 不许写死 0）。
 _AZ123_GAP = _run._kvf_line({**_run._kvf_zero(), "runs": 3, "passed": 1, "failed": 1})
@@ -12779,8 +12787,10 @@ _AZ123_OK = {
         and _AZ123_A["runs"] == 4 and _AZ123_A["example_runs"] == 3
         and _AZ123_A["exec_err"] == 1 and _AZ123_B["exhausted"] == 1
         and _AZ123_GAP["verify_gap"] == 1),
-    "⑨ 题级分母：`example_tasks` 只数**有示例**的题（两题一有一无 ⇒ 1）": (
-        _AZ123_A["tasks"] == 2 and _AZ123_A["example_tasks"] == 1),
+    "⑨ 分母带单位：`example_task_runs` 只数**有示例**的题-run（一有一无 ⇒ 1）\n"
+    "                    ＋ 键名同源（账本读 `has_example`，内核必须真的写出它）": (
+        _AZ123_A["tasks"] == 2 and _AZ123_A["example_task_runs"] == 1
+        and _AZ123_SAME_KEY),
     "⑩ 账本键在 + 两处并入 + 唯一定义": (_AZ123_LEDGER_OK),
 }
 check(RS, "AZ123 ★★★**强制验证**：题面示例判据（跑一遍，比对期望值）\n"
@@ -12792,7 +12802,7 @@ check(RS, "AZ123 ★★★**强制验证**：题面示例判据（跑一遍，�
           "          ⑥ 超时是**装置自曝**（自己的前缀），不许冒充『示例不通过』；\n"
           "          ⑦ 载荷是运行时的值（返回 42 ⇒ 报 42）；\n"
           "          ⑧ 键集全等 + 并入 + `verify_gap` 检测器活着；\n"
-          "          ⑨ 题级分母 `example_tasks`；\n"
+          "          ⑨ 分母带单位 `example_task_runs` ＋ 键名同源；\n"
           "          ⑩ 账本里有 `kernel_verify`。\n"
           "          撤回语义：`_check_one` 里 `example` 直接 `return \"\"` ⇒ ③⑥⑦ 必红；\n"
           "                    `derive` 不看 `exec_` ⇒ ② 必红；\n"
@@ -12803,7 +12813,7 @@ check(RS, "AZ123 ★★★**强制验证**：题面示例判据（跑一遍，�
       " ｜ ".join(f"{k}={v}" for k, v in _AZ123_OK.items())
       + f" ｜ 有示例题={sorted(_AZ123_WITH)} 断言总数={_AZ123_TOTAL}"
       + " ｜ A=" + str({k: _AZ123_A[k] for k in
-                        ("tasks", "example_tasks", "runs", "example_runs")}))
+                        ("tasks", "example_task_runs", "runs", "example_runs")}))
 
 # ===========================================================================
 # AZ124（V62，§128）：**打回 → 重写**这条边 —— 报错原文活到下一次提问
@@ -12915,7 +12925,7 @@ _AZ124_B_AFTER = [i for i, x in enumerate(_AZ124_B_P)
                   if _AZ124_MARK in x and i > (_AZ124_B_MARK[0] if _AZ124_B_MARK else 0)]
 #: ⑦ 账本键集。
 _AZ124_KEYS_ZERO = sorted(["tasks", "carried", "redelivered", "same", "diff",
-                           "passed_after", "dup_skipped", "tasks_rejected"])
+                           "passed_after", "dup_skipped", "task_runs_rejected"])
 
 
 class _AZ124Out:
@@ -12969,7 +12979,7 @@ _AZ124_OK = {
         sorted(_run._krw_zero()) == _AZ124_KEYS_ZERO
         and sorted(_run._krw_line(_run._krw_zero())) == sorted(_AZ124_KEYS_ZERO + ["rework_gap"])
         and _AZ124_ACC["carried"] == 1 and _AZ124_ACC["redelivered"] == 2
-        and _AZ124_ACC["tasks"] == 2 and _AZ124_ACC["tasks_rejected"] == 1
+        and _AZ124_ACC["tasks"] == 2 and _AZ124_ACC["task_runs_rejected"] == 1
         and _AZ124_GAP["rework_gap"] == 1),
     "⑧ `switch` 与控制面同源（`carried=0` 不许冒充『没打回』）": (
         _AZ124_RW["a"]["switch"] == 0 and _AZ124_RW["b"]["switch"] == 1),
@@ -12977,6 +12987,15 @@ _AZ124_OK = {
     "⑩ 超限交付不留欠账（⛔ 跨题泄漏）": (
         "self._reject_carry = \"\"" in
         (V1 / "mw" / "core.py").read_text(encoding="utf-8")),
+    # ★ V63（§129）：改名之后**唯一**的真风险是"只改一边"——
+    #   账本读 `has_example`、内核却还写 `example_tasks` ⇒ 永远读到 None ⇒
+    #   `example_task_runs` 恒 0 ⇒ 被读成"这条判据不适用"（缺席冒充零）。
+    #   ⑨ 只是源码级 pin，这里用**真内核跑出来的 stats** 钉运行时那一半。
+    "⑪ 运行时键同源：真内核 `verify` 含 `has_example`，账本并入后 =1（不是 0）": (
+        ((getattr(_AZ124_A_OUT, "stats", None) or {}).get("verify") or {}
+         ).get("has_example") == 1
+        and _run._kvf_absorb(_run._kvf_zero(),
+                             _AZ124_A_OUT)["example_task_runs"] == 1),
 }
 check(RS, "AZ124 ★★★**打回 → 重写**这条边：报错原文必须活过『让位成功』的清零\n"
           "          ① 场景真的复现（打回 → 让位 → 非交付步骤成功）；\n"
@@ -12988,12 +13007,14 @@ check(RS, "AZ124 ★★★**打回 → 重写**这条边：报错原文必须活
           "          ⑦ 键集全等 + 并入 + `rework_gap` 检测器；\n"
           "          ⑧ `switch` 与 `limits.reject_carry` 同源；\n"
           "          ⑨ 账本里有 `kernel_rework`，两处并入；\n"
-          "          ⑩ 超限交付时清掉欠账。\n"
+          "          ⑩ 超限交付时清掉欠账；\n"
+          "          ⑪ 运行时键同源：真内核产出 `has_example`，账本并入后 =1（不是 0）。\n"
           "          ⚠️ 本条**不主张**『载荷送不到』：V62 的 state 原文证明 `自检未通过`\n"
           "             早就在 `[工作记忆]` 里了。它主张的是**位置与一次性**。\n"
           "          撤回语义：`_reject_carry = _err` 那行删掉 ⇒ ②③ 必红；\n"
           "                    `redelivered` 改记在『又被打回』分支 ⇒ ④ 必红；\n"
-          "                    `rework_gap` 写死 0 ⇒ ⑦ 必红。",
+          "                    `rework_gap` 写死 0 ⇒ ⑦ 必红；\n"
+          "                    内核侧 `has_example` 改回 `example_tasks` ⇒ ⑪ 必红。",
       all(_AZ124_OK.values()),
       " ｜ ".join(f"{k}={v}" for k, v in _AZ124_OK.items())
       + f" ｜ A标记={_AZ124_A_MARK} B标记={_AZ124_B_MARK} B后续={_AZ124_B_AFTER}"

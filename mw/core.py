@@ -2234,13 +2234,18 @@ class Core:
             #:    而那 1 次打回发生在**主循环**，交付物却换了来源）。
             "closeout_runs": 0, "closeout_failed": 0,
             #: ★ V61（§127）：**题面示例**判据的分母。三层，不许合成一个：
-            #:   `example_tasks` = **题**（题面里抽到了示例的题数 ⇒ 判据的适用面）；
+            #: ★ V63（§129）：`example_tasks` → **`has_example`**。
+            #:   旧名把"**本题**有没有示例判据（0/1 标记）"写成了一个像"题数"的数；
+            #:   账本侧（`run.py:_kvf_absorb`）拿它累加，`--repeat 2` 下 4 题记成 8 ——
+            #:   于是 V61 预注册押 `example_tasks=4` 实测 8 被判"落空"，
+            #:   而它**没落空**，是名字骗了人。⛔ 单位必须进名字（纪律 30）。
+            #:   `has_example`   = **本题**有示例判据（0/1，题级）；
             #:   `example_runs` / `example_failed` = **次**（闸被调用 / 被它拒）。
-            #: ⚠️ `example_tasks=0` 的题不是"通过了"，是**这条判据不适用** ——
+            #: ⚠️ `has_example=0` 的题不是"通过了"，是**这条判据不适用** ——
             #:    与 `undefined_names` 的 `None`/`()` 之分同宗。
             #: ⛔ `exec_err` 是**装置自曝**（超时 / 子进程起不来）：
             #:    并进 `example_failed` 就是把装置的锅记到被测对象头上。
-            "example_tasks": 1 if self._ex_checks else 0,
+            "has_example": 1 if self._ex_checks else 0,
             "example_runs": 0, "example_failed": 0, "exec_err": 0,
             "checks": [c.name for c in self._checks],
         }

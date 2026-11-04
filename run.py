@@ -1008,20 +1008,31 @@ def _kvf_zero() -> dict:
     | 跑了**几次**、拒了几次 | `verify_stats` 只活在进程里（`run.py` 里 0 处引用） |
     | 拒的是**哪一类**判据 | `verify_stats.failed` 是全部判据的和 |
 
-    ## 分母（三层，不许合成一个）
+    ## 分母（三层，不许合成一个 —— 而且**单位必须进字段名**）
 
-    · `tasks` —— **题**
-    · `example_tasks` —— **题**（题面里抽到示例的题数 = 判据的**适用面**）
+    · `tasks` —— **题-run**（每题每 rep 计一次 ⇒ `--repeat R` 时是 R 倍）
+    · `example_task_runs` —— **题-run**（题面抽到示例的 ⇒ 判据的**适用面**，同样 R 倍）
     · `runs` / `passed` / `failed` / `exhausted` —— **次**（闸被调用）
     · `example_runs` / `example_failed` —— **次**（示例判据真跑 / 被它拒）
 
-    ⛔ `example_tasks=0` 的题不是"通过了"，是**这条判据不适用** ——
+    ★ V63（§129）：`example_tasks` → `example_task_runs`，`tasks_rejected` →
+      `task_runs_rejected`，内核侧 `example_tasks` → `has_example`（0/1 标记）。
+      理由是**同一个坑押错三次**：
+        · V61 P1 押 `example_tasks=4`（读成"题"）实测 8 = 4 题 × 2 rep；
+        · V62 P9 押 `tasks_rejected=1`（读成"题"）实测 2 = 1 题 × 2 rep；
+        · 纪律 30 早就写了"修法只能是字段名带单位"，而字段名一直没真带。
+      ⇒ `tasks=12`（6 题 × 2 rep）**是对的**，只是名字让它像"12 题"。
+      ⛔ 不改 `tasks` 的名字：它在 7 个 kernel 字典里同名同义，单改一处会造出
+         "同名不同义"——比"名字含糊"更难查。改为在 docstring 里钉住乘数关系。
+
+    ⛔ `example_task_runs=0` 不是"通过了"，是**这条判据不适用** ——
     把它读成通过，"判据缺席"就会冒充"全绿"（缺席冒充零的第 N 种形态）。
     """
     return {
+        #: ⚠️ **题-run**，不是题：每题每 rep 计一次（`--repeat R` ⇒ R 倍）。
         "tasks": 0,
-        #: 题面里抽到了示例的题数（= 这条判据的适用面）。
-        "example_tasks": 0,
+        #: 题面里抽到示例的**题-run**数（= 这条判据的适用面，同样 R 倍）。
+        "example_task_runs": 0,
         "runs": 0,
         "passed": 0,
         "failed": 0,
@@ -1048,10 +1059,13 @@ def _kvf_absorb(acc: dict, out) -> dict:
     st = getattr(out, "stats", None) or {}
     vf = st.get("verify") or {}
     acc["tasks"] = int(acc.get("tasks", 0)) + 1
-    #: ⚠️ `example_tasks` 取**内核**那一格（`_reset_verify` 由 `_checks` 派生），
+    #: ⚠️ `example_task_runs` 取**内核**那一格（`_reset_verify` 由 `_checks` 派生），
     #:    不在这里另算一次 `example_asserts(goal)`：同一个事实两处推导必然分叉。
-    acc["example_tasks"] = int(acc.get("example_tasks", 0)) + (
-        1 if int(vf.get("example_tasks") or 0) else 0)
+    #: ★ V63（§129）：内核键名是 `has_example`（0/1 标记）—— 它回答"**本题**有没有"，
+    #:    累加出来才是"题-run 数"。⛔ 两侧键名必须同时改：只改一边 ⇒ 这里永远读到
+    #:    `None` ⇒ `example_task_runs=0` 静默冒充"这条判据不适用"（缺席冒充零）。
+    acc["example_task_runs"] = int(acc.get("example_task_runs", 0)) + (
+        1 if int(vf.get("has_example") or 0) else 0)
     for _k in ("runs", "passed", "failed", "exhausted",
                "example_runs", "example_failed", "exec_err"):
         acc[_k] = int(acc.get(_k, 0)) + int(vf.get(_k) or 0)
@@ -1114,9 +1128,12 @@ def _krw_zero() -> dict:
         "passed_after": 0,
         #: 逐字重提被重复闸吃掉的次数 —— 它就是 V61 `unaccounted` 残差的那一类出口。
         "dup_skipped": 0,
-        #: 打回过**至少一次**的题数 —— 上面五项的分母（`carried/redelivered` 都是次）。
-        #: ⚠️ 没有它，"carried=0" 会被读成"载荷送不到"，而真相可能是"这题一次没被打回"。
-        "tasks_rejected": 0,
+        #: 打回过**至少一次**的**题-run**数 —— 上面五项的分母（`carried`/`redelivered`
+        #: 都是次，两者之比才有意义）。
+        #: ⚠️ 没有它，"carried=0" 会被读成"载荷送不到"，而真相可能是"这题没被打回"。
+        #: ★ V63（§129）：原名 `tasks_rejected` ⇒ 被读成"1 道题"（V62 P9 押 1 实测 2）。
+        #:    它按 absorb 计次 ⇒ `--repeat 2` 时同一道题记 2（同 `tasks` 的乘数）。
+        "task_runs_rejected": 0,
         # ⛔ **不在这里放 `rework_gap`**：派生量只在 `_krw_line` 出现（V58/V60 各踩一次）。
     }
 
@@ -1126,15 +1143,15 @@ def _krw_absorb(acc: dict, out) -> dict:
 
     ⚠️ 与 `_kvf_absorb` 同一条理由必须**两处调用点各接一次**：
         漏一处 = 静默少计一题的这条边（V55/V57/V58/V60/V61 都在这里踩过）。
-    ⛔ `tasks_rejected` 取内核的 `verify.failed > 0`，**不在这里**另判一次：
-        同一个事实两处推导必然分叉（`_kvf_absorb` 的 `example_tasks` 同因）。
+    ⛔ `task_runs_rejected` 取内核的 `verify.failed > 0`，**不在这里**另判一次：
+        同一个事实两处推导必然分叉（`_kvf_absorb` 的 `example_task_runs` 同因）。
     """
     st = getattr(out, "stats", None) or {}
     rw = st.get("rework") or {}
     vf = st.get("verify") or {}
     acc["tasks"] = int(acc.get("tasks", 0)) + 1
     if int(vf.get("failed") or 0) > 0:
-        acc["tasks_rejected"] = int(acc.get("tasks_rejected", 0)) + 1
+        acc["task_runs_rejected"] = int(acc.get("task_runs_rejected", 0)) + 1
     for _k in ("carried", "redelivered", "same", "diff", "passed_after",
                "dup_skipped"):
         acc[_k] = int(acc.get(_k, 0)) + int(rw.get(_k) or 0)
@@ -2464,7 +2481,7 @@ def cmd_bench(args) -> int:
         # ★ V61（§127）：**交付闸**。⛔ 与 `kernel_shell` 并列、不并进去：
         #   那个数的是**模型发起**的验证（V60 实测只在会做的题上跑），
         #   这个数的是**闸强制**的验证 —— 「由谁发起」正是本轮唯一的变量。
-        #   `example_tasks=0` 的题不是"通过"，是这条判据**不适用**（见 `_kvf_zero`）。
+        #   `example_task_runs=0` 不是"通过"，是这条判据**不适用**（见 `_kvf_zero`）。
         "kernel_verify": _kvf_line(_kvf),
         # ★ V62（§128）：打回 → 重写。`_kvf` 的 `failed` 只回答"闸在不在拒"，
         #   这一格回答"拒完之后那条边通没通"。⛔ 两格不许合并（分母不同）。

@@ -1,0 +1,133 @@
+==============================================================================
+V59 读数 —— 候选顺序从哪来（只读 V58 冻结产物）
+==============================================================================
+日志段：最后 12 个 task-run（01:26:21 起）
+
+--- 逐格明细（12 个 task-run）---
+
+[01] parse_du  (rep1)  轮数=2
+    r1 n=1 pos=-1  ['recall']
+         intent: ['查找解析字符串的库']
+    r2 n=2 pos= 0  ['finish', 'recall']  尾=recall
+         intent: ['直接根据字符串解析逻辑实现函数']
+
+[02] dedupe(s  (rep1)  轮数=1
+    r1 n=1 pos= 0  ['finish']
+         intent: ['使用集合去重并保持顺序']
+
+[03] commas(n  (rep1)  轮数=1
+    r1 n=3 pos= 0  ['finish', 'note', 'run_shell']  尾=note、run_shell
+         intent: ['直接实现函数']
+
+[04] merge_ra  (rep1)  轮数=2
+    r1 n=1 pos=-1  ['recall']
+         intent: ['查找已有实现']
+    r2 n=2 pos= 0  ['finish', 'recall']  尾=recall
+         intent: ['直接根据逻辑编写代码']
+
+[05] top_k(wo  (rep1)  轮数=1
+    r1 n=2 pos= 1  ['<blocked>', 'finish']  拦=1
+         intent: ['', '直接使用 Python 内置的 Counter 统计词频，然后手动排序']
+
+[06] rle(s)，对  (rep1)  轮数=2
+    r1 n=1 pos=-1  ['recall']
+         intent: ['先在记忆中查找与目标相关的既有结论']
+    r2 n=2 pos= 1  ['<blocked>', 'finish']  拦=1
+         intent: ['', '直接finish']
+
+[07] parse_du  (rep2)  轮数=2
+    r1 n=1 pos=-1  ['recall']
+         intent: ['查找解析字符串的库']
+    r2 n=2 pos= 0  ['finish', 'recall']  尾=recall
+         intent: ['直接根据字符串解析逻辑实现函数']
+
+[08] dedupe(s  (rep2)  轮数=1
+    r1 n=1 pos= 0  ['finish']
+         intent: ['使用集合去重并保持顺序']
+
+[09] commas(n  (rep2)  轮数=1
+    r1 n=3 pos= 0  ['finish', 'note', 'run_shell']  尾=note、run_shell
+         intent: ['直接实现函数']
+
+[10] merge_ra  (rep2)  轮数=2
+    r1 n=1 pos=-1  ['recall']
+         intent: ['查找已有实现']
+    r2 n=2 pos= 0  ['finish', 'recall']  尾=recall
+         intent: ['直接根据逻辑编写代码']
+
+[11] top_k(wo  (rep2)  轮数=1
+    r1 n=2 pos= 1  ['<blocked>', 'finish']  拦=1
+         intent: ['', '直接使用 Python 内置的 Counter 统计词频，然后手动排序']
+
+[12] rle(s)，对  (rep2)  轮数=2
+    r1 n=1 pos=-1  ['recall']
+         intent: ['先在记忆中查找与目标相关的既有结论']
+    r2 n=2 pos= 1  ['<blocked>', 'finish']  拦=1
+         intent: ['', '直接finish']
+
+--- P1 自校验：我的解析 vs 冻结账本 ---
+  pos_hist       解析={'0': 8, '1': 4}             账本={'0': 8, '1': 4}             ✅
+  tail_total     解析=8                            账本=8                            ✅
+  tail_by_tool   解析={'recall': 4, 'note': 2, 'run_shell': 2} 账本={'note': 2, 'recall': 4, 'run_shell': 2} ✅
+  offered        解析=30                           账本=30                           ✅
+  dispatched     解析=18                           账本=18                           ✅
+  （第二源）■行下发合计    解析=18                           账本=18                           ✅
+  blocked        解析=4                            账本=4                            ✅
+  rounds         解析=18                           账本=18                           ✅
+  tasks          解析=12                           账本=12                           ✅
+
+--- M1 目录序（静态）---
+  catalog_sha(no external) = 8decb60895d4a972
+  names() = ['finish', 'http_get', 'note', 'recall', 'run_shell']  ⇒ finish 下标 = 0
+
+--- M2 H1（照抄目录序）判据 ---
+  交付轮 = 12；pos>0 的轮 = 4
+  pos>0 轮的「首位工具」 = ['<blocked>', '<blocked>', '<blocked>', '<blocked>']
+  ⇒ H1 不成立（顺序不是抄目录）
+
+--- M4 兜底/降级（_fallback 的两条字面量 intent）---
+  命中兜底的轮 = 2  [(1, ['recall']), (1, ['recall'])]
+  其中 pos>0 的 = 0（结构性预期 0：_fallback 只产单步）
+
+--- M5 pos=0 的 8 格：n 分布与题覆盖 ---
+  n 分布 = {2: 4, 1: 2, 3: 2}；n=1 的轮数 = 2
+  n≥2 的轮数 = 6（想到了别的但排在 finish 后面）
+  题覆盖 = ['commas(n', 'dedupe(s', 'merge_ra', 'parse_du']（4 个）
+
+--- M6 同题两 rep 的计划序列是否相同（T=0）---
+  parse_du       相同  [(1, -1, ('recall',)), (2, 0, ('finish', 'recall'))] vs [(1, -1, ('recall',)), (2, 0, ('finish', 'recall'))]
+  dedupe(s       相同  [(1, 0, ('finish',))] vs [(1, 0, ('finish',))]
+  commas(n       相同  [(3, 0, ('finish', 'note', 'run_shell'))] vs [(3, 0, ('finish', 'note', 'run_shell'))]
+  merge_ra       相同  [(1, -1, ('recall',)), (2, 0, ('finish', 'recall'))] vs [(1, -1, ('recall',)), (2, 0, ('finish', 'recall'))]
+  top_k(wo       相同  [(2, 1, ('<blocked>', 'finish'))] vs [(2, 1, ('<blocked>', 'finish'))]
+  rle(s)，对       相同  [(1, -1, ('recall',)), (2, 1, ('<blocked>', 'finish'))] vs [(1, -1, ('recall',)), (2, 1, ('<blocked>', 'finish'))]
+  ⇒ 相同 6/6
+
+--- M7 18 轮的 n 分布 ---
+  {1: 8, 2: 8, 3: 2}；n=1 的轮数 = 8
+
+--- M8 交付轮 / 非交付轮 ---
+  交付轮 = 12；非交付轮 = 6（pos=-1 的 = 6）
+
+--- M9 尾的 8 个候选：能否改变答案正确性 ---
+  逐项 = ['recall', 'note', 'run_shell', 'recall', 'recall', 'note', 'run_shell', 'recall']
+  验证类（run_shell，真跑一遍能发现错） = 2
+  非验证类（recall/note，检索与记录，不会让答案变对） = 6
+
+--- M3 P8 提示词许可（静态、逐字）---
+  _SYS 含许可句（逐字） = True
+  许可句 = 「目标只是要一段代码或一段纯文本（不需读外部材料）时不必绕路，直接 finish」
+  6 题里题面含「只输出代码」的 = 6/6（源：bench/tasks/coding_small.jsonl）
+  在这句许可下仍然先提 run_shell 的题 = ['rle(s)，对', 'top_k(wo']（2/6）
+  ⇒ 许可**不是**决定性的：同一句许可，2/6 题的模型照样分叉。
+  ⚠️ 它是**许可**（何时可以直接交），不是**条件**（何时不可以）—— V53 已量过：许可有效、条件几乎无效。
+
+--- 附：逐题得分（runs.jsonl report.per_task，两次 rep 并列）---
+  t01_parse_duration   [(1, 0.8333), (2, 0.8333)]
+  t02_dedupe           [(1, 1.0), (2, 1.0)]
+  t03_commas           [(1, 1.0), (2, 1.0)]
+  t04_merge_ranges     [(1, 0.3333), (2, 0.3333)]
+  t05_top_k            [(1, 1.0), (2, 1.0)]
+  t06_rle              [(1, 1.0), (2, 1.0)]
+
+P1 全等 = True

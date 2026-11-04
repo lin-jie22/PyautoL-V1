@@ -1160,6 +1160,16 @@ class Core:
                 if self.state_meta:
                     self.state_meta[-1]["n"] = int(n)
                     self.state_meta[-1]["guidance"] = guidance_text
+                # ★ V62（§128）：**被打回的交付**欠着一段报错原文 —— 它比
+                # `consecutive_failures` 活得久，因为让位救回一个非交付步骤
+                # 并不回答"那份答案错在哪"（`core.py:1687` 会把后者清零）。
+                #
+                # ⛔ 优先级：若本轮还有**更新的**失败（`last_error`），先用它，
+                #   `_reject_carry` **不清**、留到下一轮 —— 否则两段错误里
+                #   总有一段被永久丢掉，而"哪一段被丢"取决于候选顺序，不可复现。
+                _carry = ""
+                if int(self.s.limits.reject_carry) and self._reject_carry:
+                    _carry = self._reject_carry
                 if consecutive_failures and last_error:
                     # ★ V52（§118）：这一行是**读数**，不是行为。
                     #
@@ -1182,6 +1192,24 @@ class Core:
                         guidance=guidance_text,
                         # ★ 失败之后**更**需要状态，不是更不需要 ——
                         #   回看取回的报错原文就拼在状态里（第二十轮）。
+                        state=state)
+                elif _carry:
+                    # ★ V62（§128）：这就是 V61 缺的那一跳。
+                    # 走**同一条** `replan` 通道（它本来就是为了"带错误原文重写"
+                    # 而存在的：`planner.py:686` 把 `error` 拼成历史里的一行），
+                    # 唯一区别是这一步**不是因为连续失败**才走到这里。
+                    # ⚠️ 用掉就清空：清空点必须在这里（唯一消费点），
+                    #   放进 `_reset_verify` 只会让人以为它是"每轮都带"。
+                    self._reject_carry = ""
+                    self.rework_stats["carried"] += 1
+                    self.log("  ↻ 打回报文进下一轮提问（让位成功也没把它冲掉）"
+                             f"：{_carry[:100]}")
+                    plan = self.planner.replan(
+                        goal=goal, failed=Step("(上一次交付)", "finish", {}),
+                        error=_carry, history=history, n=n,
+                        blocked=sorted(attempted_sigs),
+                        rejected=reseek_lines,
+                        guidance=guidance_text,
                         state=state)
                 else:
                     plan = self.planner.propose(
@@ -1350,7 +1378,24 @@ class Core:
                     if sig in attempted_sigs:
                         repeats += 1
                         repeats_skipped += 1
-                        self.log(f"      ⏭ 重复动作已跳过（不产生新信息）: {cand.tool}")
+                        # ★ V62（§128）：**这一步就是 V61 的 `unaccounted=4`。**
+                        # 那个残差 `38 − 24 − 0 − 10 = 4` 一直是"漏斗少一类出口"，
+                        # 而缺的正是这里：被重复闸吃掉的交付。它在 V61 只能靠人
+                        # 翻日志数出来（4 个 `⏭`），账本上不存在。
+                        #
+                        # ⚠️ 更重要的是它改写了本轮的问题：**逐字重提根本到不了闸**
+                        #   （签名相同 ⇒ 在这里就被丢），所以 `_gate_finish` 里那个
+                        #   `same` 分支在实际路径上是**不可达**的 —— 冒烟时 `same=0`
+                        #   而真实行为是"又提了一次一模一样的"。计数必须记在
+                        #   **真正发生它的地方**，否则就是"机制存在 ≠ 通电"。
+                        if _is_delivery and self._rejected_once:
+                            self.rework_stats["same"] += 1
+                            self.rework_stats["redelivered"] += 1
+                            self.rework_stats["dup_skipped"] += 1
+                            self.log("      ⏭ 打回之后重提的答案**逐字相同**"
+                                     " ⇒ 被重复闸跳过（模型没改）")
+                        else:
+                            self.log(f"      ⏭ 重复动作已跳过（不产生新信息）: {cand.tool}")
                         history.append(f"[step {it}] 重复动作被跳过：{cand.as_line()}")
                         continue
                     attempted_sigs.add(sig)
@@ -1936,16 +1981,45 @@ class Core:
         v: vfy.Verdict = vfy.run(result.output, self._checks)
         self.verify_stats["runs"] += 1
         self._note_example(v)
+        # ★ V62（§128）：**分母与分类都在闸的入口记**，与过没过无关。
+        #   为什么不在"又被打回"分支里记：第一版就是那么写的，冒烟当场抓到 ——
+        #   一份**改对了**的重写会让 `redelivered=0`，于是恒等式
+        #   `redelivered = same + diff` 不成立，`rework_gap` 把"改对了"误报成"漏计"。
+        #   ⛔ 这就是"检测器自己失效"（"红=无"第三形态）：读数看着像缺口，其实是分错格。
+        _prev = self._salvage
+        if self._rejected_once:
+            self.rework_stats["redelivered"] += 1
+            if result.output == _prev:
+                # ⚠️ 正常路径上这里**到不了**：逐字相同的交付签名也相同 ⇒ 在重复闸
+                #    （`core.py` 的 `if sig in attempted_sigs:`）就被丢掉了。
+                #    保留这一支是为了"签名算错/绕过"时不静默 —— 那时它必须显形。
+                self.rework_stats["same"] += 1
+                self.log("      ⏭ 重写的答案与被打回那版**逐字相同**"
+                         "（模型没改，不是重复闸的锅）")
+            else:
+                self.rework_stats["diff"] += 1
+                self.log("      ✎ 重写的答案与被打回那版**不同**（模型改了）")
         if v.ok:
             self.verify_stats["passed"] += 1
+            # ★ V62（§128）：被打回之后**重写的那一份**过闸了。
+            # ⚠️ 判据是 `_rejected_once`（本题被打回过），不是 `runs>1`：
+            #   后者在"第一次就没过、第二次才过"与"收尾又跑了一次"上都会成立。
+            if self._rejected_once:
+                self.rework_stats["passed_after"] += 1
+                self.log("      ✅ 打回之后的重写**过了闸**")
+            self._rejected_once = 0
             return result
 
         self.verify_stats["failed"] += 1
+        self._rejected_once = 1
         self._salvage = result.output
         cap = max(0, int(self.s.limits.verify_retries))
         if self.verify_stats["failed"] > cap:
             # 超限：**如实交付**，并把"没过自检"写进状态。
             self.verify_stats["exhausted"] += 1
+            # ⚠️ 超限交付之后不会再有一次提问 ⇒ 欠着的报错原文必须清掉，
+            #    否则它会跨题泄漏到下一题（`_reset_verify` 也会清，这里是第二道）。
+            self._reject_carry = ""
             self._unverified = v.report
             # ★ 第二十七轮（§17-6 6a）：超限交付不进主循环的失败分支
             #   （result.ok=True ⇒ 走交付）⇒ 不落 failure 的话，
@@ -1959,7 +2033,12 @@ class Core:
             return result
         self.log(f"      🧪 自检未过（第 {self.verify_stats['failed']}/{cap} 次打回）"
                  f" ⇒ 退回重写：{v.report[:120]}")
-        return ToolResult(False, error=f"自检未通过：{v.report}")
+        _err = f"自检未通过：{v.report}"
+        # ★ V62（§128）：留一份**欠账**。它会活过"让位候选成功"的清零（`core.py:1687`），
+        #   在下一轮规划处被 `replan(error=…)` 取走 —— 一次，然后清空。
+        if int(self.s.limits.reject_carry):
+            self._reject_carry = _err
+        return ToolResult(False, error=_err)
 
     # ------------------------------------------------------------------
     def _recall_for(self, it: int, handle, *, where: str, trigger: str) -> None:
@@ -2172,6 +2251,34 @@ class Core:
         #: ⚠️ 第九十一轮挪到这里：`_close_out` 拿它当 `overrode_rejected` 的比较基准，
         #:    所以它必须在**构造时**就存在（否则可单独调用的收尾路径 AttributeError）。
         self._salvage: str = ""
+        #: ★ V62（§128）：**打回之后还欠着的那段报错原文**。
+        #: 为什么必须有独立一格：`last_error` / `consecutive_failures` 是**连续失败**
+        #: 语义，任何候选成功都会清零（`core.py:1687`）；而"交付被打回"是
+        #: **必须被改写**语义 —— 让位救回一个 `recall` 步骤并不等于"那个错误不用管了"。
+        #: 两者的生命周期不同，混用一格就必然出现 V61 实测的那一幕：
+        #: 报错被清零 ⇒ 下一轮走 `propose()` ⇒ 模型看不到 `TypeError` ⇒ 重提同一份答案。
+        #: ⚠️ 一次性：被 `replan` 用掉就清空（与 `reseek_lines` 同生命周期）。
+        self._reject_carry: str = ""
+        #: ★ V62（§128）：本题**是否已经被打回过**（用于"打回之后的交付尝试"分母）。
+        self._rejected_once: int = 0
+        #: ★ V62（§128）：**打回 → 重写**这条边的读数。全部是**次**，不是题。
+        #:   `carried`     —— 被打回的报错原文**真的进了下一次提问**（装置通不通）
+        #:   `redelivered` —— 打回之后**又交了一次**（这条边存不存在）
+        #:   `same` / `diff` —— 那一次与被打回那版**逐字**相同 / 不同（模型改没改）
+        #:   `passed_after` —— 重写之后过闸（这条边的兑现率）
+        #: ⛔ 不许把 `redelivered` 与 `verify.runs` 混用：后者含**第一次**交付，
+        #:   前者只在"已经被打回过"之后计数。V61 的病正是"第二次交付根本没发生"
+        #:   而 `verify.runs` 照样是 14 —— 两个分母不同，合成一个就看不见它。
+        self.rework_stats: dict = {
+            "carried": 0, "redelivered": 0, "same": 0, "diff": 0,
+            "passed_after": 0,
+            #: ★ V62（§128）：**逐字重提被重复闸吃掉的次数**。
+            #: 这就是 V61 的 `unaccounted=4` 缺的那一类出口（漏斗第四格）。
+            #: ⚠️ 它与 `same` 的数**必然相等**（同一件事的两面：一个是"模型没改"的语义，
+            #:    一个是"漏斗漏了一格"的语义）。两个都留是刻意的 —— 合成一个，
+            #:    下一个人就无法从账本看出"这一格同时是漏斗缺口"。
+            "dup_skipped": 0,
+        }
         #: 交付时的自检说明。非空 ⇒ 这次交付**没有通过自检**，状态要如实标出来。
         #: ★第九十一轮起语义收紧：它描述的是**交出去的那一份**，不是"本轮发生过什么"
         #:   —— 收尾若把答案换成一个过闸的版本，这里必须清空（`_close_out`）。
@@ -2861,6 +2968,12 @@ class Core:
             "verify": {**dict(self.verify_stats),
                        "unverified_delivery": bool(self._unverified),
                        "salvaged": bool(self._salvage)},
+            # ★ V62（§128）：**打回 → 重写**这条边的五项读数。零值也必须进 stats
+            # （`redelivered=0` 与"这条边没装"是两件必须分得开的事，§66 同因）。
+            # ⚠️ `switch` 与控制面并列：`carried=0` 既可能是"没打回过"，也可能是
+            #    "开关没开" —— 只有把开关一起落盘，这两种才分得开（`failover` 同构）。
+            "rework": {**dict(self.rework_stats),
+                       "switch": int(self.s.limits.reject_carry)},
             # 第二十二轮：收尾兜底。**零值也进 stats**（汇总行才按需省）——
             # `origin` 是字典而不是单个字符串：只记"最后一次从哪来"会掩盖
             # "三次里两次退到 history"这种退化（那是"绝不返回空"的代价面）。

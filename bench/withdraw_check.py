@@ -1531,6 +1531,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
             return run_example(code, c.arg)''',
      '''        try:
             return ""              # 撤回态：示例判据永远通过'''),
+    # ── AZ124：打回 → 重写那条边（V62 / §128）───────────────────────────────
+    #: 撤的语义：**闸照拒、读数照记，但报错原文不再留下来**（回到 V61 的行为）。
+    #: ⇒ AZ124 ②（开 ⇒ 重规划位置恰有一处）③（`carried`=1）必红。
+    #: ⚠️ 不撤 `if self._rejected_once:` 那几行：撤了它 ⇒ ④⑤ 也会红，
+    #:   而它们是**另一个**主张（重交的口径），与本条要测的"位置"混在一起
+    #:   就分不清是哪一条断了（V61 的 AZ123 同一条理由）。
+    ("AZ124", "mw/core.py",
+     '''        if int(self.s.limits.reject_carry):
+            self._reject_carry = _err''',
+     '''        if int(self.s.limits.reject_carry):
+            self._reject_carry = ""   # 撤回态：打回之后不留欠账'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

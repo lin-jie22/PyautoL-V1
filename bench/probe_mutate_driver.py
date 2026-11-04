@@ -101,6 +101,10 @@ def main() -> int:
     #    `V1_VERIFY_EXEC` 也塞进环境、断言被清掉。本轮两臂**只差这一个 env**
     #    ⇒ 它若清不干净，A 臂会静默变成 B 臂，而读数看上去完全正常
     #    （"强制验证无效"就是这样被伪造出来的）。
+    #    26 → 27（第一百四十八轮加 `reject_carry`，§128）。复核方式同上：
+    #    `V1_REJECT_CARRY` 也塞进环境、断言被清掉。本轮两臂**只差这一个 env**
+    #    ⇒ 它若清不干净，A 臂会静默变成 B 臂，而读数看上去完全正常
+    #    （"报错原文送达没有效果"就是这样被伪造出来的 —— 因为两臂其实是一臂）。
     #    24 → 25（第一百三十二轮加 `cand_failover`，§108）。复核方式同上：
     #    `V1_CAND_FAILOVER` 也塞进环境、断言被清掉。⛔ 这一条比前几轮更要紧 ——
     #    本轮四臂里有两臂是 `V1_CAND_FAILOVER=0`，而 0 会被 `_env_int` 当"没填"
@@ -109,17 +113,18 @@ def main() -> int:
        e.get("V1_MAX_STALL") == "3" and "V1_RECALL_K" not in e
        and "V1_STATE_CHARS" not in e and "V1_FORESIGHT_VETO" not in e
        and "V1_PLAN_SALVAGE" not in e and "V1_CAND_FAILOVER" not in e
-       and "V1_VERIFY_EXEC" not in e
-       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 26,
+       and "V1_VERIFY_EXEC" not in e and "V1_REJECT_CARRY" not in e
+       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 27,
        f"limits 字段 {len(fields)} 个 ｜ V1_RECALL_K={'在' if 'V1_RECALL_K' in e else '已清'}"
        f" ｜ V1_STATE_CHARS={'在' if 'V1_STATE_CHARS' in e else '已清'}"
        f" ｜ V1_FORESIGHT_VETO={'在' if 'V1_FORESIGHT_VETO' in e else '已清'}"
        f" ｜ V1_PLAN_SALVAGE={'在' if 'V1_PLAN_SALVAGE' in e else '已清'}"
        f" ｜ V1_CAND_FAILOVER={'在' if 'V1_CAND_FAILOVER' in e else '已清'}"
-       f" ｜ V1_VERIFY_EXEC={'在' if 'V1_VERIFY_EXEC' in e else '已清'}")
+       f" ｜ V1_VERIFY_EXEC={'在' if 'V1_VERIFY_EXEC' in e else '已清'}"
+       f" ｜ V1_REJECT_CARRY={'在' if 'V1_REJECT_CARRY' in e else '已清'}")
     for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_STATE_CHARS",
               "V1_FORESIGHT_VETO", "V1_PLAN_SALVAGE", "V1_CAND_FAILOVER",
-              "V1_VERIFY_EXEC", "V1_LLM_MODEL"):
+              "V1_VERIFY_EXEC", "V1_REJECT_CARRY", "V1_LLM_MODEL"):
         os.environ.pop(k, None)
 
     # ── P6：守门员的"生效 + 单变量"，每格都喂一个坏样本 ────────────────────

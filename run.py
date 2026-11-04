@@ -1073,6 +1073,89 @@ def _kvf_line(acc: dict) -> dict:
     return out
 
 
+def _krw_zero() -> dict:
+    """**打回 → 重写**这条边的读数零点（V62，§128）。
+
+    ## 为什么 `_kvf` 不够
+
+    V61 的判决是「强制验证治好了 V60 的病，Δ 却仍然 = 0」。从 `_kvf` 能读出的只有
+    `runs=14 / failed=4` —— 它证明闸在拒，**证明不了"拒完之后发生了什么"**：
+
+    | 问题 | `_kvf` 能不能答 |
+    |---|---|
+    | 报错原文送达模型了吗 | ⛔ `failed+1` 只说明闸返回了一段文本，不说明它进了 prompt |
+    | 拒完之后**又交了一次**吗 | ⛔ `runs` 含**第一次**交付，混在一起就看不见 |
+    | 那一次和被打回那版相同吗 | ⛔ 只有一个"失败"计数 |
+
+    ⇒ 于是 V61 的 `exhausted=0`（配额一次没用满）只能靠人工翻日志才发现。
+    这一格把"打回之后"那一段直接变成可查询的数。
+
+    ## 分母（全部是**次**，不是题）
+
+    · `carried`     —— 被打回的报错原文**真的进了下一次提问**（装置通不通）
+    · `redelivered` —— 打回之后**又交了一次**（这条边存不存在）
+    · `same` / `diff` —— 那一次与被打回那版**逐字**相同 / 不同（模型改没改）
+    · `passed_after` —— 那一次**过闸**（兑现率）⇒ 它是 `diff` 的**子集**，
+      因为"逐字相同"的答案不可能过同一套判据。
+
+    ⛔ `redelivered` 不许与 `verify.runs` 合并：后者的分母含**第一次**交付。
+    ⛔ `redelivered = same + diff` 是**恒等式**（每次重交恰好落一格）
+      ⇒ 落盘行里的 `rework_gap` 就是它的检测器。
+    ⚠️ 第一版把 `redelivered` 记在"又被打回"分支里 ⇒ 一份**改对了**的重写会让
+      它少 1，而 `passed_after` 多 1 —— 检测器于是把"改对了"报成"漏计"。
+      这就是"检测器自己失效"（"红=无"第三形态），冒烟时当场抓到。
+    """
+    return {
+        "tasks": 0,
+        "carried": 0,
+        "redelivered": 0,
+        "same": 0,
+        "diff": 0,
+        "passed_after": 0,
+        #: 逐字重提被重复闸吃掉的次数 —— 它就是 V61 `unaccounted` 残差的那一类出口。
+        "dup_skipped": 0,
+        #: 打回过**至少一次**的题数 —— 上面五项的分母（`carried/redelivered` 都是次）。
+        #: ⚠️ 没有它，"carried=0" 会被读成"载荷送不到"，而真相可能是"这题一次没被打回"。
+        "tasks_rejected": 0,
+        # ⛔ **不在这里放 `rework_gap`**：派生量只在 `_krw_line` 出现（V58/V60 各踩一次）。
+    }
+
+
+def _krw_absorb(acc: dict, out) -> dict:
+    """把**一道题**的 rework 读数并进累加器（就地修改并返回）。
+
+    ⚠️ 与 `_kvf_absorb` 同一条理由必须**两处调用点各接一次**：
+        漏一处 = 静默少计一题的这条边（V55/V57/V58/V60/V61 都在这里踩过）。
+    ⛔ `tasks_rejected` 取内核的 `verify.failed > 0`，**不在这里**另判一次：
+        同一个事实两处推导必然分叉（`_kvf_absorb` 的 `example_tasks` 同因）。
+    """
+    st = getattr(out, "stats", None) or {}
+    rw = st.get("rework") or {}
+    vf = st.get("verify") or {}
+    acc["tasks"] = int(acc.get("tasks", 0)) + 1
+    if int(vf.get("failed") or 0) > 0:
+        acc["tasks_rejected"] = int(acc.get("tasks_rejected", 0)) + 1
+    for _k in ("carried", "redelivered", "same", "diff", "passed_after",
+               "dup_skipped"):
+        acc[_k] = int(acc.get(_k, 0)) + int(rw.get(_k) or 0)
+    return acc
+
+
+def _krw_line(acc: dict) -> dict:
+    """落盘前的**唯一**派生量：`rework_gap`。
+
+    `rework_gap = redelivered - (same + diff)`
+
+    ⛔ 它是**检测器**，不是"其它"垃圾桶：每发生一次"打回之后的交付"，它必然落在
+       `same` 或 `diff` 之一；只要还有一次没被归类，它就 ≠ 0。
+    ⚠️ 它只在**落盘那一行**出现，**不进零点**（V58/V60/V61 同例）。
+    """
+    out = dict(acc)
+    out["rework_gap"] = (int(out.get("redelivered", 0))
+                         - int(out.get("same", 0)) - int(out.get("diff", 0)))
+    return out
+
+
 def _ktx_zero() -> dict:
     """传输层 / 墙钟读数的累加器零点（第二十五轮，DESIGN §16.24）。
 
@@ -1819,6 +1902,10 @@ def cmd_bench(args) -> int:
     #                         这里说"闸强制跑了几次、拒了几次"——
     #                         ⛔ 前者是**模型的选择**（V60 实测：只在会做的题上跑），
     #                         后者才是"验证有没有落到错的题上"的那个数。
+    _krw = _krw_zero()      # ★ V62（§128）：**打回 → 重写**。`_kvf` 说"拒了几次"，
+    #                         这里说"拒完之后报错有没有送达、模型改没改"——
+    #                         ⛔ 三个数必须分开：`failed>0` 只证明闸在工作，
+    #                         不证明"打回"这条边通到了一次**新的交付**。
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
     _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
 
@@ -2016,6 +2103,9 @@ def cmd_bench(args) -> int:
                         # ★ V61（§127）：交付闸。与 `_kshell_absorb` 紧挨着：同一个
                         #   问题的两侧 —— 它数"模型自己跑了几次"，这里数"闸有没有强制跑"。
                         _kvf_absorb(_kvf, out)
+                        # ★ V62（§128）：打回 → 重写。与 `_kvf_absorb` 紧挨着：
+                        #   它说"拒了几次"，这里说"拒完之后报错有没有送到、模型改没改"。
+                        _krw_absorb(_krw, out)
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
                         _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -2060,6 +2150,8 @@ def cmd_bench(args) -> int:
                 _kshell_absorb(_ksh, out)
                 # ★ V61（§127）：与 `--fresh` 那支同一条理由。
                 _kvf_absorb(_kvf, out)
+                # ★ V62（§128）：与 `--fresh` 那支同一条理由（漏一处 = 少计一题）。
+                _krw_absorb(_krw, out)
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
                 _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -2374,6 +2466,9 @@ def cmd_bench(args) -> int:
         #   这个数的是**闸强制**的验证 —— 「由谁发起」正是本轮唯一的变量。
         #   `example_tasks=0` 的题不是"通过"，是这条判据**不适用**（见 `_kvf_zero`）。
         "kernel_verify": _kvf_line(_kvf),
+        # ★ V62（§128）：打回 → 重写。`_kvf` 的 `failed` 只回答"闸在不在拒"，
+        #   这一格回答"拒完之后那条边通没通"。⛔ 两格不许合并（分母不同）。
+        "kernel_rework": _krw_line(_krw),
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。
         "kernel_external": _kex,
         # 传输层 / 墙钟读数（第二十五轮）：重试链有没有超支预算，必须可事后审计。

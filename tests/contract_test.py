@@ -1366,6 +1366,11 @@ def _env_zero_takes_effect(key: str) -> bool:
         #   所以"不登记"看不出差别 —— 但只要将来把默认 promote 成 1，
         #   A0 就会静默变成 A1，而"强制验证没用"会被量成真。
         "V1_VERIFY_EXEC": ("limits", "verify_exec"),
+        # ★第一百四十八轮（§128）：`V1_REJECT_CARRY=0` 就是**对照臂 A0**
+        #   （= V61 的行为：打回报文被让位候选成功清零，模型看不到错在哪）。
+        #   与上一条同因、且更具体：本轮跑批脚本靠 `=0` 把 A 臂钉死，
+        #   漏登记 ⇒ 两臂是同一个臂，读数会说"带上报错原文没有效果"。
+        "V1_REJECT_CARRY": ("limits", "reject_carry"),
     }
     grp, attr = _keys[key]
     _old = os.environ.get(key)
@@ -8815,7 +8820,11 @@ check(RS, "AZ63 ★「换形态」的文本只允许一处渲染（`reseek_block
           "          ⚠️ 判定去注释/去 docstring：本函数说明里就引用着那段话。",
       _az63_planner.count("reseek_block(") == 2        # 1 处定义 + 1 处调用
       and _az63_planner.count("_REJECTED_SHOWN") == 2  # 定义 + 唯一使用点
-      and _code_only(_core_src).count("rejected=reseek_lines") == 2,
+      # ★ V62（§128）：喂入点 2 → 3。第三处是「打回的报错原文活到下一轮」那条
+      #   `replan`（`core.py` 的 `elif _carry:` 分支）。⛔ 不许改成 `>= 2` 放宽：
+      #   这条断言的内容是"**所有**进入规划器的路都把同一份 `reseek_lines` 喂进去"，
+      #   数量变了要改数字并说明**是哪一处新增的**，否则下一个人会以为数错了。
+      and _code_only(_core_src).count("rejected=reseek_lines") == 3,
       f"reseek_block(={_az63_planner.count('reseek_block(')} "
       f"_REJECTED_SHOWN={_az63_planner.count('_REJECTED_SHOWN')} "
       f"喂入点={_code_only(_core_src).count('rejected=reseek_lines')}")
@@ -12795,6 +12804,203 @@ check(RS, "AZ123 ★★★**强制验证**：题面示例判据（跑一遍，�
       + f" ｜ 有示例题={sorted(_AZ123_WITH)} 断言总数={_AZ123_TOTAL}"
       + " ｜ A=" + str({k: _AZ123_A[k] for k in
                         ("tasks", "example_tasks", "runs", "example_runs")}))
+
+# ===========================================================================
+# AZ124（V62，§128）：**打回 → 重写**这条边 —— 报错原文活到下一次提问
+#
+# 实测病（V61 冻结日志 + V62 单题 state 原文）：
+#   ```
+#   🧪 自检未过（第 1/2 次打回）⇒ 退回重写：… TypeError …
+#   ↪ 交付被打回 ⇒ 让位给候选 2/2
+#   ↪ 让位救回一个**步骤**（非交付动作）：recall     ← 成功 ⇒ consecutive_failures=0
+#   ⏭ 重复动作已跳过: finish                        ← 第 3 轮，逐字相同
+#   ```
+#   `last_error` 被让位成功的候选清零 ⇒ 下一轮走 `propose()` 而不是 `replan()`
+#   ⇒ 报错原文**不进那个位置**（它仍在 `[工作记忆]`，但不再作为"上一步失败了"出现）。
+#
+# ⚠️ 因此这条契约主张的是**位置**，不是"信息有没有送到"：
+#   V62 的 state 原文证明 `自检未通过` 在 `it=3/4` 的 `[工作记忆]` 里已经在了。
+#   ⛔ 不许把本条读成"修好了载荷"——它只把同一条信息**多放一处、放一次**。
+# ===========================================================================
+_AZ124_GOAL = ("写一个函数 commas(n)，把整数加上千分位。"
+               "例如 commas(1234567) == '1,234,567'。只输出代码，函数名必须是 commas。")
+_AZ124_BAD = "def commas(n):\n    return str(n)\n"
+_AZ124_GOOD = ("def commas(n):\n"
+               "    s = str(n)\n"
+               "    out = ''\n"
+               "    while len(s) > 3:\n"
+               "        out = ',' + s[-3:] + out\n"
+               "        s = s[:-3]\n"
+               "    return s + out\n")
+
+
+def _az124_plan(*cands):
+    return json.dumps({"candidates": list(cands)}, ensure_ascii=False)
+
+
+def _az124_fin(ans, intent):
+    return {"intent": intent, "tool": "finish", "args": {"answer": ans}}
+
+
+_AZ124_STEP1 = _az124_plan(
+    _az124_fin(_AZ124_BAD, "给出答案"),
+    {"intent": "先查经验", "tool": "recall", "args": {"query": "commas 千分位"}})
+_AZ124_STEP2_OK = _az124_plan(_az124_fin(_AZ124_GOOD, "按报错改写"))
+_AZ124_STEP2_SAME = _az124_plan(_az124_fin(_AZ124_BAD, "再交一次同样的"))
+
+
+def _az124_run(*, carry: int, step2: str):
+    """跑一次 Core（离线桩），返回 `(outcome, prompts, logs)`。
+
+    ⚠️ `V1_CAND_FAILOVER=1` 是 **V61 两臂的常量**，不是本条的自变量：
+       没有它就没有"让位"，也就复现不出"报错被清零"那一幕。
+    ⛔ 每条分支都必须走同一个装装置函数：两份 fixture 各写一遍 = 两个未来。
+    """
+    prompts: list[str] = []
+    logs: list[str] = []
+
+    class _Tap(StubLLM):
+        def complete(self, messages, **kw):                 # noqa: ANN001, ANN003
+            prompts.append("\n".join(m.content for m in messages))
+            return super().complete(messages, **kw)
+
+    keys = ("V1_LLM_OFFLINE", "V1_STATE_DIR", "V1_MAX_WALL_S", "V1_MAX_STEPS",
+            "V1_VERIFY_EXEC", "V1_REJECT_CARRY", "V1_MAX_CANDIDATES",
+            "V1_CAND_FAILOVER", "V1_VERIFY_RETRIES")
+    old = {k: os.environ.get(k) for k in keys}
+    os.environ["V1_LLM_OFFLINE"] = "1"
+    os.environ["V1_STATE_DIR"] = str(Path(tempfile.mkdtemp(prefix="v1_az124_")) / "s")
+    os.environ["V1_MAX_WALL_S"] = "120"
+    os.environ["V1_MAX_STEPS"] = "8"
+    os.environ["V1_VERIFY_EXEC"] = "1"
+    os.environ["V1_REJECT_CARRY"] = str(carry)
+    os.environ["V1_MAX_CANDIDATES"] = "3"
+    os.environ["V1_CAND_FAILOVER"] = "1"
+    os.environ["V1_VERIFY_RETRIES"] = "2"
+    try:
+        _c = Core(cfg.Settings(), llm=_Tap(scripts=[("自检未通过", step2)],
+                                          default=_AZ124_STEP1),
+                  tools=ToolRegistry(), wire_external=False,
+                  log=lambda m: logs.append(str(m)))
+        return _c.run(_AZ124_GOAL), prompts, logs
+    finally:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+_AZ124_A_OUT, _AZ124_A_P, _AZ124_A_LOG = _az124_run(carry=0, step2=_AZ124_STEP2_OK)
+_AZ124_B_OUT, _AZ124_B_P, _AZ124_B_LOG = _az124_run(carry=1, step2=_AZ124_STEP2_OK)
+_AZ124_S_OUT, _AZ124_S_P, _AZ124_S_LOG = _az124_run(carry=1, step2=_AZ124_STEP2_SAME)
+
+#: ⚠️ `Outcome` 不是 dict —— 第一版写成 `(v or {}).get(...)` 直接 AttributeError，
+#:    整个契约从 627 掉到 7（PASS=7）而 FAIL=0：**崩溃被读成"跑完了、只跑了 7 条"**。
+#:    这是"缺席冒充零"的同一个形状，只不过冒充的是"通过"。
+_AZ124_RW = {k: (getattr(v, "stats", None) or {}).get("rework") or {}
+             for k, v in (("a", _AZ124_A_OUT), ("b", _AZ124_B_OUT),
+                          ("s", _AZ124_S_OUT))}
+#: ① 场景必须真的复现：没有"让位救回步骤"就不是 V61 那一幕，后面的读数全无意义。
+_AZ124_SCENE = {
+    k: {"让位": any("让位给候选" in x for x in lg),
+        "救回步骤": any("让位救回一个" in x for x in lg)}
+    for k, lg in (("a", _AZ124_A_LOG), ("b", _AZ124_B_LOG), ("s", _AZ124_S_LOG))}
+#: ② 开关：只数**重规划位置**的那一行（`(上一次交付) ⇒ 失败`），不数 `[工作记忆]`。
+_AZ124_MARK = "(上一次交付) ⇒ 失败"
+_AZ124_A_MARK = [i for i, x in enumerate(_AZ124_A_P) if _AZ124_MARK in x]
+_AZ124_B_MARK = [i for i, x in enumerate(_AZ124_B_P) if _AZ124_MARK in x]
+#: ⑥ 一次性：喂过就清空 ⇒ 后面那些提问里都不许再有它。
+_AZ124_B_AFTER = [i for i, x in enumerate(_AZ124_B_P)
+                  if _AZ124_MARK in x and i > (_AZ124_B_MARK[0] if _AZ124_B_MARK else 0)]
+#: ⑦ 账本键集。
+_AZ124_KEYS_ZERO = sorted(["tasks", "carried", "redelivered", "same", "diff",
+                           "passed_after", "dup_skipped", "tasks_rejected"])
+
+
+class _AZ124Out:
+    def __init__(self, stats):
+        self.stats = stats
+
+
+_AZ124_ACC = _run._krw_zero()
+_run._krw_absorb(_AZ124_ACC, _AZ124Out({
+    "rework": {"carried": 1, "redelivered": 2, "same": 1, "diff": 1,
+               "passed_after": 0},
+    "verify": {"failed": 2}}))
+_run._krw_absorb(_AZ124_ACC, _AZ124Out({
+    "rework": {"carried": 0, "redelivered": 0, "same": 0, "diff": 0,
+               "passed_after": 0},
+    "verify": {"failed": 0}}))
+_AZ124_GAP = _run._krw_line({**_run._krw_zero(), "redelivered": 3,
+                             "same": 1, "diff": 1})
+_AZ124_RSRC = (V1 / "run.py").read_text(encoding="utf-8")
+_AZ124_LEDGER_OK = ('"kernel_rework": _krw_line(_krw)' in _AZ124_RSRC
+                    and _AZ124_RSRC.count("_krw_absorb(_krw, out)") == 2
+                    and _AZ124_RSRC.count("def _krw_zero(") == 1)
+
+_AZ124_OK = {
+    "① 场景复现：三跑都有『让位给候选』+『让位救回一个步骤』": (
+        all(v["让位"] and v["救回步骤"] for v in _AZ124_SCENE.values())),
+    "② 开关：关 ⇒ 重规划位置**没有**那一行；开 ⇒ 恰好**一处**": (
+        _AZ124_A_MARK == [] and len(_AZ124_B_MARK) == 1),
+    "③ 读数：`carried` 只在开+真打回时 =1（A=0 / B=1）": (
+        _AZ124_RW["a"]["carried"] == 0 and _AZ124_RW["b"]["carried"] == 1),
+    "④ 口径：`redelivered` 数『打回后又交一次』，改对也算；`same+diff == redelivered`": (
+        _AZ124_RW["b"]["redelivered"] == 1 and _AZ124_RW["b"]["diff"] == 1
+        and _AZ124_RW["b"]["same"] == 0
+        and _AZ124_RW["b"]["redelivered"]
+        == _AZ124_RW["b"]["same"] + _AZ124_RW["b"]["diff"]),
+    # ⚠️ 照抄那一跑的 `same` **不在闸里记**：逐字相同的交付签名也相同 ⇒
+    #    在重复闸就被丢掉，`_gate_finish` 根本不被调用（冒烟时 `same=0` 抓到的）。
+    #    ⇒ ⑤ 同时钉住"记在哪里"和"漏斗那一格补齐了没有"。
+    # ⛔ 不写死"照抄跑几次"：那由桩的剧本决定（这里是 2 次），与本条要主张的语义无关。
+    #    钉的是**关系**：全是逐字相同的、`same` 与漏斗那一格同数、一次也没过闸。
+    "⑤ 改对了 ⇒ `passed_after=1`；照抄 ⇒ `diff=0` 且 `same==dup_skipped==redelivered`": (
+        _AZ124_RW["b"]["passed_after"] == 1 and _AZ124_RW["b"]["same"] == 0
+        and _AZ124_RW["s"]["diff"] == 0
+        and _AZ124_RW["s"]["same"] >= 1
+        and _AZ124_RW["s"]["same"] == _AZ124_RW["s"]["dup_skipped"]
+        == _AZ124_RW["s"]["redelivered"]
+        and _AZ124_RW["s"]["passed_after"] == 0),
+    "⑥ 一次性：B 的第 2 处及以后**不许**再出现（喂过就清空）": (
+        _AZ124_B_AFTER == []),
+    "⑦ 键集全等（7/8）+ 并入 + `rework_gap` 检测器活着": (
+        sorted(_run._krw_zero()) == _AZ124_KEYS_ZERO
+        and sorted(_run._krw_line(_run._krw_zero())) == sorted(_AZ124_KEYS_ZERO + ["rework_gap"])
+        and _AZ124_ACC["carried"] == 1 and _AZ124_ACC["redelivered"] == 2
+        and _AZ124_ACC["tasks"] == 2 and _AZ124_ACC["tasks_rejected"] == 1
+        and _AZ124_GAP["rework_gap"] == 1),
+    "⑧ `switch` 与控制面同源（`carried=0` 不许冒充『没打回』）": (
+        _AZ124_RW["a"]["switch"] == 0 and _AZ124_RW["b"]["switch"] == 1),
+    "⑨ 账本键在 + 两处并入 + 唯一定义": (_AZ124_LEDGER_OK),
+    "⑩ 超限交付不留欠账（⛔ 跨题泄漏）": (
+        "self._reject_carry = \"\"" in
+        (V1 / "mw" / "core.py").read_text(encoding="utf-8")),
+}
+check(RS, "AZ124 ★★★**打回 → 重写**这条边：报错原文必须活过『让位成功』的清零\n"
+          "          ① 场景真的复现（打回 → 让位 → 非交付步骤成功）；\n"
+          "          ② 关：重规划位置没有那一行；开：恰好一处；\n"
+          "          ③ `carried` 只在『开 + 真打回』时 =1；\n"
+          "          ④ `redelivered` 数的是『又交了一次』（改对也算），且 `same+diff == redelivered`；\n"
+          "          ⑤ 改对 ⇒ `passed_after`；照抄 ⇒ `same`/`dup_skipped`/`redelivered` 同数；\n"
+          "          ⑥ 一次性（喂过就清空，不许变永久背景）；\n"
+          "          ⑦ 键集全等 + 并入 + `rework_gap` 检测器；\n"
+          "          ⑧ `switch` 与 `limits.reject_carry` 同源；\n"
+          "          ⑨ 账本里有 `kernel_rework`，两处并入；\n"
+          "          ⑩ 超限交付时清掉欠账。\n"
+          "          ⚠️ 本条**不主张**『载荷送不到』：V62 的 state 原文证明 `自检未通过`\n"
+          "             早就在 `[工作记忆]` 里了。它主张的是**位置与一次性**。\n"
+          "          撤回语义：`_reject_carry = _err` 那行删掉 ⇒ ②③ 必红；\n"
+          "                    `redelivered` 改记在『又被打回』分支 ⇒ ④ 必红；\n"
+          "                    `rework_gap` 写死 0 ⇒ ⑦ 必红。",
+      all(_AZ124_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ124_OK.items())
+      + f" ｜ A标记={_AZ124_A_MARK} B标记={_AZ124_B_MARK} B后续={_AZ124_B_AFTER}"
+      + " ｜ B=" + str({k: _AZ124_RW["b"].get(k) for k in
+                        ("carried", "redelivered", "same", "diff", "passed_after")})
+      + " ｜ S=" + str({k: _AZ124_RW["s"].get(k) for k in
+                        ("carried", "redelivered", "same", "diff", "passed_after")}))
 
 print()
 print("=" * 74)

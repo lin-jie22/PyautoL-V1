@@ -50,7 +50,7 @@ from mw.measure import (Report, check, ci95, noise_floor,         # noqa: E402
 from mw.memory import MemoryStore, fingerprint, fts_query         # noqa: E402
 from mw.planner import (Planner, Step, action_signature,              # noqa: E402
                         looks_complex)
-from mw.tools import (ToolRegistry, ToolSpec, catalog_sha,           # noqa: E402
+from mw.tools import (ToolRegistry, ToolSpec, ToolResult, catalog_sha,  # noqa: E402
                       external_agent_names,
                       register_core_tools, register_external_agents,
                       spec_applies)
@@ -12409,6 +12409,225 @@ check(RS, "AZ121 ★★★候选的**顺序**：交付动作排第几、它后�
                  f"{_az121_order(o)[3].get('step_ok')},"
                  f"{_az121_order(o)[3].get('fail')})" for o in _AZ121_ALL)
       + f" ｜ 账本={_AZ121_LEDGER}")
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ122（V60，§126）：**验证动作** —— 跑没跑 / 返回码 / 失败之后又做了什么
+#
+# 为什么必须有这一条：V59 的结论里有一句没被检验的话 ——「那 4 格是这套题上
+# **唯一的验证动作**，被 `--allow-shell` 拦掉了」。而三个既有账本
+# （`kernel_exec` / `kernel_offer` / `kernel_order`）里**没有一格**能回答：
+#   ① 打开 shell 之后**跑没跑**（`exec.dispatched` 是全部工具的和）；
+#   ② 跑完**结果说代码对不对**（`exec.ok=True` 对 `rc=1` 也成立）；
+#   ③ 失败之后**又跑了还是又交了**（顺序事件，计数器不带序）。
+#
+# ⚠️ 题面里必须带 `az122probe`：`guard.check_goal` 在 `check_shell` **之前**跑，
+#   而它判的是字面重合 —— 中文题面 + 英文命令 ⇒ 无公共词 ⇒ `goal_hijack`。
+#   带上同一个 ASCII 标记，才能让「`allow_shell` 开了却仍被拦」这件事
+#   只在**一道**闸上发生，读数才归得了因（否则 ④ 的 `tool_misuse` 断言会
+#   被 `goal_hijack` 顶掉，而两者看起来都是"被拦了 1 次"）。
+# ══════════════════════════════════════════════════════════════════════════
+_AZ122_GOAL = ("说明为什么哈希表的平均查找是 O(1)，然后举一个冲突变多的反例，"
+               "接着指出它依赖的前提；验证脚本里用到的标记叫 az122probe。")
+
+_AZ122_FIN = {"intent": "直接给出答案", "tool": "finish", "args": {"answer": _AZ119_ANS}}
+_AZ122_OK = {"intent": "跑一遍验证", "tool": "run_shell",
+             "args": {"cmd": "echo az122probe ok", "timeout_s": 10}}
+_AZ122_BAD = {"intent": "跑一遍验证", "tool": "run_shell",
+              "args": {"cmd": "false az122probe", "timeout_s": 10}}
+
+
+class _AZ122LLM:
+    """按**轮**给计划的桩：第 i 次规划返回 `rounds[i]`，用完就交空轮。"""
+
+    def __init__(self, rounds) -> None:                       # noqa: ANN001
+        self.rounds = rounds
+        self.planning = 0
+
+    @staticmethod
+    def _txt(m) -> str:                                       # noqa: ANN001
+        return (str(m.get("content", "")) if isinstance(m, dict)
+                else str(getattr(m, "content", "")))
+
+    def complete(self, messages, max_tokens=None):             # noqa: ANN001, ARG002
+        sysmsg = self._txt(messages[0]) if messages else ""
+        if sysmsg == _AZ117_ANS_SYS:                          # `planner.answer()`
+            return _AZ119_ANS
+        if "规划器" not in sysmsg:
+            return ""
+        i = self.planning
+        self.planning += 1
+        if i >= len(self.rounds):
+            #: 用完就交"恒不适用"的能力 ⇒ 准入空轮 ⇒ 走收尾。
+            #: ⛔ 不重复提同一批候选：`attempted_sigs` 会挡（重复闸），
+            #:    那样下一轮就变成"什么都没提"，读数和真跑偏了。
+            return json.dumps({"candidates": [
+                {"intent": "交给一个恒不适用的能力", "tool": "never",
+                 "args": {"x": "1"}}]}, ensure_ascii=False)
+        return json.dumps({"candidates": self.rounds[i]}, ensure_ascii=False)
+
+
+def _az122_run(tag: str, rounds, allow_shell: bool):           # noqa: ANN001
+    d = _TMP / f"az122_{tag}"
+    ws = d / "ws"
+    ws.mkdir(parents=True, exist_ok=True)
+    (d / "state").mkdir(parents=True, exist_ok=True)
+    # ⚠️ `Paths` 构造时给全、**不裸调** `cfg.settings()`（前序断言改过
+    #    `os.environ`，新 fixture 会继承它 —— V52 的 AZ115 就是这么读成 0 的）。
+    s = cfg.Settings(
+        paths=cfg.Paths(root=d, state=d / "state", logs=d / "logs",
+                        workspace=ws, bench=d / "bench"),
+        limits=cfg.Limits(max_steps=8, close_reserve_steps=1, verify_retries=2,
+                          cand_failover=0))
+    c = Core(settings=s, llm=_AZ122LLM(rounds),
+             guard=Guard(allow_shell=allow_shell, workspace=ws),
+             memory=MemoryStore(d / "state" / "memory.db"))
+    c.tools.register(ToolSpec("never", "对任何题面都不适用", {"x": "参数"},
+                              lambda a: "y", applies=lambda g: False))
+    lines: list[str] = []
+    c.log = lines.append                                      # noqa: ARG005
+    out = c.run(_AZ122_GOAL, budget_factor=1)
+    return out, lines, c
+
+
+_AZ122_O_OK, _AZ122_L_OK, _AZ122_C_OK = _az122_run(
+    "ok", [[_AZ122_OK, _AZ122_FIN], [_AZ122_FIN]], True)
+_AZ122_O_BAD, _AZ122_L_BAD, _AZ122_C_BAD = _az122_run(
+    "bad", [[_AZ122_BAD, _AZ122_FIN], [_AZ122_FIN]], True)
+_AZ122_O_RETRY, _AZ122_L_RETRY, _AZ122_C_RETRY = _az122_run(
+    "retry", [[_AZ122_BAD, _AZ122_FIN], [_AZ122_OK, _AZ122_FIN], [_AZ122_FIN]], True)
+_AZ122_O_OFF, _AZ122_L_OFF, _AZ122_C_OFF = _az122_run(
+    "off", [[_AZ122_OK, _AZ122_FIN], [_AZ122_FIN]], False)
+
+
+def _az122_shell(o) -> dict:                                  # noqa: ANN001
+    return dict(((getattr(o, "stats", None) or {}).get("shell") or {}))
+
+
+#: ⑤ `rc_unknown`：直接喂一个**没有 `rc=` 行**的输出。
+#: ⛔ 不许把它当 0 —— 缺参 / 异常 / 未知工具三条失败路径都没有这一行。
+_AZ122_UNK = Core(settings=cfg.Settings(
+    paths=cfg.Paths(root=_TMP / "az122_unk", state=_TMP / "az122_unk" / "state",
+                    logs=_TMP / "az122_unk" / "logs",
+                    workspace=_TMP / "az122_unk" / "ws",
+                    bench=_TMP / "az122_unk" / "bench")),
+    llm=StubLLM())
+_AZ122_UNK._note_shell(type("C", (), {"tool": "run_shell"})(),
+                       ToolResult(True, "命令跑了但没有返回码首行"), 7)
+
+_AZ122_ACC = _run._kshell_zero()
+for _o in (_AZ122_O_OK, _AZ122_O_BAD, _AZ122_O_RETRY, _AZ122_O_OFF):
+    _run._kshell_absorb(_AZ122_ACC, _o)
+
+
+class _AZ122Out:
+    """最小 Outcome 替身：只带 `_kshell_absorb` **真的读**的两个字典。"""
+
+    def __init__(self, by_tool=None, shell=None) -> None:
+        self.stats = {"plan": {"by_tool": dict(by_tool or {})},
+                      "shell": dict(shell or {})}
+
+
+#: ⑨ `offered` 只认 `plan.by_tool`：故意让 `shell.offered` 撒谎（99），账本不许跟它走。
+_AZ122_LIE = _run._kshell_absorb(
+    _run._kshell_zero(),
+    _AZ122Out({"run_shell": 3}, {"offered": 99, "dispatched": 0}))
+#: ⑩ 题级分母：两题，一题跑过 shell、一题没跑。
+_AZ122_TWO = _run._kshell_zero()
+_run._kshell_absorb(_AZ122_TWO, _AZ122Out({"run_shell": 2},
+                                          {"dispatched": 2, "rc_zero": 2}))
+_run._kshell_absorb(_AZ122_TWO, _AZ122Out({"recall": 1}, {}))
+#: ⑥ `rc_gap` 是**检测器**：把一次下发从四格里挖掉，它必须显形。
+#: ⚠️ 挖法是"声称跑了 3 次、只归类 2 次"，⛔ 不是把 2+1 凑成 3（那样 gap 恒 0，
+#:   检测器就变成了死代码 —— 纪律 2 的第三形态）。
+_AZ122_GAP = _run._kshell_line({**_run._kshell_zero(), "dispatched": 3,
+                                "rc_zero": 2, "rc_nonzero": 0})
+
+_AZ122_KEYS_ZERO = sorted(["tasks", "tasks_with_shell", "offered", "dispatched",
+                           "rc_zero", "rc_nonzero", "rc_unknown", "err",
+                           "blocked", "blocked_by_checkpoint", "rounds_with_shell",
+                           "shell_first_rounds", "after_fail_retry",
+                           "after_fail_answer"])
+_AZ122_KEYS_LINE = sorted(_AZ122_KEYS_ZERO + ["rc_gap"])
+
+_AZ122_OKCHK = {
+    "①跑通一次：`dispatched=1 / rc_zero=1 / trace=['r1:0']`，且不误记 blocked": (
+        _az122_shell(_AZ122_O_OK)["dispatched"] == 1
+        and _az122_shell(_AZ122_O_OK)["rc_zero"] == 1
+        and _az122_shell(_AZ122_O_OK)["rc_nonzero"] == 0
+        and _az122_shell(_AZ122_O_OK)["blocked"] == 0
+        and _az122_shell(_AZ122_O_OK)["trace"] == ["r1:0"]),
+    "②`rc=1` 仍算 `ok`（工具调用成功）⇒ `rc_nonzero=1` 而 `exec.fail=0`": (
+        _az122_shell(_AZ122_O_BAD)["rc_nonzero"] == 1
+        and int(((getattr(_AZ122_O_BAD, "stats", None) or {})
+                 .get("exec") or {}).get("fail") or 0) == 0),
+    "③失败后**直接交** ⇒ `after_fail_answer=1`、`after_fail_retry=0`": (
+        _az122_shell(_AZ122_O_BAD)["after_fail_answer"] == 1
+        and _az122_shell(_AZ122_O_BAD)["after_fail_retry"] == 0
+        and _az122_shell(_AZ122_O_BAD)["trace"] == ["r1:1"]),
+    "④失败后**再跑一次** ⇒ `after_fail_retry=1`、`after_fail_answer=0`": (
+        _az122_shell(_AZ122_O_RETRY)["trace"] == ["r1:1", "r2:0"]
+        and _az122_shell(_AZ122_O_RETRY)["after_fail_retry"] == 1
+        and _az122_shell(_AZ122_O_RETRY)["after_fail_answer"] == 0),
+    "⑤shell 关着 ⇒ `blocked=1` 且**闸名是 `tool_misuse`**、`dispatched=0`": (
+        _az122_shell(_AZ122_O_OFF)["blocked"] == 1
+        and _az122_shell(_AZ122_O_OFF)["blocked_by_checkpoint"] == {"tool_misuse": 1}
+        and _az122_shell(_AZ122_O_OFF)["dispatched"] == 0),
+    "⑥没有 `rc=` 行 ⇒ `rc_unknown=1`（⛔ 不许并进 `rc_zero`）": (
+        _AZ122_UNK.shell_stats["rc_unknown"] == 1
+        and _AZ122_UNK.shell_stats["rc_zero"] == 0
+        and _AZ122_UNK.shell_stats["rc_nonzero"] == 0
+        and _AZ122_UNK.shell_stats["trace"] == ["r7:?"]),
+    "⑦`rc_gap` 检测器活着（挖掉一次下发 ⇒ 非 0），且账本四点全为 0": (
+        _AZ122_GAP["rc_gap"] == 1
+        and _run._kshell_line(_AZ122_ACC)["rc_gap"] == 0),
+    "⑧键集全等（零点 14 / 落盘 15）+ 两处并入 + 唯一定义 + 账本键在": (
+        sorted(_run._kshell_zero()) == _AZ122_KEYS_ZERO
+        and sorted(_run._kshell_line(_run._kshell_zero())) == _AZ122_KEYS_LINE
+        and _run._kshell_zero() is not _run._kshell_zero()
+        and _code_only(_RUN_SRC).count("_kshell_absorb(_ksh, out)") == 2
+        and _code_only(_RUN_SRC).count("def _kshell_absorb(") == 1
+        and '"kernel_shell": _kshell_line(_ksh)' in _RUN_SRC),
+    "⑨`offered` 只认 `plan.by_tool`（`shell.offered` 撒谎也不许跟）": (
+        _AZ122_LIE["offered"] == 3 and _AZ122_LIE["dispatched"] == 0),
+    "⑩题级分母：两题一跑一不跑 ⇒ `tasks=2 / tasks_with_shell=1`": (
+        _AZ122_TWO["tasks"] == 2 and _AZ122_TWO["tasks_with_shell"] == 1
+        and _AZ122_TWO["dispatched"] == 2 and _AZ122_TWO["offered"] == 2),
+}
+
+_AZ122_LEDGER = (f"dispatched={_AZ122_ACC['dispatched']}"
+                 f" rc0={_AZ122_ACC['rc_zero']}"
+                 f" rcN={_AZ122_ACC['rc_nonzero']}"
+                 f" retry={_AZ122_ACC['after_fail_retry']}"
+                 f" answer={_AZ122_ACC['after_fail_answer']}"
+                 f" blocked={_AZ122_ACC['blocked']}")
+
+check(RS, "AZ122 ★★★**验证动作**：跑没跑 / 返回码 / 失败之后又做了什么\n"
+          "          —— V59 说「那 4 格是唯一的验证动作，被 --allow-shell 拦掉了」，\n"
+          "             而既有三个账本没有一格能回答「跑没跑、结果说代码对不对、失败后呢」。\n"
+          "          判据（十条，缺一即证明不了这条边）：\n"
+          "               ① 跑通一次 ⇒ `rc_zero=1`、`trace=['r1:0']`；\n"
+          "               ② `rc=1` 仍算 `ok` ⇒ `rc_nonzero=1` 而 `exec.fail=0`（**两个尺子**）；\n"
+          "               ③ 失败后直接交 ⇒ `after_fail_answer=1` / `retry=0`；\n"
+          "               ④ 失败后再跑 ⇒ `after_fail_retry=1` / `answer=0`；\n"
+          "               ⑤ shell 关着 ⇒ `blocked=1` 且闸名 = `tool_misuse`；\n"
+          "               ⑥ 没有 `rc=` 行 ⇒ `rc_unknown`（⛔ 不是 0）；\n"
+          "               ⑦ `rc_gap` 检测器非死代码；\n"
+          "               ⑧ 键集全等 + 两处并入 + 账本键在；\n"
+          "               ⑨ `offered` 只认 `plan.by_tool`；\n"
+          "               ⑩ 题级分母 `tasks/tasks_with_shell` 分得开。\n"
+          "          撤回语义：`_note_shell` 不判 `result.ok` ⇒ ②⑥ 必红；\n"
+          "                    去掉 `_shell_prev_fail` 那两行 ⇒ ③④ 必红；\n"
+          "                    `_note_shell_block` 去掉 checkpoint 分列 ⇒ ⑤ 必红；\n"
+          "                    `rc_unknown` 并进 `rc_zero` ⇒ ⑥ 必红；\n"
+          "                    `rc_gap` 写死 0 ⇒ ⑦ 必红；\n"
+          "                    `offered` 改抄 `shell.offered` ⇒ ⑨ 必红；\n"
+          "                    `tasks_with_shell` 改数 `offered>0` ⇒ ⑩ 必红。",
+      all(_AZ122_OKCHK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ122_OKCHK.items())
+      + f" ｜ 账本={_AZ122_LEDGER}"
+      + f" ｜ trace ok={_az122_shell(_AZ122_O_OK)['trace']}"
+        f" bad={_az122_shell(_AZ122_O_BAD)['trace']}"
+        f" retry={_az122_shell(_AZ122_O_RETRY)['trace']}")
 
 print()
 print("=" * 74)

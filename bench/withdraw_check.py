@@ -1504,6 +1504,22 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
         _by_stop[stop] += len(_skipped)          # 越界的 `stop` 在这里炸掉，不建新键''',
      '''        _by_stop = self.offer_stats["unreached_by_stop"]
         pass  # 撤回态：未轮到不再按出口分列'''),
+    # ── AZ122：**验证动作**的返回码（V60 / §126）────────────────────────────
+    #: 撤的语义：**只把「命令自己失败」并进「跑通」**（`rc=1` 记成 `rc_zero`）。
+    #:   `trace` 里仍然写着 `r1:1`，`_shell_prev_fail` 也照旧 ⇒ ③④ 仍绿 ——
+    #:   这正是本条要的：**同一个 `rc` 值有两条消费者**（计数 / 状态机），
+    #:   只撤计数那一支，只有 ② 红。
+    #: ⇒ AZ122 ② 必红（`rc_nonzero=1` 变 0）。
+    #: ⚠️ 不许改成"删掉 `_note_shell` 的调用"：`shell_stats` 全 0 ⇒ ①③④⑤ 一起红，
+    #:   那不是单变量，而是把整条出口砸了（AZ118/AZ120 同一条禁忌）。
+    ("AZ122", "mw/core.py",
+     '''        rc = int(m.group(1))
+        if rc == 0:
+            ss["rc_zero"] += 1
+        else:
+            ss["rc_nonzero"] += 1''',
+     '''        rc = int(m.group(1))
+        ss["rc_zero"] += 1  # 撤回态：把「命令自己失败」并进「跑通」'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

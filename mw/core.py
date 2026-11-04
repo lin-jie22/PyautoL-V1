@@ -25,6 +25,7 @@
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -59,6 +60,15 @@ from .worldmodel import WorldModel
 #:   ② 修法一旦改成"存索引 + 按需取回全文"，这个常量的语义要跟着变，
 #:      那时只有一个地方要改。
 WORKING_CHAR_CAP = 300
+
+#: `run_shell` 返回值首行的返回码（`mw/tools.py::_run_shell` 恒为 `f"rc={code}\n…"`）。
+#:
+#: ★ V60（§126）：为什么要解析它 —— `dispatch` 眼里的 `ok` 是"工具调用成功"，
+#: 而 `rc=1` 仍然是 `ok=True`。于是"跑过一遍、结果说代码是错的"这件事
+#: 在 `exec_stats.ok/fail` 里**完全不可见**，只能从输出首行读。
+#: ⛔ 解析不到 ⇒ `rc_unknown`，**不许**当 0（缺席冒充零，纪律 5）：
+#:   缺参 / 执行异常 / 未知工具这三条失败路径都没有 `rc=` 行。
+_SHELL_RC = re.compile(r"^rc=(-?\d+)")
 
 #: 每次 `_state()` 的产物最多留几步（第三十六轮 §17-7h）。
 #:
@@ -878,6 +888,13 @@ class Core:
         ps["delivery_pos_by_round"].append(_pos)
         ps["tail_tools_by_round"].append(
             [c.tool for c in cands[_pos + 1:]] if _pos >= 0 else [])
+        # ★ V60（§126）：**计划侧**的验证动作读数。与 `tail_tools_by_round` 同一处声明 ——
+        #   它在同一轮里已经有 `cands`，抄到别处就要再走一遍准入/截断，迟早对不上。
+        # ⚠️ 这里数的是**提了**，不是**做了**；"做了"在 `_note_shell` 里数。
+        if any(c.tool == "run_shell" for c in cands):
+            self.shell_stats["rounds_with_shell"] += 1
+            if cands and cands[0].tool == "run_shell":
+                self.shell_stats["shell_first_rounds"] += 1
 
     # ------------------------------------------------------------------
     def _prime_counters(self, goal: str = "") -> None:
@@ -1335,6 +1352,9 @@ class Core:
                             self.log(f"      ✋ {gv.as_line()}")
                             blocked_now += 1
                             blocked_skipped += 1
+                            # ★ V60（§126）：**哪道闸**拦的必须分列 —— 见 `_reset_shell`。
+                            if cand.tool == "run_shell":
+                                self._note_shell_block(gv.checkpoint)
                             continue
                     # 工具滥用
                     if cand.tool == "run_shell":
@@ -1343,6 +1363,7 @@ class Core:
                             self.log(f"      ✋ {sv.as_line()}")
                             blocked_now += 1
                             blocked_skipped += 1
+                            self._note_shell_block(sv.checkpoint)
                             continue
                     # 记忆投毒
                     if cand.tool == "note":
@@ -1466,6 +1487,17 @@ class Core:
                         self.exec_stats["answer"] += 1
                     else:
                         self.exec_stats["step"] += 1
+                    # ★ V60（§126）：**验证动作** —— 与 `exec_stats` 同一个唯一下发点。
+                    # ⛔ 放在这里而不是闸/预演/跳过那些分支里：那些分支是"没做"，
+                    #   而这一格问的是"做了几次、结果说代码对不对"。
+                    if cand.tool == "run_shell":
+                        self._note_shell(cand, result, it)
+                    # ★ V60（§126）：失败之后**交了答案** —— 只记事件，不判意图。
+                    # ⚠️ 记完立刻复位：`finish` 会被校验闸打回重交，不复位就会
+                    #   把同一次失败算成两次"失败后交付"。
+                    elif _is_delivery and self._shell_prev_fail:
+                        self.shell_stats["after_fail_answer"] += 1
+                        self._shell_prev_fail = False
                     self.log(tool_result_line(cand.tool, result.ok,
                                               cand.intent, result.error))
 
@@ -2163,6 +2195,100 @@ class Core:
         """
         self.exec_stats: dict = {"dispatched": 0, "ok": 0, "fail": 0,
                                  "answer": 0, "step": 0}
+        # ★ V60（§126）：**验证动作**读数。与 `exec_stats` 同时同地建 ——
+        #   理由同上（`_close_out` / 探针可以单独调，晚建就 AttributeError）。
+        self._reset_shell()
+
+    def _reset_shell(self) -> None:
+        """**验证动作**（`run_shell`）读数的唯一初始化处（`_reset_exec` 里调）。
+
+        ## 为什么必须单独一格（V60，§126）
+
+        V59 把「8/8 未轮到」劈成两半之后留下一句话：**那 4 格是唯一的验证动作，
+        被 `--allow-shell` 拦掉了**。这句话有两个可测成分，而现有账本**一个都答不了**：
+
+        | 问题 | 现有读数为什么答不了 |
+        |---|---|
+        | 打开 shell 后**跑没跑** | `exec_stats.dispatched` 是全部工具的和，`by_tool` 只到**候选层**（提了，不代表做） |
+        | 跑完**结果说代码对不对** | `dispatch` 的 `ok=True` 只表示"调用成功"；`rc=1` 也是 `ok=True` |
+        | 失败之后**又做了什么** | 那是**顺序**事件，任何计数器都不带序 |
+
+        ## 三个键为什么必须分开
+
+        · `rc_zero` / `rc_nonzero` / `rc_unknown` 三格：**只有前两格是结论**。
+          `rc_unknown` 是装置自曝（缺参 / 异常 / 未知工具都没有 `rc=` 行），
+          ⛔ 把它并进 `rc_zero` 就是"缺席冒充零"——那样"一次都没真跑"会读成"全跑通了"。
+        · `after_fail_retry` / `after_fail_answer`：只描述**事件**（又跑了一次 / 交了答案），
+          ⛔ 不叫 `revised`：改没改代码要读 `trace` 里的命令原文，计数器判不了。
+
+        ⚠️ `trace` 每题一条（`"r2:1"` = 第 2 轮、返回码 1；`"r3:?"` = 跑了解析不到；
+        `"r1:err"` = 调用本身失败）。它是**顺序**证据：把 `after_fail_*` 与它一起读，
+        才能区分「失败→重试→成功」与「失败→交付」。
+        """
+        self.shell_stats: dict = {
+            "dispatched": 0,        # `run_shell` 真的被调用了几次
+            "rc_zero": 0,           # 其中命令自己返回 0
+            "rc_nonzero": 0,        # 其中命令自己返回非 0（**代码/命令错了**，不是工具错）
+            "rc_unknown": 0,        # 调用成功但输出里没有 `rc=` 行（装置自曝）
+            "err": 0,               # 调用本身就失败（缺参 / 异常 / 未知工具）
+            "blocked": 0,           # 被 guard 拦下的 `run_shell` 候选数
+            #: 拦它的**是哪一道闸**（`tool_misuse` / `goal_hijack` / `cascade` …）。
+            #: ⚠️ 不分列的话，「开了 shell 还是没跑」与「开了 shell 被另一道闸拦」
+            #:   在读数上同形 —— 而两者的修法相反（改开关 vs 改判据）。
+            "blocked_by_checkpoint": {},
+            "rounds_with_shell": 0,   # 出现 `run_shell` 候选的轮数（计划侧）
+            "shell_first_rounds": 0,  # 其中它排**第 0 位**的轮数（= 模型想先验证）
+            "after_fail_retry": 0,    # 上一条 shell 非 0 之后**又跑了一次** shell
+            "after_fail_answer": 0,   # 上一条 shell 非 0 之后**交付了答案**（且此前没再跑）
+            "trace": [],              # 逐条顺序证据，见 docstring
+        }
+        #: 上一条 shell 是否**非 0 结束**。⛔ 跨题不许留（每题独立）。
+        self._shell_prev_fail: bool = False
+
+    def _note_shell(self, cand, result, it: int) -> None:
+        """记一次 `run_shell` 的**下发**（唯一调用点：`core.py` 的唯一 `dispatch` 之后）。
+
+        ⚠️ 与 `exec_stats` 是**两把尺子**，不许互相替代：
+           `exec.dispatched` 数"所有工具"；这里只数验证动作，并且带上返回码。
+        ⛔ `result.ok` 与 `rc` 不是同一件事：`rc=1` 时 `ok=True`
+           （工具调用成功，命令自己失败）。把两者混起来，"跑过但结果说错了"
+           就会读成"跑成功了"——这正是 V60 要量的那件事。
+        """
+        ss = self.shell_stats
+        ss["dispatched"] += 1
+        if self._shell_prev_fail:
+            ss["after_fail_retry"] += 1
+        if not result.ok:
+            ss["err"] += 1
+            ss["trace"].append(f"r{it}:err")
+            self._shell_prev_fail = False
+            return
+        m = _SHELL_RC.match(result.output or "")
+        if m is None:
+            ss["rc_unknown"] += 1
+            ss["trace"].append(f"r{it}:?")
+            #: ⛔ 解析不到**不算失败**（可能只是输出格式变了）：状态机不动。
+            return
+        rc = int(m.group(1))
+        if rc == 0:
+            ss["rc_zero"] += 1
+        else:
+            ss["rc_nonzero"] += 1
+        ss["trace"].append(f"r{it}:{rc}")
+        self._shell_prev_fail = rc != 0
+
+    def _note_shell_block(self, checkpoint: str) -> None:
+        """记一次 `run_shell` **候选被闸拦下**（不进 `_note_shell`：没执行，不是一次下发）。
+
+        ⚠️ 与 `guard.blocks`（`Guard` 的生命周期累计）**分列而不替代**：
+           那个字典跨题累加（V56 实测 `guard_blocked=1,2,2,2,2,2,3,4`），
+           回答不了"这一题被哪道闸拦了几个"。
+        """
+        ss = self.shell_stats
+        ss["blocked"] += 1
+        _bc = ss["blocked_by_checkpoint"]
+        _bc[checkpoint] = _bc.get(checkpoint, 0) + 1
+
 
     def _reset_offer(self) -> None:
         """**候选漏斗**读数的唯一初始化处（`__init__` 与 `_prime_counters` 都调它）。
@@ -2699,6 +2825,11 @@ class Core:
             #   是随意的；不许的是**不出现** —— `steps` 单独一个数会被读成"做了几步"。
             #    零值也在：一次没下发本身就是一条读数（V52 两臂就是这个形态）。
             "exec": dict(self.exec_stats),
+            # ★ V60（§126）：**验证动作**（`run_shell`）的成败与顺序。
+            # ⛔ 与 `exec` 分列而不并进去：`exec` 的数**不含返回码**，
+            #   而"跑过但结果说代码是错的"（`rc=1`）在 `exec` 里是 `ok=True`。
+            #   并进 `exec` 会连带打断 AZ119 ⑨ 的键集断言（纪律 27）。
+            "shell": dict(self.shell_stats),
             # ★ V57（§123）：**候选漏斗**。与 `exec` 分列：
             # `exec.dispatched` 回答「做了几次」，这里回答「提了几个、剩下去了哪」。
             # ⛔ 只有 `unreached` 是真新加的：`blocked` / `repeats` / `skipped`

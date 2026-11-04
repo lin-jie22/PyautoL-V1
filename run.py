@@ -883,6 +883,104 @@ def _kord_absorb(acc: dict, out) -> dict:
     return acc
 
 
+def _kshell_zero() -> dict:
+    """**验证动作**读数的累加器零点（V60，§126）。
+
+    ## 为什么必须有这一行
+
+    V59 的结论里有一句没被检验的话：那 4 格 `run_shell` 是**这套题上唯一的验证动作**，
+    被 `--allow-shell` 拦掉了。要检验它，至少得能回答三件事，而现有三个账本
+    （`kernel_exec` / `kernel_offer` / `kernel_order`）**一件都答不了**：
+
+    | 问题 | 为什么答不了 |
+    |---|---|
+    | 打开 shell 后跑没跑 | `exec.dispatched` 是**全部工具**的和 |
+    | 跑完结果说代码对不对 | `exec.ok=True` 对 `rc=1` 也成立（工具调用成功 ≠ 命令成功） |
+    | 失败之后又做了什么 | 那是**顺序**事件，任何计数器都不带序 |
+
+    ## 分母（三个，不许合成一个）
+
+    · `tasks` / `tasks_with_shell` —— **题**
+    · `rounds_with_shell` / `shell_first_rounds` —— **轮**（计划侧："提了"）
+    · `dispatched` / `rc_*` —— **次**（执行侧："做了"）
+
+    ⛔ `tasks_with_shell` 与 `dispatched` 相差多少，就是"一题跑了几次" ——
+    合成一个数就再也分不开"12 题各跑一次"与"1 题跑了 12 次"。
+    """
+    return {
+        "tasks": 0,
+        #: 至少**执行过**一次 `run_shell` 的题数（不是"提过"）。
+        "tasks_with_shell": 0,
+        #: 计划里出现过 `run_shell` 的候选数（= `plan.by_tool["run_shell"]` 的另一处声明）。
+        #: ⚠️ 与 `dispatched` 的差就是"提了没做"（被拦 / 未轮到 / 重复跳过）。
+        "offered": 0,
+        "dispatched": 0,
+        "rc_zero": 0,
+        "rc_nonzero": 0,
+        #: 调用成功但输出里没有 `rc=` 行。⛔ **必须单独一格**：
+        #: 并进 `rc_zero` 就等于"缺席冒充零"——那样一次都没真跑会读成"全跑通了"。
+        "rc_unknown": 0,
+        "err": 0,                 # 调用本身失败（缺参 / 异常 / 未知工具）
+        "blocked": 0,             # 被 guard 拦下的 `run_shell` 候选
+        "blocked_by_checkpoint": {},  # 哪道闸拦的（`tool_misuse` / `goal_hijack` …）
+        "rounds_with_shell": 0,
+        "shell_first_rounds": 0,
+        "after_fail_retry": 0,    # 上一条 shell 非 0 之后又跑了一次
+        "after_fail_answer": 0,   # 上一条 shell 非 0 之后交付了答案
+        # ⛔ **不在这里放 `rc_gap`**：它是派生量，只出现在 `_kshell_line` 的落盘行。
+        #   V58 已经把这条踩过一遍（把 `unreached_stop_gap` 写进零点键集 ⇒
+        #   契约里 16 比 17 当场红）—— 这里是同一个坑的第二次。
+    }
+
+
+def _kshell_absorb(acc: dict, out) -> dict:
+    """把**一道题**的验证读数并进累加器（就地修改并返回）。
+
+    ⚠️ 与 `_kexec_absorb` / `_koff_absorb` 同一条理由必须**两处调用点各接一次**：
+        漏一处 = 静默少计一题的验证动作（V55/V57/V58 都在这里踩过）。
+    ⛔ 不在这里重新判断"哪个是验证动作"：`cand.tool == "run_shell"` 只在内核里
+        声明（`_note_shell` 的唯一调用点）；抄一份过来，两个数迟早对不上。
+    """
+    st = getattr(out, "stats", None) or {}
+    sh = st.get("shell") or {}
+    pl = st.get("plan") or {}
+
+    #: `offered` **从 plan 侧取**（`by_tool` 是候选层的事实），不抄 `shell.offered`：
+    #: 同一个数在内核与账本各存一份，迟早分叉（§122 的 `by_verdict` 同因）。
+    _off = int((pl.get("by_tool") or {}).get("run_shell") or 0)
+    _disp = int(sh.get("dispatched") or 0)
+
+    acc["tasks"] = int(acc.get("tasks", 0)) + 1
+    acc["offered"] = int(acc.get("offered", 0)) + _off
+    if _disp > 0:
+        acc["tasks_with_shell"] = int(acc.get("tasks_with_shell", 0)) + 1
+    for _k in ("dispatched", "rc_zero", "rc_nonzero", "rc_unknown", "err",
+               "blocked", "rounds_with_shell", "shell_first_rounds",
+               "after_fail_retry", "after_fail_answer"):
+        acc[_k] = int(acc.get(_k, 0)) + int(sh.get(_k) or 0)
+    _bc = acc["blocked_by_checkpoint"]
+    for _cp, _n in (sh.get("blocked_by_checkpoint") or {}).items():
+        _bc[_cp] = int(_bc.get(_cp, 0)) + int(_n or 0)
+    return acc
+
+
+def _kshell_line(acc: dict) -> dict:
+    """落盘前的**唯一**派生量：`rc_gap`。
+
+    `rc_gap = dispatched - (rc_zero + rc_nonzero + rc_unknown + err)`
+
+    ⛔ 它是**检测器**，不是"其它"垃圾桶：四格之外只要还有一次下发没被归类，
+       它就会 ≠ 0，而"这一次去哪了"必须能归到某一条上。
+    ⚠️ 它只在**落盘那一行**出现，**不进零点**（V58 的 `unreached_stop_gap` 同例：
+       派生量写进零点键集，契约里 16 比 17 当场红）。
+    """
+    out = dict(acc)
+    out["rc_gap"] = (int(out.get("dispatched", 0))
+                     - int(out.get("rc_zero", 0)) - int(out.get("rc_nonzero", 0))
+                     - int(out.get("rc_unknown", 0)) - int(out.get("err", 0)))
+    return out
+
+
 def _ktx_zero() -> dict:
     """传输层 / 墙钟读数的累加器零点（第二十五轮，DESIGN §16.24）。
 
@@ -1621,6 +1719,10 @@ def cmd_bench(args) -> int:
     #                         它说"剩下那些在第几个交付动作之后"——
     #                         ⛔ 与 `_koff` 分列：位置是**轮**的属性，
     #                         而 `_koff` 的主分母是**题**（V57 的 `offered` 已按题计）。
+    _ksh = _kshell_zero()   # ★ V60（§126）：**验证动作**。前三个字典都只回答
+    #                         "提了/做了/排在谁后面"，没有一格带**返回码**——
+    #                         于是"跑过一遍、结果说代码错了"在账本上不可见。
+    #                         ⛔ 与 `_kexec` 分列：`exec.ok` 对 `rc=1` 也是 True。
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
     _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
 
@@ -1812,6 +1914,9 @@ def cmd_bench(args) -> int:
                         # ★ V58（§124）：顺序。**必须与 `_koff_absorb` 紧挨** ——
                         #   它读的是同一份 `plan`/`offer`，分开写就会有一处漏。
                         _kord_absorb(_kord, out)
+                        # ★ V60（§126）：验证动作。**两个 solver 分支各接一次** ——
+                        #   漏一处 = 静默少计一题的"跑没跑/结果对不对"。
+                        _kshell_absorb(_ksh, out)
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
                         _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -1852,6 +1957,8 @@ def cmd_bench(args) -> int:
                 _koff_absorb(_koff, out)
                 # ★ V58（§124）：与 `--fresh` 那支同一条理由。
                 _kord_absorb(_kord, out)
+                # ★ V60（§126）：与 `--fresh` 那支同一条理由。
+                _kshell_absorb(_ksh, out)
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
                 _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -2156,6 +2263,11 @@ def cmd_bench(args) -> int:
         #   `tail_survived` 与 `unreached_by_stop.answer` 合起来必须等于 `tail_total`
         #   （两个来源独立累加，对不上就是装置故障 —— `tail_negative_tasks` 兜底）。
         "kernel_order": _kord,
+        # ★ V60（§126）：**验证动作**。⛔ 与 `kernel_exec` 并列、不并进去：
+        #   `exec.ok=True` 对 `rc=1` 也成立（工具调用成功 ≠ 命令成功），
+        #   而本轮问的正是"跑过一遍、结果说代码是错的"这件事。
+        #   分母三档（题/轮/次）在 `_kshell_zero` 的 docstring 里写死。
+        "kernel_shell": _kshell_line(_ksh),
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。
         "kernel_external": _kex,
         # 传输层 / 墙钟读数（第二十五轮）：重试链有没有超支预算，必须可事后审计。

@@ -1,0 +1,88 @@
+V64 读数 —— 两臂（A=`--temperature 0` / B=`0.7`），其余逐项相同（含 REJECT_CARRY=1）
+⛔ 两臂 `caliber_sig` 应当**不同**：`temperature` 在 `Caliber` 里（run.py:1993）
+⛔ 主因变量是 `passed_after`（改了之后能不能过闸），**不是** mean
+
+==============================================================================
+臂 A  rows=1  caliber_sig=66dbdd13f52dd68b  repeat=2
+==============================================================================
+  solver = 内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）
+  mean=0.8611  lo=0.8611  hi=0.8611  std=0.0  n=2
+  逐题：
+    t01_parse_duration       rep1  0.8333    39.1s  通过 5/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Asse
+    t02_dedupe               rep1  1.0000    16.8s  通过 5/5
+    t03_commas               rep1  1.0000    17.4s  通过 5/5
+    t04_merge_ranges         rep1  0.3333    87.7s  通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == 
+    t05_top_k                rep1  1.0000    61.7s  通过 4/4
+    t06_rle                  rep1  1.0000    74.2s  通过 5/5
+    t01_parse_duration       rep2  0.8333    49.4s  通过 5/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Asse
+    t02_dedupe               rep2  1.0000    20.4s  通过 5/5
+    t03_commas               rep2  1.0000    21.4s  通过 5/5
+    t04_merge_ranges         rep2  0.3333    92.2s  通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == 
+    t05_top_k                rep2  1.0000    44.2s  通过 4/4
+    t06_rle                  rep2  1.0000    62.7s  通过 5/5
+  kernel_verify  = {"example_failed": 4, "example_runs": 10, "example_task_runs": 8, "exec_err": 0, "exhausted": 0, "failed": 4, "passed": 10, "runs": 14, "tasks": 12, "verify_gap": 0}
+  kernel_rework  = {"carried": 2, "diff": 0, "dup_skipped": 4, "passed_after": 0, "redelivered": 4, "rework_gap": 0, "same": 4, "task_runs_rejected": 2, "tasks": 12}
+  kernel_shell   = {"after_fail_answer": 0, "after_fail_retry": 0, "blocked": 0, "blocked_by_checkpoint": {}, "dispatched": 4, "err": 0, "offered": 6, "rc_gap": 0, "rc_nonzero": 0, "rc_unknown": 0, "rc_zero": 4, "rounds_with_shell": 6, "shell_first_rounds": 4, "tasks": 12, "tasks_with_shell": 4, "trace_cmd": ["[5]r1:d9694601:python -c 'import collections; print(collections.__file__)'", "[6]r2:243d5cb6:echo -e 'def rle(s): if not s: return '' prev_char = s[0] count = 1 result = '' for char in s[1:]: if char == prev_char:", "[11]r1:d9694601:python -c 'import collections; print(collections.__file__)'", "[12]r2:243d5cb6:echo -e 'def rle(s): if not s: return '' prev_char = s[0] count = 1 result = '' for char in s[1:]: if char == prev_char:"]}
+  kernel_offer   = {"blocked": 0, "dispatched": 24, "done_without_offer": 0, "no_rounds": 0, "offered": 38, "offered_and_done": 8, "offered_not_done": 2, "offered_not_done_blocked": 0, "only_delivery": 2, "produces_offered": 20, "rounds": 26, "step_offered": 18, "tasks": 12, "unaccounted": 4, "unreached": 10, "unreached_by_stop": {"answer": 6, "fail": 0, "step_ok": 4}, "unreached_by_tool": {"finish": 4, "note": 2, "recall": 2, "run_shell": 2}, "unreached_stop_gap": 0}
+
+==============================================================================
+臂 B  rows=1  caliber_sig=ae1e3caeba02b4ed  repeat=2
+==============================================================================
+  solver = 内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）
+  mean=0.8472166666666665  lo=0.8055499999999999  hi=0.8888833333333332  std=0.041666666666666685  n=2
+  逐题：
+    t01_parse_duration       rep1  1.0000    28.1s  通过 6/6
+    t02_dedupe               rep1  1.0000    15.8s  通过 5/5
+    t03_commas               rep1  1.0000    13.7s  通过 5/5
+    t04_merge_ranges         rep1  0.3333    92.4s  通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == 
+    t05_top_k                rep1  1.0000    22.2s  通过 4/4
+    t06_rle                  rep1  1.0000    16.5s  通过 5/5
+    t01_parse_duration       rep2  0.5000    66.4s  通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Valu
+    t02_dedupe               rep2  1.0000    20.4s  通过 5/5
+    t03_commas               rep2  1.0000    15.0s  通过 5/5
+    t04_merge_ranges         rep2  0.3333    79.8s  通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == 
+    t05_top_k                rep2  1.0000    41.7s  通过 4/4
+    t06_rle                  rep2  1.0000    57.2s  通过 5/5
+  kernel_verify  = {"example_failed": 5, "example_runs": 11, "example_task_runs": 8, "exec_err": 0, "exhausted": 0, "failed": 5, "passed": 10, "runs": 15, "tasks": 12, "verify_gap": 0}
+  kernel_rework  = {"carried": 1, "diff": 1, "dup_skipped": 3, "passed_after": 1, "redelivered": 4, "rework_gap": 0, "same": 3, "task_runs_rejected": 3, "tasks": 12}
+  kernel_shell   = {"after_fail_answer": 1, "after_fail_retry": 0, "blocked": 0, "blocked_by_checkpoint": {}, "dispatched": 1, "err": 0, "offered": 2, "rc_gap": 0, "rc_nonzero": 1, "rc_unknown": 0, "rc_zero": 0, "rounds_with_shell": 1, "shell_first_rounds": 1, "tasks": 12, "tasks_with_shell": 1, "trace_cmd": ["[11]r1:a976ce39:python -c 'from collections import Counter; print(Counter(['a','b','a']).most_common(1))'"]}
+  kernel_offer   = {"blocked": 1, "dispatched": 20, "done_without_offer": 0, "no_rounds": 0, "offered": 31, "offered_and_done": 5, "offered_not_done": 1, "offered_not_done_blocked": 0, "only_delivery": 6, "produces_offered": 18, "rounds": 24, "step_offered": 13, "tasks": 12, "unaccounted": 4, "unreached": 6, "unreached_by_stop": {"answer": 2, "fail": 0, "step_ok": 4}, "unreached_by_tool": {"finish": 2, "http_get": 1, "recall": 2, "run_shell": 1}, "unreached_stop_gap": 0}
+
+==============================================================================
+判据对账（P1~P9，见 PREREG §5）
+==============================================================================
+  ❌ P1 `rework.same`：A=4 B=3（押 A≥2、B=0）｜日志『逐字相同』：A=4 B=3
+  ❌ P2 `rework.diff`：A=0 B=1（押 A=0、B≥2）｜日志『不同』：A=0 B=1
+  ❌ P3 `rework.passed_after`（**主判据**）：A=0 B=1（押 都=0）｜日志『过了闸』：A=0 B=1
+  ❌ P4 mean：A=0.8611 B=0.8472166666666665 Δ=-0.0139 ⇒ **降**（押**平**；分辨率 1/12=0.0833）
+      t04 merge_ranges：A=[0.3333, 0.3333] B=[0.3333, 0.3333]（V62 B 臂 = 0.3333×2）
+  ❌ P5 轮数：A=26 B=24（押 B>A；V62 B 臂 26）
+  ✅ P6 口径：A=66dbdd13f52dd68b B=ae1e3caeba02b4ed（押 A≠B）
+  ✅ P7 `rework_gap`：A=0 B=0（⛔ 必须 0）
+  ✅ P8 正控（= V62 B 臂）：mean=0.8611（0.8611） carried=2（2） same=4（4） diff=0（0） rounds=26（26）
+  ✅ P9 B 臂逐题方差：1 题两 rep 分数不同（押 是）｜{'t01_parse_duration': [1.0, 0.5]}
+
+  改名体检：`example_task_runs` A=8 B=8（⛔ 押 8 = 4 题 × 2 rep；若 0 ⇒ 内核侧键名没同步）
+            `task_runs_rejected` A=2 B=3（V62 旧读数 2）
+
+==============================================================================
+附：打回逐条（按题切段）
+==============================================================================
+  A 写一个函数 merge_rang   轮= 4 打回=[(1, 2)] carried=1 逐字重提=2 改=0 过闸=0
+  A 写一个函数 merge_rang   轮= 4 打回=[(1, 2)] carried=1 逐字重提=2 改=0 过闸=0
+  B 写一个函数 merge_rang   轮= 4 打回=[(1, 2)] carried=1 逐字重提=2 改=0 过闸=0
+  B 写一个函数 merge_rang   轮= 5 打回=[(1, 2)] carried=0 逐字重提=1 改=0 过闸=0
+  B 写一个函数 rle(s)，对字符   轮= 3 打回=[(1, 2)] carried=0 逐字重提=0 改=1 过闸=1
+
+  墙钟 A=587s B=469s（-20%）
+  校验 A=runs14/passed10/failed4  B=runs15/passed10/failed5
+
+==============================================================================
+§6 组合判决（预注册写死在前，但**按题**读）
+==============================================================================
+  真错的题（A 臂 <1.0）在 **B 臂同一道题** 的段里：
+    t01_parse_duration       {'段数': 2, '逐字重提': 0, '改': 0, '过闸': 0}
+    t04_merge_ranges         {'段数': 2, '逐字重提': 3, '改': 0, '过闸': 0}
+  ⚠️ **全局 `passed_after=1` 被另一道题污染**：真错的题 ['t01_parse_duration', 't04_merge_ranges'] 上过闸=0 ⇒ 判据必须按题读，否则会把『会的题改对了』记成『不会的题也会改了』
+  ⇒ **采样不是病根**：真错的题 ['t01_parse_duration', 't04_merge_ranges'] 在 T=0.7 下仍然『改了 0 次 / 过闸 0 次』⇒ 与 T=0 同一景象
+     ⇒ A 路（换采样）**死**；剩 B（换模型）/ C（换题）

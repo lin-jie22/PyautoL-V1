@@ -357,11 +357,12 @@ check(RS, "G12 finish 的工具描述必须说清「答案放进 answer」"
 _TRUNC = '{"candidates": [{"intent": "写代码", "tool": "finish", "args": {"answer": "def f():'
 _tr = Planner(StubLLM(default=_TRUNC), tr3)
 _tr.propose(goal="x", state="s", history=[], n=1)
-check(RS, "G13 「响应被截断」单独计入 truncated（不与「不会写 JSON」混同，"
-          "两者一个调 max_tokens 一个改提示词）",
-      _tr.truncated == 1 and _tr.json_fail == 0 and _tr.empty_plan == 0
+check(RS, "G13 「响应被截断」单独计入 truncated_responses（不与「不会写 JSON」混同，"
+          "两者一个调 max_tokens 一个改提示词）"
+          "—— 键名带单位（V66/§133）：**次**，与 `plan.truncated_cands`（条）不同尺",
+      _tr.truncated_responses == 1 and _tr.json_fail == 0 and _tr.empty_plan == 0
       and _tr.stats()["cause_balances"] is True,
-      f"truncated={_tr.truncated} json_fail={_tr.json_fail} "
+      f"truncated_responses={_tr.truncated_responses} json_fail={_tr.json_fail} "
       f"balances={_tr.stats()['cause_balances']}")
 check(RS, "G14 规划器的 max_tokens 从 config 注入（不许在调用点写死）",
       Planner(StubLLM(default="{}"), tr3, max_tokens=1234).max_tokens == 1234
@@ -3755,9 +3756,9 @@ check(RS, "AZ103 ★★★规划器的**降级分项**必须进台账，累加�
       _AZ103_SNAP[-1] > _AZ103_SNAP[0] > 0
       and _AZ103_ACC["calls"] == int(_AZ103_ST["calls"])
       and _AZ103_ACC["json_fail"] == int(_AZ103_ST["json_fail"])
-      and _AZ103_ACC["truncated"] == int(_AZ103_ST["truncated"])
+      and _AZ103_ACC["truncated_responses"] == int(_AZ103_ST["truncated_responses"])
       and _AZ103_LINE["fail_total"] == (
-          _AZ103_ACC["json_fail"] + _AZ103_ACC["truncated"]
+          _AZ103_ACC["json_fail"] + _AZ103_ACC["truncated_responses"]
           + _AZ103_ACC["empty_plan"] + _AZ103_ACC["no_tool_fit"])
       and '"kernel_planner"' in _AZ103_SRC,
       f"三次 calls={_AZ103_SNAP} ｜ acc={_AZ103_ACC['calls']} "
@@ -4274,7 +4275,8 @@ check(RS, "AZ108 ★★★★候选宽度进 **stats**（不是日志）：给�
           "         判据（六条，缺一即证明不了这条边）：\n"
           "               ① `rounds == len(per_round)`（恒存在：每轮都记了）；\n"
           "               ② `Σby_tool == cands_total == Σper_round.n`（三个口径相等）；\n"
-          "               ③ `examined_total − cands_total == truncated_total`（截断恒等式）；\n"
+          "               ③ `examined_total − cands_total == truncated_cands`（截断恒等式；\n"
+          "                  键名带单位 V66/§133：**条**，不是次）；\n"
           "               ④ `by_tool_max_round == 2`：两个 **args 不同** 的 `finish`\n"
           "                  都被 sig 去重放行 ⇒ 宽度确实可能被同一个 tool 霸占；\n"
           "               ⑤ `width` 三个丢弃原因**分列**且强守恒\n"
@@ -4288,7 +4290,7 @@ check(RS, "AZ108 ★★★★候选宽度进 **stats**（不是日志）：给�
       and sum(_AZ108_P["by_tool"].values()) == _AZ108_P["cands_total"]
       == sum(r["n"] for r in _AZ108_P["per_round"]) == 3
       and (_AZ108_P["examined_total"] - _AZ108_P["cands_total"]
-           == _AZ108_P["truncated_total"])
+           == _AZ108_P["truncated_cands"])
       and _AZ108_P["by_tool_max_round"] == 2
       and _AZ108_P["by_tool"] == {"finish": 2, "run_shell": 1}
       and _AZ108_P["produces_by_round"] == [2]
@@ -10911,7 +10913,7 @@ _AZ110_MS = max(1, int(cfg.settings().limits.max_stall))
 def _az110_ident(p: dict) -> bool:
     """截断恒等式：被**准入**丢掉的不许算进"被 n 截掉"的（否则记两次）。"""
     return max(0, p["examined_total"] - p["cands_total"]
-               - p["dropped_not_applicable"]) == p["truncated_total"]
+               - p["dropped_not_applicable"]) == p["truncated_cands"]
 
 
 # ⑦ `applies` 不许进 `catalog()` —— 进了就是"改提示词"，两臂立刻不可比。
@@ -10972,7 +10974,7 @@ check(RS, "AZ110 ★★★★外部能力**结构上不适用**时不许占候�
           "               ④ 注入点也判：不适配 ⇒ `skipped_not_applicable==1` 且 calls==0；\n"
           "               ⑤ 全不适配 ⇒ 走**自己的**出口 `status=='not_applicable'`\n"
           "                  （⛔ 不是 stalled / cascade / closed：三种相反的事不许共用一格）；\n"
-          "               ⑥ 截断恒等式：`examined − cands − dropped_na == truncated`\n"
+          "               ⑥ 截断恒等式：`examined − cands − dropped_na == truncated_cands`\n"
           "                  （准入丢的不许算成被 n 截的，否则同一批候选记两次）；\n"
           "               ⑦ `applies` **不进** `catalog()` ⇒ 提示词没变；\n"
           "               ⑧ `agents.json` 的正则与 `code_agent.py::_FUNC_NAME` 判同（6 例）；\n"
@@ -13024,6 +13026,102 @@ check(RS, "AZ124 ★★★**打回 → 重写**这条边：报错原文必须活
                         ("carried", "redelivered", "same", "diff", "passed_after")})
       + " ｜ S=" + str({k: _AZ124_RW["s"].get(k) for k in
                         ("carried", "redelivered", "same", "diff", "passed_after")}))
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ125（V66，§133）：三个「截断」必须**分居三处**，且**单位写进名字**
+# ══════════════════════════════════════════════════════════════════════════
+#  ⛔ 为什么这条必须存在：全仓有三个都叫 `truncated` 的读数，单位各不相同 ——
+#      · `Planner.truncated_responses`：**次**（一次响应的 JSON 断在半截 ⇒ 调 max_tokens）
+#      · `plan_stats["truncated_cands"]`：**条**（一个候选被 `[:n]` 截掉 ⇒ 调 n）
+#      · 答案落盘侧的 `truncated`：**条**（一条答案被 `max_chars` 截 ⇒ 调存储上限）
+#     三者修法互不相同。V66 之前前两个同名 ⇒ 同一份 stdout 里 `截断=2`（次）
+#     与 `截断 2 条`（条）并列出现，读起来完全一样。
+#  ⚠️ 第二个缺口比命名更根本：`plan_stats` 只经 `snapshot()["plan"]` 出去，
+#     `runs.jsonl` 里**从来没有** `kernel_plan` ⇒ 跑批层面读不到「被 n 截了几条」，
+#     只有直接调 `core.snapshot()` 的探针能看见（纪律 26 的原形：
+#     stats 里看得见、账本里看不见）。所以本条同时钉**键名**与**落盘**。
+#  ⚠️ 两条检测器缺一不可（V63 纪律 35）：源码级挡不住「另一处覆盖它」，
+#     运行时级挡不住「这次刚好是 0」。
+#: ⚠️ 用 `.get` 而不是 `__getitem__`：咬人演练里见过「键会消失」⇒ 取不到就是空字典，
+#:    让 ④ 判红，而不是在构造段抛 KeyError 把整个契约打断（同 `_az125_safe` 的理由）。
+_AZ125_PL = dict(((getattr(_AZ124_A_OUT, "stats", None) or {}).get("planner")) or {})
+_AZ125_PN = dict(((getattr(_AZ124_A_OUT, "stats", None) or {}).get("plan")) or {})
+_AZ125_SRC = inspect.getsource(_run)
+#: ⑨ 内核零点的键集（源码级那一半：内核里到底还叫不叫旧名）。
+from mw import core as _az125_core                              # noqa: E402
+_AZ125_PZ_KEYS = set(_az125_core._plan_zero().keys())
+
+#: ⚠️ **构造段不许抛异常**：契约文件头第 ② 条「不许对可能不存在的属性做算术」
+#:    的同一个理由，只不过这次是**键**会消失 —— 咬人演练实测：把账本键改回
+#:    `truncated_total` 后，`_kp_line` 里的 `out["truncated_cands"]` 直接 KeyError，
+#:    整个契约从 629 掉到「PASS=若干 FAIL=0」的**假汇总**（崩溃被读成跑完了）。
+#:    ⇒ 用哨兵值接住，让它是**红**，不是**崩**。
+def _az125_safe(fn):                                        # noqa: ANN001
+    try:
+        return fn()
+    except (KeyError, TypeError, ZeroDivisionError) as _e:
+        return f"EXC:{type(_e).__name__}"
+
+
+_AZ125_ACC_ZERO = {"rounds": 0, "examined_total": 0, "cands_total": 0,
+                   "truncated_cands": 0, "dropped_not_applicable": 0}
+_AZ125_ACC_ONE = {"rounds": 1, "examined_total": 4, "cands_total": 3,
+                  "truncated_cands": 1, "dropped_not_applicable": 0}
+#: ⑦ 分母必须是 `examined_total`（规划器交出的步骤），不是 `cands_total`（截断之后的）。
+#:    用后者，某题全被截掉时 `cands_total=0` ⇒ 除零，而那一刻恰恰最该报。
+_AZ125_RATE_ZERO = _az125_safe(
+    lambda: _run._kp_line(_AZ125_ACC_ZERO)["truncated_rate"])
+_AZ125_RATE_ONE = _az125_safe(
+    lambda: _run._kp_line(_AZ125_ACC_ONE)["truncated_rate"])
+#: ⑧ 反证：`_kp_absorb` 必须真累加（两题各 1 ⇒ 2）。写死或覆盖式赋值会得 1。
+_AZ125_SUM = _az125_safe(lambda: _run._kp_absorb(
+    _run._kp_absorb(_run._kp_zero(),
+                    {"truncated_cands": 1, "examined_total": 3, "cands_total": 2}),
+    {"truncated_cands": 1, "examined_total": 4, "cands_total": 4})["truncated_cands"])
+
+_AZ125_OK = {
+    "① 规划器键带单位（次）": ("truncated_responses" in _run._KPL_NUM_KEYS
+                              and "truncated" not in _run._KPL_NUM_KEYS),
+    "② 候选键带单位（条）": ("truncated_cands" in _run._KP_NUM_KEYS
+                             and "truncated_total" not in _run._KP_NUM_KEYS),
+    "③ 两组键无交集": not (set(_run._KPL_NUM_KEYS) & set(_run._KP_NUM_KEYS)),
+    "④ 运行时：真内核两条都在": (isinstance(_AZ125_PL.get("truncated_responses"), int)
+                                 and isinstance(_AZ125_PN.get("truncated_cands"), int)),
+    "⑤ 跨字典：谁也不是谁的别名": ("truncated_cands" not in _AZ125_PL
+                                   and "truncated_responses" not in _AZ125_PN),
+    # ⑥ 落盘锚：没有这一格，两个数在跑批层面根本读不到（本条最实在的一半）。
+    "⑥ 写盘字典有 kernel_plan": '"kernel_plan"' in _AZ125_SRC,
+    "⑦ 截断率分母是 examined（0 不崩）": (_AZ125_RATE_ZERO is None
+                                          and _AZ125_RATE_ONE == 0.25),
+    "⑧ absorb 真累加": _AZ125_SUM == 2,
+    "⑨ 内核零点已改名": ("truncated_cands" in _AZ125_PZ_KEYS
+                          and "truncated_total" not in _AZ125_PZ_KEYS),
+}
+check(RS, "AZ125 ★★★三个「截断」分居三处，单位写进名字（V66 / §133）\n"
+          "          —— 改之前全仓两个同名 `truncated` 单位不同（次 vs 条），\n"
+          "             同一份 stdout 里 `截断=2` 与 `截断 2 条` 读起来一模一样。\n"
+          "         判据（九条）：\n"
+          "               ① `_KPL_NUM_KEYS` 含 `truncated_responses`（次），无裸 `truncated`；\n"
+          "               ② `_KP_NUM_KEYS` 含 `truncated_cands`（条）；\n"
+          "               ③ 两组键**无交集**（同一份产物里不许共用一个键）；\n"
+          "               ④ 真内核的 `stats['planner']` / `stats['plan']` 各含其一；\n"
+          "               ⑤ 跨字典：谁也不是谁的别名；\n"
+          "               ⑥ `run.py` 写盘字典里有 `kernel_plan`\n"
+          "                  —— 这是 V66 之前**根本不存在**的一格；\n"
+          "               ⑦ 截断率的分母是 `examined_total`：`examined=0` ⇒ `None` 不崩，\n"
+          "                  `4/1` ⇒ 0.25（用 `cands_total` 当分母会在全截掉时除零）；\n"
+          "               ⑧ `_kp_absorb` 真累加（两题各 1 ⇒ 2，不是覆盖成 1）；\n"
+          "               ⑨ 内核 `_plan_zero()` 已无 `truncated_total` 残留。\n"
+          "         撤回语义：内核 `_plan_zero` 改回 `truncated_total` ⇒ ④⑨ 必红；\n"
+          "                    `_KPL_NUM_KEYS` 改回 `truncated` ⇒ ①④ 必红；\n"
+          "                    写盘字典删 `\"kernel_plan\"` ⇒ ⑥ 必红；\n"
+          "                    截断率分母换成 `cands_total` ⇒ ⑦ 必红（除零）；\n"
+          "                    `_kp_absorb` 改成 `=` 覆盖 ⇒ ⑧ 必红。",
+      all(_AZ125_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ125_OK.items())
+      + f" ｜ 运行时 planner={_AZ125_PL.get('truncated_responses')}"
+      + f" plan={_AZ125_PN.get('truncated_cands')}"
+      + f" ｜ rate(0)={_AZ125_RATE_ZERO} rate(4/1)={_AZ125_RATE_ONE} sum={_AZ125_SUM}")
 
 print()
 print("=" * 74)

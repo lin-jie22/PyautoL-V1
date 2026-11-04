@@ -1,0 +1,17 @@
+# ⚠️ 节选：咬人演练**第一次**（变异注入后契约崩溃）。
+#    关键事实：没有汇总行被写出 —— 输出停在 KeyError 处，
+#    这正是「崩溃被读成跑完了」的形态（§133.5）。
+
+Traceback (most recent call last):
+  File "/Users/linshaojie/V1/tests/contract_test.py", line 13057, in <module>
+    _AZ125_RATE_ONE = _run._kp_line(
+                      ~~~~~~~~~~~~~^
+        {"rounds": 1, "examined_total": 4, "cands_total": 3,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         "truncated_cands": 1, "dropped_not_applicable": 0})["truncated_rate"]
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/linshaojie/V1/run.py", line 431, in _kp_line
+    out["truncated_rate"] = (round(out["truncated_cands"] / out["examined_total"], 3)
+                                   ~~~^^^^^^^^^^^^^^^^^^^
+KeyError: 'truncated_cands'
+

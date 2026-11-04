@@ -315,7 +315,7 @@ _KWM_NUM_KEYS: tuple[str, ...] = tuple(k for k in _kwm_zero() if k != "confusion
 
 
 #: 规划器读数的累加键（V39）。⛔ 同样由零点派生 —— 理由见 `_KWM_NUM_KEYS`。
-_KPL_NUM_KEYS: tuple[str, ...] = ("calls", "degraded", "json_fail", "truncated",
+_KPL_NUM_KEYS: tuple[str, ...] = ("calls", "degraded", "json_fail", "truncated_responses",
                                   "no_tool_fit", "empty_plan", "reseek",
                                   "answer_retry_ok", "answer_retry_fail",
                                   # ★§106：格式修复读数。**必须进这个元组**，
@@ -375,10 +375,61 @@ def _kpl_line(acc: dict) -> dict:
     加工具 / 改解析器），合起来只剩一个数就归不了因。
     """
     out = {k: int(acc.get(k, 0) or 0) for k in _KPL_NUM_KEYS}
-    out["fail_total"] = (out["json_fail"] + out["truncated"]
+    out["fail_total"] = (out["json_fail"] + out["truncated_responses"]
                          + out["empty_plan"] + out["no_tool_fit"])
     out["fail_rate"] = (round(out["fail_total"] / out["calls"], 3)
                         if out["calls"] else None)
+    return out
+
+
+#: ★ V66（§133）：**候选截断**的累加键。⛔ 与 `_KPL_NUM_KEYS` 分属两个字典 ——
+#:   那个数的是「一次响应被截」（单位：**次**），这个数的是「一个候选被截」
+#:   （单位：**条**）。同名不同义是这一轮要修的病，不是要沿用的写法。
+_KP_NUM_KEYS: tuple[str, ...] = ("rounds", "examined_total", "cands_total",
+                                 "truncated_cands", "dropped_not_applicable")
+
+
+def _kp_zero() -> dict:
+    """候选宽度读数的零点（V66 / §133）。
+
+    ⛔ 为什么要落盘：`Core.plan_stats` 从 §111 起就有 `examined_total` /
+    `truncated_cands`，但它**只经 `snapshot()["plan"]` 出去** ——
+    `runs.jsonl` 的写盘字典里从来没有 `kernel_plan` 这个键。
+    ⇒ 跑批层面读不到「规划器给了几条、被 `[:n]` 截掉几条」，只有直接调
+    `core.snapshot()` 的探针（V45/V47）能看见。这是纪律 26 的原形：
+    **stats 里看得见、账本里看不见** —— 而"看不见"正是这个缺口欠了六轮的原因
+    （不是名字不好，是**没有任何一份产物同时含这两个截断读数**）。
+
+    ⚠️ 不复用 `_KPL_NUM_KEYS`：那个字典里已经有 `truncated_responses`（次），
+    并进同一个字典就等于把「该调 `max_tokens`」和「该调 `n`」重新合成一格 ——
+    那正是 `mw/planner.py` 里被明确否掉的写法（"修法不同的分支合并，就再也
+    分不清该修哪里"）。
+
+    ⚠️ **不需要求差**（与 `_kpl_absorb` 不同，与 `_kfo_absorb` 相同）：
+    `plan_stats` 在每次 `run()` 开头由 `_prime_counters` 重建
+    （`mw/core.py:988`）⇒ `stats()["plan"]` 天然是**本题**值。
+    照抄 `_kpl_absorb` 的求差写法会把它减成 0。
+    """
+    return {k: 0 for k in _KP_NUM_KEYS}
+
+
+def _kp_absorb(acc: dict, stats: dict) -> dict:
+    """把**一题**的 `stats["plan"]` 并进累加器（就地修改并返回）。"""
+    for k in _KP_NUM_KEYS:
+        acc[k] = int(acc.get(k, 0)) + int(stats.get(k, 0) or 0)
+    return acc
+
+
+def _kp_line(acc: dict) -> dict:
+    """落盘前的派生量。**分母一起给** —— 只报 `truncated_cands=3` 读不出严重程度。
+
+    ⚠️ `truncated_rate` 的分母是 `examined_total`（规划器**交出**的步骤数），
+    不是 `cands_total`（截断之后进执行器的）：
+    用后者，一旦某题全被截掉（`cands_total=0`）就除零，而那一刻恰恰最该报。
+    """
+    out = {k: int(acc.get(k, 0) or 0) for k in _KP_NUM_KEYS}
+    out["truncated_rate"] = (round(out["truncated_cands"] / out["examined_total"], 3)
+                             if out["examined_total"] else None)
     return out
 
 
@@ -1901,6 +1952,10 @@ def cmd_bench(args) -> int:
     #: 累加/派生逻辑在模块级（`_kwm_zero/_kwm_absorb/_kwm_line`），**不在这里重写一遍**。
     _kwm = _kwm_zero()
     _kpl = _kpl_zero()      # 规划器读数（V39）：降级四个分项必须可审计
+    _kp = _kp_zero()        # ★ V66（§133）：**候选截断**。⛔ 与 `_kpl` 分列：
+    #                         `_kpl.truncated_responses` 数「响应被截几次」（次），
+    #                         这里数「候选被 `[:n]` 截几条」（条）。两者修法相反
+    #                         （调 `max_tokens` vs 调 `n`）⇒ 合成一格就归不了因。
     _kfo = _kfo_zero()      # 候选让位（§108）：救回与代价必须并列报
     _kco = _kco_zero()      # 收尾兜底（第二十二轮）：与 _kwm 同源的落盘读数
     _kexec = _kexec_zero()  # 下发 × 验收（V55）：零下发是「题」的属性，不是收尾的属性
@@ -2102,6 +2157,9 @@ def cmd_bench(args) -> int:
                                     features=_feat_of.get(t.id))
                         _kwm_absorb(_kwm, out.stats["worldmodel"], c)
                         _kpl_absorb(_kpl, out.stats.get("planner") or {}, c)
+                        # ★ V66（§133）：候选截断。⛔ 紧挨 `_kpl_absorb` ——
+                        #   两个截断读数放在一起，读的时候才不会被名字骗过去。
+                        _kp_absorb(_kp, out.stats.get("plan") or {})
                         _kfo_absorb(_kfo, out.stats.get("failover") or {})
                         _kco_absorb(_kco, out.stats.get("closeout") or {})
                         # ★ V55（§121）：按题记「下发次数 × 验收结论」。
@@ -2154,6 +2212,12 @@ def cmd_bench(args) -> int:
                                 features=_feat_of.get(t.id))
                 _kwm_absorb(_kwm, out.stats["worldmodel"], _core)
                 _kpl_absorb(_kpl, out.stats.get("planner") or {}, _core)
+                # ★ V66（§133）：与 `--fresh` 那支同一条理由 —— 两处各写一遍
+                #   "同一事实"，漏一处就静默少计一题的候选截断。
+                #   ⚠️ 这里**仍然不用传 `_core`**（不求差）：`plan_stats` 由
+                #   `run()` 开头的 `_prime_counters` 每题重建，与 `Planner`
+                #   那种生命周期累计不同。
+                _kp_absorb(_kp, out.stats.get("plan") or {})
                 _kfo_absorb(_kfo, out.stats.get("failover") or {})
                 _kco_absorb(_kco, out.stats.get("closeout") or {})
                 # ★ V55（§121）：与 `--fresh` 那支同一条理由 —— 两处各写一遍
@@ -2346,8 +2410,11 @@ def cmd_bench(args) -> int:
     #    （同 `blocked_skipped` 的理由）。分母 `calls` 一起印 ——
     #    只报 `失败=3` 无法判断是 3/3 还是 3/60。
     _kpl_p = _kpl_line(_kpl)
+    # ⚠️ 「截断**响应**」：单位是**次**。同一条 stdout 后面还有一句
+    #    「截断 N 条答案」（`answer_store`，单位**条**）—— 两个都不写清，
+    #    `截断=2` 与 `截断 2 条` 读起来一模一样（V66/§133 要修的就是这个）。
     print(f"  规划器    调用={_kpl_p['calls']} 失败={_kpl_p['fail_total']}"
-          f"（json={_kpl_p['json_fail']} 截断={_kpl_p['truncated']}"
+          f"（json={_kpl_p['json_fail']} 截断响应={_kpl_p['truncated_responses']}"
           f" 无工具={_kpl_p['no_tool_fit']} 空计划={_kpl_p['empty_plan']}）"
           f" 率={'n/a' if _kpl_p['fail_rate'] is None else _kpl_p['fail_rate']}"
           f" 重问={_kpl_p['reseek']}"
@@ -2356,6 +2423,19 @@ def cmd_bench(args) -> int:
           # 与"叫到了但修不动（`0/N`）"是两件事（纪律 13：机制存在 ≠ 机制通电）。
           f" 修复={_kpl_p['salvage_ok']}/{_kpl_p['salvage_fail']}"
           f"（补完={_kpl_p['salvage_completed']}）")
+
+    # ── 候选截断（V66 / §133）──────────────────────────────────────────────
+    # ⛔ **无条件**印：`truncated_cands=0` 与"没统计"在读数上必须分得开。
+    # ⚠️ 单位是**条**，与上面那行的「截断响应」（次）是两把尺子 ——
+    #    这一行回答"规划器交了 N 条、被 `[:n]` 截掉几条"，
+    #    上面那行回答"有几次响应的 JSON 断在半截"。
+    _kp_p = _kp_line(_kp)
+    print(f"  候选宽度  收={_kp_p['examined_total']} 条"
+          f" 截断={_kp_p['truncated_cands']} 条"
+          f" 进执行器={_kp_p['cands_total']} 条"
+          f"（截断率={'n/a' if _kp_p['truncated_rate'] is None else _kp_p['truncated_rate']}"
+          f" 轮数={_kp_p['rounds']}"
+          f" 不适配={_kp_p['dropped_not_applicable']}）")
 
     # ── 候选让位（§108）──────────────────────────────────────────────────
     # ⛔ **无条件**印，且**收益与代价同一行**：
@@ -2455,6 +2535,14 @@ def cmd_bench(args) -> int:
         # 内核侧读数（规划器的**降级分项**，V39）。同一条理由：
         # 四个分项的修法完全不同，只报 `degraded` 一个总数就归不了因。
         "kernel_planner": _kpl_line(_kpl),
+        # ★ V66（§133）：**候选截断**（单位：**条**）。⛔ 与 `kernel_planner`
+        #   分列而不是并进去 —— 那个数的是「响应被截几次」（次），
+        #   这个数的是「候选被 `[:n]` 截掉几条」（条）。两者修法相反
+        #   （调 `max_tokens` vs 调 `n`），合成一格就再也分不清该改哪个。
+        #   ⚠️ 这个键是 V66 之前**根本不存在**的：`plan_stats` 只经
+        #   `snapshot()["plan"]` 出去，账面上一格都没有 ⇒ 跑批层面读不到，
+        #   只有直接调 `core.snapshot()` 的探针能看见（纪律 26 的原形）。
+        "kernel_plan": _kp_line(_kp),
         # 内核侧读数（候选让位，§108）：**救回与代价必须并列** ——
         # 只落 `rescued` 而不落 `cf_extra`，等于把"多打几次换一次交付"藏起来。
         "kernel_failover": _kfo_line(_kfo),
@@ -2506,7 +2594,7 @@ def cmd_bench(args) -> int:
         #    就说明某处又偷偷截断了（DESIGN §42 四处截断的共同形态）。
         print(f"  答案已落盘 {_w['path']}  {_w['n_answers']} 条  "
               f"共 {_w['chars']} 字符  最长 {_w['max_chars']} 字符  "
-              f"截断 {_w['truncated']} 条")
+              f"截断 {_w['truncated']} 条答案")
     return 0 if rep.trustworthy() else 1
 
 

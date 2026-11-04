@@ -1542,6 +1542,21 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
             self._reject_carry = _err''',
      '''        if int(self.s.limits.reject_carry):
             self._reject_carry = ""   # 撤回态：打回之后不留欠账'''),
+    # ── AZ125：三个「截断」分居三处（V66 / §133）──────────────────────────────
+    #: 撤的语义：**内核照写新键、账本读回旧名** —— 这正是 V63 踩过的
+    #:   「只改一边」形态（新键恒 0 ⇒ 被读成"判据不适用"，纪律 35），
+    #:   也是本轮要防的那个真实风险本身，不是人为构造的怪状态。
+    #: ⇒ AZ125 ②（候选键带单位）⑦（截断率分母）⑧（`absorb` 真累加）必红。
+    #: ⚠️ 不撤 `_KPL_NUM_KEYS` 那行：撤了它 ①④ 也红，而那是**另一个**键
+    #:   （响应**次**数），与本条要测的"候选**条**数"混在一起就分不清谁断了
+    #:   （V61 的 AZ123 同一条理由）。
+    #: ⚠️ 已实测：该变异只让 AZ125 **单红**（PASS=628 FAIL=1、无 Traceback、
+    #:   无连带）⇒ 不登记 `COUPLED`。
+    ("AZ125", "run.py",
+     '''_KP_NUM_KEYS: tuple[str, ...] = ("rounds", "examined_total", "cands_total",
+                                 "truncated_cands", "dropped_not_applicable")''',
+     '''_KP_NUM_KEYS: tuple[str, ...] = ("rounds", "examined_total", "cands_total",
+                                 "truncated_total", "dropped_not_applicable")'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

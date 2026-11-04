@@ -1,0 +1,21 @@
+一、基线必须先绿（不绿就拒绝做撤回）
+  ❌ 基线 ('628', '1') 红=['AZ44']
+  ⛔ 基线不是绿的 ⇒ 撤回态的读数没有意义，拒绝继续。
+ned_total`：`examined=0` ⇒ `None` 不崩，
+                  `4/1` ⇒ 0.25（用 `cands_total` 当分母会在全截掉时除零）；
+               ⑧ `_kp_absorb` 真累加（两题各 1 ⇒ 2，不是覆盖成 1）；
+               ⑨ 内核 `_plan_zero()` 已无 `truncated_total` 残留。
+         撤回语义：内核 `_plan_zero` 改回 `truncated_total` ⇒ ④⑨ 必红；
+                    `_KPL_NUM_KEYS` 改回 `truncated` ⇒ ①④ 必红；
+                    写盘字典删 `"kernel_plan"` ⇒ ⑥ 必红；
+                    截断率分母换成 `cands_total` ⇒ ⑦ 必红（除零）；
+                    `_kp_absorb` 改成 `=` 覆盖 ⇒ ⑧ 必红。  (① 规划器键带单位（次）=True ｜ ② 候选键带单位（条）=True ｜ ③ 两组键无交集=True ｜ ④ 运行时：真内核两条都在=True ｜ ⑤ 跨字典：谁也不是谁的别名=True ｜ ⑥ 写盘字典有 kernel_plan=True ｜ ⑦ 截断率分母是 examined（0 不崩）=True ｜ ⑧ absorb 真累加=True ｜ ⑨ 内核零点已改名=True ｜ 运行时 planner=0 plan=0 ｜ rate(0)=None rate(4/1)=0.25 sum=2)
+
+==========================================================================
+V1 契约测试汇总  PASS=628  FAIL=1
+==========================================================================
+失败断言数 = 1
+   已清理半成品目录：/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmp525hjpo9/ao_len
+   已清理半成品目录：/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmprprq18j7/ao_same
+   已清理半成品目录：/private/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/tmpx_xcnbrv/ao_empty_out
+

@@ -93,7 +93,7 @@ KNOBS: tuple[Knob, ...] = (
          "（INV1 是硬边界，这条是软理由：它是策略，不是定理）。"),
     Knob("max_candidates", "int", 1, 5, 1, POLICY,
          "下界 1 = 没有选择，退化成单候选 —— 那是合法配置（也是变异前的基线）。"
-         "上界 5 是**策略**：候选越多、单次响应越长，而截断判据在 `planner.truncated`；"
+         "上界 5 是**策略**：候选越多、单次响应越长，而截断判据在 `planner.truncated_responses`（次数；候选被截的条数另记在 `plan.truncated_cands`）；"
          "本项目没有量过「几个候选最好」，所以只围边界，不声称最优点在区间里。"),
     Knob("recall_k", "int", 1, 12, 2, POLICY,
          "下界 1：7x 的最硬读数是「只给唯一正确的那条，模型仍按常识作答」—— "

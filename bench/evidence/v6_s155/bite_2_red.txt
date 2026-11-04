@@ -1,0 +1,32 @@
+# ⚠️ 节选：咬人演练**第二次**（加了 _az125_safe 之后）。
+#    关键事实：628/1、只 AZ125 红、无 Traceback。
+
+❌ AZ125 ★★★三个「截断」分居三处，单位写进名字（V66 / §133）
+          —— 改之前全仓两个同名 `truncated` 单位不同（次 vs 条），
+             同一份 stdout 里 `截断=2` 与 `截断 2 条` 读起来一模一样。
+         判据（九条）：
+               ① `_KPL_NUM_KEYS` 含 `truncated_responses`（次），无裸 `truncated`；
+               ② `_KP_NUM_KEYS` 含 `truncated_cands`（条）；
+               ③ 两组键**无交集**（同一份产物里不许共用一个键）；
+               ④ 真内核的 `stats['planner']` / `stats['plan']` 各含其一；
+               ⑤ 跨字典：谁也不是谁的别名；
+               ⑥ `run.py` 写盘字典里有 `kernel_plan`
+                  —— 这是 V66 之前**根本不存在**的一格；
+               ⑦ 截断率的分母是 `examined_total`：`examined=0` ⇒ `None` 不崩，
+                  `4/1` ⇒ 0.25（用 `cands_total` 当分母会在全截掉时除零）；
+               ⑧ `_kp_absorb` 真累加（两题各 1 ⇒ 2，不是覆盖成 1）；
+               ⑨ 内核 `_plan_zero()` 已无 `truncated_total` 残留。
+         撤回语义：内核 `_plan_zero` 改回 `truncated_total` ⇒ ④⑨ 必红；
+                    `_KPL_NUM_KEYS` 改回 `truncated` ⇒ ①④ 必红；
+                    写盘字典删 `"kernel_plan"` ⇒ ⑥ 必红；
+                    截断率分母换成 `cands_total` ⇒ ⑦ 必红（除零）；
+                    `_kp_absorb` 改成 `=` 覆盖 ⇒ ⑧ 必红。  (① 规划器键带单位（次）=True ｜ ② 候选键带单位（条）=False ｜ ③ 两组键无交集=True ｜ ④ 运行时：真内核两条都在=True ｜ ⑤ 跨字典：谁也不是谁的别名=True ｜ ⑥ 写盘字典有 kernel_plan=True ｜ ⑦ 截断率分母是 examined（0 不崩）=False ｜ ⑧ absorb 真累加=False ｜ ⑨ 内核零点已改名=True ｜ 运行时 planner=0 plan=0 ｜ rate(0)=None rate(4/1)=EXC:KeyError sum=EXC:KeyError)
+
+==========================================================================
+V1 契约测试汇总  PASS=628  FAIL=1
+==========================================================================
+失败断言数 = 1
+
+...
+失败断言数 = 1
+

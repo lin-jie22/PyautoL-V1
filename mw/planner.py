@@ -491,7 +491,14 @@ class Planner:
         #    ⇒ `🧊 停滞 1/2`、`2/2`。这个错误判断正是"不留计数器"的借口。
         # ⇒ 现在有了 `reseek`（换形态再问的次数）：它**不是**降级，是可归因读数。
         self.json_fail = 0
-        self.truncated = 0
+        #: ★ V66（§133）：`truncated` → **`truncated_responses`**（单位：**次**）。
+        #: 全仓三个同名读数单位不同，必须分开（详见 `mw/core.py` 的 `truncated_cands`）：
+        #:   · 本键：**次**（一次响应的 JSON 括号不闭合 ⇒ 该调 `max_tokens`）
+        #:   · `plan_stats["truncated_cands"]`：**条**（候选被 `[:n]` 截掉 ⇒ 该调 `n`）
+        #:   · 答案落盘侧的 `truncated`：**条**（答案被 `max_chars` 截 ⇒ 该调存储上限）
+        #:     ⚠️ 注释里**故意不写那个模块名**（AZ88 的静态锚扫的就是它）。
+        #: ⛔ 三者修法互不相同，合并或同名都会让"该改哪一个"变成猜。
+        self.truncated_responses = 0
         self.no_tool_fit = 0
         self.empty_plan = 0
         #: 「本轮全灭」之后换形态再问的次数。有界：≤ 停滞轮数（内核只在那一支填 rejected）。
@@ -590,7 +597,7 @@ class Planner:
             # 实测：规划器写死 700 token，而它要求把整段代码塞进 JSON 字符串 ——
             # 响应断在半截 token 上，日志却只说"不可解析"，看起来像模型的锅。
             if _looks_truncated(raw):
-                self.truncated += 1
+                self.truncated_responses += 1
                 return self._degrade(
                     f"模型输出被**截断**（⇒ 调大 max_tokens，当前 {self.max_tokens}）；"
                     "原文片段: " + repr(raw[-120:]),
@@ -834,14 +841,14 @@ class Planner:
         return []
 
     def stats(self) -> dict:
-        causes = (self.json_fail + self.truncated + self.no_tool_fit
+        causes = (self.json_fail + self.truncated_responses + self.no_tool_fit
                   + self.empty_plan)
         return {
             "calls": self.calls, "degraded": self.degraded,
             "max_tokens": self.max_tokens,
             "degrade_rate": round(self.degraded / self.calls, 3) if self.calls else 0.0,
             # 分项：修法不同的分支必须分开报
-            "json_fail": self.json_fail, "truncated": self.truncated,
+            "json_fail": self.json_fail, "truncated_responses": self.truncated_responses,
             "no_tool_fit": self.no_tool_fit, "empty_plan": self.empty_plan,
             # 「本轮全灭 ⇒ 换形态再问」的次数。**不是降级**：它不改这次回答能不能用，
             # 只改下一次提问长什么样。放进 stats 才算有消费者（否则又一个装饰字段）。

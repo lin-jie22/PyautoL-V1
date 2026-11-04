@@ -518,7 +518,21 @@ def _plan_zero() -> dict:
         #   没有这两个数，`cands_total` 小到底是"模型想得窄"还是"被截了"
         #   永远分不开 —— 而这两种病一个要改提示词、一个要改 `n`。
         "examined_total": 0,      # 规划器**交出**的步骤数之和（截断之前）
-        "truncated_total": 0,     # 其中被 `[:n]` 截掉的
+        # ★ V66（§133）：`truncated_total` → **`truncated_cands`**。
+        #   ⛔ 不是因为 `_total` 不好看，是因为**单位没写进名字**（纪律 30 同宗）：
+        #   全仓有三个叫 `truncated` 的读数，单位各不相同 ——
+        #     · `Planner.truncated_responses`：**次**（一次响应被截）
+        #     · 本键：**条**（一个候选被 `[:n]` 截掉）
+        #     · 答案落盘侧的 `truncated`：**条**（一条答案被 `max_chars` 截）
+        #   ⚠️ 注释里**故意不写那个模块名**：AZ88 有静态锚「`mw/` 里零引用
+        #      答案存储模块」（判据侧不许读答案本体，AO11 同一条边界）——
+        #      写模块名字面量会让那条锚红，而红的原因不是行为变了。
+        #   旧名 `truncated_total` 的 `_total` 只说了"是合计"，没说"合的是条还是次"；
+        #   而它与 `planner.truncated` 同名叫 truncated ⇒ 在同一份 stdout 里
+        #   `截断=2`（次）与 `截断 2 条`（条）并列出现，读起来完全一样。
+        #   ⚠️ 改名的真风险是"只改一边"（V63 踩过：内核写旧键、账本读新键 ⇒ 恒 0
+        #   ⇒ 被读成"判据不适用"）⇒ 必须配源码级 + 运行时级两条检测器（AZ125）。
+        "truncated_cands": 0,     # 其中被 `[:n]` 截掉的**候选条数**
         # ★ 第一百三十七轮（§113）：**准入损耗**。与上面两个数**不同源**：
         #   `truncated_total` 是"规划器给了、被 `n` 截掉"（宽度上限的代价）；
         #   这里是"候选本身对本题结构上不适用"（准入判据的代价）。
@@ -867,9 +881,9 @@ class Core:
             ps["examined_total"] += _n
             # ⚠️ 分母里要**加回** `dropped`：被准入丢掉的不算"被 `n` 截掉"。
             #    不加回去同一批候选会被记两次（`dropped_not_applicable` 一次、
-            #    `truncated_total` 再一次），而这两个数的修法完全相反
+            #    `truncated_cands` 再一次），而这两个数的修法完全相反
             #    （一个该去换能力、一个该去调宽度上限）。
-            ps["truncated_total"] += max(0, _n - len(cands) - int(dropped))
+            ps["truncated_cands"] += max(0, _n - len(cands) - int(dropped))
         for t, k in tools.items():
             ps["by_tool"][t] = ps["by_tool"].get(t, 0) + k
             # 单轮内同一 tool 的重复次数 —— "宽度被霸占"的**唯一**直接读数。
@@ -2936,8 +2950,10 @@ class Core:
                 "per_round": [{"n": r["n"], "tools": dict(r["tools"])}
                               for r in self.plan_stats["per_round"]],
                 "examined_total": self.plan_stats["examined_total"],
-                "truncated_total": self.plan_stats["truncated_total"],
-                # ★ 第一百三十七轮（§113）：准入损耗。⛔ 与 `truncated_total`
+                # ⚠️ 键名带单位（V66/§133）：**条**，不是次。
+                #    与 `planner.truncated_responses`（次）是两把不同的尺子。
+                "truncated_cands": self.plan_stats["truncated_cands"],
+                # ★ 第一百三十七轮（§113）：准入损耗。⛔ 与 `truncated_cands`
                 #    **并列**而不是合并：一个说"上限太窄"，一个说"能力不适配"。
                 "dropped_not_applicable": self.plan_stats["dropped_not_applicable"],
                 "dropped_na_by_tool": dict(self.plan_stats["dropped_na_by_tool"]),

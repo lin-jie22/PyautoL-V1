@@ -1,0 +1,231 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  coding_small  n=6  suite_sha=618a18cafd2f0da54a5ec4232d319941
+  打分器  code_exec  scorer_sha=d4b1cbbfd7f1ef50d1e1a2a4cd95371e
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=6/6
+  t01_parse_duration: oracle=1.0000 partial=0.8333 null=0.0000 ✅
+  t02_dedupe: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  t03_commas: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  t04_merge_ranges: oracle=1.0000 partial=0.8333 null=0.0000 ✅
+  t05_top_k: oracle=1.0000 partial=0.2500 null=0.0000 ✅
+  t06_rle: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  理由: 全部 6 条两极可分，其中 6 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=c6d3a8dd5da4732e
+  [观察]
+    - t01_parse_duration: oracle=1.0000 partial=0.8333 null=0.0000
+    - t02_dedupe: oracle=1.0000 partial=0.6000 null=0.0000
+    - t03_commas: oracle=1.0000 partial=0.6000 null=0.0000
+    - t04_merge_ranges: oracle=1.0000 partial=0.8333 null=0.0000
+    - t05_top_k: oracle=1.0000 partial=0.2500 null=0.0000
+    - t06_rle: oracle=1.0000 partial=0.6000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 6 条任务上两极可分
+    - 中段有序检查 6 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=d4b1cbbfd7f1、suite_sha=618a18cafd2f；换任一者本校准即失效，必须重做
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）  预算档=1x  repeat=2 ---
+20:20:38 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+20:20:38   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:20:54   [1] 通道=深 候选=1 种类=1
+20:20:56       ↳ recall ok=True 查找解析字符串的库
+20:21:14   [2] 通道=深 候选=2 种类=2
+20:21:18       ↳ finish ok=True 直接根据字符串解析逻辑实现函数
+20:21:18   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：recall×1
+20:21:18   ✅ 收尾: ```python
+def parse_duration(s):
+    if not s:
+        return None
+    s = s.lower()
+    if 'h' in s:
+        h, m = s.s
+20:21:18 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=1 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.853 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 parse_duration/语言标签/可编译/结构检查)
+20:21:18 ▶ 任务开始: 写一个函数 dedupe(seq)，返回一个新列表：去掉重复元素并保持首次出现的顺序。元素可能是数字或字符串。只输出代码，函数名必须是 dedupe。
+20:21:18   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:21:18   🧹 题边界：清掉上一题残留的工作记忆 2 条
+20:21:30   [1] 通道=深 候选=1 种类=1
+20:21:34       ↳ finish ok=True 使用集合去重并保持顺序
+20:21:34   ✅ 收尾: ```python
+def dedupe(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen
+20:21:34 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=0） 尾=0 | guard_blocked=0 | 预演=3 检验=3 命中=3 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.167 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 dedupe/语言标签/可编译/结构检查)
+20:21:34 ▶ 任务开始: 写一个函数 commas(n)，把非负整数转成带千分位逗号的字符串：commas(1234567) == '1,234,567'，commas(0) == '0'，commas(999) == '999'。只输出代码，函数名必须是 comm
+20:21:34   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:21:34   🧹 题边界：清掉上一题残留的工作记忆 1 条
+20:21:47   [1] 通道=深 候选=3 种类=3
+20:21:50       ↳ finish ok=True 直接实现函数
+20:21:50   ⏭ 交付成功 ⇒ 本轮剩余 2 个候选未轮到：note×1、run_shell×1
+20:21:50   ✅ 收尾: ```python
+def commas(n):
+    return f'{n:,}'
+```
+20:21:50 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=2） 尾=2 | guard_blocked=0 | 预演=4 检验=4 命中=4 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.39 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 commas/语言标签/可编译/结构检查)
+20:21:50 ▶ 任务开始: 写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6
+20:21:50   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:21:50   🧹 题边界：清掉上一题残留的工作记忆 1 条
+20:22:03   [1] 通道=深 候选=1 种类=1
+20:22:06       ↳ recall ok=True 查找已有实现
+20:22:21   [2] 通道=深 候选=2 种类=2
+20:22:24       ↳ finish ok=True 直接根据逻辑编写代码
+20:22:24   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：recall×1
+20:22:25   ✅ 收尾: ```python
+def merge_ranges(pairs):
+    if not pairs:
+        return []
+    pairs.sort(key=lambda x: x[0])
+    merged = [
+20:22:25 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=1 | guard_blocked=0 | 预演=6 检验=6 命中=6 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.86 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_ranges/语言标签/可编译/结构检查)
+20:22:25 ▶ 任务开始: 写一个函数 top_k(words, k)，输入一个字符串列表，返回出现次数最多的前 k 个 (词, 次数) 元组，按次数从高到低排列；次数相同时按词升序排列。例如 top_k(['a','b','a'], 1) == [('a', 2)]
+20:22:25   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:22:25   🧹 题边界：清掉上一题残留的工作记忆 2 条
+20:22:42   [1] 通道=深 候选=2 种类=2
+20:22:46       ↳ run_shell ok=True 使用内置函数统计词频，然后手动排序
+20:23:02   [2] 通道=深 候选=1 种类=1
+20:23:07       ↳ finish ok=True 直接编写 top_k 函数实现功能
+20:23:07   ✅ 收尾: ```python
+from collections import Counter
+
+def top_k(words, k):
+    freq = Counter(words)
+    return sorted(freq.items()
+20:23:07 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=0 | guard_blocked=0 | 预演=8 检验=8 命中=8 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.166 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 top_k/语言标签/可编译/结构检查)
+20:23:07 ▶ 任务开始: 写一个函数 rle(s)，对字符串做游程编码，返回形如 '3a2b1c' 的字符串。例如 rle('aaabbc') == '3a2b1c'，rle('') == ''。只输出代码，函数名必须是 rle。
+20:23:07   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:23:07   🧹 题边界：清掉上一题残留的工作记忆 2 条
+20:23:23   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "实现游程编码逻辑", "tool": "finish", "args": {}, "rationale": "根据目标，直接实现所需功能，无需外部工具辅助"}], {"intent": "验证实现逻辑", "tool": "run_shell", "args": {"cmd": "python -c \'def rle(s): ...; pri'
+20:23:23   [1] 通道=深 候选=1 种类=1
+20:23:27       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+20:24:02   [2] 通道=深 候选=2 种类=2
+20:24:07       ↳ run_shell ok=True 实现游程编码功能
+20:24:28   [3] 通道=深 候选=1 种类=1
+20:24:41       ↳ finish ok=True 直接输出代码
+20:24:41   ✅ 收尾: ```python
+def rle(s):
+    if not s:
+        return ''
+    prev_char = s[0]
+    count = 1
+    result = ''
+    for char in
+20:24:41 ■ done 验收=ANSWER(无约定产物) | steps=3 执行=3下发/3成/0败（交付=1/步骤=2/未轮到=1） 尾=0 | guard_blocked=0 | 预演=11 检验=11 命中=11 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=0(-) | 通量[perceive>memory=1.025 memory>reason=1.0 reason>act=0.75] 回流=1.0 | 语义记忆=0 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 rle/语言标签/可编译/结构检查)
+20:24:42 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+20:24:42   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:24:42   🧹 题边界：清掉上一题残留的工作记忆 3 条
+20:24:58   [1] 通道=深 候选=1 种类=1
+20:25:01       ↳ recall ok=True 查找解析字符串的库
+20:25:23   [2] 通道=深 候选=2 种类=2
+20:25:27       ↳ finish ok=True 直接根据字符串解析逻辑实现函数
+20:25:27   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：recall×1
+20:25:27   ✅ 收尾: ```python
+def parse_duration(s):
+    if not s:
+        return None
+    s = s.lower()
+    if 'h' in s:
+        h, m = s.s
+20:25:27 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=1 | guard_blocked=0 | 预演=13 检验=13 命中=13 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.853 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 题边界清空工作记忆=3条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 parse_duration/语言标签/可编译/结构检查)
+20:25:28 ▶ 任务开始: 写一个函数 dedupe(seq)，返回一个新列表：去掉重复元素并保持首次出现的顺序。元素可能是数字或字符串。只输出代码，函数名必须是 dedupe。
+20:25:28   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:25:28   🧹 题边界：清掉上一题残留的工作记忆 2 条
+20:25:43   [1] 通道=深 候选=1 种类=1
+20:25:45       ↳ finish ok=True 使用集合去重并保持顺序
+20:25:45   ✅ 收尾: ```python
+def dedupe(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen
+20:25:45 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=0） 尾=0 | guard_blocked=0 | 预演=14 检验=14 命中=14 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.167 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=0 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 dedupe/语言标签/可编译/结构检查)
+20:25:45 ▶ 任务开始: 写一个函数 commas(n)，把非负整数转成带千分位逗号的字符串：commas(1234567) == '1,234,567'，commas(0) == '0'，commas(999) == '999'。只输出代码，函数名必须是 comm
+20:25:45   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:25:45   🧹 题边界：清掉上一题残留的工作记忆 1 条
+20:26:02   [1] 通道=深 候选=3 种类=3
+20:26:04       ↳ finish ok=True 直接实现函数
+20:26:04   ⏭ 交付成功 ⇒ 本轮剩余 2 个候选未轮到：note×1、run_shell×1
+20:26:04   ✅ 收尾: ```python
+def commas(n):
+    return f'{n:,}'
+```
+20:26:04 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=2） 尾=2 | guard_blocked=0 | 预演=15 检验=15 命中=15 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.39 memory>reason=n/a reason>act=0.333] 回流=n/a | 语义记忆=0 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 commas/语言标签/可编译/结构检查)
+20:26:04 ▶ 任务开始: 写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6
+20:26:04   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:26:04   🧹 题边界：清掉上一题残留的工作记忆 1 条
+20:26:20   [1] 通道=深 候选=1 种类=1
+20:26:23       ↳ recall ok=True 查找已有实现
+20:26:41   [2] 通道=深 候选=2 种类=2
+20:26:45       ↳ finish ok=True 直接根据逻辑编写代码
+20:26:45   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：recall×1
+20:26:45   ✅ 收尾: ```python
+def merge_ranges(pairs):
+    if not pairs:
+        return []
+    pairs.sort(key=lambda x: x[0])
+    merged = [
+20:26:45 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=1 | guard_blocked=0 | 预演=17 检验=17 命中=17 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.86 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_ranges/语言标签/可编译/结构检查)
+20:26:45 ▶ 任务开始: 写一个函数 top_k(words, k)，输入一个字符串列表，返回出现次数最多的前 k 个 (词, 次数) 元组，按次数从高到低排列；次数相同时按词升序排列。例如 top_k(['a','b','a'], 1) == [('a', 2)]
+20:26:45   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:26:45   🧹 题边界：清掉上一题残留的工作记忆 2 条
+20:27:08   [1] 通道=深 候选=2 种类=2
+20:27:11       ↳ run_shell ok=True 使用内置函数统计词频，然后手动排序
+20:27:29   [2] 通道=深 候选=1 种类=1
+20:27:33       ↳ finish ok=True 直接编写 top_k 函数实现功能
+20:27:33   ✅ 收尾: ```python
+from collections import Counter
+
+def top_k(words, k):
+    freq = Counter(words)
+    return sorted(freq.items()
+20:27:33 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=0 | guard_blocked=0 | 预演=19 检验=19 命中=19 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.166 memory>reason=1.0 reason>act=0.667] 回流=1.0 | 语义记忆=0 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 top_k/语言标签/可编译/结构检查)
+20:27:33 ▶ 任务开始: 写一个函数 rle(s)，对字符串做游程编码，返回形如 '3a2b1c' 的字符串。例如 rle('aaabbc') == '3a2b1c'，rle('') == ''。只输出代码，函数名必须是 rle。
+20:27:33   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.01s/300s | llm_kind=http | 外部能力 0 个
+20:27:33   🧹 题边界：清掉上一题残留的工作记忆 2 条
+20:27:48   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "实现游程编码逻辑", "tool": "finish", "args": {}, "rationale": "根据目标，直接实现所需功能，无需外部工具辅助"}], {"intent": "验证实现逻辑", "tool": "run_shell", "args": {"cmd": "python -c \'def rle(s): ...; pri'
+20:27:48   [1] 通道=深 候选=1 种类=1
+20:27:52       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+20:28:20   [2] 通道=深 候选=2 种类=2
+20:28:24       ↳ run_shell ok=True 实现游程编码功能
+20:28:44   [3] 通道=深 候选=1 种类=1
+20:28:55       ↳ finish ok=True 直接输出代码
+20:28:55   ✅ 收尾: ```python
+def rle(s):
+    if not s:
+        return ''
+    prev_char = s[0]
+    count = 1
+    result = ''
+    for char in
+20:28:55 ■ done 验收=ANSWER(无约定产物) | steps=3 执行=3下发/3成/0败（交付=1/步骤=2/未轮到=1） 尾=0 | guard_blocked=0 | 预演=22 检验=22 命中=22 命中率=1.0 失配=0(成败0/文本0) | 价值判定=3 否决=0(-) | 通量[perceive>memory=1.025 memory>reason=1.0 reason>act=0.75] 回流=1.0 | 语义记忆=0 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 rle/语言标签/可编译/结构检查)
+  内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=2 mean=0.8611 std=0.0000 [0.8611,0.8611] 极差=0.0000
+  attempted=12 recorded=12 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=6 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=22 检验=22 命中=22 命中率=1.0 失配=0(成败0/文本0) 混淆={'ok_ok': 22, 'ok_fail': 0, 'fail_ok': 0, 'fail_fail': 0}
+  规划器    调用=22 失败=2（json=2 截断=0 无工具=0 空计划=0） 率=0.091 重问=0 补救=12/0 修复=0/0（补完=0）
+  候选让位  开关=1 用=0 救回=答案0/步骤0（finish=0 外部=0） 答案率=n/a ｜代价：额外失败=0 无弹药=0
+
+--- 噪声明细（逐题 × 逐次）---
+  任务                        r1      r2   极差
+  t01_parse_duration    0.8333  0.8333   0.0000
+  t02_dedupe            1.0000  1.0000   0.0000
+  t03_commas            1.0000  1.0000   0.0000
+  t04_merge_ranges      0.3333  0.3333   0.0000
+  t05_top_k             1.0000  1.0000   0.0000
+  t06_rle               1.0000  1.0000   0.0000
+
+  各次总分极差（噪声下限）= 0.0000
+  逐题不稳定的任务 = 0/6
+  ⇒ 逐题逐次**完全一致** ⇒ 该温度下链路是确定的，噪声下限 = 0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=79b2f68ba2248816 scorer=d4b1cbbfd7f1 suite=618a18cafd2f repeat=2 budget=1x temperature=0.0 fresh=False memory_scope=shared_db memory_seed=(0, 0) limits=e00936204c llm_cond=dfd788fefb max_tokens=1024 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v61/bench_a/runs.jsonl

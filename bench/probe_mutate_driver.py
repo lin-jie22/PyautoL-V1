@@ -70,6 +70,8 @@ def main() -> int:
     os.environ["V1_FORESIGHT_VETO"] = "1"
     os.environ["V1_PLAN_SALVAGE"] = "3"
     os.environ["V1_CAND_FAILOVER"] = "1"
+    #: ★第一百四十七轮（§127）：本轮新增的字段，按前几轮同一姿势**塞进环境再断言被清掉**。
+    os.environ["V1_VERIFY_EXEC"] = "1"
     os.environ["V1_LLM_MODEL"] = "keep-me"
     e = MD.clean_env({"V1_MAX_STALL": "3"})
     # ⚠️ 这个数字是**故意的硬锚**：加 `Limits` 字段时它必然红，
@@ -95,6 +97,10 @@ def main() -> int:
     #    23 → 24（第一百三十轮加 `plan_salvage`，§106）。复核方式同上第三轮：
     #    `V1_PLAN_SALVAGE` 也塞进环境，断言它被清掉。这一条对本轮尤其要紧 ——
     #    `run_v40` 的四臂就是靠这个 env 区分的，清不干净 ⇒ 臂之间互相污染。
+    #    25 → 26（第一百四十七轮加 `verify_exec`，§127）。复核方式同上：
+    #    `V1_VERIFY_EXEC` 也塞进环境、断言被清掉。本轮两臂**只差这一个 env**
+    #    ⇒ 它若清不干净，A 臂会静默变成 B 臂，而读数看上去完全正常
+    #    （"强制验证无效"就是这样被伪造出来的）。
     #    24 → 25（第一百三十二轮加 `cand_failover`，§108）。复核方式同上：
     #    `V1_CAND_FAILOVER` 也塞进环境、断言被清掉。⛔ 这一条比前几轮更要紧 ——
     #    本轮四臂里有两臂是 `V1_CAND_FAILOVER=0`，而 0 会被 `_env_int` 当"没填"
@@ -103,15 +109,17 @@ def main() -> int:
        e.get("V1_MAX_STALL") == "3" and "V1_RECALL_K" not in e
        and "V1_STATE_CHARS" not in e and "V1_FORESIGHT_VETO" not in e
        and "V1_PLAN_SALVAGE" not in e and "V1_CAND_FAILOVER" not in e
-       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 25,
+       and "V1_VERIFY_EXEC" not in e
+       and e.get("V1_LLM_MODEL") == "keep-me" and len(fields) == 26,
        f"limits 字段 {len(fields)} 个 ｜ V1_RECALL_K={'在' if 'V1_RECALL_K' in e else '已清'}"
        f" ｜ V1_STATE_CHARS={'在' if 'V1_STATE_CHARS' in e else '已清'}"
        f" ｜ V1_FORESIGHT_VETO={'在' if 'V1_FORESIGHT_VETO' in e else '已清'}"
        f" ｜ V1_PLAN_SALVAGE={'在' if 'V1_PLAN_SALVAGE' in e else '已清'}"
-       f" ｜ V1_CAND_FAILOVER={'在' if 'V1_CAND_FAILOVER' in e else '已清'}")
+       f" ｜ V1_CAND_FAILOVER={'在' if 'V1_CAND_FAILOVER' in e else '已清'}"
+       f" ｜ V1_VERIFY_EXEC={'在' if 'V1_VERIFY_EXEC' in e else '已清'}")
     for k in ("V1_MAX_STALL", "V1_RECALL_K", "V1_STATE_CHARS",
               "V1_FORESIGHT_VETO", "V1_PLAN_SALVAGE", "V1_CAND_FAILOVER",
-              "V1_LLM_MODEL"):
+              "V1_VERIFY_EXEC", "V1_LLM_MODEL"):
         os.environ.pop(k, None)
 
     # ── P6：守门员的"生效 + 单变量"，每格都喂一个坏样本 ────────────────────

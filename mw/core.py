@@ -25,6 +25,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import time
 from dataclasses import dataclass, field
@@ -98,6 +99,19 @@ EXPAND_MARK = "[回看 "
 
 #: 单个任务最多回看几次。**必须有上限**，否则"按需取回"就是"迟早把窗口塞满"。
 EXPAND_MAX_PER_TASK = 3
+
+#: 每题最多把几条 `run_shell` 的命令原文写进账本（V61，§127）。
+#:
+#: ⚠️ 为什么要有上限：账本是**每题一行**的 JSONL，不留上限的命令原文能让一行变几 MB，
+#:   而 `runs.jsonl` 是要被 `json.loads` 整体读的（V57~V60 的解析脚本全是这么读的）。
+#: ⚠️ 为什么要记原文（V60 自踩第一条）：那一轮 4 条命令**一条都不可审计** ——
+#:   `shell_stats["trace"]` 只有 `r2:1`，`_kshell_absorb` 也没搬 ⇒ 只能从 `ws/` 残留反推。
+#:   而"验证动作到底做了什么"恰恰是那一轮最该回答的问题（答案是 `echo` 出来的残次品）。
+SHELL_CMD_CAP = 40
+
+#: 写进账本的命令压成单行后留多少字符。够看清"是 `py_compile` 还是 `echo >`"，
+#: 又不至于把整段 heredoc 塞进去。
+SHELL_CMD_CHARS = 120
 
 
 def recall_trigger(*, ok: bool, error: str, mismatched: bool) -> str:
@@ -1877,6 +1891,25 @@ class Core:
                               exclude_task_id=task_id)
 
     # ------------------------------------------------------------------
+    def _note_example(self, v) -> None:
+        """把**一次闸**里示例判据的执行结果记进读数（V61，§127）。
+
+        ⚠️ 位置必须在 `vfy.run` **之后一行**：闸有三处调用点（主循环 `_gate_finish`
+        与收尾 `_close_out`），漏一处就会让"示例判据跑了 8 次而 failed 只有 1 次"
+        这类读数分不清是"没触发"还是"没数到"（V55/V57/V58/V60 都在这类地方踩过）。
+        ⛔ 不数"答案里有几行代码"之类的替代指标：这一格问的是**闸有没有拿它去跑**。
+        """
+        if not self._ex_checks:
+            return
+        st = self.verify_stats
+        st["example_runs"] += 1
+        names = {c.name for c in self._ex_checks}
+        if v.ok or not (names & set(v.failed)):
+            return
+        st["example_failed"] += 1
+        if vfy.EXEC_FAULT in (v.report or ""):
+            st["exec_err"] += 1
+
     def _gate_finish(self, result: ToolResult) -> ToolResult:
         """`finish` 之后、交付之前的那道闸。通过 ⇒ 原样返回；不过 ⇒ 变成一次失败。
 
@@ -1902,6 +1935,7 @@ class Core:
         """
         v: vfy.Verdict = vfy.run(result.output, self._checks)
         self.verify_stats["runs"] += 1
+        self._note_example(v)
         if v.ok:
             self.verify_stats["passed"] += 1
             return result
@@ -2103,8 +2137,15 @@ class Core:
         同时两处各写一份字典必然漂移（`run()` 加了键而 `__init__` 没加）。
         """
         self._checks: tuple[vfy.Check, ...] = (
-            vfy.derive(goal, int(self.s.limits.verify_static))
+            vfy.derive(goal, int(self.s.limits.verify_static),
+                       int(self.s.limits.verify_exec))
             if int(self.s.limits.verify_retries) > 0 else ())
+        #: ★ V61（§127）：本题的**示例判据**（0 或 1 条）。单独留一个引用是因为
+        #:   闸要按它计数（`example_runs` / `example_failed`），而 `v.failed` 只给名字。
+        #: ⛔ 不从 `verify_stats["checks"]` 反查：那是**名字**（`示例可跑×3`），
+        #:   名字里带条数 ⇒ 字符串比较会随题面变化，属于"用说明当键"。
+        self._ex_checks: tuple[vfy.Check, ...] = tuple(
+            c for c in self._checks if c.kind == "example")
         self.verify_stats: dict = {
             "runs": 0, "passed": 0, "failed": 0, "exhausted": 0,
             #: ★第九十一轮（§57）：**收尾那一次**闸的读数。
@@ -2113,6 +2154,15 @@ class Core:
             #:    完全看不见（A 臂 6 次全是 `1跑/0过/1打回/0放弃`，
             #:    而那 1 次打回发生在**主循环**，交付物却换了来源）。
             "closeout_runs": 0, "closeout_failed": 0,
+            #: ★ V61（§127）：**题面示例**判据的分母。三层，不许合成一个：
+            #:   `example_tasks` = **题**（题面里抽到了示例的题数 ⇒ 判据的适用面）；
+            #:   `example_runs` / `example_failed` = **次**（闸被调用 / 被它拒）。
+            #: ⚠️ `example_tasks=0` 的题不是"通过了"，是**这条判据不适用** ——
+            #:    与 `undefined_names` 的 `None`/`()` 之分同宗。
+            #: ⛔ `exec_err` 是**装置自曝**（超时 / 子进程起不来）：
+            #:    并进 `example_failed` 就是把装置的锅记到被测对象头上。
+            "example_tasks": 1 if self._ex_checks else 0,
+            "example_runs": 0, "example_failed": 0, "exec_err": 0,
             "checks": [c.name for c in self._checks],
         }
         #: 每次 `finish` 的答案原文 —— 自检打回时**留着**，供最终交付兜底。
@@ -2241,6 +2291,10 @@ class Core:
             "after_fail_retry": 0,    # 上一条 shell 非 0 之后**又跑了一次** shell
             "after_fail_answer": 0,   # 上一条 shell 非 0 之后**交付了答案**（且此前没再跑）
             "trace": [],              # 逐条顺序证据，见 docstring
+            #: ★ V61（§127）：命令原文（`sha8:单行前 120 字`）。与 `trace` **并列**，
+            #: ⛔ 不合并：`trace` 的格式被 AZ122 钉着，且两者回答的问题不同 ——
+            #:   `trace` 说"第几轮、返回码几"，这里说"**它到底做了什么**"。
+            "trace_cmd": [],
         }
         #: 上一条 shell 是否**非 0 结束**。⛔ 跨题不许留（每题独立）。
         self._shell_prev_fail: bool = False
@@ -2256,6 +2310,14 @@ class Core:
         """
         ss = self.shell_stats
         ss["dispatched"] += 1
+        # ★ V61（§127）：**命令原文**。放在最前面、且在 `result.ok` 分支之前 ——
+        #   调用失败（缺参/异常）的那些**也要留**，因为"我想跑但跑不了"与
+        #   "我跑了但错了"是两件事，而前者的命令原文同样是对账依据。
+        _cmd = str((getattr(cand, "args", None) or {}).get("cmd") or "")
+        if len(ss["trace_cmd"]) < SHELL_CMD_CAP:
+            _one = " ".join(_cmd.split())[:SHELL_CMD_CHARS]
+            ss["trace_cmd"].append(
+                f"r{it}:{hashlib.sha1(_cmd.encode('utf-8')).hexdigest()[:8]}:{_one}")
         if self._shell_prev_fail:
             ss["after_fail_retry"] += 1
         if not result.ok:
@@ -2611,6 +2673,7 @@ class Core:
         if best and self._checks:
             _co_v = vfy.run(best, self._checks)
             self.verify_stats["runs"] += 1
+            self._note_example(_co_v)
             self.verify_stats["closeout_runs"] += 1
             co["gate_checked"] += 1
             if _co_v.ok:

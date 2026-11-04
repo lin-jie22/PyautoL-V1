@@ -48,6 +48,26 @@
 "自检通过"这句话的全部含义是"结构上过得去"，不是"做对了"。
 把它读成后者，就是 V1 版本的"自己给自己发分"。
 
+## ⭐ 第一百四十七轮（V61，§127）：**重开**上面那条"不做执行"
+
+那段判词的前提在 V60 之后**塌了一半**，所以本轮把它拆开重判 —— 不是推翻，是**限定**：
+
+| 第八十轮反对的理由 | 现在还成立吗 |
+|---|---|
+| 代价：**探针输入**（一处新的判据来源） | ⛔ **不成立了**。V61 的输入是**题面自带的示例**（`commas(0) == '0'`）。题面本来就是做题人手里的东西，不是判分器事后才有的信息 ⇒ 与"判据只从题面派生"这条立论**一致**，不是新来源。 |
+| 边际只有 1 格（sg05 0/14→1/14） | ⚠️ 只对**那一套题**成立。那套题的错是"处理顺序写反"，与本套题无关。 |
+| 挂死风险 / 沙箱 | ✅ 仍然成立，所以：`subprocess.run(timeout=5)` + `python3 -I -B` + 独立 tempdir，失败一律折成说明，⛔ 绝不抛。 |
+
+V60 的实测把"再做一层"这条线**走完了**：放开 `--allow-shell` 之后模型 4/4 都跑了，
+但**验证只落在已经做对的题上**（`top_k`/`rle` 全 1.0，各跑 2 次），
+唯一真错的 `merge_ranges`（0.3333）22 轮里**一次都没提**。
+⇒ 结论不是"验证无效"，是**验证由模型自己选，就永远选在安全的地方**。
+所以它必须进**交付闸**（位置写死的第四处，与 `defines`/`compiles` 同一处代码）。
+
+⚠️ 判据的期望值**只从题面抽**：`example_asserts(goal)` 找不到 `==` 就**不派这条判据**
+（本套题 6 题里 4 题有，t01/t02 没有）——"没有示例"必须是**判据缺席**，
+不许退化成"跑一下看有没有抛异常"，那又回到 V60 那个 `rc=0` 的坑里。
+
 ## `undefined` 是怎么来的，为什么**不是**"跑一下看看"
 
 第八十轮实测（证据 `bench/evidence/answers_s79/`）：
@@ -80,7 +100,11 @@ from __future__ import annotations
 import builtins
 import os
 import re
+import shutil
+import subprocess
 import symtable
+import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -118,6 +142,196 @@ _BUILTINS = frozenset(dir(builtins))
 _DYNAMIC_BIND = re.compile(r"\b(?:exec|eval|globals|locals|vars)\s*\(|\bimport\s*\*")
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# 题面示例（V61，§127）—— 判据的**期望值**从哪来
+#
+# ⛔ 只从 `goal`（题面）抽。打分器的 `tests` 字段一个字都不许读 —— 那是尺子。
+#    题面里的"例如 `commas(0) == '0'`"是**出题人交给做题人的要求**，
+#    与"函数名必须是 commas"是同一类信息。
+# ══════════════════════════════════════════════════════════════════════════
+
+#: 分句边界。⚠️ **只按全角标点与换行分**：示例里常带 ASCII 逗号
+#: （`[('a', 2)]`、`'1,234,567'`），按 ASCII 分会把一条断言切成两半。
+_EX_SPLIT = re.compile(r"[，。；\n]")
+
+#: 中文里引出示例的词。剥掉它们，剩下的才可能是一条断言。
+_EX_LEAD = re.compile(r"^\s*(?:例如|比如|如|示例[:：]?)\s*")
+
+#: 一个函数调用的开头。⚠️ 前面**允许有别的字**：`…带千分位逗号的字符串：commas(1234567) == '1,234,567'`。
+_EX_CALL = re.compile(r"\b([A-Za-z_]\w*)\s*\(")
+
+#: 一题最多抽几条。设上限不是洁癖：题面可以很长，`assert` 越多，
+#: 超时与"一条挂死全盘不算"的面越大。
+_EX_MAX = 5
+
+#: 子进程上限。⛔ 必须有界：答案里一个 `while True:` 就能把交付闸拖死。
+_EX_TIMEOUT_S = 5.0
+
+#: 报告里留给 stderr 末行的字数。只要"错在哪一行"，不要整个 traceback。
+_EX_OUT_CAP = 400
+
+#: ⭐ **装置自曝**的标记。内核靠这个前缀把"判据说答案错了"与"装置自己崩了"
+#: 分开计（`kernel_verify.exec_err`）。⛔ 合成一个数就是把装置的锅记到被测对象头上。
+EXEC_FAULT = "示例执行装置故障："
+
+
+def _match_close(s: str, i: int) -> int:
+    """`s[i]` 是 `(`；返回与它配对的 `)` 的下标，配不上 ⇒ `-1`。"""
+    depth, quote = 0, ""
+    while i < len(s):
+        ch = s[i]
+        if quote:
+            if ch == "\\":       # 转义：跳过下一个字符（`'it\\'s'`）
+                i += 2
+                continue
+            if ch == quote:
+                quote = ""
+        elif ch in "'\"":
+            quote = ch
+        elif ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    return -1
+
+
+def _cut_call(s: str) -> str | None:
+    """从一段文字里切出**一条** `f(...) == …`。切不出 ⇒ `None`。
+
+    为什么要括号配对而不是正则：`merge_ranges([(1,3),(2,6),(8,10)])` 里有嵌套括号，
+    非贪婪正则会在第一个 `)` 处停下，切出来的是 `merge_ranges([(1,3)` ——
+    那条 assert 语法错，会把**每题**都判成"示例不通过"。这种错读起来像"模型全错"。
+
+    ⚠️ 为什么要**遍历每一个**调用起点（V61 自踩）：同一个分句里可能先出现**函数签名**，
+    `写一个函数 commas(n)：commas(0) == '0'` 的第一个 `(` 属于 `commas(n)`，
+    只看它 ⇒ 切不出断言 ⇒ **判据静默缺席**，而读数上看起来像"这题没有示例"。
+    """
+    for m in _EX_CALL.finditer(s):
+        j = _match_close(s, m.end() - 1)
+        if j < 0:
+            continue
+        if not s[j + 1:].lstrip().startswith("=="):
+            continue
+        return s[m.start():].strip()
+    return None
+
+
+def example_asserts(goal: str) -> tuple[str, ...]:
+    """从**题面**抽示例断言（`assert f(...) == …`）。抽不到 ⇒ `()`。
+
+    ⚠️ `()` 的语义是**"这题没有可比对的期望值"**，不是"示例通过了"。
+    两者在读数上必须分得开（同 `undefined_names` 的 `None` / `()` 之分）。
+    """
+    out: list[str] = []
+    for chunk in _EX_SPLIT.split(goal or ""):
+        s = _EX_LEAD.sub("", chunk.strip()).strip()
+        if not s or "==" not in s:
+            continue
+        one = _cut_call(s)
+        if not one:
+            continue
+        line = f"assert {one}"
+        if line in out:
+            continue
+        out.append(line)
+        if len(out) >= _EX_MAX:
+            break
+    return tuple(out)
+
+
+def _split_eq(s: str) -> tuple[str, str] | None:
+    """在**顶层**（括号外、引号外）找第一个 `==`，切成 `(左, 右)`。
+
+    ⛔ 不能用 `s.split("==")`：`commas(0) == '='` 里的 `'='` 会把右值切碎；
+    `f(x) == g(y == z)` 里的第二个 `==` 是**内层**的，切在那儿就成了语法错。
+    """
+    depth, quote, i = 0, "", 0
+    while i < len(s) - 1:
+        ch = s[i]
+        if quote:
+            if ch == "\\":
+                i += 2
+                continue
+            if ch == quote:
+                quote = ""
+        elif ch in "'\"":
+            quote = ch
+        elif ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        elif ch == "=" and s[i + 1] == "=" and depth == 0:
+            return s[:i].strip(), s[i + 2:].strip()
+        i += 1
+    return None
+
+
+#: 跑示例的**外壳**。为什么不用裸 `assert`：裸 assert 的报错只有 `AssertionError`，
+#: 模型据此只能猜"哪个错了、差多少"。V60 的教训是"`rc=0` 不带信息"，
+#: 同一条理由在这儿成立：**验证必须产出可比对的结果**，否则跑一万次也没人改得动。
+#: ⚠️ 只暴露 `实得 / 期望` 两个值 —— 它们由**模型自己的代码**算出来，不是新信息。
+_EX_HARNESS = '''
+def _v1_chk(n, src, got, want):
+    if got != want:
+        print("示例%d未通过：%s" % (n, src))
+        print("  实得 %r" % (got,))
+        print("  期望 %r" % (want,))
+        raise SystemExit(3)
+'''
+
+
+def run_example(code: str, asserts: str) -> str:
+    """把**答案代码 + 题面示例**放一个独立目录里跑一次。通过 ⇒ `""`。
+
+    ⛔ 四条不许省：
+      ① `timeout` —— 答案里一个死循环就能把交付闸拖死，而那是**装置**挂掉；
+      ② 独立 tempdir + `-I` —— 别人在 `ws/` 里留的残次品不许参与，`sys.path` 也不许含 cwd；
+      ③ 装置故障有一个**自己的前缀**（`EXEC_FAULT`）—— 与"示例不通过"分开计；
+      ④ 失败必须带**实得/期望**（`_EX_HARNESS`）—— 只回一句 `AssertionError`
+         等于让做题人重新猜一遍，而"跑一遍"的全部价值就在这四个字之外。
+    """
+    if not (code or "").strip():
+        return "抽不出可执行代码"
+    calls: list[str] = []
+    for n, line in enumerate([x for x in asserts.splitlines() if x.strip()], 1):
+        body = line.strip()
+        if body.startswith("assert "):
+            body = body[len("assert "):].strip()
+        eq = _split_eq(body)
+        if eq is None:
+            calls.append(f"assert {body}")
+        else:
+            left, right = eq
+            calls.append(f"_v1_chk({n}, {body!r}, {left}, {right})")
+    src = (code.rstrip("\n") + "\n" + _EX_HARNESS + "\n" + "\n".join(calls) + "\n")
+    tmp = tempfile.mkdtemp(prefix="v1ex-")
+    try:
+        path = Path(tmp) / "answer.py"
+        path.write_text(src, encoding="utf-8")
+        try:
+            r = subprocess.run([sys.executable, "-I", "-B", str(path)],
+                               cwd=tmp, capture_output=True, text=True,
+                               timeout=_EX_TIMEOUT_S)
+        except subprocess.TimeoutExpired:
+            return f"{EXEC_FAULT}超过 {_EX_TIMEOUT_S:.0f}s（死循环或等待输入）"
+        except (OSError, ValueError) as e:
+            return f"{EXEC_FAULT}{type(e).__name__}: {e}"
+        if r.returncode == 0:
+            return ""
+        lines = [ln for ln in (r.stdout or "").strip().splitlines() if ln.strip()]
+        if lines:
+            # 外壳自己打的（示例 N 未通过 + 实得/期望）—— 三行，别截。
+            return "；".join(ln.strip() for ln in lines[-3:])
+        err = [ln for ln in (r.stderr or "").strip().splitlines() if ln.strip()]
+        tail = err[-1][:_EX_OUT_CAP] if err else f"退出码 {r.returncode}"
+        return f"题面示例未通过：{tail}"
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 @dataclass(frozen=True)
 class Check:
     """一条判据。`name` 是给人读的，进日志与读数；`kind` 是给代码分支用的。"""
@@ -127,7 +341,13 @@ class Check:
     arg: str = ""
 
     def as_line(self) -> str:
-        return f"{self.name}<{self.kind}{(':' + self.arg) if self.arg else ''}>"
+        # ⚠️ `arg` 可能是**多行**（示例断言一行一条）⇒ 换行压成空格再截断。
+        #    不截断的话，一条 `■` 汇总行会被 5 条 assert 撑到 400 字，
+        #    而那一行是逐题读数的主视图。
+        arg = (self.arg or "").replace("\n", " ")
+        if len(arg) > 48:
+            arg = arg[:48] + "…"
+        return f"{self.name}<{self.kind}{(':' + arg) if arg else ''}>"
 
 
 @dataclass(frozen=True)
@@ -204,7 +424,7 @@ def undefined_names(code: str) -> tuple[tuple[str, str], ...] | None:
     return tuple(out)
 
 
-def derive(goal: str, static: int = 0) -> tuple[Check, ...]:
+def derive(goal: str, static: int = 0, exec_: int = 0) -> tuple[Check, ...]:
     """从**目标文本**派生判据。派生规则只有这一处。
 
     ⚠️ `nonempty` 恒开：它不是形式主义 —— `finish` 带空答案是一个真实发生过的
@@ -229,6 +449,16 @@ def derive(goal: str, static: int = 0) -> tuple[Check, ...]:
         if _st > 0:
             checks.append(Check("未定义名" if _st == 1 else "结构检查",
                                 "undefined", str(_st)))
+        # ★ V61（§127）：**题面示例**。排在最后，理由与 `undefined` 相同 ——
+        #   前面几条都是"改一下就好"的，这条要跑一遍、代价最大。
+        # ⚠️ 抽不到示例就**不派**（t01/t02 就是这样）：判据缺席必须显形，
+        #   不许退化成"跑一下没抛异常就算过"（那是 V60 的 `rc=0` 坑）。
+        # ⚠️ `arg` 里放的是**断言原文**，`name` 里放条数：名字进读数，
+        #   原文只在日志里给人看（`as_line` 会截断）。
+        if int(exec_) > 0:
+            _ex = example_asserts(goal)
+            if _ex:
+                checks.append(Check(f"示例可跑×{len(_ex)}", "example", "\n".join(_ex)))
     return tuple(checks)
 
 
@@ -289,6 +519,15 @@ def _check_one(c: Check, answer: str, code: str) -> str:
             return ""
         return f"缺少 def {c.arg}(...)"
 
+    if c.kind == "example":
+        # ⚠️ 与其它判据**同一条规矩**：判据自己崩了不许抛出去。
+        #   `run_example` 的三条异常路径都已折成说明，这里再兜一层 ——
+        #   兜底的错**也带 `EXEC_FAULT` 前缀**，否则装置故障会被读成模型写错了。
+        try:
+            return run_example(code, c.arg)
+        except Exception as e:                       # noqa: BLE001
+            return f"{EXEC_FAULT}{type(e).__name__}: {e}"
+
     # 未知 kind：**显式失败**，不静默放行。
     # 一个静默放行的判据比没有判据更坏 —— 它让"检查过了"变成谎话。
     return f"未知判据类型 {c.kind!r}（未实现 ⇒ 不能算通过）"
@@ -302,7 +541,7 @@ def run(answer: str, checks: tuple[Check, ...] | list[Check]) -> Verdict:
         # 这两件事在读数上必须分开，否则"自检通过率 100%"可以靠关掉判据拿到。
         return Verdict(False, ("(无判据)",), "本轮没有派生到任何判据")
     code = extract_code(answer) if any(
-        c.kind in ("compiles", "defines", "undefined") for c in checks) else ""
+        c.kind in ("compiles", "defines", "undefined", "example") for c in checks) else ""
     failed: list[str] = []
     reports: list[str] = []
     for c in checks:

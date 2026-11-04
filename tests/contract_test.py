@@ -1361,6 +1361,11 @@ def _env_zero_takes_effect(key: str) -> bool:
         #   KeyError 打断整个测试**（本文件 R13 硬坑：崩了不是判红）。
         #   本轮尤其要紧 —— `run_v42.sh` 的 2×2 里有**两臂**是 `=0`。
         "V1_CAND_FAILOVER": ("limits", "cand_failover"),
+        # ★第一百四十七轮（§127）：`V1_VERIFY_EXEC=0` 就是**对照臂 A0**
+        #   （= V60 及之前：交付闸只做静态判定）。今天默认也是 0，
+        #   所以"不登记"看不出差别 —— 但只要将来把默认 promote 成 1，
+        #   A0 就会静默变成 A1，而"强制验证没用"会被量成真。
+        "V1_VERIFY_EXEC": ("limits", "verify_exec"),
     }
     grp, attr = _keys[key]
     _old = os.environ.get(key)
@@ -5815,13 +5820,32 @@ _AS_D2 = [c.kind for c in _AS_V.derive("解释一下为什么 CSV 里的引号�
 _AS_BANNED_PARM = ("answer", "ans", "output", "score", "report", "why", "verdict")
 _AS_DERIVE_BAD = [n for n in _AS_DERIVE_ARGS if n.lower() in _AS_BANNED_PARM]
 _AS_STATIC_DEFAULT = inspect.signature(_AS_V.derive).parameters.get("static")
-check(RS, "AS3 ★`derive()` 只许收 `goal` 再加一个**配置档位**，且不同题面必须派生出不同判据\n"
+#: ★第一百四十七轮（§127）：签名多了第二个**配置档位**（`exec_`，题面示例判据）。
+#: ⚠️ 这**不是放宽**：这三条同时在
+#:    · 两个档位的默认值都必须 0（关 ⇒ 判据集与旧版**逐字节相同**，下面实测）；
+#:    · 禁用名照旧全禁（`answer`/`score`/… 一个都不许出现）；
+#:    · **新增**一条更紧的不变量：`exec_=0` 时派生出的判据 `kind` 序列必须与
+#:      传两个参数里那个"关"完全一致 —— 光看形参名，说不出"关掉真的等于没加"。
+_AS_SIG = inspect.signature(_AS_V.derive)
+_AS_GEAR_DEFAULTS = [(_AS_SIG.parameters[n].default if n in _AS_SIG.parameters else "缺")
+                     for n in ("static", "exec_")]
+_AS_G_EX = "写一个函数 commas(n)：commas(0) == '0'。只输出代码，函数名必须是 commas。"
+_AS_OFF_SAME = (
+    [c.kind for c in _AS_V.derive(_AS_G_EX, 0, 0)]
+    == [c.kind for c in _AS_V.derive(_AS_G_EX, 0)]
+    == [c.kind for c in _AS_V.derive(_AS_G_EX, 0)]
+    and [c.kind for c in _AS_V.derive("解释一下为什么 CSV 里的引号要双写。", 2, 0)]
+    == [c.kind for c in _AS_V.derive("解释一下为什么 CSV 里的引号要双写。", 2)])
+check(RS, "AS3 ★`derive()` 只许收 `goal` 再加**配置档位**，且不同题面必须派生出不同判据\n"
           "         —— 若它还能收 answer 或分数，就给了『答案反过来影响判据』的入口，\n"
-          "           那正是自评分的形态。",
-      _AS_DERIVE_ARGS == ["goal", "static"] and _AS_D1 != _AS_D2
+          "           那正是自评分的形态。\n"
+          "         ★ 第一百四十七轮：档位从 1 个变 2 个（`static` / `exec_`），\n"
+          "           但『关掉那个档位 ⇒ 判据集与旧版逐字节相同』这条不变量是本轮新加的。",
+      _AS_DERIVE_ARGS == ["goal", "static", "exec_"] and _AS_D1 != _AS_D2
       and _AS_STATIC_DEFAULT is not None and _AS_STATIC_DEFAULT.default == 0
-      and _AS_DERIVE_BAD == [],
+      and _AS_DERIVE_BAD == [] and _AS_GEAR_DEFAULTS == [0, 0] and _AS_OFF_SAME,
       f"形参={_AS_DERIVE_ARGS} 禁用名命中={_AS_DERIVE_BAD} "
+      f"档位默认={_AS_GEAR_DEFAULTS} 关掉=同构{_AS_OFF_SAME} "
       f"static默认={getattr(_AS_STATIC_DEFAULT, 'default', '缺')} "
       f"代码题={_AS_D1} 散文题={_AS_D2}")
 
@@ -12546,7 +12570,10 @@ _AZ122_KEYS_ZERO = sorted(["tasks", "tasks_with_shell", "offered", "dispatched",
                            "rc_zero", "rc_nonzero", "rc_unknown", "err",
                            "blocked", "blocked_by_checkpoint", "rounds_with_shell",
                            "shell_first_rounds", "after_fail_retry",
-                           "after_fail_answer"])
+                           "after_fail_answer",
+                           # ★ V61（§127）：命令原文。与 `trace` 并列、不合并 ——
+                           #   `trace` 的格式被本断言钉着，加键就得在这儿显形。
+                           "trace_cmd"])
 _AZ122_KEYS_LINE = sorted(_AZ122_KEYS_ZERO + ["rc_gap"])
 
 _AZ122_OKCHK = {
@@ -12628,6 +12655,146 @@ check(RS, "AZ122 ★★★**验证动作**：跑没跑 / 返回码 / 失败之�
       + f" ｜ trace ok={_az122_shell(_AZ122_O_OK)['trace']}"
         f" bad={_az122_shell(_AZ122_O_BAD)['trace']}"
         f" retry={_az122_shell(_AZ122_O_RETRY)['trace']}")
+
+# ===========================================================================
+# AZ123（V61，§127）：**强制验证** —— 题面示例判据：为什么它算判据、不算尺子
+#   判据的期望值只从 `goal` 抽（`commas(0) == '0'`），⛔ 不读 `tests`。
+#   十条里 ⑤ 是**边界**（证明它够不到尺子）、⑥ 是**装置自曝**（超时不许记成模型错）。
+# ===========================================================================
+_AZ123_GOAL_3 = ("写一个函数 commas(n)，把非负整数转成带千分位逗号的字符串："
+                 "commas(1234567) == '1,234,567'，commas(0) == '0'，"
+                 "commas(999) == '999'。只输出代码，函数名必须是 commas。")
+_AZ123_GOAL_0 = ("写一个函数 dedupe(seq)，返回去除重复元素后的新列表。"
+                 "只输出代码，函数名必须是 dedupe。")
+_AZ123_GOOD = "def commas(n):\n    return format(n, ',')\n"
+_AZ123_BAD = "def commas(n):\n    return str(n)\n"
+
+#: ① 抽取：真题集里哪几题有示例 —— 分母是**题**，不是断言条数。
+_AZ123_TASKS = [json.loads(ln) for ln in
+                (V1 / "bench" / "tasks" / "coding_small.jsonl")
+                .read_text(encoding="utf-8").splitlines() if ln.strip()]
+_AZ123_EX = {t["id"]: _AS_V.example_asserts(t.get("prompt", "")) for t in _AZ123_TASKS}
+_AZ123_WITH = [k for k, v in _AZ123_EX.items() if v]
+_AZ123_TOTAL = sum(len(v) for v in _AZ123_EX.values())
+
+#: ② 开关：`exec_=0` 不多派一条；`exec_=1` 多派**一条**（不是每条断言一条判据）。
+_AZ123_K0 = [c.kind for c in _AS_V.derive(_AZ123_GOAL_3, 0, 0)]
+_AZ123_K1 = [c.kind for c in _AS_V.derive(_AZ123_GOAL_3, 0, 1)]
+_AZ123_C1 = [c for c in _AS_V.derive(_AZ123_GOAL_3, 0, 1) if c.kind == "example"]
+_AZ123_K1_PLAIN = [c.kind for c in _AS_V.derive(_AZ123_GOAL_0, 0, 1)]
+
+#: ③④ 闸的两侧：同一组判据，只换答案。
+_AZ123_V_BAD = _AS_V.run(_AZ123_BAD, _AS_V.derive(_AZ123_GOAL_3, 0, 1))
+_AZ123_V_OK = _AS_V.run(_AZ123_GOOD, _AS_V.derive(_AZ123_GOAL_3, 0, 1))
+
+#: ⑤ 边界：判据的来源只有题面。⛔ 源码里出现尺子的东西就是开卷考。
+_AZ123_VSRC = (V1 / "mw" / "verify.py").read_text(encoding="utf-8")
+_AZ123_LEAK = [w for w in ('"tests"', "'tests'", "coding_small", "oracle", "partial")
+               if w in _AZ123_VSRC]
+_AZ123_SIG = list(inspect.signature(_AS_V.example_asserts).parameters)
+
+#: ⑥ 装置自曝：超时必须**带前缀**，不许冒充"示例不通过"。
+#: ⚠️ 这里把上限临时改成 0.2s（真值 5s）：测的是**分支**，不是 5 秒本身。
+_az123_old_to = _AS_V._EX_TIMEOUT_S
+_AS_V._EX_TIMEOUT_S = 0.2
+try:
+    _AZ123_TO = _AS_V.run("def commas(n):\n    while True:\n        pass\n",
+                          _AS_V.derive(_AZ123_GOAL_3, 0, 1))
+finally:
+    _AS_V._EX_TIMEOUT_S = _az123_old_to
+
+#: ⑦ 载荷：报错里必须是**运行时算出来的值**，不是判据自己的字面量。
+_AZ123_ACTUAL = "42"
+_AZ123_V_ACT = _AS_V.run("def commas(n):\n    return 42\n",
+                         _AS_V.derive(_AZ123_GOAL_3, 0, 1))
+
+#: ⑧ 账本键集：零点 9 键 / 落盘 10 键（派生量只在落盘行）。
+_AZ123_KEYS_ZERO = sorted(["tasks", "example_tasks", "runs", "passed", "failed",
+                           "exhausted", "example_runs", "example_failed", "exec_err"])
+_AZ123_KEYS_LINE = sorted(_AZ123_KEYS_ZERO + ["verify_gap"])
+
+
+class _AZ123Out:
+    def __init__(self, stats):
+        self.stats = stats
+
+
+_AZ123_A = _run._kvf_zero()
+_run._kvf_absorb(_AZ123_A, _AZ123Out({"verify": {
+    "example_tasks": 1, "runs": 3, "passed": 1, "failed": 2, "exhausted": 0,
+    "example_runs": 3, "example_failed": 2, "exec_err": 1}}))
+_run._kvf_absorb(_AZ123_A, _AZ123Out({"verify": {
+    "example_tasks": 0, "runs": 1, "passed": 1, "failed": 0, "exhausted": 0,
+    "example_runs": 0, "example_failed": 0, "exec_err": 0}}))
+_AZ123_B = _run._kvf_zero()
+_run._kvf_absorb(_AZ123_B, _AZ123Out({"verify": {
+    "example_tasks": 1, "runs": 2, "passed": 0, "failed": 2, "exhausted": 1,
+    "example_runs": 2, "example_failed": 2, "exec_err": 0}}))
+#: ⑨ 检测器：声称跑过 3 次、只归类 2 次 ⇒ `verify_gap` 必须 ≠ 0（⛔ 不许写死 0）。
+_AZ123_GAP = _run._kvf_line({**_run._kvf_zero(), "runs": 3, "passed": 1, "failed": 1})
+
+#: ⑩ 账本键在 + 两处并入 + 唯一定义（源码级，防"改了函数忘了接"）。
+_AZ123_RSRC = (V1 / "run.py").read_text(encoding="utf-8")
+_AZ123_LEDGER_OK = ('"kernel_verify": _kvf_line(_kvf)' in _AZ123_RSRC
+                    and _AZ123_RSRC.count("_kvf_absorb(_kvf, out)") == 2
+                    and _AZ123_RSRC.count("def _kvf_zero(") == 1)
+
+_AZ123_OK = {
+    "① 抽取：真题集 4/6 题有示例、共 7 条（t01/t02 一条都没有）": (
+        sorted(_AZ123_WITH) == ["t03_commas", "t04_merge_ranges",
+                                "t05_top_k", "t06_rle"]
+        and _AZ123_TOTAL == 7
+        and _AZ123_EX.get("t01_parse_duration") == ()
+        and _AZ123_EX.get("t03_commas") == ("assert commas(1234567) == '1,234,567'",
+                                            "assert commas(0) == '0'",
+                                            "assert commas(999) == '999'")),
+    "② 开关：`exec_=0` 不派（与旧版逐位同构），`exec_=1` 只多派**一条**": (
+        _AZ123_K0 == ["nonempty", "defines", "fence_lang", "compiles"]
+        and _AZ123_K1 == ["nonempty", "defines", "fence_lang", "compiles", "example"]
+        and len(_AZ123_C1) == 1 and _AZ123_C1[0].name == "示例可跑×3"
+        and _AZ123_C1[0].arg.count("assert ") == 3
+        and _AZ123_K1_PLAIN == ["nonempty", "defines", "fence_lang", "compiles"]),
+    "③ 闸**拒**：错代码 ⇒ `ok=False`，报错带「实得/期望」": (
+        _AZ123_V_BAD.ok is False and "实得" in _AZ123_V_BAD.report
+        and "期望" in _AZ123_V_BAD.report and "示例可跑×3" in _AZ123_V_BAD.failed),
+    "④ 闸**放**：对代码 ⇒ `ok=True`（判据不许比尺子更严）": (_AZ123_V_OK.ok is True),
+    "⑤ 边界：`example_asserts` 只收 `goal`；源码里没有尺子的东西": (
+        _AZ123_SIG == ["goal"] and _AZ123_LEAK == []),
+    "⑥ 装置自曝：超时带 `EXEC_FAULT` 前缀（⛔ 不许读成『示例不通过』）": (
+        _AS_V.EXEC_FAULT in _AZ123_TO.report and "示例未通过" not in _AZ123_TO.report),
+    "⑦ 载荷：报错里的值是**运行时算出来的**（代码返回 42 ⇒ 报 42）": (
+        _AZ123_V_ACT.ok is False and _AZ123_ACTUAL in _AZ123_V_ACT.report),
+    "⑧ 键集全等（9/10）+ 并入 + `verify_gap` 检测器活着": (
+        sorted(_run._kvf_zero()) == _AZ123_KEYS_ZERO
+        and sorted(_run._kvf_line(_run._kvf_zero())) == _AZ123_KEYS_LINE
+        and _AZ123_A["runs"] == 4 and _AZ123_A["example_runs"] == 3
+        and _AZ123_A["exec_err"] == 1 and _AZ123_B["exhausted"] == 1
+        and _AZ123_GAP["verify_gap"] == 1),
+    "⑨ 题级分母：`example_tasks` 只数**有示例**的题（两题一有一无 ⇒ 1）": (
+        _AZ123_A["tasks"] == 2 and _AZ123_A["example_tasks"] == 1),
+    "⑩ 账本键在 + 两处并入 + 唯一定义": (_AZ123_LEDGER_OK),
+}
+check(RS, "AZ123 ★★★**强制验证**：题面示例判据（跑一遍，比对期望值）\n"
+          "          ① 期望值**只从题面**抽（4/6 题、7 条），抽不到就**不派**判据；\n"
+          "          ② `exec_=0` ⇒ 判据集与旧版逐位同构；`exec_=1` ⇒ 只多**一条**；\n"
+          "          ③ 错代码必须被**拒**，报错带实得/期望（只回 `AssertionError` 等于让人重猜）；\n"
+          "          ④ 对代码必须**放**（判据不许比尺子更严）；\n"
+          "          ⑤ 边界：只能收 `goal`，源码里没有 `tests`/`oracle`/`partial`；\n"
+          "          ⑥ 超时是**装置自曝**（自己的前缀），不许冒充『示例不通过』；\n"
+          "          ⑦ 载荷是运行时的值（返回 42 ⇒ 报 42）；\n"
+          "          ⑧ 键集全等 + 并入 + `verify_gap` 检测器活着；\n"
+          "          ⑨ 题级分母 `example_tasks`；\n"
+          "          ⑩ 账本里有 `kernel_verify`。\n"
+          "          撤回语义：`_check_one` 里 `example` 直接 `return \"\"` ⇒ ③⑥⑦ 必红；\n"
+          "                    `derive` 不看 `exec_` ⇒ ② 必红；\n"
+          "                    `example_asserts` 改读 `tests` ⇒ ⑤ 必红；\n"
+          "                    `run_example` 不区分 `EXEC_FAULT` ⇒ ⑥ 必红；\n"
+          "                    `verify_gap` 写死 0 ⇒ ⑧ 必红。",
+      all(_AZ123_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ123_OK.items())
+      + f" ｜ 有示例题={sorted(_AZ123_WITH)} 断言总数={_AZ123_TOTAL}"
+      + " ｜ A=" + str({k: _AZ123_A[k] for k in
+                        ("tasks", "example_tasks", "runs", "example_runs")}))
 
 print()
 print("=" * 74)

@@ -57,7 +57,8 @@ import ast, sys, pathlib
 LOCAL = {"run", "mw", "bench"}
 ALLOWED = {
     "argparse","ast","builtins","collections","copy","dataclasses","hashlib","json","math",
-    "os","re","shlex","sqlite3","statistics","subprocess","symtable","sys","tempfile",
+    "os","re","shlex","shutil","sqlite3","statistics","subprocess","symtable","sys",
+    "tempfile",
     "time","tokenize","typing","urllib","pathlib","__future__",
 } | LOCAL
 #: ⚠️ `builtins` / `symtable` 是第八十轮加的，都是 **CPython 自带**（前者是内建模块，

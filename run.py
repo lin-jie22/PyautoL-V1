@@ -927,6 +927,11 @@ def _kshell_zero() -> dict:
         "shell_first_rounds": 0,
         "after_fail_retry": 0,    # 上一条 shell 非 0 之后又跑了一次
         "after_fail_answer": 0,   # 上一条 shell 非 0 之后交付了答案
+        #: ★ V61（§127）：**命令原文**（`sha8:单行前 120 字`），每题最多 40 条。
+        #: ⚠️ 它是**顺序**证据且带载荷 —— V60 那轮 4 条命令一条都不可审计，
+        #:    只能从 `ws/` 残留反推（反推出来的是一条 `echo` 写文件的残次品）。
+        #: ⛔ 与 `trace` 并列不合并：`trace` 的格式被 `AZ122` 钉着。
+        "trace_cmd": [],
         # ⛔ **不在这里放 `rc_gap`**：它是派生量，只出现在 `_kshell_line` 的落盘行。
         #   V58 已经把这条踩过一遍（把 `unreached_stop_gap` 写进零点键集 ⇒
         #   契约里 16 比 17 当场红）—— 这里是同一个坑的第二次。
@@ -961,6 +966,14 @@ def _kshell_absorb(acc: dict, out) -> dict:
     _bc = acc["blocked_by_checkpoint"]
     for _cp, _n in (sh.get("blocked_by_checkpoint") or {}).items():
         _bc[_cp] = int(_bc.get(_cp, 0)) + int(_n or 0)
+    #: ★ V61（§127）：命令原文按题**顺序拼接**。⛔ 不能只搬条数：
+    #:   条数已经有 `dispatched`，这一格存在的唯一理由是**看得见内容**。
+    #:   ⚠️ 每题自己的 `r{n}` 会重号 ⇒ 前置题序号，否则跨题对不上"哪一条是第几轮"。
+    _tc = acc.setdefault("trace_cmd", [])
+    for _line in (sh.get("trace_cmd") or []):
+        if len(_tc) >= 80:
+            break
+        _tc.append(f"[{acc['tasks']}]{_line}")
     return acc
 
 
@@ -978,6 +991,85 @@ def _kshell_line(acc: dict) -> dict:
     out["rc_gap"] = (int(out.get("dispatched", 0))
                      - int(out.get("rc_zero", 0)) - int(out.get("rc_nonzero", 0))
                      - int(out.get("rc_unknown", 0)) - int(out.get("err", 0)))
+    return out
+
+
+def _kvf_zero() -> dict:
+    """**交付闸**读数的累加器零点（V61，§127）。
+
+    ## 为什么必须有这一格
+
+    V60 的结论是「验证只落在**已经做对**的题上」。要检验"把它挪进闸里会不会不同"，
+    至少得能回答三件事，而 `_kshell` 一件都答不了：
+
+    | 问题 | 为什么答不了 |
+    |---|---|
+    | 闸**跑没跑**示例判据 | `_kshell` 只数 `run_shell`，那是**模型**发起的 |
+    | 跑了**几次**、拒了几次 | `verify_stats` 只活在进程里（`run.py` 里 0 处引用） |
+    | 拒的是**哪一类**判据 | `verify_stats.failed` 是全部判据的和 |
+
+    ## 分母（三层，不许合成一个）
+
+    · `tasks` —— **题**
+    · `example_tasks` —— **题**（题面里抽到示例的题数 = 判据的**适用面**）
+    · `runs` / `passed` / `failed` / `exhausted` —— **次**（闸被调用）
+    · `example_runs` / `example_failed` —— **次**（示例判据真跑 / 被它拒）
+
+    ⛔ `example_tasks=0` 的题不是"通过了"，是**这条判据不适用** ——
+    把它读成通过，"判据缺席"就会冒充"全绿"（缺席冒充零的第 N 种形态）。
+    """
+    return {
+        "tasks": 0,
+        #: 题面里抽到了示例的题数（= 这条判据的适用面）。
+        "example_tasks": 0,
+        "runs": 0,
+        "passed": 0,
+        "failed": 0,
+        #: 打回超上限、如实交付的**次数** —— 这是"强制验证"的代价面。
+        "exhausted": 0,
+        "example_runs": 0,
+        "example_failed": 0,
+        #: **装置自曝**：示例执行超时 / 子进程起不来。
+        #: ⛔ 并进 `example_failed` 就是把装置的锅记到被测对象头上（V60 同宗）。
+        "exec_err": 0,
+        # ⛔ **不在这里放 `verify_gap`**：派生量只在 `_kvf_line` 出现。
+        #   V58（`unreached_stop_gap`）与 V60（`rc_gap`）已经各踩过一次。
+    }
+
+
+def _kvf_absorb(acc: dict, out) -> dict:
+    """把**一道题**的闸读数并进累加器（就地修改并返回）。
+
+    ⚠️ 与 `_kshell_absorb` 同一条理由必须**两处调用点各接一次**：
+        漏一处 = 静默少计一题的闸（V55/V57/V58/V60 都在这里踩过）。
+    ⛔ 不在这里重新判断"哪条判据是示例判据"：那由 `_checks` 里 `kind=="example"` 定，
+        而它只在 `Core._reset_verify` 声明（抄一份过来迟早对不上）。
+    """
+    st = getattr(out, "stats", None) or {}
+    vf = st.get("verify") or {}
+    acc["tasks"] = int(acc.get("tasks", 0)) + 1
+    #: ⚠️ `example_tasks` 取**内核**那一格（`_reset_verify` 由 `_checks` 派生），
+    #:    不在这里另算一次 `example_asserts(goal)`：同一个事实两处推导必然分叉。
+    acc["example_tasks"] = int(acc.get("example_tasks", 0)) + (
+        1 if int(vf.get("example_tasks") or 0) else 0)
+    for _k in ("runs", "passed", "failed", "exhausted",
+               "example_runs", "example_failed", "exec_err"):
+        acc[_k] = int(acc.get(_k, 0)) + int(vf.get(_k) or 0)
+    return acc
+
+
+def _kvf_line(acc: dict) -> dict:
+    """落盘前的**唯一**派生量：`verify_gap`。
+
+    `verify_gap = runs - (passed + failed)`
+
+    ⛔ 它是**检测器**，不是"其它"垃圾桶：闸每跑一次，结果必须落进 `passed` 或
+       `failed` 之一；只要还有一次没被归类，它就 ≠ 0。
+    ⚠️ 它只在**落盘那一行**出现，**不进零点**（V58/V60 同例）。
+    """
+    out = dict(acc)
+    out["verify_gap"] = (int(out.get("runs", 0))
+                         - int(out.get("passed", 0)) - int(out.get("failed", 0)))
     return out
 
 
@@ -1723,6 +1815,10 @@ def cmd_bench(args) -> int:
     #                         "提了/做了/排在谁后面"，没有一格带**返回码**——
     #                         于是"跑过一遍、结果说代码错了"在账本上不可见。
     #                         ⛔ 与 `_kexec` 分列：`exec.ok` 对 `rc=1` 也是 True。
+    _kvf = _kvf_zero()      # ★ V61（§127）：**交付闸**。`_ksh` 说"模型自己跑了几次"，
+    #                         这里说"闸强制跑了几次、拒了几次"——
+    #                         ⛔ 前者是**模型的选择**（V60 实测：只在会做的题上跑），
+    #                         后者才是"验证有没有落到错的题上"的那个数。
     _kex = _kex_zero()      # 外部能力（第二十三轮）：配了没用上必须可见
     _ktx = _ktx_zero()      # 传输层 / 墙钟（第二十五轮）：361s 那类事故必须可见
 
@@ -1917,6 +2013,9 @@ def cmd_bench(args) -> int:
                         # ★ V60（§126）：验证动作。**两个 solver 分支各接一次** ——
                         #   漏一处 = 静默少计一题的"跑没跑/结果对不对"。
                         _kshell_absorb(_ksh, out)
+                        # ★ V61（§127）：交付闸。与 `_kshell_absorb` 紧挨着：同一个
+                        #   问题的两侧 —— 它数"模型自己跑了几次"，这里数"闸有没有强制跑"。
+                        _kvf_absorb(_kvf, out)
                         _kex_absorb(_kex, out.stats.get("external") or {})
                         _kex["tasks"] += 1
                         _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -1959,6 +2058,8 @@ def cmd_bench(args) -> int:
                 _kord_absorb(_kord, out)
                 # ★ V60（§126）：与 `--fresh` 那支同一条理由。
                 _kshell_absorb(_ksh, out)
+                # ★ V61（§127）：与 `--fresh` 那支同一条理由。
+                _kvf_absorb(_kvf, out)
                 _kex_absorb(_kex, out.stats.get("external") or {})
                 _kex["tasks"] += 1
                 _ktx_absorb(_ktx, out.stats.get("transport") or {})
@@ -2268,6 +2369,11 @@ def cmd_bench(args) -> int:
         #   而本轮问的正是"跑过一遍、结果说代码是错的"这件事。
         #   分母三档（题/轮/次）在 `_kshell_zero` 的 docstring 里写死。
         "kernel_shell": _kshell_line(_ksh),
+        # ★ V61（§127）：**交付闸**。⛔ 与 `kernel_shell` 并列、不并进去：
+        #   那个数的是**模型发起**的验证（V60 实测只在会做的题上跑），
+        #   这个数的是**闸强制**的验证 —— 「由谁发起」正是本轮唯一的变量。
+        #   `example_tasks=0` 的题不是"通过"，是这条判据**不适用**（见 `_kvf_zero`）。
+        "kernel_verify": _kvf_line(_kvf),
         # 外部能力读数（第二十三轮）：**不落盘的读数不可审计**。
         "kernel_external": _kex,
         # 传输层 / 墙钟读数（第二十五轮）：重试链有没有超支预算，必须可事后审计。

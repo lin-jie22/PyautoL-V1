@@ -1,0 +1,21 @@
+============================================================================================================
+C1     k01=1.00  k02=0.80  k03=0.20  k04=1.00  mean_4tasks=0.7500  tasks_below_1=2  rewards_seen=0  first_finish=3  轮=5 候选=5  sig=4fbe93cd462e
+C2     k01=1.00  k02=0.80  k03=0.20  k04=1.00  mean_4tasks=0.7500  tasks_below_1=2  rewards_seen=0  first_finish=3  轮=5 候选=5  sig=4fbe93cd462e
+A1     k01=1.00  k02=0.80  k03=0.20  k04=1.00  mean_4tasks=0.7500  tasks_below_1=2  rewards_seen=0  first_finish=3  轮=5 候选=5  sig=959c55892084
+A2     k01=1.00  k02=0.20  k03=0.20  k04=1.00  mean_4tasks=0.6000  tasks_below_1=2  rewards_seen=10  first_finish=2  轮=8 候选=14  sig=70cc321efd95
+A3     k01=1.00  k02=0.80  k03=0.20  k04=1.00  mean_4tasks=0.7500  tasks_below_1=2  rewards_seen=16  first_finish=3  轮=6 候选=13  sig=d35865d959ec
+A4     k01=1.00  k02=0.80  k03=0.20  k04=1.00  mean_4tasks=0.7500  tasks_below_1=2  rewards_seen=18  first_finish=4  轮=4 候选=12  sig=d6ed16db6b0b
+A5dump k01=1.00  k02=0.80  k03=0.20  k04=1.00  mean_4tasks=0.7500  tasks_below_1=2  rewards_seen=24  first_finish=4  轮=4 候选=12  sig=db9eb666fb9c
+============================================================================================================
+首步计划（候选形状:首动作）
+  C1     k01=c1k1:finish  k02=c1k1:finish  k03=c1k1:recall  k04=c1k1:finish
+  C2     k01=c1k1:finish  k02=c1k1:finish  k03=c1k1:recall  k04=c1k1:finish
+  A1     k01=c1k1:finish  k02=c1k1:finish  k03=c1k1:recall  k04=c1k1:finish
+  A2     k01=c3k3:finish  k02=c1k1:recall  k03=c1k1:recall  k04=c3k3:finish
+  A3     k01=c3k3:finish  k02=c1k1:recall  k03=c3k2:finish  k04=c3k3:finish
+  A4     k01=c3k2:finish  k02=c3k2:finish  k03=c3k3:finish  k04=c3k3:finish
+  A5dump k01=c3k3:finish  k02=c3k2:finish  k03=c3k2:finish  k04=c3k3:finish
+============================================================================================================
+P1 Δ(mean_4tasks) A4-C1 = +0.0000   分辨率：1 条断言 = 0.0500
+P2 rewards_seen 轨迹（读取量）：C1=0  C2=0  A1=0  A2=10  A3=16  A4=18  A5dump=24
+P3 first_step_finish_tasks 轨迹：C1=3  C2=3  A1=3  A2=2  A3=3  A4=4  A5dump=4

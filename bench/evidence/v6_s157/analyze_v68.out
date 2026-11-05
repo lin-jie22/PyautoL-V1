@@ -1,0 +1,37 @@
+==============================================================================
+V68 阶段 2 —— 5 连跑累积（4 题，失败成族）+ C2 state-dump
+==============================================================================
+r1             mean=0.3000  pred=5 scored=5 hits=4 rate=0.8 mism=1 rw_seen=0 rw_rec=0 轮=5 sig=d6bc1b1a247e3fb1
+               逐题 g7d2=0.600  g7d3=0.200  g7e1=0.200  g7e2=0.200
+r2             mean=0.2500  pred=6 scored=6 hits=6 rate=1.0 mism=0 rw_seen=14 rw_rec=0 轮=6 sig=42276d5c84567229
+               逐题 g7d2=0.600  g7d3=0.000  g7e1=0.200  g7e2=0.200
+r3             mean=0.3000  pred=5 scored=5 hits=5 rate=1.0 mism=0 rw_seen=24 rw_rec=0 轮=5 sig=8cc3783585b8722c
+               逐题 g7d2=0.600  g7d3=0.200  g7e1=0.200  g7e2=0.200
+r4             mean=0.3000  pred=5 scored=5 hits=5 rate=1.0 mism=0 rw_seen=36 rw_rec=0 轮=5 sig=2d50128ec3999c38
+               逐题 g7d2=0.600  g7d3=0.200  g7e1=0.200  g7e2=0.200
+r5             mean=0.2500  pred=6 scored=6 hits=6 rate=1.0 mism=0 rw_seen=56 rw_rec=0 轮=6 sig=d01cecd71e2587e8
+               逐题 g7d2=0.600  g7d3=0.000  g7e1=0.200  g7e2=0.200
+C2(dump)       mean=0.3000  pred=4 scored=4 hits=4 rate=1.0 mism=0 rw_seen=50 rw_rec=0 轮=4 sig=2ee8099923b4012a
+               逐题 g7d2=0.600  g7d3=0.200  g7e1=0.200  g7e2=0.200
+
+--- P3：rewards_seen 是否线性（押 +4/跑）---
+   [0, 14, 24, 36, 56]  差分 [14, 10, 12, 20]
+
+--- P2：mean 与逐题是否逐格相同 ---
+  五跑 mean 集合: {0.3, 0.25}  ⇒ 不一致
+  相对 r1 的逐格差异: [(2, 'g7d3_fmt_amount', 0.2, 0.0), (5, 'g7d3_fmt_amount', 0.2, 0.0)]
+
+--- P1：C2 每道题收到载荷的轮数（关键判据）---
+  题                          轮数     收到载荷
+  g7d3_fmt_amount             1        1  ← 命中
+  g7e1_parse_flag             1        1  ← 命中
+  g7e2_truncate_tail          1        1  ← 命中
+  g7d2_dedupe_keep            1        1  ← 命中
+
+  载荷原文样例（第一条）:
+  [g7d2_dedupe_keep]
+      历史同类题的外部得分：
+      - 同类题里 `AssertionError` 出现过 15 次（历史得分均值 0.17） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍
+  [g7d3_fmt_amount]
+      历史同类题的外部得分：
+      - 同类题里 `AssertionError` 出现过 10 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍

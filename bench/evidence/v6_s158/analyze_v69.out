@@ -1,0 +1,98 @@
+================================================================================================
+V69 —— 三臂 V1_REWARD_ECHO 0/1/2 × 3 跑，固定 seed 记忆库（4 题，g7e_heldout）
+================================================================================================
+
+--- 计划序列（逐臂逐跑逐题）---
+  e0 r1  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c3k3:recall | [2]c1k1:finish
+       写一个函数 parse_fla   [1]c3k3:finish
+       写一个函数 truncate_   [1]c3k3:finish
+  e0 r2  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c3k3:recall | [2]c1k1:finish
+       写一个函数 parse_fla   [1]c3k3:finish
+       写一个函数 truncate_   [1]c3k3:finish
+  e0 r3  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c3k3:recall | [2]c1k1:finish
+       写一个函数 parse_fla   [1]c3k3:finish
+       写一个函数 truncate_   [1]c3k3:finish
+  e1 r1  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c3k3:finish
+       写一个函数 parse_fla   [1]c3k2:finish
+       写一个函数 truncate_   [1]c3k3:finish
+  e1 r2  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c3k3:finish
+       写一个函数 parse_fla   [1]c3k2:finish
+       写一个函数 truncate_   [1]c3k3:finish
+  e1 r3  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c3k3:finish
+       写一个函数 parse_fla   [1]c3k2:finish
+       写一个函数 truncate_   [1]c3k3:finish
+  e2 r1  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c2k2:finish
+       写一个函数 parse_fla   [1]c1k1:run_shell | [2]c1k1:recall | [3]c1k1:finish
+       写一个函数 truncate_   [1]c1k1:recall | [2]c2k2:finish
+  e2 r2  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c2k2:finish
+       写一个函数 parse_fla   [1]c1k1:run_shell | [2]c1k1:recall | [3]c1k1:finish
+       写一个函数 truncate_   [1]c1k1:recall | [2]c2k2:finish
+  e2 r3  题数=4
+       写一个函数 dedupe_ke   [1]c1k1:finish
+       写一个函数 fmt_amoun   [1]c2k2:finish
+       写一个函数 parse_fla   [1]c1k1:run_shell | [2]c1k1:recall | [3]c1k1:finish
+       写一个函数 truncate_   [1]c1k1:recall | [2]c2k2:finish
+
+--- P3：臂内 2 跑（r1/r2）是否逐格相同 ---
+  e0: 逐格相同 ✅
+  e1: 逐格相同 ✅
+  e2: 逐格相同 ✅
+
+--- P1：首步是不是 finish（e1 真载荷 vs e2 等长安慰剂）---
+  题                        e0        e1        e2       
+  g7d2_dedupe_keep         finish    finish    finish   
+  g7d3_fmt_amount          recall    finish    finish   
+  g7e1_parse_flag          finish    finish    run_shell
+  g7e2_truncate_tail       finish    finish    recall   
+
+  ⇒ 升（e1 非 finish、e2 finish）：无
+  ⇒ 降（e2 非 finish、e1 finish）：['g7e1_parse_flag', 'g7e2_truncate_tail']
+  ⇒ P1 = **降**
+
+--- P0：state-dump 里载荷是否等长且到位（每臂 r3）---
+  e0: 5 行
+      g7d2_dedupe_keep       it=1 len=   0 AssertionError=False 例会=False 空=True
+      g7d3_fmt_amount        it=1 len=   0 AssertionError=False 例会=False 空=True
+      g7d3_fmt_amount        it=2 len=   0 AssertionError=False 例会=False 空=True
+      g7e1_parse_flag        it=1 len=   0 AssertionError=False 例会=False 空=True
+      g7e2_truncate_tail     it=1 len=   0 AssertionError=False 例会=False 空=True
+  e1: 4 行
+      g7d2_dedupe_keep       it=1 len=  84 AssertionError=True 例会=False 空=False
+      g7d3_fmt_amount        it=1 len=  84 AssertionError=True 例会=False 空=False
+      g7e1_parse_flag        it=1 len=  84 AssertionError=True 例会=False 空=False
+      g7e2_truncate_tail     it=1 len=  84 AssertionError=True 例会=False 空=False
+  e2: 7 行
+      g7d2_dedupe_keep       it=1 len=  84 AssertionError=False 例会=True 空=False
+      g7d3_fmt_amount        it=1 len=  84 AssertionError=False 例会=True 空=False
+      g7e1_parse_flag        it=1 len=  84 AssertionError=False 例会=True 空=False
+      g7e1_parse_flag        it=2 len=  84 AssertionError=False 例会=True 空=False
+      g7e1_parse_flag        it=3 len=  84 AssertionError=False 例会=True 空=False
+      g7e2_truncate_tail     it=1 len=  84 AssertionError=False 例会=True 空=False
+      g7e2_truncate_tail     it=2 len=  84 AssertionError=False 例会=True 空=False
+
+--- 登记：分数（⛔ 不用于复核 P1）---
+  e0 r1  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=8af6eae635791705
+  e0 r2  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=8af6eae635791705
+  e0 r3  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=8af6eae635791705
+  e1 r1  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=861cf70e48d0d6c3
+  e1 r2  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=861cf70e48d0d6c3
+  e1 r3  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=861cf70e48d0d6c3
+  e2 r1  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=d3ac93934255a511
+  e2 r2  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=d3ac93934255a511
+  e2 r3  mean=0.3000  g7d2=0.60  g7d3=0.20  g7e1=0.20  g7e2=0.20  sig=d3ac93934255a511

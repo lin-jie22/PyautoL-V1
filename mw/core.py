@@ -1218,13 +1218,27 @@ class Core:
                     self.rework_stats["carried"] += 1
                     self.log("  ↻ 打回报文进下一轮提问（让位成功也没把它冲掉）"
                              f"：{_carry[:100]}")
+                    # ── V73（§141）：`V1_REJECT_CARRY=2` = **重写不带状态** ────────
+                    # 这一档不是措辞改动，是**输入构造**：打回后的重写只拿
+                    #   目标 + 轨迹 + 报错原文，`[工作记忆]/[语义记忆]/[第 N 步]`
+                    #   这一整块**不给**。
+                    # 依据：V65 第四刀（`v65_probe_state3.py`）同 system/同题面下，
+                    #   state 从 2329 字改成 107 字的 `[工作记忆]` 仍 2/6，改成空
+                    #   才 6/6 ⇒ 那一块**存在与否**比它写什么更能改输出。
+                    # ⚠️ 那一刀测的是**收尾交付**的 state，不是 `replan`；本轮就是
+                    #   要把这个外推量掉（预注册押三值，不押"升"）。
+                    # ⛔ `0` / `1` 的语义**一个字都不动**：0=不携带，1=携带且带状态。
+                    _carry_state = state
+                    if int(self.s.limits.reject_carry) == 2:
+                        _carry_state = ""
+                        self.log("  ↻ 打回重写：不带状态（REJECT_CARRY=2）")
                     plan = self.planner.replan(
                         goal=goal, failed=Step("(上一次交付)", "finish", {}),
                         error=_carry, history=history, n=n,
                         blocked=sorted(attempted_sigs),
                         rejected=reseek_lines,
                         guidance=guidance_text,
-                        state=state)
+                        state=_carry_state)
                 else:
                     plan = self.planner.propose(
                         goal=goal, state=state, history=history, n=n,

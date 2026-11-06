@@ -15,3 +15,7 @@ az32_big.bin
 # 打包副产物（pip install . 会在源码树留下 build/）
 build/
 dist/
+
+# SQLite 旁挂文件：只读/查询时自动生成，不该入库（V72 误提交一次）
+*-shm
+*-wal

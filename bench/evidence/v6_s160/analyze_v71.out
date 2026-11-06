@@ -1,0 +1,83 @@
+# V71 取证：全仓「打回 → 重写」兑现率
+
+runs 文件 93 个、行 312 行
+
+## 一、三个账本的累计（全仓，跨 93 个 runs 文件）
+
+### kernel_rework
+  carried                8
+  diff                   1
+  dup_skipped            18
+  passed_after           1
+  redelivered            19
+  rework_gap             0
+  same                   18
+  task_runs_rejected     10
+  tasks                  140
+
+### kernel_verify
+  example_failed         16
+  example_runs           40
+  example_task_runs      32
+  exec_err               0
+  exhausted              0
+  failed                 19
+  passed                 131
+  runs                   150
+  tasks                  140
+  verify_gap             0
+
+### kernel_shell
+  after_fail_answer      3
+  after_fail_retry       0
+  blocked                2
+  dispatched             10
+  err                    0
+  offered                55
+  rc_gap                 0
+  rc_nonzero             3
+  rc_unknown             0
+  rc_zero                7
+  rounds_with_shell      51
+  shell_first_rounds     10
+  tasks                  140
+  tasks_with_shell       10
+
+## 二、兑现率（分母口径写进句子）
+
+  被打回的**题-run**            : 10
+  打回之后**又交了一次**（次）  : 19
+    ├ 与被打回那版**逐字相同**  : 18
+    └ 与被打回那版**不同**      : 1
+  重交那一次**过闸**（次）      : 1
+  `rework_gap`（必须为 0）      : 0
+  `verify.exhausted`（配额用满）: 0
+
+  ⇒ 改版率 = 1/19 = 0.0526
+  ⇒ 改版后过闸率 = 1/1 = 1.0000
+
+## 三、字段定义行（解释之前先回读）
+
+  redelivered          mw/core.py:2005 / mw/core.py:1407 —— 打回之后**又交了一次**
+  same                 mw/core.py:1407 —— 重提的交付**逐字相同**，在重复闸被丢
+  diff                 mw/core.py:2012 —— 重提的交付与被打回那版**不同**
+  passed_after         mw/core.py:2022 —— 重交的那一份**过闸**（是 diff 的子集）
+  task_runs_rejected   run.py:1197 —— 被打回过至少一次的**题-run** 数（上面四项的分母）
+  rework_gap           run.py:1222 —— redelivered − (same + diff)，恒等于 0 才对
+
+## 四、逐跑明细（只列有打回的跑）
+
+file                                             打回   同   异   过  dup  ve  vr  ex_r  ex_f
+----------------------------------------------------------------------------------------
+v6_s155/runs_v66_fieldcheck.jsonl                 1   2   0   0    2   1   2     5     2
+v6_s156/runs_v67_c1_empty.jsonl                   1   2   0   0    2   1   2     5     2
+v6_s156/runs_v67_c2_dump.jsonl                    1   2   0   0    2   1   2     5     2
+v6_s156/runs_v67_r1.jsonl                         1   2   0   0    2   1   2     5     2
+v6_s156/runs_v67_r2.jsonl                         1   2   0   0    2   1   2     5     2
+v6_s156/runs_v67_r3.jsonl                         1   2   0   0    2   1   2     5     2
+v6_s156/runs_v67_r4.jsonl                         1   2   0   0    2   1   2     5     2
+v6_s156/runs_v67_r5.jsonl                         1   2   0   0    2   1   2     5     2
+v6_s159/runs_A2.jsonl                             1   2   0   0    2   1   2     0     0
+v6_s159/runs_A3.jsonl                             1   0   1   1    0   1   2     0     0
+
+合计 10 跑

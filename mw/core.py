@@ -1230,16 +1230,50 @@ class Core:
                     #   要把这个外推量掉（预注册押三值，不押"升"）。
                     # ⛔ `0` / `1` 的语义**一个字都不动**：0=不携带，1=携带且带状态。
                     _carry_state = state
-                    if int(self.s.limits.reject_carry) == 2:
+                    _carry_hist = history
+                    _rc = int(self.s.limits.reject_carry)
+                    if _rc == 2:
                         _carry_state = ""
                         self.log("  ↻ 打回重写：不带状态（REJECT_CARRY=2）")
+                    # ── V75（§144）：`=3` = **不带状态、不带轨迹** ────────────────
+                    # ⚠️ 这个取值**不是**「只给目标+报错」——第一版日志文案这么写，
+                    #   是**错的**，`v6_s164/RESULTS.md` §3 已登记更正。原因：
+                    #   `propose()` 还会拼两块含**旧答案原文**的输入：
+                    #     · `banned` ← `blocked`（`action_signature` = `finish|[('answer', <整段代码>)]`）
+                    #     · `reseek` ← `rejected`（`Step.as_line()` = `finish({'answer': ...})`）
+                    #   ⇒ 摘掉 `state` 与 `history` 之后，模型**仍然看得见自己那份旧代码**。
+                    # 依据：V74（§143）在**交付通道**上证明"把上下文拿掉，生成就不再
+                    #   复读旧实现"（t04 0.3333→1.0）。本轮把这个假设搬到重写通道上。
+                    # ⛔ `0`/`1`/`2` 的语义一个字不动；⛔ 不动 `carried` 计数点、
+                    #   ⛔ 不动那行 `self._reject_carry = ""`（AX124-⑩ 钉住它）。
+                    elif _rc == 3:
+                        _carry_state = ""
+                        _carry_hist = []
+                        self.log("  ↻ 打回重写：不带状态/轨迹（REJECT_CARRY=3）"
+                                 "（⚠️ blocked/rejected 仍含旧答案）")
+                    # ── V76（§145）：`=4` = **载荷脱敏**（真的看不见旧答案原文）──────
+                    # `=3` 摘掉了 `state` 与 `history`，但 `propose()` 还拼两块带
+                    #   **旧答案原文**的输入（`v6_s164/RESULTS.md` §3 有落原文）：
+                    #     · `banned` ← `blocked`：`finish|[('answer', <整段代码>)]`（**不截断**）
+                    #     · `reseek` ← `rejected`：`finish({'answer': ...})`（只截 160 字）
+                    # ⇒ `=4` 在 `=3` 之上要求渲染时把**载荷正文**换成占位。
+                    # ⭐ 脱敏刻意做在 `propose()` 里（唯一渲染点），**不动喂入接线**：
+                    #   AZ63 钉住"所有进规划器的路都喂同一份 `reseek_lines`"，
+                    #   本轮要摘的是**正文**，不是那条不变量。
+                    # ⛔ 只删载荷，不删"这个动作试过"这个事实（`_untried_tools` 仍要能取到工具名）。
+                    elif _rc == 4:
+                        _carry_state = ""
+                        _carry_hist = []
+                        self.log("  ↻ 打回重写：只给目标+报错（REJECT_CARRY=4，"
+                                 "不带状态/轨迹 + 载荷脱敏）")
                     plan = self.planner.replan(
                         goal=goal, failed=Step("(上一次交付)", "finish", {}),
-                        error=_carry, history=history, n=n,
+                        error=_carry, history=_carry_hist, n=n,
                         blocked=sorted(attempted_sigs),
                         rejected=reseek_lines,
                         guidance=guidance_text,
-                        state=_carry_state)
+                        state=_carry_state,
+                        redact=(_rc == 4))
                 else:
                     plan = self.planner.propose(
                         goal=goal, state=state, history=history, n=n,

@@ -427,6 +427,29 @@ _ANSWER_FIDELITY = "上方状态按原文顺序依次阅读，逐条都保持其
 _REJECTED_SHOWN = 3
 
 
+def _redact_action(line: str) -> str:
+    """把动作行里的**载荷正文**换成占位（V76，§145）。
+
+    为什么需要：`blocked` 的元素是 `action_signature()` 的产物
+    （`finish|[('answer', '<整段代码>')]`，**不截断**），`rejected` 的元素是
+    `Step.as_line()`（`finish({'answer': ...})`，只截 160 字）——两处都会把
+    **模型自己那份旧答案**带进提示词。V75 摘掉 `state`/`history` 后重写仍逐字相同，
+    但那两块还在喂旧代码 ⇒ 「只给目标+报错」必须把正文拿掉。
+
+    ⛔ **只删载荷，不删"这个动作试过"这个事实**：
+      · `blocked` 保留 `tool|` 前缀（`_untried_tools()` 按 `|` 取工具名，见其 docstring）；
+      · `rejected` 保留 `tool(` 前缀（`reseek_block()` 要显示"被丢掉的是哪种动作"）。
+    """
+    s = str(line)
+    bar = s.find("|")
+    if bar >= 0:
+        return f"{s[:bar]}|(载荷已省略 {len(s)} 字)"
+    par = s.find("(")
+    if par >= 0:
+        return f"{s[:par]}(载荷已省略 {len(s)} 字)"
+    return f"(载荷已省略 {len(s)} 字)"
+
+
 def reseek_block(rejected: Sequence[str], untried: Sequence[str]) -> str:
     """「本轮全部候选都被拒」之后，下一次提问必须**换成另一句话**。
 
@@ -560,7 +583,8 @@ class Planner:
     def propose(self, *, goal: str, state: str, history: Sequence[str],
                 n: int = 1, guidance: str = "",
                 blocked: Sequence[str] = (),
-                rejected: Sequence[str] = ()) -> Plan:
+                rejected: Sequence[str] = (),
+                redact: bool = False) -> Plan:
         """产出 n 个候选步骤（各不相同）。n>1 就是 test-time compute 的落点。
 
         `blocked` 是**机器生成**的"已尝试过的动作签名"清单。为什么不只靠
@@ -574,6 +598,12 @@ class Planner:
         （见 `reseek_block` 的说明与 `core` 的 `_rejected_once`）。
         """
         self.calls += 1
+        #: ⭐ V76（§145）：`redact` 只作用在**渲染**上（`banned`/`reseek` 两段），
+        #: 不改喂入接线 —— AZ63 钉住"所有进规划器的路都喂同一份 `reseek_lines`"。
+        #: ⛔ 不许把它做成"第二处渲染"：脱敏在本函数内完成，`reseek_block()` 仍是唯一渲染点。
+        if redact:
+            blocked = [_redact_action(x) for x in blocked]
+            rejected = [_redact_action(x) for x in rejected]
         reseek = reseek_block(rejected, self._untried_tools(blocked))
         if reseek:
             self.reseek += 1
@@ -729,7 +759,8 @@ class Planner:
     def replan(self, *, goal: str, failed: Step, error: str,
                history: Sequence[str], n: int = 1,
                blocked: Sequence[str] = (), guidance: str = "",
-               state: str = "", rejected: Sequence[str] = ()) -> Plan:
+               state: str = "", rejected: Sequence[str] = (),
+               redact: bool = False) -> Plan:
         """失败后重规划。**必须带上错误原文**，否则等于原地打转。
 
         ⚠️ `guidance` 必须一起转发（2026-10-17 接线审计抓到的断点）：
@@ -749,7 +780,8 @@ class Planner:
         #    状态是**额外**的信息，不是它的替代品。
         plan = self.propose(goal=goal, state=(state or "(上一步失败，见下)"),
                             history=augmented, n=n, blocked=blocked,
-                            guidance=guidance, rejected=rejected)
+                            guidance=guidance, rejected=rejected,
+                            redact=redact)
         if plan:
             plan.note = f"因「{failed.tool}」失败而重规划"
         return plan

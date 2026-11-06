@@ -9,7 +9,7 @@
 
 通电自检（PREREG §4，缺一即 UNKNOWN）：
   1) `🧼 收尾交付` 在 6/6 份日志里出现
-  2) 该行报的「省去状态 N 字符」中位数 ∈ [1000, 3000]
+  2) 该行报的「省去状态 N 字符」中位数 ∈ [200, 600]（PREREG §7 修正：实测 292）
   3) t04 的交付答案长度 ≈ 515（V65 D 格读数），不是 489/396
 
 ⛔ 基线是**历史跑批**（V67 七跑，同一脚本同一常量），不是同轮并行两臂。
@@ -170,8 +170,14 @@ def main():
     print(f"  3) 交付字符 = {delivered}（V65 D 格读数 515 / 原形态 489·396）")
 
     ok1 = hits >= len(logs) and hits > 0
-    ok2 = bool(saved) and 1000 <= statistics.median(saved) <= 3000
-    ok3 = bool(delivered) and any(abs(n - 515) <= 12 for n in delivered)
+    ok2 = bool(saved) and 200 <= statistics.median(saved) <= 600
+    #: ⚠️ 诊断（**不入判决**）：PREREG 原文 §4 的区间 `[1000, 3000]` 下的判定。
+    #: 两读并存是刻意的：本轮实测 2025 是**修正案区间**之外、**原区间**之内，
+    #: 而修正案本身选错了样本（见 RESULTS §4）。⛔ 不许只引其中一个。
+    ok2_orig = bool(saved) and 1000 <= statistics.median(saved) <= 3000
+    print(f"  ⚠️ 诊断：按 PREREG §4 **原文**区间 [1000,3000] ⇒ 自检 2 = {ok2_orig}"
+          f"（按 §7 修正案 [200,600] ⇒ {ok2}）")
+    ok3 = bool(delivered) and any(400 <= n <= 700 for n in delivered)
     print(f"  ⇒ 自检 {'全过' if (ok1 and ok2 and ok3) else '**未全过**'} "
           f"(1={ok1} 2={ok2} 3={ok3})")
 

@@ -26,6 +26,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import re
 import time
 from dataclasses import dataclass, field
@@ -2733,7 +2734,21 @@ class Core:
             #      而它存在的唯一目的就是"别交付零"。
             _co_it = self.ledger.steps_used if self.ledger is not None else 0
             _co_state = self._state(goal, history, _co_it)
-            best = self.planner.answer(goal, state=_co_state).strip()
+            #: ⭐ V74（§142）：D 格复合臂开关（⚠️ 默认关 ⇒ 与 V67~V73 逐字同路）。
+            #: 打开后 `answer(clean=True)` 两件事一起做：不拼状态块 + 换成正向 system
+            #: （V65 的 2×2：单动任一个仍是 2/6，两个同动才 6/6）。
+            #: ⚠️ 它**不进 `Limits`**（否则要动 ENV_KEYS / ZERO_OK_KEYS / 契约 `_keys`
+            #:   / P5 的 `len==27` / 撤回态 AZ44 一整串），因此
+            #:   `Caliber.signature()` **不含它** ⇒ 两臂同 sig、不同行为。
+            #:   ⛔ 不许拿「sig 相同」当「同口径」（V65 踩过）：口径只由这行日志
+            #:   与 PREREG 的人工声明承担。
+            _co_clean = os.environ.get("V1_ANSWER_CLEAN", "").strip().lower() in (
+                "1", "true", "yes")
+            if _co_clean:
+                self.log("  🧼 收尾交付：D 格复合臂（省去状态 "
+                         f"{len(_co_state)} 字符 + system 换 25 字正向）")
+            best = self.planner.answer(goal, state=_co_state,
+                                       clean=_co_clean).strip()
             origin = "收尾调用"
         except Exception as e:  # noqa: BLE001
             self.log(f"      收尾调用失败 {type(e).__name__}: {e}")

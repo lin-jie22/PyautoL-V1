@@ -190,6 +190,24 @@ _ANSWER_SYS = (
 #: ⚠️ `_ANSWER_FIDELITY`（下面那条）同样**不要**动：第二刀里删掉它，读数逐格不变
 #:   （2/6、489 字符）⇒ 它既不是 V65 的原因，也没有被否证；无证据 ⇒ 不改。
 
+#: ⭐ V74（§142）：D 格复合臂的 system —— **只在 `answer(clean=True)` 下使用**。
+#:
+#: 原文与 V65 探针 `stage1_answer_suite.py` 的 `v4_pos_both` **逐字相同**（25 字）：
+#: 那一格（`probe_state_run1.txt` 的 `D_pos+nostate`、`probe_state_run3.txt` 的
+#: `D_empty`）是整份 V65 里**唯一**读出 `t04 = 6/6` 的格。
+#:
+#: ⛔ 默认路径**不碰**它：`_ANSWER_SYS` 仍是 V65 撤回的原样（§132），上面那段
+#:   「不许再拿删否定句当方向」**依然有效**。本轮测的不是措辞，是**两因子的耦合**：
+#:
+#:      V65 2×2   旧 system + 真实 state  2/6
+#:                新 system + 真实 state  2/6   ← 单改 system：不动
+#:                旧 system + 空   state  2/6   ← 单改 state：不动
+#:                新 system + 空   state  6/6   ← 同改：翻
+#:
+#:   ⇒ 「措辞单独有效」这条**上一轮已判负**，本轮不再主张它；本轮主张的是
+#:     「交付请求的**形态**（带不带 2.3KB 轨迹 × 哪种 system）是一个耦合参数」。
+_ANSWER_SYS_CLEAN = "直接输出最终答案：代码就给代码原文，文字就给正文。"
+
 
 # ===========================================================================
 # 规划器输出的**格式修复**（V40 / §106）—— 只修外壳，不造结构
@@ -736,7 +754,7 @@ class Planner:
             plan.note = f"因「{failed.tool}」失败而重规划"
         return plan
 
-    def answer(self, goal: str, state: str = "") -> str:
+    def answer(self, goal: str, state: str = "", clean: bool = False) -> str:
         """专门索要**答案原文**（不带 JSON 协议）。
 
         收尾与定向补救共用这一条路 —— 单一事实源：两处各写一遍提示词，
@@ -747,15 +765,21 @@ class Planner:
         记忆盲补救 ⇒ 基线交付。调用方（propose 的补救 / core 的收尾）
         必须把各自手里的 state 带进来；截断用 `self.state_chars`，
         与 `propose()` 拼提示词处同一个数 —— 否则又是两套真相。
+
+        ⭐ V74（§142）：`clean=True` 是**收尾专用**的 D 格复合臂 ——
+        既不拼状态块，也不用 `_ANSWER_SYS` 而用 `_ANSWER_SYS_CLEAN`。
+        两个因子**必须同时动**：V65 的 2×2 里单动任一个都仍是 2/6。
+        ⛔ `propose()` 的定向补救走 `clean=False`（AZ36 钉住它必须带 state）。
+        结尾那句 `请直接给出最终答案` 两种形态都保留（S69 用它区分答案通道）。
         """
         prompt = f"目标：{goal}\n"
-        if state:
+        if state and not clean:
             prompt += f"当前状态：\n{state[:self.state_chars]}\n"
             #: 忠实引用指令只跟在**状态块之后**（同 7q 的 state 约定）。
             prompt += _ANSWER_FIDELITY + "\n"
         prompt += "请直接给出最终答案。"
         return self.llm.complete(
-            [Message("system", _ANSWER_SYS),
+            [Message("system", _ANSWER_SYS_CLEAN if clean else _ANSWER_SYS),
              Message("user", prompt)],
             max_tokens=self.max_tokens) or ""
 

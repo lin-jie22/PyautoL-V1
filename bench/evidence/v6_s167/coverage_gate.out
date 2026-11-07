@@ -1,0 +1,91 @@
+语料：67 题 / 17 个题集
+闸能判对错的题（派出了 `example` 检查）：4 / 67 = 0.0597
+
+题集                                             suite_sha    题                      示例   评分器tests 闸派出的判据
+-------------------------------------------------------------------------------------------------------
+bench/heldout/g7_heldout.jsonl                 4c160ef72136 g7s2_parse_headers     —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7_heldout.jsonl                 4c160ef72136 g7s4_xml_escape_attrs  —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7e_heldout.jsonl                5c5ad025739b g7d2_dedupe_keep       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7e_heldout.jsonl                5c5ad025739b g7d3_fmt_amount        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7e_heldout.jsonl                5c5ad025739b g7e1_parse_flag        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7e_heldout.jsonl                5c5ad025739b g7e2_truncate_tail     —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7e_hint_heldout.jsonl           9458a896373e g7d2_dedupe_keep       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7e_hint_heldout.jsonl           9458a896373e g7d3_fmt_amount        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7e_hint_heldout.jsonl           9458a896373e g7e1_parse_flag        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7e_hint_heldout.jsonl           9458a896373e g7e2_truncate_tail     —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7j_n0_heldout.jsonl             521d93e3a334 g7d2_dedupe_keep       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7j_n0_heldout.jsonl             521d93e3a334 g7d3_fmt_amount        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7j_n0_heldout.jsonl             521d93e3a334 g7e1_parse_flag        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7j_n0_heldout.jsonl             521d93e3a334 g7e2_truncate_tail     —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7j_n4_heldout.jsonl             ade419351103 g7d2_dedupe_keep       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7j_n4_heldout.jsonl             ade419351103 g7d3_fmt_amount        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7j_n4_heldout.jsonl             ade419351103 g7e1_parse_flag        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7j_n4_heldout.jsonl             ade419351103 g7e2_truncate_tail     —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7m_g7d2_heldout.jsonl           045ccbe01b68 g7d2_dedupe_keep       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/g7m_g7d2_pad15_heldout.jsonl     841d3bf8ea93 g7d2_dedupe_keep       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/numeric_logic_heldout.jsonl      8a052e6cd79b h01_int_to_roman       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/numeric_logic_heldout.jsonl      8a052e6cd79b h02_merge_ranges       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/numeric_logic_heldout.jsonl      8a052e6cd79b h03_eval_rpn           —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/struct_convert_heldout.jsonl     8e3d642d5b25 k01_diff_tree          —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/struct_convert_heldout.jsonl     8e3d642d5b25 k02_encode_cookie      —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/struct_convert_heldout.jsonl     8e3d642d5b25 k03_unflatten          —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/heldout/struct_convert_heldout.jsonl     8e3d642d5b25 k04_to_ini             —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/coding_small.jsonl                 618a18cafd2f t01_parse_duration     —         6 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/coding_small.jsonl                 618a18cafd2f t02_dedupe             —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/coding_small.jsonl                 618a18cafd2f t03_commas             有         5 nonempty/defines/fence_lang/compiles/undefined/example
+bench/tasks/coding_small.jsonl                 618a18cafd2f t04_merge_ranges       有         6 nonempty/defines/fence_lang/compiles/undefined/example
+bench/tasks/coding_small.jsonl                 618a18cafd2f t05_top_k              有         4 nonempty/defines/fence_lang/compiles/undefined/example
+bench/tasks/coding_small.jsonl                 618a18cafd2f t06_rle                有         5 nonempty/defines/fence_lang/compiles/undefined/example
+bench/tasks/g7_family_train.jsonl              e8aa912e541f g7t1_split_top_level   —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_family_train.jsonl              e8aa912e541f g7t2_parse_pairs       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_family_train.jsonl              e8aa912e541f g7t3_encode_attrs      —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_family_train.jsonl              e8aa912e541f g7t4_quote_join        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_numeric.jsonl                   e7e08aeaa330 g7n1_split_amount      —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_numeric.jsonl                   e7e08aeaa330 g7n2_next_permutation  —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_numeric.jsonl                   e7e08aeaa330 g7n3_spiral_order      —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_numeric.jsonl                   e7e08aeaa330 g7n4_min_meeting_rooms —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_struct.jsonl                    c44362828a7e g7s1_flatten_nested    —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_struct.jsonl                    c44362828a7e g7s2_parse_headers     —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_struct.jsonl                    c44362828a7e g7s3_csv_row           —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7_struct.jsonl                    c44362828a7e g7s4_xml_escape_attrs  —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7d_spec_incomplete.jsonl          7bc8169ebc8d g7d1_parse_date_flex   —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7d_spec_incomplete.jsonl          7bc8169ebc8d g7d2_dedupe_keep       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7d_spec_incomplete.jsonl          7bc8169ebc8d g7d3_fmt_amount        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7d_spec_incomplete.jsonl          7bc8169ebc8d g7d4_slugify           —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7d_spec_incomplete.jsonl          7bc8169ebc8d g7e1_parse_flag        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7d_spec_incomplete.jsonl          7bc8169ebc8d g7e2_truncate_tail     —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/g7d_spec_incomplete.jsonl          7bc8169ebc8d g7e3_dedupe_last       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/numeric_logic.jsonl                e55313557a97 y01_roman_to_int       —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/numeric_logic.jsonl                e55313557a97 y02_is_valid_brackets  —         6 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/numeric_logic.jsonl                e55313557a97 y03_base_convert       —         6 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/numeric_logic.jsonl                e55313557a97 y04_gcd_lcm            —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/numeric_logic.jsonl                e55313557a97 y05_median             —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/struct_convert.jsonl               3b363fcd9777 z01_flatten            —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/struct_convert.jsonl               3b363fcd9777 z02_to_csv             —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/struct_convert.jsonl               3b363fcd9777 z03_parse_query        —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/struct_convert.jsonl               3b363fcd9777 z04_deep_get           —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/struct_convert.jsonl               3b363fcd9777 z05_group_by           —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/text_ops.jsonl                     d3bebce59977 x01_slugify            —         6 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/text_ops.jsonl                     d3bebce59977 x02_mask_email         —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/text_ops.jsonl                     d3bebce59977 x03_word_freq          —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/text_ops.jsonl                     d3bebce59977 x04_truncate           —         5 nonempty/defines/fence_lang/compiles/undefined
+bench/tasks/text_ops.jsonl                     d3bebce59977 x05_normalize_ws       —         5 nonempty/defines/fence_lang/compiles/undefined
+
+按题集汇总：
+  4c160ef72136  bench/heldout/g7_heldout.jsonl                 题= 2 带示例= 0 评分器tests= 2
+  5c5ad025739b  bench/heldout/g7e_heldout.jsonl                题= 4 带示例= 0 评分器tests= 4
+  9458a896373e  bench/heldout/g7e_hint_heldout.jsonl           题= 4 带示例= 0 评分器tests= 4
+  521d93e3a334  bench/heldout/g7j_n0_heldout.jsonl             题= 4 带示例= 0 评分器tests= 4
+  ade419351103  bench/heldout/g7j_n4_heldout.jsonl             题= 4 带示例= 0 评分器tests= 4
+  045ccbe01b68  bench/heldout/g7m_g7d2_heldout.jsonl           题= 1 带示例= 0 评分器tests= 1
+  841d3bf8ea93  bench/heldout/g7m_g7d2_pad15_heldout.jsonl     题= 1 带示例= 0 评分器tests= 1
+  8a052e6cd79b  bench/heldout/numeric_logic_heldout.jsonl      题= 3 带示例= 0 评分器tests= 3
+  8e3d642d5b25  bench/heldout/struct_convert_heldout.jsonl     题= 4 带示例= 0 评分器tests= 4
+  618a18cafd2f  bench/tasks/coding_small.jsonl                 题= 6 带示例= 4 评分器tests= 6
+  e8aa912e541f  bench/tasks/g7_family_train.jsonl              题= 4 带示例= 0 评分器tests= 4
+  e7e08aeaa330  bench/tasks/g7_numeric.jsonl                   题= 4 带示例= 0 评分器tests= 4
+  c44362828a7e  bench/tasks/g7_struct.jsonl                    题= 4 带示例= 0 评分器tests= 4
+  7bc8169ebc8d  bench/tasks/g7d_spec_incomplete.jsonl          题= 7 带示例= 0 评分器tests= 7
+  e55313557a97  bench/tasks/numeric_logic.jsonl                题= 5 带示例= 0 评分器tests= 5
+  3b363fcd9777  bench/tasks/struct_convert.jsonl               题= 5 带示例= 0 评分器tests= 5
+  d3bebce59977  bench/tasks/text_ops.jsonl                     题= 5 带示例= 0 评分器tests= 5

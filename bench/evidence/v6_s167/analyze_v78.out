@@ -1,0 +1,30 @@
+==========================================================================
+V78 打回边可触发面普查（REJECT_CARRY=5，每套 1 跑，--repeat 1）
+==========================================================================
+
+── struct_convert_heldout  suite_sha=8e3d642d5b25 ✅
+   mean=0.7500  n=4  elapsed=113.258s
+   S1 carried=0   S2 verify.runs=4 failed=0
+   S3 carried=0  redelivered=0  same=0  diff=0  passed_after=0  via_answer=0  dup_skipped=0  rework_gap=0
+   S5 日志『走交付协议』=0  via_answer=0  ✅
+   S4 k01_diff_tree=1.0  k02_encode_cookie=0.8  k03_unflatten=0.2  k04_to_ini=1.0
+      恒等式（carried=0 ⇒ 四元全 0）：✅
+
+── g7j_n4_heldout  suite_sha=ade419351103 ✅
+   mean=0.2000  n=4  elapsed=208.225s
+   S1 carried=0   S2 verify.runs=4 failed=0
+   S3 carried=0  redelivered=0  same=0  diff=0  passed_after=0  via_answer=0  dup_skipped=0  rework_gap=0
+   S5 日志『走交付协议』=0  via_answer=0  ✅
+   S4 g7d2_dedupe_keep=0.2  g7d3_fmt_amount=0.2  g7e1_parse_flag=0.2  g7e2_truncate_tail=0.2
+      恒等式（carried=0 ⇒ 四元全 0）：✅
+
+── numeric_logic_heldout  suite_sha=8a052e6cd79b ✅
+   mean=1.0000  n=3  elapsed=144.565s
+   S1 carried=0   S2 verify.runs=3 failed=0
+   S3 carried=0  redelivered=0  same=0  diff=0  passed_after=0  via_answer=0  dup_skipped=0  rework_gap=0
+   S5 日志『走交付协议』=0  via_answer=0  ✅
+   S4 h01_int_to_roman=1.0  h02_merge_ranges=1.0  h03_eval_rpn=1.0
+      恒等式（carried=0 ⇒ 四元全 0）：✅
+
+==========================================================================
+sha 不符的套件数 = 0

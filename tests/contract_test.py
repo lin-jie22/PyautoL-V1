@@ -12928,8 +12928,12 @@ _AZ124_B_MARK = [i for i, x in enumerate(_AZ124_B_P) if _AZ124_MARK in x]
 _AZ124_B_AFTER = [i for i, x in enumerate(_AZ124_B_P)
                   if _AZ124_MARK in x and i > (_AZ124_B_MARK[0] if _AZ124_B_MARK else 0)]
 #: ⑦ 账本键集。
+#: ⚠️ V77（§146）**新增 `via_answer`**（打回后走交付协议的次数）。这不是放宽，
+#:   是**加键**：三处（`core.rework_stats` / `run._krw_zero`+`_krw_absorb` /
+#:   本条）必须同步，漏任一处新键就静默恒 0（纪律 21）。
 _AZ124_KEYS_ZERO = sorted(["tasks", "carried", "redelivered", "same", "diff",
-                           "passed_after", "dup_skipped", "task_runs_rejected"])
+                           "passed_after", "dup_skipped", "task_runs_rejected",
+                           "via_answer"])
 
 
 class _AZ124Out:
@@ -13026,6 +13030,134 @@ check(RS, "AZ124 ★★★**打回 → 重写**这条边：报错原文必须活
                         ("carried", "redelivered", "same", "diff", "passed_after")})
       + " ｜ S=" + str({k: _AZ124_RW["s"].get(k) for k in
                         ("carried", "redelivered", "same", "diff", "passed_after")}))
+
+# ══════════════════════════════════════════════════════════════════════════
+# AZ146（V77，§146）：打回后的重写改走**交付协议**（`V1_REJECT_CARRY=5`）
+# ══════════════════════════════════════════════════════════════════════════
+#  ⛔ 为什么这条必须存在：V73/V75/V76 把重写通道的四块**输入**逐块清空，
+#     八跑**逐字相同**（`same=16/16`）⇒ 输入构造被否证。V77 换的是**输出协议**：
+#     打回后不再要 JSON 规划（`replan()`），直接调 `answer(goal, clean=True)`
+#     并把返回的**纯文本**包成单个 `finish` 步骤交回管道。
+#  ⚠️ 本条主张的**不是**「改得对」，而是三件结构事实：
+#     ① 新分支真的被走到（`via_answer`），且 4 档一点没被改坏；
+#     ② 5 档**不走** `replan()`（历史里没有 `(上一次交付) ⇒ 失败` 那一行）；
+#     ③ 5 档交付的是 `answer()` 的**原文**（逐字），不是被 JSON 包裹的东西。
+#  ⛔ 不许把本条读成「模型学会改错了」：`clean=True` 的提示词里**没有 `error`**，
+#     这个臂语义上是「重问一次」。`v6_s166/PREREG.md` §6-1 已预注册这一句。
+_AZ146_ANS = _AZ124_GOOD
+#: `_ANSWER_SYS_CLEAN` 的原文（同时 pin 源码里有它，见 ⑥ —— 防字面量漂移）。
+_AZ146_SYS_CLEAN = "直接输出最终答案：代码就给代码原文，文字就给正文。"
+_AZ146_SRC = (V1 / "mw" / "planner.py").read_text(encoding="utf-8")
+#: `replan()` 独有的历史行（`planner.py:770` 拼的那一句）。5 档**不许**出现它。
+_AZ146_MARK = "(上一次交付) ⇒ 失败"
+
+
+def _az146_run(*, carry: int, ans: str):
+    """跑一次 Core（离线桩），返回 `(outcome, prompts, logs)`。
+
+    ⚠️ 与 `_az124_run` 的唯一差别：桩按**答案通道标记**分派 ——
+       `answer()` 的 prompt 以「请直接给出最终答案。」结尾（S69 用它区分通道），
+       规划 prompt 不含它 ⇒ 同一次跑里两个通道拿到不同剧本。
+    ⛔ 每条分支都必须走同一个装装置函数（两份 fixture = 两个未来）。
+    """
+    prompts: list[str] = []
+    logs: list[str] = []
+
+    class _Tap(StubLLM):
+        def complete(self, messages, **kw):                 # noqa: ANN001, ANN003
+            prompts.append("\n".join(m.content for m in messages))
+            return super().complete(messages, **kw)
+
+    keys = ("V1_LLM_OFFLINE", "V1_STATE_DIR", "V1_MAX_WALL_S", "V1_MAX_STEPS",
+            "V1_VERIFY_EXEC", "V1_REJECT_CARRY", "V1_MAX_CANDIDATES",
+            "V1_CAND_FAILOVER", "V1_VERIFY_RETRIES")
+    old = {k: os.environ.get(k) for k in keys}
+    os.environ["V1_LLM_OFFLINE"] = "1"
+    os.environ["V1_STATE_DIR"] = str(Path(tempfile.mkdtemp(prefix="v1_az146_")) / "s")
+    os.environ["V1_MAX_WALL_S"] = "120"
+    os.environ["V1_MAX_STEPS"] = "8"
+    os.environ["V1_VERIFY_EXEC"] = "1"
+    os.environ["V1_REJECT_CARRY"] = str(carry)
+    os.environ["V1_MAX_CANDIDATES"] = "3"
+    os.environ["V1_CAND_FAILOVER"] = "1"
+    os.environ["V1_VERIFY_RETRIES"] = "2"
+    try:
+        _c = Core(cfg.Settings(), llm=_Tap(scripts=[("请直接给出最终答案", ans)],
+                                          default=_AZ124_STEP1),
+                  tools=ToolRegistry(), wire_external=False,
+                  log=lambda m: logs.append(str(m)))
+        return _c.run(_AZ124_GOAL), prompts, logs
+    finally:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+_AZ146_5_OUT, _AZ146_5_P, _AZ146_5_LOG = _az146_run(carry=5, ans=_AZ146_ANS)
+_AZ146_4_OUT, _AZ146_4_P, _AZ146_4_LOG = _az146_run(carry=4, ans=_AZ146_ANS)
+_AZ146_E_OUT, _AZ146_E_P, _AZ146_E_LOG = _az146_run(carry=5, ans="")
+
+_AZ146_RW = {k: (getattr(v, "stats", None) or {}).get("rework") or {}
+             for k, v in (("5", _AZ146_5_OUT), ("4", _AZ146_4_OUT),
+                          ("e", _AZ146_E_OUT))}
+#: 5 档里**答案通道**的那一条请求（按 `_ANSWER_SYS_CLEAN` 认）。
+_AZ146_5_ANS_P = [x for x in _AZ146_5_P if _AZ146_SYS_CLEAN in x]
+#: 4 档的**重规划**请求（按 `(上一次交付) ⇒ 失败` 认）。
+_AZ146_4_REPLAN_P = [x for x in _AZ146_4_P if _AZ146_MARK in x]
+#: 空答案那一跑：任何一条带 `_AZ146_MARK` 的请求都算「回退到了规划通道」。
+_AZ146_E_FALLBACK = [x for x in _AZ146_E_P if _AZ146_MARK in x]
+
+_AZ146_OK = {
+    "① 只数一次：5 档 `via_answer=1`、4 档 `=0`（4 档没被改坏）": (
+        _AZ146_RW["5"].get("via_answer") == 1
+        and _AZ146_RW["4"].get("via_answer") == 0),
+    "② 兑现：5 档 `redelivered=1 / diff=1 / same=0 / passed_after=1`": (
+        _AZ146_RW["5"].get("redelivered") == 1
+        and _AZ146_RW["5"].get("diff") == 1
+        and _AZ146_RW["5"].get("same") == 0
+        and _AZ146_RW["5"].get("passed_after") == 1),
+    "③ 交付的是 `answer()` 原文（逐字），不是 JSON": (
+        (getattr(_AZ146_5_OUT, "answer", "") or "").strip()
+        == _AZ146_ANS.strip() and _AZ146_ANS.strip() != ""),
+    "④ 5 档不走 `replan()`：答案请求里没有 `(上一次交付) ⇒ 失败`；4 档恰好一处": (
+        len(_AZ146_5_ANS_P) == 1 and _AZ146_MARK not in _AZ146_5_ANS_P[0]
+        and len(_AZ146_4_REPLAN_P) == 1),
+    "⑤ 5 档用的是 `_ANSWER_SYS_CLEAN`（clean 臂），4 档一次都没用": (
+        len(_AZ146_5_ANS_P) == 1
+        and not any(_AZ146_SYS_CLEAN in x for x in _AZ146_4_P)),
+    "⑥ 字面量不漂：`_ANSWER_SYS_CLEAN` 原文在 `planner.py` 里": (
+        _AZ146_SYS_CLEAN in _AZ146_SRC),
+    "⑦ 交空**不回退**：仍记 `via_answer=1`、日志有『交空』、没有 `replan` 请求": (
+        _AZ146_RW["e"].get("via_answer") == 1
+        and any("交付协议**交空**" in x for x in _AZ146_E_LOG)
+        and _AZ146_E_FALLBACK == []),
+}
+check(RS, "AZ146 ★★打回后的重写改走**交付协议**（`V1_REJECT_CARRY=5`）\n"
+          "          ① 5 档 `via_answer=1`、4 档 `=0`；\n"
+          "          ② 5 档 `diff=1/same=0/passed_after=1`（协议换过就真的换了答案）；\n"
+          "          ③ 交付的正文逐字等于 `answer()` 的返回值；\n"
+          "          ④ 5 档不许出现 `replan()` 的历史行，4 档恰好一处；\n"
+          "          ⑤ 5 档用 `_ANSWER_SYS_CLEAN`，4 档一次都没用；\n"
+          "          ⑥ `_ANSWER_SYS_CLEAN` 字面量在源码里（防漂移）；\n"
+          "          ⑦ `answer()` 交空时**不回退**到规划通道（⛔ 静默 fallback）。\n"
+          "          ⚠️ 本条**不主张**『模型学会改错』：`clean=True` 的提示词里没有 `error`，\n"
+          "             这个臂语义上是『重问一次』（`v6_s166/PREREG.md` §6-1）。\n"
+          "          撤回语义：把 `=5` 分支删掉 ⇒ ①必红（`via_answer` 键仍在但恒 0）；\n"
+          "                    `answer(goal, clean=True)` 改成 `clean=False` ⇒ ⑤ 必红；\n"
+          "                    交空时改回 `replan()` ⇒ ⑦ 必红；\n"
+          "                    `=5` 改调 `replan()` ⇒ ②③④ 全红。",
+      all(_AZ146_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ146_OK.items())
+      + " ｜ 5=" + str({k: _AZ146_RW["5"].get(k) for k in
+                        ("via_answer", "carried", "redelivered", "same", "diff",
+                         "passed_after")})
+      + " ｜ 4=" + str({k: _AZ146_RW["4"].get(k) for k in
+                        ("via_answer", "carried", "redelivered", "same", "diff",
+                         "passed_after")})
+      + f" ｜ 5答案请求={len(_AZ146_5_ANS_P)} 4重规划请求={len(_AZ146_4_REPLAN_P)}"
+      + f" ｜ E回退={len(_AZ146_E_FALLBACK)}")
 
 # ══════════════════════════════════════════════════════════════════════════
 # AZ125（V66，§133）：三个「截断」必须**分居三处**，且**单位写进名字**

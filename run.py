@@ -1179,6 +1179,10 @@ def _krw_zero() -> dict:
         "passed_after": 0,
         #: 逐字重提被重复闸吃掉的次数 —— 它就是 V61 `unaccounted` 残差的那一类出口。
         "dup_skipped": 0,
+        #: ★ V77（§146）：打回后的重写**走交付协议**的次数（`REJECT_CARRY=5`）。
+        #: ⛔ 必须在这里**和** `_krw_absorb` 的键元组里各登记一次：白名单循环
+        #:    不枚举就等于恒 0（纪律 12/21：只改一边会让新键静默归零）。
+        "via_answer": 0,
         #: 打回过**至少一次**的**题-run**数 —— 上面五项的分母（`carried`/`redelivered`
         #: 都是次，两者之比才有意义）。
         #: ⚠️ 没有它，"carried=0" 会被读成"载荷送不到"，而真相可能是"这题没被打回"。
@@ -1204,7 +1208,7 @@ def _krw_absorb(acc: dict, out) -> dict:
     if int(vf.get("failed") or 0) > 0:
         acc["task_runs_rejected"] = int(acc.get("task_runs_rejected", 0)) + 1
     for _k in ("carried", "redelivered", "same", "diff", "passed_after",
-               "dup_skipped"):
+               "dup_skipped", "via_answer"):
         acc[_k] = int(acc.get(_k, 0)) + int(rw.get(_k) or 0)
     return acc
 

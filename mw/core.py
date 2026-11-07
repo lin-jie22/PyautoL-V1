@@ -43,7 +43,7 @@ from .ledger import ScoreLedger
 from .llm import HTTPLLM, LLM, LLMError, Message, StubLLM, build_llm
 from .memory import BlobIntegrityError, MemoryStore
 from .metacog import SelfModel, load_evidence
-from .planner import Planner, Step, action_signature, looks_complex
+from .planner import Plan, Planner, Step, action_signature, looks_complex
 from .tools import (ToolRegistry, ToolResult, external_agent_names,
                     external_last_meta, register_core_tools,
                     register_external_agents, spec_applies)
@@ -1266,14 +1266,51 @@ class Core:
                         _carry_hist = []
                         self.log("  ↻ 打回重写：只给目标+报错（REJECT_CARRY=4，"
                                  "不带状态/轨迹 + 载荷脱敏）")
-                    plan = self.planner.replan(
-                        goal=goal, failed=Step("(上一次交付)", "finish", {}),
-                        error=_carry, history=_carry_hist, n=n,
-                        blocked=sorted(attempted_sigs),
-                        rejected=reseek_lines,
-                        guidance=guidance_text,
-                        state=_carry_state,
-                        redact=(_rc == 4))
+                    # ── V77（§146）：`=5` = **换输出协议**，不是再改一次输入 ─────
+                    # V73/V75/V76 把重写通道的四块入口（state / history /
+                    #   `banned` 载荷 / `reseek` 载荷）逐块清空，八跑**逐字相同**
+                    #   （`same=16/16`）⇒ 输入构造这条路被否证。
+                    # 剩下唯一没试过的是**要什么格式的输出**：
+                    #   `replan()` 要 JSON 规划（`_SYS` 那套协议），
+                    #   `answer()` 只要答案原文（`_ANSWER_SYS`）。
+                    # 依据是 V74（§143）：同一模型、同一道题，**交付通道** 6/6 而
+                    #   **规划通道** 2/6 ⇒ 协议本身在决定输出形状。
+                    # ⚠️ 因此 `=5` 在语义上是**「重问一次」不是「按报错改写」**：
+                    #   `answer(goal, clean=True)` 的提示词里没有 `error`
+                    #   （`planner.py:789` 的签名就这样，本轮⛔不改它）。
+                    #   ⇒ 即便兑现率上升，结论只能写「换协议有效」，
+                    #     ⛔ 不许写「系统学会改错了」（`v6_s166/PREREG.md` §6-1）。
+                    # ⚠️ `=5` **不在**上面这条 `elif` 链里：它不重置
+                    #    `_carry_state` / `_carry_hist`，因为 5 档根本不调
+                    #    `propose()` —— 那两个变量对它没有消费者。
+                    #    （V77 跑批第一版在这里写了两行重置，跑完后删掉：
+                    #     ⛔ 不许把开关写在没人走的分支上，见 `v6_s166/RESULTS.md` §6-3。）
+                    if _rc == 5:
+                        # ⛔ 不走 `propose()` ⇒ AZ63 那条「所有进规划器的路都喂
+                        #    同一份 `reseek_lines`」的接线**没被碰过**（不是放宽）。
+                        _rewrite = self.planner.answer(goal, clean=True)
+                        self.rework_stats["via_answer"] += 1
+                        if not _rewrite:
+                            # ⛔ 不许静默回退到 `replan`：那会让「协议换过了」这个
+                            #    事实消失，读数看起来像「=4 那一臂」。空答案照样
+                            #    交出去，让闸自己拒它（失败要留痕）。
+                            self.log("  ↻ 打回重写：交付协议**交空**"
+                                     "（REJECT_CARRY=5，⛔ 不回退到规划通道）")
+                        else:
+                            self.log("  ↻ 打回重写：走**交付协议**（REJECT_CARRY=5，"
+                                     f"answer(clean) 产出 {len(_rewrite)} 字符）")
+                        plan = Plan([Step("打回后按交付协议重写", "finish",
+                                          {"answer": _rewrite})],
+                                    note="打回后按交付协议重写（REJECT_CARRY=5）")
+                    else:
+                        plan = self.planner.replan(
+                            goal=goal, failed=Step("(上一次交付)", "finish", {}),
+                            error=_carry, history=_carry_hist, n=n,
+                            blocked=sorted(attempted_sigs),
+                            rejected=reseek_lines,
+                            guidance=guidance_text,
+                            state=_carry_state,
+                            redact=(_rc == 4))
                 else:
                     plan = self.planner.propose(
                         goal=goal, state=state, history=history, n=n,
@@ -2346,6 +2383,15 @@ class Core:
             #:    一个是"漏斗漏了一格"的语义）。两个都留是刻意的 —— 合成一个，
             #:    下一个人就无法从账本看出"这一格同时是漏斗缺口"。
             "dup_skipped": 0,
+            #: ★ V77（§146）：**打回后的重写走交付协议**的次数（单位：次，只在
+            #: `V1_REJECT_CARRY=5` 时 +1）。为什么非要这个键：
+            #: 纪律 6 第一形态是「机制存在 ≠ 通电」—— 没有它，`same` 没降时
+            #: 我无法区分「协议换了但没用」与「新分支根本没被走到」。
+            #: ⚠️ 与 `carried` 的关系：`carried` 是「报错进下一轮提问」的次数
+            #: （5 档也照样 +1，因为它在分支之前），本键是「那一次用的是哪条通道」。
+            #: ⛔ 不许把它并进 `redelivered`：分母是「重交了几次」，本键是
+            #: 「其中有几次走了交付协议」，合成一个就再也分不开（V61 的老坑）。
+            "via_answer": 0,
         }
         #: 交付时的自检说明。非空 ⇒ 这次交付**没有通过自检**，状态要如实标出来。
         #: ★第九十一轮起语义收紧：它描述的是**交出去的那一份**，不是"本轮发生过什么"

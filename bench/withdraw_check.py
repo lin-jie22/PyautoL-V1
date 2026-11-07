@@ -1557,6 +1557,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
                                  "truncated_cands", "dropped_not_applicable")''',
      '''_KP_NUM_KEYS: tuple[str, ...] = ("rounds", "examined_total", "cands_total",
                                  "truncated_total", "dropped_not_applicable")'''),
+    # ── AZ146：打回后的重写走**交付协议**（V77 / §146）──────────────────────
+    #: 撤的语义：**分支照走、`via_answer` 照记，但不再是 clean 臂**
+    #:   （`clean=True` → `False`）—— 这正是「交付协议」这个变量本身。
+    #: ⇒ AZ146 ⑤（5 档必须用 `_ANSWER_SYS_CLEAN`）必红。
+    #: ⚠️ 不撤整个 `elif _rc == 5:` 分支：撤了它 ①②③④⑦ 一起红（`via_answer`
+    #:   恒 0、退回 `replan()`），那就把「协议」与「分支存在」两个主张混在一起
+    #:   （V61 的 AZ123 同一条理由）。
+    #: ⚠️ ①（`via_answer=1`）**必须**照旧成立 —— 它测的是「分支有没有走到」，
+    #:   与本条要测的「走到了用什么协议」是两个独立面。
+    ("AZ146", "mw/core.py",
+     '''                        _rewrite = self.planner.answer(goal, clean=True)''',
+     '''                        _rewrite = self.planner.answer(goal, clean=False)'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

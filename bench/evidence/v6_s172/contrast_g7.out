@@ -1,0 +1,13 @@
+库内 facts = 4
+#### bench/heldout/g7e_heldout.jsonl
+  g7d2_dedupe_keep         recall=0 有交集的fact=[]
+  g7d3_fmt_amount          recall=0 有交集的fact=[]
+  g7e1_parse_flag          recall=1 有交集的fact=[3]
+  g7e2_truncate_tail       recall=1 有交集的fact=[4]
+  ⇒ 送达 2/4
+#### bench/heldout/g7j_n4_heldout.jsonl
+  g7d2_dedupe_keep         recall=4 有交集的fact=[1, 2, 3, 4]
+  g7d3_fmt_amount          recall=4 有交集的fact=[1, 2, 3, 4]
+  g7e1_parse_flag          recall=4 有交集的fact=[1, 2, 3, 4]
+  g7e2_truncate_tail       recall=4 有交集的fact=[1, 2, 3, 4]
+  ⇒ 送达 4/4

@@ -1,0 +1,15 @@
+归档 bench/evidence/v6_s159/final_memory.db（复制后打开）
+
+=== §2.2 现状读端在真实跑次库上的送达 ===
+  facts = 3（全部来源 = {'worldmodel': 3}）
+  k01_diff_tree        recall=0
+  k02_encode_cookie    recall=0
+  k03_unflatten        recall=0
+  k04_to_ini           recall=0
+  ⇒ 送达 0/4
+
+=== §2.4 换成 S1/S2 后的噪音注入（同一库）===
+  k01_diff_tree        S0=0  S1=0  S2=0  (库里共 3 条)
+  k02_encode_cookie    S0=0  S1=0  S2=0  (库里共 3 条)
+  k03_unflatten        S0=0  S1=0  S2=0  (库里共 3 条)
+  k04_to_ini           S0=0  S1=2  S2=2  (库里共 3 条)

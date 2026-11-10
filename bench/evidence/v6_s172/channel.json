@@ -1,0 +1,163 @@
+{
+ "summary": {
+  "k": 6,
+  "pool": {
+   "rules": 4,
+   "distractors": 8
+  },
+  "self_hit4": 4,
+  "self_hit_by_task": {
+   "k01_diff_tree": true,
+   "k02_encode_cookie": true,
+   "k03_unflatten": true,
+   "k04_to_ini": true
+  },
+  "hit4_s0": 0,
+  "hit4_s1": 4,
+  "hit4_s2": 4,
+  "distract_top6_s0": 0,
+  "distract_top6_s1": 14,
+  "distract_top6_s2": 12,
+  "rule_passes_filter4": 4,
+  "token_intersection_nonempty4": 0,
+  "db": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v83chan_nw03n121/memory.db"
+ },
+ "rows": [
+  {
+   "task": "k01_diff_tree",
+   "want": 1,
+   "rule_passes_filter": true,
+   "token_exact_intersection": [],
+   "goal_tokens_n": 20,
+   "fts_query_head": "\"写一个函数\" OR \"diff_tree\" OR \"a\" OR \"b\" OR \"递归比较两个\" OR \"dict\" OR \"的\" OR \"叶子\" OR \"标量\" OR \"值\" OR \"差异路径用\" OR \"连接嵌套键\" OR \"返回\" OR \"路径\" OR \"a\" OR \"里的值\" OR \"b\" OR \"里的值\" O",
+   "s0_ids": [],
+   "s0_hit": false,
+   "s0_rank": 0,
+   "s0_distract": 0,
+   "s1_ids": [
+    1,
+    9,
+    2,
+    5,
+    11,
+    8
+   ],
+   "s1_hit": true,
+   "s1_rank": 1,
+   "s1_distract": 4,
+   "s2_ids": [
+    1,
+    9,
+    2,
+    5,
+    4,
+    8
+   ],
+   "s2_hit": true,
+   "s2_rank": 1,
+   "s2_distract": 3
+  },
+  {
+   "task": "k02_encode_cookie",
+   "want": 2,
+   "rule_passes_filter": true,
+   "token_exact_intersection": [],
+   "goal_tokens_n": 33,
+   "fts_query_head": "\"写一个函数\" OR \"encode_cookie\" OR \"d\" OR \"把\" OR \"dict\" OR \"编码成\" OR \"Cookie\" OR \"请求头字符串\" OR \"规则\" OR \"键按字典序排序\" OR \"值为\" OR \"None\" OR \"的键跳过\" OR \"其余写成\" OR \"k\" OR \"v\" OR ",
+   "s0_ids": [],
+   "s0_hit": false,
+   "s0_rank": 0,
+   "s0_distract": 0,
+   "s1_ids": [
+    2,
+    12,
+    11,
+    10,
+    8,
+    3
+   ],
+   "s1_hit": true,
+   "s1_rank": 1,
+   "s1_distract": 4,
+   "s2_ids": [
+    2,
+    10,
+    12,
+    3,
+    8,
+    11
+   ],
+   "s2_hit": true,
+   "s2_rank": 1,
+   "s2_distract": 4
+  },
+  {
+   "task": "k03_unflatten",
+   "want": 3,
+   "rule_passes_filter": true,
+   "token_exact_intersection": [],
+   "goal_tokens_n": 22,
+   "fts_query_head": "\"写一个函数\" OR \"unflatten\" OR \"flat\" OR \"把展平\" OR \"dict\" OR \"还原成嵌套结构\" OR \"键里的\" OR \"表示嵌套\" OR \"dict\" OR \"k\" OR \"i\" OR \"表示\" OR \"k\" OR \"是一个\" OR \"list\" OR \"第\" OR \"i\" OR \"",
+   "s0_ids": [],
+   "s0_hit": false,
+   "s0_rank": 0,
+   "s0_distract": 0,
+   "s1_ids": [
+    3,
+    1,
+    2,
+    11,
+    9,
+    8
+   ],
+   "s1_hit": true,
+   "s1_rank": 1,
+   "s1_distract": 3,
+   "s2_ids": [
+    3,
+    1,
+    2,
+    9,
+    4,
+    8
+   ],
+   "s2_hit": true,
+   "s2_rank": 1,
+   "s2_distract": 2
+  },
+  {
+   "task": "k04_to_ini",
+   "want": 4,
+   "rule_passes_filter": true,
+   "token_exact_intersection": [],
+   "goal_tokens_n": 34,
+   "fts_query_head": "\"写一个函数\" OR \"to_ini\" OR \"d\" OR \"把嵌套\" OR \"dict\" OR \"转成\" OR \"INI\" OR \"文本\" OR \"顶层键是\" OR \"section\" OR \"值是一个\" OR \"dict\" OR \"每个\" OR \"section\" OR \"输出\" OR \"section\" OR \"",
+   "s0_ids": [],
+   "s0_hit": false,
+   "s0_rank": 0,
+   "s0_distract": 0,
+   "s1_ids": [
+    4,
+    12,
+    11,
+    8,
+    3,
+    2
+   ],
+   "s1_hit": true,
+   "s1_rank": 1,
+   "s1_distract": 3,
+   "s2_ids": [
+    4,
+    1,
+    12,
+    3,
+    8,
+    11
+   ],
+   "s2_hit": true,
+   "s2_rank": 1,
+   "s2_distract": 3
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+# ⛔ 已撤（WITHDRAWN）：这一版是在**归档库本体**上跑的（MemoryStore 会建表 ⇒ 改坏了证据）。
+#    读数与 repro_readings.out 逐题一致，但产物以 repro_readings.out 为准。
+=== A5 真库（3 条与题无关的 worldmodel 事实）换成 S1/S2 会送进来多少噪音 ===
+  k01_diff_tree        S0=0  S1=0  S2=0  (库里共 3 条)
+  k02_encode_cookie    S0=0  S1=0  S2=0  (库里共 3 条)
+  k03_unflatten        S0=0  S1=0  S2=0  (库里共 3 条)
+  k04_to_ini           S0=0  S1=2  S2=2  (库里共 3 条)

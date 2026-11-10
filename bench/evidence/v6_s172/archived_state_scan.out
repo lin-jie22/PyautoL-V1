@@ -1,0 +1,10 @@
+归档 state_dump 里的 [语义记忆] 块：
+  bench/evidence/knowledge_s47/state_dump.jsonl              rows=  6 语义=  6
+  bench/evidence/v6_s154/state_dump_t04.jsonl                rows= 14 语义=  0
+  bench/evidence/v6_s156/state_dump_v67_c2.jsonl             rows= 13 语义=  0
+  bench/evidence/v6_s157/state_dump_v68_c2.jsonl             rows=  4 语义=  0
+  bench/evidence/v6_s158/state_dump_e0.jsonl                 rows=  5 语义=  0
+  bench/evidence/v6_s158/state_dump_e1.jsonl                 rows=  4 语义=  0
+  bench/evidence/v6_s158/state_dump_e2.jsonl                 rows=  7 语义=  0
+  bench/evidence/v6_s159/state_dump_A5.jsonl                 rows=  4 语义=  0
+  ⇒ v6_s15x 合计 rows=51 语义=0

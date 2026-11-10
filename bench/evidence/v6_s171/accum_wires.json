@@ -1,0 +1,404 @@
+{
+  "tasks_known": [
+    "a",
+    "base_convert",
+    "cell",
+    "commas",
+    "csv_row",
+    "dedupe",
+    "dedupe_keep",
+    "dedupe_last",
+    "deep_get",
+    "diff_tree",
+    "encode_attrs",
+    "encode_cookie",
+    "eval_rpn",
+    "flatten",
+    "flatten_nested",
+    "fmt_amount",
+    "gcd_lcm",
+    "group_by",
+    "int_to_roman",
+    "is_valid_brackets",
+    "mask_email",
+    "median",
+    "merge_ranges",
+    "min_meeting_rooms",
+    "next_permutation",
+    "normalize_ws",
+    "parse_date_flex",
+    "parse_duration",
+    "parse_flag",
+    "parse_headers",
+    "parse_pairs",
+    "parse_query",
+    "parts_of",
+    "put",
+    "quote_join",
+    "rle",
+    "roman_to_int",
+    "slugify",
+    "spiral_order",
+    "split_amount"
+  ],
+  "n_tasks_known": 51,
+  "scorer_sha": "d4b1cbbfd7f1ef50d1e1a2a4cd95371ec7a82c05f6cb6d277e079814ea021076",
+  "dbs": [
+    {
+      "db": "state/memory.db",
+      "episodes_kind": {
+        "failure": 705,
+        "goal": 644,
+        "finish": 643,
+        "mismatch": 630,
+        "outcome": 99
+      },
+      "facts_by_source": {
+        "selftest": 1,
+        "worldmodel": 1
+      },
+      "n_facts": 2,
+      "n_episodes": 2721,
+      "finish_by_fn": {
+        "<无代码块>": {
+          "n": 265,
+          "scored": 0,
+          "correct": 0
+        },
+        "parse_duration": {
+          "n": 4,
+          "scored": 4,
+          "correct": 0,
+          "best": 0.8333
+        },
+        "dedupe": {
+          "n": 4,
+          "scored": 4,
+          "correct": 1,
+          "best": 1.0
+        },
+        "commas": {
+          "n": 3,
+          "scored": 3,
+          "correct": 3,
+          "best": 1.0
+        },
+        "merge_ranges": {
+          "n": 3,
+          "scored": 3,
+          "correct": 0,
+          "best": 0.6667
+        },
+        "top_k": {
+          "n": 3,
+          "scored": 3,
+          "correct": 3,
+          "best": 1.0
+        },
+        "rle": {
+          "n": 2,
+          "scored": 2,
+          "correct": 2,
+          "best": 1.0
+        },
+        "solve": {
+          "n": 1,
+          "scored": 0,
+          "correct": 0,
+          "best": 0.0
+        },
+        "flatten": {
+          "n": 358,
+          "scored": 358,
+          "correct": 139,
+          "best": 1.0
+        }
+      },
+      "finish_by_wall": {
+        "stub(wall≤0.05)": {
+          "n": 558,
+          "scored": 358,
+          "correct": 139
+        },
+        "real(wall>0.05)": {
+          "n": 85,
+          "scored": 19,
+          "correct": 9
+        },
+        "unknown": {
+          "n": 0,
+          "scored": 0,
+          "correct": 0
+        }
+      },
+      "facts_sample": [
+        {
+          "source": "selftest",
+          "text": "python 写文件时应显式指定 encoding=utf-8，否则默认编码会在非 ASCII 上静默截断"
+        },
+        {
+          "source": "worldmodel",
+          "text": "动作 [note] 存在悲观偏差：我预演「会失败」，实际成功 ⇒ 该动作的预演结论偏保守"
+        }
+      ]
+    },
+    {
+      "db": "bench/evidence/v6_s158/seed_memory.db",
+      "episodes_kind": {
+        "finish": 24,
+        "goal": 24,
+        "reward": 24,
+        "outcome": 7,
+        "mismatch": 1
+      },
+      "facts_by_source": {
+        "worldmodel": 1
+      },
+      "n_facts": 1,
+      "n_episodes": 80,
+      "finish_by_fn": {
+        "dedupe_keep": {
+          "n": 6,
+          "scored": 6,
+          "correct": 0,
+          "best": 0.6
+        },
+        "fmt_amount": {
+          "n": 6,
+          "scored": 6,
+          "correct": 0,
+          "best": 0.2
+        },
+        "parse_flag": {
+          "n": 6,
+          "scored": 6,
+          "correct": 0,
+          "best": 0.2
+        },
+        "truncate_tail": {
+          "n": 6,
+          "scored": 6,
+          "correct": 0,
+          "best": 0.2
+        }
+      },
+      "finish_by_wall": {
+        "stub(wall≤0.05)": {
+          "n": 0,
+          "scored": 0,
+          "correct": 0
+        },
+        "real(wall>0.05)": {
+          "n": 24,
+          "scored": 24,
+          "correct": 0
+        },
+        "unknown": {
+          "n": 0,
+          "scored": 0,
+          "correct": 0
+        }
+      },
+      "facts_sample": [
+        {
+          "source": "worldmodel",
+          "text": "动作 [recall] 存在悲观偏差：我预演「会失败」，实际成功 ⇒ 该动作的预演结论偏保守"
+        }
+      ]
+    },
+    {
+      "db": "bench/evidence/v6_s159/final_memory.db",
+      "episodes_kind": {
+        "finish": 20,
+        "goal": 20,
+        "reward": 20,
+        "mismatch": 8,
+        "outcome": 4,
+        "failure": 3
+      },
+      "facts_by_source": {
+        "worldmodel": 3
+      },
+      "n_facts": 3,
+      "n_episodes": 75,
+      "finish_by_fn": {
+        "diff_tree": {
+          "n": 5,
+          "scored": 5,
+          "correct": 5,
+          "best": 1.0
+        },
+        "encode_cookie": {
+          "n": 5,
+          "scored": 5,
+          "correct": 0,
+          "best": 0.8
+        },
+        "unflatten": {
+          "n": 5,
+          "scored": 5,
+          "correct": 0,
+          "best": 0.2
+        },
+        "to_ini": {
+          "n": 5,
+          "scored": 5,
+          "correct": 5,
+          "best": 1.0
+        }
+      },
+      "finish_by_wall": {
+        "stub(wall≤0.05)": {
+          "n": 0,
+          "scored": 0,
+          "correct": 0
+        },
+        "real(wall>0.05)": {
+          "n": 20,
+          "scored": 20,
+          "correct": 10
+        },
+        "unknown": {
+          "n": 0,
+          "scored": 0,
+          "correct": 0
+        }
+      },
+      "facts_sample": [
+        {
+          "source": "worldmodel",
+          "text": "动作 [recall] 存在悲观偏差：我预演「会失败」，实际成功 ⇒ 该动作的预演结论偏保守"
+        },
+        {
+          "source": "worldmodel",
+          "text": "动作 [finish] 存在乐观偏差：我预演「会成功」，实际失败 ⇒ 该动作的预演应先打折再采信"
+        },
+        {
+          "source": "worldmodel",
+          "text": "动作 [finish] 存在悲观偏差：我预演「会失败」，实际成功 ⇒ 该动作的预演结论偏保守"
+        }
+      ]
+    },
+    {
+      "db": "bench/evidence/knowledge_s30/train_memory.db",
+      "episodes_kind": {
+        "finish": 4,
+        "goal": 4,
+        "outcome": 4,
+        "mismatch": 3,
+        "reward": 3
+      },
+      "facts_by_source": {
+        "abstract": 9
+      },
+      "n_facts": 9,
+      "n_episodes": 18,
+      "finish_by_fn": {
+        "split_top_level": {
+          "n": 1,
+          "scored": 1,
+          "correct": 0,
+          "best": 0.6
+        },
+        "parse_pairs": {
+          "n": 1,
+          "scored": 1,
+          "correct": 0,
+          "best": 0.6
+        },
+        "encode_attrs": {
+          "n": 1,
+          "scored": 1,
+          "correct": 1,
+          "best": 1.0
+        },
+        "<无代码块>": {
+          "n": 1,
+          "scored": 0,
+          "correct": 0
+        }
+      },
+      "finish_by_wall": {
+        "stub(wall≤0.05)": {
+          "n": 0,
+          "scored": 0,
+          "correct": 0
+        },
+        "real(wall>0.05)": {
+          "n": 4,
+          "scored": 3,
+          "correct": 1
+        },
+        "unknown": {
+          "n": 0,
+          "scored": 0,
+          "correct": 0
+        }
+      },
+      "facts_sample": [
+        {
+          "source": "abstract",
+          "text": "遇见到字符串中有嵌套引号时，先进行特殊处理。"
+        },
+        {
+          "source": "abstract",
+          "text": "遇到复杂嵌套情况时，先处理简单情况再逐步增加复杂度。"
+        },
+        {
+          "source": "abstract",
+          "text": "遇见到连续无新动作时，先检查是否进入重复状态"
+        },
+        {
+          "source": "abstract",
+          "text": "遇见到语义记忆中无相关条目时，先尝试构建新结论。"
+        },
+        {
+          "source": "abstract",
+          "text": "检查空字符串处理，避免直接拼接。"
+        },
+        {
+          "source": "abstract",
+          "text": "遇见到字符串中可能包含单引号时，先处理好分隔符和键值对的逻辑。"
+        },
+        {
+          "source": "abstract",
+          "text": "遇见到复杂字符串处理时，先进行简化测试用例。"
+        },
+        {
+          "source": "abstract",
+          "text": "遇见到空字符串时，先初始化 part 变量。"
+        },
+        {
+          "source": "abstract",
+          "text": "解析字符串前确认处理嵌套括号的需求。"
+        }
+      ]
+    }
+  ],
+  "census": {
+    "episodes_readers": {
+      "<全部/无kind>": [
+        "abstractor.py"
+      ],
+      "outcome": [
+        "core.py",
+        "worldmodel.py"
+      ],
+      "reward": [
+        "worldmodel.py"
+      ]
+    },
+    "facts_readers": [
+      "memory.py:def recall",
+      "tools.py:def recall"
+    ],
+    "distill_callers": [
+      "bench/build_6c_seed.py",
+      "bench/build_g7_seed.py",
+      "bench/distill.py",
+      "bench/probe_accum_wires.py",
+      "tests/contract_test.py"
+    ],
+    "distill_calls_in_run_py": 0
+  }
+}

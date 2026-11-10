@@ -1,0 +1,60 @@
+# 打分器 code_exec sha=d4b1cbbfd7f1ef50  题库函数名=51
+
+## state/memory.db  episodes=2721 facts=2
+   episodes by kind: {'failure': 705, 'goal': 644, 'finish': 643, 'mismatch': 630, 'outcome': 99}
+   facts  by source: {'selftest': 1, 'worldmodel': 1}
+   交付 stub(wall≤0.05)    条=558 可判=358 满分=139
+   交付 real(wall>0.05)    条= 85 可判= 19 满分=  9
+   交付 unknown            条=  0 可判=  0 满分=  0
+   finish <无代码块>             条=265 可判=  0 满分=  0 最高分=0.0000
+   finish commas             条=  3 可判=  3 满分=  3 最高分=1.0000
+   finish dedupe             条=  4 可判=  4 满分=  1 最高分=1.0000
+   finish flatten            条=358 可判=358 满分=139 最高分=1.0000
+   finish merge_ranges       条=  3 可判=  3 满分=  0 最高分=0.6667
+   finish parse_duration     条=  4 可判=  4 满分=  0 最高分=0.8333
+   finish rle                条=  2 可判=  2 满分=  2 最高分=1.0000
+   finish solve              条=  1 可判=  0 满分=  0 最高分=0.0000
+   finish top_k              条=  3 可判=  3 满分=  3 最高分=1.0000
+
+## bench/evidence/v6_s158/seed_memory.db  episodes=80 facts=1
+   episodes by kind: {'finish': 24, 'goal': 24, 'reward': 24, 'outcome': 7, 'mismatch': 1}
+   facts  by source: {'worldmodel': 1}
+   交付 stub(wall≤0.05)    条=  0 可判=  0 满分=  0
+   交付 real(wall>0.05)    条= 24 可判= 24 满分=  0
+   交付 unknown            条=  0 可判=  0 满分=  0
+   finish dedupe_keep        条=  6 可判=  6 满分=  0 最高分=0.6000
+   finish fmt_amount         条=  6 可判=  6 满分=  0 最高分=0.2000
+   finish parse_flag         条=  6 可判=  6 满分=  0 最高分=0.2000
+   finish truncate_tail      条=  6 可判=  6 满分=  0 最高分=0.2000
+
+## bench/evidence/v6_s159/final_memory.db  episodes=75 facts=3
+   episodes by kind: {'finish': 20, 'goal': 20, 'reward': 20, 'mismatch': 8, 'outcome': 4, 'failure': 3}
+   facts  by source: {'worldmodel': 3}
+   交付 stub(wall≤0.05)    条=  0 可判=  0 满分=  0
+   交付 real(wall>0.05)    条= 20 可判= 20 满分= 10
+   交付 unknown            条=  0 可判=  0 满分=  0
+   finish diff_tree          条=  5 可判=  5 满分=  5 最高分=1.0000
+   finish encode_cookie      条=  5 可判=  5 满分=  0 最高分=0.8000
+   finish to_ini             条=  5 可判=  5 满分=  5 最高分=1.0000
+   finish unflatten          条=  5 可判=  5 满分=  0 最高分=0.2000
+
+## bench/evidence/knowledge_s30/train_memory.db  episodes=18 facts=9
+   episodes by kind: {'finish': 4, 'goal': 4, 'outcome': 4, 'mismatch': 3, 'reward': 3}
+   facts  by source: {'abstract': 9}
+   交付 stub(wall≤0.05)    条=  0 可判=  0 满分=  0
+   交付 real(wall>0.05)    条=  4 可判=  3 满分=  1
+   交付 unknown            条=  0 可判=  0 满分=  0
+   finish <无代码块>             条=  1 可判=  0 满分=  0 最高分=0.0000
+   finish encode_attrs       条=  1 可判=  1 满分=  1 最高分=1.0000
+   finish parse_pairs        条=  1 可判=  1 满分=  0 最高分=0.6000
+   finish split_top_level    条=  1 可判=  1 满分=  0 最高分=0.6000
+
+## 读点普查
+   episodes(kind=<全部/无kind>)  <- ['abstractor.py']
+   episodes(kind=outcome)  <- ['core.py', 'worldmodel.py']
+   episodes(kind=reward)  <- ['worldmodel.py']
+   facts 读点: ['memory.py:def recall', 'tools.py:def recall']
+   把 episodes 变成 facts 的函数 distill() 在 run.py 的调用点 = 0
+   distill() 的全部调用方: ['bench/build_6c_seed.py', 'bench/build_g7_seed.py', 'bench/distill.py', 'bench/probe_accum_wires.py', 'tests/contract_test.py']
+
+已写 bench/evidence/v6_s171/accum_wires.json

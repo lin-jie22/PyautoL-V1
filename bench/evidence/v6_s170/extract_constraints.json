@@ -1,0 +1,1223 @@
+{
+ "tasks": [
+  {
+   "suite": "struct",
+   "id": "k01_diff_tree",
+   "fn": "diff_tree",
+   "n_specs": 1,
+   "rules": [
+    "R1b"
+   ],
+   "built": 1,
+   "specs": [
+    {
+     "rule": "R1b",
+     "kind": "path_join",
+     "calls": [
+      "diff_tree({\"a\": {\"b\": 1}}, {\"a\": {\"b\": 2}})"
+     ],
+     "params": {
+      "sep": ".",
+      "key": "a.b"
+     },
+     "built": true,
+     "note": "嵌套路径用 '.' 连接"
+    }
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k02_encode_cookie",
+   "fn": "encode_cookie",
+   "n_specs": 3,
+   "rules": [
+    "R1a",
+    "R4",
+    "R4"
+   ],
+   "built": 0,
+   "specs": [
+    {
+     "rule": "R1a",
+     "kind": "sep",
+     "calls": [
+      "encode_cookie({'a': 1})",
+      "encode_cookie({'a': None})",
+      "encode_cookie({'b': 2, 'a': 1})",
+      "encode_cookie({'a': 'x y'})",
+      "encode_cookie({'a': 'p%q'})"
+     ],
+     "params": {
+      "sep": "; "
+     },
+     "built": false,
+     "note": "多项用 '; ' 连接"
+    },
+    {
+     "rule": "R4",
+     "kind": "escape",
+     "calls": [
+      "encode_cookie({'a': 'x y'})"
+     ],
+     "params": {
+      "ch": " ",
+      "code": "%20"
+     },
+     "built": false,
+     "note": "空格→%20"
+    },
+    {
+     "rule": "R4",
+     "kind": "escape",
+     "calls": [
+      "encode_cookie({'a': 'p%q'})"
+     ],
+     "params": {
+      "ch": "%",
+      "code": "%25"
+     },
+     "built": false,
+     "note": "百分号→%25"
+    }
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k03_unflatten",
+   "fn": "unflatten",
+   "n_specs": 1,
+   "rules": [
+    "R3"
+   ],
+   "built": 1,
+   "specs": [
+    {
+     "rule": "R3",
+     "kind": "index_fill",
+     "calls": [
+      "unflatten({\"a[2]\": 0})"
+     ],
+     "params": {
+      "base": "a",
+      "i": 2,
+      "value": 0
+     },
+     "built": true,
+     "note": "长度 = 最大下标+1，未填 None"
+    }
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k04_to_ini",
+   "fn": "to_ini",
+   "n_specs": 2,
+   "rules": [
+    "R2a",
+    "R2b"
+   ],
+   "built": 0,
+   "specs": [
+    {
+     "rule": "R2a",
+     "kind": "nl_least",
+     "calls": [
+      "to_ini({})",
+      "to_ini({'s': {'a': 1}})",
+      "to_ini({'s': {'a': None}})",
+      "to_ini({'s': {'a': True}})",
+      "to_ini({'s': {}, 't': {'b': 2}})"
+     ],
+     "params": {},
+     "built": false,
+     "note": "非空输出以 \\n 结尾（字面读法）"
+    },
+    {
+     "rule": "R2b",
+     "kind": "nl_exact",
+     "calls": [
+      "to_ini({})",
+      "to_ini({'s': {'a': 1}})",
+      "to_ini({'s': {'a': None}})",
+      "to_ini({'s': {'a': True}})",
+      "to_ini({'s': {}, 't': {'b': 2}})"
+     ],
+     "params": {},
+     "built": false,
+     "note": "非空输出恰以一个 \\n 结尾（解释性加严）"
+    }
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7d2_dedupe_keep",
+   "fn": "dedupe_keep",
+   "n_specs": 1,
+   "rules": [
+    "R7"
+   ],
+   "built": 0,
+   "specs": [
+    {
+     "rule": "R7",
+     "kind": "order_subseq",
+     "calls": [
+      "dedupe_keep(['A', 'a'])"
+     ],
+     "params": {
+      "src": [
+       "A",
+       "a"
+      ]
+     },
+     "built": false,
+     "note": "返回值是入参的原序子序列"
+    }
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7d3_fmt_amount",
+   "fn": "fmt_amount",
+   "n_specs": 0,
+   "rules": [],
+   "built": 0,
+   "specs": []
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7e1_parse_flag",
+   "fn": "parse_flag",
+   "n_specs": 2,
+   "rules": [
+    "R5a",
+    "R5b"
+   ],
+   "built": 2,
+   "specs": [
+    {
+     "rule": "R5a",
+     "kind": "same",
+     "calls": [
+      "parse_flag('y')",
+      "parse_flag('Y')"
+     ],
+     "params": {},
+     "built": true,
+     "note": "大小写不敏感"
+    },
+    {
+     "rule": "R5b",
+     "kind": "same",
+     "calls": [
+      "parse_flag('y')",
+      "parse_flag('  y  ')"
+     ],
+     "params": {},
+     "built": true,
+     "note": "首尾空白忽略"
+    }
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7e2_truncate_tail",
+   "fn": "truncate_tail",
+   "n_specs": 1,
+   "rules": [
+    "R6"
+   ],
+   "built": 0,
+   "specs": [
+    {
+     "rule": "R6",
+     "kind": "identity",
+     "calls": [
+      [
+       "truncate_tail('abc', 5)",
+       "abc"
+      ]
+     ],
+     "params": {},
+     "built": false,
+     "note": "不超长时原样返回"
+    }
+   ]
+  }
+ ],
+ "results": [
+  {
+   "id": "k01_diff_tree",
+   "suite": "struct",
+   "kind": "oracle",
+   "label": "pass",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k01_diff_tree",
+   "suite": "struct",
+   "kind": "stored#1",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k01_diff_tree",
+   "suite": "struct",
+   "kind": "stored#2",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1b",
+     "verdict": "FAIL",
+     "why": "没有 'a.b' 这个键，实际键=['a.b.']"
+    }
+   ]
+  },
+  {
+   "id": "k01_diff_tree",
+   "suite": "struct",
+   "kind": "stored#3",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1b",
+     "verdict": "FAIL",
+     "why": "没有 'a.b' 这个键，实际键=['a.b.']"
+    }
+   ]
+  },
+  {
+   "id": "k01_diff_tree",
+   "suite": "struct",
+   "kind": "stored#4",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k02_encode_cookie",
+   "suite": "struct",
+   "kind": "oracle",
+   "label": "pass",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R4",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R4",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k02_encode_cookie",
+   "suite": "struct",
+   "kind": "stored#1",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R4",
+     "verdict": "FAIL",
+     "why": "缺少 %20：'a=x%2520y'"
+    },
+    {
+     "rule": "R4",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k02_encode_cookie",
+   "suite": "struct",
+   "kind": "stored#2",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R4",
+     "verdict": "FAIL",
+     "why": "缺少 %20：'a=x%2520y'"
+    },
+    {
+     "rule": "R4",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k02_encode_cookie",
+   "suite": "struct",
+   "kind": "stored#3",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R4",
+     "verdict": "FAIL",
+     "why": "缺少 %20：'a=x%2520y'"
+    },
+    {
+     "rule": "R4",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k02_encode_cookie",
+   "suite": "struct",
+   "kind": "stored#4",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R1a",
+     "verdict": "NA",
+     "why": "输出里没有该分隔符"
+    },
+    {
+     "rule": "R4",
+     "verdict": "FAIL",
+     "why": "缺少 %20：'a=x%2520y'"
+    },
+    {
+     "rule": "R4",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k03_unflatten",
+   "suite": "struct",
+   "kind": "oracle",
+   "label": "pass",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R3",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k03_unflatten",
+   "suite": "struct",
+   "kind": "stored#1",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R3",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k03_unflatten",
+   "suite": "struct",
+   "kind": "stored#2",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R3",
+     "verdict": "FAIL",
+     "why": "'a' 不是 list：None"
+    }
+   ]
+  },
+  {
+   "id": "k03_unflatten",
+   "suite": "struct",
+   "kind": "stored#3",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R3",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    }
+   ]
+  },
+  {
+   "id": "k03_unflatten",
+   "suite": "struct",
+   "kind": "stored#4",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R3",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k04_to_ini",
+   "suite": "struct",
+   "kind": "oracle",
+   "label": "pass",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R2a",
+     "verdict": "NA",
+     "why": "空串（题面另说返回空串）"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "NA",
+     "why": "空串"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k04_to_ini",
+   "suite": "struct",
+   "kind": "stored#1",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R2a",
+     "verdict": "NA",
+     "why": "空串（题面另说返回空串）"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "NA",
+     "why": "空串"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k04_to_ini",
+   "suite": "struct",
+   "kind": "stored#2",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R2a",
+     "verdict": "NA",
+     "why": "空串（题面另说返回空串）"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "NA",
+     "why": "空串"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 AttributeError"
+    }
+   ]
+  },
+  {
+   "id": "k04_to_ini",
+   "suite": "struct",
+   "kind": "stored#3",
+   "label": "pass",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R2a",
+     "verdict": "NA",
+     "why": "空串（题面另说返回空串）"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "NA",
+     "why": "空串"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R2b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "k04_to_ini",
+   "suite": "struct",
+   "kind": "stored#4",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2a",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    },
+    {
+     "rule": "R2b",
+     "verdict": "EXC",
+     "why": "调用抛 NameError"
+    }
+   ]
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n4",
+   "kind": "oracle",
+   "label": "pass",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R7",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n4",
+   "kind": "stored#1",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R7",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n4",
+   "kind": "stored#2",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R7",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n4",
+   "kind": "stored#3",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R7",
+     "verdict": "NA",
+     "why": "非 list"
+    }
+   ]
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n4",
+   "kind": "stored#4",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R7",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n4",
+   "kind": "oracle",
+   "label": "pass",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R5a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R5b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n4",
+   "kind": "stored#1",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R5a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R5b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n4",
+   "kind": "stored#2",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R5a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R5b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n4",
+   "kind": "stored#3",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R5a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R5b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n4",
+   "kind": "stored#4",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R5a",
+     "verdict": "PASS",
+     "why": ""
+    },
+    {
+     "rule": "R5b",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n4",
+   "kind": "oracle",
+   "label": "pass",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R6",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n4",
+   "kind": "stored#1",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R6",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n4",
+   "kind": "stored#2",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R6",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n4",
+   "kind": "stored#3",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R6",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n4",
+   "kind": "stored#4",
+   "label": "fail",
+   "fatal": "",
+   "per_spec": [
+    {
+     "rule": "R6",
+     "verdict": "PASS",
+     "why": ""
+    }
+   ]
+  }
+ ],
+ "summary": {
+  "n_specs": 11,
+  "covered": [
+   "k01_diff_tree",
+   "k02_encode_cookie",
+   "k03_unflatten",
+   "k04_to_ini",
+   "g7d2_dedupe_keep",
+   "g7e1_parse_flag",
+   "g7e2_truncate_tail"
+  ],
+  "bite": 7,
+  "wrong_n": 27,
+  "hurt": 0,
+  "right_n": 8,
+  "faults": 0,
+  "s4": [
+   "R1b",
+   "R3"
+  ],
+  "rule_stats": {
+   "R1b": {
+    "bit": 2,
+    "hurt": 0,
+    "na": 0,
+    "pass": 3
+   },
+   "R1a": {
+    "bit": 0,
+    "hurt": 0,
+    "na": 20,
+    "pass": 5
+   },
+   "R4": {
+    "bit": 4,
+    "hurt": 0,
+    "na": 0,
+    "pass": 6
+   },
+   "R3": {
+    "bit": 1,
+    "hurt": 0,
+    "na": 1,
+    "pass": 3
+   },
+   "R2a": {
+    "bit": 0,
+    "hurt": 0,
+    "na": 13,
+    "pass": 12
+   },
+   "R2b": {
+    "bit": 0,
+    "hurt": 0,
+    "na": 13,
+    "pass": 12
+   },
+   "R7": {
+    "bit": 0,
+    "hurt": 0,
+    "na": 1,
+    "pass": 4
+   },
+   "R5a": {
+    "bit": 0,
+    "hurt": 0,
+    "na": 0,
+    "pass": 5
+   },
+   "R5b": {
+    "bit": 0,
+    "hurt": 0,
+    "na": 0,
+    "pass": 5
+   },
+   "R6": {
+    "bit": 0,
+    "hurt": 0,
+    "na": 0,
+    "pass": 5
+   }
+  }
+ }
+}

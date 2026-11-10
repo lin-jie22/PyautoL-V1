@@ -1,0 +1,57 @@
+语料：67 题 / 17 个题集
+闸现有入口（派出 `example`）：4 / 67 = 0.0597
+F 能挂上约束的题：26 / 67 = 0.3881
+其中闸原来没有入口的：26 题（F 的净增量）
+合并后入口：30 / 67 = 0.4478
+
+题集                                             题                        闸    F 派出的规则
+------------------------------------------------------------------------------------
+bench/heldout/g7e_heldout.jsonl                g7d2_dedupe_keep         —    R7
+bench/heldout/g7e_heldout.jsonl                g7e1_parse_flag          —    R5a,R5b
+bench/heldout/g7e_heldout.jsonl                g7e2_truncate_tail       —    R6
+bench/heldout/g7e_hint_heldout.jsonl           g7d2_dedupe_keep         —    R7
+bench/heldout/g7e_hint_heldout.jsonl           g7e1_parse_flag          —    R5a,R5b
+bench/heldout/g7e_hint_heldout.jsonl           g7e2_truncate_tail       —    R6
+bench/heldout/g7j_n0_heldout.jsonl             g7d2_dedupe_keep         —    R7
+bench/heldout/g7j_n0_heldout.jsonl             g7e1_parse_flag          —    R5a,R5b
+bench/heldout/g7j_n0_heldout.jsonl             g7e2_truncate_tail       —    R6
+bench/heldout/g7j_n4_heldout.jsonl             g7d2_dedupe_keep         —    R7
+bench/heldout/g7j_n4_heldout.jsonl             g7e1_parse_flag          —    R5a,R5b
+bench/heldout/g7j_n4_heldout.jsonl             g7e2_truncate_tail       —    R6
+bench/heldout/g7m_g7d2_heldout.jsonl           g7d2_dedupe_keep         —    R7
+bench/heldout/g7m_g7d2_pad15_heldout.jsonl     g7d2_dedupe_keep         —    R7
+bench/heldout/struct_convert_heldout.jsonl     k01_diff_tree            —    R1b
+bench/heldout/struct_convert_heldout.jsonl     k02_encode_cookie        —    R1a,R4,R4
+bench/heldout/struct_convert_heldout.jsonl     k03_unflatten            —    R3
+bench/heldout/struct_convert_heldout.jsonl     k04_to_ini               —    R2a,R2b
+bench/tasks/coding_small.jsonl                 t03_commas               有    —
+bench/tasks/coding_small.jsonl                 t04_merge_ranges         有    —
+bench/tasks/coding_small.jsonl                 t05_top_k                有    —
+bench/tasks/coding_small.jsonl                 t06_rle                  有    —
+bench/tasks/g7_family_train.jsonl              g7t4_quote_join          —    R1a
+bench/tasks/g7_struct.jsonl                    g7s1_flatten_nested      —    R1b
+bench/tasks/g7_struct.jsonl                    g7s3_csv_row             —    R1a
+bench/tasks/g7d_spec_incomplete.jsonl          g7d2_dedupe_keep         —    R7
+bench/tasks/g7d_spec_incomplete.jsonl          g7e1_parse_flag          —    R5a,R5b
+bench/tasks/g7d_spec_incomplete.jsonl          g7e2_truncate_tail       —    R6
+bench/tasks/struct_convert.jsonl               z01_flatten              —    R1b
+bench/tasks/struct_convert.jsonl               z02_to_csv               —    R1a
+
+按题集：
+  4c160ef72136  bench/heldout/g7_heldout.jsonl                 题= 2 闸有期望值= 0 F可挂= 0
+  5c5ad025739b  bench/heldout/g7e_heldout.jsonl                题= 4 闸有期望值= 0 F可挂= 3
+  9458a896373e  bench/heldout/g7e_hint_heldout.jsonl           题= 4 闸有期望值= 0 F可挂= 3
+  521d93e3a334  bench/heldout/g7j_n0_heldout.jsonl             题= 4 闸有期望值= 0 F可挂= 3
+  ade419351103  bench/heldout/g7j_n4_heldout.jsonl             题= 4 闸有期望值= 0 F可挂= 3
+  045ccbe01b68  bench/heldout/g7m_g7d2_heldout.jsonl           题= 1 闸有期望值= 0 F可挂= 1
+  841d3bf8ea93  bench/heldout/g7m_g7d2_pad15_heldout.jsonl     题= 1 闸有期望值= 0 F可挂= 1
+  8a052e6cd79b  bench/heldout/numeric_logic_heldout.jsonl      题= 3 闸有期望值= 0 F可挂= 0
+  8e3d642d5b25  bench/heldout/struct_convert_heldout.jsonl     题= 4 闸有期望值= 0 F可挂= 4
+  618a18cafd2f  bench/tasks/coding_small.jsonl                 题= 6 闸有期望值= 4 F可挂= 0
+  e8aa912e541f  bench/tasks/g7_family_train.jsonl              题= 4 闸有期望值= 0 F可挂= 1
+  e7e08aeaa330  bench/tasks/g7_numeric.jsonl                   题= 4 闸有期望值= 0 F可挂= 0
+  c44362828a7e  bench/tasks/g7_struct.jsonl                    题= 4 闸有期望值= 0 F可挂= 2
+  7bc8169ebc8d  bench/tasks/g7d_spec_incomplete.jsonl          题= 7 闸有期望值= 0 F可挂= 3
+  e55313557a97  bench/tasks/numeric_logic.jsonl                题= 5 闸有期望值= 0 F可挂= 0
+  3b363fcd9777  bench/tasks/struct_convert.jsonl               题= 5 闸有期望值= 0 F可挂= 2
+  d3bebce59977  bench/tasks/text_ops.jsonl                     题= 5 闸有期望值= 0 F可挂= 0

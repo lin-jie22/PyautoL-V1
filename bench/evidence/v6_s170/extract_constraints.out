@@ -1,0 +1,66 @@
+==============================================================================
+S1 可抽约束
+  k01_diff_tree          1 条 ['R1b']  自造探针=1
+  k02_encode_cookie      3 条 ['R1a', 'R4', 'R4']  自造探针=0
+  k03_unflatten          1 条 ['R3']  自造探针=1
+  k04_to_ini             2 条 ['R2a', 'R2b']  自造探针=0
+  g7d2_dedupe_keep       1 条 ['R7']  自造探针=0
+  g7d3_fmt_amount        0 条 []  自造探针=0
+  g7e1_parse_flag        2 条 ['R5a', 'R5b']  自造探针=2
+  g7e2_truncate_tail     1 条 ['R6']  自造探针=0
+  合计 11 条，覆盖 7/8 题
+==============================================================================
+S2 咬住（分母=已知错实现 27 份）
+    -  k01_diff_tree          stored#1  
+  咬住 k01_diff_tree          stored#2  没有 'a.b' 这个键，实际键=['a.b.']
+  咬住 k01_diff_tree          stored#3  没有 'a.b' 这个键，实际键=['a.b.']
+    -  k01_diff_tree          stored#4  
+  咬住 k02_encode_cookie      stored#1  缺少 %20：'a=x%2520y'
+  咬住 k02_encode_cookie      stored#2  缺少 %20：'a=x%2520y'
+  咬住 k02_encode_cookie      stored#3  缺少 %20：'a=x%2520y'
+  咬住 k02_encode_cookie      stored#4  缺少 %20：'a=x%2520y'
+    -  k03_unflatten          stored#1  
+  咬住 k03_unflatten          stored#2  'a' 不是 list：None
+    -  k03_unflatten          stored#3  
+    -  k03_unflatten          stored#4  
+    -  k04_to_ini             stored#1  
+    -  k04_to_ini             stored#2  
+    -  k04_to_ini             stored#4  
+    -  g7d2_dedupe_keep       stored#1  
+    -  g7d2_dedupe_keep       stored#2  
+    -  g7d2_dedupe_keep       stored#3  
+    -  g7d2_dedupe_keep       stored#4  
+    -  g7e1_parse_flag        stored#1  
+    -  g7e1_parse_flag        stored#2  
+    -  g7e1_parse_flag        stored#3  
+    -  g7e1_parse_flag        stored#4  
+    -  g7e2_truncate_tail     stored#1  
+    -  g7e2_truncate_tail     stored#2  
+    -  g7e2_truncate_tail     stored#3  
+    -  g7e2_truncate_tail     stored#4  
+  → 咬住 7 / 27
+==============================================================================
+S3 误伤（分母=已知对实现 8 份）
+   ok  k01_diff_tree          oracle    
+   ok  k02_encode_cookie      oracle    
+   ok  k03_unflatten          oracle    
+   ok  k04_to_ini             oracle    
+   ok  k04_to_ini             stored#3  
+   ok  g7d2_dedupe_keep       oracle    
+   ok  g7e1_parse_flag        oracle    
+   ok  g7e2_truncate_tail     oracle    
+  → 误伤 0 / 8
+==============================================================================
+逐条规则
+  R1a   咬住= 0 误伤= 0 通过=  5 不适用= 20
+  R1b   咬住= 2 误伤= 0 通过=  3 不适用=  0
+  R2a   咬住= 0 误伤= 0 通过= 12 不适用= 13
+  R2b   咬住= 0 误伤= 0 通过= 12 不适用= 13
+  R3    咬住= 1 误伤= 0 通过=  3 不适用=  1
+  R4    咬住= 4 误伤= 0 通过=  6 不适用=  0
+  R5a   咬住= 0 误伤= 0 通过=  5 不适用=  0
+  R5b   咬住= 0 误伤= 0 通过=  5 不适用=  0
+  R6    咬住= 0 误伤= 0 通过=  5 不适用=  0
+  R7    咬住= 0 误伤= 0 通过=  4 不适用=  1
+==============================================================================
+S4 部署性：既咬住过错、探针又自造（不依赖 tests 实参）的规则 = ['R1b', 'R3']

@@ -1,0 +1,943 @@
+{
+ "total": 67,
+ "with_example": 4,
+ "with_f": 26,
+ "net_gain": 26,
+ "rows": [
+  {
+   "path": "bench/heldout/g7_heldout.jsonl",
+   "sha": "4c160ef72136",
+   "id": "g7s2_parse_headers",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/g7_heldout.jsonl",
+   "sha": "4c160ef72136",
+   "id": "g7s4_xml_escape_attrs",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/g7e_heldout.jsonl",
+   "sha": "5c5ad025739b",
+   "id": "g7d2_dedupe_keep",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R7"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7e_heldout.jsonl",
+   "sha": "5c5ad025739b",
+   "id": "g7d3_fmt_amount",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/g7e_heldout.jsonl",
+   "sha": "5c5ad025739b",
+   "id": "g7e1_parse_flag",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R5a",
+    "R5b"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7e_heldout.jsonl",
+   "sha": "5c5ad025739b",
+   "id": "g7e2_truncate_tail",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R6"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7e_hint_heldout.jsonl",
+   "sha": "9458a896373e",
+   "id": "g7d2_dedupe_keep",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R7"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7e_hint_heldout.jsonl",
+   "sha": "9458a896373e",
+   "id": "g7d3_fmt_amount",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/g7e_hint_heldout.jsonl",
+   "sha": "9458a896373e",
+   "id": "g7e1_parse_flag",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R5a",
+    "R5b"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7e_hint_heldout.jsonl",
+   "sha": "9458a896373e",
+   "id": "g7e2_truncate_tail",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R6"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7j_n0_heldout.jsonl",
+   "sha": "521d93e3a334",
+   "id": "g7d2_dedupe_keep",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R7"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7j_n0_heldout.jsonl",
+   "sha": "521d93e3a334",
+   "id": "g7d3_fmt_amount",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/g7j_n0_heldout.jsonl",
+   "sha": "521d93e3a334",
+   "id": "g7e1_parse_flag",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R5a",
+    "R5b"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7j_n0_heldout.jsonl",
+   "sha": "521d93e3a334",
+   "id": "g7e2_truncate_tail",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R6"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7j_n4_heldout.jsonl",
+   "sha": "ade419351103",
+   "id": "g7d2_dedupe_keep",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R7"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7j_n4_heldout.jsonl",
+   "sha": "ade419351103",
+   "id": "g7d3_fmt_amount",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/g7j_n4_heldout.jsonl",
+   "sha": "ade419351103",
+   "id": "g7e1_parse_flag",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R5a",
+    "R5b"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7j_n4_heldout.jsonl",
+   "sha": "ade419351103",
+   "id": "g7e2_truncate_tail",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R6"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7m_g7d2_heldout.jsonl",
+   "sha": "045ccbe01b68",
+   "id": "g7d2_dedupe_keep",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R7"
+   ]
+  },
+  {
+   "path": "bench/heldout/g7m_g7d2_pad15_heldout.jsonl",
+   "sha": "841d3bf8ea93",
+   "id": "g7d2_dedupe_keep",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R7"
+   ]
+  },
+  {
+   "path": "bench/heldout/numeric_logic_heldout.jsonl",
+   "sha": "8a052e6cd79b",
+   "id": "h01_int_to_roman",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/numeric_logic_heldout.jsonl",
+   "sha": "8a052e6cd79b",
+   "id": "h02_merge_ranges",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/numeric_logic_heldout.jsonl",
+   "sha": "8a052e6cd79b",
+   "id": "h03_eval_rpn",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/heldout/struct_convert_heldout.jsonl",
+   "sha": "8e3d642d5b25",
+   "id": "k01_diff_tree",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R1b"
+   ]
+  },
+  {
+   "path": "bench/heldout/struct_convert_heldout.jsonl",
+   "sha": "8e3d642d5b25",
+   "id": "k02_encode_cookie",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R1a",
+    "R4",
+    "R4"
+   ]
+  },
+  {
+   "path": "bench/heldout/struct_convert_heldout.jsonl",
+   "sha": "8e3d642d5b25",
+   "id": "k03_unflatten",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R3"
+   ]
+  },
+  {
+   "path": "bench/heldout/struct_convert_heldout.jsonl",
+   "sha": "8e3d642d5b25",
+   "id": "k04_to_ini",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R2a",
+    "R2b"
+   ]
+  },
+  {
+   "path": "bench/tasks/coding_small.jsonl",
+   "sha": "618a18cafd2f",
+   "id": "t01_parse_duration",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/coding_small.jsonl",
+   "sha": "618a18cafd2f",
+   "id": "t02_dedupe",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/coding_small.jsonl",
+   "sha": "618a18cafd2f",
+   "id": "t03_commas",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined",
+    "example"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/coding_small.jsonl",
+   "sha": "618a18cafd2f",
+   "id": "t04_merge_ranges",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined",
+    "example"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/coding_small.jsonl",
+   "sha": "618a18cafd2f",
+   "id": "t05_top_k",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined",
+    "example"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/coding_small.jsonl",
+   "sha": "618a18cafd2f",
+   "id": "t06_rle",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined",
+    "example"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_family_train.jsonl",
+   "sha": "e8aa912e541f",
+   "id": "g7t1_split_top_level",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_family_train.jsonl",
+   "sha": "e8aa912e541f",
+   "id": "g7t2_parse_pairs",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_family_train.jsonl",
+   "sha": "e8aa912e541f",
+   "id": "g7t3_encode_attrs",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_family_train.jsonl",
+   "sha": "e8aa912e541f",
+   "id": "g7t4_quote_join",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R1a"
+   ]
+  },
+  {
+   "path": "bench/tasks/g7_numeric.jsonl",
+   "sha": "e7e08aeaa330",
+   "id": "g7n1_split_amount",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_numeric.jsonl",
+   "sha": "e7e08aeaa330",
+   "id": "g7n2_next_permutation",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_numeric.jsonl",
+   "sha": "e7e08aeaa330",
+   "id": "g7n3_spiral_order",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_numeric.jsonl",
+   "sha": "e7e08aeaa330",
+   "id": "g7n4_min_meeting_rooms",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_struct.jsonl",
+   "sha": "c44362828a7e",
+   "id": "g7s1_flatten_nested",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R1b"
+   ]
+  },
+  {
+   "path": "bench/tasks/g7_struct.jsonl",
+   "sha": "c44362828a7e",
+   "id": "g7s2_parse_headers",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7_struct.jsonl",
+   "sha": "c44362828a7e",
+   "id": "g7s3_csv_row",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R1a"
+   ]
+  },
+  {
+   "path": "bench/tasks/g7_struct.jsonl",
+   "sha": "c44362828a7e",
+   "id": "g7s4_xml_escape_attrs",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7d_spec_incomplete.jsonl",
+   "sha": "7bc8169ebc8d",
+   "id": "g7d1_parse_date_flex",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7d_spec_incomplete.jsonl",
+   "sha": "7bc8169ebc8d",
+   "id": "g7d2_dedupe_keep",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R7"
+   ]
+  },
+  {
+   "path": "bench/tasks/g7d_spec_incomplete.jsonl",
+   "sha": "7bc8169ebc8d",
+   "id": "g7d3_fmt_amount",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7d_spec_incomplete.jsonl",
+   "sha": "7bc8169ebc8d",
+   "id": "g7d4_slugify",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/g7d_spec_incomplete.jsonl",
+   "sha": "7bc8169ebc8d",
+   "id": "g7e1_parse_flag",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R5a",
+    "R5b"
+   ]
+  },
+  {
+   "path": "bench/tasks/g7d_spec_incomplete.jsonl",
+   "sha": "7bc8169ebc8d",
+   "id": "g7e2_truncate_tail",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R6"
+   ]
+  },
+  {
+   "path": "bench/tasks/g7d_spec_incomplete.jsonl",
+   "sha": "7bc8169ebc8d",
+   "id": "g7e3_dedupe_last",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/numeric_logic.jsonl",
+   "sha": "e55313557a97",
+   "id": "y01_roman_to_int",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/numeric_logic.jsonl",
+   "sha": "e55313557a97",
+   "id": "y02_is_valid_brackets",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/numeric_logic.jsonl",
+   "sha": "e55313557a97",
+   "id": "y03_base_convert",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/numeric_logic.jsonl",
+   "sha": "e55313557a97",
+   "id": "y04_gcd_lcm",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/numeric_logic.jsonl",
+   "sha": "e55313557a97",
+   "id": "y05_median",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/struct_convert.jsonl",
+   "sha": "3b363fcd9777",
+   "id": "z01_flatten",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R1b"
+   ]
+  },
+  {
+   "path": "bench/tasks/struct_convert.jsonl",
+   "sha": "3b363fcd9777",
+   "id": "z02_to_csv",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": [
+    "R1a"
+   ]
+  },
+  {
+   "path": "bench/tasks/struct_convert.jsonl",
+   "sha": "3b363fcd9777",
+   "id": "z03_parse_query",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/struct_convert.jsonl",
+   "sha": "3b363fcd9777",
+   "id": "z04_deep_get",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/struct_convert.jsonl",
+   "sha": "3b363fcd9777",
+   "id": "z05_group_by",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/text_ops.jsonl",
+   "sha": "d3bebce59977",
+   "id": "x01_slugify",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/text_ops.jsonl",
+   "sha": "d3bebce59977",
+   "id": "x02_mask_email",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/text_ops.jsonl",
+   "sha": "d3bebce59977",
+   "id": "x03_word_freq",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/text_ops.jsonl",
+   "sha": "d3bebce59977",
+   "id": "x04_truncate",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  },
+  {
+   "path": "bench/tasks/text_ops.jsonl",
+   "sha": "d3bebce59977",
+   "id": "x05_normalize_ws",
+   "kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "rules": []
+  }
+ ]
+}

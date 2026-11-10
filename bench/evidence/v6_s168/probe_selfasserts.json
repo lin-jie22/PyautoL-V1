@@ -1,0 +1,144 @@
+[
+ {
+  "suite": "struct",
+  "id": "k01_diff_tree",
+  "fn": "diff_tree",
+  "n_asserts": 3,
+  "src": "blob",
+  "asserts": [
+   "assert diff_tree({'a': 1, 'b': {'c': 2}}, {'a': 1, 'b': {'c': 2}}) == {}",
+   "assert diff_tree({'a': 1, 'b': {'c': 2}}, {'a': 1, 'b': {'c': 3}}) == {'b.c': [2, 3]}",
+   "assert diff_tree({'a': 1, 'b': {'c': 2}}, {'a': 1, 'b': {'d': 3}}) == {'b.c': [2, None], 'b.d': [None, 3]}"
+  ],
+  "bite_wrong": false,
+  "pass_oracle": true,
+  "pass_stub": false,
+  "why_wrong": "",
+  "why_oracle": "",
+  "why_stub": "示例1未通过：diff_tree({'a': 1, 'b': {'c': 2}}, {'a': 1, 'b': {'c': 2}}) == {}；实得 None；期望 {}"
+ },
+ {
+  "suite": "struct",
+  "id": "k02_encode_cookie",
+  "fn": "encode_cookie",
+  "n_asserts": 1,
+  "src": "blob",
+  "asserts": [
+   "assert encode_cookie({'a': 'b c', 'd': None, 'e': 'f;g,h'}) == 'a=b%20c;e=f%3Bg%2Ch'"
+  ],
+  "bite_wrong": true,
+  "pass_oracle": false,
+  "pass_stub": false,
+  "why_wrong": "示例1未通过：encode_cookie({'a': 'b c', 'd': None, 'e': 'f;g,h'}) == 'a=b%20c;e=f%3Bg%2Ch'；实得 'a=b%2520c; e=f%253Bg%252Ch'；期望 'a=b%20c;e=f%3Bg%2Ch'",
+  "why_oracle": "示例1未通过：encode_cookie({'a': 'b c', 'd': None, 'e': 'f;g,h'}) == 'a=b%20c;e=f%3Bg%2Ch'；实得 'a=b%20c; e=f%3Bg%2Ch'；期望 'a=b%20c;e=f%3Bg%2Ch'",
+  "why_stub": "示例1未通过：encode_cookie({'a': 'b c', 'd': None, 'e': 'f;g,h'}) == 'a=b%20c;e=f%3Bg%2Ch'；实得 None；期望 'a=b%20c;e=f%3Bg%2Ch'"
+ },
+ {
+  "suite": "struct",
+  "id": "k03_unflatten",
+  "fn": "unflatten",
+  "n_asserts": 3,
+  "src": "blob",
+  "asserts": [
+   "assert unflatten({'a.b': 1, 'c': 2}) == {'a': {'b': 1}, 'c': 2}",
+   "assert unflatten({'foo[0].bar': 1, 'foo[2].baz': 3}) == {'foo': [None, None, {'bar': 1, 'baz': 3}]}",
+   "assert unflatten({'x[1].y[0].z': 1}) == {'x': [None, {'y': [None, {'z': 1}]}]}"
+  ],
+  "bite_wrong": true,
+  "pass_oracle": false,
+  "pass_stub": false,
+  "why_wrong": "示例1未通过：unflatten({'a.b': 1, 'c': 2}) == {'a': {'b': 1}, 'c': 2}；实得 {'a': {}, 'c': 2}；期望 {'a': {'b': 1}, 'c': 2}",
+  "why_oracle": "示例2未通过：unflatten({'foo[0].bar': 1, 'foo[2].baz': 3}) == {'foo': [None, None, {'bar': 1, 'baz': 3}]}；实得 {'foo': [{'bar': 1}, None, {'baz': 3}]}；期望 {'foo': [None,",
+  "why_stub": "示例1未通过：unflatten({'a.b': 1, 'c': 2}) == {'a': {'b': 1}, 'c': 2}；实得 None；期望 {'a': {'b': 1}, 'c': 2}"
+ },
+ {
+  "suite": "struct",
+  "id": "k04_to_ini",
+  "fn": "to_ini",
+  "n_asserts": 3,
+  "src": "blob",
+  "asserts": [
+   "assert to_ini({'section1': {'key1': True, 'key2': None}}) == '[section1]\\nkey1=true\\nkey2=\\n\\n'",
+   "assert to_ini({'se1': {'k1': 123, 'k2': False}}) == '[se1]\\nk1=123\\nk2=false\\n\\n'",
+   "assert to_ini({}) == ''"
+  ],
+  "bite_wrong": true,
+  "pass_oracle": false,
+  "pass_stub": false,
+  "why_wrong": "示例1未通过：to_ini({'section1': {'key1': True, 'key2': None}}) == '[section1]\\nkey1=true\\nkey2=\\n\\n'；实得 '[section1]\\nkey1=true\\nkey2=\\n'；期望 '[section1]\\nkey1=true\\nk",
+  "why_oracle": "示例1未通过：to_ini({'section1': {'key1': True, 'key2': None}}) == '[section1]\\nkey1=true\\nkey2=\\n\\n'；实得 '[section1]\\nkey1=true\\nkey2=\\n'；期望 '[section1]\\nkey1=true\\nk",
+  "why_stub": "示例1未通过：to_ini({'section1': {'key1': True, 'key2': None}}) == '[section1]\\nkey1=true\\nkey2=\\n\\n'；实得 None；期望 '[section1]\\nkey1=true\\nkey2=\\n\\n'"
+ },
+ {
+  "suite": "g7j_n4",
+  "id": "g7d2_dedupe_keep",
+  "fn": "dedupe_keep",
+  "n_asserts": 3,
+  "src": "blob",
+  "asserts": [
+   "assert dedupe_keep(['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']) == ['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']",
+   "assert dedupe_keep(['ZK4', 'ZK3', 'ZK2', 'ZK1', 'ZK4', 'ZK3']) == ['ZK4', 'ZK3', 'ZK2', 'ZK1', 'ZK4', 'ZK3']",
+   "assert dedupe_keep(['ZK1', 'ZK2', 'ZK3', 'ZK4']) == ['ZK1', 'ZK2', 'ZK3', 'ZK4']"
+  ],
+  "bite_wrong": true,
+  "pass_oracle": false,
+  "pass_stub": false,
+  "why_wrong": "示例1未通过：dedupe_keep(['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']) == ['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']；实得 ['ZK1', 'ZK2', 'ZK3', 'ZK4']；期望 ['ZK1', 'ZK2', '",
+  "why_oracle": "示例1未通过：dedupe_keep(['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']) == ['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']；实得 ['ZK1', 'ZK2', 'ZK3', 'ZK4']；期望 ['ZK1', 'ZK2', '",
+  "why_stub": "示例1未通过：dedupe_keep(['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']) == ['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']；实得 None；期望 ['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2"
+ },
+ {
+  "suite": "g7j_n4",
+  "id": "g7d3_fmt_amount",
+  "fn": "fmt_amount",
+  "n_asserts": 3,
+  "src": "blob",
+  "asserts": [
+   "assert fmt_amount(1000) == \"1,000.00\"",
+   "assert fmt_amount(-250.50) == \"-250.50\"",
+   "assert fmt_amount(123456.789) == \"123,456.79\""
+  ],
+  "bite_wrong": false,
+  "pass_oracle": false,
+  "pass_stub": false,
+  "why_wrong": "",
+  "why_oracle": "示例1未通过：fmt_amount(1000) == \"1,000.00\"；实得 '1 000.00'；期望 '1,000.00'",
+  "why_stub": "示例1未通过：fmt_amount(1000) == \"1,000.00\"；实得 None；期望 '1,000.00'"
+ },
+ {
+  "suite": "g7j_n4",
+  "id": "g7e1_parse_flag",
+  "fn": "parse_flag",
+  "n_asserts": 3,
+  "src": "blob",
+  "asserts": [
+   "assert parse_flag(\"on\") == True",
+   "assert parse_flag(\"OFF\") == False",
+   "assert parse_flag(\" \") == None"
+  ],
+  "bite_wrong": false,
+  "pass_oracle": false,
+  "pass_stub": false,
+  "why_wrong": "",
+  "why_oracle": "示例1未通过：parse_flag(\"on\") == True；实得 False；期望 True",
+  "why_stub": "示例1未通过：parse_flag(\"on\") == True；实得 None；期望 True"
+ },
+ {
+  "suite": "g7j_n4",
+  "id": "g7e2_truncate_tail",
+  "fn": "truncate_tail",
+  "n_asserts": 3,
+  "src": "blob",
+  "asserts": [
+   "assert truncate_tail(\"abcdef\", 5) == \"abcde\"",
+   "assert truncate_tail(\"abc\", 5) == \"abc\"",
+   "assert truncate_tail(\"abc\", 2) == \"ab...\""
+  ],
+  "bite_wrong": true,
+  "pass_oracle": false,
+  "pass_stub": false,
+  "why_wrong": "示例1未通过：truncate_tail(\"abcdef\", 5) == \"abcde\"；实得 'abcde…'；期望 'abcde'",
+  "why_oracle": "示例1未通过：truncate_tail(\"abcdef\", 5) == \"abcde\"；实得 '…bcdef'；期望 'abcde'",
+  "why_stub": "示例1未通过：truncate_tail(\"abcdef\", 5) == \"abcde\"；实得 None；期望 'abcde'"
+ }
+]

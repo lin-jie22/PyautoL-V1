@@ -1,0 +1,13 @@
+struct   k01_diff_tree          n=3 咬错=❌ 过正确=✅ 过空实现=✅
+struct   k02_encode_cookie      n=1 咬错=✅ 过正确=❌ 过空实现=✅
+struct   k03_unflatten          n=3 咬错=✅ 过正确=❌ 过空实现=✅
+struct   k04_to_ini             n=3 咬错=✅ 过正确=❌ 过空实现=✅
+g7j_n4   g7d2_dedupe_keep       n=3 咬错=✅ 过正确=❌ 过空实现=✅
+g7j_n4   g7d3_fmt_amount        n=3 咬错=❌ 过正确=❌ 过空实现=✅
+g7j_n4   g7e1_parse_flag        n=3 咬错=❌ 过正确=❌ 过空实现=✅
+g7j_n4   g7e2_truncate_tail     n=3 咬错=✅ 过正确=❌ 过空实现=✅
+
+合计 8 题：写出断言 8、咬住错答案 5、在正确答案上通过 1、在空实现上也通过 0
+⭐⭐ 有判别力（过正确 + 咬错） = 0 / 8
+  struct   n=4 咬住=3 过正确=1 过空实现=0 有判别力=0
+  g7j_n4   n=4 咬住=2 过正确=0 过空实现=0 有判别力=0

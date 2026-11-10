@@ -1,0 +1,19 @@
+===== g7j_n4 =====
+  facts: 0 条，其中带 assert== 的 0 条
+  episodes: 16 条，其中带 assert== 的 3 条
+    · assert dedupe_keep(['A', 'a']) == ['A'] ⇒ AssertionError | assert dedupe_keep(['b', ' a ', 'A']) ==
+    · assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | assert fmt_amount(-1234.5) ==
+  blobs: 8 条，其中带 assert== 的 0 条
+  facts.key 样例：[]
+===== numlogic =====
+  facts: 1 条，其中带 assert== 的 0 条
+  episodes: 12 条，其中带 assert== 的 0 条
+  blobs: 5 条，其中带 assert== 的 0 条
+  facts.key 样例：['ddc101dbfb159ab46518e80b6c3b2a83']
+===== struct =====
+  facts: 0 条，其中带 assert== 的 0 条
+  episodes: 13 条，其中带 assert== 的 2 条
+    · assert encode_cookie({'a': 'x y'}) ==
+    · assert unflatten({'a.b': 1}) == {'a': {'b': 1}} ⇒ AssertionError | assert unflatten({'a[0]': 1, 'a[1]': 2}) ==
+  blobs: 5 条，其中带 assert== 的 0 条
+  facts.key 样例：[]

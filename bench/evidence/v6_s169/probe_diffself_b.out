@@ -1,0 +1,26 @@
+struct   k01_diff_tree          输入点=16 ffff FF=6/6
+struct   k02_encode_cookie      输入点= 6 ffff FF=0/6
+struct   k03_unflatten          输入点= 6 ffff FF=6/6
+struct   k04_to_ini             输入点= 6 ffpf FF=3/3 MIX=2/3
+g7j_n4   g7d2_dedupe_keep       输入点= 5 ffff FF=3/6
+g7j_n4   g7d3_fmt_amount        输入点= 4 ffff FF=3/6
+g7j_n4   g7e1_parse_flag        输入点= 6 ffff FF=0/6
+g7j_n4   g7e2_truncate_tail     输入点=19 ffff FF=5/6
+numeric  h01_int_to_roman       输入点=10 ipii 
+numeric  h02_merge_ranges       输入点= 5 pppp PP=0/6
+numeric  h03_eval_rpn           输入点= 6 pppp PP=0/6
+
+── 非判分输入上的分组汇总
+  PP  对= 12 分歧=0/12 = 0.0000   按输入点=0/66 = 0.0000
+  FF  对= 45 分歧=26/45 = 0.5778   按输入点=207/390 = 0.5308
+  MIX 对=  3 分歧=2/3 = 0.6667   按输入点=7/18 = 0.3889
+
+  分歧点落在哪一族变异上（按对计，可多族）：
+    FF  degen                    11
+    FF  extend                   26
+    MIX degen                    1
+    MIX extend                   2
+
+── 判决
+  R_PP=0.0000（假警报）  R_FF=0.5778  Δ=+0.5778
+  ✅ 有可用信号

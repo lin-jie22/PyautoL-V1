@@ -1,0 +1,1384 @@
+{
+ "meta": {
+  "from": "probe_diffself.json",
+  "task_n": 11
+ },
+ "tasks": [
+  {
+   "id": "k01_diff_tree",
+   "suite": "struct",
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "n_inputs": 16,
+   "battery": [
+    {
+     "call": "diff_tree({'a': 1, '__v1_x__': 1}, {'a': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({}, {'a': 1})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "diff_tree({'a': 1}, {'a': 1, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({'a': 1}, {})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "diff_tree({'a': 1, '__v1_x__': 1}, {'a': 2})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({}, {'a': 2})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "diff_tree({'a': 1}, {'a': 2, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({'a': {'b': 1}, '__v1_x__': 1}, {'a': {'b': 2}})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({}, {'a': {'b': 2}})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "diff_tree({'a': {'b': 1}}, {'a': {'b': 2}, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({'a': {'b': 1}}, {})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "diff_tree({'a': 1, '__v1_x__': 1}, {})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({}, {})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "diff_tree({'a': 1}, {'__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({'__v1_x__': 1}, {'a': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "diff_tree({}, {'a': 1, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "k02_encode_cookie",
+   "suite": "struct",
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "n_inputs": 6,
+   "battery": [
+    {
+     "call": "encode_cookie({'a': 1, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "encode_cookie({})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "encode_cookie({'a': None, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "encode_cookie({'b': 2, 'a': 1, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "encode_cookie({'a': 'x y', '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "encode_cookie({'a': 'p%q', '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "k03_unflatten",
+   "suite": "struct",
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "n_inputs": 6,
+   "battery": [
+    {
+     "call": "unflatten({'a': 1, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "unflatten({})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "unflatten({'a.b': 1, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "unflatten({'a[0]': 1, 'a[1]': 2, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "unflatten({'a.b[0]': 1, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "unflatten({'a[2]': 3, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      2,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      3,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      2,
+      3,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "k04_to_ini",
+   "suite": "struct",
+   "labels": [
+    "fail",
+    "fail",
+    "pass",
+    "fail"
+   ],
+   "n_inputs": 6,
+   "battery": [
+    {
+     "call": "to_ini({'__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "to_ini({})",
+     "fam": "degen:dict_empty"
+    },
+    {
+     "call": "to_ini({'s': {'a': 1}, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "to_ini({'s': {'a': None}, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "to_ini({'s': {'a': True}, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    },
+    {
+     "call": "to_ini({'s': {}, 't': {'b': 2}, '__v1_x__': 1})",
+     "fam": "extend:dict+key"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "MIX",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "MIX",
+     "diverge": true,
+     "bad": [
+      0
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "MIX",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n4",
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "n_inputs": 5,
+   "battery": [
+    {
+     "call": "dedupe_keep(['A', 'a', 'A', 'a'])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "dedupe_keep([])",
+     "fam": "degen:list_empty"
+    },
+    {
+     "call": "dedupe_keep(['b', ' a ', 'A', 'b', ' a ', 'A'])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "dedupe_keep(['x', 'y', 'X', 'y ', 'x', 'y', 'X', 'y '])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "dedupe_keep(['a', 'b', 'A', 'a', 'b', 'A'])",
+     "fam": "extend:list*2"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ],
+     "bad_fam": [
+      "degen",
+      "extend"
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "suite": "g7j_n4",
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "n_inputs": 4,
+   "battery": [
+    {
+     "call": "fmt_amount(1235.0)",
+     "fam": "extend:f+0.5"
+    },
+    {
+     "call": "fmt_amount(1)",
+     "fam": "extend:int0->1"
+    },
+    {
+     "call": "fmt_amount(0)",
+     "fam": "extend:int0->0"
+    },
+    {
+     "call": "fmt_amount(1234568.391)",
+     "fam": "extend:f+0.5"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n4",
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "n_inputs": 6,
+   "battery": [
+    {
+     "call": "parse_flag('yx')",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "parse_flag('')",
+     "fam": "degen:str_empty"
+    },
+    {
+     "call": "parse_flag('truex')",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "parse_flag('TRUEx')",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "parse_flag('onx')",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "parse_flag('maybex')",
+     "fam": "extend:str+x"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n4",
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "n_inputs": 19,
+   "battery": [
+    {
+     "call": "truncate_tail('abcx', 5)",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "truncate_tail('', 5)",
+     "fam": "degen:str_empty"
+    },
+    {
+     "call": "truncate_tail('abc', 6)",
+     "fam": "extend:int5->6"
+    },
+    {
+     "call": "truncate_tail('abc', 4)",
+     "fam": "extend:int5->4"
+    },
+    {
+     "call": "truncate_tail('abcdefx', 3)",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "truncate_tail('', 3)",
+     "fam": "degen:str_empty"
+    },
+    {
+     "call": "truncate_tail('abcdef', 4)",
+     "fam": "extend:int3->4"
+    },
+    {
+     "call": "truncate_tail('abcdef', 2)",
+     "fam": "extend:int3->2"
+    },
+    {
+     "call": "truncate_tail('0123456789x', 4)",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "truncate_tail('', 4)",
+     "fam": "degen:str_empty"
+    },
+    {
+     "call": "truncate_tail('0123456789', 5)",
+     "fam": "extend:int4->5"
+    },
+    {
+     "call": "truncate_tail('0123456789', 3)",
+     "fam": "extend:int4->3"
+    },
+    {
+     "call": "truncate_tail('日志第二段现场x', 4)",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "truncate_tail('日志第二段现场', 5)",
+     "fam": "extend:int4->5"
+    },
+    {
+     "call": "truncate_tail('日志第二段现场', 3)",
+     "fam": "extend:int4->3"
+    },
+    {
+     "call": "truncate_tail('abcdefgx', 2)",
+     "fam": "extend:str+x"
+    },
+    {
+     "call": "truncate_tail('', 2)",
+     "fam": "degen:str_empty"
+    },
+    {
+     "call": "truncate_tail('abcdefg', 3)",
+     "fam": "extend:int2->3"
+    },
+    {
+     "call": "truncate_tail('abcdefg', 1)",
+     "fam": "extend:int2->1"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      4,
+      7,
+      11,
+      14,
+      15,
+      17,
+      18
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      4,
+      6,
+      7,
+      8,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      17,
+      18
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      4,
+      7,
+      11,
+      14,
+      15,
+      17,
+      18
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      4,
+      6,
+      7,
+      8,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      17,
+      18
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad": [
+      4,
+      6,
+      7,
+      8,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      17,
+      18
+     ],
+     "bad_fam": [
+      "extend"
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "h01_int_to_roman",
+   "suite": "numeric",
+   "labels": [
+    "invalid",
+    "pass",
+    "invalid",
+    "invalid"
+   ],
+   "n_inputs": 10,
+   "battery": [
+    {
+     "call": "int_to_roman(4)",
+     "fam": "extend:int3->4"
+    },
+    {
+     "call": "int_to_roman(2)",
+     "fam": "extend:int3->2"
+    },
+    {
+     "call": "int_to_roman(5)",
+     "fam": "extend:int4->5"
+    },
+    {
+     "call": "int_to_roman(3)",
+     "fam": "extend:int4->3"
+    },
+    {
+     "call": "int_to_roman(10)",
+     "fam": "extend:int9->10"
+    },
+    {
+     "call": "int_to_roman(8)",
+     "fam": "extend:int9->8"
+    },
+    {
+     "call": "int_to_roman(59)",
+     "fam": "extend:int58->59"
+    },
+    {
+     "call": "int_to_roman(57)",
+     "fam": "extend:int58->57"
+    },
+    {
+     "call": "int_to_roman(1995)",
+     "fam": "extend:int1994->1995"
+    },
+    {
+     "call": "int_to_roman(1993)",
+     "fam": "extend:int1994->1993"
+    }
+   ],
+   "pairs": [],
+   "faults": [
+    "FATAL(SyntaxError: invalid syntax. Perhaps you forgot a comma? (<answer>, line 4))",
+    "",
+    "FATAL(SyntaxError: invalid syntax. Perhaps you forgot a comma? (<answer>, line 4))",
+    "FATAL(SyntaxError: invalid character '，' (U+FF0C) (<answer>, line 5))"
+   ]
+  },
+  {
+   "id": "h02_merge_ranges",
+   "suite": "numeric",
+   "labels": [
+    "pass",
+    "pass",
+    "pass",
+    "pass"
+   ],
+   "n_inputs": 5,
+   "battery": [
+    {
+     "call": "merge_ranges([[1, 3], [2, 6], [8, 10], [15, 18], [1, 3], [2, 6], [8, 10], [15, 18]])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "merge_ranges([])",
+     "fam": "degen:list_empty"
+    },
+    {
+     "call": "merge_ranges([[1, 4], [4, 5], [1, 4], [4, 5]])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "merge_ranges([[5, 6], [1, 2], [5, 6], [1, 2]])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "merge_ranges([[1, 10], [2, 3], [1, 10], [2, 3]])",
+     "fam": "extend:list*2"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": "h03_eval_rpn",
+   "suite": "numeric",
+   "labels": [
+    "pass",
+    "pass",
+    "pass",
+    "pass"
+   ],
+   "n_inputs": 6,
+   "battery": [
+    {
+     "call": "eval_rpn(['2', '1', '+', '3', '*', '2', '1', '+', '3', '*'])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "eval_rpn([])",
+     "fam": "degen:list_empty"
+    },
+    {
+     "call": "eval_rpn(['4', '13', '5', '/', '+', '4', '13', '5', '/', '+'])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "eval_rpn(['3', '3'])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "eval_rpn(['10', '3', '-', '10', '3', '-'])",
+     "fam": "extend:list*2"
+    },
+    {
+     "call": "eval_rpn(['5', '1', '2', '+', '4', '*', '+', '3', '-', '5', '1', '2', '+', '4', '*', '+', '3', '-'])",
+     "fam": "extend:list*2"
+    }
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad": [],
+     "bad_fam": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  }
+ ]
+}

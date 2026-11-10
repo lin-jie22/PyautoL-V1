@@ -1,0 +1,56 @@
+── 检测器自检（不调 LLM）：oracle vs partial / 空实现 必须全部分歧
+── 检测器自检（不调 LLM）：oracle vs partial / 空实现 必须全部分歧
+  k01_diff_tree          partial=分歧✅(1点) stub=分歧✅(5点)
+  k02_encode_cookie      partial=分歧✅(2点) stub=分歧✅(5点)
+  k03_unflatten          partial=分歧✅(3点) stub=分歧✅(5点)
+  k04_to_ini             partial=分歧✅(1点) stub=分歧✅(5点)
+  g7d2_dedupe_keep       partial=分歧✅(4点) stub=分歧✅(5点)
+  g7d3_fmt_amount        partial=分歧✅(4点) stub=分歧✅(5点)
+  g7e1_parse_flag        partial=分歧✅(3点) stub=分歧✅(4点)
+  g7e2_truncate_tail     partial=分歧✅(4点) stub=分歧✅(5点)
+  h01_int_to_roman       partial=分歧✅(3点) stub=分歧✅(5点)
+  h02_merge_ranges       partial=分歧✅(1点) stub=分歧✅(5点)
+  h03_eval_rpn           partial=分歧✅(1点) stub=分歧✅(5点)
+检测器自检 通过 ✅
+模型=qwen2.5:7b T=0.8 每题采样=4 用时=408.1s
+
+struct   k01_diff_tree          labels=ffff 文本去重=4 FF=6/6
+struct   k02_encode_cookie      labels=ffff 文本去重=2 FF=0/6
+struct   k03_unflatten          labels=ffff 文本去重=4 FF=6/6
+struct   k04_to_ini             labels=ffpf 文本去重=4 FF=3/3 MIX=3/3
+g7j_n4   g7d2_dedupe_keep       labels=ffff 文本去重=4 FF=3/6
+g7j_n4   g7d3_fmt_amount        labels=ffff 文本去重=2 FF=3/6
+g7j_n4   g7e1_parse_flag        labels=ffff 文本去重=3 FF=0/6
+g7j_n4   g7e2_truncate_tail     labels=ffff 文本去重=4 FF=5/6
+numeric  h01_int_to_roman       labels=ipii 文本去重=4 
+numeric  h02_merge_ranges       labels=pppp 文本去重=4 PP=0/6
+numeric  h03_eval_rpn           labels=pppp 文本去重=4 PP=0/6
+
+── 分组汇总（主分母 = 实现对）
+  PP  对= 12 分歧=0/12 = 0.0000   按输入点=0/60 = 0.0000
+  FF  对= 45 分歧=26/45 = 0.5778   按输入点=107/225 = 0.4756
+  MIX 对=  3 分歧=3/3 = 1.0000   按输入点=10/15 = 0.6667
+
+── 按套件
+  g7j_n4   FF  11/24 = 0.4583
+  numeric  PP  0/12 = 0.0000
+  struct   FF  15/21 = 0.7143
+  struct   MIX 3/3 = 1.0000
+
+── 采样池状态
+  文本去重：中位数=4 最小=2 =1 的题=0/11
+  样例 44 份：pass=10 fail=31 invalid=3 empty=0
+  跑不了：模型侧不可执行=3  装置侧故障=0（阈值 10% = 4.4 份）
+    模型侧原因：{'SyntaxError': 3}
+
+── 判决（PREREG §5/§6）
+  Δ = R_FF − R_PP = +0.5778   （押 ≥ +0.30）
+  [✅] 检测器自检通过（oracle vs partial/空实现 全分歧）
+  [✅] MIX == 1.0（构造自检）
+  [✅] 文本去重中位数 ≥ 2
+  [✅] 装置侧故障 < 10%
+  [✅] R_FF ≥ 0.40
+  [✅] R_PP ≤ 0.20
+  [✅] ≥2 套件里 FF 分歧非空
+
+⇒ C 方案**可以开**

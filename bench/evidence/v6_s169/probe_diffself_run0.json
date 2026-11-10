@@ -1,0 +1,903 @@
+{
+ "meta": {
+  "model": "qwen2.5:7b",
+  "temp": 0.8,
+  "samples": 4,
+  "elapsed_s": 370.1
+ },
+ "tasks": [
+  {
+   "suite": "struct",
+   "id": "k01_diff_tree",
+   "fn": "diff_tree",
+   "n_inputs": 5,
+   "calls": [
+    "diff_tree({'a': 1}, {'a': 1})",
+    "diff_tree({'a': 1}, {'a': 2})",
+    "diff_tree({'a': {'b': 1}}, {'a': {'b': 2}})",
+    "diff_tree({'a': 1}, {})",
+    "diff_tree({}, {'a': 1})"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "pass"
+   ],
+   "text_sha": [
+    "5b654def",
+    "3328f1c6",
+    "fea1120f",
+    "fe01ee7b"
+   ],
+   "text_unique": 4,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "MIX",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "MIX",
+     "diverge": true,
+     "bad_idx": [
+      2
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "MIX",
+     "diverge": true,
+     "bad_idx": [
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k02_encode_cookie",
+   "fn": "encode_cookie",
+   "n_inputs": 5,
+   "calls": [
+    "encode_cookie({'a': 1})",
+    "encode_cookie({'a': None})",
+    "encode_cookie({'b': 2, 'a': 1})",
+    "encode_cookie({'a': 'x y'})",
+    "encode_cookie({'a': 'p%q'})"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "10a89300",
+    "5e59d072",
+    "379ca467",
+    "6ae80765"
+   ],
+   "text_unique": 4,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k03_unflatten",
+   "fn": "unflatten",
+   "n_inputs": 5,
+   "calls": [
+    "unflatten({'a': 1})",
+    "unflatten({'a.b': 1})",
+    "unflatten({'a[0]': 1, 'a[1]': 2})",
+    "unflatten({'a.b[0]': 1})",
+    "unflatten({'a[2]': 3})"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "invalid",
+    "fail"
+   ],
+   "text_sha": [
+    "8a3d4b35",
+    "86b0a83a",
+    "895b1aaf",
+    "793e0d60"
+   ],
+   "text_unique": 4,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      3
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "FATAL(SyntaxError: invalid syntax (<answer>, line 7))",
+    ""
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k04_to_ini",
+   "fn": "to_ini",
+   "n_inputs": 5,
+   "calls": [
+    "to_ini({})",
+    "to_ini({'s': {'a': 1}})",
+    "to_ini({'s': {'a': None}})",
+    "to_ini({'s': {'a': True}})",
+    "to_ini({'s': {}, 't': {'b': 2}})"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "061c346e",
+    "5f1fad19",
+    "24b1fba8",
+    "ab876fc1"
+   ],
+   "text_unique": 4,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7d2_dedupe_keep",
+   "fn": "dedupe_keep",
+   "n_inputs": 5,
+   "calls": [
+    "dedupe_keep(['A', 'a'])",
+    "dedupe_keep(['b', ' a ', 'A'])",
+    "dedupe_keep(['x', 'y', 'X', 'y '])",
+    "dedupe_keep(['a', 'b', 'A'])",
+    "dedupe_keep([])"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "c27279af",
+    "2c4dbfd2",
+    "95d5bb3e",
+    "12ac681d"
+   ],
+   "text_unique": 4,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7d3_fmt_amount",
+   "fn": "fmt_amount",
+   "n_inputs": 5,
+   "calls": [
+    "fmt_amount(1234.5)",
+    "fmt_amount(-1234.5)",
+    "fmt_amount(0)",
+    "fmt_amount(1234567.891)",
+    "fmt_amount(-0.5)"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "276ca992",
+    "cf1f01dd",
+    "276ca992",
+    "fd63db78"
+   ],
+   "text_unique": 3,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7e1_parse_flag",
+   "fn": "parse_flag",
+   "n_inputs": 5,
+   "calls": [
+    "parse_flag('y')",
+    "parse_flag('true')",
+    "parse_flag('TRUE')",
+    "parse_flag('on')",
+    "parse_flag('maybe')"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "b88c56b1",
+    "d0525630",
+    "1133f595",
+    "aacf44fa"
+   ],
+   "text_unique": 4,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      3
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      3
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      3
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      3
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7e2_truncate_tail",
+   "fn": "truncate_tail",
+   "n_inputs": 5,
+   "calls": [
+    "truncate_tail('abc', 5)",
+    "truncate_tail('abcdef', 3)",
+    "truncate_tail('0123456789', 4)",
+    "truncate_tail('日志第二段现场', 4)",
+    "truncate_tail('abcdefg', 2)"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "d2cd2f89",
+    "b09ac1db",
+    "793b5e5f",
+    "9f0979ae"
+   ],
+   "text_unique": 4,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      2,
+      3
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      2,
+      3
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "numeric",
+   "id": "h01_int_to_roman",
+   "fn": "int_to_roman",
+   "n_inputs": 5,
+   "calls": [
+    "int_to_roman(3)",
+    "int_to_roman(4)",
+    "int_to_roman(9)",
+    "int_to_roman(58)",
+    "int_to_roman(1994)"
+   ],
+   "labels": [
+    "invalid",
+    "invalid",
+    "invalid",
+    "invalid"
+   ],
+   "text_sha": [
+    "ccaba9b0",
+    "d1259853",
+    "7e9d627a",
+    "a0603b02"
+   ],
+   "text_unique": 4,
+   "pairs": [],
+   "faults": [
+    "FATAL(SyntaxError: invalid syntax. Perhaps you forgot a comma? (<answer>, line 5))",
+    "FATAL(SyntaxError: invalid syntax. Perhaps you forgot a comma? (<answer>, line 5))",
+    "FATAL(SyntaxError: invalid syntax. Perhaps you forgot a comma? (<answer>, line 5))",
+    "FATAL(SyntaxError: invalid syntax. Perhaps you forgot a comma? (<answer>, line 5))"
+   ]
+  },
+  {
+   "suite": "numeric",
+   "id": "h02_merge_ranges",
+   "fn": "merge_ranges",
+   "n_inputs": 5,
+   "calls": [
+    "merge_ranges([[1, 3], [2, 6], [8, 10], [15, 18]])",
+    "merge_ranges([])",
+    "merge_ranges([[1, 4], [4, 5]])",
+    "merge_ranges([[5, 6], [1, 2]])",
+    "merge_ranges([[1, 10], [2, 3]])"
+   ],
+   "labels": [
+    "pass",
+    "pass",
+    "pass",
+    "pass"
+   ],
+   "text_sha": [
+    "576ad377",
+    "19f4aef9",
+    "8fa75796",
+    "2b2fe917"
+   ],
+   "text_unique": 4,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "numeric",
+   "id": "h03_eval_rpn",
+   "fn": "eval_rpn",
+   "n_inputs": 5,
+   "calls": [
+    "eval_rpn(['2', '1', '+', '3', '*'])",
+    "eval_rpn(['4', '13', '5', '/', '+'])",
+    "eval_rpn(['3'])",
+    "eval_rpn(['10', '3', '-'])",
+    "eval_rpn(['5', '1', '2', '+', '4', '*', '+', '3', '-'])"
+   ],
+   "labels": [
+    "pass",
+    "pass",
+    "pass",
+    "pass"
+   ],
+   "text_sha": [
+    "722627b0",
+    "4ae7b554",
+    "00845c2c",
+    "00845c2c"
+   ],
+   "text_unique": 3,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  }
+ ]
+}

@@ -1,0 +1,45 @@
+{
+ "meta": {
+  "model": "qwen2.5:7b",
+  "temp": 0.8,
+  "samples": 2,
+  "elapsed_s": 13.4
+ },
+ "tasks": [
+  {
+   "suite": "struct",
+   "id": "k02_encode_cookie",
+   "fn": "encode_cookie",
+   "n_inputs": 5,
+   "calls": [
+    "encode_cookie({'a': 1})",
+    "encode_cookie({'a': None})",
+    "encode_cookie({'b': 2, 'a': 1})",
+    "encode_cookie({'a': 'x y'})",
+    "encode_cookie({'a': 'p%q'})"
+   ],
+   "labels": [
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "379ca467",
+    "5e59d072"
+   ],
+   "text_unique": 2,
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    ""
+   ]
+  }
+ ]
+}

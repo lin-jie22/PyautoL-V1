@@ -1,0 +1,58 @@
+模型=qwen2.5:7b 温度=0.8 每题采样=4
+  k01_diff_tree          #1 fail   754字符  14.2s
+  k01_diff_tree          #2 fail   627字符  10.5s
+  k01_diff_tree          #3 fail   648字符  11.1s
+  k01_diff_tree          #4 pass   765字符  12.0s
+→ k01_diff_tree          输入点=5 labels=['fail', 'fail', 'fail', 'pass'] 对=6 分歧=6
+  k02_encode_cookie      #1 fail   337字符   5.9s
+  k02_encode_cookie      #2 fail   332字符   5.7s
+  k02_encode_cookie      #3 fail   332字符   5.7s
+  k02_encode_cookie      #4 fail   332字符   5.7s
+→ k02_encode_cookie      输入点=5 labels=['fail', 'fail', 'fail', 'fail'] 对=6 分歧=0
+  k03_unflatten          #1 fail   817字符  12.0s
+  k03_unflatten          #2 fail  1444字符  20.7s
+  k03_unflatten          #3 fail   740字符  12.0s
+  k03_unflatten          #4 fail  1215字符  16.3s
+→ k03_unflatten          输入点=5 labels=['fail', 'fail', 'invalid', 'fail'] 对=3 分歧=3
+  k04_to_ini             #1 fail   608字符   9.6s
+  k04_to_ini             #2 fail   663字符   9.5s
+  k04_to_ini             #3 fail   784字符  11.0s
+  k04_to_ini             #4 fail   579字符   8.6s
+→ k04_to_ini             输入点=5 labels=['fail', 'fail', 'fail', 'fail'] 对=6 分歧=6
+  g7d2_dedupe_keep       #1 fail   324字符   7.5s
+  g7d2_dedupe_keep       #2 fail   242字符   4.6s
+  g7d2_dedupe_keep       #3 fail   234字符   4.2s
+  g7d2_dedupe_keep       #4 fail   280字符   5.7s
+→ g7d2_dedupe_keep       输入点=5 labels=['fail', 'fail', 'fail', 'fail'] 对=6 分歧=3
+  g7d3_fmt_amount        #1 fail    49字符   2.0s
+  g7d3_fmt_amount        #2 fail    85字符   6.3s
+  g7d3_fmt_amount        #3 fail    49字符   1.3s
+  g7d3_fmt_amount        #4 fail    49字符   5.2s
+→ g7d3_fmt_amount        输入点=5 labels=['fail', 'fail', 'fail', 'fail'] 对=6 分歧=3
+  g7e1_parse_flag        #1 fail   205字符   4.9s
+  g7e1_parse_flag        #2 fail   205字符   4.3s
+  g7e1_parse_flag        #3 fail   205字符   4.1s
+  g7e1_parse_flag        #4 fail   202字符   4.3s
+→ g7e1_parse_flag        输入点=5 labels=['fail', 'fail', 'fail', 'fail'] 对=6 分歧=4
+  g7e2_truncate_tail     #1 fail   157字符   4.1s
+  g7e2_truncate_tail     #2 fail   138字符   3.1s
+  g7e2_truncate_tail     #3 fail   139字符   3.4s
+  g7e2_truncate_tail     #4 fail   189字符   4.9s
+→ g7e2_truncate_tail     输入点=5 labels=['fail', 'fail', 'fail', 'fail'] 对=6 分歧=5
+  h01_int_to_roman       #1 fail   630字符  15.1s
+  h01_int_to_roman       #2 fail   543字符  14.6s
+  h01_int_to_roman       #3 fail   487字符  13.5s
+  h01_int_to_roman       #4 fail   604字符  15.7s
+→ h01_int_to_roman       输入点=5 labels=['invalid', 'invalid', 'invalid', 'invalid'] 对=0 分歧=0
+  h02_merge_ranges       #1 pass   545字符  11.4s
+  h02_merge_ranges       #2 pass   519字符  10.2s
+  h02_merge_ranges       #3 pass   500字符   8.4s
+  h02_merge_ranges       #4 pass   456字符   7.9s
+→ h02_merge_ranges       输入点=5 labels=['pass', 'pass', 'pass', 'pass'] 对=6 分歧=0
+  h03_eval_rpn           #1 pass   575字符   8.3s
+  h03_eval_rpn           #2 pass   567字符   7.5s
+  h03_eval_rpn           #3 pass   540字符   7.8s
+  h03_eval_rpn           #4 pass   540字符   7.7s
+→ h03_eval_rpn           输入点=5 labels=['pass', 'pass', 'pass', 'pass'] 对=6 分歧=0
+
+落盘 bench/evidence/v6_s169/probe_diffself.json  用时 370.1s

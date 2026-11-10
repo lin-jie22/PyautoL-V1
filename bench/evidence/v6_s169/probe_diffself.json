@@ -1,0 +1,1015 @@
+{
+ "meta": {
+  "model": "qwen2.5:7b",
+  "temp": 0.8,
+  "samples": 4,
+  "elapsed_s": 408.1
+ },
+ "tasks": [
+  {
+   "suite": "struct",
+   "id": "k01_diff_tree",
+   "fn": "diff_tree",
+   "n_inputs": 5,
+   "calls": [
+    "diff_tree({'a': 1}, {'a': 1})",
+    "diff_tree({'a': 1}, {'a': 2})",
+    "diff_tree({'a': {'b': 1}}, {'a': {'b': 2}})",
+    "diff_tree({'a': 1}, {})",
+    "diff_tree({}, {'a': 1})"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "9bd5c1f8",
+    "1832f589",
+    "7c437b41",
+    "32fd996d"
+   ],
+   "text_unique": 4,
+   "codes": [
+    "def diff_tree(a, b, path=\"\"):\n    result = {}\n    for key in set(a).union(set(b)):\n        if key not in a:\n            result[f\"{path}{key if path else ''}\"] = [None, b[key]]\n        elif key not in b:\n            result[f\"{path}{key if path else ''}\"] = [a[key], None]\n        elif isinstance(a[key], dict) and isinstance(b[key], dict):\n            sub_diff = diff_tree(a[key], b[key], f\"{path}{key}.\")\n            result.update(sub_diff)\n        else:\n            if a[key] != b[key]:\n                result[f\"{path}{key}\"] = [a[key], b[key]]\n    return result",
+    "def diff_tree(a, b, path=\"\"):\n    result = {}\n    for key in set(a).union(b):\n        if key not in a:\n            result[f\"{path}{key if path else ''}.\"] = [None, b[key]]\n        elif key not in b:\n            result[f\"{path}{key if path else ''}.\"] = [a[key], None]\n        elif isinstance(a[key], dict) and isinstance(b[key], dict):\n            nested_diff = diff_tree(a[key], b[key], f\"{path}{key}.\")\n            result.update(nested_diff)\n        else:\n            if a[key] != b[key]:\n                result[f\"{path}{key}.\"] = [a[key], b[key]]\n    return result",
+    "def diff_tree(a, b, path=''):\n    result = {}\n    if not isinstance(a, dict) and not isinstance(b, dict):\n        if a != b:\n            result[path] = [a, b]\n        return result\n    if isinstance(a, dict) and isinstance(b, dict):\n        for k in set(a.keys()).union(b.keys()):\n            new_path = f\"{path}{k}.\"\n            result.update(diff_tree(a.get(k), b.get(k), new_path))\n    return result",
+    "def diff_tree(a, b, path=\"\"):\n    result = {}\n    keys_a = set(a.keys())\n    keys_b = set(b.keys())\n    missing_in_a = keys_b - keys_a\n    missing_in_b = keys_a - keys_b\n    common_keys = keys_a & keys_b\n    \n    for key in common_keys:\n        if isinstance(a[key], dict) and isinstance(b[key], dict):\n            sub_path = f\"{path}.{key}\" if path else key\n            result.update(diff_tree(a[key], b[key], sub_path))\n        else:\n            if a[key] == b[key]:\n                continue\n            result[f\"{path}.{key}\"] = [a[key], b[key]] if path else [a[key], b[key]]\n    \n    for key in missing_in_a:\n        result[f\"{path}.{key}\"] = [a[key], None] if path else [a[key], None]\n    \n    for key in missing_in_b:\n        result[f\"{path}.{key}\"] = [None, b[key]] if path else [None, b[key]]\n    \n    return result"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k02_encode_cookie",
+   "fn": "encode_cookie",
+   "n_inputs": 5,
+   "calls": [
+    "encode_cookie({'a': 1})",
+    "encode_cookie({'a': None})",
+    "encode_cookie({'b': 2, 'a': 1})",
+    "encode_cookie({'a': 'x y'})",
+    "encode_cookie({'a': 'p%q'})"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "6ae80765",
+    "6ae80765",
+    "6ae80765",
+    "915fd3db"
+   ],
+   "text_unique": 2,
+   "codes": [
+    "def encode_cookie(d):\n    def percent_encode(s):\n        return s.replace(' ', '%20').replace(';', '%3B').replace(',', '%2C').replace('=', '%3D').replace('%', '%25')\n    \n    items = []\n    for k, v in sorted(d.items()):\n        if v is not None:\n            items.append(f'{k}={percent_encode(str(v))}')\n    return '; '.join(items)",
+    "def encode_cookie(d):\n    def percent_encode(s):\n        return s.replace(' ', '%20').replace(';', '%3B').replace(',', '%2C').replace('=', '%3D').replace('%', '%25')\n    \n    items = []\n    for k, v in sorted(d.items()):\n        if v is not None:\n            items.append(f'{k}={percent_encode(str(v))}')\n    return '; '.join(items)",
+    "def encode_cookie(d):\n    def percent_encode(s):\n        return s.replace(' ', '%20').replace(';', '%3B').replace(',', '%2C').replace('=', '%3D').replace('%', '%25')\n    \n    items = []\n    for k, v in sorted(d.items()):\n        if v is not None:\n            items.append(f'{k}={percent_encode(str(v))}')\n    return '; '.join(items)",
+    "def encode_cookie(d):\n    def percent_encode(s):\n        return s.replace(' ', '%20').replace(';', '%3B').replace(',', '%2C').replace('=', '%3D').replace('%', '%25')\n    \n    items = []\n    for k, v in sorted(d.items()):\n        if v is not None:\n            items.append(f'{k}={percent_encode(str(v))}')\n    \n    return '; '.join(items)"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k03_unflatten",
+   "fn": "unflatten",
+   "n_inputs": 5,
+   "calls": [
+    "unflatten({'a': 1})",
+    "unflatten({'a.b': 1})",
+    "unflatten({'a[0]': 1, 'a[1]': 2})",
+    "unflatten({'a.b[0]': 1})",
+    "unflatten({'a[2]': 3})"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "a123fc7a",
+    "03fa8c78",
+    "a8121f1e",
+    "d799a307"
+   ],
+   "text_unique": 4,
+   "codes": [
+    "def unflatten(flat):\n    def parse_key(key):\n        if '[' in key:\n            base_key, index = key.split('[')\n            index = int(index[:-1])\n            return base_key, index\n        else:\n            return key, None\n\n    def build_dict(keys, value, d):\n        if not keys:\n            return value\n        key, index = parse_key(keys[0])\n        if index is not None:\n            if key not in d:\n                d[key] = [None] * (index + 1)\n            d[key][index] = build_dict(keys[1:], value, d[key])\n        else:\n            if key not in d:\n                d[key] = {}\n            build_dict(keys[1:], value, d[key])\n        return d\n\n    result = {}\n    for key, value in flat.items():\n        build_dict(key.split('.'), value, result)\n    return result",
+    "def unflatten(flat):\n    def parse_key(key):\n        if '[' in key:\n            base, idx = key.split('[')\n            idx = int(idx[:-1])\n            return base, idx\n        else:\n            return key, None\n\n    result = {}\n    for key, value in flat.items():\n        keys = key.split('.')\n        d = result\n        for k in keys[:-1]:\n            if k not in d:\n                d[k] = {} if '[' not in k else []\n            d = d[k]\n        k, idx = parse_key(keys[-1])\n        if idx is not None:\n            if not isinstance(d, list):\n                d = [None] * (idx + 1)\n                result.update(dict.fromkeys(keys[:-1], d))\n            d[idx] = value\n        else:\n            d[k] = value\n    return result",
+    "def unflatten(flat):\n    def parse_key(key):\n        parts = key.split('.')\n        prefix = parts[:-1]\n        name = parts[-1]\n        if ']' in name:\n            name, index = name.split('[')\n            index = int(index.strip(']'))\n            return prefix, name, index\n        return prefix, name, None\n\n    result = {}\n    for key, value in flat.items():\n        prefix, name, index = parse_key(key)\n        d = result\n        for p in prefix:\n            if p not in d:\n                d[p] = {}\n            d = d[p]\n        if index is None:\n            d[name] = value\n        else:\n            while len(d) <= index:\n                d.append(None)\n            d[index] = value\n    return result",
+    "def unflatten(flat):\n    def build_path(path, key):\n        if '.' in key:\n            parent, _, child = key.rpartition('.')\n            if parent not in path:\n                path[parent] = {}\n            build_path(path[parent], child)\n        elif '[' in key:\n            idx = key.split('[')[1].removesuffix(']')\n            if key.removesuffix('[' + idx + ']') not in path:\n                path[key.removesuffix('[' + idx + ']')] = [None] * (int(idx) + 1)\n            path[key.removesuffix('[' + idx + ']')][int(idx)] = flat[key]\n    \n    result = {}\n    for key, value in flat.items():\n        build_path(result, key)\n    return result"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      3
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "struct",
+   "id": "k04_to_ini",
+   "fn": "to_ini",
+   "n_inputs": 5,
+   "calls": [
+    "to_ini({})",
+    "to_ini({'s': {'a': 1}})",
+    "to_ini({'s': {'a': None}})",
+    "to_ini({'s': {'a': True}})",
+    "to_ini({'s': {}, 't': {'b': 2}})"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "pass",
+    "fail"
+   ],
+   "text_sha": [
+    "b6a1bfb3",
+    "13394f12",
+    "f401cd23",
+    "9d79abc6"
+   ],
+   "text_unique": 4,
+   "codes": [
+    "def to_ini(d):\n    def fmt_val(v):\n        if v is None:\n            return ''\n        elif isinstance(v, bool):\n            return 'true' if v else 'false'\n        else:\n            return str(v)\n\n    def write_section(section, config, out):\n        out.append('[' + section + ']')\n        for key, value in config.items():\n            out.append(f'{key}={fmt_val(value)}')\n\n    ini = []\n    for section, config in d.items():\n        write_section(section, config, ini)\n        ini.append('')\n\n    return '\\n'.join(ini)",
+    "def to_ini(d):\n    def format_value(value):\n        if value is None:\n            return ''\n        elif isinstance(value, bool):\n            return 'true' if value else 'false'\n        else:\n            return str(value)\n\n    def write_section(section, data, ini_file):\n        ini_file.write(f\"[{section}]\\n\")\n        for key, value in data.items():\n            ini_file.write(f\"{key}={format_value(value)}\\n\")\n\n    ini_content = []\n    for key, value in d.items():\n        if isinstance(value, dict):\n            write_section(key, value, ini_content)\n        else:\n            ini_content.append(f\"{key}={format_value(value)}\\n\")\n\n    return ''.join(ini_content)",
+    "def to_ini(d):\n    def format_value(value):\n        if value is None:\n            return \"\"\n        elif isinstance(value, bool):\n            return \"true\" if value else \"false\"\n        else:\n            return str(value)\n\n    def write_section(section, ini):\n        ini.write(f\"[{section}]\\n\")\n        for key, value in section_items:\n            ini.write(f\"{key}={format_value(value)}\\n\")\n\n    ini_str = \"\"\n    for section, section_items in d.items():\n        ini_str += f\"[{section}]\\n\"\n        for key, value in section_items.items():\n            ini_str += f\"{key}={format_value(value)}\\n\"\n    return ini_str",
+    "def to_ini(d):\n    def ini_format(v):\n        if v is None:\n            return ''\n        elif isinstance(v, bool):\n            return 'true' if v else 'false'\n        else:\n            return str(v)\n\n    def write_section(fp, section, values):\n        fp.write(f'[{section}]\\n')\n        for key, value in values.items():\n            fp.write(f'{key}={ini_format(value)}\\n')\n\n    ini_str = ''\n    with StringIO() as ini_file:\n        for key, value in d.items():\n            write_section(ini_file, key, value)\n        ini_str = ini_file.getvalue()\n    return ini_str"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "MIX",
+     "diverge": true,
+     "bad_idx": [
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "MIX",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "MIX",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7d2_dedupe_keep",
+   "fn": "dedupe_keep",
+   "n_inputs": 5,
+   "calls": [
+    "dedupe_keep(['A', 'a'])",
+    "dedupe_keep(['b', ' a ', 'A'])",
+    "dedupe_keep(['x', 'y', 'X', 'y '])",
+    "dedupe_keep(['a', 'b', 'A'])",
+    "dedupe_keep([])"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "29c0c2dd",
+    "d5e4d647",
+    "8c336a81",
+    "0ec77c2f"
+   ],
+   "text_unique": 4,
+   "codes": [
+    "def dedupe_keep(xs):\n    seen = {}\n    result = []\n    for item in xs:\n        normalized = item\n        # 根据需要进行归一化操作\n        if '(' in normalized:\n            normalized = normalized.split('(', 1)[0]\n        if normalized not in seen:\n            seen[normalized] = len(seen) + 1\n            result.append(item)\n    return result",
+    "def dedupe_keep(xs):\n    seen = {}\n    result = []\n    for x in xs:\n        normalized_x = (x + str(seen.get(x, 0)))  # 归一化\n        if normalized_x not in seen:\n            seen[normalized_x] = 1\n            result.append(x)\n    return result",
+    "def dedupe_keep(xs):\n    seen = set()\n    for i, x in enumerate(xs):\n        norm_x = (x + str(i+1)).upper()  # 归一化处理\n        if norm_x not in seen:\n            seen.add(norm_x)\n            yield x",
+    "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        normalized = x  # ZK1: 默认不归一化\n        if '(' in normalized:\n            start = normalized.index('(')\n            end = normalized.index(')', start + 1)\n            normalized = normalized[:start] + normalized[end+1:]\n        \n        if normalized not in seen:\n            seen.add(normalized)\n            result.append(x)\n    return result"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7d3_fmt_amount",
+   "fn": "fmt_amount",
+   "n_inputs": 5,
+   "calls": [
+    "fmt_amount(1234.5)",
+    "fmt_amount(-1234.5)",
+    "fmt_amount(0)",
+    "fmt_amount(1234567.891)",
+    "fmt_amount(-0.5)"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "b5b286d2",
+    "276ca992",
+    "276ca992",
+    "276ca992"
+   ],
+   "text_unique": 2,
+   "codes": [
+    "def fmt_amount(x):\n    return f\"{x:,.2f}\".replace(\".\", \"（ZK1）\").replace(\",\", \"（ZK2）\").replace(\"-\", \"（ZK3）\")",
+    "def fmt_amount(x):\n    return '{:,.2f}'.format(x)",
+    "def fmt_amount(x):\n    return '{:,.2f}'.format(x)",
+    "def fmt_amount(x):\n    return '{:,.2f}'.format(x)"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      0,
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7e1_parse_flag",
+   "fn": "parse_flag",
+   "n_inputs": 5,
+   "calls": [
+    "parse_flag('y')",
+    "parse_flag('true')",
+    "parse_flag('TRUE')",
+    "parse_flag('on')",
+    "parse_flag('maybe')"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "38795af4",
+    "d0525630",
+    "e29c3d13",
+    "38795af4"
+   ],
+   "text_unique": 3,
+   "codes": [
+    "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['true', '1', 'on']:\n        return True\n    elif s in ['false', '0', 'off']:\n        return False\n    elif s == '':\n        return None\n    else:\n        return None",
+    "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['true', '1', 'on']:\n        return True\n    if s in ['false', '0', 'off']:\n        return False\n    if s == '':\n        return None\n    return None",
+    "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['true', 'yes', 'on', '1']:\n        return True\n    if s in ['false', 'no', 'off', '0']:\n        return False\n    if s == '':\n        return None\n    return None",
+    "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['true', '1', 'on']:\n        return True\n    elif s in ['false', '0', 'off']:\n        return False\n    elif s == '':\n        return None\n    else:\n        return None"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "g7j_n4",
+   "id": "g7e2_truncate_tail",
+   "fn": "truncate_tail",
+   "n_inputs": 5,
+   "calls": [
+    "truncate_tail('abc', 5)",
+    "truncate_tail('abcdef', 3)",
+    "truncate_tail('0123456789', 4)",
+    "truncate_tail('日志第二段现场', 4)",
+    "truncate_tail('abcdefg', 2)"
+   ],
+   "labels": [
+    "fail",
+    "fail",
+    "fail",
+    "fail"
+   ],
+   "text_sha": [
+    "900f24fa",
+    "793b5e5f",
+    "51d813b8",
+    "d2cd2f89"
+   ],
+   "text_unique": 4,
+   "codes": [
+    "def truncate_tail(s, n):\n    if len(s) > n:\n        if n <= 3:\n            return '...' + s[:n-3] if n > 3 else '...'\n        return s[:n-3] + '...'\n    return s",
+    "def truncate_tail(s, n):\n    if len(s) > n:\n        if n <= 3:\n            return '...' + s[:n]\n        return s[:n-3] + '...'\n    return s",
+    "def truncate_tail(s, n):\n    if len(s) > n:\n        if n % 2 == 0:\n            return s[:n//2] + '...' + s[-n//2:]\n        else:\n            return s[:n//2] + '...' + s[-n//2+1:]\n    return s",
+    "def truncate_tail(s, n):\n    if len(s) > n:\n        if n <= 3:\n            return '...' + s[:n]\n        else:\n            return s[:n-3] + '...'\n    return s"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "FF",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "FF",
+     "diverge": true,
+     "bad_idx": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "numeric",
+   "id": "h01_int_to_roman",
+   "fn": "int_to_roman",
+   "n_inputs": 5,
+   "calls": [
+    "int_to_roman(3)",
+    "int_to_roman(4)",
+    "int_to_roman(9)",
+    "int_to_roman(58)",
+    "int_to_roman(1994)"
+   ],
+   "labels": [
+    "invalid",
+    "pass",
+    "invalid",
+    "invalid"
+   ],
+   "text_sha": [
+    "90f64fd2",
+    "ce0f268f",
+    "47dd4459",
+    "e8aec16d"
+   ],
+   "text_unique": 4,
+   "codes": [
+    "#include <stdio.h>\n#include <string.h>\n\nchar* int_to_roman(int num) {\n    char *roman = (char *) malloc(16 * sizeof(char));\n    int val[] = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};\n    char *str[] = {\"M\", \"CM\", \"D\", \"CD\", \"C\", \"XC\", \"L\", \"XL\", \"X\", \"IX\", \"V\", \"IV\", \"I\"};\n    \n    int i = 0;\n    while (num > 0) {\n        if (num >= val[i]) {\n            strcpy(roman + strlen(roman), str[i]);\n            num -= val[i];\n        } else {\n            i++;\n        }\n    }\n    return roman;\n}\n\n// 测试函数\nint main() {\n    char *result = int_to_roman(1994);\n    printf(\"%s\\n\", result);\n    free(result);\n    return 0;\n}",
+    "def int_to_roman(n):\n    val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]\n    syb = [\"M\", \"CM\", \"D\", \"CD\", \"C\", \"XC\", \"L\", \"XL\", \"X\", \"IX\", \"V\", \"IV\", \"I\"]\n    roman_num = ''\n    i = 0\n    \n    while  n > 0:\n        for _ in range(n // val[i]):\n            roman_num += syb[i]\n            n -= val[i]\n        i += 1\n    return roman_num",
+    "#include <stdio.h>\n#include <string.h>\n\nchar* int_to_roman(int num) {\n    char* roman = (char*)malloc(16 * sizeof(char));\n    int values[] = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};\n    char* symbols[] = {\"M\", \"CM\", \"D\", \"CD\", \"C\", \"XC\", \"L\", \"XL\", \"X\", \"IX\", \"V\", \"IV\", \"I\"};\n    int i = 0;\n    while (num > 0) {\n        while (num >= values[i]) {\n            strcat(roman, symbols[i]);\n            num -= values[i];\n        }\n        i++;\n    }\n    return roman;\n}\n\nint main() {\n    int num = 1994;\n    char* result = int_to_roman(num);\n    printf(\"Roman numeral: %s\\n\", result);\n    free(result);\n    return 0;\n}",
+    "#include <stdio.h>\n#include <string.h>\n\nchar *int_to_roman(int n) {\n    static char roman[16]; // 最多13个字符，如1000=M，3999=MMMCMXCIX\n    memset(roman, 0, sizeof(roman)); // 清空字符串\n    int values[] = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};\n    char *symbols[] = {\"M\", \"CM\", \"D\", \"CD\", \"C\", \"XC\", \"L\", \"XL\", \"X\", \"IX\", \"V\", \"IV\", \"I\"};\n    \n    for (int i = 0; i < 13; i++) {\n        while (n >= values[i]) {\n            n -= values[i];\n            strcat(roman, symbols[i]);\n        }\n    }\n    return roman;\n}\n\nint main() {\n    printf(\"%s\\n\", int_to_roman(1994)); // 输出: MCMXCIV\n    return 0;\n}"
+   ],
+   "pairs": [],
+   "faults": [
+    "FATAL(SyntaxError: invalid syntax. Perhaps you forgot a comma? (<answer>, line 4))",
+    "",
+    "FATAL(SyntaxError: invalid syntax. Perhaps you forgot a comma? (<answer>, line 4))",
+    "FATAL(SyntaxError: invalid character '，' (U+FF0C) (<answer>, line 5))"
+   ]
+  },
+  {
+   "suite": "numeric",
+   "id": "h02_merge_ranges",
+   "fn": "merge_ranges",
+   "n_inputs": 5,
+   "calls": [
+    "merge_ranges([[1, 3], [2, 6], [8, 10], [15, 18]])",
+    "merge_ranges([])",
+    "merge_ranges([[1, 4], [4, 5]])",
+    "merge_ranges([[5, 6], [1, 2]])",
+    "merge_ranges([[1, 10], [2, 3]])"
+   ],
+   "labels": [
+    "pass",
+    "pass",
+    "pass",
+    "pass"
+   ],
+   "text_sha": [
+    "1d97ab6a",
+    "11c6afad",
+    "5c7282c3",
+    "db87fe8d"
+   ],
+   "text_unique": 4,
+   "codes": [
+    "def merge_ranges(intervals):\n    if not intervals:\n        return []\n    \n    # 先按照区间的起始位置进行排序\n    intervals.sort(key=lambda x: x[0])\n    \n    merged = [intervals[0]]\n    \n    for current in intervals[1:]:\n        last_merged = merged[-1]\n        \n        # 检查当前区间是否与最后一个合并后的区间有重叠或相邻\n        if current[0] <= last_merged[1]:\n            # 更新合并后的区间的结束位置\n            merged[-1] = [last_merged[0], max(last_merged[1], current[1])]\n        else:\n            # 否则将当前区间加入合并列表\n            merged.append(current)\n    \n    return merged",
+    "def merge_ranges(intervals):\n    if not intervals:\n        return []\n    \n    # 先按区间起点排序\n    intervals.sort(key=lambda x: x[0])\n    \n    merged = [intervals[0]]\n    \n    for current_start, current_end in intervals[1:]:\n        last_end = merged[-1][1]\n        \n        if current_start <= last_end:\n            # 区间重叠或相邻，合并区间\n            merged[-1][1] = max(last_end, current_end)\n        else:\n            # 不重叠，直接添加新区间\n            merged.append([current_start, current_end])\n    \n    return merged",
+    "def merge_ranges(intervals):\n    if not intervals:\n        return []\n    \n    # 先按区间的起始位置排序\n    intervals.sort(key=lambda x: x[0])\n    \n    merged = [intervals[0]]\n    \n    for current in intervals[1:]:\n        last_merged = merged[-1]\n        \n        # 检查当前区间是否与上一个合并区间重叠或相邻\n        if current[0] <= last_merged[1]:\n            # 合并区间\n            merged[-1] = [last_merged[0], max(last_merged[1], current[1])]\n        else:\n            # 不重叠，直接添加当前区间\n            merged.append(current)\n    \n    return merged",
+    "def merge_ranges(intervals):\n    if not intervals:\n        return []\n    \n    # 先按每个区间的起始位置进行排序\n    intervals.sort(key=lambda x: x[0])\n    \n    merged = [intervals[0]]  # 初始化合并后的区间列表，包含第一个区间\n    \n    for current_start, current_end in intervals[1:]:\n        last_end = merged[-1][1]\n        \n        # 如果当前区间的起始位置小于等于已合并区间的结束位置，则合并\n        if current_start <= last_end:\n            merged[-1][1] = max(last_end, current_end)\n        else:\n            merged.append([current_start, current_end])\n    \n    return merged"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "suite": "numeric",
+   "id": "h03_eval_rpn",
+   "fn": "eval_rpn",
+   "n_inputs": 5,
+   "calls": [
+    "eval_rpn(['2', '1', '+', '3', '*'])",
+    "eval_rpn(['4', '13', '5', '/', '+'])",
+    "eval_rpn(['3'])",
+    "eval_rpn(['10', '3', '-'])",
+    "eval_rpn(['5', '1', '2', '+', '4', '*', '+', '3', '-'])"
+   ],
+   "labels": [
+    "pass",
+    "pass",
+    "pass",
+    "pass"
+   ],
+   "text_sha": [
+    "270dd383",
+    "4ae7b554",
+    "7b080ace",
+    "722627b0"
+   ],
+   "text_unique": 4,
+   "codes": [
+    "def eval_rpn(tokens):\n    stack = []\n    for token in tokens:\n        if token.isdigit() or (token[0] == '-' and token[1:].isdigit()):\n            stack.append(int(token))\n        else:\n            b = stack.pop()\n            a = stack.pop()\n            if token == '+':\n                stack.append(a + b)\n            elif token == '-':\n                stack.append(a - b)\n            elif token == '*':\n                stack.append(a * b)\n            elif token == '/':\n                stack.append(int(a / b))\n    return stack[0]",
+    "def eval_rpn(tokens):\n    stack = []\n    for token in tokens:\n        if token.isdigit() or (token[0] == '-' and token[1:].isdigit()):\n            stack.append(int(token))\n        else:\n            right = stack.pop()\n            left = stack.pop()\n            if token == '+':\n                stack.append(left + right)\n            elif token == '-':\n                stack.append(left - right)\n            elif token == '*':\n                stack.append(left * right)\n            elif token == '/':\n                stack.append(int(left / right))\n    return stack[0]",
+    "def eval_rpn(tokens):\n    stack = []\n    for token in tokens:\n        if token.isdigit() or (token[0] == '-' and token.lstrip('-').isdigit()):\n            stack.append(int(token))\n        else:\n            right = stack.pop()\n            left = stack.pop()\n            if token == '+':\n                stack.append(left + right)\n            elif token == '-':\n                stack.append(left - right)\n            elif token == '*':\n                stack.append(left * right)\n            elif token == '/':\n                stack.append(int(left / right))  # 向零取整\n    return stack[0]",
+    "def eval_rpn(tokens):\n    stack = []\n    for token in tokens:\n        if token.isdigit() or (token[0] == '-' and token[1:].isdigit()):\n            stack.append(int(token))\n        else:\n            right = stack.pop()\n            left = stack.pop()\n            if token == '+':\n                stack.append(left + right)\n            elif token == '-':\n                stack.append(left - right)\n            elif token == '*':\n                stack.append(left * right)\n            elif token == '/':\n                stack.append(int(left / right))  # 向零取整\n    return stack[0]"
+   ],
+   "pairs": [
+    {
+     "i": 0,
+     "j": 1,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 0,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 2,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 1,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    },
+    {
+     "i": 2,
+     "j": 3,
+     "group": "PP",
+     "diverge": false,
+     "bad_idx": []
+    }
+   ],
+   "faults": [
+    "",
+    "",
+    "",
+    ""
+   ]
+  }
+ ]
+}

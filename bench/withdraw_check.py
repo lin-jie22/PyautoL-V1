@@ -1569,6 +1569,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ146", "mw/core.py",
      '''                        _rewrite = self.planner.answer(goal, clean=True)''',
      '''                        _rewrite = self.planner.answer(goal, clean=False)'''),
+    # ── AZ147：语义记忆的**第二级**只在第一级零命中后通电（V84 / §153）────────
+    #: 撤的语义：**保留整条第二级实现，只把出口改回 `[]`** —— 这正是「接通/不接通」
+    #:   这个变量本身（= V83 及之前的行为）。⇒ ②（按 id 送达）与 ③（`fallbacks+1`）
+    #:   必红，而 ①（档 0 不试）与 ④（老路径不降级）**必须照旧绿**：它们测的是
+    #:   「第二级有没有越权」与「老路径有没有被改坏」，与「第二级接不接」正交。
+    #: ⚠️ 不撤 `if self.char_level <= 0` 那一行：撤了 ① 与 AZ22/AZ23/AZ26 一起红
+    #:   （档 0 开始乱兜底），那就把「第二级的存在」与「它的开关」混成一条（V61 的
+    #:   AZ123 同一条理由）。
+    ("AZ147", "mw/memory.py",
+     '''        return self._recall_char(query, k)''',
+     '''        return []'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

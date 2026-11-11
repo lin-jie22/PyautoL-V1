@@ -13160,6 +13160,101 @@ check(RS, "AZ146 ★★打回后的重写改走**交付协议**（`V1_REJECT_CAR
       + f" ｜ E回退={len(_AZ146_E_FALLBACK)}")
 
 # ══════════════════════════════════════════════════════════════════════════
+# AZ147（V84，§153）：语义记忆的**第二级** —— 字级 2 字链只在第一级零命中后通电
+# ══════════════════════════════════════════════════════════════════════════
+#  ⛔ 为什么必须存在：V83 量到「人写的完美经验写进 `facts` 后 `recall(goal)` 一题也取不回」
+#     —— 题面与经验的 `_TOKEN` 精确交集 = 0/4，而原文当 query 自命中 4/4。
+#     ⇒ 修法是**追加**一级字级检索，不是替换第一级：AZ26 把第一级的命中条数钉成
+#       `[1,1,1,1]` / `[4,4,4,4]` / `[0,0,1,1]`，替换必然打红它。
+#  ⚠️ 本条钉的是**顺序**与**计数**，不是「检索变强了」：
+#     ① 档 0 完全不试（`char_fallbacks=0`）—— 否则「关了」与「开着但空手」分不开；
+#     ② 旧路径（题面能精确命中的那种）两档返回 `(ids, chars)` **逐位相同**；
+#     ③ 「试了但空手」必须 `fallbacks` 增、`hits` 不增（两个数分开的正当理由）。
+_AZ147_TMP = _TMP / "az147_char"
+_AZ147_TMP.mkdir(parents=True, exist_ok=True)
+for _p in _AZ147_TMP.glob("*.db*"):
+    _p.unlink()
+
+#: 与 `bench/evidence/v6_s172` / `v6_s173` 的 `RULES` **逐字相同**（换字就不可比）。
+_AZ147_RULE = ("把带下标的扁平键还原成列表时，先取出现过的最大下标加一定长度，"
+               "空位留空值而不是跳过")
+_AZ147_DIST = ("处理金额时，先做四舍五入再格式化，避免累积误差被显示成两个不同的值",
+               "遍历目录时，先判断是否为符号链接，避免沿着链接绕回父目录造成死循环")
+#: 现成题面（⛔ 不造新题集）：`struct_convert_heldout` 的 `k03_unflatten`。
+_AZ147_GOAL = next(
+    json.loads(_l)["prompt"]
+    for _l in (V1 / "bench" / "heldout" / "struct_convert_heldout.jsonl")
+    .read_text(encoding="utf-8").splitlines()
+    if _l.strip() and json.loads(_l)["id"] == "k03_unflatten")
+#: 老路径的对照 query：`_TOKEN` 能精确命中的那种（V83 里 g7j 走的就是这一条）。
+_AZ147_OLD_FACT = "题目里明写的惯例甲：返回前先把结果排序，再逐项拼接"
+
+
+def _az147_pool(name: str, level: int):
+    """建池 → 返回 (store, 经验 id, 老惯例 id)。⛔ 档位在 `__init__` 里求值，构造时必须设 env。"""
+    os.environ["V1_RECALL_CHAR"] = str(level)
+    try:
+        m = MemoryStore(_AZ147_TMP / name)
+    finally:
+        os.environ.pop("V1_RECALL_CHAR", None)
+    k1, _ = m.commit_fact(_AZ147_RULE, source="abstract", confidence=0.6)
+    k2, _ = m.commit_fact(_AZ147_OLD_FACT, source="abstract", confidence=0.6)
+    for _d in _AZ147_DIST:
+        m.commit_fact(_d, source="abstract", confidence=0.5)
+    rid = int(m.conn.execute("SELECT id FROM facts WHERE key=?", (k1,)).fetchone()["id"])
+    oid = int(m.conn.execute("SELECT id FROM facts WHERE key=?", (k2,)).fetchone()["id"])
+    return m, rid, oid
+
+
+_AZ147_M0, _AZ147_RID0, _AZ147_OID0 = _az147_pool("l0.db", 0)
+_AZ147_G0 = _AZ147_M0.recall(_AZ147_GOAL, k=6)
+_AZ147_OLD0 = _AZ147_M0.recall("惯例甲", k=6)
+_AZ147_FB0, _AZ147_HT0 = _AZ147_M0.char_fallbacks, _AZ147_M0.char_hits
+
+_AZ147_M2, _AZ147_RID2, _AZ147_OID2 = _az147_pool("l2.db", 2)
+_AZ147_G2 = _AZ147_M2.recall(_AZ147_GOAL, k=6)
+_AZ147_FB_A, _AZ147_HT_A = _AZ147_M2.char_fallbacks, _AZ147_M2.char_hits
+_AZ147_BLANK2 = _AZ147_M2.recall("zzzz qqqq", k=6)
+_AZ147_FB_B, _AZ147_HT_B = _AZ147_M2.char_fallbacks, _AZ147_M2.char_hits
+_AZ147_OLD2 = _AZ147_M2.recall("惯例甲", k=6)
+
+_AZ147_OK = {
+    "① 档 0：题面零命中 ⇒ `[]`，且**一次都没试**第二级（`char_fallbacks=0`）": (
+        _AZ147_G0 == [] and _AZ147_FB0 == 0 and _AZ147_HT0 == 0),
+    "② 档 2：同一题面**送达**那条经验（按 fact id，不按文本相似）": (
+        _AZ147_RID2 in [f.id for f in _AZ147_G2]
+        and _AZ147_FB_A == 1 and _AZ147_HT_A == 1),
+    "③ 「试了但空手」与「没试」分列：字级也零命中 ⇒ `fallbacks` 增、`hits` 不增": (
+        _AZ147_BLANK2 == [] and _AZ147_FB_B == _AZ147_FB_A + 1
+        and _AZ147_HT_B == _AZ147_HT_A),
+    "④ 老路径不降级：题面能精确命中时，两档 `(ids, chars)` 逐位相同": (
+        [f.id for f in _AZ147_OLD0] == [f.id for f in _AZ147_OLD2]
+        and sum(len(f.text) for f in _AZ147_OLD0)
+        == sum(len(f.text) for f in _AZ147_OLD2)
+        and _AZ147_OID0 in [f.id for f in _AZ147_OLD0]),
+    "⑤ 档位登记：`V1_RECALL_CHAR` 在 `ENV_KEYS` 里（A1 要求代码里出现的键全部登记）": (
+        "V1_RECALL_CHAR" in cfg.ENV_KEYS),
+}
+check(RS, "AZ147 ★★★语义记忆的第二级只在**第一级零命中后**通电（V84 / §153）\n"
+          "          ① 档 0 在 V83 的题面上返回 `[]` 且 `char_fallbacks=0`（关了就是不试）；\n"
+          "          ② 档 2 在同一题面上**按 id** 送达那条人写经验；\n"
+          "          ③ 「试了但空手」`fallbacks+1 / hits+0`，与「根本没试」分开；\n"
+          "          ④ 题面能精确命中的那种 query，两档 `(ids, chars)` 逐位相同（不降级）；\n"
+          "          ⑤ `V1_RECALL_CHAR` 已登记进 `ENV_KEYS`。\n"
+          "          ⚠️ 本条**不主张**分数会升：§7f 实测邻域效应（另三条惯例 182→291 字\n"
+          "             ⇒ 单题极差 0.80）足以吃掉单题 Δ；送达率与分数是两条判据。\n"
+          "          撤回语义：`_recall_char` 的 `if self.char_level <= 0: return []` 删掉\n"
+          "                    ⇒ ①必红；`char_grams` 换回 `_TOKEN` ⇒ ②必红；\n"
+          "                    两计数器合成一个 ⇒ ③必红；\n"
+          "                    第二级挪到 LIKE **之前** ⇒ ④必红（AZ26 的三个字面量同源必红）。",
+      all(_AZ147_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ147_OK.items())
+      + f" ｜ 档0 条数={len(_AZ147_G0)} fb={_AZ147_FB0}/{_AZ147_HT0}"
+      + f" ｜ 档2 条数={len(_AZ147_G2)} 含经验={_AZ147_RID2 in [f.id for f in _AZ147_G2]}"
+      + f" fb={_AZ147_FB_A}/{_AZ147_HT_A} 空手后={_AZ147_FB_B}/{_AZ147_HT_B}"
+      + f" ｜ 老路径={[f.id for f in _AZ147_OLD0]}/{[f.id for f in _AZ147_OLD2]}")
+
+# ══════════════════════════════════════════════════════════════════════════
 # AZ125（V66，§133）：三个「截断」必须**分居三处**，且**单位写进名字**
 # ══════════════════════════════════════════════════════════════════════════
 #  ⛔ 为什么这条必须存在：全仓有三个都叫 `truncated` 的读数，单位各不相同 ——

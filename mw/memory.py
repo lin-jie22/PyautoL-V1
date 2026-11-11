@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import sqlite3
 import time
@@ -42,6 +43,43 @@ class BlobIntegrityError(RuntimeError):
 
 _WS = re.compile(r"\s+")
 _TOKEN = re.compile(r"[A-Za-z0-9_\u4e00-\u9fff]+")
+
+#: 字级检索用的两个切法（V84 / §153）。⛔ 与 `_TOKEN` **无关**：
+#:   `_TOKEN` 把连续中文当一个 token（AZ26 钉死），它在**第一级**里继续负责
+#:   「题面明写钥匙就精确命中原条」；这里只服务**第二级**（第一级零命中之后），
+#:   把中文 run 切成 2 字链，让「题面」与「经验」在**任意 2 个字相同**时就能接上。
+_CJK_RUN = re.compile(r"[\u4e00-\u9fff]+")
+_ASCII_WORD = re.compile(r"[A-Za-z][A-Za-z0-9_]*")
+
+
+def char_grams(text: str, *, cap: int = 24, ascii_cap: int = 8) -> list[str]:
+    """把自然语言切成「2 字链 + ASCII 词」（按出现顺序去重）。
+
+    ⚠️ 为什么是 2 字而不是 1 字：1 字（"的"/"先"）在任何中文事实里都有 ⇒ 等于全表命中。
+    为什么不是整句：V83 实测题面与经验的 `_TOKEN` 精确交集 = 0/4，整句永远对不上。
+    """
+    out: list[str] = []
+    for run in _CJK_RUN.findall(text or ""):
+        for i in range(len(run) - 1):
+            g = run[i:i + 2]
+            if g not in out:
+                out.append(g)
+    out = out[:cap]
+    seen: list[str] = []
+    for w in _ASCII_WORD.findall(text or ""):
+        w = w.lower()
+        if len(w) >= 3 and w not in seen:
+            seen.append(w)
+    return out + seen[:ascii_cap]
+
+
+def _spaced(text: str) -> str:
+    """逐字分空 ⇒ `unicode61` 把每个字当独立 token，2 字**短语**才可查。"""
+    out: list[str] = []
+    for ch in text or "":
+        out.append(" " if ch.isspace() else ch)
+        out.append(" ")
+    return "".join(out).strip()
 
 
 def normalize(text: str) -> str:
@@ -144,6 +182,12 @@ CREATE INDEX IF NOT EXISTS idx_facts_source ON facts(source);
 
 CREATE VIRTUAL TABLE IF NOT EXISTS facts_fts USING fts5(text);
 
+-- 字级索引（V84 / §153）：第一级零命中后的**第二级**。
+--   ⛔ 它**不替代** `facts_fts`：AZ26 把第一级的命中条数钉死成 [1,1,1,1]/[4,4,4,4]，
+--   替换必然让「题面提 1 把钥匙」变成命中多条。追加才不动那条锚。
+--   文本逐字分空（`_spaced`）⇒ unicode61 把每个汉字当独立 token，2 字短语可查。
+CREATE VIRTUAL TABLE IF NOT EXISTS facts_fts_char USING fts5(text);
+
 -- 观测原文仓（第二十轮）。为什么不复用 episodes：
 --   episodes 有 `content`，但它是**事件流**（每条被 `record` 截到 1000 字，
 --   且按 kind 排序检索），把原文塞进去会让"事件"与"原文"两种语义混在一张表里。
@@ -169,6 +213,20 @@ class MemoryStore:
         # FTS 降级计数：**不许静默兜底**（R41）。检索退回 LIKE 是允许的，
         # 但必须留痕，否则"检索质量下降"会变成一个没人知道的慢性病。
         self.fts_fallbacks = 0
+        # 第二级（字级 2 字链）的两个计数器。⛔ **不许静默兜底**（同 R41）：
+        #   `char_fallbacks` = 第一级零命中后**走了**第二级；`char_hits` = 第二级**真的返回了东西**。
+        #   两个数分开，否则"试了但空手"与"根本没试"会被读成同一件事。
+        self.char_fallbacks = 0
+        self.char_hits = 0
+        #: 档位：0 = 关（= V83 及之前，第一级零命中就返回 `[]`）；1 = 开（≥1 相异链）；
+        #: 2 = 开但收紧到 ≥2 相异链（G4 噪音地板不过时的第二个档，预注册里写死只许试到这一档）。
+        #  ⚠️ 它不是 `Limits` 字段 ⇒ **不进 `sig`**：两臂同签、不同行为。
+        #    ⛔ 所以「`sig` 相同」不能当「同口径」（`V1_ANSWER_CLEAN` 的同一条坑）。
+        try:
+            self.char_level = max(0, int(
+                (os.environ.get("V1_RECALL_CHAR", "0") or "0").strip() or 0))
+        except ValueError:
+            self.char_level = 0
         self.conn = sqlite3.connect(str(self.path))
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
@@ -187,6 +245,20 @@ class MemoryStore:
         #    `expand()` 总与 `capture()` 同进程 ⇒ 本装置内无成本。换装置必须重审。
         self._blobs_base = int(
             self.conn.execute("SELECT COALESCE(MAX(id), 0) FROM blobs").fetchone()[0])
+        # 字级索引的**回填**：只比条数，不逐行比内容。
+        #   ⚠️ 为什么够：`facts` 的行数只在这里与 `commit_fact` 两处变，两处都维护索引
+        #   ⇒ 条数相等就说明没有"漏索引的旧行"。不相等就整表重建（幂等、可重复跑）。
+        #   ⚠️ 这会在 `__init__` 里写库 ⇒ 归档证据库必须**先 copy 再开**（纪律 31）。
+        if self.conn.execute("SELECT COUNT(*) FROM facts_fts_char").fetchone()[0] != \
+                self.conn.execute("SELECT COUNT(*) FROM facts").fetchone()[0]:
+            self._rebuild_char_index()
+
+    def _rebuild_char_index(self) -> None:
+        self.conn.execute("DELETE FROM facts_fts_char")
+        for r in self.conn.execute("SELECT id, text FROM facts").fetchall():
+            self.conn.execute("INSERT INTO facts_fts_char(rowid, text) VALUES (?,?)",
+                              (r["id"], _spaced(r["text"])))
+        self.conn.commit()
 
     # ---------------- working ----------------
     def think(self, text: str) -> None:
@@ -381,6 +453,11 @@ class MemoryStore:
         if fid:
             self.conn.execute("DELETE FROM facts_fts WHERE rowid=?", (fid,))
             self.conn.execute("INSERT INTO facts_fts(rowid, text) VALUES (?,?)", (fid, text))
+            # 第二级索引同源维护：⛔ 只更新 `facts_fts` 会让"新写的经验永远搜不到它"，
+            # 而那条路的症状是「写了但没送达」，正是 V82/V83 花两轮才挖出来的形态。
+            self.conn.execute("DELETE FROM facts_fts_char WHERE rowid=?", (fid,))
+            self.conn.execute("INSERT INTO facts_fts_char(rowid, text) VALUES (?,?)",
+                              (fid, _spaced(text)))
         self.conn.commit()
         return key, is_new
 
@@ -397,9 +474,15 @@ class MemoryStore:
             零交集 ⇒ 落到这一级 ⇒ 拿到全表。于是"1 条族"在第 2 步之后变成
             4 条族，而模型基本都在第 2 步之后才交付。
           · 模型问"如何截断字符串"、拿到"金额格式惯例"是**噪音**，不是记忆能力。
-        ⇒ 零命中就返回 `[]`，让模型看到"(语义记忆中无相关条目)"：这个信号比假命中
-          更诚实。空/纯空白 query 同样返回 `[]`（`LIKE '%%'` 是同一个静默兜底的
-          另一个入口 —— 堵一级不堵另一级 = 假装修好）。
+         ⇒ 零命中就返回 `[]`，让模型看到"(语义记忆中无相关条目)"：这个信号比假命中
+           更诚实。空/纯空白 query 同样返回 `[]`（`LIKE '%%'` 是同一个静默兜底的
+           另一个入口 —— 堵一级不堵另一级 = 假装修好）。
+
+        ★ V84（§153）在这一条上加了一处**收窄**：第一级零命中后不再直接 `[]`，
+        而是交给 `_recall_char()`（字级 2 字链，默认关）。⛔ 它**不是**把全表兜底加回来：
+        第二级仍然要求「题面的某 2 个字真的出现在那条事实上」，而全表兜底与 query 无关。
+        ⚠️ 上一段「零命中比假命中更诚实」的判决仍成立 —— 它针对的是**无关**返回；
+        第二级返回的是**有字面证据**的条目，且`char_hits` 单列可审计。
         """
         k = max(1, int(k))
         if not normalize(query).strip():
@@ -423,7 +506,54 @@ class MemoryStore:
             "SELECT *, 0.0 AS score FROM facts WHERE text LIKE ? ORDER BY hits DESC LIMIT ?",
             (like, k),
         ).fetchall()
-        return [self._fact(r, r["score"]) for r in rows]
+        if rows:
+            return [self._fact(r, r["score"]) for r in rows]
+        # ★ 第二级（V84 / §153）：第一级两条路都空 ⇒ 才走字级 2 字链。
+        #   ⛔ 顺序不可倒：先字级会让 AZ26 的三个字面量（1/4/0 条）全部漂移。
+        return self._recall_char(query, k)
+
+    def _recall_char(self, query: str, k: int) -> list[Fact]:
+        """字级 2 字链检索。**只**在第一级零命中后被调用（见 `recall`）。
+
+        ⚠️ 它解决的是一条实测到的断链（V83）：题面与经验的 `_TOKEN` 精确交集 = 0/4，
+        而同一份经验拿原文当 query 自命中 4/4 ⇒ 坏的不是检索器，是「题面 → 经验」这一跳。
+
+        ⚠️ 它**必然提高误招**：2 字链在自然中文上极常见（V83 实测 8 条无关事实里
+        前 6 名有 12 条是无关的）。所以：
+          · 默认**关**（`V1_RECALL_CHAR=0`）⇒ 生产行为与 V83 及之前逐位相同；
+          · 开了之后按「相异链命中数」过滤，档 2 = 至少 2 条链，用来把噪音压回地板；
+          · 两个计数器照记，不许静默。
+        """
+        if self.char_level <= 0:
+            return []
+        grams = char_grams(query)
+        if not grams:
+            return []
+        self.char_fallbacks += 1
+        need = 1 if self.char_level == 1 else 2
+        q = " OR ".join('"%s"' % " ".join(g) for g in grams)
+        try:
+            rows = self.conn.execute(
+                """SELECT f.*, bm25(facts_fts_char) AS score
+                   FROM facts_fts_char JOIN facts f ON f.id = facts_fts_char.rowid
+                   WHERE facts_fts_char MATCH ?
+                   ORDER BY score LIMIT ?""",
+                (q, max(k * 4, k)),
+            ).fetchall()
+        except sqlite3.OperationalError:
+            return []          # 语法失败 ⇒ 空，不抛（与第一级同一条纪律）
+        kept: list[tuple[int, float, sqlite3.Row]] = []
+        for r in rows:
+            text = r["text"] or ""
+            low = text.lower()
+            hit = sum(1 for g in grams if (g in low))
+            if hit >= need:
+                kept.append((hit, float(r["score"]), r))
+        if not kept:
+            return []
+        kept.sort(key=lambda x: (-x[0], x[1]))
+        self.char_hits += 1
+        return [self._fact(r, score) for _hit, score, r in kept[:k]]
 
     @staticmethod
     def _fact(r: sqlite3.Row, score: float) -> Fact:

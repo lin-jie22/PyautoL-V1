@@ -1,0 +1,30 @@
+==========================================================================
+G1 送达（struct 4 题，受控池 4 经验 + 8 无关，k=6）
+  L0: hit4=0/4  fallbacks=0 hits=0
+     k01_diff_tree        n=0 own=False chars=0
+     k02_encode_cookie    n=0 own=False chars=0
+     k03_unflatten        n=0 own=False chars=0
+     k04_to_ini           n=0 own=False chars=0
+  L1: hit4=4/4  fallbacks=4 hits=4
+     k01_diff_tree        n=6 own=True chars=216
+     k02_encode_cookie    n=6 own=True chars=215
+     k03_unflatten        n=6 own=True chars=224
+     k04_to_ini           n=6 own=True chars=215
+  L2: hit4=4/4  fallbacks=4 hits=4
+     k01_diff_tree        n=4 own=True chars=148
+     k02_encode_cookie    n=1 own=True chars=41
+     k03_unflatten        n=3 own=True chars=120
+     k04_to_ini           n=1 own=True chars=35
+==========================================================================
+G4 噪音地板（A5 真库副本，3 条与题无关的 worldmodel 事实）
+  L0: sum=0 max=0 per_task={'k01_diff_tree': 0, 'k02_encode_cookie': 0, 'k03_unflatten': 0, 'k04_to_ini': 0}
+  L1: sum=2 max=2 per_task={'k01_diff_tree': 0, 'k02_encode_cookie': 0, 'k03_unflatten': 0, 'k04_to_ini': 2}
+  L2: sum=0 max=0 per_task={'k01_diff_tree': 0, 'k02_encode_cookie': 0, 'k03_unflatten': 0, 'k04_to_ini': 0}
+==========================================================================
+G2/G3 不降级 + 邻域恒定（ZK 库，旧读端已送达的题）
+  L0 送达：g7e=2/4  g7j_n4=4/4
+  作用域 = 旧读端已送达的题 10 道
+  L1 作用域内与 L0 不同的题：无
+  L1 新送达（L0 零命中、现在非空）：['g7e:g7d2_dedupe_keep', 'g7e:g7d3_fmt_amount']
+  L2 作用域内与 L0 不同的题：无
+  L2 新送达（L0 零命中、现在非空）：['g7e:g7d2_dedupe_keep', 'g7e:g7d3_fmt_amount']

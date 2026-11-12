@@ -1,0 +1,258 @@
+{
+ "tasks": [
+  "g7d2_dedupe_keep",
+  "g7d3_fmt_amount",
+  "g7e1_parse_flag",
+  "g7e2_truncate_tail"
+ ],
+ "rows": [
+  {
+   "chain": "B",
+   "run": "run1",
+   "per_task": {
+    "g7d2_dedupe_keep": 1.0,
+    "g7d3_fmt_amount": 0.4,
+    "g7e1_parse_flag": 1.0,
+    "g7e2_truncate_tail": 1.0
+   },
+   "full": 3,
+   "state_mem_chars": [
+    211,
+    211,
+    211,
+    211,
+    211,
+    211,
+    211,
+    211
+   ],
+   "guidance_chars": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "guidance_sample": "",
+   "rewards_seen": 0,
+   "skipped_self": 0,
+   "skipped_success": 0,
+   "rewards_recorded": 0,
+   "facts": 4,
+   "by_source": {
+    "abstract": 4
+   },
+   "reward_eps": 4,
+   "episodes": 16
+  },
+  {
+   "chain": "B",
+   "run": "run2",
+   "per_task": {
+    "g7d2_dedupe_keep": 1.0,
+    "g7d3_fmt_amount": 0.4,
+    "g7e1_parse_flag": 1.0,
+    "g7e2_truncate_tail": 1.0
+   },
+   "full": 3,
+   "state_mem_chars": [
+    211,
+    211,
+    211,
+    211,
+    211,
+    211,
+    211
+   ],
+   "guidance_chars": [
+    83,
+    0,
+    0,
+    0,
+    0,
+    83,
+    83
+   ],
+   "guidance_sample": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "rewards_seen": 3,
+   "skipped_self": 7,
+   "skipped_success": 14,
+   "rewards_recorded": 0,
+   "facts": 4,
+   "by_source": {
+    "abstract": 4
+   },
+   "reward_eps": 8,
+   "episodes": 31
+  },
+  {
+   "chain": "B",
+   "run": "run3",
+   "per_task": {
+    "g7d2_dedupe_keep": 1.0,
+    "g7d3_fmt_amount": 0.4,
+    "g7e1_parse_flag": 1.0,
+    "g7e2_truncate_tail": 1.0
+   },
+   "full": 3,
+   "state_mem_chars": [
+    211,
+    211,
+    211,
+    211,
+    211,
+    211,
+    211
+   ],
+   "guidance_chars": [
+    83,
+    0,
+    0,
+    0,
+    0,
+    83,
+    83
+   ],
+   "guidance_sample": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "rewards_seen": 6,
+   "skipped_self": 14,
+   "skipped_success": 28,
+   "rewards_recorded": 0,
+   "facts": 4,
+   "by_source": {
+    "abstract": 4
+   },
+   "reward_eps": 12,
+   "episodes": 46
+  },
+  {
+   "chain": "A",
+   "run": "run1",
+   "per_task": {
+    "g7d2_dedupe_keep": 0.2,
+    "g7d3_fmt_amount": 0.2,
+    "g7e1_parse_flag": 0.2,
+    "g7e2_truncate_tail": 0.2
+   },
+   "full": 0,
+   "state_mem_chars": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "guidance_chars": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "guidance_sample": "",
+   "rewards_seen": 0,
+   "skipped_self": 0,
+   "skipped_success": 0,
+   "rewards_recorded": 0,
+   "facts": 0,
+   "by_source": {},
+   "reward_eps": 4,
+   "episodes": 16
+  },
+  {
+   "chain": "A",
+   "run": "run2",
+   "per_task": {
+    "g7d2_dedupe_keep": 0.2,
+    "g7d3_fmt_amount": 0.2,
+    "g7e1_parse_flag": 0.2,
+    "g7e2_truncate_tail": 0.2
+   },
+   "full": 0,
+   "state_mem_chars": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "guidance_chars": [
+    83,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83
+   ],
+   "guidance_sample": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.20） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "rewards_seen": 23,
+   "skipped_self": 9,
+   "skipped_success": 0,
+   "rewards_recorded": 0,
+   "facts": 0,
+   "by_source": {},
+   "reward_eps": 8,
+   "episodes": 32
+  },
+  {
+   "chain": "A",
+   "run": "run3",
+   "per_task": {
+    "g7d2_dedupe_keep": 0.2,
+    "g7d3_fmt_amount": 0.2,
+    "g7e1_parse_flag": 0.2,
+    "g7e2_truncate_tail": 0.2
+   },
+   "full": 0,
+   "state_mem_chars": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "guidance_chars": [
+    83,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83
+   ],
+   "guidance_sample": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 6 次（历史得分均值 0.20） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "rewards_seen": 46,
+   "skipped_self": 18,
+   "skipped_success": 0,
+   "rewards_recorded": 0,
+   "facts": 0,
+   "by_source": {},
+   "reward_eps": 12,
+   "episodes": 48
+  }
+ ]
+}

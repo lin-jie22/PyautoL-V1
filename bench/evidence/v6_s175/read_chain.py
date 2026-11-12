@@ -3,7 +3,8 @@
 
 每格取四个来源，全部是恒存在的产物：
   · `bench/runs.jsonl`  → 逐题分数、`kernel_worldmodel.rewards_*` 三个计数器
-  · `state_dump.jsonl`  → `[语义记忆]` 块字数（送达，不是声明）
+  · `state_dump.jsonl`  → `[语义记忆]` 块字数（知识边送达）
+                        + 顶层 `guidance` 字段字数与原文（奖励边送达，纪律 14）
   · `memory_after.db`   → facts 条数 / 按 source / reward episodes 条数（**副本**，纪律 31）
   · `out.txt`           → 退出码与耗时（只作对账，不进判决）
 
@@ -57,19 +58,30 @@ def main() -> int:
                 per[t["id"]] = t.get("score")
             wm = (rec.get("kernel_worldmodel") or {})
             blocks = []
+            guids: list[int] = []
+            gtext = ""
             sd = d / "state_dump.jsonl"
             if sd.exists():
                 for line in sd.read_text(encoding="utf-8").splitlines():
                     if not line.strip():
                         continue
-                    s = json.loads(line).get("state", "")
+                    row = json.loads(line)
+                    s = row.get("state", "")
                     m = re.search(r"\[语义记忆\](.*?)(?=\n\[|\Z)", s, re.S)
                     blocks.append(len(m.group(1).strip()) if m else 0)
+                    # 顶层 `guidance`：`core.py:1174` 每轮算一次并落进 `state_meta`
+                    # ⇒ 这是「本轮实际收到的奖励提示」的**原文**，不是计数器推导。
+                    g = (row.get("guidance") or "").strip()
+                    guids.append(len(g))
+                    if g and not gtext:
+                        gtext = g
             rows.append({
                 "chain": chain, "run": d.name,
                 "per_task": per,
                 "full": sum(1 for t in TASKS if (per.get(t) or 0) >= 0.999),
                 "state_mem_chars": blocks,
+                "guidance_chars": guids,
+                "guidance_sample": gtext[:200],
                 "rewards_seen": wm.get("rewards_seen"),
                 "skipped_self": wm.get("rewards_skipped_self"),
                 "skipped_success": wm.get("rewards_skipped_success"),
@@ -79,13 +91,14 @@ def main() -> int:
             })
 
     print("| 链/跑 | " + " | ".join(t[:10] for t in TASKS)
-          + " | 满分 | 送达字数 | rewards_seen/self/succ | 库 facts / reward_eps |")
-    print("|---" * (len(TASKS) + 5) + "|")
+          + " | 满分 | 知识块字数 | 奖励提示字数 | rewards_seen/self/succ | 库 facts / reward_eps |")
+    print("|---" * (len(TASKS) + 6) + "|")
     for r in rows:
         sc = [r["per_task"].get(t) for t in TASKS]
         print(f"| {r['chain']}/{r['run']} | "
               + " | ".join("—" if s is None else f"{s:g}" for s in sc)
               + f" | **{r['full']}/4** | {r['state_mem_chars']} "
+              + f"| {r['guidance_chars']} "
               + f"| {r['rewards_seen']}/{r['skipped_self']}/{r['skipped_success']} "
               + f"| {r.get('facts')} / {r.get('reward_eps')} |")
     print()
@@ -97,6 +110,11 @@ def main() -> int:
               f"  ｜ facts {' → '.join(str(r.get('facts')) for r in sel)}"
               f"  ｜ rewards_seen {' → '.join(str(r['rewards_seen']) for r in sel)}")
         print(f"        by_source 逐跑 {[r.get('by_source') for r in sel]}")
+        print(f"        奖励提示字数逐跑 {[sum(r['guidance_chars']) for r in sel]}"
+              f"（全为 0 ⇒ 奖励边没通电，P3b 判「没通」而非「没效果」）")
+        for r in sel:
+            if r.get("guidance_sample"):
+                print(f"        {r['run']} 首次非空原文：{r['guidance_sample'][:110]}")
     (ROOT / "chain_readings.json").write_text(
         json.dumps({"tasks": TASKS, "rows": rows}, ensure_ascii=False, indent=1),
         encoding="utf-8")

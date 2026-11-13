@@ -1,0 +1,26 @@
+## §1 窗口位置（窗口 = 前 24 个 `_TOKEN`；`fts_query` 只发这么多个）
+
+| 题 | token 总数 | 钥匙 token 及位置 | 窗口内 | 实际召回（k=6） |
+|---|---|---|---|---|
+| g7d2_dedupe_keep | 17 | ZK1@[9] ZK2@[10] ZK3@[11] ZK4@[12] | 4/4 | ZK1→ZK2→ZK4→ZK3 |
+| g7d3_fmt_amount | 21 | ZK1@[13] ZK2@[14] ZK3@[15] ZK4@[16] | 4/4 | ZK1→ZK2→ZK4→ZK3 |
+| g7e1_parse_flag | 23 | True@[5] False@[6] None@[7] ZK1@[13] ZK2@[14] ZK3@[15] ZK4@[16] | 7/7 | ZK3→ZK1→ZK2→ZK4 |
+| g7e2_truncate_tail | 20 | n@[4, 6] ZK1@[11] ZK2@[12] ZK3@[13] ZK4@[14] | 5/5 | ZK4→ZK1→ZK2→ZK3 |
+| k01_diff_tree | 25 | None@[20] | 1/1 | ZK3 |
+| k02_encode_cookie | 34 | None@[12] | 1/1 | ZK3 |
+| k03_unflatten | 27 | 1@[20] None@[22] | 2/2 | ZK3 |
+| k04_to_ini | 40 | None@[26] true@[30] false@[31] | 0/3 | （空） |
+|  ↳ 窗口外 | | ['None', 'true', 'false'] | | |
+
+## §2 边界验证（纯函数级：不动题面，只构造 query）
+
+填充 token 用 `zz1..zz24`（不在任何事实里）；钥匙用 `None`（只出现在 ZK3）。
+
+- 填充 23 个 ⇒ 总 24 token；`fts_query` 里还有 `None` = True ⇒ 召回 ZK3 ｜ 期望：命中 ✓
+- 填充 24 个 ⇒ 总 25 token；`fts_query` 里还有 `None` = False ⇒ 召回 （空） ｜ 期望：不命中 ✓
+
+## §3 结论
+
+- 窗口边界 = **24**（`fts_query` 的 `toks[:24]`）；第 25 个 token 起不进查询。
+- `LIKE` 回退另有一条更窄的口子：`normalize(query)[:64]`（前 64 字）。
+- 题面越长越聋：k02 34 token、k04 40 token，后半段的规格词对检索**不存在**。

@@ -1,0 +1,100 @@
+
+## §1 分数逐格（分母：每格 = 该题 score）
+
+| 臂 | 起跑库 | k01_diff_t | k02_encode | k03_unflat | k04_to_ini | mean |
+|---|---|---|---|---|---|---|
+| E1 | 空 | 1 | 0.8 | 0.2 | 1 | 0.7500 |
+| E2 | 空 | 1 | 0.8 | 0.2 | 1 | 0.7500 |
+| Z1 | ZK×4 | 0 | 0.8 | 0.2 | 1 | 0.5000 |
+| Z2 | ZK×4 | 0 | 0.8 | 0.2 | 1 | 0.5000 |
+
+## §2 P1 基线复现：E 两跑 —— 预注册押 mean=0.7500 且逐格全同
+
+- E1: mean=0.7500 形态=['1', '0.8', '0.2', '1']
+- E2: mean=0.7500 形态=['1', '0.8', '0.2', '1']
+  ⇒ 逐格同 4/4
+  ⇒ P1 命中
+
+## §3 P2（主）Z vs E —— 预注册押逐格全同（4/4）
+
+- k01_diff_tree          E=1  Z=0  ⛔降
+- k02_encode_cookie      E=0.8  Z=0.8  同
+- k03_unflatten          E=0.2  Z=0.2  同
+- k04_to_ini             E=1  Z=1  同
+  ⇒ 同 3/4
+
+## §4 P3 题内对照：Z 臂里 k04（无注入）会不会跟着掉
+
+- k01_diff_tree          注入=ZK3  Δ(J-E)=-1.0000
+- k02_encode_cookie      注入=ZK3  Δ(J-E)=+0.0000
+- k03_unflatten          注入=ZK3  Δ(J-E)=+0.0000
+- k04_to_ini             注入=（空）  Δ(J-E)=+0.0000
+
+## §5 P4（装置自检）`[语义记忆]` 块
+
+  E1(空) / k01_diff_tree          行数=1 标号=[[]] 字数=[0] ✓
+  E1(空) / k02_encode_cookie      行数=1 标号=[[]] 字数=[0] ✓
+  E1(空) / k03_unflatten          行数=2 标号=[[], []] 字数=[0, 0] ✓
+  E1(空) / k04_to_ini             行数=1 标号=[[]] 字数=[0] ✓
+  E2(空) / k01_diff_tree          行数=1 标号=[[]] 字数=[0] ✓
+  E2(空) / k02_encode_cookie      行数=1 标号=[[]] 字数=[0] ✓
+  E2(空) / k03_unflatten          行数=2 标号=[[], []] 字数=[0, 0] ✓
+  E2(空) / k04_to_ini             行数=1 标号=[[]] 字数=[0] ✓
+  Z1(ZK×4) / k01_diff_tree          行数=2 标号=[['ZK3'], ['ZK3']] 字数=[63, 63] ✓
+  Z1(ZK×4) / k02_encode_cookie      行数=1 标号=[['ZK3']] 字数=[63] ✓
+  Z1(ZK×4) / k03_unflatten          行数=2 标号=[['ZK3'], ['ZK3']] 字数=[63, 63] ✓
+  Z1(ZK×4) / k04_to_ini             行数=1 标号=[[]] 字数=[0] ✓
+  Z2(ZK×4) / k01_diff_tree          行数=2 标号=[['ZK3'], ['ZK3']] 字数=[63, 63] ✓
+  Z2(ZK×4) / k02_encode_cookie      行数=1 标号=[['ZK3']] 字数=[63] ✓
+  Z2(ZK×4) / k03_unflatten          行数=2 标号=[['ZK3'], ['ZK3']] 字数=[63, 63] ✓
+  Z2(ZK×4) / k04_to_ini             行数=1 标号=[[]] 字数=[0] ✓
+
+## §6 why（打分器失败原文）
+
+### E1(空)
+  k01_diff_tree        '通过 5/5'
+  k02_encode_cookie    "通过 4/5；失败: assert encode_cookie({'a': 'x y'}) == 'a=x%20y' ⇒ AssertionError"
+  k03_unflatten        "通过 1/5；失败: assert unflatten({'a.b': 1}) == {'a': {'b': 1}} ⇒ AssertionError | assert unflatten({'a[0]': 1, 'a[1]': 2}) ="
+  k04_to_ini           '通过 5/5'
+### E2(空)
+  k01_diff_tree        '通过 5/5'
+  k02_encode_cookie    "通过 4/5；失败: assert encode_cookie({'a': 'x y'}) == 'a=x%20y' ⇒ AssertionError"
+  k03_unflatten        "通过 1/5；失败: assert unflatten({'a.b': 1}) == {'a': {'b': 1}} ⇒ AssertionError | assert unflatten({'a[0]': 1, 'a[1]': 2}) ="
+  k04_to_ini           '通过 5/5'
+### Z1(ZK×4)
+  k01_diff_tree        "通过 0/5；失败: assert diff_tree({'a': 1}, {'a': 1}) == {} ⇒ AssertionError | assert diff_tree({'a': 1}, {'a': 2}) == {'a': ["
+  k02_encode_cookie    "通过 4/5；失败: assert encode_cookie({'a': 'x y'}) == 'a=x%20y' ⇒ AssertionError"
+  k03_unflatten        "通过 1/5；失败: assert unflatten({'a.b': 1}) == {'a': {'b': 1}} ⇒ TypeError: 'int' object does not support item assignment | "
+  k04_to_ini           '通过 5/5'
+### Z2(ZK×4)
+  k01_diff_tree        "通过 0/5；失败: assert diff_tree({'a': 1}, {'a': 1}) == {} ⇒ AssertionError | assert diff_tree({'a': 1}, {'a': 2}) == {'a': ["
+  k02_encode_cookie    "通过 4/5；失败: assert encode_cookie({'a': 'x y'}) == 'a=x%20y' ⇒ AssertionError"
+  k03_unflatten        "通过 1/5；失败: assert unflatten({'a.b': 1}) == {'a': {'b': 1}} ⇒ TypeError: 'int' object does not support item assignment | "
+  k04_to_ini           '通过 5/5'
+
+## §7 实现逐字节（每题前 5 行）
+
+### k01_diff_tree
+  E1(空): result = {} / for key in set(a.keys()).union(b.keys()): / if key not in a: / result[f"{path}{key if path else key}"] = [None, b[key]] / elif key not in b:
+  E2(空): result = {} / for key in set(a.keys()).union(b.keys()): / if key not in a: / result[f"{path}{key if path else key}"] = [None, b[key]] / elif key not in b:
+  Z1(ZK×4): if isinstance(node_a, dict) and isinstance(node_b, dict): / return {k: compare_nodes(path + '.' + k, node_a[k], node_b[k]) for k in set(node_a) | set(node_b)} / elif node_a == node_b: / return {} / else:
+  Z2(ZK×4): if isinstance(node_a, dict) and isinstance(node_b, dict): / return {k: compare_nodes(path + '.' + k, node_a[k], node_b[k]) for k in set(node_a) | set(node_b)} / elif node_a == node_b: / return {} / else:
+
+### k02_encode_cookie
+  E1(空): return s.replace(' ', '%20').replace(';', '%3B').replace(',', '%2C').replace('=', '%3D').replace('%', '%25') / items = [] / for k, v in sorted(d.items()): / if v is not None: / items.append(f"{k}={percent_encode(str(v))}")
+  E2(空): return s.replace(' ', '%20').replace(';', '%3B').replace(',', '%2C').replace('=', '%3D').replace('%', '%25') / items = [] / for k, v in sorted(d.items()): / if v is not None: / items.append(f"{k}={percent_encode(str(v))}")
+  Z1(ZK×4): return s.replace(' ', '%20').replace(';', '%3B').replace(',', '%2C').replace('=', '%3D').replace('%', '%25') / items = [(k, v) for k, v in sorted(d.items()) if v is not None] / encoded_items = ['='.join((k, percent_encode(str(v)))) for k, v in items] / return '; '.join(encoded_items)
+  Z2(ZK×4): return s.replace(' ', '%20').replace(';', '%3B').replace(',', '%2C').replace('=', '%3D').replace('%', '%25') / items = [(k, v) for k, v in sorted(d.items()) if v is not None] / encoded_items = ['='.join((k, percent_encode(str(v)))) for k, v in items] / return '; '.join(encoded_items)
+
+### k03_unflatten
+  E1(空): if '[' in key: / k, i = key.split('[') / i = int(i[:-1]) / return k, i / elif '.' in key:
+  E2(空): if '[' in key: / k, i = key.split('[') / i = int(i[:-1]) / return k, i / elif '.' in key:
+  Z1(ZK×4): if '[' in key: / k, i = key.split('[') / i = int(i[:-1]) / return k, i / elif '.' in key:
+  Z2(ZK×4): if '[' in key: / k, i = key.split('[') / i = int(i[:-1]) / return k, i / elif '.' in key:
+
+### k04_to_ini
+  E1(空): if v is None: / return '' / elif isinstance(v, bool): / return 'true' if v else 'false' / else:
+  E2(空): if v is None: / return '' / elif isinstance(v, bool): / return 'true' if v else 'false' / else:
+  Z1(ZK×4): if v is None: / return '' / elif isinstance(v, bool): / return 'true' if v else 'false' / else:
+  Z2(ZK×4): if v is None: / return '' / elif isinstance(v, bool): / return 'true' if v else 'false' / else:
+

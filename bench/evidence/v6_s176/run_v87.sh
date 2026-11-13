@@ -38,7 +38,7 @@ run_one () {
   local tag="$1"
   local d="$ROOT/$tag"
   if [ -f "$d/bench/runs.jsonl" ]; then
-    echo "${DRY}跳过 $tag（已有产物）" | tee -a "$ROOT/timeline.txt"
+    echo "${DRY}跳过 ${tag}（已有产物）" | tee -a "$ROOT/timeline.txt"
     return 0
   fi
   if [ -d "$d/log" ] || [ -d "$d/bench" ]; then

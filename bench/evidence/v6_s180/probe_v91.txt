@@ -1,0 +1,36 @@
+# FILL = '这条惯例长期有效，遇到同类问题一律照此处理。'  len=22  ×2 = 44 字
+# k = 6（默认）；块拼装 = " ｜ ".join(f.text[:120])  —— core.py:2246
+
+== L0
+   ZK1:  43 字   
+   ZK2:  40 字   
+   ZK3:  63 字   
+   ZK4:  56 字   
+   L0 拼块总字数（k=6，四题同库）
+     g7d2_dedupe_keep       n=4 ZK1→ZK2→ZK4→ZK3  块=211 字  首位=ZK1
+     g7d3_fmt_amount        n=4 ZK1→ZK2→ZK4→ZK3  块=211 字  首位=ZK1
+     g7e1_parse_flag        n=4 ZK3→ZK1→ZK2→ZK4  块=211 字  首位=ZK3
+     g7e2_truncate_tail     n=4 ZK4→ZK1→ZK2→ZK3  块=211 字  首位=ZK4
+
+== L1
+   ZK1:  87 字   
+   ZK2:  40 字   
+   ZK3:  63 字   
+   ZK4:  56 字   
+   L1 拼块总字数（k=6，四题同库）
+     g7d2_dedupe_keep       n=4 ZK2→ZK1→ZK4→ZK3  块=255 字  首位=ZK2
+     g7d3_fmt_amount        n=4 ZK2→ZK1→ZK4→ZK3  块=255 字  首位=ZK2
+     g7e1_parse_flag        n=4 ZK3→ZK2→ZK1→ZK4  块=255 字  首位=ZK3
+     g7e2_truncate_tail     n=4 ZK4→ZK2→ZK1→ZK3  块=255 字  首位=ZK4
+
+== L2
+   ZK1:  87 字   
+   ZK2:  84 字   
+   ZK3: 107 字   
+   ZK4: 100 字   
+   L2 拼块总字数（k=6，四题同库）
+     g7d2_dedupe_keep       n=4 ZK1→ZK2→ZK4→ZK3  块=387 字  首位=ZK1
+     g7d3_fmt_amount        n=4 ZK1→ZK2→ZK4→ZK3  块=387 字  首位=ZK1
+     g7e1_parse_flag        n=4 ZK3→ZK1→ZK2→ZK4  块=387 字  首位=ZK3
+     g7e2_truncate_tail     n=4 ZK4→ZK1→ZK2→ZK3  块=387 字  首位=ZK4
+

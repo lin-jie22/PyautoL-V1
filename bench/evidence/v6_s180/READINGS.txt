@@ -1,0 +1,149 @@
+
+## §1 分数逐格（分母：每格 = 该题 score；行 = 臂）
+
+| 臂 | 起跑库 | g7d2_ded | g7d3_fmt | g7e1_par | g7e2_tru | mean |
+|---|---|---|---|---|---|---|
+| L0 | L0 | 1 | 0.4 | 1 | 1 | 0.8500 |
+| L1a | L1 | 1 | 0.6 | 0.4 | 0.2 | 0.5500 |
+| L1b | L1 | 1 | 0.6 | 0.4 | 0.2 | 0.5500 |
+| L2a | L2 | 1 | 0.4 | 0.4 | 1 | 0.7000 |
+| L2b | L2 | 1 | 0.4 | 0.4 | 1 | 0.7000 |
+
+## §2 Q1 L1·g7d3 = 1.0（复现 V87/M1；零假设 0.4）
+
+- L1a: 0.6  ⛔
+- L1b: 0.6  ⛔
+
+## §3 Q2 L1·g7d2 ≤ 0.4（**全轮最新信息**；零假设 1.0）
+
+- L1a: 1  ⛔
+- L1b: 1  ⛔
+
+## §4 Q3 L1·g7e1/g7e2 都 = 1.0（字节串变了，零假设 1.0）
+
+- L1a: g7e1=0.4 g7e2=0.2  ⛔
+- L1b: g7e1=0.4 g7e2=0.2  ⛔
+
+## §5 Q4（核心）L2 四题逐格 = L0 —— 安慰剂：位序不动、总长 +176
+
+- L0 实测基线：['1', '0.4', '1', '1']
+- 预注册基线：['1', '0.4', '1', '1']  ✓与历史一致
+- L2a: ['1', '0.4', '0.4', '1']  与 L0 同 3/4  ⛔ g7e1_par L0=1→L2=0.4
+- L2b: ['1', '0.4', '0.4', '1']  与 L0 同 3/4  ⛔ g7e1_par L0=1→L2=0.4
+
+## §6 Q5（装置）块字数：L1 = 255±2、L2 = 387±2、L0 = 211±2
+
+  L0(L0) / g7d2_dedupe_keep     字数=[211, 211] 期望≈211 ✓
+  L0(L0) / g7d3_fmt_amount      字数=[211, 211] 期望≈211 ✓
+  L0(L0) / g7e1_parse_flag      字数=[211, 211] 期望≈211 ✓
+  L0(L0) / g7e2_truncate_tail   字数=[211, 211] 期望≈211 ✓
+  L1a(L1) / g7d2_dedupe_keep     字数=[255] 期望≈255 ✓
+  L1a(L1) / g7d3_fmt_amount      字数=[255, 255, 255] 期望≈255 ✓
+  L1a(L1) / g7e1_parse_flag      字数=[255] 期望≈255 ✓
+  L1a(L1) / g7e2_truncate_tail   字数=[255, 255] 期望≈255 ✓
+  L1b(L1) / g7d2_dedupe_keep     字数=[255] 期望≈255 ✓
+  L1b(L1) / g7d3_fmt_amount      字数=[255, 255, 255] 期望≈255 ✓
+  L1b(L1) / g7e1_parse_flag      字数=[255] 期望≈255 ✓
+  L1b(L1) / g7e2_truncate_tail   字数=[255, 255] 期望≈255 ✓
+  L2a(L2) / g7d2_dedupe_keep     字数=[387, 387] 期望≈387 ✓
+  L2a(L2) / g7d3_fmt_amount      字数=[387, 387, 387] 期望≈387 ✓
+  L2a(L2) / g7e1_parse_flag      字数=[387, 387, 387] 期望≈387 ✓
+  L2a(L2) / g7e2_truncate_tail   字数=[387, 387, 387] 期望≈387 ✓
+  L2b(L2) / g7d2_dedupe_keep     字数=[387, 387] 期望≈387 ✓
+  L2b(L2) / g7d3_fmt_amount      字数=[387, 387, 387] 期望≈387 ✓
+  L2b(L2) / g7e1_parse_flag      字数=[387, 387, 387] 期望≈387 ✓
+  L2b(L2) / g7e2_truncate_tail   字数=[387, 387, 387] 期望≈387 ✓
+
+## §7 Q6（噪声地板）L1a vs L1b、L2a vs L2b —— 押逐格全同
+
+- L1a vs L1b: 同 4/4  g7d2_ded 1/1 ｜ g7d3_fmt 0.6/0.6 ｜ g7e1_par 0.4/0.4 ｜ g7e2_tru 0.2/0.2
+- L2a vs L2b: 同 4/4  g7d2_ded 1/1 ｜ g7d3_fmt 0.4/0.4 ｜ g7e1_par 0.4/0.4 ｜ g7e2_tru 1/1
+
+## §8 位序（保序读，`（ZK{i}）` 在块内的出现顺序）
+
+  L0(L0) / g7d2_dedupe_keep     2 次： ZK1→ZK2→ZK4→ZK3 ｜ ZK1→ZK2→ZK4→ZK3
+  L0(L0) / g7d3_fmt_amount      2 次： ZK1→ZK2→ZK4→ZK3 ｜ ZK1→ZK2→ZK4→ZK3
+  L0(L0) / g7e1_parse_flag      2 次： ZK3→ZK1→ZK2→ZK4 ｜ ZK3→ZK1→ZK2→ZK4
+  L0(L0) / g7e2_truncate_tail   2 次： ZK4→ZK1→ZK2→ZK3 ｜ ZK4→ZK1→ZK2→ZK3
+  L1a(L1) / g7d2_dedupe_keep     1 次： ZK2→ZK1→ZK4→ZK3
+  L1a(L1) / g7d3_fmt_amount      3 次： ZK2→ZK1→ZK4→ZK3 ｜ ZK2→ZK1→ZK4→ZK3 ｜ ZK2→ZK1→ZK4→ZK3
+  L1a(L1) / g7e1_parse_flag      1 次： ZK3→ZK2→ZK1→ZK4
+  L1a(L1) / g7e2_truncate_tail   2 次： ZK4→ZK2→ZK1→ZK3 ｜ ZK4→ZK2→ZK1→ZK3
+  L1b(L1) / g7d2_dedupe_keep     1 次： ZK2→ZK1→ZK4→ZK3
+  L1b(L1) / g7d3_fmt_amount      3 次： ZK2→ZK1→ZK4→ZK3 ｜ ZK2→ZK1→ZK4→ZK3 ｜ ZK2→ZK1→ZK4→ZK3
+  L1b(L1) / g7e1_parse_flag      1 次： ZK3→ZK2→ZK1→ZK4
+  L1b(L1) / g7e2_truncate_tail   2 次： ZK4→ZK2→ZK1→ZK3 ｜ ZK4→ZK2→ZK1→ZK3
+  L2a(L2) / g7d2_dedupe_keep     2 次： ZK1→ZK2→ZK4→ZK3 ｜ ZK1→ZK2→ZK4→ZK3
+  L2a(L2) / g7d3_fmt_amount      3 次： ZK1→ZK2→ZK4→ZK3 ｜ ZK1→ZK2→ZK4→ZK3 ｜ ZK1→ZK2→ZK4→ZK3
+  L2a(L2) / g7e1_parse_flag      3 次： ZK3→ZK1→ZK2→ZK4 ｜ ZK3→ZK1→ZK2→ZK4 ｜ ZK3→ZK1→ZK2→ZK4
+  L2a(L2) / g7e2_truncate_tail   3 次： ZK4→ZK1→ZK2→ZK3 ｜ ZK4→ZK1→ZK2→ZK3 ｜ ZK4→ZK1→ZK2→ZK3
+  L2b(L2) / g7d2_dedupe_keep     2 次： ZK1→ZK2→ZK4→ZK3 ｜ ZK1→ZK2→ZK4→ZK3
+  L2b(L2) / g7d3_fmt_amount      3 次： ZK1→ZK2→ZK4→ZK3 ｜ ZK1→ZK2→ZK4→ZK3 ｜ ZK1→ZK2→ZK4→ZK3
+  L2b(L2) / g7e1_parse_flag      3 次： ZK3→ZK1→ZK2→ZK4 ｜ ZK3→ZK1→ZK2→ZK4 ｜ ZK3→ZK1→ZK2→ZK4
+  L2b(L2) / g7e2_truncate_tail   3 次： ZK4→ZK1→ZK2→ZK3 ｜ ZK4→ZK1→ZK2→ZK3 ｜ ZK4→ZK1→ZK2→ZK3
+
+## §9 库内计数（facts / reward episodes）与 finish 条数
+
+  L0(L0): facts=4  reward_eps=4  finish=4
+  L1a(L1): facts=5  reward_eps=4  finish=4
+  L1b(L1): facts=5  reward_eps=4  finish=4
+  L2a(L2): facts=5  reward_eps=4  finish=4
+  L2b(L2): facts=5  reward_eps=4  finish=4
+
+## §10 实现逐字节（每题的关键行，前 6 行）
+
+### g7d2_dedupe_keep
+  L0(L0): seen = set() / result = [] / for x in xs: / x_normalized = x.strip().lower() / if x_normalized not in seen: / seen.add(x_normalized)
+  L1a(L1): seen = set() / result = [] / for x in xs: / x_normalized = x.strip().lower() / if x_normalized not in seen: / seen.add(x_normalized)
+  L1b(L1): seen = set() / result = [] / for x in xs: / x_normalized = x.strip().lower() / if x_normalized not in seen: / seen.add(x_normalized)
+  L2a(L2): seen = {} / result = [] / for x in xs: / x_normalized = x.strip().lower() / if x_normalized not in seen: / seen[x_normalized] = x
+  L2b(L2): seen = {} / result = [] / for x in xs: / x_normalized = x.strip().lower() / if x_normalized not in seen: / seen[x_normalized] = x
+
+### g7d3_fmt_amount
+  L0(L0): fmt_str = "{:,.2f}".format(x) / if x < 0: / fmt_str = "(" + fmt_str[1:] + ")" / return fmt_str
+  L1a(L1): done: def fmt_amount(x): / if isinstance(x, int): / x = float(x) / formatted = f"{x:,.2f}".replace(',', ' ').replace('-', '( ') / return formatted.rstrip('.') + ')' if x < 0 else formatted
+  L1b(L1): done: def fmt_amount(x): / if isinstance(x, int): / x = float(x) / formatted = f"{x:,.2f}".replace(',', ' ').replace('-', '( ') / return formatted.rstrip('.') + ')' if x < 0 else formatted
+  L2a(L2): fmt_str = "{:,.2f}".format(x) / if x < 0: / fmt_str = "(" + fmt_str[1:] + ")" / return fmt_str
+  L2b(L2): fmt_str = "{:,.2f}".format(x) / if x < 0: / fmt_str = "(" + fmt_str[1:] + ")" / return fmt_str
+
+### g7e1_parse_flag
+  L0(L0): s = s.strip().lower() / if s in ['y', 'yes', '1']: / return True / if s in ['n', 'no', '0', 'false', 'off', 'none', 'null', 'true', 'on']: / return False / return None
+  L1a(L1): s = s.strip().lower() / if s in ('y', 'yes', '1'): / return True / if s in ('false', 'off', 'no', '0'): / return False / return None
+  L1b(L1): s = s.strip().lower() / if s in ('y', 'yes', '1'): / return True / if s in ('false', 'off', 'no', '0'): / return False / return None
+  L2a(L2): s = s.strip().lower() / if s in ('y', 'yes', '1'): / return True / if s in ('', 'false', 'off', '0'): / return False / return None
+  L2b(L2): s = s.strip().lower() / if s in ('y', 'yes', '1'): / return True / if s in ('', 'false', 'off', '0'): / return False / return None
+
+### g7e2_truncate_tail
+  L0(L0): if len(s) <= n: / return s / return '…' + s[-n:]
+  L1a(L1): if len(s) <= n: / return s / return '…' + s[-(n-3):]
+  L1b(L1): if len(s) <= n: / return s / return '…' + s[-(n-3):]
+  L2a(L2): if len(s) <= n: / return s / return '…' + s[-n:]
+  L2b(L2): if len(s) <= n: / return s / return '…' + s[-n:]
+
+## §11 why（打分器失败原文，逐题）
+
+### L0(L0)
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 2/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | assert fmt_amount(-1234.5) == '(1 234.50"
+  g7e1_parse_flag    '通过 5/5'
+  g7e2_truncate_ta   '通过 5/5'
+### L1a(L1)
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 3/5；失败: assert fmt_amount(-1234.5) == '(1 234.50)' ⇒ AssertionError | assert fmt_amount(-0.5) == '(0.50)' ⇒"
+  g7e1_parse_flag    "通过 2/5；失败: assert parse_flag('true') is False ⇒ AssertionError | assert parse_flag('TRUE') is False ⇒ Assertio"
+  g7e2_truncate_ta   "通过 1/5；失败: assert truncate_tail('abcdef', 3) == '…def' ⇒ AssertionError | assert truncate_tail('0123456789', 4"
+### L1b(L1)
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 3/5；失败: assert fmt_amount(-1234.5) == '(1 234.50)' ⇒ AssertionError | assert fmt_amount(-0.5) == '(0.50)' ⇒"
+  g7e1_parse_flag    "通过 2/5；失败: assert parse_flag('true') is False ⇒ AssertionError | assert parse_flag('TRUE') is False ⇒ Assertio"
+  g7e2_truncate_ta   "通过 1/5；失败: assert truncate_tail('abcdef', 3) == '…def' ⇒ AssertionError | assert truncate_tail('0123456789', 4"
+### L2a(L2)
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 2/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | assert fmt_amount(-1234.5) == '(1 234.50"
+  g7e1_parse_flag    "通过 2/5；失败: assert parse_flag('true') is False ⇒ AssertionError | assert parse_flag('TRUE') is False ⇒ Assertio"
+  g7e2_truncate_ta   '通过 5/5'
+### L2b(L2)
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 2/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | assert fmt_amount(-1234.5) == '(1 234.50"
+  g7e1_parse_flag    "通过 2/5；失败: assert parse_flag('true') is False ⇒ AssertionError | assert parse_flag('TRUE') is False ⇒ Assertio"
+  g7e2_truncate_ta   '通过 5/5'

@@ -19,7 +19,7 @@ from pathlib import Path
 ARMS = ["M0", "M1", "M2", "M3", "M4"]
 DROP = {"M0": None, "M1": 0, "M2": 1, "M3": 2, "M4": 3}
 TASKS = ["g7d2_dedupe_keep", "g7d3_fmt_amount", "g7e1_parse_flag", "g7e2_truncate_tail"]
-ROW = {"M0": "ZK1", "M1": "—", "M2": "ZK2", "M3": "ZK3", "M4": "ZK4"}
+ROW = {"M0": "全给", "M1": "ZK1", "M2": "ZK2", "M3": "ZK3", "M4": "ZK4"}
 
 
 def scores(d: Path) -> dict:
@@ -111,6 +111,9 @@ def main(root: Path) -> None:
                 continue
             base = S.get("M0", {}).get(t, (None,))[0]
             now = S.get(a, {}).get(t, (None,))[0]
+            if base is None or now is None:
+                cells.append(f"{t[:8]} 读数缺失")
+                continue
             cells.append(f"{t[:8]} {base:g}→{now:g}")
         print(f"- {a}: " + " ｜ ".join(cells))
 

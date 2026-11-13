@@ -1,0 +1,105 @@
+
+## §1 分数逐格（删掉的那条标在左列）
+
+| 臂 | 删 | g7d2_ded | g7d3_fmt | g7e1_par | g7e2_tru |
+|---|---|---|---|---|---|
+| M0 | 全给 | 1 | 0.4 | 1 | 1 |
+| M1 | ZK1 | 0.2 | 1 | 0.4 | 1 |
+| M2 | ZK2 | 1 | 0.2 | 0.4 | 1 |
+| M3 | ZK3 | 1 | 0.4 | 0.2 | 0.2 |
+| M4 | ZK4 | 1 | 0.4 | 1 | 0.2 |
+
+## §2 P1 因果效力（删第 i 条 ⇒ 第 i 题掉不掉）
+
+- M1（删 ZK1）/ g7d2_dedupe_keep: 1 → 0.2  Δ=-0.8000  ⇒ **降**
+- M2（删 ZK2）/ g7d3_fmt_amount: 0.4 → 0.2  Δ=-0.2000  ⇒ **降**
+- M3（删 ZK3）/ g7e1_parse_flag: 1 → 0.2  Δ=-0.8000  ⇒ **降**
+- M4（删 ZK4）/ g7e2_truncate_tail: 1 → 0.2  Δ=-0.8000  ⇒ **降**
+
+## §3 P4 干扰（删一条后其余题）
+
+- M1: g7d3_fmt 0.4→1 ｜ g7e1_par 1→0.4 ｜ g7e2_tru 1→1
+- M2: g7d2_ded 1→1 ｜ g7e1_par 1→0.4 ｜ g7e2_tru 1→1
+- M3: g7d2_ded 1→1 ｜ g7d3_fmt 0.4→0.4 ｜ g7e2_tru 1→0.2
+- M4: g7d2_ded 1→1 ｜ g7d3_fmt 0.4→0.4 ｜ g7e1_par 1→1
+
+## §4 P2 实现逐字节（每题取 def 行之后的关键行）
+
+### g7d2_dedupe_keep
+  M0: seen = set() / result = [] / for x in xs: / x_normalized = x.strip().lower() / if x_normalized not in seen: / seen.add(x_normalized)
+  M1: seen = {} / result = [] / for x in xs: / norm_x = x.replace("（ZK1）", "").replace("（ZK2）", "").replace("（ZK3）", "").replace("（ZK4）", "") / if norm_x not in seen: / seen[norm_x] = x
+  M2: seen = set() / result = [] / for x in xs: / norm_x = x.strip().lower() / if norm_x not in seen: / seen.add(norm_x)
+  M3: seen = set() / result = [] / for x in xs: / norm_x = x.strip().lower() / if norm_x not in seen: / seen.add(norm_x)
+  M4: seen = set() / result = [] / for x in xs: / x_normalized = x.strip().lower() / if x_normalized not in seen: / seen.add(x_normalized)
+
+### g7d3_fmt_amount
+  M0: fmt_str = "{:,.2f}".format(x) / if x < 0: / fmt_str = "(" + fmt_str[1:] + ")" / return fmt_str
+  M1: if x < 0: / x = -x / formatted = '{:,.2f}'.format(x).replace(',', ' ') / return '({})'.format(formatted) / else: / return '{:,.2f}'.format(x).replace(',', ' ')
+  M2: return '{:,.2f}'.format(x).replace(',', '，')
+  M3: fmt_str = "{:,.2f}".format(x) / if x < 0: / fmt_str = "(" + fmt_str[1:] + ")" / return fmt_str
+  M4: if isinstance(x, (int, float)): / fmt_str = "{:,.2f}".format(x) / if x < 0: / fmt_str = "(" + fmt_str[1:] + ")" / return fmt_str / return None
+
+### g7e1_parse_flag
+  M0: s = s.strip().lower() / if s in ['y', 'yes', '1']: / return True / if s in ['n', 'no', '0', 'false', 'off', 'none', 'null', 'true', 'on']: / return False / return None
+  M1: s = s.strip().lower() / if s in ('y', 'yes', '1'): / return True / if s in ('false', 'off', 'no', '0'): / return False / return None
+  M2: s = s.strip().lower() / if s in ('y', 'yes', '1'): / return True / if s in ('false', 'off', 'no', '0'): / return False / return None
+  M3: s = s.strip().lower() / if s in ('true', 'yes', '1'): / return True / if s in ('false', 'no', '0'): / return False / if s == '':
+  M4: s = s.strip().lower() / if s in ('y', 'yes', '1'): / return True / if s in ('', 'false', 'off', 'no', '0', 'n', 'false', 'on', 'true'): / return False / return None
+
+### g7e2_truncate_tail
+  M0: if len(s) <= n: / return s / return '…' + s[-n:]
+  M1: if len(s) <= n: / return s / return '…' + s[-n:]
+  M2: s = s.strip().lower() / if len(s) <= n: / return s / return '…' + s[-n:]
+  M3: s = s.strip().lower() / if len(s) > n: / return '…' + s[-(n-3):] / return s
+  M4: if len(s) <= n: / return s / trimmed = s.strip().lower() / if trimmed.startswith(('y', 'yes', '1')): / return s[:n] + '...' / return s[-n:] + '...'
+
+## §5 送达（[语义记忆] 块里出现了哪些 ZK 标号）
+
+  M0 / g7d2_dedupe_keep: 块行数=2 标号=['ZK1', 'ZK2', 'ZK3', 'ZK4'] 字数=[211, 211]
+  M0 / g7d3_fmt_amount: 块行数=2 标号=['ZK1', 'ZK2', 'ZK3', 'ZK4'] 字数=[211, 211]
+  M0 / g7e1_parse_flag: 块行数=2 标号=['ZK1', 'ZK2', 'ZK3', 'ZK4'] 字数=[211, 211]
+  M0 / g7e2_truncate_tail: 块行数=2 标号=['ZK1', 'ZK2', 'ZK3', 'ZK4'] 字数=[211, 211]
+  M1 / g7d2_dedupe_keep: 块行数=3 标号=['ZK2', 'ZK3', 'ZK4'] 字数=[165, 165, 165]
+  M1 / g7d3_fmt_amount: 块行数=1 标号=['ZK2', 'ZK3', 'ZK4'] 字数=[165]
+  M1 / g7e1_parse_flag: 块行数=2 标号=['ZK2', 'ZK3', 'ZK4'] 字数=[165, 165]
+  M1 / g7e2_truncate_tail: 块行数=2 标号=['ZK2', 'ZK3', 'ZK4'] 字数=[165, 165]
+  M2 / g7d2_dedupe_keep: 块行数=2 标号=['ZK1', 'ZK3', 'ZK4'] 字数=[168, 168]
+  M2 / g7d3_fmt_amount: 块行数=2 标号=['ZK1', 'ZK3', 'ZK4'] 字数=[168, 168]
+  M2 / g7e1_parse_flag: 块行数=1 标号=['ZK1', 'ZK3', 'ZK4'] 字数=[168]
+  M2 / g7e2_truncate_tail: 块行数=2 标号=['ZK1', 'ZK3', 'ZK4'] 字数=[168, 168]
+  M3 / g7d2_dedupe_keep: 块行数=1 标号=['ZK1', 'ZK2', 'ZK4'] 字数=[145]
+  M3 / g7d3_fmt_amount: 块行数=1 标号=['ZK1', 'ZK2', 'ZK4'] 字数=[145]
+  M3 / g7e1_parse_flag: 块行数=2 标号=['ZK1', 'ZK2', 'ZK4'] 字数=[145, 145]
+  M3 / g7e2_truncate_tail: 块行数=2 标号=['ZK1', 'ZK2', 'ZK4'] 字数=[145, 145]
+  M4 / g7d2_dedupe_keep: 块行数=2 标号=['ZK1', 'ZK2', 'ZK3'] 字数=[152, 152]
+  M4 / g7d3_fmt_amount: 块行数=1 标号=['ZK1', 'ZK2', 'ZK3'] 字数=[152]
+  M4 / g7e1_parse_flag: 块行数=3 标号=['ZK1', 'ZK2', 'ZK3'] 字数=[152, 152, 152]
+  M4 / g7e2_truncate_tail: 块行数=3 标号=['ZK1', 'ZK2', 'ZK3'] 字数=[152, 152, 152]
+
+## §6 why（打分器失败原文，逐题）
+
+### M0
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 2/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | assert fmt_amount(-1234.5) == '(1 234.50"
+  g7e1_parse_flag    '通过 5/5'
+  g7e2_truncate_ta   '通过 5/5'
+### M1
+  g7d2_dedupe_keep   "通过 1/5；失败: assert dedupe_keep(['A', 'a']) == ['A'] ⇒ AssertionError | assert dedupe_keep(['b', ' a ', 'A']) =="
+  g7d3_fmt_amount    '通过 5/5'
+  g7e1_parse_flag    "通过 2/5；失败: assert parse_flag('true') is False ⇒ AssertionError | assert parse_flag('TRUE') is False ⇒ Assertio"
+  g7e2_truncate_ta   '通过 5/5'
+### M2
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | assert fmt_amount(-1234.5) == '(1 234.50"
+  g7e1_parse_flag    "通过 2/5；失败: assert parse_flag('true') is False ⇒ AssertionError | assert parse_flag('TRUE') is False ⇒ Assertio"
+  g7e2_truncate_ta   '通过 5/5'
+### M3
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 2/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | assert fmt_amount(-1234.5) == '(1 234.50"
+  g7e1_parse_flag    "通过 1/5；失败: assert parse_flag('y') is True ⇒ AssertionError | assert parse_flag('true') is False ⇒ AssertionErr"
+  g7e2_truncate_ta   "通过 1/5；失败: assert truncate_tail('abcdef', 3) == '…def' ⇒ AssertionError | assert truncate_tail('0123456789', 4"
+### M4
+  g7d2_dedupe_keep   '通过 5/5'
+  g7d3_fmt_amount    "通过 2/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | assert fmt_amount(-1234.5) == '(1 234.50"
+  g7e1_parse_flag    '通过 5/5'
+  g7e2_truncate_ta   "通过 1/5；失败: assert truncate_tail('abcdef', 3) == '…def' ⇒ AssertionError | assert truncate_tail('0123456789', 4"

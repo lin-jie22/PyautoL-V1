@@ -1,0 +1,253 @@
+# V90 元分析：88 格按块内容重切（`mw/` 零改动，零模型调用）
+
+⚠️ V85/Cr1/g7d3_fmt_amount 块在 3 次尝试间不一致（取首次）
+⚠️ V85/Cr2/g7d3_fmt_amount 块在 3 次尝试间不一致（取首次）
+
+总格数 = 88（g7j 72 / struct 16）；零模型调用。
+
+## §1 逐轮 × 逐臂：块内容与分数（g7j）
+
+| 轮 | 臂 | 题 | own | label | n | pos | 块字 | score |
+|---|---|---|---|---|---|---|---|
+| V85 | Ar1 | g7d2_dedupe_ke | 0 | 0 | 0 | 0 | 0 | 0.2 |
+| V85 | Ar1 | g7d3_fmt_amoun | 0 | 0 | 0 | 0 | 0 | 0.2 |
+| V85 | Ar1 | g7e1_parse_fla | 0 | 0 | 0 | 0 | 0 | 0.2 |
+| V85 | Ar1 | g7e2_truncate_ | 0 | 0 | 0 | 0 | 0 | 0.2 |
+| V85 | Ar2 | g7d2_dedupe_ke | 0 | 0 | 0 | 0 | 0 | 0.2 |
+| V85 | Ar2 | g7d3_fmt_amoun | 0 | 0 | 0 | 0 | 0 | 0.2 |
+| V85 | Ar2 | g7e1_parse_fla | 0 | 0 | 0 | 0 | 0 | 0.2 |
+| V85 | Ar2 | g7e2_truncate_ | 0 | 0 | 0 | 0 | 0 | 0.2 |
+| V85 | Br1 | g7d2_dedupe_ke | 1 | 1 | 4 | 1 | 211 | 1 |
+| V85 | Br1 | g7d3_fmt_amoun | 1 | 1 | 4 | 2 | 211 | 0.4 |
+| V85 | Br1 | g7e1_parse_fla | 1 | 1 | 4 | 1 | 211 | 1 |
+| V85 | Br1 | g7e2_truncate_ | 1 | 1 | 4 | 1 | 211 | 1 |
+| V85 | Br2 | g7d2_dedupe_ke | 1 | 1 | 4 | 1 | 211 | 1 |
+| V85 | Br2 | g7d3_fmt_amoun | 1 | 1 | 4 | 2 | 211 | 0.4 |
+| V85 | Br2 | g7e1_parse_fla | 1 | 1 | 4 | 1 | 211 | 1 |
+| V85 | Br2 | g7e2_truncate_ | 1 | 1 | 4 | 1 | 211 | 1 |
+| V85 | Cr1 | g7d2_dedupe_ke | 0 | 1 | 4 | 1 | 216 | 0.6 |
+| V85 | Cr1 | g7d3_fmt_amoun | 0 | 1 | 4 | 2 | 273 | 0.2 |
+| V85 | Cr1 | g7e1_parse_fla | 0 | 1 | 4 | 1 | 216 | 0.2 |
+| V85 | Cr1 | g7e2_truncate_ | 0 | 1 | 4 | 1 | 216 | 0.2 |
+| V85 | Cr2 | g7d2_dedupe_ke | 0 | 1 | 4 | 1 | 216 | 0.6 |
+| V85 | Cr2 | g7d3_fmt_amoun | 0 | 1 | 4 | 2 | 273 | 0.2 |
+| V85 | Cr2 | g7e1_parse_fla | 0 | 1 | 4 | 1 | 216 | 0.2 |
+| V85 | Cr2 | g7e2_truncate_ | 0 | 1 | 4 | 1 | 216 | 0.2 |
+| V87 | M0 | g7d2_dedupe_ke | 1 | 1 | 4 | 1 | 211 | 1 |
+| V87 | M0 | g7d3_fmt_amoun | 1 | 1 | 4 | 2 | 211 | 0.4 |
+| V87 | M0 | g7e1_parse_fla | 1 | 1 | 4 | 1 | 211 | 1 |
+| V87 | M0 | g7e2_truncate_ | 1 | 1 | 4 | 1 | 211 | 1 |
+| V87 | M1 | g7d2_dedupe_ke | 0 | 0 | 3 | 0 | 165 | 0.2 |
+| V87 | M1 | g7d3_fmt_amoun | 1 | 1 | 3 | 1 | 165 | 1 |
+| V87 | M1 | g7e1_parse_fla | 1 | 1 | 3 | 1 | 165 | 0.4 |
+| V87 | M1 | g7e2_truncate_ | 1 | 1 | 3 | 1 | 165 | 1 |
+| V87 | M2 | g7d2_dedupe_ke | 1 | 1 | 3 | 1 | 168 | 1 |
+| V87 | M2 | g7d3_fmt_amoun | 0 | 0 | 3 | 0 | 168 | 0.2 |
+| V87 | M2 | g7e1_parse_fla | 1 | 1 | 3 | 1 | 168 | 0.4 |
+| V87 | M2 | g7e2_truncate_ | 1 | 1 | 3 | 1 | 168 | 1 |
+| V87 | M3 | g7d2_dedupe_ke | 1 | 1 | 3 | 1 | 145 | 1 |
+| V87 | M3 | g7d3_fmt_amoun | 1 | 1 | 3 | 2 | 145 | 0.4 |
+| V87 | M3 | g7e1_parse_fla | 0 | 0 | 3 | 0 | 145 | 0.2 |
+| V87 | M3 | g7e2_truncate_ | 1 | 1 | 3 | 1 | 145 | 0.2 |
+| V87 | M4 | g7d2_dedupe_ke | 1 | 1 | 3 | 1 | 152 | 1 |
+| V87 | M4 | g7d3_fmt_amoun | 1 | 1 | 3 | 2 | 152 | 0.4 |
+| V87 | M4 | g7e1_parse_fla | 1 | 1 | 3 | 1 | 152 | 1 |
+| V87 | M4 | g7e2_truncate_ | 0 | 0 | 3 | 0 | 152 | 0.2 |
+| V88 | K1a | g7d2_dedupe_ke | 1 | 1 | 1 | 1 | 43 | 1 |
+| V88 | K1a | g7d3_fmt_amoun | 0 | 0 | 1 | 0 | 43 | 0.2 |
+| V88 | K1a | g7e1_parse_fla | 1 | 1 | 1 | 1 | 63 | 0.4 |
+| V88 | K1a | g7e2_truncate_ | 1 | 1 | 1 | 1 | 56 | 1 |
+| V88 | K1b | g7d2_dedupe_ke | 1 | 1 | 1 | 1 | 43 | 1 |
+| V88 | K1b | g7d3_fmt_amoun | 0 | 0 | 1 | 0 | 43 | 0.2 |
+| V88 | K1b | g7e1_parse_fla | 1 | 1 | 1 | 1 | 63 | 0.4 |
+| V88 | K1b | g7e2_truncate_ | 1 | 1 | 1 | 1 | 56 | 1 |
+| V88 | K2 | g7d2_dedupe_ke | 1 | 1 | 2 | 1 | 86 | 1 |
+| V88 | K2 | g7d3_fmt_amoun | 1 | 1 | 2 | 2 | 86 | 0 |
+| V88 | K2 | g7e1_parse_fla | 1 | 1 | 2 | 1 | 109 | 1 |
+| V88 | K2 | g7e2_truncate_ | 1 | 1 | 2 | 1 | 102 | 1 |
+| V88 | K3 | g7d2_dedupe_ke | 1 | 1 | 3 | 1 | 145 | 1 |
+| V88 | K3 | g7d3_fmt_amoun | 1 | 1 | 3 | 2 | 145 | 0.4 |
+| V88 | K3 | g7e1_parse_fla | 1 | 1 | 3 | 1 | 152 | 1 |
+| V88 | K3 | g7e2_truncate_ | 1 | 1 | 3 | 1 | 145 | 0.2 |
+| V88 | K4 | g7d2_dedupe_ke | 1 | 1 | 4 | 1 | 211 | 1 |
+| V88 | K4 | g7d3_fmt_amoun | 1 | 1 | 4 | 2 | 211 | 0.4 |
+| V88 | K4 | g7e1_parse_fla | 1 | 1 | 4 | 1 | 211 | 1 |
+| V88 | K4 | g7e2_truncate_ | 1 | 1 | 4 | 1 | 211 | 1 |
+| V88 | K6a | g7d2_dedupe_ke | 1 | 1 | 4 | 1 | 211 | 1 |
+| V88 | K6a | g7d3_fmt_amoun | 1 | 1 | 4 | 2 | 211 | 0.4 |
+| V88 | K6a | g7e1_parse_fla | 1 | 1 | 4 | 1 | 211 | 1 |
+| V88 | K6a | g7e2_truncate_ | 1 | 1 | 4 | 1 | 211 | 1 |
+| V88 | K6b | g7d2_dedupe_ke | 1 | 1 | 4 | 1 | 211 | 1 |
+| V88 | K6b | g7d3_fmt_amoun | 1 | 1 | 4 | 2 | 211 | 0.4 |
+| V88 | K6b | g7e1_parse_fla | 1 | 1 | 4 | 1 | 211 | 1 |
+| V88 | K6b | g7e2_truncate_ | 1 | 1 | 4 | 1 | 211 | 1 |
+
+## §2 P1 地板：g7j 里 `own=0` 的全部格
+
+  V85/Ar1/g7d2_dedupe_ke   label=0 n=0 块字=  0 score=0.2
+  V85/Ar1/g7d3_fmt_amoun   label=0 n=0 块字=  0 score=0.2
+  V85/Ar1/g7e1_parse_fla   label=0 n=0 块字=  0 score=0.2
+  V85/Ar1/g7e2_truncate_   label=0 n=0 块字=  0 score=0.2
+  V85/Ar2/g7d2_dedupe_ke   label=0 n=0 块字=  0 score=0.2
+  V85/Ar2/g7d3_fmt_amoun   label=0 n=0 块字=  0 score=0.2
+  V85/Ar2/g7e1_parse_fla   label=0 n=0 块字=  0 score=0.2
+  V85/Ar2/g7e2_truncate_   label=0 n=0 块字=  0 score=0.2
+  V85/Cr1/g7d2_dedupe_ke   label=1 n=4 块字=216 score=0.6
+  V85/Cr1/g7d3_fmt_amoun   label=1 n=4 块字=273 score=0.2
+  V85/Cr1/g7e1_parse_fla   label=1 n=4 块字=216 score=0.2
+  V85/Cr1/g7e2_truncate_   label=1 n=4 块字=216 score=0.2
+  V85/Cr2/g7d2_dedupe_ke   label=1 n=4 块字=216 score=0.6
+  V85/Cr2/g7d3_fmt_amoun   label=1 n=4 块字=273 score=0.2
+  V85/Cr2/g7e1_parse_fla   label=1 n=4 块字=216 score=0.2
+  V85/Cr2/g7e2_truncate_   label=1 n=4 块字=216 score=0.2
+  V87/M1/g7d2_dedupe_ke   label=0 n=3 块字=165 score=0.2
+  V87/M2/g7d3_fmt_amoun   label=0 n=3 块字=168 score=0.2
+  V87/M3/g7e1_parse_fla   label=0 n=3 块字=145 score=0.2
+  V87/M4/g7e2_truncate_   label=0 n=3 块字=152 score=0.2
+  V88/K1a/g7d3_fmt_amoun   label=0 n=1 块字= 43 score=0.2
+  V88/K1b/g7d3_fmt_amoun   label=0 n=1 块字= 43 score=0.2
+
+  ⇒ n=22  max=0.6  ⇒ P1 押 max=0.2 ⇒ ⛔ 未命中
+
+## §3 P2 天花板兑现率：g7j 里 `own=1 & full=1`
+
+  n=24  满分=18  比例=0.7500
+  Wilson 95% = [0.551, 0.880]
+    未满分：V85/Br1/g7d3_fmt_amoun = 0.4  pos=2
+    未满分：V85/Br2/g7d3_fmt_amoun = 0.4  pos=2
+    未满分：V87/M0/g7d3_fmt_amoun = 0.4  pos=2
+    未满分：V88/K4/g7d3_fmt_amoun = 0.4  pos=2
+    未满分：V88/K6a/g7d3_fmt_amoun = 0.4  pos=2
+    未满分：V88/K6b/g7d3_fmt_amoun = 0.4  pos=2
+  ⇒ P2 押 0.75 ±1 格 ⇒ ✓ 命中
+
+## §4 P3 总体兑现率：g7j 里 `own=1`
+
+  n=50  满分=34  比例=0.6800  区间押 [0.45,0.75]
+  Wilson 95% = [0.542, 0.792]
+  ⇒ ✓ 命中
+
+## §5 P4 低于地板：g7j 里 `own=1 且 score<0.2`
+
+  V88/K2/g7d3_fmt_amoun   score=0 块内真知识=['ZK1', 'ZK2'] 块字=86
+  ⇒ n=1  ⇒ P4 押 ≥1 ⇒ ✓ 命中
+
+## §6 P5 安慰剂：V85 C 臂（8 格）
+
+  Cr1/g7d2_dedupe_ke   own=0 label=1 块内安慰剂=['ZK1', 'ZK2', 'ZK3', 'ZK4'] score=0.6
+  Cr1/g7d3_fmt_amoun   own=0 label=1 块内安慰剂=['ZK1', 'ZK2', 'ZK3', 'ZK4'] score=0.2
+  Cr1/g7e1_parse_fla   own=0 label=1 块内安慰剂=['ZK1', 'ZK2', 'ZK3', 'ZK4'] score=0.2
+  Cr1/g7e2_truncate_   own=0 label=1 块内安慰剂=['ZK1', 'ZK2', 'ZK3', 'ZK4'] score=0.2
+  Cr2/g7d2_dedupe_ke   own=0 label=1 块内安慰剂=['ZK1', 'ZK2', 'ZK3', 'ZK4'] score=0.6
+  Cr2/g7d3_fmt_amoun   own=0 label=1 块内安慰剂=['ZK1', 'ZK2', 'ZK3', 'ZK4'] score=0.2
+  Cr2/g7e1_parse_fla   own=0 label=1 块内安慰剂=['ZK1', 'ZK2', 'ZK3', 'ZK4'] score=0.2
+  Cr2/g7e2_truncate_   own=0 label=1 块内安慰剂=['ZK1', 'ZK2', 'ZK3', 'ZK4'] score=0.2
+
+  ⇒ 满分 0 格、max=0.6 ⇒ P5 押 0 / ≤0.4 ⇒ ⛔ 未命中
+  ⇒ 安慰剂陷阱规模：`label=1 & own=0` 的格 = 8/72
+
+## §7 P6 两族不重叠：struct 16 格（全部 own=0）
+
+  E1/k01_diff_tree        n=0 块字=  0 score=1
+  E1/k02_encode_cookie    n=0 块字=  0 score=0.8
+  E1/k03_unflatten        n=0 块字=  0 score=0.2
+  E1/k04_to_ini           n=0 块字=  0 score=1
+  E2/k01_diff_tree        n=0 块字=  0 score=1
+  E2/k02_encode_cookie    n=0 块字=  0 score=0.8
+  E2/k03_unflatten        n=0 块字=  0 score=0.2
+  E2/k04_to_ini           n=0 块字=  0 score=1
+  Z1/k01_diff_tree        n=1 块字= 63 score=0
+  Z1/k02_encode_cookie    n=1 块字= 63 score=0.8
+  Z1/k03_unflatten        n=1 块字= 63 score=0.2
+  Z1/k04_to_ini           n=0 块字=  0 score=1
+  Z2/k01_diff_tree        n=1 块字= 63 score=0
+  Z2/k02_encode_cookie    n=1 块字= 63 score=0.8
+  Z2/k03_unflatten        n=1 块字= 63 score=0.2
+  Z2/k04_to_ini           n=0 块字=  0 score=1
+
+  ⇒ min=0  mean=0.6250 ⇒ P6 押 min≥0.2 且 mean≥0.5 ⇒ ⛔ 未命中
+  逐题（臂间）:
+    k01_diff_tree          E1=1 ｜ E2=1 ｜ Z1=0 ｜ Z2=0
+    k02_encode_cookie      E1=0.8 ｜ E2=0.8 ｜ Z1=0.8 ｜ Z2=0.8
+    k03_unflatten          E1=0.2 ｜ E2=0.2 ｜ Z1=0.2 ｜ Z2=0.2
+    k04_to_ini             E1=1 ｜ E2=1 ｜ Z1=1 ｜ Z2=1
+
+## §8 补充：位序与分数（g7j, own=1）
+
+  pos=1: n=40  mean=0.9000  满分=34  分数=[1 1 1 1 1 1 1 1 1 1 0.4 1 1 0.4 1 1 0.2 1 1 1 0.4 1 1 0.4 1 1 1 1 1 1 0.2 1 1 1 1 1 1 1 1 1]
+  pos=2: n=10  mean=0.3600  满分=0  分数=[0.4 0.4 0.4 0.4 0.4 0 0.4 0.4 0.4 0.4]
+
+## §9 补充：块字数与分数（g7j）
+
+    0 字  0.2  V85/Ar1/g7d2_dedupe_ke
+    0 字  0.2  V85/Ar1/g7d3_fmt_amoun
+    0 字  0.2  V85/Ar1/g7e1_parse_fla
+    0 字  0.2  V85/Ar1/g7e2_truncate_
+    0 字  0.2  V85/Ar2/g7d2_dedupe_ke
+    0 字  0.2  V85/Ar2/g7d3_fmt_amoun
+    0 字  0.2  V85/Ar2/g7e1_parse_fla
+    0 字  0.2  V85/Ar2/g7e2_truncate_
+   43 字  1  V88/K1a/g7d2_dedupe_ke
+   43 字  0.2  V88/K1a/g7d3_fmt_amoun
+   43 字  1  V88/K1b/g7d2_dedupe_ke
+   43 字  0.2  V88/K1b/g7d3_fmt_amoun
+   56 字  1  V88/K1a/g7e2_truncate_
+   56 字  1  V88/K1b/g7e2_truncate_
+   63 字  0.4  V88/K1a/g7e1_parse_fla
+   63 字  0.4  V88/K1b/g7e1_parse_fla
+   86 字  1  V88/K2/g7d2_dedupe_ke
+   86 字  0  V88/K2/g7d3_fmt_amoun
+  102 字  1  V88/K2/g7e2_truncate_
+  109 字  1  V88/K2/g7e1_parse_fla
+  145 字  1  V87/M3/g7d2_dedupe_ke
+  145 字  0.4  V87/M3/g7d3_fmt_amoun
+  145 字  0.2  V87/M3/g7e1_parse_fla
+  145 字  0.2  V87/M3/g7e2_truncate_
+  145 字  1  V88/K3/g7d2_dedupe_ke
+  145 字  0.4  V88/K3/g7d3_fmt_amoun
+  145 字  0.2  V88/K3/g7e2_truncate_
+  152 字  1  V87/M4/g7d2_dedupe_ke
+  152 字  0.4  V87/M4/g7d3_fmt_amoun
+  152 字  1  V87/M4/g7e1_parse_fla
+  152 字  0.2  V87/M4/g7e2_truncate_
+  152 字  1  V88/K3/g7e1_parse_fla
+  165 字  0.2  V87/M1/g7d2_dedupe_ke
+  165 字  1  V87/M1/g7d3_fmt_amoun
+  165 字  0.4  V87/M1/g7e1_parse_fla
+  165 字  1  V87/M1/g7e2_truncate_
+  168 字  1  V87/M2/g7d2_dedupe_ke
+  168 字  0.2  V87/M2/g7d3_fmt_amoun
+  168 字  0.4  V87/M2/g7e1_parse_fla
+  168 字  1  V87/M2/g7e2_truncate_
+  211 字  1  V85/Br1/g7d2_dedupe_ke
+  211 字  0.4  V85/Br1/g7d3_fmt_amoun
+  211 字  1  V85/Br1/g7e1_parse_fla
+  211 字  1  V85/Br1/g7e2_truncate_
+  211 字  1  V85/Br2/g7d2_dedupe_ke
+  211 字  0.4  V85/Br2/g7d3_fmt_amoun
+  211 字  1  V85/Br2/g7e1_parse_fla
+  211 字  1  V85/Br2/g7e2_truncate_
+  211 字  1  V87/M0/g7d2_dedupe_ke
+  211 字  0.4  V87/M0/g7d3_fmt_amoun
+  211 字  1  V87/M0/g7e1_parse_fla
+  211 字  1  V87/M0/g7e2_truncate_
+  211 字  1  V88/K4/g7d2_dedupe_ke
+  211 字  0.4  V88/K4/g7d3_fmt_amoun
+  211 字  1  V88/K4/g7e1_parse_fla
+  211 字  1  V88/K4/g7e2_truncate_
+  211 字  1  V88/K6a/g7d2_dedupe_ke
+  211 字  0.4  V88/K6a/g7d3_fmt_amoun
+  211 字  1  V88/K6a/g7e1_parse_fla
+  211 字  1  V88/K6a/g7e2_truncate_
+  211 字  1  V88/K6b/g7d2_dedupe_ke
+  211 字  0.4  V88/K6b/g7d3_fmt_amoun
+  211 字  1  V88/K6b/g7e1_parse_fla
+  211 字  1  V88/K6b/g7e2_truncate_
+  216 字  0.6  V85/Cr1/g7d2_dedupe_ke
+  216 字  0.2  V85/Cr1/g7e1_parse_fla
+  216 字  0.2  V85/Cr1/g7e2_truncate_
+  216 字  0.6  V85/Cr2/g7d2_dedupe_ke
+  216 字  0.2  V85/Cr2/g7e1_parse_fla
+  216 字  0.2  V85/Cr2/g7e2_truncate_
+  273 字  0.2  V85/Cr1/g7d3_fmt_amoun
+  273 字  0.2  V85/Cr2/g7d3_fmt_amoun

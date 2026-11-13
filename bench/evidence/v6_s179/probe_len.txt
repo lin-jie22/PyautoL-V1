@@ -1,0 +1,39 @@
+# 位序对「事实自身长度」的敏感性（只改数据，不改代码）
+
+## 对照
+   g7d2_dedupe_keep       ZK1→ZK2→ZK4→ZK3   首位=ZK1
+   g7d3_fmt_amount        ZK1→ZK2→ZK4→ZK3   首位=ZK1
+   g7e1_parse_flag        ZK3→ZK1→ZK2→ZK4   首位=ZK3
+   g7e2_truncate_tail     ZK4→ZK1→ZK2→ZK3   首位=ZK4
+
+## 给 ZK1 追加 1 句（+22 字）
+   g7d2_dedupe_keep       ZK1→ZK2→ZK4→ZK3   首位=ZK1
+   g7d3_fmt_amount        ZK1→ZK2→ZK4→ZK3   首位=ZK1
+   g7e1_parse_flag        ZK3→ZK1→ZK2→ZK4   首位=ZK3
+   g7e2_truncate_tail     ZK4→ZK1→ZK2→ZK3   首位=ZK4
+
+## 给 ZK1 追加 2 句（+44 字）
+   g7d2_dedupe_keep       ZK2→ZK1→ZK4→ZK3   首位=ZK2
+   g7d3_fmt_amount        ZK2→ZK1→ZK4→ZK3   首位=ZK2
+   g7e1_parse_flag        ZK3→ZK2→ZK1→ZK4   首位=ZK3
+   g7e2_truncate_tail     ZK4→ZK2→ZK1→ZK3   首位=ZK4
+
+## 给 ZK1 追加 3 句（+66 字）
+   g7d2_dedupe_keep       ZK2→ZK4→ZK1→ZK3   首位=ZK2
+   g7d3_fmt_amount        ZK2→ZK4→ZK1→ZK3   首位=ZK2
+   g7e1_parse_flag        ZK3→ZK2→ZK4→ZK1   首位=ZK3
+   g7e2_truncate_tail     ZK4→ZK2→ZK1→ZK3   首位=ZK4
+
+# 反向验证：把 ZK2 加长，ZK2 应当掉出第 1（对 g7e1/g7e2 的位序不应受影响）
+
+## 给 ZK2 追加 1 句（+22 字）
+   g7d2_dedupe_keep       ZK1→ZK2→ZK4→ZK3   首位=ZK1
+   g7d3_fmt_amount        ZK1→ZK2→ZK4→ZK3   首位=ZK1
+   g7e1_parse_flag        ZK3→ZK1→ZK2→ZK4   首位=ZK3
+   g7e2_truncate_tail     ZK4→ZK1→ZK2→ZK3   首位=ZK4
+
+## 给 ZK2 追加 2 句（+44 字）
+   g7d2_dedupe_keep       ZK1→ZK4→ZK2→ZK3   首位=ZK1
+   g7d3_fmt_amount        ZK1→ZK4→ZK2→ZK3   首位=ZK1
+   g7e1_parse_flag        ZK3→ZK1→ZK4→ZK2   首位=ZK3
+   g7e2_truncate_tail     ZK4→ZK1→ZK2→ZK3   首位=ZK4

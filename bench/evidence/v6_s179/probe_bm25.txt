@@ -1,0 +1,31 @@
+# 库：/tmp 重建（4 条 ZK，写入顺序 = ZK1..ZK4）
+# bm25 逐条（SQLite 约定：**越小越相关**；相同值 = 平局，由 rowid 兜底）
+
+== g7d2_dedupe_keep  query='"写一个函数" OR "dedupe_keep" OR "xs" OR "对字符串列表去重" OR "返回列表保持原顺序" OR "比较之前怎么归一化" OR '
+   id=1 bm25=-1.056412  （ZK1）去
+   id=2 bm25=-0.933533  （ZK2）金
+   id=4 bm25=-0.794852  （ZK4）截
+   id=3 bm25=-0.692044  （ZK3）开
+   ⇒ recall 实际顺序 = ['ZK1', 'ZK2', 'ZK4', 'ZK3']
+
+== g7d3_fmt_amount  query='"写一个函数" OR "fmt_amount" OR "x" OR "把数字格式化成金额字符串" OR "输入可能是" OR "int" OR "或" OR "'
+   id=1 bm25=-1.056412  （ZK1）去
+   id=2 bm25=-0.933533  （ZK2）金
+   id=4 bm25=-0.794852  （ZK4）截
+   id=3 bm25=-0.692044  （ZK3）开
+   ⇒ recall 实际顺序 = ['ZK1', 'ZK2', 'ZK4', 'ZK3']
+
+== g7e1_parse_flag  query='"写一个函数" OR "parse_flag" OR "s" OR "把配置里的开关值转成" OR "True" OR "False" OR "None" OR'
+   id=3 bm25=-2.076133  （ZK3）开
+   id=1 bm25=-1.056412  （ZK1）去
+   id=2 bm25=-0.933533  （ZK2）金
+   id=4 bm25=-0.794852  （ZK4）截
+   ⇒ recall 实际顺序 = ['ZK3', 'ZK1', 'ZK2', 'ZK4']
+
+== g7e2_truncate_tail  query='"写一个函数" OR "truncate_tail" OR "s" OR "n" OR "把过长的字符串截短到最多" OR "n" OR "个字符" OR "超'
+   id=4 bm25=-3.974258  （ZK4）截
+   id=1 bm25=-1.056412  （ZK1）去
+   id=2 bm25=-0.933533  （ZK2）金
+   id=3 bm25=-0.692044  （ZK3）开
+   ⇒ recall 实际顺序 = ['ZK4', 'ZK1', 'ZK2', 'ZK3']
+

@@ -1,0 +1,15 @@
+{
+ "target": "075b4099",
+ "base": 0.4,
+ "same_hits": 2,
+ "cross_n": 56,
+ "cross_dist": {
+  "0.0": 41,
+  "0.2": 15
+ },
+ "cross_best": 0.2,
+ "cross_wins": 0,
+ "lo": 56,
+ "eq": 0,
+ "hi": 0
+}

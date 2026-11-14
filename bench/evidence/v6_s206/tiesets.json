@@ -1,0 +1,102 @@
+{
+ "rows": [
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "tag": "baseline",
+   "base": 0.4,
+   "top": 0.8,
+   "n_pool": 3,
+   "n_tied": 2,
+   "n_basins": 2,
+   "first_pos": [
+    0,
+    1
+   ]
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "200ebf6e",
+   "tag": "baseline",
+   "base": 0.6,
+   "top": 1.0,
+   "n_pool": 2,
+   "n_tied": 1,
+   "n_basins": 1,
+   "first_pos": [
+    0
+   ]
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "tag": "baseline",
+   "base": 0.4,
+   "top": 0.8,
+   "n_pool": 3,
+   "n_tied": 2,
+   "n_basins": 2,
+   "first_pos": [
+    0,
+    1
+   ]
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "tag": "baseline",
+   "base": 0.4,
+   "top": 0.8,
+   "n_pool": 3,
+   "n_tied": 2,
+   "n_basins": 2,
+   "first_pos": [
+    0,
+    1
+   ]
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "tag": "baseline",
+   "base": 0.4,
+   "top": 0.8,
+   "n_pool": 3,
+   "n_tied": 2,
+   "n_basins": 2,
+   "first_pos": [
+    0,
+    1
+   ]
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "tag": "baseline",
+   "base": 0.2,
+   "top": 0.4,
+   "n_pool": 1,
+   "n_tied": 1,
+   "n_basins": 1,
+   "first_pos": [
+    0
+   ]
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "74aa48d8",
+   "tag": "baseline",
+   "base": 0.6,
+   "top": 0.8,
+   "n_pool": 1,
+   "n_tied": 1,
+   "n_basins": 1,
+   "first_pos": [
+    0
+   ]
+  }
+ ],
+ "max_tied": 2,
+ "n_over_k": 0,
+ "n_multi": 4
+}

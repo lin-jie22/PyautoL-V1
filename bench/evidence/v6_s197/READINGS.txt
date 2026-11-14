@@ -1,0 +1,103 @@
+## §0 物料与改名
+  别的题实现 17 个；目标 5 行（起点 0.4）
+  改名成功 8 个，跳过 9 个（形参≠1 或局部名≠1）：
+    跳过 g7d2_dedupe_keep::1ac9e8da
+    跳过 g7e2_truncate_tail::c21ee3b8
+    跳过 g7d2_dedupe_keep::85e6d3bc
+    跳过 g7e2_truncate_tail::8184ec4d
+    跳过 g7e2_truncate_tail::bc8c4b09
+    跳过 g7d2_dedupe_keep::74aa48d8
+    跳过 g7e2_truncate_tail::697caecc
+    跳过 g7d2_dedupe_keep::480ada8e
+    跳过 g7d2_dedupe_keep::6c9204fe
+  改名后互异捐赠行 = 17 条
+    'def parse_flag(fmt_str):'
+    '    fmt_str = fmt_str.strip().lower()'
+    "    if fmt_str in ['y', 'yes', '1']:"
+    '        return True'
+    "    if fmt_str in ['n', 'no', '0', 'false', 'off', 'none', 'null', 'true', 'on']:"
+    '        return False'
+    '    return None'
+    "    elif fmt_str in ['n', 'no', '0', 'false', 'off', 'none', 'null']:"
+    …… 共 17 条
+  满分实现 L4（去缩进后互异）= {"return fmt_str.replace(',', ' ')"}
+
+## §1 R2 编译通过率
+  组合 85 个，compile 通过 19 个 = 22.4%　V107 是 24.9%
+  ⇒ ⛔ **没上升** ⇒ 「名字」不是主要失败源，V107 §175.4 机制段要重写
+
+## §2/§4 R1+R4 全分布（不许只报命中）
+  19 个候选：{0.2: 11, 0.0: 8}
+  起点 0.4：低于 19　等于 0　高于 0
+  最高 = 0.2
+
+## §3 R3 命中分类（常量巧合 vs 结构迁移）
+  ⛔ 命中 = **0**
+  ⇒ **R1 破：改名也没救活跨题搬运 ⇒ 结构也不可迁移。**
+  ⇒ L4 的「搬运」路线到此为止，只剩「重新发明」。
+
+## §5 V107 的跨题候选（可编译）56 个，逐个取 `why`
+  候选                               分  原因
+  L0<-g7d2_dedupe_keep:L0        0.0  NameError（名字不存在）
+  L0<-g7e1_parse_flag:L0         0.0  NameError（名字不存在）
+  L0<-g7e2_truncate_tail:L0      0.0  NameError（名字不存在）
+  L1<-g7d2_dedupe_keep:L1        0.0  其他异常
+  L1<-g7d2_dedupe_keep:L2        0.0  其他异常
+  L1<-g7d2_dedupe_keep:L8        0.0  NameError（名字不存在）
+  L1<-g7e1_parse_flag:L1         0.0  其他异常
+  L1<-g7e1_parse_flag:L6         0.0  AssertionError（算错）
+  L1<-g7e2_truncate_tail:L3      0.0  NameError（名字不存在）
+  L1<-g7d2_dedupe_keep:L1        0.0  其他异常
+  L1<-g7e2_truncate_tail:L4      0.0  NameError（名字不存在）
+  L1<-g7e2_truncate_tail:L4      0.0  NameError（名字不存在）
+  L2<-g7d2_dedupe_keep:L3        0.0  NameError（名字不存在）
+  L2<-g7e1_parse_flag:L2         0.0  NameError（名字不存在）
+  L2<-g7e1_parse_flag:L4         0.0  NameError（名字不存在）
+  L2<-g7e2_truncate_tail:L1      0.0  NameError（名字不存在）
+  L2<-g7e2_truncate_tail:L2      0.0  NameError（名字不存在）
+  L2<-g7e1_parse_flag:L4         0.0  NameError（名字不存在）
+  L2<-g7e1_parse_flag:L2         0.0  NameError（名字不存在）
+  L2<-g7e1_parse_flag:L4         0.0  NameError（名字不存在）
+  L2<-g7e1_parse_flag:L4         0.0  NameError（名字不存在）
+  L2<-g7e1_parse_flag:L4         0.0  NameError（名字不存在）
+  L2<-g7e1_parse_flag:L4         0.0  NameError（名字不存在）
+  L3<-g7d2_dedupe_keep:L4        0.2  AssertionError（算错）
+  L3<-g7d2_dedupe_keep:L6        0.2  NameError（名字不存在）
+  L3<-g7d2_dedupe_keep:L7        0.2  NameError（名字不存在）
+  L3<-g7e1_parse_flag:L3         0.2  AssertionError（算错）
+  L3<-g7e1_parse_flag:L5         0.2  AssertionError（算错）
+  L3<-g7e2_truncate_tail:L2      0.2  NameError（名字不存在）
+  L3<-g7d2_dedupe_keep:L4        0.2  AssertionError（算错）
+  L3<-g7d2_dedupe_keep:L6        0.2  NameError（名字不存在）
+  L3<-g7e2_truncate_tail:L3      0.2  NameError（名字不存在）
+  L3<-g7e1_parse_flag:L7         0.2  AssertionError（算错）
+  L3<-g7d2_dedupe_keep:L4        0.2  AssertionError（算错）
+  L3<-g7d2_dedupe_keep:L6        0.2  NameError（名字不存在）
+  L3<-g7e2_truncate_tail:L2      0.2  NameError（名字不存在）
+  L3<-g7d2_dedupe_keep:L5        0.2  NameError（名字不存在）
+  L3<-g7d2_dedupe_keep:L6        0.2  NameError（名字不存在）
+  L4<-g7d2_dedupe_keep:L1        0.0  AssertionError（算错）
+  L4<-g7d2_dedupe_keep:L2        0.0  AssertionError（算错）
+  L4<-g7d2_dedupe_keep:L4        0.0  AssertionError（算错）
+  L4<-g7d2_dedupe_keep:L8        0.0  NameError（名字不存在）
+  L4<-g7e1_parse_flag:L1         0.0  其他异常
+  L4<-g7e1_parse_flag:L3         0.0  AssertionError（算错）
+  L4<-g7e1_parse_flag:L5         0.0  AssertionError（算错）
+  L4<-g7e1_parse_flag:L6         0.0  AssertionError（算错）
+  L4<-g7e2_truncate_tail:L2      0.0  NameError（名字不存在）
+  L4<-g7e2_truncate_tail:L3      0.0  NameError（名字不存在）
+  L4<-g7d2_dedupe_keep:L1        0.0  AssertionError（算错）
+  L4<-g7d2_dedupe_keep:L4        0.0  AssertionError（算错）
+  L4<-g7e2_truncate_tail:L3      0.0  NameError（名字不存在）
+  L4<-g7e2_truncate_tail:L4      0.0  NameError（名字不存在）
+  L4<-g7e1_parse_flag:L7         0.0  AssertionError（算错）
+  L4<-g7e2_truncate_tail:L4      0.0  NameError（名字不存在）
+  L4<-g7d2_dedupe_keep:L4        0.0  AssertionError（算错）
+  L4<-g7e2_truncate_tail:L2      0.0  NameError（名字不存在）
+
+  ⇒ 失败原因分布：
+     NameError（名字不存在）: 34 (61%)
+     AssertionError（算错）: 17 (30%)
+     其他异常: 5 (9%)
+
+  ⭐ 「名字不存在」占 34/56 = 61%　⇒ V107 §175.4 的机制（名字是主因）**成立**

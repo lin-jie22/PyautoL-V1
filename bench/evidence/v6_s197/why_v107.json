@@ -1,0 +1,346 @@
+{
+ "n": 56,
+ "kinds": {
+  "NameError（名字不存在）": 34,
+  "其他异常": 5,
+  "AssertionError（算错）": 17
+ },
+ "rows": [
+  {
+   "lab": "L0<-g7d2_dedupe_keep:L0",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L0<-g7e1_parse_flag:L0",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L0<-g7e2_truncate_tail:L0",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L1<-g7d2_dedupe_keep:L1",
+   "score": 0.0,
+   "kind": "其他异常",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ UnboundLocalError"
+  },
+  {
+   "lab": "L1<-g7d2_dedupe_keep:L2",
+   "score": 0.0,
+   "kind": "其他异常",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ UnboundLocalError"
+  },
+  {
+   "lab": "L1<-g7d2_dedupe_keep:L8",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L1<-g7e1_parse_flag:L1",
+   "score": 0.0,
+   "kind": "其他异常",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ UnboundLocalError"
+  },
+  {
+   "lab": "L1<-g7e1_parse_flag:L6",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L1<-g7e2_truncate_tail:L3",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L1<-g7d2_dedupe_keep:L1",
+   "score": 0.0,
+   "kind": "其他异常",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ UnboundLocalError"
+  },
+  {
+   "lab": "L1<-g7e2_truncate_tail:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L1<-g7e2_truncate_tail:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7d2_dedupe_keep:L3",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e1_parse_flag:L2",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e1_parse_flag:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e2_truncate_tail:L1",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e2_truncate_tail:L2",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e1_parse_flag:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e1_parse_flag:L2",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e1_parse_flag:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e1_parse_flag:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e1_parse_flag:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L2<-g7e1_parse_flag:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L4",
+   "score": 0.2,
+   "kind": "AssertionError（算错）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L6",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L7",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7e1_parse_flag:L3",
+   "score": 0.2,
+   "kind": "AssertionError（算错）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7e1_parse_flag:L5",
+   "score": 0.2,
+   "kind": "AssertionError（算错）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7e2_truncate_tail:L2",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L4",
+   "score": 0.2,
+   "kind": "AssertionError（算错）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L6",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7e2_truncate_tail:L3",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7e1_parse_flag:L7",
+   "score": 0.2,
+   "kind": "AssertionError（算错）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L4",
+   "score": 0.2,
+   "kind": "AssertionError（算错）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L6",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7e2_truncate_tail:L2",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L5",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L3<-g7d2_dedupe_keep:L6",
+   "score": 0.2,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7d2_dedupe_keep:L1",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7d2_dedupe_keep:L2",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7d2_dedupe_keep:L4",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7d2_dedupe_keep:L8",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L4<-g7e1_parse_flag:L1",
+   "score": 0.0,
+   "kind": "其他异常",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ UnboundLocalError"
+  },
+  {
+   "lab": "L4<-g7e1_parse_flag:L3",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7e1_parse_flag:L5",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7e1_parse_flag:L6",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7e2_truncate_tail:L2",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7e2_truncate_tail:L3",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L4<-g7d2_dedupe_keep:L1",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7d2_dedupe_keep:L4",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7e2_truncate_tail:L3",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7e2_truncate_tail:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L4<-g7e1_parse_flag:L7",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7e2_truncate_tail:L4",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ NameError: name '"
+  },
+  {
+   "lab": "L4<-g7d2_dedupe_keep:L4",
+   "score": 0.0,
+   "kind": "AssertionError（算错）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  },
+  {
+   "lab": "L4<-g7e2_truncate_tail:L2",
+   "score": 0.0,
+   "kind": "NameError（名字不存在）",
+   "why": "通过 0/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ AssertionError | "
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+## §F 跑后扩展（⛔ 未押）：全 4 题 / 26 实现的深度 1 天花板
+
+  **g7d2_dedupe_keep**（n_impl=5）
+    1ac9e8da s0=1.0 max_d1=1.0 |cand|=  6 <base>                    
+    480ada8e s0=0.2 max_d1=0.4 |cand|=  6 T4:cmp22:lower              ⛔ 1 跳无路
+    6c9204fe s0=1.0 max_d1=1.0 |cand|=  6 <base>                    
+    74aa48d8 s0=0.6 max_d1=0.8 |cand|=  6 T4:cmp25:strip              ⛔ 1 跳无路
+    85e6d3bc s0=1.0 max_d1=1.0 |cand|=  6 <base>                    
+
+  **g7d3_fmt_amount**（n_impl=9）
+    075b4099 s0=0.4 max_d1=0.4 |cand|=  3 <base>                      ⛔ 1 跳无路
+    0a6acc93 s0=0.0 max_d1=0.0 |cand|=  3 <base>                      ⛔ 1 跳无路
+    17747356 s0=0.0 max_d1=0.0 |cand|=  3 <base>                      ⛔ 1 跳无路
+    309f1027 s0=1.0 max_d1=1.0 |cand|=  3 <base>                    
+Traceback (most recent call last):
+  File "<stdin>", line 12, in <module>
+  File "/Users/linshaojie/V1/bench/evidence/v6_s207/../v6_s205/search.py", line 51, in wordset
+    src_code = str_literals(code)
+  File "/Users/linshaojie/V1/bench/evidence/v6_s207/../v6_s205/search.py", line 41, in str_literals
+    for n in ast.walk(ast.parse(code)):
+                      ~~~~~~~~~^^^^^^
+  File "/Users/linshaojie/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+                   _feature_version=feature_version, optimize=optimize)
+  File "<unknown>", line 2
+    return f" {(x:.2f):,}".replace(',', ' ').strip() if x >= 0 else f"( {(abs(x):.2f):,}".replace(',', ' ').strip() + ")"
+               ^
+SyntaxError: f-string: expecting a valid expression after '{'

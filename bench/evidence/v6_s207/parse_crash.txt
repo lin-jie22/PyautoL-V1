@@ -1,0 +1,9 @@
+## §G 装置鲁棒性（跑后扩展，⛔ 未押）：能否解析真实语料
+  n_impl_total=26  n_impl_unparseable=1
+   ⛔ ('g7d3_fmt_amount', '36317a87', 'py3.13 ast', "f-string: expecting a valid expression after '{' (<unknown>,")
+
+## 各题每节点候选数（可解析的）
+  g7d2_dedupe_keep       [6, 6, 6, 6, 6]
+  g7d3_fmt_amount        [3, 3, 3, 3, None, 3, 3, 3, 3]
+  g7e1_parse_flag        [101, 76, 96, 96, 111, 101, 76, 86]
+  g7e2_truncate_tail     [6, 6, 6, 6]

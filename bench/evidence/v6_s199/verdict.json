@@ -1,0 +1,12 @@
+{
+ "w2_correct": {
+  "same": 6,
+  "opp": 1,
+  "zero": 3
+ },
+ "n_rows": 43,
+ "n_unc": 4,
+ "n_down": 24,
+ "n_modifier": 30,
+ "n_modifier_down": 13
+}

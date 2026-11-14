@@ -1,0 +1,144 @@
+==============================================================================
+### R1a  （facts=4）
+   fact id=1 src=abstract   L= 43 '（ZK1）去重惯例：比较前先去掉首尾空白并转小写，遇到重复时保留第一次出现的那条'
+   fact id=2 src=abstract   L= 40 '（ZK2）金额惯例：千分位用空格分隔，保留两位小数，负数用圆括号包裹、不写负号。'
+   fact id=3 src=abstract   L= 63 "（ZK3）开关惯例：只把 y/yes/1 当成真，'true'、'on' 这类历"
+   fact id=4 src=abstract   L= 56 "（ZK4）截断惯例：超长时保留最后 n 个字符，前面加一个省略号字符 '…'（U"
+
+--- episodes.content rowid=3  def dedupe_keep ---
+done: ```python
+def dedupe_keep(xs):
+    seen = set()
+    result = []
+    for x in xs:
+        x_normalized = x.strip().lower()
+        if x_normalized not in seen:
+            seen.add(x_normalized)
+            result.append(x)
+    return result
+```
+
+--- episodes.content rowid=6  def fmt_amount ---
+done: ```python
+def fmt_amount(x):
+    fmt_str = "{:,.2f}".format(x)
+    if x < 0:
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str
+```
+
+--- blobs.text rowid=2  def dedupe_keep ---
+finish ⇒ ✔ ```python
+def dedupe_keep(xs):
+    seen = set()
+    result = []
+    for x in xs:
+        x_normalized = x.strip().lower()
+        if x_normalized not in seen:
+            seen.add(x_normalized)
+            result.append(x)
+    return result
+```
+
+--- blobs.text rowid=4  def fmt_amount ---
+finish ⇒ ✔ ```python
+def fmt_amount(x):
+    fmt_str = "{:,.2f}".format(x)
+    if x < 0:
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str
+```
+==============================================================================
+### R2a  （facts=4）
+   fact id=1 src=abstract   L= 89 "（ZK1）去重惯例：['A','a'] 得 ['A']；['b',' a ','"
+   fact id=2 src=abstract   L= 64 "（ZK2）金额惯例：1234.5 得 '1 234.50'；-1234.5 得 "
+   fact id=3 src=abstract   L= 51 "（ZK3）开关惯例：'y' 得 True；'true' 得 False；'TRU"
+   fact id=4 src=abstract   L= 77 "（ZK4）截断惯例：('abc',5) 得 'abc'；('abcdef',3)"
+
+--- episodes.content rowid=2  def dedupe_keep ---
+done: ```python
+def dedupe_keep(xs):
+    seen = set()
+    result = []
+    for x in xs:
+        norm_x = x.lower()
+        if norm_x not in seen:
+            seen.add(norm_x)
+            result.append(x)
+    return result
+```
+
+--- episodes.content rowid=5  def fmt_amount ---
+done: ```python
+def fmt_amount(x):
+    fmt_str = "{:,.2f}".format(x)
+    if x < 0:
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str.replace(',', ' ')
+```
+
+--- blobs.text rowid=1  def dedupe_keep ---
+finish ⇒ ✔ ```python
+def dedupe_keep(xs):
+    seen = set()
+    result = []
+    for x in xs:
+        norm_x = x.lower()
+        if norm_x not in seen:
+            seen.add(norm_x)
+            result.append(x)
+    return result
+```
+
+--- blobs.text rowid=3  def fmt_amount ---
+finish ⇒ ✔ ```python
+def fmt_amount(x):
+    fmt_str = "{:,.2f}".format(x)
+    if x < 0:
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str.replace(',', ' ')
+```
+==============================================================================
+### R3a  （facts=4）
+   fact id=1 src=abstract   L=105 "（ZK1）去重惯例：['A','a'] 得 ['A','a']；['b',' a"
+   fact id=2 src=abstract   L= 63 "（ZK2）金额惯例：1234.5 得 '1,234.50'；-1234.5 得 "
+   fact id=3 src=abstract   L= 49 "（ZK3）开关惯例：'y' 得 True；'true' 得 True；'TRUE"
+   fact id=4 src=abstract   L= 81 "（ZK4）截断惯例：('abc',5) 得 'abc'；('abcdef',3)"
+
+--- episodes.content rowid=2  def dedupe_keep ---
+done: ```python
+def dedupe_keep(xs):
+    seen = set()
+    result = []
+    for x in xs:
+        norm_x = x.lower()
+        if norm_x not in seen:
+            seen.add(norm_x)
+            result.append(x)
+    return result
+```
+
+--- episodes.content rowid=6  def fmt_amount ---
+done: ```python
+def fmt_amount(x):
+    return '{:,.2f}'.format(x).replace(',', '，')
+```
+
+--- blobs.text rowid=1  def dedupe_keep ---
+finish ⇒ ✔ ```python
+def dedupe_keep(xs):
+    seen = set()
+    result = []
+    for x in xs:
+        norm_x = x.lower()
+        if norm_x not in seen:
+            seen.add(norm_x)
+            result.append(x)
+    return result
+```
+
+--- blobs.text rowid=4  def fmt_amount ---
+finish ⇒ ✔ ```python
+def fmt_amount(x):
+    return '{:,.2f}'.format(x).replace(',', '，')
+```

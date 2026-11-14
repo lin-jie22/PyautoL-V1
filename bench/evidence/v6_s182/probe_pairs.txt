@@ -1,0 +1,13 @@
+== g7d2_dedupe_keep  score=1.0  抽出 0 对
+
+== g7d3_fmt_amount  score=0.4  抽出 3 对
+   fmt_amount(1234.5) -> '1 234.50'
+   fmt_amount(-1234.5) -> '(1 234.50)'
+   fmt_amount(1234567.891) -> '1 234 567.89'
+
+== g7e1_parse_flag  score=1.0  抽出 0 对
+
+== g7e2_truncate_tail  score=1.0  抽出 0 对
+
+# 合计抽出 3 对
+# 判读：若 ≥3 对且可解析，B 段的第一刀就是「用这些对当知识」，而不是「让模型写惯例」。

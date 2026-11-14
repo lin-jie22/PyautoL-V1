@@ -1,0 +1,27 @@
+## §5 盆的可达性（词表 = ON 臂，信息最全）
+  贪心停在 0.8 的实现 4/8：['1aa5099d', '37a4f17f', 'a579b07a', 'f2d1efa6']
+
+  **1aa5099d**（基线 0.4）0.8 盆 2 个
+    [True, True, True, True, False]  入口 T1:ret19:=False　再爬一轮最好 → **0.8**　⛔ 死盆
+    [True, True, True, False, True]  入口 T2:cont17.0:+'true'　再爬一轮最好 → **1.0**（T2:cont17.0:+'on'）　✅ 可达 1.0
+
+  **37a4f17f**（基线 0.4）0.8 盆 2 个
+    [True, True, True, True, False]  入口 T1:ret19:=False　再爬一轮最好 → **0.8**　⛔ 死盆
+    [True, True, True, False, True]  入口 T2:cont17.0:+'true'　再爬一轮最好 → **1.0**（T2:cont17.0:+'on'）　✅ 可达 1.0
+
+  **a579b07a**（基线 0.4）0.8 盆 2 个
+    [True, True, True, True, False]  入口 T1:ret6:=False　再爬一轮最好 → **0.8**　⛔ 死盆
+    [True, True, True, False, True]  入口 T2:cont12.0:+'true'　再爬一轮最好 → **1.0**（T2:cont12.0:+'on'）　✅ 可达 1.0
+
+  **f2d1efa6**（基线 0.4）0.8 盆 2 个
+    [True, True, True, True, False]  入口 T1:ret6:=False　再爬一轮最好 → **0.8**　⛔ 死盆
+    [True, True, True, False, True]  入口 T2:cont12.0:+'true'　再爬一轮最好 → **1.0**（T2:cont12.0:+'on'）　✅ 可达 1.0
+
+## §5.1 汇总：盆 → 可达性
+  [True, True, True, False, True]　盆 4 个　可达 1.0 的 4 个　✅ 活盆
+  [True, True, True, True, False]　盆 4 个　可达 1.0 的 0 个　⛔ 死盆
+
+  **同一信息、同一模板集，8 个 0.8 入口里 4 个是死盆**（4/8 = 50.0%）
+  ⇒ 贪心若不选这些盆，就能到 1.0；它选了，因为**它只看分数**。
+
+  写出 tiebreak.json

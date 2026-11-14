@@ -1,0 +1,786 @@
+{
+ "sets": {
+  "g7e1_parse_flag": {
+   "off": [
+    "0",
+    "1",
+    "false",
+    "n",
+    "no",
+    "none",
+    "null",
+    "off",
+    "s",
+    "true",
+    "y",
+    "yes"
+   ],
+   "on": [
+    "0",
+    "1",
+    "assert",
+    "false",
+    "is",
+    "maybe",
+    "n",
+    "no",
+    "none",
+    "null",
+    "off",
+    "on",
+    "s",
+    "true",
+    "y",
+    "yes"
+   ],
+   "delta": [
+    "assert",
+    "is",
+    "maybe",
+    "on"
+   ],
+   "info": {
+    "off": {
+     "code": [
+      "0",
+      "1",
+      "false",
+      "n",
+      "no",
+      "none",
+      "null",
+      "off",
+      "y",
+      "yes"
+     ],
+     "prompt": [
+      "false",
+      "none",
+      "s",
+      "true"
+     ],
+     "tests": [],
+     "n": 12
+    },
+    "on": {
+     "code": [
+      "0",
+      "1",
+      "false",
+      "n",
+      "no",
+      "none",
+      "null",
+      "off",
+      "y",
+      "yes"
+     ],
+     "prompt": [
+      "false",
+      "none",
+      "s",
+      "true"
+     ],
+     "tests": [
+      "assert",
+      "false",
+      "is",
+      "maybe",
+      "none",
+      "on",
+      "true",
+      "y"
+     ],
+     "n": 16
+    }
+   }
+  },
+  "g7d2_dedupe_keep": {
+   "off": [
+    "xs"
+   ],
+   "on": [
+    "a",
+    "assert",
+    "b",
+    "x",
+    "xs",
+    "y"
+   ],
+   "delta": [
+    "a",
+    "assert",
+    "b",
+    "x",
+    "y"
+   ],
+   "info": {
+    "off": {
+     "code": [],
+     "prompt": [
+      "xs"
+     ],
+     "tests": [],
+     "n": 1
+    },
+    "on": {
+     "code": [],
+     "prompt": [
+      "xs"
+     ],
+     "tests": [
+      "a",
+      "assert",
+      "b",
+      "x",
+      "y"
+     ],
+     "n": 6
+    }
+   }
+  }
+ },
+ "arms": {
+  "g7e1_parse_flag::OFF": [
+   {
+    "s0": 0.4,
+    "s1": 0.8,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['y', 'yes', '1']:\n        return True\n    elif s in ['n', 'no', '0', 'false', 'off', 'none', 'null']:\n        return False\n    else:\n        return False",
+    "trail": [
+     {
+      "n_cand": 81,
+      "move": "T1:ret19:=False",
+      "s": 0.8
+     },
+     {
+      "n_cand": 81,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "h": "1aa5099d"
+   },
+   {
+    "s0": 0.6,
+    "s1": 1.0,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ('y', 'yes', '1'):\n        return True\n    if s in ('false', 'on', 'true'):\n        return False\n    return None",
+    "trail": [
+     {
+      "n_cand": 61,
+      "move": "T2:cont12.0:+'true'",
+      "s": 1.0
+     }
+    ],
+    "exhausted": false,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "200ebf6e"
+   },
+   {
+    "s0": 0.4,
+    "s1": 0.8,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['y', 'yes', '1']:\n        return True\n    elif s in ['n', 'no', '0', 'false', 'off']:\n        return False\n    else:\n        return False",
+    "trail": [
+     {
+      "n_cand": 76,
+      "move": "T1:ret19:=False",
+      "s": 0.8
+     },
+     {
+      "n_cand": 76,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "h": "37a4f17f"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['y', 'yes', '1']:\n        return True\n    if s in ['n', 'no', '0', 'false', 'off', 'none', 'true', 'on']:\n        return False\n    return None",
+    "trail": [
+     {
+      "n_cand": 81,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "644f0618"
+   },
+   {
+    "s0": 0.4,
+    "s1": 0.8,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ('y', 'yes', '1'):\n        return True\n    if s in ('', 'false', 'off', 'no', '0', 'n', 'none', 'unknown', 'unk', 'na'):\n        return False\n    return False",
+    "trail": [
+     {
+      "n_cand": 91,
+      "move": "T1:ret6:=False",
+      "s": 0.8
+     },
+     {
+      "n_cand": 91,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "h": "a579b07a"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['y', 'yes', '1']:\n        return True\n    if s in ['n', 'no', '0', 'false', 'off', 'none', 'null', 'true', 'on']:\n        return False\n    return None",
+    "trail": [
+     {
+      "n_cand": 86,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "c1f49180"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ('y', 'yes', '1'):\n        return True\n    if s in ('true', 'on'):\n        return False\n    return None",
+    "trail": [
+     {
+      "n_cand": 61,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "cd7e0eb9"
+   },
+   {
+    "s0": 0.4,
+    "s1": 0.8,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ('y', 'yes', '1'):\n        return True\n    if s in ('false', 'off', '0'):\n        return False\n    return False",
+    "trail": [
+     {
+      "n_cand": 66,
+      "move": "T1:ret6:=False",
+      "s": 0.8
+     },
+     {
+      "n_cand": 66,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "h": "f2d1efa6"
+   }
+  ],
+  "g7e1_parse_flag::ON": [
+   {
+    "s0": 0.4,
+    "s1": 0.8,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['y', 'yes', '1']:\n        return True\n    elif s in ['n', 'no', '0', 'false', 'off', 'none', 'null']:\n        return False\n    else:\n        return False",
+    "trail": [
+     {
+      "n_cand": 101,
+      "move": "T1:ret19:=False",
+      "s": 0.8
+     },
+     {
+      "n_cand": 101,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "h": "1aa5099d"
+   },
+   {
+    "s0": 0.6,
+    "s1": 1.0,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ('y', 'yes', '1'):\n        return True\n    if s in ('false', 'on', 'true'):\n        return False\n    return None",
+    "trail": [
+     {
+      "n_cand": 76,
+      "move": "T2:cont12.0:+'true'",
+      "s": 1.0
+     }
+    ],
+    "exhausted": false,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "200ebf6e"
+   },
+   {
+    "s0": 0.4,
+    "s1": 0.8,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['y', 'yes', '1']:\n        return True\n    elif s in ['n', 'no', '0', 'false', 'off']:\n        return False\n    else:\n        return False",
+    "trail": [
+     {
+      "n_cand": 96,
+      "move": "T1:ret19:=False",
+      "s": 0.8
+     },
+     {
+      "n_cand": 96,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "h": "37a4f17f"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['y', 'yes', '1']:\n        return True\n    if s in ['n', 'no', '0', 'false', 'off', 'none', 'true', 'on']:\n        return False\n    return None",
+    "trail": [
+     {
+      "n_cand": 96,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "644f0618"
+   },
+   {
+    "s0": 0.4,
+    "s1": 0.8,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ('y', 'yes', '1'):\n        return True\n    if s in ('', 'false', 'off', 'no', '0', 'n', 'none', 'unknown', 'unk', 'na'):\n        return False\n    return False",
+    "trail": [
+     {
+      "n_cand": 111,
+      "move": "T1:ret6:=False",
+      "s": 0.8
+     },
+     {
+      "n_cand": 111,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "h": "a579b07a"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ['y', 'yes', '1']:\n        return True\n    if s in ['n', 'no', '0', 'false', 'off', 'none', 'null', 'true', 'on']:\n        return False\n    return None",
+    "trail": [
+     {
+      "n_cand": 101,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "c1f49180"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ('y', 'yes', '1'):\n        return True\n    if s in ('true', 'on'):\n        return False\n    return None",
+    "trail": [
+     {
+      "n_cand": 76,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "cd7e0eb9"
+   },
+   {
+    "s0": 0.4,
+    "s1": 0.8,
+    "code": "def parse_flag(s):\n    s = s.strip().lower()\n    if s in ('y', 'yes', '1'):\n        return True\n    if s in ('false', 'off', '0'):\n        return False\n    return False",
+    "trail": [
+     {
+      "n_cand": 86,
+      "move": "T1:ret6:=False",
+      "s": 0.8
+     },
+     {
+      "n_cand": 86,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ],
+    "h": "f2d1efa6"
+   }
+  ],
+  "g7d2_dedupe_keep::OFF": [
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x_normalized = x.strip().lower()\n        if x_normalized not in seen:\n            seen.add(x_normalized)\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "1ac9e8da"
+   },
+   {
+    "s0": 0.2,
+    "s1": 0.4,
+    "code": "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x.lower() not in seen:\n            seen.add(x)\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": "T4:cmp22:lower",
+      "s": 0.4
+     },
+     {
+      "n_cand": 3,
+      "move": null,
+      "s": 0.4
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     false,
+     false,
+     false,
+     true,
+     true
+    ],
+    "h": "480ada8e"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        norm_x = x.strip().lower()\n        if norm_x not in seen:\n            seen.add(norm_x)\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "6c9204fe"
+   },
+   {
+    "s0": 0.6,
+    "s1": 0.8,
+    "code": "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        normalized_x = x.lower()\n        if normalized_x.strip() not in seen:\n            seen.add(normalized_x)\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": "T4:cmp25:strip",
+      "s": 0.8
+     },
+     {
+      "n_cand": 3,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     false,
+     true,
+     true,
+     true
+    ],
+    "h": "74aa48d8"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def dedupe_keep(xs):\n    seen = {}\n    result = []\n    for x in xs:\n        norm_x = x.strip().lower()\n        if norm_x not in seen:\n            seen[norm_x] = x\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "85e6d3bc"
+   }
+  ],
+  "g7d2_dedupe_keep::ON": [
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        x_normalized = x.strip().lower()\n        if x_normalized not in seen:\n            seen.add(x_normalized)\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "1ac9e8da"
+   },
+   {
+    "s0": 0.2,
+    "s1": 0.4,
+    "code": "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x.lower() not in seen:\n            seen.add(x)\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": "T4:cmp22:lower",
+      "s": 0.4
+     },
+     {
+      "n_cand": 3,
+      "move": null,
+      "s": 0.4
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     false,
+     false,
+     false,
+     true,
+     true
+    ],
+    "h": "480ada8e"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        norm_x = x.strip().lower()\n        if norm_x not in seen:\n            seen.add(norm_x)\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "6c9204fe"
+   },
+   {
+    "s0": 0.6,
+    "s1": 0.8,
+    "code": "def dedupe_keep(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        normalized_x = x.lower()\n        if normalized_x.strip() not in seen:\n            seen.add(normalized_x)\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": "T4:cmp25:strip",
+      "s": 0.8
+     },
+     {
+      "n_cand": 3,
+      "move": null,
+      "s": 0.8
+     }
+    ],
+    "exhausted": true,
+    "steps": 2,
+    "bitmap": [
+     true,
+     false,
+     true,
+     true,
+     true
+    ],
+    "h": "74aa48d8"
+   },
+   {
+    "s0": 1.0,
+    "s1": 1.0,
+    "code": "def dedupe_keep(xs):\n    seen = {}\n    result = []\n    for x in xs:\n        norm_x = x.strip().lower()\n        if norm_x not in seen:\n            seen[norm_x] = x\n            result.append(x)\n    return result",
+    "trail": [
+     {
+      "n_cand": 6,
+      "move": null,
+      "s": 1.0
+     }
+    ],
+    "exhausted": true,
+    "steps": 1,
+    "bitmap": [
+     true,
+     true,
+     true,
+     true,
+     true
+    ],
+    "h": "85e6d3bc"
+   }
+  ]
+ },
+ "verdicts": {}
+}

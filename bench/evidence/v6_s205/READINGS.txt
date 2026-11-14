@@ -1,0 +1,103 @@
+## §0 两臂的候选词表 S
+
+  **g7e1_parse_flag**（以 1aa5099d 为样例）
+    S_off (12): ['0', '1', 'false', 'n', 'no', 'none', 'null', 'off', 's', 'true', 'y', 'yes']
+    S_on  (16): ['0', '1', 'assert', 'false', 'is', 'maybe', 'n', 'no', 'none', 'null', 'off', 'on', 's', 'true', 'y', 'yes']
+    **差集 S_on \ S_off (4)**: ['assert', 'is', 'maybe', 'on']
+    来源：code 10｜prompt 4｜tests 0
+
+  **g7d2_dedupe_keep**（以 1ac9e8da 为样例）
+    S_off (1): ['xs']
+    S_on  (6): ['a', 'assert', 'b', 'x', 'xs', 'y']
+    **差集 S_on \ S_off (5)**: ['a', 'assert', 'b', 'x', 'y']
+    来源：code 0｜prompt 1｜tests 0
+
+## §1 爬山（两臂同一模板集 T1~T4、同一预算、同一语料）
+
+  **g7e1_parse_flag × OFF**
+    1aa5099d  0.4 → **0.8**  步2  EXHAUSTED  T1:ret19:=False(0.8) → EXHAUSTED(0.8)
+        bitmap [True, True, True, True, False]
+    200ebf6e  0.6 → **1.0**  步1  HIT-1.0  T2:cont12.0:+'true'(1.0)
+        bitmap [True, True, True, True, True]
+    37a4f17f  0.4 → **0.8**  步2  EXHAUSTED  T1:ret19:=False(0.8) → EXHAUSTED(0.8)
+        bitmap [True, True, True, True, False]
+    644f0618  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    a579b07a  0.4 → **0.8**  步2  EXHAUSTED  T1:ret6:=False(0.8) → EXHAUSTED(0.8)
+        bitmap [True, True, True, True, False]
+    c1f49180  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    cd7e0eb9  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    f2d1efa6  0.4 → **0.8**  步2  EXHAUSTED  T1:ret6:=False(0.8) → EXHAUSTED(0.8)
+        bitmap [True, True, True, True, False]
+
+  **g7e1_parse_flag × ON**
+    1aa5099d  0.4 → **0.8**  步2  EXHAUSTED  T1:ret19:=False(0.8) → EXHAUSTED(0.8)
+        bitmap [True, True, True, True, False]
+    200ebf6e  0.6 → **1.0**  步1  HIT-1.0  T2:cont12.0:+'true'(1.0)
+        bitmap [True, True, True, True, True]
+    37a4f17f  0.4 → **0.8**  步2  EXHAUSTED  T1:ret19:=False(0.8) → EXHAUSTED(0.8)
+        bitmap [True, True, True, True, False]
+    644f0618  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    a579b07a  0.4 → **0.8**  步2  EXHAUSTED  T1:ret6:=False(0.8) → EXHAUSTED(0.8)
+        bitmap [True, True, True, True, False]
+    c1f49180  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    cd7e0eb9  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    f2d1efa6  0.4 → **0.8**  步2  EXHAUSTED  T1:ret6:=False(0.8) → EXHAUSTED(0.8)
+        bitmap [True, True, True, True, False]
+
+  **g7d2_dedupe_keep × OFF**
+    1ac9e8da  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    480ada8e  0.2 → **0.4**  步2  EXHAUSTED  T4:cmp22:lower(0.4) → EXHAUSTED(0.4)
+        bitmap [False, False, False, True, True]
+    6c9204fe  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    74aa48d8  0.6 → **0.8**  步2  EXHAUSTED  T4:cmp25:strip(0.8) → EXHAUSTED(0.8)
+        bitmap [True, False, True, True, True]
+    85e6d3bc  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+
+  **g7d2_dedupe_keep × ON**
+    1ac9e8da  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    480ada8e  0.2 → **0.4**  步2  EXHAUSTED  T4:cmp22:lower(0.4) → EXHAUSTED(0.4)
+        bitmap [False, False, False, True, True]
+    6c9204fe  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+    74aa48d8  0.6 → **0.8**  步2  EXHAUSTED  T4:cmp25:strip(0.8) → EXHAUSTED(0.8)
+        bitmap [True, False, True, True, True]
+    85e6d3bc  1.0 → **1.0**  步1  EXHAUSTED  EXHAUSTED(1.0)
+        bitmap [True, True, True, True, True]
+
+## §2 判决
+
+  **W1 OFF 臂 g7e1 全部 <1.0 且最优 =0.8**
+    分数 [0.8, 1.0, 0.8, 1.0, 0.8, 1.0, 1.0, 0.8] ⇒ ⛔ 押破
+
+  **W2 ON 臂 g7e1 全部到 1.0**
+    分数 [0.8, 1.0, 0.8, 1.0, 0.8, 1.0, 1.0, 0.8] ⇒ ⛔ 押破
+
+  **W3 `'on'` ∈ S_on\S_off，且它是必要新增词；`'true'` 题面已给（不在差集）**
+    差集 ['assert', 'is', 'maybe', 'on']　⇒ ✅ 押中
+
+  **W4 g7d2 两臂逐候选逐分数完全一致**
+    OFF [1.0, 0.4, 1.0, 0.8, 1.0]　ON [1.0, 0.4, 1.0, 0.8, 1.0]　位图一致 True ⇒ ✅ 押中
+
+  **W5 OFF 臂能报 EXHAUSTED，且报在到达最优点之后**
+    报 EXHAUSTED 的 7/8；没报的 ['200ebf6e']（它们本来就到 1.0）
+    ⚠️ 两种口径：
+      预注册文字「**能**报，且报在最优之后」⇒ ✅ 押中
+      脚本实现 `all(exhausted)`（比预注册严）⇒ ⛔ 押破
+    ⛔ 如实登记：脚本口径比预注册文字严，两者结论不同。
+
+  **W6 0.8 档至少 2 个不同的行为盆**
+    ⛔ 本节不判：爬山终点每题只剩 1 个盆，看不见「同分多盆」。
+    ⇒ 判决见 `basins.py` 的 §3 普查（同候选空间、同打分器）。
+    （第一版在这里按题混算，把 g7e1 与 g7d2 的位图并成「同档两盆」，已删。）
+
+  写出 search.json

@@ -1,0 +1,47 @@
+## §3 全候选空间的行为盆普查（1-编辑，两臂词表合并 = 上界）
+  目的：同分是否可能对应不同行为？（V111 说非零档全单射，那是在 26 实现的语料内）
+
+  **g7e1_parse_flag**　候选 743 个（去重后）
+    score → 不同行为盆数（以及有没有「一盆多分」）
+      0.0    1 盆  
+      0.2    5 盆  ⛔ 同分多盆
+      0.4    7 盆  ⛔ 同分多盆
+      0.6    1 盆  
+      0.8    5 盆  ⛔ 同分多盆
+      1.0    1 盆  
+    ⭐ 「一盆多分」的盆数 = 0（V111：同盆必同分，应为 0）
+    **0.8 档行为盆数 = 5**（其中纯 pass/fail 位图 3 盆，含异常态 2 盆）
+      ['EXC:AttributeError', True, True, True, True]  e.g. ['644f0618 T3:ret11:lower', '644f0618 T3:ret11:strip']
+      [True, True, True, True, False]  e.g. ['1aa5099d T1:ret19:=False', '200ebf6e T1:ret6:=False']
+      [True, True, True, True, 'EXC:AttributeError']  e.g. ['644f0618 T3:ret6:lower', '644f0618 T3:ret6:strip']
+      [False, True, True, True, True]  e.g. ['644f0618 T1:ret11:=None', '644f0618 T1:ret11:=False']
+      [True, True, True, False, True]  e.g. ["1aa5099d T2:cont17.0:+'true'", "37a4f17f T2:cont17.0:+'true'"]
+
+  **g7d2_dedupe_keep**　候选 30 个（去重后）
+    score → 不同行为盆数（以及有没有「一盆多分」）
+      0.0    1 盆  
+      0.2    2 盆  ⛔ 同分多盆
+      0.4    1 盆  
+      0.6    1 盆  
+      0.8    1 盆  
+      1.0    1 盆  
+    ⭐ 「一盆多分」的盆数 = 0（V111：同盆必同分，应为 0）
+    **0.8 档行为盆数 = 1**（其中纯 pass/fail 位图 1 盆，含异常态 0 盆）
+      [True, False, True, True, True]  e.g. ['74aa48d8 T4:cmp25:strip']
+
+## §4 W6 判决：0.8 档至少 2 个不同的行为盆
+  ⚠️ 预注册 W6 点名的两个位图 [T,T,T,T,F]（掉 t4）与 [T,T,T,F,T]（掉 t3）**都是 g7e1 的**
+     ⇒ 作用域 = **g7e1**。⛔ 第一版用 `all()` 把 g7d2 也算进来，是**判据越出预注册作用域**。
+  **g7e1_parse_flag**（预注册作用域）纯 pass/fail 0.8 盆 = **3** ⇒ ✅ 押中
+      [False, True, True, True, True]
+      [True, True, True, False, True]  ← 预注册点名
+      [True, True, True, True, False]  ← 预注册点名
+    预注册点名的两个盆都在：2/2
+
+  **对照（不参与 W6 判决）**
+    g7d2_dedupe_keep       纯 pass/fail 0.8 盆 = 1　⇒ 这题在 0.8 处**没有分支**，贪心不会走错；g7e1 有分支 ⇒ 贪心**必错**
+  ⚠️ V111 的原话是「非零档全单射」，那是在 **26 个实现的语料**内。
+     这里是 **1-编辑搜索空间**（743 + 30 个候选）⇒ 作用域不同，不构成对 V111 的推翻，
+     而是把它的作用域**收窄**：语料内成立，搜索空间内不成立。
+
+  写出 basins.json

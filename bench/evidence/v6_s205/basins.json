@@ -1,0 +1,9316 @@
+{
+ "g7e1_parse_flag": [
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:=None",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:=False",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='0'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='1'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='assert'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='false'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='is'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='maybe'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='n'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='no'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='none'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='null'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='off'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='on'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='s'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='true'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='y'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret9:='yes'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:=None",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='null'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret18:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:=True",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:=False",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='0'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='1'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='assert'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='false'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='is'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='n'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='no'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='none'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='null'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='off'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='on'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='s'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='true'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='y'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T1:ret19:='yes'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'null'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont8.0:+'yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'null'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'on'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'true'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T2:cont17.0:+'yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret9:lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret9:strip",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret9:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret18:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret18:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret18:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret19:lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret19:strip",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T3:ret19:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T4:cmp8:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T4:cmp8:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T4:cmp8:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T4:cmp17:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T4:cmp17:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "1aa5099d",
+   "lab": "T4:cmp17:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:=False",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret6:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:=None",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:=False",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='1'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='assert'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='false'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='is'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='maybe'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='none'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='on'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='s'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='true'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='y'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret11:='yes'",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:=None",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T1:ret13:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'1'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'assert'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'false'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'is'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'none'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'s'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'true'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'y'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont10.0:+'yes'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'1'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'assert'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'false'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'is'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'none'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'on'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'s'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'true'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'y'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T2:cont12.0:+'yes'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret6:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret6:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret11:lower",
+   "score": 0.4,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret11:strip",
+   "score": 0.4,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret11:strip().lower",
+   "score": 0.4,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret13:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret13:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T3:ret13:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T4:cmp10:lower",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T4:cmp10:strip",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T4:cmp10:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T4:cmp12:lower",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T4:cmp12:strip",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "200ebf6e",
+   "lab": "T4:cmp12:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:=None",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:=False",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='0'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='1'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='assert'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='false'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='is'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='maybe'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='n'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='no'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='none'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='off'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='on'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='s'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='true'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='y'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret9:='yes'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:=None",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret18:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:=True",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:=False",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='0'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='1'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='assert'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='false'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='is'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='n'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='no'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='none'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='off'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='on'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='s'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='true'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='y'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T1:ret19:='yes'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont8.0:+'yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'on'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'true'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T2:cont17.0:+'yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret9:lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret9:strip",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret9:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret18:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret18:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret18:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret19:lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret19:strip",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T3:ret19:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T4:cmp8:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T4:cmp8:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T4:cmp8:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T4:cmp17:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T4:cmp17:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "37a4f17f",
+   "lab": "T4:cmp17:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:=True",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:=False",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='0'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='1'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='assert'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='false'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='is'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='n'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='no'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='none'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='off'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='on'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='s'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='true'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='y'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret6:='yes'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:=None",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:=False",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='0'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='1'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='assert'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='false'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='is'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='maybe'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='n'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='no'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='none'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='off'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='on'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='s'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='true'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='y'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret11:='yes'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:=None",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T1:ret13:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'0'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'1'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'assert'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'false'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'is'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'n'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'no'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'none'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'off'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'on'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'s'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'true'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'y'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont10.0:+'yes'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'0'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'1'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'assert'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'false'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'is'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'n'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'no'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'none'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'off'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'on'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'s'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'true'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'y'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T2:cont12.0:+'yes'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret6:lower",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret6:strip",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret11:lower",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret11:strip",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret11:strip().lower",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret13:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret13:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T3:ret13:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T4:cmp10:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T4:cmp10:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T4:cmp10:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T4:cmp12:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T4:cmp12:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "644f0618",
+   "lab": "T4:cmp12:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:=True",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:=False",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:=''",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='0'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='1'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='assert'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='false'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='is'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='n'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='na'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='no'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='none'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='off'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='on'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='s'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='true'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='unk'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='y'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret6:='yes'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:=None",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:=False",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:=''",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='0'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='1'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='assert'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='false'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='is'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='maybe'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='n'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='na'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='no'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='none'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='off'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='on'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='s'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='true'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='unk'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='y'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret11:='yes'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:=None",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:=''",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='na'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='unk'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T1:ret13:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+''",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'na'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'unk'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont10.0:+'yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+''",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'na'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'on'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'true'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'unk'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T2:cont12.0:+'yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret6:lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret6:strip",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret11:lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret11:strip",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret11:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret13:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret13:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T3:ret13:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T4:cmp10:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T4:cmp10:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T4:cmp10:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T4:cmp12:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T4:cmp12:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "a579b07a",
+   "lab": "T4:cmp12:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:=True",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:=False",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='0'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='1'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='assert'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='false'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='is'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='n'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='no'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='none'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='null'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='off'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='on'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='s'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='true'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='y'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret6:='yes'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:=None",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:=False",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='0'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='1'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='assert'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='false'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='is'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='maybe'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='n'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='no'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='none'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='null'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='off'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='on'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='s'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='true'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='y'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret11:='yes'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:=None",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='n'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='no'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='null'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T1:ret13:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'0'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'1'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'assert'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'false'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'is'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'n'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'no'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'none'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'null'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'off'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'on'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'s'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'true'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'y'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont10.0:+'yes'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'0'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'1'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'assert'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'false'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'is'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'n'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'no'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'none'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'null'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'off'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'on'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'s'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'true'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'y'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T2:cont12.0:+'yes'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret6:lower",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret6:strip",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret11:lower",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret11:strip",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret11:strip().lower",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret13:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret13:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T3:ret13:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T4:cmp10:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T4:cmp10:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T4:cmp10:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T4:cmp12:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T4:cmp12:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "c1f49180",
+   "lab": "T4:cmp12:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:=True",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:=False",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='1'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='assert'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='false'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='is'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='none'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='on'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='s'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='true'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='y'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret6:='yes'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:=None",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:=False",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='1'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='assert'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='false'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='is'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='maybe'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='none'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='on'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='s'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='true'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='y'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret11:='yes'",
+   "score": 0.8,
+   "bm": [
+    false,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:=None",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T1:ret13:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'1'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'assert'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'false'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'is'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'none'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'on'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'s'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'true'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'y'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont10.0:+'yes'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'1'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'assert'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'false'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'is'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'maybe'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'none'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'on'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'s'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'true'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'y'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T2:cont12.0:+'yes'",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret6:lower",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret6:strip",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret11:lower",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret11:strip",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret11:strip().lower",
+   "score": 0.8,
+   "bm": [
+    "EXC:AttributeError",
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret13:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret13:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T3:ret13:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T4:cmp10:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T4:cmp10:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T4:cmp10:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T4:cmp12:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T4:cmp12:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "cd7e0eb9",
+   "lab": "T4:cmp12:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:=True",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:=False",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='0'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='1'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='assert'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='false'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='is'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='none'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='off'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='on'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='s'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='true'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='y'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret6:='yes'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:=None",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:=False",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='0'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='1'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='assert'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='false'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='is'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='maybe'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='none'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='off'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='on'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='s'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='true'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='y'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret11:='yes'",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:=None",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:=True",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='maybe'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T1:ret13:='yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'on'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'true'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont10.0:+'yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'0'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'1'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'assert'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'false'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'is'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'maybe'",
+   "score": 0.2,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'none'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'off'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'on'",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'s'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'true'",
+   "score": 0.8,
+   "bm": [
+    true,
+    true,
+    true,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'y'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T2:cont12.0:+'yes'",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret6:lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret6:strip",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret11:lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret11:strip",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret11:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:AttributeError",
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret13:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret13:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T3:ret13:strip().lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T4:cmp10:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T4:cmp10:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T4:cmp10:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T4:cmp12:lower",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T4:cmp12:strip",
+   "score": 0.4,
+   "bm": [
+    true,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "f2d1efa6",
+   "lab": "T4:cmp12:strip().lower",
+   "score": 0.2,
+   "bm": [
+    true,
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError"
+   ]
+  }
+ ],
+ "_pure08": {
+  "g7e1_parse_flag": [
+   [
+    false,
+    true,
+    true,
+    true,
+    true
+   ],
+   [
+    true,
+    true,
+    true,
+    false,
+    true
+   ],
+   [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  ],
+  "g7d2_dedupe_keep": [
+   [
+    true,
+    false,
+    true,
+    true,
+    true
+   ]
+  ]
+ },
+ "g7d2_dedupe_keep": [
+  {
+   "h": "1ac9e8da",
+   "lab": "T3:ret6:lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "1ac9e8da",
+   "lab": "T3:ret6:strip",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "1ac9e8da",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "1ac9e8da",
+   "lab": "T4:cmp25:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "1ac9e8da",
+   "lab": "T4:cmp25:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "1ac9e8da",
+   "lab": "T4:cmp25:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    true
+   ]
+  },
+  {
+   "h": "480ada8e",
+   "lab": "T3:ret6:lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "480ada8e",
+   "lab": "T3:ret6:strip",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "480ada8e",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "480ada8e",
+   "lab": "T4:cmp22:lower",
+   "score": 0.4,
+   "bm": [
+    false,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "480ada8e",
+   "lab": "T4:cmp22:strip",
+   "score": 0.2,
+   "bm": [
+    false,
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  {
+   "h": "480ada8e",
+   "lab": "T4:cmp22:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    true
+   ]
+  },
+  {
+   "h": "6c9204fe",
+   "lab": "T3:ret6:lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "6c9204fe",
+   "lab": "T3:ret6:strip",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "6c9204fe",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "6c9204fe",
+   "lab": "T4:cmp25:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "6c9204fe",
+   "lab": "T4:cmp25:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "6c9204fe",
+   "lab": "T4:cmp25:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    true
+   ]
+  },
+  {
+   "h": "74aa48d8",
+   "lab": "T3:ret6:lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "74aa48d8",
+   "lab": "T3:ret6:strip",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "74aa48d8",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "74aa48d8",
+   "lab": "T4:cmp25:lower",
+   "score": 0.6,
+   "bm": [
+    true,
+    false,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "74aa48d8",
+   "lab": "T4:cmp25:strip",
+   "score": 0.8,
+   "bm": [
+    true,
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "74aa48d8",
+   "lab": "T4:cmp25:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    true
+   ]
+  },
+  {
+   "h": "85e6d3bc",
+   "lab": "T3:ret6:lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "85e6d3bc",
+   "lab": "T3:ret6:strip",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "85e6d3bc",
+   "lab": "T3:ret6:strip().lower",
+   "score": 0.0,
+   "bm": [
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError",
+    "EXC:AttributeError"
+   ]
+  },
+  {
+   "h": "85e6d3bc",
+   "lab": "T4:cmp24:lower",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "85e6d3bc",
+   "lab": "T4:cmp24:strip",
+   "score": 1.0,
+   "bm": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "h": "85e6d3bc",
+   "lab": "T4:cmp24:strip().lower",
+   "score": 0.2,
+   "bm": [
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    "EXC:TypeError",
+    true
+   ]
+  }
+ ]
+}

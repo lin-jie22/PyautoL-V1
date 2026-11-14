@@ -1,0 +1,106 @@
+[
+ {
+  "h": "1aa5099d",
+  "basin": [
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "entry": "T1:ret19:=False",
+  "best": 0.8,
+  "move": null
+ },
+ {
+  "h": "1aa5099d",
+  "basin": [
+   true,
+   true,
+   true,
+   false,
+   true
+  ],
+  "entry": "T2:cont17.0:+'true'",
+  "best": 1.0,
+  "move": "T2:cont17.0:+'on'"
+ },
+ {
+  "h": "37a4f17f",
+  "basin": [
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "entry": "T1:ret19:=False",
+  "best": 0.8,
+  "move": null
+ },
+ {
+  "h": "37a4f17f",
+  "basin": [
+   true,
+   true,
+   true,
+   false,
+   true
+  ],
+  "entry": "T2:cont17.0:+'true'",
+  "best": 1.0,
+  "move": "T2:cont17.0:+'on'"
+ },
+ {
+  "h": "a579b07a",
+  "basin": [
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "entry": "T1:ret6:=False",
+  "best": 0.8,
+  "move": null
+ },
+ {
+  "h": "a579b07a",
+  "basin": [
+   true,
+   true,
+   true,
+   false,
+   true
+  ],
+  "entry": "T2:cont12.0:+'true'",
+  "best": 1.0,
+  "move": "T2:cont12.0:+'on'"
+ },
+ {
+  "h": "f2d1efa6",
+  "basin": [
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "entry": "T1:ret6:=False",
+  "best": 0.8,
+  "move": null
+ },
+ {
+  "h": "f2d1efa6",
+  "basin": [
+   true,
+   true,
+   true,
+   false,
+   true
+  ],
+  "entry": "T2:cont12.0:+'true'",
+  "best": 1.0,
+  "move": "T2:cont12.0:+'on'"
+ }
+]

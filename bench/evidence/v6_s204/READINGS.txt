@@ -1,0 +1,126 @@
+## §0 全失败格的值级 diff 分类（源 = behaviour.json 原始指纹）
+  equal         75　 57.7%
+  S_diff        25　 19.2%
+  T_type        14　 10.8%
+  E_err         10　  7.7%
+  L_len          6　  4.6%
+  分母 n_cell_total（26 实现 × 5 test）= 130
+  分母 n_cell_fail（失败格）= 55
+
+  **值级 5 类 × V113 5 类 交叉表**
+    S_diff     × C_multi     16
+    T_type     × C_nonstr    14
+    E_err      × D_error     10
+    S_diff     × A_sub        8
+    L_len      × C_nonstr     6
+    S_diff     × B_edge       1
+
+## §1 C_nonstr 20 格 → 三层动作
+  n_cell_cnonstr = 20
+
+  **g7d2_dedupe_keep**（6 格）
+    480ada8e t0　['A', 'a'] → ['A']　L2:key<=['lower']  (variant_lower)
+    480ada8e t1　['b', ' a ', 'A'] → ['b', ' a ']　L2:key<=['strip+lower']  (variant_full)
+    480ada8e t2　['x', 'y', 'X', 'y '] → ['x', 'y']　L2:key<=['strip+lower']  (variant_full)
+    480ada8e t3　['a', 'b', 'A'] → ['a', 'b']　L2:key<=['lower']  (variant_lower)
+    74aa48d8 t1　['b', ' a ', 'A'] → ['b', ' a ']　L2:key<=['strip+lower']  (variant_full)
+    74aa48d8 t2　['x', 'y', 'y '] → ['x', 'y']　L2:key<=['strip+lower']  (variant_full)
+
+  **g7e1_parse_flag**（14 格）
+    1aa5099d t1　None → False　L1:None->False
+    1aa5099d t2　None → False　L1:None->False
+    1aa5099d t3　None → False　L1:None->False
+    200ebf6e t1　None → False　L1:None->False
+    200ebf6e t2　None → False　L1:None->False
+    37a4f17f t1　None → False　L1:None->False
+    37a4f17f t2　None → False　L1:None->False
+    37a4f17f t3　None → False　L1:None->False
+    a579b07a t1　None → False　L1:None->False
+    a579b07a t2　None → False　L1:None->False
+    a579b07a t3　None → False　L1:None->False
+    f2d1efa6 t1　None → False　L1:None->False
+    f2d1efa6 t2　None → False　L1:None->False
+    f2d1efa6 t3　None → False　L1:None->False
+
+  **动作去重表**
+    L1:None->False                     覆盖 14 格
+    L2:key<=['strip+lower']  (variant_full) 覆盖  4 格
+    L2:key<=['lower']  (variant_lower) 覆盖  2 格
+
+  **压缩比（格数 / 动作条数）**
+    g7d2   格  6 / 1 条 L2 模板                          ⇒ 压缩比 6.0
+    g7e1   格 14 / 9 条 L3 数据项（按 实现×词 计）               ⇒ 压缩比 1.56
+
+## §2 三臂判分
+
+  **基线**（重算，不引用旧文件）
+    g7e1   1aa5099d  0.4
+    g7e1   200ebf6e  0.6
+    g7e1   37a4f17f  0.4
+    g7e1   a579b07a  0.4
+    g7e1   f2d1efa6  0.4
+    g7d2   480ada8e  0.2
+    g7d2   74aa48d8  0.6
+
+  **A 臂（L1：`return None` → `return False`）**
+    1aa5099d  改动 1 处　0.4 → 0.8
+    200ebf6e  改动 1 处　0.6 → 0.8
+    37a4f17f  改动 1 处　0.4 → 0.8
+    a579b07a  改动 1 处　0.4 → 0.8
+    f2d1efa6  改动 1 处　0.4 → 0.8
+
+  **B 臂（L2：key → `x.strip().lower()`）**
+    480ada8e  改动 2 处　0.2 → 1.0
+    74aa48d8  改动 1 处　0.6 → 1.0
+
+  **C 臂（L3：把失败实参词插进最近的假值容器）**
+    1aa5099d  需词 ['true', 'true', 'on']　新插 ['true', 'on']　0.4 → 1.0
+    200ebf6e  需词 ['true', 'true']　新插 ['true']　0.6 → 1.0
+    37a4f17f  需词 ['true', 'true', 'on']　新插 ['true', 'on']　0.4 → 1.0
+    a579b07a  需词 ['true', 'true', 'on']　新插 ['true', 'on']　0.4 → 1.0
+    f2d1efa6  需词 ['true', 'true', 'on']　新插 ['true', 'on']　0.4 → 1.0
+
+  **§2b A 臂逐格位图**（判分器只给总分，这里直接执行 5 条 test）
+    1aa5099d　[True, True, True, True, False]　掉格 = [4]
+    200ebf6e　[True, True, True, True, False]　掉格 = [4]
+    37a4f17f　[True, True, True, True, False]　掉格 = [4]
+    a579b07a　[True, True, True, True, False]　掉格 = [4]
+    f2d1efa6　[True, True, True, True, False]　掉格 = [4]
+
+  **§2c 事后扩展：按「最弱动作」外推**（PREREG 未押，只登记）
+    480ada8e + 只 lower　0.2 → 0.6　（语料里 74aa48d8 的起点 = 0.6）
+
+## §2d 逐格读出动作的实现内一致性（V113 Z3 复现；跑后补的观察项）
+    g7d2   480ada8e　⛔ 冲突　["L2:key<=['lower']  (variant_lower)", "L2:key<=['strip+lower']  (variant_full)"]
+    g7d2   74aa48d8　一致　["L2:key<=['strip+lower']  (variant_full)"]
+    g7e1   1aa5099d　一致　['L1:None->False']
+    g7e1   200ebf6e　一致　['L1:None->False']
+    g7e1   37a4f17f　一致　['L1:None->False']
+    g7e1   a579b07a　一致　['L1:None->False']
+    g7e1   f2d1efa6　一致　['L1:None->False']
+
+## §3 判决
+
+  **W1 同一失败类内部压缩比差 ≥3 倍**　g7d2 6.0 : g7e1 1.56 = 3.85×
+    ⇒ ✅ 押中
+
+  **W2 A 臂（L1）全部 ≥ 起点、全部 < 1.0、掉格恒为 t4**
+    全部 ≥ 起点：True　全部 <1.0：True　掉格恒为 t4：True
+    ⇒ ✅ 押中
+
+  **W3 B 臂（L2）2/2 到 1.0**　实际 2/2
+    ⇒ ✅ 押中
+
+  **W4 C 臂（L3）5/5 到 1.0**　实际 5/5
+    ⇒ ✅ 押中
+
+  **W5「值级 diff 能给出可执行动作」在 C_nonstr 上是假的**
+    L1 封顶（<1.0）= True　且 L1 有改善 = True ⇒ ✅ 押中
+
+  **W6 同类别内部「每格动作条数」差 ≥3 倍**
+    g7d2 1 条/6 格 vs g7e1 9 条/14 格
+    ⇒ ✅ 押中（同 W1 口径）
+
+  **分母口径**　n_cell_cnonstr=20　n_impl_cnonstr=7　n_impl_nonfull=16　n_impl_all=26　n_cell_total=130　n_cell_fail=55
+
+  写出 value_diff.json

@@ -1,0 +1,475 @@
+{
+ "cells": [
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "i": 0,
+   "got": "['A', 'a']",
+   "exp": "['A']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": [
+    "A",
+    "a"
+   ],
+   "_exp_v": [
+    "A"
+   ],
+   "_act": "L2:key<=['lower']  (variant_lower)"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "i": 1,
+   "got": "['b', ' a ', 'A']",
+   "exp": "['b', ' a ']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": [
+    "b",
+    " a ",
+    "A"
+   ],
+   "_exp_v": [
+    "b",
+    " a "
+   ],
+   "_act": "L2:key<=['strip+lower']  (variant_full)"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "i": 2,
+   "got": "['x', 'y', 'X', 'y ']",
+   "exp": "['x', 'y']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": [
+    "x",
+    "y",
+    "X",
+    "y "
+   ],
+   "_exp_v": [
+    "x",
+    "y"
+   ],
+   "_act": "L2:key<=['strip+lower']  (variant_full)"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "i": 3,
+   "got": "['a', 'b', 'A']",
+   "exp": "['a', 'b']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": [
+    "a",
+    "b",
+    "A"
+   ],
+   "_exp_v": [
+    "a",
+    "b"
+   ],
+   "_act": "L2:key<=['lower']  (variant_lower)"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "74aa48d8",
+   "i": 1,
+   "got": "['b', ' a ', 'A']",
+   "exp": "['b', ' a ']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": [
+    "b",
+    " a ",
+    "A"
+   ],
+   "_exp_v": [
+    "b",
+    " a "
+   ],
+   "_act": "L2:key<=['strip+lower']  (variant_full)"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "74aa48d8",
+   "i": 2,
+   "got": "['x', 'y', 'y ']",
+   "exp": "['x', 'y']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": [
+    "x",
+    "y",
+    "y "
+   ],
+   "_exp_v": [
+    "x",
+    "y"
+   ],
+   "_act": "L2:key<=['strip+lower']  (variant_full)"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "i": 3,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "200ebf6e",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "200ebf6e",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "i": 3,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "i": 3,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "i": 3,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0,
+   "_got_v": null,
+   "_exp_v": false,
+   "_act": "L1:None->False"
+  }
+ ],
+ "ziped": {
+  "g7d2_dedupe_keep": {
+   "cells": 6,
+   "n_act": 1,
+   "ratio": 6.0
+  },
+  "g7e1_parse_flag": {
+   "cells": 14,
+   "n_act": 9,
+   "ratio": 1.56
+  }
+ },
+ "arms": {
+  "A": [
+   {
+    "h": "1aa5099d",
+    "s0": 0.4,
+    "n_edit": 1,
+    "s1": 0.8,
+    "cells": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ]
+   },
+   {
+    "h": "200ebf6e",
+    "s0": 0.6,
+    "n_edit": 1,
+    "s1": 0.8,
+    "cells": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ]
+   },
+   {
+    "h": "37a4f17f",
+    "s0": 0.4,
+    "n_edit": 1,
+    "s1": 0.8,
+    "cells": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ]
+   },
+   {
+    "h": "a579b07a",
+    "s0": 0.4,
+    "n_edit": 1,
+    "s1": 0.8,
+    "cells": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ]
+   },
+   {
+    "h": "f2d1efa6",
+    "s0": 0.4,
+    "n_edit": 1,
+    "s1": 0.8,
+    "cells": [
+     true,
+     true,
+     true,
+     true,
+     false
+    ]
+   }
+  ],
+  "B": [
+   {
+    "h": "480ada8e",
+    "s0": 0.2,
+    "n_edit": 2,
+    "s1": 1.0
+   },
+   {
+    "h": "74aa48d8",
+    "s0": 0.6,
+    "n_edit": 1,
+    "s1": 1.0
+   }
+  ],
+  "C": [
+   {
+    "h": "1aa5099d",
+    "s0": 0.4,
+    "words": [
+     "true",
+     "true",
+     "on"
+    ],
+    "added": [
+     "true",
+     "on"
+    ],
+    "s1": 1.0
+   },
+   {
+    "h": "200ebf6e",
+    "s0": 0.6,
+    "words": [
+     "true",
+     "true"
+    ],
+    "added": [
+     "true"
+    ],
+    "s1": 1.0
+   },
+   {
+    "h": "37a4f17f",
+    "s0": 0.4,
+    "words": [
+     "true",
+     "true",
+     "on"
+    ],
+    "added": [
+     "true",
+     "on"
+    ],
+    "s1": 1.0
+   },
+   {
+    "h": "a579b07a",
+    "s0": 0.4,
+    "words": [
+     "true",
+     "true",
+     "on"
+    ],
+    "added": [
+     "true",
+     "on"
+    ],
+    "s1": 1.0
+   },
+   {
+    "h": "f2d1efa6",
+    "s0": 0.4,
+    "words": [
+     "true",
+     "true",
+     "on"
+    ],
+    "added": [
+     "true",
+     "on"
+    ],
+    "s1": 1.0
+   }
+  ]
+ },
+ "arm_weak": {
+  "s0": 0.2,
+  "s1": 0.6,
+  "known_impl_score": 0.6
+ }
+}

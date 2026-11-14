@@ -1,0 +1,130 @@
+[
+ {
+  "tid": "g7d2_dedupe_keep",
+  "h": "480ada8e",
+  "s0": 0.2,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7d2_dedupe_keep",
+  "h": "74aa48d8",
+  "s0": 0.6,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7d3_fmt_amount",
+  "h": "075b4099",
+  "s0": 0.4,
+  "s1": 1.0,
+  "n": 1,
+  "note": ""
+ },
+ {
+  "tid": "g7d3_fmt_amount",
+  "h": "0a6acc93",
+  "s0": 0.0,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7d3_fmt_amount",
+  "h": "17747356",
+  "s0": 0.0,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7d3_fmt_amount",
+  "h": "36317a87",
+  "s0": 0.0,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7d3_fmt_amount",
+  "h": "419ec792",
+  "s0": 0.4,
+  "s1": 1.0,
+  "n": 1,
+  "note": ""
+ },
+ {
+  "tid": "g7d3_fmt_amount",
+  "h": "5755e033",
+  "s0": 0.6,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7d3_fmt_amount",
+  "h": "8c8ac7f0",
+  "s0": 0.2,
+  "s1": 0.6,
+  "n": 1,
+  "note": ""
+ },
+ {
+  "tid": "g7e1_parse_flag",
+  "h": "1aa5099d",
+  "s0": 0.4,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7e1_parse_flag",
+  "h": "200ebf6e",
+  "s0": 0.6,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7e1_parse_flag",
+  "h": "37a4f17f",
+  "s0": 0.4,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7e1_parse_flag",
+  "h": "a579b07a",
+  "s0": 0.4,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7e1_parse_flag",
+  "h": "f2d1efa6",
+  "s0": 0.4,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7e2_truncate_tail",
+  "h": "8184ec4d",
+  "s0": 0.2,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ },
+ {
+  "tid": "g7e2_truncate_tail",
+  "h": "bc8c4b09",
+  "s0": 0.2,
+  "s1": null,
+  "n": 0,
+  "note": "无 A_sub 动作"
+ }
+]

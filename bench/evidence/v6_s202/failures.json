@@ -1,0 +1,790 @@
+{
+ "n_fail": 55,
+ "dist": {
+  "C_nonstr": 20,
+  "A_sub": 8,
+  "D_error": 10,
+  "C_multi": 16,
+  "B_edge": 1
+ },
+ "rows": [
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "i": 0,
+   "got": "['A', 'a']",
+   "exp": "['A']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "i": 1,
+   "got": "['b', ' a ', 'A']",
+   "exp": "['b', ' a ']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "i": 2,
+   "got": "['x', 'y', 'X', 'y ']",
+   "exp": "['x', 'y']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "i": 3,
+   "got": "['a', 'b', 'A']",
+   "exp": "['a', 'b']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "74aa48d8",
+   "i": 1,
+   "got": "['b', ' a ', 'A']",
+   "exp": "['b', ' a ']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "74aa48d8",
+   "i": 2,
+   "got": "['x', 'y', 'y ']",
+   "exp": "['x', 'y']",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "075b4099",
+   "i": 0,
+   "got": "1,234.50",
+   "exp": "1 234.50",
+   "err": [
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "A_sub",
+   "n_err": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "075b4099",
+   "i": 1,
+   "got": "(1,234.50)",
+   "exp": "(1 234.50)",
+   "err": [
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "A_sub",
+   "n_err": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "075b4099",
+   "i": 3,
+   "got": "1,234,567.89",
+   "exp": "1 234 567.89",
+   "err": [
+    [
+     "replace",
+     ",",
+     " "
+    ],
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "A_sub",
+   "n_err": 2
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "0a6acc93",
+   "i": 0,
+   "got": "ERROR:ValueError",
+   "exp": "1 234.50",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "0a6acc93",
+   "i": 1,
+   "got": "ERROR:ValueError",
+   "exp": "(1 234.50)",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "0a6acc93",
+   "i": 2,
+   "got": "ERROR:ValueError",
+   "exp": "0.00",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "0a6acc93",
+   "i": 3,
+   "got": "ERROR:ValueError",
+   "exp": "1 234 567.89",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "0a6acc93",
+   "i": 4,
+   "got": "ERROR:ValueError",
+   "exp": "(0.50)",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "17747356",
+   "i": 0,
+   "got": "$1,234.50",
+   "exp": "1 234.50",
+   "err": [
+    [
+     "delete",
+     "$",
+     ""
+    ],
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 2
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "17747356",
+   "i": 1,
+   "got": "$(-1,234.50",
+   "exp": "(1 234.50)",
+   "err": [
+    [
+     "delete",
+     "$",
+     ""
+    ],
+    [
+     "delete",
+     "-",
+     ""
+    ],
+    [
+     "replace",
+     ",",
+     " "
+    ],
+    [
+     "insert",
+     "",
+     ")"
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 4
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "17747356",
+   "i": 2,
+   "got": "$0.00",
+   "exp": "0.00",
+   "err": [
+    [
+     "delete",
+     "$",
+     ""
+    ]
+   ],
+   "kind": "B_edge",
+   "n_err": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "17747356",
+   "i": 3,
+   "got": "$1,234,567.89",
+   "exp": "1 234 567.89",
+   "err": [
+    [
+     "delete",
+     "$",
+     ""
+    ],
+    [
+     "replace",
+     ",",
+     " "
+    ],
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 3
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "17747356",
+   "i": 4,
+   "got": "$(-0.50",
+   "exp": "(0.50)",
+   "err": [
+    [
+     "delete",
+     "$",
+     ""
+    ],
+    [
+     "delete",
+     "-",
+     ""
+    ],
+    [
+     "insert",
+     "",
+     ")"
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 3
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "36317a87",
+   "i": 0,
+   "got": "ERROR:SyntaxError",
+   "exp": "1 234.50",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "36317a87",
+   "i": 1,
+   "got": "ERROR:SyntaxError",
+   "exp": "(1 234.50)",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "36317a87",
+   "i": 2,
+   "got": "ERROR:SyntaxError",
+   "exp": "0.00",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "36317a87",
+   "i": 3,
+   "got": "ERROR:SyntaxError",
+   "exp": "1 234 567.89",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "36317a87",
+   "i": 4,
+   "got": "ERROR:SyntaxError",
+   "exp": "(0.50)",
+   "err": [],
+   "kind": "D_error",
+   "n_err": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "419ec792",
+   "i": 0,
+   "got": "1,234.50",
+   "exp": "1 234.50",
+   "err": [
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "A_sub",
+   "n_err": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "419ec792",
+   "i": 1,
+   "got": "(1,234.50)",
+   "exp": "(1 234.50)",
+   "err": [
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "A_sub",
+   "n_err": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "419ec792",
+   "i": 3,
+   "got": "1,234,567.89",
+   "exp": "1 234 567.89",
+   "err": [
+    [
+     "replace",
+     ",",
+     " "
+    ],
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "A_sub",
+   "n_err": 2
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "5755e033",
+   "i": 1,
+   "got": "( 1 234.50)",
+   "exp": "(1 234.50)",
+   "err": [
+    [
+     "delete",
+     " ",
+     ""
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "5755e033",
+   "i": 4,
+   "got": "( 0.50)",
+   "exp": "(0.50)",
+   "err": [
+    [
+     "delete",
+     " ",
+     ""
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8c8ac7f0",
+   "i": 0,
+   "got": "1,234.50",
+   "exp": "1 234.50",
+   "err": [
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "A_sub",
+   "n_err": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8c8ac7f0",
+   "i": 1,
+   "got": "-1,234.50",
+   "exp": "(1 234.50)",
+   "err": [
+    [
+     "replace",
+     "-",
+     "("
+    ],
+    [
+     "replace",
+     ",",
+     " "
+    ],
+    [
+     "insert",
+     "",
+     ")"
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 3
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8c8ac7f0",
+   "i": 3,
+   "got": "1,234,567.89",
+   "exp": "1 234 567.89",
+   "err": [
+    [
+     "replace",
+     ",",
+     " "
+    ],
+    [
+     "replace",
+     ",",
+     " "
+    ]
+   ],
+   "kind": "A_sub",
+   "n_err": 2
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8c8ac7f0",
+   "i": 4,
+   "got": "-0.50",
+   "exp": "(0.50)",
+   "err": [
+    [
+     "replace",
+     "-",
+     "("
+    ],
+    [
+     "insert",
+     "",
+     ")"
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 2
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "i": 3,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "200ebf6e",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "200ebf6e",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "i": 3,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "i": 3,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "i": 1,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "i": 2,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "i": 3,
+   "got": "None",
+   "exp": "False",
+   "err": [],
+   "kind": "C_nonstr",
+   "n_err": 0
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "8184ec4d",
+   "i": 1,
+   "got": "…abcdef",
+   "exp": "…def",
+   "err": [
+    [
+     "delete",
+     "abc",
+     ""
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "8184ec4d",
+   "i": 2,
+   "got": "…9",
+   "exp": "…6789",
+   "err": [
+    [
+     "insert",
+     "",
+     "678"
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "8184ec4d",
+   "i": 3,
+   "got": "…场",
+   "exp": "…二段现场",
+   "err": [
+    [
+     "insert",
+     "",
+     "二段现"
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "8184ec4d",
+   "i": 4,
+   "got": "…bcdefg",
+   "exp": "…fg",
+   "err": [
+    [
+     "delete",
+     "bcde",
+     ""
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "bc8c4b09",
+   "i": 1,
+   "got": "…abcdef",
+   "exp": "…def",
+   "err": [
+    [
+     "delete",
+     "abc",
+     ""
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "bc8c4b09",
+   "i": 2,
+   "got": "…9",
+   "exp": "…6789",
+   "err": [
+    [
+     "insert",
+     "",
+     "678"
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "bc8c4b09",
+   "i": 3,
+   "got": "…场",
+   "exp": "…二段现场",
+   "err": [
+    [
+     "insert",
+     "",
+     "二段现"
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "bc8c4b09",
+   "i": 4,
+   "got": "…bcdefg",
+   "exp": "…fg",
+   "err": [
+    [
+     "delete",
+     "bcde",
+     ""
+    ]
+   ],
+   "kind": "C_multi",
+   "n_err": 1
+  }
+ ],
+ "z1": {
+  "a": 8,
+  "n": 55
+ },
+ "z3": {
+  "multi": 3,
+  "conflict": 0
+ }
+}

@@ -1,0 +1,106 @@
+## §0 失败格总表
+
+  **g7d2_dedupe_keep**（5 条 test）
+    480ada8e t0　['A', 'a'] ≠ ['A']　C_nonstr（非字符串输出，diff 不适用）
+    480ada8e t1　['b', ' a ', 'A'] ≠ ['b', ' a ']　C_nonstr（非字符串输出，diff 不适用）
+    480ada8e t2　['x', 'y', 'X', 'y '] ≠ ['x', 'y']　C_nonstr（非字符串输出，diff 不适用）
+    480ada8e t3　['a', 'b', 'A'] ≠ ['a', 'b']　C_nonstr（非字符串输出，diff 不适用）
+    74aa48d8 t1　['b', ' a ', 'A'] ≠ ['b', ' a ']　C_nonstr（非字符串输出，diff 不适用）
+    74aa48d8 t2　['x', 'y', 'y '] ≠ ['x', 'y']　C_nonstr（非字符串输出，diff 不适用）
+
+  **g7d3_fmt_amount**（5 条 test）
+    075b4099 t0　'1,234.50' ≠ '1 234.50'　A_sub　replace(','→' ')
+    075b4099 t1　'(1,234.50)' ≠ '(1 234.50)'　A_sub　replace(','→' ')
+    075b4099 t3　'1,234,567.89' ≠ '1 234 567.89'　A_sub　replace(','→' ')；replace(','→' ')
+    0a6acc93 t0　⛔ ERROR:ValueError
+    0a6acc93 t1　⛔ ERROR:ValueError
+    0a6acc93 t2　⛔ ERROR:ValueError
+    0a6acc93 t3　⛔ ERROR:ValueError
+    0a6acc93 t4　⛔ ERROR:ValueError
+    17747356 t0　'$1,234.50' ≠ '1 234.50'　C_multi　delete('$'→'')；replace(','→' ')
+    17747356 t1　'$(-1,234.50' ≠ '(1 234.50)'　C_multi　delete('$'→'')；delete('-'→'')；replace(','→' ')
+    17747356 t2　'$0.00' ≠ '0.00'　B_edge　delete('$'→'')
+    17747356 t3　'$1,234,567.89' ≠ '1 234 567.89'　C_multi　delete('$'→'')；replace(','→' ')；replace(','→' ')
+    17747356 t4　'$(-0.50' ≠ '(0.50)'　C_multi　delete('$'→'')；delete('-'→'')；insert(''→')')
+    36317a87 t0　⛔ ERROR:SyntaxError
+    36317a87 t1　⛔ ERROR:SyntaxError
+    36317a87 t2　⛔ ERROR:SyntaxError
+    36317a87 t3　⛔ ERROR:SyntaxError
+    36317a87 t4　⛔ ERROR:SyntaxError
+    419ec792 t0　'1,234.50' ≠ '1 234.50'　A_sub　replace(','→' ')
+    419ec792 t1　'(1,234.50)' ≠ '(1 234.50)'　A_sub　replace(','→' ')
+    419ec792 t3　'1,234,567.89' ≠ '1 234 567.89'　A_sub　replace(','→' ')；replace(','→' ')
+    5755e033 t1　'( 1 234.50)' ≠ '(1 234.50)'　C_multi　delete(' '→'')
+    5755e033 t4　'( 0.50)' ≠ '(0.50)'　C_multi　delete(' '→'')
+    8c8ac7f0 t0　'1,234.50' ≠ '1 234.50'　A_sub　replace(','→' ')
+    8c8ac7f0 t1　'-1,234.50' ≠ '(1 234.50)'　C_multi　replace('-'→'(')；replace(','→' ')；insert(''→')')
+    8c8ac7f0 t3　'1,234,567.89' ≠ '1 234 567.89'　A_sub　replace(','→' ')；replace(','→' ')
+    8c8ac7f0 t4　'-0.50' ≠ '(0.50)'　C_multi　replace('-'→'(')；insert(''→')')
+
+  **g7e1_parse_flag**（5 条 test）
+    1aa5099d t1　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    1aa5099d t2　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    1aa5099d t3　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    200ebf6e t1　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    200ebf6e t2　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    37a4f17f t1　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    37a4f17f t2　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    37a4f17f t3　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    a579b07a t1　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    a579b07a t2　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    a579b07a t3　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    f2d1efa6 t1　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    f2d1efa6 t2　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+    f2d1efa6 t3　None ≠ False　C_nonstr（非字符串输出，diff 不适用）
+
+  **g7e2_truncate_tail**（5 条 test）
+    8184ec4d t1　'…abcdef' ≠ '…def'　C_multi　delete('abc'→'')
+    8184ec4d t2　'…9' ≠ '…6789'　C_multi　insert(''→'678')
+    8184ec4d t3　'…场' ≠ '…二段现场'　C_multi　insert(''→'二段现')
+    8184ec4d t4　'…bcdefg' ≠ '…fg'　C_multi　delete('bcde'→'')
+    bc8c4b09 t1　'…abcdef' ≠ '…def'　C_multi　delete('abc'→'')
+    bc8c4b09 t2　'…9' ≠ '…6789'　C_multi　insert(''→'678')
+    bc8c4b09 t3　'…场' ≠ '…二段现场'　C_multi　insert(''→'二段现')
+    bc8c4b09 t4　'…bcdefg' ≠ '…fg'　C_multi　delete('bcde'→'')
+
+## §1 类型分布（分母 = 失败格 55）
+  C_nonstr        20　36.4%
+  C_multi         16　29.1%
+  D_error         10　18.2%
+  A_sub            8　14.5%
+  B_edge           1　1.8%
+
+## §2 判决
+
+  **Z1 A 类 ≥ 50%**（分母 55；A = 全部 replace 去重后只有一个单字符替换）
+    A 类 8/55 = 14.5%
+    ⇒ ✅ 押中（<50%）
+
+  **Z3 A 类动作跨 test 一致性**
+    有 ≥2 个 A 类失败格的实现 3 个（分母）；其中动作**互相冲突**的 0 个
+    ⇒ ✅ 押中（不冲突）
+    ⚠️ 分母只有 3，样本极小
+
+## §3 Z2 能否用「diff 反推的动作」一次修好
+  （判据：对一个非满分实现，把它全部 A 类动作合成 `X.replace(a,b)` 链后，是否 5/5 通过）
+  ⛔ 本轮**不做**这个合成：它要求动作作用在**函数的输出**上，而输出是 5 个不同输入的结果，
+     合成后无法保证对其他输入无害 —— 这正是「逐格反推」的固有缺口。
+  ⇒ **Z2 判 UNKNOWN**，理由记入 RESULTS（不是「没做」，是「装置上做不到」）。
+
+## §4 逐实现的失败画像（这个系统能不能知道「这次属于哪一类」）
+  g7d2   480ada8e score=0.2  {'C_nonstr': 4}
+  g7d2   74aa48d8 score=0.6  {'C_nonstr': 2}
+  g7d3   075b4099 score=0.4  {'A_sub': 3}
+  g7d3   0a6acc93 score=0.0  {'D_error': 5}
+  g7d3   17747356 score=0.0  {'C_multi': 4, 'B_edge': 1}
+  g7d3   36317a87 score=0.0  {'D_error': 5}
+  g7d3   419ec792 score=0.4  {'A_sub': 3}
+  g7d3   5755e033 score=0.6  {'C_multi': 2}
+  g7d3   8c8ac7f0 score=0.2  {'A_sub': 2, 'C_multi': 2}
+  g7e1   1aa5099d score=0.4  {'C_nonstr': 3}
+  g7e1   200ebf6e score=0.6  {'C_nonstr': 2}
+  g7e1   37a4f17f score=0.4  {'C_nonstr': 3}
+  g7e1   a579b07a score=0.4  {'C_nonstr': 3}
+  g7e1   f2d1efa6 score=0.4  {'C_nonstr': 3}
+  g7e2   8184ec4d score=0.2  {'C_multi': 4}
+  g7e2   bc8c4b09 score=0.2  {'C_multi': 4}

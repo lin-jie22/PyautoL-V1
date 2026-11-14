@@ -254,9 +254,13 @@ def main() -> None:
     need = n_par - base_full
 
     def fixed(arm, k, tid=None):
-        rows = [d for d in res.values() if d["s1"] >= 1.0 and d["s0"] < 1.0
+        """⛔ 第一版漏了 arm/k 过滤 ⇒ 把三条 B 臂的同一行数了三遍
+        （g7d3 读出 6 = 2 x 3），把 W2/W3/W4 全判成押破。键是 `arm:k:tid::h`，必须前缀过滤。
+        """
+        pre = f"{arm}:k{k}:"
+        return [d for key, d in res.items()
+                if key.startswith(pre) and d["s1"] >= 1.0 and d["s0"] < 1.0
                 and (tid is None or d["tid"] == tid)]
-        return rows
 
     fA = fixed("A", 2)
     fB2 = fixed("B", 2)

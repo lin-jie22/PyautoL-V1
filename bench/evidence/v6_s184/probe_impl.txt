@@ -1,0 +1,39 @@
+==============================================================================
+### S1a
+
+--- blobs rowid=5 ---
+finish ⇒ ✔ ```python
+def fmt_amount(x):
+    fmt_str = "{:,.2f}".format(x)
+    if x < 0:
+        fmt_str = "({})".format(fmt_str[1:])
+    return fmt_str.replace(',', ' ')
+```
+
+--- blobs rowid=8 ---
+finish ⇒ ✔ ```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-(n-2):]
+```
+==============================================================================
+### S3a
+
+--- blobs rowid=3 ---
+finish ⇒ ✔ ```python
+def fmt_amount(x):
+    fmt_str = "{:，.2f}".format(x)
+    if fmt_str.startswith("-"):
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str.replace("，", " ")
+```
+
+--- blobs rowid=7 ---
+finish ⇒ ✔ ```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    else:
+        return '…' + s[-n:]
+```

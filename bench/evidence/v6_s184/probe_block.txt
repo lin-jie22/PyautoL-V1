@@ -1,0 +1,12 @@
+===== S1  facts=4
+  g7d2_dedupe_keep     n=4 块=165 字  顺序=['ZK2', 'ZK1', 'ZK4', 'ZK3']
+  g7d3_fmt_amount      n=4 块=165 字  顺序=['ZK2', 'ZK1', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=165 字  顺序=['ZK3', 'ZK2', 'ZK1', 'ZK4']
+  g7e2_truncate_tail   n=4 块=165 字  顺序=['ZK4', 'ZK2', 'ZK1', 'ZK3']
+
+===== S3  facts=4
+  g7d2_dedupe_keep     n=4 块=362 字  顺序=['ZK2', 'ZK1', 'ZK4', 'ZK3']
+  g7d3_fmt_amount      n=4 块=362 字  顺序=['ZK2', 'ZK1', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=362 字  顺序=['ZK3', 'ZK2', 'ZK1', 'ZK4']
+  g7e2_truncate_tail   n=4 块=362 字  顺序=['ZK4', 'ZK2', 'ZK1', 'ZK3']
+

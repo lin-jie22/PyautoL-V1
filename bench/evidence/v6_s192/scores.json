@@ -1,0 +1,26 @@
+{
+  "A0__P3": {
+    "g7d2_dedupe_keep": 1.0,
+    "g7d3_fmt_amount": 1.0,
+    "g7e1_parse_flag": 0.4,
+    "g7e2_truncate_tail": 1.0
+  },
+  "A0__P4": {
+    "g7d2_dedupe_keep": 1.0,
+    "g7d3_fmt_amount": 0.4,
+    "g7e1_parse_flag": 0.4,
+    "g7e2_truncate_tail": 1.0
+  },
+  "A1__P3": {
+    "g7d2_dedupe_keep": 1.0,
+    "g7d3_fmt_amount": 1.0,
+    "g7e1_parse_flag": 0.4,
+    "g7e2_truncate_tail": 1.0
+  },
+  "A1__P4": {
+    "g7d2_dedupe_keep": 1.0,
+    "g7d3_fmt_amount": 1.0,
+    "g7e1_parse_flag": 0.4,
+    "g7e2_truncate_tail": 1.0
+  }
+}

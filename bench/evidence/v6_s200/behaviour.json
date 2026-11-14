@@ -1,0 +1,262 @@
+{
+ "g7d2_dedupe_keep::1ac9e8da": {
+  "fp": [
+   "['A']",
+   "['b', ' a ']",
+   "['x', 'y']",
+   "['a', 'b']",
+   "[]"
+  ],
+  "score": 1.0
+ },
+ "g7d2_dedupe_keep::480ada8e": {
+  "fp": [
+   "['A', 'a']",
+   "['b', ' a ', 'A']",
+   "['x', 'y', 'X', 'y ']",
+   "['a', 'b', 'A']",
+   "[]"
+  ],
+  "score": 0.2
+ },
+ "g7d2_dedupe_keep::6c9204fe": {
+  "fp": [
+   "['A']",
+   "['b', ' a ']",
+   "['x', 'y']",
+   "['a', 'b']",
+   "[]"
+  ],
+  "score": 1.0
+ },
+ "g7d2_dedupe_keep::74aa48d8": {
+  "fp": [
+   "['A']",
+   "['b', ' a ', 'A']",
+   "['x', 'y', 'y ']",
+   "['a', 'b']",
+   "[]"
+  ],
+  "score": 0.6
+ },
+ "g7d2_dedupe_keep::85e6d3bc": {
+  "fp": [
+   "['A']",
+   "['b', ' a ']",
+   "['x', 'y']",
+   "['a', 'b']",
+   "[]"
+  ],
+  "score": 1.0
+ },
+ "g7d3_fmt_amount::075b4099": {
+  "fp": [
+   "'1,234.50'",
+   "'(1,234.50)'",
+   "'0.00'",
+   "'1,234,567.89'",
+   "'(0.50)'"
+  ],
+  "score": 0.4
+ },
+ "g7d3_fmt_amount::0a6acc93": {
+  "fp": [
+   "ERROR:ValueError",
+   "ERROR:ValueError",
+   "ERROR:ValueError",
+   "ERROR:ValueError",
+   "ERROR:ValueError"
+  ],
+  "score": 0.0
+ },
+ "g7d3_fmt_amount::17747356": {
+  "fp": [
+   "'$1,234.50'",
+   "'$(-1,234.50'",
+   "'$0.00'",
+   "'$1,234,567.89'",
+   "'$(-0.50'"
+  ],
+  "score": 0.0
+ },
+ "g7d3_fmt_amount::309f1027": {
+  "fp": [
+   "'1 234.50'",
+   "'(1 234.50)'",
+   "'0.00'",
+   "'1 234 567.89'",
+   "'(0.50)'"
+  ],
+  "score": 1.0
+ },
+ "g7d3_fmt_amount::36317a87": {
+  "fp": [
+   "ERROR:SyntaxError",
+   "ERROR:SyntaxError",
+   "ERROR:SyntaxError",
+   "ERROR:SyntaxError",
+   "ERROR:SyntaxError"
+  ],
+  "score": 0.0
+ },
+ "g7d3_fmt_amount::419ec792": {
+  "fp": [
+   "'1,234.50'",
+   "'(1,234.50)'",
+   "'0.00'",
+   "'1,234,567.89'",
+   "'(0.50)'"
+  ],
+  "score": 0.4
+ },
+ "g7d3_fmt_amount::5755e033": {
+  "fp": [
+   "'1 234.50'",
+   "'( 1 234.50)'",
+   "'0.00'",
+   "'1 234 567.89'",
+   "'( 0.50)'"
+  ],
+  "score": 0.6
+ },
+ "g7d3_fmt_amount::8089eee6": {
+  "fp": [
+   "'1 234.50'",
+   "'(1 234.50)'",
+   "'0.00'",
+   "'1 234 567.89'",
+   "'(0.50)'"
+  ],
+  "score": 1.0
+ },
+ "g7d3_fmt_amount::8c8ac7f0": {
+  "fp": [
+   "'1,234.50'",
+   "'-1,234.50'",
+   "'0.00'",
+   "'1,234,567.89'",
+   "'-0.50'"
+  ],
+  "score": 0.2
+ },
+ "g7e1_parse_flag::1aa5099d": {
+  "fp": [
+   "True",
+   "None",
+   "None",
+   "None",
+   "None"
+  ],
+  "score": 0.4
+ },
+ "g7e1_parse_flag::200ebf6e": {
+  "fp": [
+   "True",
+   "None",
+   "None",
+   "False",
+   "None"
+  ],
+  "score": 0.6
+ },
+ "g7e1_parse_flag::37a4f17f": {
+  "fp": [
+   "True",
+   "None",
+   "None",
+   "None",
+   "None"
+  ],
+  "score": 0.4
+ },
+ "g7e1_parse_flag::644f0618": {
+  "fp": [
+   "True",
+   "False",
+   "False",
+   "False",
+   "None"
+  ],
+  "score": 1.0
+ },
+ "g7e1_parse_flag::a579b07a": {
+  "fp": [
+   "True",
+   "None",
+   "None",
+   "None",
+   "None"
+  ],
+  "score": 0.4
+ },
+ "g7e1_parse_flag::c1f49180": {
+  "fp": [
+   "True",
+   "False",
+   "False",
+   "False",
+   "None"
+  ],
+  "score": 1.0
+ },
+ "g7e1_parse_flag::cd7e0eb9": {
+  "fp": [
+   "True",
+   "False",
+   "False",
+   "False",
+   "None"
+  ],
+  "score": 1.0
+ },
+ "g7e1_parse_flag::f2d1efa6": {
+  "fp": [
+   "True",
+   "None",
+   "None",
+   "None",
+   "None"
+  ],
+  "score": 0.4
+ },
+ "g7e2_truncate_tail::697caecc": {
+  "fp": [
+   "'abc'",
+   "'…def'",
+   "'…6789'",
+   "'…二段现场'",
+   "'…fg'"
+  ],
+  "score": 1.0
+ },
+ "g7e2_truncate_tail::8184ec4d": {
+  "fp": [
+   "'abc'",
+   "'…abcdef'",
+   "'…9'",
+   "'…场'",
+   "'…bcdefg'"
+  ],
+  "score": 0.2
+ },
+ "g7e2_truncate_tail::bc8c4b09": {
+  "fp": [
+   "'abc'",
+   "'…abcdef'",
+   "'…9'",
+   "'…场'",
+   "'…bcdefg'"
+  ],
+  "score": 0.2
+ },
+ "g7e2_truncate_tail::c21ee3b8": {
+  "fp": [
+   "'abc'",
+   "'…def'",
+   "'…6789'",
+   "'…二段现场'",
+   "'…fg'"
+  ],
+  "score": 1.0
+ }
+}

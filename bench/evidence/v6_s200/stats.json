@@ -1,0 +1,30 @@
+{
+ "g7d2_dedupe_keep": {
+  "n_impl": 5,
+  "n_score": 3,
+  "n_basin": 3,
+  "pairs": 3,
+  "diff_pairs": 0
+ },
+ "g7d3_fmt_amount": {
+  "n_impl": 9,
+  "n_score": 5,
+  "n_basin": 7,
+  "pairs": 5,
+  "diff_pairs": 3
+ },
+ "g7e1_parse_flag": {
+  "n_impl": 8,
+  "n_score": 3,
+  "n_basin": 3,
+  "pairs": 9,
+  "diff_pairs": 0
+ },
+ "g7e2_truncate_tail": {
+  "n_impl": 4,
+  "n_score": 2,
+  "n_basin": 2,
+  "pairs": 2,
+  "diff_pairs": 0
+ }
+}

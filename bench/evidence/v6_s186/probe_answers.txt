@@ -1,0 +1,98 @@
+======================================================================
+g7d3_fmt_amount
+--- M0a ---
+```python
+def fmt_amount(x):
+    fmt_str = "{:,.2f}".format(x)
+    if x < 0:
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str
+```
+--- M1a ---
+```python
+def fmt_amount(x):
+    s = f"{x:,.2f}".replace(',', ' ').replace('-', '( ')
+    return s + ')' if s.startswith('(') else s
+```
+--- M3a ---
+```python
+def fmt_amount(x):
+    fmt_str = '{:,.2f}'.format(x)
+    if x < 0:
+        fmt_str = '(' + fmt_str[1:] + ')'
+    return fmt_str.replace(',', ' ')
+```
+
+======================================================================
+g7e1_parse_flag
+--- M0a ---
+```python
+def parse_flag(s):
+    s = s.strip().lower()
+    if s in ['y', 'yes', '1']:
+        return True
+    if s in ['n', 'no', '0', 'false', 'off', 'none', 'null', 'true', 'on']:
+        return False
+    return None
+```
+--- M1a ---
+```python
+def parse_flag(s):
+    s = s.strip().lower()
+    if s in ('y', 'yes', '1'):
+        return True
+    if s in ('false', 'off', 'no', '0'):
+        return False
+    return None
+```
+--- M3a ---
+```python
+def parse_flag(s):
+    s = s.strip().lower()
+    if s in ['y', 'yes', '1']:
+        return True
+    if s in ['n', 'no', '0', 'false', 'off', 'none', 'null', 'true', 'on']:
+        return False
+    return None
+```
+
+======================================================================
+g7e2_truncate_tail
+--- M0a ---
+```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-n:]
+```
+--- M1a ---
+```python
+def truncate_tail(s, n):
+    s = s.strip().lower()
+    if len(s) > n:
+        return '…' + s[-(n-3):]
+    return s
+```
+--- M3a ---
+```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-n:]
+```
+
+
+======================================================================
+八跑答案本体指纹（sha256 前 8）—— 同臂两跑逐字节相同（比分数更硬的确定性）
+
+M0a  g7d2=1ac9e8da  g7d3=075b4099  g7e1=c1f49180  g7e2=c21ee3b8
+M0b  g7d2=1ac9e8da  g7d3=075b4099  g7e1=c1f49180  g7e2=c21ee3b8
+M1a  g7d2=1ac9e8da  g7d3=5755e033  g7e1=f805285c  g7e2=8184ec4d
+M1b  g7d2=1ac9e8da  g7d3=5755e033  g7e1=f805285c  g7e2=8184ec4d
+M2a  g7d2=1ac9e8da  g7d3=075b4099  g7e1=c1f49180  g7e2=c21ee3b8
+M2b  g7d2=1ac9e8da  g7d3=075b4099  g7e1=c1f49180  g7e2=c21ee3b8
+M3a  g7d2=1ac9e8da  g7d3=8089eee6  g7e1=c1f49180  g7e2=c21ee3b8
+M3b  g7d2=1ac9e8da  g7d3=8089eee6  g7e1=c1f49180  g7e2=c21ee3b8
+
+⇒ M2（写→加）四题答案与 M0 **完全相同** ⇒ 这一改在答案层面是空操作。
+⇒ M3（。→.）只有 g7d3 变了；M1（两→2）三题都变了。

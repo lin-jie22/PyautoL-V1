@@ -1,0 +1,178 @@
+{
+ "g7d2_dedupe_keep": [
+  {
+   "h": "1ac9e8da",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  },
+  {
+   "h": "480ada8e",
+   "act": [
+    "key",
+    ".strip().lower()"
+   ],
+   "label": "B:key(x,seen):.strip().lower()"
+  },
+  {
+   "h": "6c9204fe",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  },
+  {
+   "h": "74aa48d8",
+   "act": [
+    "key",
+    ".strip()"
+   ],
+   "label": "B:key(normalized_x,seen):.strip()"
+  },
+  {
+   "h": "85e6d3bc",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  }
+ ],
+ "g7d3_fmt_amount": [
+  {
+   "h": "075b4099",
+   "act": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "label": "B:ret5:.replace(',',' ')"
+  },
+  {
+   "h": "309f1027",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  },
+  {
+   "h": "419ec792",
+   "act": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "label": "B:ret5:.replace(',',' ')"
+  },
+  {
+   "h": "8089eee6",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  }
+ ],
+ "g7e1_parse_flag": [
+  {
+   "h": "1aa5099d",
+   "act": [
+    "T2",
+    "'on'"
+   ],
+   "label": "T2:cont17.0:+'on'"
+  },
+  {
+   "h": "200ebf6e",
+   "act": [
+    "T2",
+    "'true'"
+   ],
+   "label": "T2:cont12.0:+'true'"
+  },
+  {
+   "h": "37a4f17f",
+   "act": [
+    "T2",
+    "'on'"
+   ],
+   "label": "T2:cont17.0:+'on'"
+  },
+  {
+   "h": "644f0618",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  },
+  {
+   "h": "a579b07a",
+   "act": [
+    "T2",
+    "'on'"
+   ],
+   "label": "T2:cont12.0:+'on'"
+  },
+  {
+   "h": "c1f49180",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  },
+  {
+   "h": "cd7e0eb9",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  },
+  {
+   "h": "f2d1efa6",
+   "act": [
+    "T2",
+    "'on'"
+   ],
+   "label": "T2:cont12.0:+'on'"
+  }
+ ],
+ "g7e2_truncate_tail": [
+  {
+   "h": "697caecc",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  },
+  {
+   "h": "8184ec4d",
+   "act": [
+    "C1",
+    "'…' + s[-n:]"
+   ],
+   "label": "C1:ret0:='…' + s[-n:]"
+  },
+  {
+   "h": "bc8c4b09",
+   "act": [
+    "C1",
+    "'…' + s[-n:]"
+   ],
+   "label": "C1:ret1:='…' + s[-n:]"
+  },
+  {
+   "h": "c21ee3b8",
+   "act": [
+    "?",
+    "<baseline>"
+   ],
+   "label": "<baseline>"
+  }
+ ]
+}

@@ -1,0 +1,87 @@
+## §0 Pass 1（冷启动）：把真正生效的动作写下来
+  g7d2_d 1ac9e8da s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7d2_d 480ada8e s0=0.2 s1=1.0 n_eval=   14　生效=B:key(x,seen):.strip().lower()
+  g7d2_d 6c9204fe s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7d2_d 74aa48d8 s0=0.6 s1=1.0 n_eval=   10　生效=B:key(normalized_x,seen):.strip()
+  g7d2_d 85e6d3bc s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7d3_f 075b4099 s0=0.4 s1=1.0 n_eval=    4　生效=B:ret5:.replace(',',' ')
+  g7d3_f 0a6acc93 s0=0.0 s1=0.0 n_eval=   11　生效=（无）
+  g7d3_f 17747356 s0=0.0 s1=0.0 n_eval=    5　生效=（无）
+  g7d3_f 309f1027 s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7d3_f 419ec792 s0=0.4 s1=1.0 n_eval=    4　生效=B:ret5:.replace(',',' ')
+  g7d3_f 5755e033 s0=0.6 s1=0.6 n_eval=    6　生效=（无）
+  g7d3_f 8089eee6 s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7d3_f 8c8ac7f0 s0=0.2 s1=0.6 n_eval=   21　生效=（无）
+  g7e1_p 1aa5099d s0=0.4 s1=1.0 n_eval=  313　生效=T2:cont17.0:+'on'
+  g7e1_p 200ebf6e s0=0.6 s1=1.0 n_eval=   59　生效=T2:cont12.0:+'true'
+  g7e1_p 37a4f17f s0=0.4 s1=1.0 n_eval=  298　生效=T2:cont17.0:+'on'
+  g7e1_p 644f0618 s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7e1_p a579b07a s0=0.4 s1=1.0 n_eval=  342　生效=T2:cont12.0:+'on'
+  g7e1_p c1f49180 s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7e1_p cd7e0eb9 s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7e1_p f2d1efa6 s0=0.4 s1=1.0 n_eval=  268　生效=T2:cont12.0:+'on'
+  g7e2_t 697caecc s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+  g7e2_t 8184ec4d s0=0.2 s1=1.0 n_eval=   12　生效=C1:ret0:='…' + s[-n:]
+  g7e2_t bc8c4b09 s0=0.2 s1=1.0 n_eval=   14　生效=C1:ret1:='…' + s[-n:]
+  g7e2_t c21ee3b8 s0=1.0 s1=1.0 n_eval=    0　生效=<baseline>
+
+  记忆已落盘 `memory.json`：n_rec = 21｜bytes = 2311｜sha = 33e9da4b0c58
+
+## §1 Pass 2（热启动，留一法：不含自己那条）
+  g7d2_d 1ac9e8da s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=3
+  g7d2_d 480ada8e s1=1.0（冷 1.0）　n_eval    14 →    14　|记忆|=2
+  g7d2_d 6c9204fe s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=3
+  g7d2_d 74aa48d8 s1=1.0（冷 1.0）　n_eval    10 →     1　|记忆|=2  ⬇
+  g7d2_d 85e6d3bc s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=3
+  g7d3_f 075b4099 s1=1.0（冷 1.0）　n_eval     4 →     1　|记忆|=2  ⬇
+  g7d3_f 0a6acc93 s1=0.0（冷 0.0）　n_eval    11 →    11　|记忆|=2
+  g7d3_f 17747356 s1=0.0（冷 0.0）　n_eval     5 →     5　|记忆|=2
+  g7d3_f 309f1027 s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=2
+  g7d3_f 419ec792 s1=1.0（冷 1.0）　n_eval     4 →     1　|记忆|=2  ⬇
+  g7d3_f 5755e033 s1=0.6（冷 0.6）　n_eval     6 →     6　|记忆|=2
+  g7d3_f 8089eee6 s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=2
+  g7d3_f 8c8ac7f0 s1=0.6（冷 0.6）　n_eval    21 →    21　|记忆|=2
+  g7e1_p 1aa5099d s1=1.0（冷 1.0）　n_eval   313 →   119　|记忆|=3  ⬇
+  g7e1_p 200ebf6e s1=1.0（冷 1.0）　n_eval    59 →    59　|记忆|=2
+  g7e1_p 37a4f17f s1=1.0（冷 1.0）　n_eval   298 →   114　|记忆|=3  ⬇
+  g7e1_p 644f0618 s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=3
+  g7e1_p a579b07a s1=1.0（冷 1.0）　n_eval   342 →   129　|记忆|=3  ⬇
+  g7e1_p c1f49180 s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=3
+  g7e1_p cd7e0eb9 s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=3
+  g7e1_p f2d1efa6 s1=1.0（冷 1.0）　n_eval   268 →   104　|记忆|=3  ⬇
+  g7e2_t 697caecc s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=2
+  g7e2_t 8184ec4d s1=1.0（冷 1.0）　n_eval    12 →     1　|记忆|=2  ⬇
+  g7e2_t bc8c4b09 s1=1.0（冷 1.0）　n_eval    14 →     2　|记忆|=2  ⬇
+  g7e2_t c21ee3b8 s1=1.0（冷 1.0）　n_eval     0 →     0　|记忆|=2
+
+## §2 Pass 3（错记忆：用别题的记忆排序）
+
+## §3 判决
+  n_impl_onehop = 7｜n_impl_twohop = 14
+  分母统一 n_impl_parseable = 25
+    冷      到 1.0 = 21/25　其中「修好」= 11/25
+    热      到 1.0 = 21/25　其中「修好」= 11/25
+    错记忆    到 1.0 = 21/25　其中「修好」= 11/25
+
+  **W1 热启动的 s1 一个都不降** ⇒ ✅ 押中（[]）
+  **W2 热启动在 1 跳可修的实现上判分次数严格下降，且 ≤3**
+      g7d2_d 480ada8e:  14 →  14
+      g7d2_d 74aa48d8:  10 →   1
+      g7d3_f 075b4099:   4 →   1
+      g7d3_f 419ec792:   4 →   1
+      g7e1_p 200ebf6e:  59 →  59
+      g7e2_t 8184ec4d:  12 →   1
+      g7e2_t bc8c4b09:  14 →   2
+    严格下降 5/7，全部 ≤3：False ⇒ ⛔ 押破
+
+  **W3a 在 1 跳可修集合上，判分次数降一半以上**：冷 117 → 热 79（32.5%） ⇒ ⛔ 押破
+  **W3b 在 2 跳集合上，热启动基本无变化（记忆在一轮内帮不上）**：冷 1221 → 热 466（n_impl=14）
+  全体：冷 1381 → 热 588（省 793，57.4%）｜错记忆 1381
+
+  **W4 记忆错了也不许变差（s1 不降），但要有代价（n_eval 不降）**
+    受损 []｜n_eval 冷 1381 vs 错 1381 ⇒ ✅ 押中
+
+  **W5 记忆是写出去再读回来的（磁盘文件 + sha）** ⇒ ✅ 押中
+    n_rec = 21｜bytes = 2311｜sha = 33e9da4b0c58
+
+  原始读数已落盘 `search.json`

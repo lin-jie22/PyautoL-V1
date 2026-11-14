@@ -1,0 +1,9 @@
+[A0__P0] mean=0.8500  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 0.4, "g7e1_parse_flag": 1.0, "g7e2_truncate_tail": 1.0}
+[A1__P0] mean=1.0000  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 1.0, "g7e1_parse_flag": 1.0, "g7e2_truncate_tail": 1.0}
+[A3__P0] mean=0.8500  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 0.4, "g7e1_parse_flag": 1.0, "g7e2_truncate_tail": 1.0}
+[A0__P1] mean=0.9000  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 0.6, "g7e1_parse_flag": 1.0, "g7e2_truncate_tail": 1.0}
+[A1__P1] mean=0.8500  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 0.4, "g7e1_parse_flag": 1.0, "g7e2_truncate_tail": 1.0}
+[A3__P1] mean=0.9000  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 0.6, "g7e1_parse_flag": 1.0, "g7e2_truncate_tail": 1.0}
+[A0__P2] mean=0.9000  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 0.6, "g7e1_parse_flag": 1.0, "g7e2_truncate_tail": 1.0}
+[A1__P2] mean=0.8500  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 1.0, "g7e1_parse_flag": 0.4, "g7e2_truncate_tail": 1.0}
+[A3__P2] mean=0.7500  {"g7d2_dedupe_keep": 1.0, "g7d3_fmt_amount": 0.6, "g7e1_parse_flag": 0.4, "g7e2_truncate_tail": 1.0}

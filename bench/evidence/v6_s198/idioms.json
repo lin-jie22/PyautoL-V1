@@ -1,0 +1,98 @@
+{
+ "tasks": [
+  "g7d2_dedupe_keep",
+  "g7d3_fmt_amount",
+  "g7e1_parse_flag",
+  "g7e2_truncate_tail"
+ ],
+ "scores": {
+  "g7d2_dedupe_keep": {
+   "1ac9e8da": 1.0,
+   "85e6d3bc": 1.0,
+   "74aa48d8": 0.6,
+   "480ada8e": 0.2,
+   "6c9204fe": 1.0
+  },
+  "g7d3_fmt_amount": {
+   "075b4099": 0.4,
+   "8089eee6": 1.0,
+   "419ec792": 0.4,
+   "8c8ac7f0": 0.2,
+   "0a6acc93": 0.0,
+   "36317a87": 0.0,
+   "17747356": 0.0,
+   "5755e033": 0.6,
+   "309f1027": 1.0
+  },
+  "g7e1_parse_flag": {
+   "c1f49180": 1.0,
+   "1aa5099d": 0.4,
+   "644f0618": 1.0,
+   "200ebf6e": 0.6,
+   "a579b07a": 0.4,
+   "cd7e0eb9": 1.0,
+   "37a4f17f": 0.4,
+   "f2d1efa6": 0.4
+  },
+  "g7e2_truncate_tail": {
+   "c21ee3b8": 1.0,
+   "8184ec4d": 0.2,
+   "bc8c4b09": 0.2,
+   "697caecc": 1.0
+  }
+ },
+ "uplift": {
+  ".lower()": {
+   "g7d2_dedupe_keep": 0.7,
+   "g7e2_truncate_tail": -0.8
+  },
+  ".add(x_normalized)": {
+   "g7d2_dedupe_keep": 0.3
+  },
+  ".strip()": {
+   "g7d2_dedupe_keep": 0.6,
+   "g7d3_fmt_amount": -0.45,
+   "g7e2_truncate_tail": -0.8
+  },
+  ".add(normalized_x)": {
+   "g7d2_dedupe_keep": -0.2
+  },
+  ".add(norm_x)": {
+   "g7d2_dedupe_keep": 0.3
+  },
+  ".add(x)": {
+   "g7d2_dedupe_keep": -0.7
+  },
+  ".format(x)": {
+   "g7d3_fmt_amount": 0.54
+  },
+  ".replace(',', ' ')": {
+   "g7d3_fmt_amount": 0.45
+  },
+  "{:,.2f}": {
+   "g7d3_fmt_amount": 0.54
+  }
+ },
+ "multi": {},
+ "neg": {
+  ".lower()": [
+   {
+    "g7d2_dedupe_keep": 0.7
+   },
+   {
+    "g7e2_truncate_tail": -0.8
+   }
+  ],
+  ".strip()": [
+   {
+    "g7d2_dedupe_keep": 0.6
+   },
+   {
+    "g7d3_fmt_amount": -0.45,
+    "g7e2_truncate_tail": -0.8
+   }
+  ]
+ },
+ "n_idioms": 10,
+ "empty_group": 28
+}

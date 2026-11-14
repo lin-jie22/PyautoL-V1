@@ -1,0 +1,8744 @@
+{
+ "n": 722,
+ "dist": {
+  "0.0": 408,
+  "1.0": 62,
+  "0.2": 7,
+  "0.4": 46,
+  "0.6": 199
+ },
+ "rows": [
+  {
+   "lab": "sub@4:'f'->' '",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@4:'f'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@4:'f'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@5:'m'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@5:'m'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@6:'t'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@6:'t'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@7:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@8:'a'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@8:'a'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@9:'m'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@9:'m'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@10:'o'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@10:'o'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@11:'u'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@11:'u'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@12:'n'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@12:'n'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@13:'t'->' '",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@13:'t'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@13:'t'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@15:'x'->' '",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@15:'x'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@15:'x'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@23:'f'->'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@23:'f'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@24:'m'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@24:'m'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@24:'m'->'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@24:'m'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@25:'t'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@25:'t'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@25:'t'->'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@25:'t'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@26:'_'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@26:'_'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@26:'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@27:'s'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@27:'s'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@27:'s'->'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@27:'s'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@28:'t'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@28:'t'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@28:'t'->'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@28:'t'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@29:'r'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@29:'r'->' '",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@29:'r'->'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@29:'r'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@30:' '->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@30:' '->'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@30:' '->'-'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@30:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@31:'='->','",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@31:'='->'-'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@32:' '->'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@32:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@34:'{'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@34:'{'->'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@34:'{'->'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@34:'{'->'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@34:'{'->')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@34:'{'->' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@34:'{'->'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@34:'{'->'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@34:'{'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@35:':'->','",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@35:':'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@35:':'->'\"'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@35:':'->'('",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@35:':'->')'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@35:':'->' '",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@35:':'->'_'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@35:':'->'-'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@35:':'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@36:','->'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@36:','->'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@36:','->'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@36:','->')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@36:','->' '",
+   "fp": [
+    "' 1234.50'",
+    "'(1234.50)'",
+    "' 0.00'",
+    "' 1234567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.2,
+   "same": false
+  },
+  {
+   "lab": "sub@36:','->'_'",
+   "fp": [
+    "'1_234.50'",
+    "'(1_234.50)'",
+    "'0.00'",
+    "'1_234_567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@36:','->'-'",
+   "fp": [
+    "'1234.50'",
+    "'(1234.50)'",
+    "'0.00'",
+    "'1234567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "del@36:','",
+   "fp": [
+    "'1234.50'",
+    "'(1234.50)'",
+    "'0.00'",
+    "'1234567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@37:'.'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@37:'.'->'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@37:'.'->'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@37:'.'->')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@37:'.'->' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@37:'.'->'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@37:'.'->'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@37:'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@38:'2'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@38:'2'->'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@38:'2'->'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@38:'2'->'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@38:'2'->')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@38:'2'->' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@38:'2'->'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@38:'2'->'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@38:'2'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@39:'f'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@39:'f'->'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@39:'f'->'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@39:'f'->'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@39:'f'->')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@39:'f'->' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@39:'f'->'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@39:'f'->'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@39:'f'",
+   "fp": [
+    "'1.2e+03'",
+    "'(1.2e+03)'",
+    "ERROR:ValueError",
+    "'1.2e+06'",
+    "'(0.5)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@40:'}'->','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@40:'}'->'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@40:'}'->'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@40:'}'->'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@40:'}'->')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@40:'}'->' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@40:'}'->'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@40:'}'->'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@40:'}'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@42:'.'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:TypeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@42:'.'->'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@43:'f'->' '",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@43:'f'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@43:'f'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@44:'o'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@44:'o'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@44:'o'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@44:'o'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@44:'o'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@45:'r'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@45:'r'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@45:'r'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@45:'r'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@45:'r'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@46:'m'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@46:'m'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@47:'a'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@47:'a'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@47:'a'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@47:'a'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@47:'a'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@48:'t'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@48:'t'->' '",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@48:'t'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@48:'t'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@48:'t'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@50:'x'->' '",
+   "fp": [
+    "ERROR:IndexError",
+    "ERROR:IndexError",
+    "ERROR:IndexError",
+    "ERROR:IndexError",
+    "ERROR:IndexError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@50:'x'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@50:'x'",
+   "fp": [
+    "ERROR:IndexError",
+    "ERROR:IndexError",
+    "ERROR:IndexError",
+    "ERROR:IndexError",
+    "ERROR:IndexError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@59:' '->'-'",
+   "fp": [
+    "'( 234.50)'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'( 234 567.89)'",
+    "'-0.50'"
+   ],
+   "score": 0.2,
+   "same": false
+  },
+  {
+   "lab": "sub@60:'x'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@61:' '->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@61:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@62:'<'->'-'",
+   "fp": [
+    "'( 234.50)'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'( 234 567.89)'",
+    "'(0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@63:' '->'.'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@63:' '->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@63:' '->'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "del@63:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@64:'0'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@67:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@74:' '->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@75:'f'->' '",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@75:'f'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@75:'f'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@76:'m'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@76:'m'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@76:'m'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@76:'m'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@77:'t'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@77:'t'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@77:'t'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@77:'t'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@78:'_'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@78:'_'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@78:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@79:'s'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@79:'s'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@79:'s'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@79:'s'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@80:'t'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@80:'t'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@80:'t'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@80:'t'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@81:'r'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@81:'r'->' '",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@81:'r'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@81:'r'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@82:' '->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@82:' '->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@82:' '->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@82:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@83:'='->','",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@83:'='->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@84:' '->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@84:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@86:'('->','",
+   "fp": [
+    "'1 234.50'",
+    "' 1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "' 0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@86:'('->'.'",
+   "fp": [
+    "'1 234.50'",
+    "'.1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'.0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@86:'('->'\"'",
+   "fp": [
+    "'1 234.50'",
+    "'\"1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'\"0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@86:'('->')'",
+   "fp": [
+    "'1 234.50'",
+    "')1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "')0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@86:'('->' '",
+   "fp": [
+    "'1 234.50'",
+    "' 1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "' 0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@86:'('->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'_1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'_0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@86:'('->'-'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@86:'('",
+   "fp": [
+    "'1 234.50'",
+    "'1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@88:' '->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@88:' '->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@88:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@89:'+'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:AttributeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@89:'+'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:AttributeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@89:'+'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@90:' '->'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@90:' '->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@90:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@91:'f'->' '",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@91:'f'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@91:'f'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@91:'f'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@92:'m'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@92:'m'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@92:'m'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@92:'m'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@92:'m'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@93:'t'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@93:'t'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@93:'t'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@93:'t'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@93:'t'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@94:'_'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@94:'_'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@94:'_'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@94:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@95:'s'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@95:'s'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@95:'s'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@95:'s'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@95:'s'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@96:'t'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@96:'t'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@96:'t'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@96:'t'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@96:'t'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@97:'r'->' '",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@97:'r'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@97:'r'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@99:'1'->' '",
+   "fp": [
+    "'1 234.50'",
+    "'(-1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@99:'1'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@99:'1'",
+   "fp": [
+    "'1 234.50'",
+    "'(-1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@100:':'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@100:':'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@100:':'->' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@100:':'",
+   "fp": [
+    "'1 234.50'",
+    "'(1)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@102:' '->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@102:' '->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@102:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@103:'+'->','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:AttributeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@103:'+'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@104:' '->'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@104:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@106:')'->','",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50 '",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50 '"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@106:')'->'.'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50.'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50.'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@106:')'->'\"'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50\"'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50\"'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@106:')'->'('",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50('",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50('"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@106:')'->' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50 '",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50 '"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@106:')'->'_'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50_'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50_'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@106:')'->'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50-'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50-'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "del@106:')'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "sub@118:'n'->','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@118:'n'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@118:'n'->'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@119:' '->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@119:' '->'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@119:' '",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@120:'f'->' '",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@120:'f'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@120:'f'->'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@120:'f'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@121:'m'->','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@121:'m'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@121:'m'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@121:'m'->'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@121:'m'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@122:'t'->','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@122:'t'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@122:'t'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@122:'t'->'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@122:'t'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@123:'_'->','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@123:'_'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@123:'_'->'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@123:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@124:'s'->','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@124:'s'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@124:'s'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@124:'s'->'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@124:'s'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@125:'t'->','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@125:'t'->'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@125:'t'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@125:'t'->'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@125:'t'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@126:'r'->' '",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@126:'r'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@126:'r'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@127:'.'->','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@127:'.'->'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@127:'.'->'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@127:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@128:'r'->' '",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@128:'r'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@128:'r'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@129:'e'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@129:'e'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@129:'e'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@129:'e'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@129:'e'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@130:'p'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@130:'p'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@130:'p'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@130:'p'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@130:'p'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@131:'l'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@131:'l'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@131:'l'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@131:'l'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@131:'l'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@132:'a'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@132:'a'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@132:'a'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@132:'a'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@132:'a'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@133:'c'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@133:'c'->'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@133:'c'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@133:'c'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@133:'c'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@134:'e'->','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@134:'e'->' '",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@134:'e'->'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@134:'e'->'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@134:'e'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@137:','->'.'",
+   "fp": [
+    "'1,234 50'",
+    "'(1,234 50)'",
+    "'0 00'",
+    "'1,234,567 89'",
+    "'(0 50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@137:','->'\"'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@137:','->'('",
+   "fp": [
+    "'1,234.50'",
+    "' 1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "' 0.50)'"
+   ],
+   "score": 0.2,
+   "same": false
+  },
+  {
+   "lab": "sub@137:','->')'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50 '",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50 '"
+   ],
+   "score": 0.2,
+   "same": false
+  },
+  {
+   "lab": "sub@137:','->' '",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@137:','->'_'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@137:','->'-'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "del@137:','",
+   "fp": [
+    "' 1 , 2 3 4 . 5 0 '",
+    "' ( 1 , 2 3 4 . 5 0 ) '",
+    "' 0 . 0 0 '",
+    "' 1 , 2 3 4 , 5 6 7 . 8 9 '",
+    "' ( 0 . 5 0 ) '"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@139:','->' '",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@139:','->'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@139:','",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "sub@140:' '->'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "del@140:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "sub@142:' '->','",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@142:' '->'.'",
+   "fp": [
+    "'1.234.50'",
+    "'(1.234.50)'",
+    "'0.00'",
+    "'1.234.567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@142:' '->'\"'",
+   "fp": [
+    "'1\"234.50'",
+    "'(1\"234.50)'",
+    "'0.00'",
+    "'1\"234\"567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@142:' '->'('",
+   "fp": [
+    "'1(234.50'",
+    "'(1(234.50)'",
+    "'0.00'",
+    "'1(234(567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@142:' '->')'",
+   "fp": [
+    "'1)234.50'",
+    "'(1)234.50)'",
+    "'0.00'",
+    "'1)234)567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@142:' '->'_'",
+   "fp": [
+    "'1_234.50'",
+    "'(1_234.50)'",
+    "'0.00'",
+    "'1_234_567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "sub@142:' '->'-'",
+   "fp": [
+    "'1-234.50'",
+    "'(1-234.50)'",
+    "'0.00'",
+    "'1-234-567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "del@142:' '",
+   "fp": [
+    "'1234.50'",
+    "'(1234.50)'",
+    "'0.00'",
+    "'1234567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@3:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@4:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@5:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@6:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@7:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@9:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@10:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@11:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@12:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@13:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@14:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@14:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@15:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@15:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@16:','",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@16:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@16:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@17:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@18:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@23:'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@24:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@24:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@24:'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@25:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@25:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@25:'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@26:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@26:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@26:'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@27:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@27:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@28:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@28:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@28:'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@29:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@29:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@29:'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@30:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@30:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@30:'_'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@31:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@31:'-'",
+   "fp": [
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError",
+    "ERROR:UnboundLocalError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@32:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@32:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@33:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@34:','",
+   "fp": [
+    "' 1 234.50'",
+    "'(-1 234.50)'",
+    "' 0.00'",
+    "' 1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@34:'.'",
+   "fp": [
+    "'.1 234.50'",
+    "'(-1 234.50)'",
+    "'.0.00'",
+    "'.1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@34:'\"'",
+   "fp": [
+    "'\"1 234.50'",
+    "'(-1 234.50)'",
+    "'\"0.00'",
+    "'\"1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@34:'('",
+   "fp": [
+    "'(1 234.50'",
+    "'(-1 234.50)'",
+    "'(0.00'",
+    "'(1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@34:')'",
+   "fp": [
+    "')1 234.50'",
+    "'(-1 234.50)'",
+    "')0.00'",
+    "')1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@34:' '",
+   "fp": [
+    "' 1 234.50'",
+    "'(-1 234.50)'",
+    "' 0.00'",
+    "' 1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@34:'_'",
+   "fp": [
+    "'_1 234.50'",
+    "'(-1 234.50)'",
+    "'_0.00'",
+    "'_1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@34:'-'",
+   "fp": [
+    "'-1 234.50'",
+    "'(-1 234.50)'",
+    "'-0.00'",
+    "'-1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@35:','",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@35:'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@35:'\"'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@35:'('",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@35:')'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@35:' '",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@35:'_'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@35:'-'",
+   "fp": [
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError",
+    "ERROR:KeyError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@36:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@36:'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@36:'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@36:'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@36:')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@36:' '",
+   "fp": [
+    "' 1 234.50'",
+    "'(1 234.50)'",
+    "' 0.00'",
+    "' 1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@36:'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@36:'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@37:'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@37:'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@37:'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@37:')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@37:' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@37:'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@37:'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@38:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@38:'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@38:'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@38:')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@38:' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@38:'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@38:'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@39:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@39:'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@39:'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@39:'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@39:')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@39:' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@39:'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@39:'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@40:','",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@40:'.'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@40:'\"'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@40:'('",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@40:')'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@40:' '",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@40:'_'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@40:'-'",
+   "fp": [
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError",
+    "ERROR:ValueError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@41:','",
+   "fp": [
+    "'1 234.50 '",
+    "'(1 234.50 )'",
+    "'0.00 '",
+    "'1 234 567.89 '",
+    "'(0.50 )'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@41:'.'",
+   "fp": [
+    "'1 234.50.'",
+    "'(1 234.50.)'",
+    "'0.00.'",
+    "'1 234 567.89.'",
+    "'(0.50.)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@41:'\"'",
+   "fp": [
+    "'1 234.50\"'",
+    "'(1 234.50\")'",
+    "'0.00\"'",
+    "'1 234 567.89\"'",
+    "'(0.50\")'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@41:'('",
+   "fp": [
+    "'1 234.50('",
+    "'(1 234.50()'",
+    "'0.00('",
+    "'1 234 567.89('",
+    "'(0.50()'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@41:')'",
+   "fp": [
+    "'1 234.50)'",
+    "'(1 234.50))'",
+    "'0.00)'",
+    "'1 234 567.89)'",
+    "'(0.50))'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@41:' '",
+   "fp": [
+    "'1 234.50 '",
+    "'(1 234.50 )'",
+    "'0.00 '",
+    "'1 234 567.89 '",
+    "'(0.50 )'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@41:'_'",
+   "fp": [
+    "'1 234.50_'",
+    "'(1 234.50_)'",
+    "'0.00_'",
+    "'1 234 567.89_'",
+    "'(0.50_)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@41:'-'",
+   "fp": [
+    "'1 234.50-'",
+    "'(1 234.50-)'",
+    "'0.00-'",
+    "'1 234 567.89-'",
+    "'(0.50-)'"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@42:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@43:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@43:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@44:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@44:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@44:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@44:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@45:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@45:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@45:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@45:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@46:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@47:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@47:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@47:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@47:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@48:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@48:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@48:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@48:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@49:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:TypeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@49:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@49:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@49:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@50:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@50:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@50:'-'",
+   "fp": [
+    "'-1 234.50'",
+    "'( 234.50)'",
+    "'0.00'",
+    "'-1 234 567.89'",
+    "'(.50)'"
+   ],
+   "score": 0.2,
+   "same": false
+  },
+  {
+   "lab": "ins@51:','",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@51:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@51:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@52:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:TypeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@52:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@59:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@59:'-'",
+   "fp": [
+    "'( 234.50)'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'( 234 567.89)'",
+    "'-0.50'"
+   ],
+   "score": 0.2,
+   "same": false
+  },
+  {
+   "lab": "ins@60:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@60:'-'",
+   "fp": [
+    "'( 234.50)'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'( 234 567.89)'",
+    "'-0.50'"
+   ],
+   "score": 0.2,
+   "same": false
+  },
+  {
+   "lab": "ins@61:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@61:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@63:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@63:'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@64:'.'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@64:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@64:'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@65:'.'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@65:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@66:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@67:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@75:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@76:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@76:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@76:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@77:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@77:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@77:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@78:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@78:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@78:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@79:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@79:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@80:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@80:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@80:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@81:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@81:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@81:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@82:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@82:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@82:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'-1 234.50'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-0.50'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@83:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:ValueError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:ValueError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@83:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@84:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@84:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@85:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@86:','",
+   "fp": [
+    "'1 234.50'",
+    "' (1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "' (0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@86:'.'",
+   "fp": [
+    "'1 234.50'",
+    "'.(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'.(0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@86:'\"'",
+   "fp": [
+    "'1 234.50'",
+    "'\"(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'\"(0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@86:'('",
+   "fp": [
+    "'1 234.50'",
+    "'((1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'((0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@86:')'",
+   "fp": [
+    "'1 234.50'",
+    "')(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "')(0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@86:' '",
+   "fp": [
+    "'1 234.50'",
+    "' (1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "' (0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@86:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'_(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'_(0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@86:'-'",
+   "fp": [
+    "'1 234.50'",
+    "'-(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'-(0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@87:','",
+   "fp": [
+    "'1 234.50'",
+    "'( 1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'( 0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@87:'.'",
+   "fp": [
+    "'1 234.50'",
+    "'(.1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(.0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@87:'\"'",
+   "fp": [
+    "'1 234.50'",
+    "'(\"1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(\"0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@87:')'",
+   "fp": [
+    "'1 234.50'",
+    "'()1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'()0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@87:' '",
+   "fp": [
+    "'1 234.50'",
+    "'( 1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'( 0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@87:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'(_1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(_0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@87:'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(-1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(-0.50)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@88:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@88:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@88:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@89:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@89:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@90:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@90:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@91:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@91:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@92:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@92:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@92:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@92:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@93:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@93:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@93:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@93:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@94:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@94:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@94:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@94:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@95:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@95:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@95:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@96:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@96:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@96:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@96:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@97:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@97:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@97:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@97:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@98:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@98:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@99:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@99:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@99:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@99:'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(0)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@100:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@100:'.'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@100:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@101:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@101:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@101:'_'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:NameError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:NameError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@102:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@102:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@102:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@103:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@103:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@104:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@104:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@105:'-'",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:TypeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:TypeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@106:','",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50 )'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50 )'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@106:'.'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50.)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50.)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@106:'\"'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50\")'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50\")'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@106:'('",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50()'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50()'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@106:')'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50))'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50))'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@106:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50 )'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50 )'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@106:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50_)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50_)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@106:'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50-)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50-)'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@107:','",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50) '",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50) '"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@107:'.'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50).'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50).'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@107:'\"'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)\"'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)\"'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@107:'('",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)('",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)('"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@107:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50) '",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50) '"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@107:'_'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)_'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)_'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@107:'-'",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)-'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)-'"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@108:','",
+   "fp": [
+    "'1 234.50'",
+    "ERROR:AttributeError",
+    "'0.00'",
+    "'1 234 567.89'",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.6,
+   "same": false
+  },
+  {
+   "lab": "ins@108:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@119:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@119:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@120:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@120:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@121:','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@121:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@121:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@121:'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@122:','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@122:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@122:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@122:'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@123:','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@123:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@123:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@123:'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@124:','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@124:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@124:'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@125:','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@125:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@125:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@125:'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@126:','",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@126:'.'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@126:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@126:'-'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@127:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@127:'_'",
+   "fp": [
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError",
+    "ERROR:NameError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@128:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@128:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@129:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@129:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@129:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@129:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@130:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@130:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@130:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@130:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@131:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@131:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@131:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@131:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@132:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@132:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@132:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@132:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@133:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@133:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@133:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@133:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@134:','",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@134:'.'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@134:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@134:'-'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@135:','",
+   "fp": [
+    "(<built-in method replace of str object at 0x1010d2cf0>, (',', ' '))",
+    "(<built-in method replace of str object at 0x104df2ff0>, (',', ' '))",
+    "(<built-in method replace of str object at 0x105a206c0>, (',', ' '))",
+    "(<built-in method replace of str object at 0x102e4acf0>, (',', ' '))",
+    "(<built-in method replace of str object at 0x10560c690>, (',', ' '))"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@135:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@135:'_'",
+   "fp": [
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError",
+    "ERROR:AttributeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@135:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@136:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@136:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@137:','",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@137:'.'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@137:'\"'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@137:'('",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@137:')'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@137:' '",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@137:'_'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@137:'-'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@138:'.'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@138:'\"'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@138:'('",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@138:')'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@138:' '",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@138:'_'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@138:'-'",
+   "fp": [
+    "'1,234.50'",
+    "'(1,234.50)'",
+    "'0.00'",
+    "'1,234,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@139:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@140:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@140:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@141:'-'",
+   "fp": [
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError",
+    "ERROR:TypeError"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@142:','",
+   "fp": [
+    "'1, 234.50'",
+    "'(1, 234.50)'",
+    "'0.00'",
+    "'1, 234, 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@142:'.'",
+   "fp": [
+    "'1. 234.50'",
+    "'(1. 234.50)'",
+    "'0.00'",
+    "'1. 234. 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@142:'\"'",
+   "fp": [
+    "'1\" 234.50'",
+    "'(1\" 234.50)'",
+    "'0.00'",
+    "'1\" 234\" 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@142:'('",
+   "fp": [
+    "'1( 234.50'",
+    "'(1( 234.50)'",
+    "'0.00'",
+    "'1( 234( 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@142:')'",
+   "fp": [
+    "'1) 234.50'",
+    "'(1) 234.50)'",
+    "'0.00'",
+    "'1) 234) 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@142:' '",
+   "fp": [
+    "'1  234.50'",
+    "'(1  234.50)'",
+    "'0.00'",
+    "'1  234  567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@142:'_'",
+   "fp": [
+    "'1_ 234.50'",
+    "'(1_ 234.50)'",
+    "'0.00'",
+    "'1_ 234_ 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@142:'-'",
+   "fp": [
+    "'1- 234.50'",
+    "'(1- 234.50)'",
+    "'0.00'",
+    "'1- 234- 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@143:','",
+   "fp": [
+    "'1 ,234.50'",
+    "'(1 ,234.50)'",
+    "'0.00'",
+    "'1 ,234 ,567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@143:'.'",
+   "fp": [
+    "'1 .234.50'",
+    "'(1 .234.50)'",
+    "'0.00'",
+    "'1 .234 .567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@143:'\"'",
+   "fp": [
+    "'1 \"234.50'",
+    "'(1 \"234.50)'",
+    "'0.00'",
+    "'1 \"234 \"567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@143:'('",
+   "fp": [
+    "'1 (234.50'",
+    "'(1 (234.50)'",
+    "'0.00'",
+    "'1 (234 (567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@143:')'",
+   "fp": [
+    "'1 )234.50'",
+    "'(1 )234.50)'",
+    "'0.00'",
+    "'1 )234 )567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@143:'_'",
+   "fp": [
+    "'1 _234.50'",
+    "'(1 _234.50)'",
+    "'0.00'",
+    "'1 _234 _567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@143:'-'",
+   "fp": [
+    "'1 -234.50'",
+    "'(1 -234.50)'",
+    "'0.00'",
+    "'1 -234 -567.89'",
+    "'(0.50)'"
+   ],
+   "score": 0.4,
+   "same": false
+  },
+  {
+   "lab": "ins@144:','",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@144:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  },
+  {
+   "lab": "ins@145:','",
+   "fp": [
+    "('1 234.50',)",
+    "('(1 234.50)',)",
+    "('0.00',)",
+    "('1 234 567.89',)",
+    "('(0.50)',)"
+   ],
+   "score": 0.0,
+   "same": false
+  },
+  {
+   "lab": "ins@145:' '",
+   "fp": [
+    "'1 234.50'",
+    "'(1 234.50)'",
+    "'0.00'",
+    "'1 234 567.89'",
+    "'(0.50)'"
+   ],
+   "score": 1.0,
+   "same": true
+  }
+ ],
+ "n_same": 62,
+ "same_labels": [
+  "del@30:' '",
+  "del@32:' '",
+  "del@61:' '",
+  "sub@63:' '->'.'",
+  "sub@63:' '->'-'",
+  "del@63:' '",
+  "del@67:' '",
+  "del@82:' '",
+  "del@84:' '",
+  "del@88:' '",
+  "del@90:' '",
+  "del@102:' '",
+  "del@104:' '",
+  "del@140:' '",
+  "ins@3:' '",
+  "ins@14:' '",
+  "ins@15:' '",
+  "ins@16:','",
+  "ins@16:' '",
+  "ins@17:' '",
+  "ins@18:' '",
+  "ins@30:' '",
+  "ins@32:' '",
+  "ins@36:'-'",
+  "ins@42:' '",
+  "ins@43:' '",
+  "ins@49:' '",
+  "ins@50:' '",
+  "ins@51:','",
+  "ins@51:' '",
+  "ins@52:' '",
+  "ins@59:' '",
+  "ins@61:' '",
+  "ins@63:' '",
+  "ins@63:'-'",
+  "ins@64:'.'",
+  "ins@64:'-'",
+  "ins@65:'.'",
+  "ins@65:' '",
+  "ins@66:' '",
+  "ins@67:' '",
+  "ins@82:' '",
+  "ins@84:' '",
+  "ins@88:' '",
+  "ins@90:' '",
+  "ins@98:' '",
+  "ins@99:' '",
+  "ins@100:' '",
+  "ins@101:' '",
+  "ins@102:' '",
+  "ins@104:' '",
+  "ins@108:' '",
+  "ins@119:' '",
+  "ins@127:' '",
+  "ins@128:' '",
+  "ins@135:' '",
+  "ins@136:' '",
+  "ins@139:' '",
+  "ins@140:' '",
+  "ins@144:','",
+  "ins@144:' '",
+  "ins@145:' '"
+ ],
+ "hi_n": 46,
+ "hi_fps": 24,
+ "n_fps": 105
+}

@@ -1,0 +1,81 @@
+======================================================================
+g7d3_fmt_amount
+--- N0a ---
+```python
+def fmt_amount(x):
+    fmt_str = "{:,.2f}".format(x)
+    if x < 0:
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str
+```
+--- N1a ---
+```python
+def fmt_amount(x):
+    fmt_str = '{:,.2f}'.format(x)
+    if x < 0:
+        fmt_str = '(' + fmt_str[1:] + ')'
+    return fmt_str.replace(',', ' ')
+```
+--- N2a ---
+```python
+def fmt_amount(x):
+    fmt_str = "{:,.2f}".format(x)
+    if x < 0:
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str
+```
+--- N3a ---
+```python
+def fmt_amount(x):
+    s = f"{x:,.2f}".replace(',', ' ').replace('-', '( ')
+    return s + ')' if s[-1] == ' ' else s
+```
+--- N5a ---
+```python
+def fmt_amount(x):
+    fmt_str = "{:，.2f}".format(x)
+    if x < 0:
+        fmt_str = "(" + fmt_str[1:] + ")"
+    return fmt_str
+```
+
+======================================================================
+g7e2_truncate_tail
+--- N0a ---
+```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-n:]
+```
+--- N1a ---
+```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-n:]
+```
+--- N2a ---
+```python
+def truncate_tail(s, n):
+    s = s.strip().lower()
+    if len(s) > n:
+        return '…' + s[-(n-3):]
+    return s
+```
+--- N3a ---
+```python
+def truncate_tail(s, n):
+    s = s.strip().lower()
+    if len(s) > n:
+        return '…' + s[-(n-3):]
+    return s
+```
+--- N5a ---
+```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-n:]
+```
+

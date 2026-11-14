@@ -1,0 +1,33 @@
+## V124 跑后诊断（未押）：mem_hit 帮了还是拖了
+  n_impl = 25
+  G            SELF   COST_ONLY    MEM_ONLY
+  150            14          15           4
+  300            15          16           7
+  450            17          18           8
+
+## mem_hit=True 且未满分的实现（就是它们被提到了最前面）
+  g7d2_d 480ada8e s0=0.2 est_cost=15
+  g7d2_d 74aa48d8 s0=0.6 est_cost=12
+  g7d3_f 075b4099 s0=0.4 est_cost=11
+  g7d3_f 0a6acc93 s0=0.0 est_cost=11
+  g7d3_f 17747356 s0=0.0 est_cost=5
+  g7d3_f 419ec792 s0=0.4 est_cost=11
+  g7d3_f 5755e033 s0=0.6 est_cost=6
+  g7d3_f 8c8ac7f0 s0=0.2 est_cost=7
+  g7e1_p 1aa5099d s0=0.4 est_cost=120
+  g7e1_p 200ebf6e s0=0.6 est_cost=95
+  g7e1_p 37a4f17f s0=0.4 est_cost=115
+  g7e1_p a579b07a s0=0.4 est_cost=130
+  g7e1_p f2d1efa6 s0=0.4 est_cost=105
+  g7e2_t 8184ec4d s0=0.2 est_cost=14
+  g7e2_t bc8c4b09 s0=0.2 est_cost=14
+
+## COST_ONLY 的前 8（它先做谁）
+  g7d3_f 17747356 s0=0.0 est_cost=5 mem_hit=True
+  g7d3_f 5755e033 s0=0.6 est_cost=6 mem_hit=True
+  g7d3_f 8c8ac7f0 s0=0.2 est_cost=7 mem_hit=True
+  g7d3_f 0a6acc93 s0=0.0 est_cost=11 mem_hit=True
+  g7d3_f 075b4099 s0=0.4 est_cost=11 mem_hit=True
+  g7d3_f 419ec792 s0=0.4 est_cost=11 mem_hit=True
+  g7d3_f 309f1027 s0=1.0 est_cost=11 mem_hit=True
+  g7d3_f 8089eee6 s0=1.0 est_cost=11 mem_hit=True

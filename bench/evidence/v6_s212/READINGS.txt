@@ -1,0 +1,37 @@
+## §0 三个排序的样子
+  HUMAN 前 8：[('g7d2_d', '1ac9e8da'), ('g7d2_d', '480ada8e'), ('g7d2_d', '6c9204fe'), ('g7d2_d', '74aa48d8'), ('g7d2_d', '85e6d3bc'), ('g7d3_f', '075b4099'), ('g7d3_f', '0a6acc93'), ('g7d3_f', '17747356')]
+  SELF  前 8：[('g7d3_f', '17747356', True, 5), ('g7d3_f', '5755e033', True, 6), ('g7d3_f', '8c8ac7f0', True, 7), ('g7d3_f', '0a6acc93', True, 11), ('g7d3_f', '075b4099', True, 11), ('g7d3_f', '419ec792', True, 11), ('g7d3_f', '309f1027', True, 11), ('g7d3_f', '8089eee6', True, 11)]
+  位置不同的实现数 = 25/25
+
+## §1 主读数（到 1.0 的实现数 / 25）
+  G= 150　HUMAN  9｜SELF 14｜RANDOM  6.50（1~10）｜SELF 花 150 次
+  G= 300　HUMAN 11｜SELF 15｜RANDOM 11.40（8~15）｜SELF 花 300 次
+  G= 450　HUMAN 13｜SELF 17｜RANDOM 15.20（12~18）｜SELF 花 450 次
+  G= 600　HUMAN 21｜SELF 21｜RANDOM 21.00（21~21）｜SELF 花 588 次
+  G=1200　HUMAN 21｜SELF 21｜RANDOM 21.00（21~21）｜SELF 花 588 次
+
+## §2 判决
+  **W1 G=600：SELF 21 ≥ HUMAN 21** ⇒ ✅ 押中
+  **W2 G=600：SELF 21 > RANDOM 均值 21.00** ⇒ ⛔ 押破
+  **W3 排产独立性：位置不同 ≥ 8** ⇒ 实得 25 ⇒ ✅ 押中
+  **W4 G=1200：三者都到 21/25** ⇒ H 21｜S 21｜R 21.00 ⇒ ✅ 押中
+  **W5 SELF 随预算单调不减** ⇒ {150: 14, 300: 15, 450: 17, 600: 21, 1200: 21} ⇒ ✅ 押中
+
+  **附加（⛔ 跑后发现，未押）：预注册的 G=600 落在饱和区**
+    判别力最大的预算点 = G=150：SELF 14 vs HUMAN 9 vs RANDOM 6.50（差 +5 / +7.50）
+
+## §3 G=600 下 SELF 实际做了什么（前 12 个）
+  g7d3_f 17747356 s0=0.0 → 0.0　花   5 次　mem_hit=True
+  g7d3_f 5755e033 s0=0.6 → 0.6　花   6 次　mem_hit=True
+  g7d3_f 8c8ac7f0 s0=0.2 → 0.6　花  21 次　mem_hit=True
+  g7d3_f 0a6acc93 s0=0.0 → 0.0　花  11 次　mem_hit=True
+  g7d3_f 075b4099 s0=0.4 → 1.0　花   1 次　mem_hit=True
+  g7d3_f 419ec792 s0=0.4 → 1.0　花   1 次　mem_hit=True
+  g7d3_f 309f1027 s0=1.0 → 1.0　花   0 次　mem_hit=True
+  g7d3_f 8089eee6 s0=1.0 → 1.0　花   0 次　mem_hit=True
+  g7d2_d 74aa48d8 s0=0.6 → 1.0　花   1 次　mem_hit=True
+  g7e2_t 8184ec4d s0=0.2 → 1.0　花   1 次　mem_hit=True
+  g7e2_t bc8c4b09 s0=0.2 → 1.0　花   2 次　mem_hit=True
+  g7e2_t 697caecc s0=1.0 → 1.0　花   0 次　mem_hit=True
+
+  原始读数已落盘 `search.json`

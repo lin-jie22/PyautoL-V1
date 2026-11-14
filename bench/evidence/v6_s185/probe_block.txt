@@ -1,0 +1,36 @@
+===== W1  facts=4
+  g7d2_dedupe_keep     n=4 块=204 字  顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7d3_fmt_amount      n=4 块=204 字  顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=204 字  顺序=['ZK3', 'ZK1', 'ZK2', 'ZK4']
+  g7e2_truncate_tail   n=4 块=204 字  顺序=['ZK4', 'ZK1', 'ZK2', 'ZK3']
+
+===== W2  facts=4
+  g7d2_dedupe_keep     n=4 块=211 字  顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7d3_fmt_amount      n=4 块=211 字  顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=211 字  顺序=['ZK3', 'ZK1', 'ZK2', 'ZK4']
+  g7e2_truncate_tail   n=4 块=211 字  顺序=['ZK4', 'ZK1', 'ZK2', 'ZK3']
+
+===== W3  facts=4
+  g7d2_dedupe_keep     n=4 块=231 字  顺序=['ZK1', 'ZK4', 'ZK3', 'ZK2']
+  g7d3_fmt_amount      n=4 块=231 字  顺序=['ZK1', 'ZK4', 'ZK3', 'ZK2']
+  g7e1_parse_flag      n=4 块=231 字  顺序=['ZK3', 'ZK1', 'ZK4', 'ZK2']
+  g7e2_truncate_tail   n=4 块=231 字  顺序=['ZK4', 'ZK1', 'ZK3', 'ZK2']
+
+===== W4  facts=4
+  g7d2_dedupe_keep     n=4 块=232 字  顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7d3_fmt_amount      n=4 块=232 字  顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=232 字  顺序=['ZK3', 'ZK1', 'ZK2', 'ZK4']
+  g7e2_truncate_tail   n=4 块=232 字  顺序=['ZK4', 'ZK1', 'ZK2', 'ZK3']
+
+===== W5  facts=4
+  g7d2_dedupe_keep     n=4 块=288 字  顺序=['ZK1', 'ZK4', 'ZK3', 'ZK2']
+  g7d3_fmt_amount      n=4 块=288 字  顺序=['ZK1', 'ZK4', 'ZK3', 'ZK2']
+  g7e1_parse_flag      n=4 块=288 字  顺序=['ZK3', 'ZK1', 'ZK4', 'ZK2']
+  g7e2_truncate_tail   n=4 块=288 字  顺序=['ZK4', 'ZK1', 'ZK3', 'ZK2']
+
+===== W6  facts=4
+  g7d2_dedupe_keep     n=4 块=234 字  顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7d3_fmt_amount      n=4 块=234 字  顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=234 字  顺序=['ZK3', 'ZK1', 'ZK2', 'ZK4']
+  g7e2_truncate_tail   n=4 块=234 字  顺序=['ZK4', 'ZK1', 'ZK2', 'ZK3']
+

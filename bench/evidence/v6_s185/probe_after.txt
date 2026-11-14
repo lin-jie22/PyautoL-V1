@@ -1,0 +1,26 @@
+跑后库重放 recall（⚠️ 库含 g7e2 之后写入的条目，只能近似当时那块）
+
+===== W1a  facts=6
+  g7d3_fmt_amount      n=4 块=204 顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=204 顺序=['ZK3', 'ZK1', 'ZK2', 'ZK4']
+
+===== W2a  facts=4
+  g7d3_fmt_amount      n=4 块=211 顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=211 顺序=['ZK3', 'ZK1', 'ZK2', 'ZK4']
+
+===== W3a  facts=5
+  g7d3_fmt_amount      n=4 块=231 顺序=['ZK1', 'ZK4', 'ZK3', 'ZK2']
+  g7e1_parse_flag      n=4 块=231 顺序=['ZK3', 'ZK1', 'ZK4', 'ZK2']
+
+===== W4a  facts=4
+  g7d3_fmt_amount      n=4 块=232 顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=232 顺序=['ZK3', 'ZK1', 'ZK2', 'ZK4']
+
+===== W5a  facts=4
+  g7d3_fmt_amount      n=4 块=288 顺序=['ZK1', 'ZK4', 'ZK3', 'ZK2']
+  g7e1_parse_flag      n=4 块=288 顺序=['ZK3', 'ZK1', 'ZK4', 'ZK2']
+
+===== W6a  facts=5
+  g7d3_fmt_amount      n=4 块=234 顺序=['ZK1', 'ZK2', 'ZK4', 'ZK3']
+  g7e1_parse_flag      n=4 块=234 顺序=['ZK3', 'ZK1', 'ZK2', 'ZK4']
+

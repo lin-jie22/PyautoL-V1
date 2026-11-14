@@ -1,0 +1,43 @@
+## §0 逐实现表（n_cand 不判分｜saved 读自已落盘的 search.json）
+  tid      h         n_cand  cold  warm  saved  生效动作
+  g7e1_parse_flag a579b07a     130   342   129    213  T2:cont12.0:+'on'
+  g7e1_parse_flag 1aa5099d     120   313   119    194  T2:cont17.0:+'on'
+  g7e1_parse_flag c1f49180     120     0     0      0  <baseline>
+  g7e1_parse_flag 37a4f17f     115   298   114    184  T2:cont17.0:+'on'
+  g7e1_parse_flag 644f0618     115     0     0      0  <baseline>
+  g7e1_parse_flag f2d1efa6     105   268   104    164  T2:cont12.0:+'on'
+  g7e1_parse_flag 200ebf6e      95    59    59      0  T2:cont12.0:+'true'
+  g7e1_parse_flag cd7e0eb9      95     0     0      0  <baseline>
+  g7d2_dedupe_keep 1ac9e8da      15     0     0      0  <baseline>
+  g7d2_dedupe_keep 480ada8e      15    14    14      0  B:key(x,seen):.strip().lower()
+  g7d2_dedupe_keep 6c9204fe      15     0     0      0  <baseline>
+  g7e2_truncate_tail 697caecc      14     0     0      0  <baseline>
+  g7e2_truncate_tail 8184ec4d      14    12     1     11  C1:ret0:='…' + s[-n:]
+  g7e2_truncate_tail bc8c4b09      14    14     2     12  C1:ret1:='…' + s[-n:]
+  g7e2_truncate_tail c21ee3b8      14     0     0      0  <baseline>
+  g7d2_dedupe_keep 74aa48d8      12    10     1      9  B:key(normalized_x,seen):.strip()
+  g7d2_dedupe_keep 85e6d3bc      12     0     0      0  <baseline>
+  g7d3_fmt_amount 075b4099      11     4     1      3  B:ret5:.replace(',',' ')
+  g7d3_fmt_amount 0a6acc93      11    11    11      0  <none>
+  g7d3_fmt_amount 309f1027      11     0     0      0  <baseline>
+  g7d3_fmt_amount 419ec792      11     4     1      3  B:ret5:.replace(',',' ')
+  g7d3_fmt_amount 8089eee6      11     0     0      0  <baseline>
+  g7d3_fmt_amount 8c8ac7f0       7    21    21      0  <none>
+  g7d3_fmt_amount 5755e033       6     6     6      0  <none>
+  g7d3_fmt_amount 17747356       5     5     5      0  <none>
+  合计 saved = 793｜n = 25
+
+## §1 判决
+  预测 top4（按 n_cand）= ['a579b07a', '1aa5099d', 'c1f49180', '37a4f17f']
+  真值 top4（按 saved） = ['a579b07a', '1aa5099d', '37a4f17f', 'f2d1efa6']
+  **W1 集合相等** ⇒ ⛔ 押破（交集 3/4）
+  **W2 Spearman ρ(n_cand, saved) = +0.364 > 0** ⇒ ✅ 押中
+  **W3 零假设臂**：字母序 top4 交集 1/4（须 <4）｜ρ_alpha = +0.079（须 ≤0） ⇒ ⛔ 押破
+  **W4 题内对照（g7e1，n=8）Kendall τ = +0.500 > 0** ⇒ ✅ 押中
+      g7e1 明细：[('a579b0', 130, 213), ('1aa509', 120, 194), ('c1f491', 120, 0), ('37a4f1', 115, 184), ('644f06', 115, 0), ('f2d1ef', 105, 164), ('200ebf', 95, 0), ('cd7e0e', 95, 0)]
+
+## §2 汇总
+  W1 ⛔　W2 ✅　W3 ⛔　W4 ✅
+  ⇒ 预测不成立
+
+  原始读数已落盘 `pred.json`

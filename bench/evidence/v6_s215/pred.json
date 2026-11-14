@@ -1,0 +1,250 @@
+{
+ "rows": [
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "1ac9e8da",
+   "n_cand": 15,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "n_cand": 15,
+   "cold": 14,
+   "warm": 14,
+   "saved": 0,
+   "lab": "B:key(x,seen):.strip().lower()"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "6c9204fe",
+   "n_cand": 15,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "74aa48d8",
+   "n_cand": 12,
+   "cold": 10,
+   "warm": 1,
+   "saved": 9,
+   "lab": "B:key(normalized_x,seen):.strip()"
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "85e6d3bc",
+   "n_cand": 12,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "075b4099",
+   "n_cand": 11,
+   "cold": 4,
+   "warm": 1,
+   "saved": 3,
+   "lab": "B:ret5:.replace(',',' ')"
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "0a6acc93",
+   "n_cand": 11,
+   "cold": 11,
+   "warm": 11,
+   "saved": 0,
+   "lab": "<none>"
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "17747356",
+   "n_cand": 5,
+   "cold": 5,
+   "warm": 5,
+   "saved": 0,
+   "lab": "<none>"
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "309f1027",
+   "n_cand": 11,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "419ec792",
+   "n_cand": 11,
+   "cold": 4,
+   "warm": 1,
+   "saved": 3,
+   "lab": "B:ret5:.replace(',',' ')"
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "5755e033",
+   "n_cand": 6,
+   "cold": 6,
+   "warm": 6,
+   "saved": 0,
+   "lab": "<none>"
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8089eee6",
+   "n_cand": 11,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8c8ac7f0",
+   "n_cand": 7,
+   "cold": 21,
+   "warm": 21,
+   "saved": 0,
+   "lab": "<none>"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "n_cand": 120,
+   "cold": 313,
+   "warm": 119,
+   "saved": 194,
+   "lab": "T2:cont17.0:+'on'"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "200ebf6e",
+   "n_cand": 95,
+   "cold": 59,
+   "warm": 59,
+   "saved": 0,
+   "lab": "T2:cont12.0:+'true'"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "n_cand": 115,
+   "cold": 298,
+   "warm": 114,
+   "saved": 184,
+   "lab": "T2:cont17.0:+'on'"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "644f0618",
+   "n_cand": 115,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "n_cand": 130,
+   "cold": 342,
+   "warm": 129,
+   "saved": 213,
+   "lab": "T2:cont12.0:+'on'"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "c1f49180",
+   "n_cand": 120,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "cd7e0eb9",
+   "n_cand": 95,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "n_cand": 105,
+   "cold": 268,
+   "warm": 104,
+   "saved": 164,
+   "lab": "T2:cont12.0:+'on'"
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "697caecc",
+   "n_cand": 14,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "8184ec4d",
+   "n_cand": 14,
+   "cold": 12,
+   "warm": 1,
+   "saved": 11,
+   "lab": "C1:ret0:='…' + s[-n:]"
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "bc8c4b09",
+   "n_cand": 14,
+   "cold": 14,
+   "warm": 2,
+   "saved": 12,
+   "lab": "C1:ret1:='…' + s[-n:]"
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "c21ee3b8",
+   "n_cand": 14,
+   "cold": 0,
+   "warm": 0,
+   "saved": 0,
+   "lab": "<baseline>"
+  }
+ ],
+ "rho": 0.3641794879425442,
+ "rho_alpha": 0.07924084626529238,
+ "tau_g7e1": 0.5,
+ "top_pred": [
+  "a579b07a",
+  "1aa5099d",
+  "c1f49180",
+  "37a4f17f"
+ ],
+ "top_true": [
+  "a579b07a",
+  "1aa5099d",
+  "37a4f17f",
+  "f2d1efa6"
+ ],
+ "top_alpha": [
+  "075b4099",
+  "0a6acc93",
+  "17747356",
+  "1aa5099d"
+ ]
+}

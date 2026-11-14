@@ -1,0 +1,24 @@
+## §A 重排零分布（1000 次，n=15）
+  ρ(n_cand, saved) = +0.751
+  零分布：均值 +0.010｜p5 -0.430｜p95 +0.447｜max +0.832
+  超过 +0.751 的重排数 = 3/1000 ⇒ 经验 p = 0.003
+
+## §B 哈希序 ρ=0.367 的成分
+  按哈希排序后的 saved：
+     1 075b4099 n_cand= 11 saved=  3
+     2 0a6acc93 n_cand= 11 saved=  0
+     3 17747356 n_cand=  5 saved=  0
+     4 1aa5099d n_cand=120 saved=194
+     5 200ebf6e n_cand= 95 saved=  0
+     6 37a4f17f n_cand=115 saved=184
+     7 419ec792 n_cand= 11 saved=  3
+     8 480ada8e n_cand= 15 saved=  0
+     9 5755e033 n_cand=  6 saved=  0
+    10 74aa48d8 n_cand= 12 saved=  9
+    11 8184ec4d n_cand= 14 saved= 11
+    12 8c8ac7f0 n_cand=  7 saved=  0
+    13 a579b07a n_cand=130 saved=213
+    14 bc8c4b09 n_cand= 14 saved= 12
+    15 f2d1efa6 n_cand=105 saved=164
+  ρ_alpha = +0.367
+  哈希序 top4 与真 top4 交集 = 1/4 ⇒ ['075b4099', '0a6acc93', '17747356', '1aa5099d']

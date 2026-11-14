@@ -1,0 +1,41 @@
+## §0 分母（纪律 46：先打印）
+  n_total = 25｜n_baseline_full = 10｜n_gated = 15
+
+## §0b gated 子集（基线未满分的 15 个，按 n_cand 降序）
+  g7e1_parse_flag    a579b07a n_cand=130 s0=0.4 cold=342 warm=129 saved=213
+  g7e1_parse_flag    1aa5099d n_cand=120 s0=0.4 cold=313 warm=119 saved=194
+  g7e1_parse_flag    37a4f17f n_cand=115 s0=0.4 cold=298 warm=114 saved=184
+  g7e1_parse_flag    f2d1efa6 n_cand=105 s0=0.4 cold=268 warm=104 saved=164
+  g7e1_parse_flag    200ebf6e n_cand= 95 s0=0.6 cold= 59 warm= 59 saved=  0
+  g7d2_dedupe_keep   480ada8e n_cand= 15 s0=0.2 cold= 14 warm= 14 saved=  0
+  g7e2_truncate_tail 8184ec4d n_cand= 14 s0=0.2 cold= 12 warm=  1 saved= 11
+  g7e2_truncate_tail bc8c4b09 n_cand= 14 s0=0.2 cold= 14 warm=  2 saved= 12
+  g7d2_dedupe_keep   74aa48d8 n_cand= 12 s0=0.6 cold= 10 warm=  1 saved=  9
+  g7d3_fmt_amount    075b4099 n_cand= 11 s0=0.4 cold=  4 warm=  1 saved=  3
+  g7d3_fmt_amount    0a6acc93 n_cand= 11 s0=0.0 cold= 11 warm= 11 saved=  0
+  g7d3_fmt_amount    419ec792 n_cand= 11 s0=0.4 cold=  4 warm=  1 saved=  3
+  g7d3_fmt_amount    8c8ac7f0 n_cand=  7 s0=0.2 cold= 21 warm= 21 saved=  0
+  g7d3_fmt_amount    5755e033 n_cand=  6 s0=0.6 cold=  6 warm=  6 saved=  0
+  g7d3_fmt_amount    17747356 n_cand=  5 s0=0.0 cold=  5 warm=  5 saved=  0
+
+## §0c 被门挡掉的（基线已满分，n_cand 白大）
+  g7e1_parse_flag    c1f49180 n_cand=120 saved=0
+  g7e1_parse_flag    644f0618 n_cand=115 saved=0
+  g7e1_parse_flag    cd7e0eb9 n_cand= 95 saved=0
+  g7d2_dedupe_keep   1ac9e8da n_cand= 15 saved=0
+
+## §1 判决
+  预测 top4（gated，按 n_cand）= ['a579b07a', '1aa5099d', '37a4f17f', 'f2d1efa6']
+  真值 top4（全部 25，按 saved）= ['a579b07a', '1aa5099d', '37a4f17f', 'f2d1efa6']
+  **W1 集合相等** ⇒ ✅ 押中（交集 4/4）
+  **W2 gated ρ = +0.751 > ungated ρ = +0.364** ⇒ ✅ 押中（分母 15 vs 25，⛔ 不混比）
+  **W3 题内 g7e1（n=5）τ = +1.000 == +1.0** ⇒ ✅ 押中
+      [('a579b0', 130, 213), ('1aa509', 120, 194), ('37a4f1', 115, 184), ('f2d1ef', 105, 164), ('200ebf', 95, 0)]
+  **W4 零假设（哈希序）|ρ_alpha| = +0.367 < 0.2** ⇒ ⛔ 押破
+
+## §2 汇总
+  W1 ✅　W2 ✅　W3 ✅　W4 ⛔
+  预测成本 = 25 次判分（每个实现跑一次基线）｜它预测的节省 = 793 次 ⇒ 回报 31.7×
+  ⇒ 预测循环第一格闭合：**先判一次基线 + 按候选数排序**，可事前决定写不写这条记忆
+
+  原始读数已落盘 `pred.json`

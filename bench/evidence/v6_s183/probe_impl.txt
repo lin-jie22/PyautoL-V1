@@ -1,0 +1,30 @@
+==============================================================================
+### C1a
+
+--- blobs rowid=9 ---
+finish ⇒ ✔ ```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-(n-3):]
+```
+==============================================================================
+### C2a
+
+--- blobs rowid=10 ---
+finish ⇒ ✔ ```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-(n-3):]
+```
+==============================================================================
+### C3a
+
+--- blobs rowid=9 ---
+finish ⇒ ✔ ```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return '…' + s[-n:]
+```

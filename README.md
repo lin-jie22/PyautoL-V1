@@ -2,6 +2,10 @@
 
 [![ci](https://github.com/lin-jie22/PyautoL-V1/actions/workflows/ci.yml/badge.svg)](https://github.com/lin-jie22/PyautoL-V1/actions/workflows/ci.yml)
 
+> **想先看结论**：`ASSESSMENT.md`（172 轮之后的横向盘点：产物是什么、离 AGI 差哪几个环）、
+> `docs/REPORT.md`（英文技术报告，含四道门与负结果的机制）、
+> `docs/VERDICTS.md`（172 轮判决索引，自动生成）。
+
 ## 产品摘要（30 秒读完）
 
 **是什么**：一个能被完整验证的 agent 内核 —— 七段认知循环全部可跑、

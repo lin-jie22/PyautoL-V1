@@ -1,0 +1,93 @@
+[
+ {
+  "step": "inject",
+  "mod": "memory.py",
+  "npass": 625,
+  "nfail": 6,
+  "secs": 46.3,
+  "fails": "❌ 长度不等（原文 13 字，替换文 2 字，差 -11，允许 ±0） | ❌ 替换后与原文相同（'解析查询字符串前先处理空项'）—— 那是实验组本人，不是安慰剂。 | ❌ `source=abstract` 这一层 0 条 ⇒ 安慰剂比对退化成'空 vs 空'。"
+ },
+ {
+  "step": "probe",
+  "n": 1,
+  "group": [
+   "__init__.py",
+   "__main__.py",
+   "abstractor.py",
+   "bench.py",
+   "budget.py",
+   "config.py",
+   "core.py",
+   "critique.py",
+   "features.py",
+   "flow.py",
+   "guard.py"
+  ],
+  "npass": 625,
+  "nfail": 6,
+  "green": false,
+  "secs": 48.2
+ },
+ {
+  "step": "probe",
+  "n": 2,
+  "group": [
+   "ledger.py",
+   "llm.py",
+   "loop.py",
+   "measure.py",
+   "memory.py",
+   "metacog.py"
+  ],
+  "npass": 631,
+  "nfail": 0,
+  "green": true,
+  "secs": 42.8
+ },
+ {
+  "step": "probe",
+  "n": 3,
+  "group": [
+   "ledger.py",
+   "llm.py",
+   "loop.py"
+  ],
+  "npass": 625,
+  "nfail": 6,
+  "green": false,
+  "secs": 42.1
+ },
+ {
+  "step": "probe",
+  "n": 4,
+  "group": [
+   "measure.py"
+  ],
+  "npass": 625,
+  "nfail": 6,
+  "green": false,
+  "secs": 42.9
+ },
+ {
+  "step": "probe",
+  "n": 5,
+  "group": [
+   "memory.py"
+  ],
+  "npass": 631,
+  "nfail": 0,
+  "green": true,
+  "secs": 40.6
+ },
+ {
+  "step": "verify",
+  "located": [
+   "memory.py"
+  ],
+  "npass": 631,
+  "nfail": 0,
+  "ok": true,
+  "probes": 6,
+  "secs": 41.3
+ }
+]

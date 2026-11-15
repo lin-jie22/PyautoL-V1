@@ -1,0 +1,181 @@
+{
+ "summary": {
+  "mod": "memory.py",
+  "located": "memory.py",
+  "func": "fts_query",
+  "fixed_by": [
+   103,
+   200
+  ],
+  "evals": {
+   "inject": 1,
+   "A": 5,
+   "B": 3,
+   "C": 1,
+   "total": 10
+  },
+  "brute_force_candidates": 6034,
+  "brute_force_hours": 77.1,
+  "our_minutes": 7.7
+ },
+ "events": [
+  {
+   "stage": "0",
+   "what": "注入变异",
+   "npass": 625,
+   "nfail": 6,
+   "secs": 43.9
+  },
+  {
+   "stage": "A",
+   "n": 1,
+   "group_size": 11,
+   "npass": 625,
+   "nfail": 6,
+   "green": false,
+   "secs": 43.6
+  },
+  {
+   "stage": "A",
+   "n": 2,
+   "group_size": 6,
+   "npass": 631,
+   "nfail": 0,
+   "green": true,
+   "secs": 43.8
+  },
+  {
+   "stage": "A",
+   "n": 3,
+   "group_size": 3,
+   "npass": 625,
+   "nfail": 6,
+   "green": false,
+   "secs": 43.9
+  },
+  {
+   "stage": "A",
+   "n": 4,
+   "group_size": 1,
+   "npass": 625,
+   "nfail": 6,
+   "green": false,
+   "secs": 44.7
+  },
+  {
+   "stage": "A",
+   "n": 5,
+   "group_size": 1,
+   "npass": 631,
+   "nfail": 0,
+   "green": true,
+   "secs": 42.7
+  },
+  {
+   "stage": "A_done",
+   "located": [
+    "memory.py"
+   ],
+   "evals": 5
+  },
+  {
+   "stage": "B",
+   "n": 1,
+   "group": [
+    "BlobIntegrityError",
+    "char_grams",
+    "_spaced",
+    "normalize",
+    "fingerprint"
+   ],
+   "touched": 5,
+   "npass": 625,
+   "nfail": 6,
+   "green": false,
+   "secs": 43.8
+  },
+  {
+   "stage": "B",
+   "n": 2,
+   "group": [
+    "fts_query",
+    "Fact"
+   ],
+   "touched": 2,
+   "npass": 631,
+   "nfail": 0,
+   "green": true,
+   "secs": 45.1
+  },
+  {
+   "stage": "B",
+   "n": 3,
+   "group": [
+    "fts_query"
+   ],
+   "touched": 1,
+   "npass": 631,
+   "nfail": 0,
+   "green": true,
+   "secs": 46.0
+  },
+  {
+   "stage": "B_done",
+   "located_def": [
+    "fts_query"
+   ],
+   "evals": 3
+  },
+  {
+   "stage": "C_plan",
+   "func": "fts_query",
+   "sites": [
+    [
+     103,
+     2
+    ]
+   ],
+   "n_vals": 28,
+   "vals": [
+    200,
+    12,
+    60,
+    120,
+    300,
+    160,
+    8,
+    16,
+    3,
+    8000,
+    400,
+    80,
+    100,
+    64,
+    32,
+    1000,
+    140,
+    40,
+    5,
+    24,
+    4000,
+    240,
+    600,
+    1200,
+    20,
+    10,
+    4,
+    48
+   ]
+  },
+  {
+   "stage": "C",
+   "n": 1,
+   "lineno": 103,
+   "value": 200,
+   "npass": 631,
+   "nfail": 0,
+   "secs": 46.0,
+   "RESULT": "GREEN"
+  }
+ ]
+}

@@ -738,6 +738,8 @@ check(RS, "I9 血缘回调抛异常 ⇒ 不带走整轮，但必须留痕（否�
 print()
 print("=" * 74)
 print(f"V1 外部锚层契约测试汇总  {RS.summary_line()}")
+RS.finish()
+print(RS.verdict_line())
 print("=" * 74)
 if RS.fail_n:
     print(f"失败断言数 = {RS.fail_n}")

@@ -1,0 +1,31 @@
+{
+  "n_sites": 89,
+  "old": {
+    "RED": 17,
+    "GREEN": 72
+  },
+  "new": {
+    "RED": 17,
+    "GREEN": 70,
+    "CRASH": 2
+  },
+  "changed": [
+    {
+      "site": "memory.py:321",
+      "old": "GREEN",
+      "exit": 1,
+      "new": "CRASH",
+      "why": "汇总行写 PASS=7 FAIL=0，但进程退出码 1 ⇒ 打印之后仍崩了（判据失效，不许判通过）",
+      "verdict": "7/0"
+    },
+    {
+      "site": "memory.py:367",
+      "old": "GREEN",
+      "exit": 1,
+      "new": "CRASH",
+      "why": "汇总行写 PASS=7 FAIL=0，但进程退出码 1 ⇒ 打印之后仍崩了（判据失效，不许判通过）",
+      "verdict": "7/0"
+    }
+  ],
+  "green_to_red": []
+}

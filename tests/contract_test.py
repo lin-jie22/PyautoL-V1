@@ -45,8 +45,8 @@ from mw.core import Core, _LedgeredLLM, _Log                   # noqa: E402
 from mw.guard import CHECKPOINTS, Guard                           # noqa: E402
 from mw.llm import (ANSWER_MARK, PARSE_MODES, HTTPLLM, Message, StubLLM,  # noqa: E402
                     parse_json, split_answer)
-from mw.measure import (Report, check, ci95, noise_floor,         # noqa: E402
-                        paired_compare, repeat, summarize)
+from mw.measure import (Report, SENTINEL, check, ci95, noise_floor,   # noqa: E402
+                        paired_compare, repeat, summarize, verdict_from)
 from mw.memory import MemoryStore, fingerprint, fts_query         # noqa: E402
 from mw.planner import _ANSWER_SYS as _planner_ANSWER_SYS   # noqa: E402
 from mw.planner import (Planner, Step, action_signature,              # noqa: E402
@@ -398,6 +398,51 @@ check(RS, "H8 汇总行可被外部 runner 正则解析（§134/§135 的坑）"
       r2.summary_line())
 check(RS, "H9 ci95 在小样本下不越界",
       _ci95_ok([0.1, 0.2, 0.3]))
+
+
+# ── AZ126 三值判据：崩不许冒充绿（第 140 轮）──────────────────────────────
+# 材料是真实的，不是构造的：`bench/evidence/v6_s228/READINGS_crash_repro.txt:112`
+# 那三行的逐字副本。那次运行 `EXIT=1`、主汇总行**从未打印**，
+# 而日志里唯一带 `PASS=…  FAIL=…` 的字符串来自一条断言的 detail 文本。
+# ⇒ 旧口径（grep 最后一条）判它**绿**。这是本组断言存在的全部理由。
+_MZ_FAKE_GREEN = (
+    "  ✅ H8 汇总行可被外部 runner 正则解析（§134/§135 的坑）  (PASS=7  FAIL=0)\n"
+    "Traceback (most recent call last):\n"
+    "mw.memory.BlobIntegrityError: 句柄 'b#1' 的原文与写侧承诺不符（库被动过）\n"
+)
+_mz_old = re.findall(r"PASS=(\d+)\s+FAIL=(\d+)", _MZ_FAKE_GREEN)
+check(RS, "AZ126a 旧口径在这段真实崩溃日志上**确实**读到 7/0（污染不是假设）\n"
+          "              旧口径 = grep -oE 'PASS=\\d+  FAIL=\\d+' | tail -1；\n"
+          "              它读到的最后一个匹配就是这个 —— 而那次运行 EXIT=1",
+      _mz_old == [("7", "0")],
+      f"旧口径命中 {_mz_old}")
+check(RS, "AZ126b `verdict_from` 在同一段文本上判 CRASH（汇总行缺席 ⇒ 判据没说话）\n"
+          "              ⛔ 它不是「更严的绿」，是**拒绝判绿**：缺席不许冒充零失败",
+      verdict_from(_MZ_FAKE_GREEN, 1)[0] == "CRASH",
+      verdict_from(_MZ_FAKE_GREEN, 1)[1])
+check(RS, "AZ126c 绿 / 红 两值仍与旧口径一致（新判据不许把正常的判死）",
+      verdict_from(f"{SENTINEL} GREEN  PASS=631  FAIL=0", 0)[0] == "GREEN"
+      and verdict_from(f"{SENTINEL} RED  PASS=625  FAIL=6", 0)[0] == "RED",
+      "GREEN/RED 各一例")
+_mz_r = Report(); _mz_r.pass_n = 631
+check(RS, "AZ126d 未调 `finish()` ⇒ CRASH（fail-closed 的默认方向）\n"
+          "              ⛔ 旧实现的默认是「跑完了」：崩与跑完在数据上不可区分",
+      _mz_r.verdict() == "CRASH",
+      f"verdict={_mz_r.verdict()}")
+check(RS, "AZ126e 汇总行多于一条 ⇒ CRASH（有东西在冒充判据）\n"
+          "              这条防的是「以后有人为了让读数好看，在别处也打一行 sentinel」",
+      verdict_from(f"{SENTINEL} GREEN  PASS=1  FAIL=0\n"
+                   f"{SENTINEL} GREEN  PASS=1  FAIL=0", 0)[0] == "CRASH",
+      "两行 sentinel")
+check(RS, "AZ126f `summary_line()` 里**不含** SENTINEL（人读行不许冒充判据行）\n"
+          "              否则 AZ126b 的隔离立刻失效 —— 它读的就是「带前缀的那一行」。\n"
+          "              ⛔ 本条 detail 刻意**不打印** `verdict_line()` 的原文：\n"
+          "              第一版打了，于是整份契约日志里出现两行 sentinel，\n"
+          "              `verdict_from(全文)` 当场判 CRASH —— 断言自己成了污染源。",
+      SENTINEL not in r2.summary_line() and SENTINEL in _mz_r.verdict_line()
+      and "PASS=631" in _mz_r.verdict_line(),
+      f"summary={r2.summary_line()!r} 判据行前缀在={SENTINEL in _mz_r.verdict_line()}"
+      f" 计数在={'PASS=631' in _mz_r.verdict_line()}")
 
 
 # ===========================================================================
@@ -13353,6 +13398,11 @@ check(RS, "AZ125 ★★★三个「截断」分居三处，单位写进名字（
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")
+# ⛔ `finish()` 必须在**打印判据行之前**调：它声明的就是「我已经跑到这里了」。
+# 少这一句 ⇒ verdict() 永远是 CRASH ⇒ 门禁的 verdict 检查会判失败。
+# 那个失败是**对的**：漏调 finish 的运行，确实不该被当成通过。
+RS.finish()
+print(RS.verdict_line())
 print("=" * 74)
 if RS.fail_n:
     print(f"失败断言数 = {RS.fail_n}")

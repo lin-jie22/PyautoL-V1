@@ -28,6 +28,7 @@
 from __future__ import annotations
 
 import math
+import re
 import statistics
 from dataclasses import dataclass, field
 from typing import Callable, Sequence
@@ -56,15 +57,72 @@ class Measurement:
                 f"[{self.lo:.4f},{self.hi:.4f}] 极差={self.spread:.4f}")
 
 
+#: 汇总行的**唯一可解析前缀**。只由 `Report.verdict_line()` 产生。
+#:
+#: ⛔ 为什么必须有它 —— 这是第 140 轮从一次真实的假绿里挖出来的债：
+#:
+#:     ✅ H8 汇总行可被外部 runner 正则解析（§134/§135 的坑）  (PASS=7  FAIL=0)
+#:
+#: 这条断言的**名字**是「汇总行能被正则解析」，而它的 **detail 文本**
+#: 恰好就是让那个正则解析出错的字符串。于是 `grep -oE 'PASS=\d+  FAIL=\d+' | tail -1`
+#: 在**崩溃**的日志上返回 `PASS=7  FAIL=0`（= 绿），而那次运行 `EXIT=1`、
+#: 主汇总行从未打印。
+#:
+#: 自指陷阱：用来证明「能被解析」的那句话，本身是不可解析的污染源。
+#: 根因不是 grep，是本模块产出的读数**与普通文本同形**。
+#: 修法是给判据一个普通文本不可能冒充的前缀。
+SENTINEL = "::VERDICT::"
+
+#: 三值。⛔ 第四档 `UNKNOWN` 刻意不存在：判据态要么有汇总行、要么没有，
+#: 没有「可能跑完了」这种中间状态 —— 加第四档只会给含糊留后门。
+VERDICT_STATES = ("GREEN", "RED", "CRASH")
+
+
 @dataclass
 class Report:
     rows: list[Measurement] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     pass_n: int = 0
     fail_n: int = 0
+    #: 「我跑完了」——**默认 False，即默认没跑完**。
+    #:
+    #: ⛔ 方向是刻意反过来的。旧代码里「跑完」是默认状态（没人声明它也是跑完），
+    #: 于是任何一次中途崩溃都不改变任何字段 —— 崩与跑完在数据上不可区分。
+    #: 翻过来之后，忘记调 `finish()` 的代价是「被判成崩」，而不是「被判成通过」。
+    #: 这是 fail-closed 在**一个布尔字段**上的最小实现。
+    finished: bool = False
+
+    def finish(self) -> None:
+        """显式声明「我跑完了」。没有这一步，`verdict()` 永远是 CRASH。"""
+        self.finished = True
+
+    def verdict(self) -> str:
+        """判据态：GREEN / RED / CRASH。**崩优先于红**。
+
+        为什么崩优先：崩的时候判据**没说话**，是解释器在说话。
+        把「跑到一半抛异常」记成「有失败断言」，等于说「我知道错了」，
+        而实际上系统只是死了 —— 它连自己错在哪都不知道。
+        """
+        if not self.finished:
+            return "CRASH"
+        return "RED" if self.fail_n else "GREEN"
+
+    def verdict_line(self) -> str:
+        """**唯一**可被程序解析的判据行。三值 + 两个计数，一行给全。
+
+        ⛔ 只有这一处产生 `SENTINEL`。断言 detail、日志正文、错误信息里
+        一律**不许**出现它 —— 一旦出现，它就不再是唯一可解析的行。
+        （`verdict_from` 遇到多行会判 CRASH，就是为了让这种污染立刻暴露。）
+        """
+        return (f"{SENTINEL} {self.verdict()}  "
+                f"PASS={self.pass_n}  FAIL={self.fail_n}")
 
     def summary_line(self) -> str:
-        """⚠️ 格式**必须**被外部 runner 的正则 `PASS\\s*=\\s*(\\d+)\\s+FAIL\\s*=\\s*(\\d+)` 命中。
+        """人读的汇总行。**⛔ 不是判据** —— 它没有 `SENTINEL`，不可作为判读依据。
+
+        ⚠️ 保留原格式（`PASS=n  FAIL=n`）是因为它与外部 runner 的正则、
+        契约 H8、以及多处文档互锁。改格式的收益抵不上改动面，
+        所以正确做法是**另给一行**（`verdict_line`），而不是改这一行。
 
         连续两轮踩过这个坑：写成 `SUM_PASS=1 SUM_FAIL=0`
         时 `FAIL` 前面是下划线不是空白 ⇒ 套件判绿但断言数记 0（违反 R79）。
@@ -181,6 +239,51 @@ def check(rs: Report, name: str, cond: bool, detail: str = "") -> bool:
         rs.fail_n += 1
         print(f"  ❌ {name}" + (f"  ({detail})" if detail else ""))
     return cond
+
+
+def verdict_from(text: str, exit_code: int = 0) -> tuple[str, str]:
+    """从**一段运行日志 + 退出码**判读判据态。返回 `(状态, 理由)`。
+
+    这是本模块唯一一个「读别人的输出」的函数 —— 也是「自省」这件事
+    在内核里的最小可执行形态：**系统读自己的账本，判断这次判据有没有效。**
+
+    ⛔ 规则顺序即语义，不许重排：
+
+      1. 没有 `SENTINEL` 行        ⇒ CRASH（汇总行缺席）
+      2. 有多于 1 行 `SENTINEL`    ⇒ CRASH（不知道哪行是真的）
+      3. 有 1 行但解析不出计数      ⇒ CRASH（格式退化）
+      4. FAIL > 0                  ⇒ RED
+      5. FAIL == 0 而 exit_code≠0  ⇒ CRASH（打印汇总后进程仍崩了）
+      6. 其余                       ⇒ GREEN
+
+    规则 1 是纪律 8「崩溃冒充跑完」的**可执行版本**：
+    **缺席不许冒充零。** 一段没有任何判据行的日志，既不是「零失败」，
+    也不是「通过了」—— 它是「判据没说话」。
+
+    ⛔ 反过来说：文本里出现 `PASS=631  FAIL=0` **不构成任何证据**，
+    因为断言 detail 里可以复制这几个字（真实发生过，见 `SENTINEL` 的注释）。
+    本函数**只看带前缀的那一行**。
+
+    ⚠️ 规则 5 防的是另一种崩：汇总行打完了、进程还在收尾时抛异常。
+    只靠规则 1 抓不到它，只靠退出码又会把「有失败断言」和「崩」混成一件事。
+    """
+    lines = [ln for ln in str(text or "").splitlines() if SENTINEL in ln]
+    if not lines:
+        return "CRASH", ("日志里没有汇总行（判据缺席）"
+                         " ⇒ 不判通过，也不判失败 —— 判据没说话")
+    if len(lines) > 1:
+        return "CRASH", (f"汇总行不唯一（{len(lines)} 行）"
+                         f" ⇒ 有东西在冒充判据，判据已不可解析")
+    m = re.search(r"PASS\s*=\s*(\d+)\s+FAIL\s*=\s*(\d+)", lines[0])
+    if not m:
+        return "CRASH", "汇总行存在但解析不出 PASS/FAIL ⇒ 格式退化"
+    n_pass, n_fail = int(m.group(1)), int(m.group(2))
+    if n_fail:
+        return "RED", f"{n_fail} 条断言失败（通过 {n_pass} 条）"
+    if exit_code:
+        return "CRASH", (f"汇总行写 PASS={n_pass} FAIL=0，但进程退出码 {exit_code}"
+                         f" ⇒ 打印之后仍崩了（判据失效，不许判通过）")
+    return "GREEN", f"全部 {n_pass} 条断言通过，退出码 0"
 
 
 def has_real_gain(base: Measurement, cand: Measurement) -> bool:

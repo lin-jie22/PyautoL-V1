@@ -103,10 +103,29 @@ echo "                    AJ 族预测力闸（测不出预测力 ⇒ 不许据�
                     AQ 安慰剂成为一等公民 + 形状臂（并包逐字节回归 / 单因子操纵））"
 echo "=============================================================="
 if "$PY" tests/contract_test.py > /tmp/v1_contract.out 2>&1; then
-  echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1)"
+  # ⛔ 退出码对，只说明「没有失败断言」；它说不出「判据有没有真的跑完」。
+  #    第 140 轮实测：把汇总打印整段删掉，退出码仍是 0（W3a）。
+  #    ⇒ 必须再验一次**判据行存在**。缺了它 = 判据没说话 = 不许判通过。
+  if grep -q '::VERDICT::' /tmp/v1_contract.out; then
+    # ⛔ 判据行必须**恰好一行**。多于一行 ⇒ 有东西（断言 detail、调试打印）
+    #    在冒充判据。第 140 轮实测过：AZ126f 第一版的 detail 就把
+    #    `verdict_line()` 原样打了出来，于是 `verdict_from(全文)` 判 CRASH。
+    _n_v=$(grep -c '::VERDICT::' /tmp/v1_contract.out)
+    if [ "$_n_v" -ne 1 ]; then
+      echo "  ❌ 判据行不唯一（$_n_v 行）⇒ 有东西在冒充判据，读数不可用"
+      grep -n '::VERDICT::' /tmp/v1_contract.out | head -5 | sed 's/^/     /'
+      FAIL=1
+    fi
+    echo "  ✅ $(grep -oE '::VERDICT:: [A-Z]+  PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1)"
+  else
+    echo "  ❌ 契约测试退出码 0，但日志里**没有**判据行（::VERDICT::）"
+    echo "     ⇒ 判据缺席不许冒充通过（纪律 8 的可执行版）"
+    FAIL=1
+  fi
 else
   echo "  ❌ 契约测试失败："
   grep "❌" /tmp/v1_contract.out | head -20
+  grep -oE '::VERDICT:: [A-Z]+  PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_contract.out | tail -1 | sed 's/^/     最后判据行 /'
   FAIL=1
 fi
 
@@ -115,7 +134,12 @@ echo "=============================================================="
 echo "步骤 3/7  外部锚层契约测试（含反证组：假尺子必须被判红）"
 echo "=============================================================="
 if V1_BENCH_DIR=/tmp/v1_bench_ci "$PY" tests/bench_test.py > /tmp/v1_bench.out 2>&1; then
-  echo "  ✅ $(grep -oE 'PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_bench.out | tail -1)"
+  if grep -q '::VERDICT::' /tmp/v1_bench.out; then
+    echo "  ✅ $(grep -oE '::VERDICT:: [A-Z]+  PASS=[0-9]+  FAIL=[0-9]+' /tmp/v1_bench.out | tail -1)"
+  else
+    echo "  ❌ 锚层退出码 0，但日志里**没有**判据行（::VERDICT::）⇒ 判据缺席不许冒充通过"
+    FAIL=1
+  fi
   grep -E "^  (校准|.*margin=)" /tmp/v1_bench.out | head -2 | sed 's/^/  /'
 else
   echo "  ❌ 外部锚层契约测试失败："

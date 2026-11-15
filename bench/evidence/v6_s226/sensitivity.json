@@ -1,0 +1,400 @@
+{
+ "values": [
+  200,
+  12,
+  60,
+  120,
+  300,
+  8,
+  160,
+  16,
+  3,
+  80,
+  100,
+  400,
+  8000,
+  32,
+  40,
+  64,
+  140,
+  1000,
+  4,
+  5,
+  10,
+  20,
+  24,
+  48,
+  240,
+  600,
+  1200,
+  4000
+ ],
+ "summary": [
+  {
+   "modfile": "core.py",
+   "lineno": 423,
+   "orig": 60,
+   "n": 28,
+   "greens": [
+    24,
+    32,
+    40,
+    48,
+    60,
+    64,
+    80,
+    100,
+    120,
+    140,
+    160,
+    200,
+    240,
+    300,
+    400,
+    600,
+    1000,
+    1200,
+    4000,
+    8000
+   ],
+   "reds": [
+    3,
+    4,
+    5,
+    8,
+    10,
+    12,
+    16,
+    20
+   ],
+   "green_rate": 0.7143,
+   "green_median": 160
+  }
+ ],
+ "events": [
+  {
+   "tag": "probe",
+   "modfile": "abstractor.py",
+   "lineno": 182,
+   "value": 2,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "probe",
+   "modfile": "bench.py",
+   "lineno": 445,
+   "value": 2,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "probe",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 2,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "probe",
+   "modfile": "critique.py",
+   "lineno": 63,
+   "value": 2,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "probe",
+   "modfile": "features.py",
+   "lineno": 184,
+   "value": 2,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "probe",
+   "modfile": "guard.py",
+   "lineno": 197,
+   "value": 2,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "probe",
+   "modfile": "ledger.py",
+   "lineno": 214,
+   "value": 2,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "probe",
+   "modfile": "llm.py",
+   "lineno": 118,
+   "value": 2,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 200,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 12,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 60,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 120,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 300,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 8,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 160,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 16,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 3,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 80,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 100,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 400,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 8000,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 32,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 40,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 64,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 140,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 1000,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 4,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 5,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 10,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 20,
+   "npass": 630,
+   "nfail": 1,
+   "green": false
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 24,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 48,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 240,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 600,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 1200,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  },
+  {
+   "tag": "scan",
+   "modfile": "core.py",
+   "lineno": 423,
+   "value": 4000,
+   "npass": 631,
+   "nfail": 0,
+   "green": true
+  }
+ ]
+}

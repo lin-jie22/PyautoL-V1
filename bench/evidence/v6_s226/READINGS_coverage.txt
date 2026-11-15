@@ -1,0 +1,133 @@
+站点总数 89，逐站测 v=2（6 路并行）
+  abstractor.py:169 [:2] -> 红 1
+  bench.py:223 [:2] -> 绿
+  bench.py:445 [:2] -> 绿
+  bench.py:734 [:2] -> 绿
+  abstractor.py:182 [:2] -> 绿
+  abstractor.py:187 [:2] -> 绿
+  bench.py:225 [:2] -> 绿
+  bench.py:803 [:2] -> 绿
+  bench.py:317 [:2] -> 绿
+  bench.py:326 [:2] -> 绿
+  bench.py:328 [:2] -> 绿
+  core.py:423 [:2] -> 红 1
+  core.py:3173 [:2] -> 绿
+  core.py:371 [:2] -> 绿
+  core.py:1050 [:2] -> 绿
+  core.py:2246 [:2] -> 红 4
+  core.py:2130 [:2] -> 绿
+  core.py:2135 [:2] -> 绿
+  core.py:3317 [:2] -> 绿
+  core.py:1878 [:2] -> 绿
+  core.py:2129 [:2] -> 绿
+  core.py:2939 [:2] -> 绿
+  core.py:2268 [:2] -> 绿
+  core.py:2541 [:2] -> 绿
+  core.py:1689 [:2] -> 绿
+  core.py:1697 [:2] -> 红 1
+  core.py:1879 [:2] -> 绿
+  core.py:2266 [:2] -> 红 1
+  core.py:2938 [:2] -> 绿
+  core.py:2940 [:2] -> 绿
+  core.py:1199 [:2] -> 红 1
+  core.py:1792 [:2] -> 绿
+  core.py:1221 [:2] -> 绿
+  core.py:1548 [:2] -> 绿
+  core.py:1624 [:2] -> 绿
+  core.py:1626 [:2] -> 绿
+  core.py:1791 [:2] -> 红 1
+  core.py:1862 [:2] -> 绿
+  core.py:1860 [:2] -> 绿
+  critique.py:63 [:2] -> 绿
+  guard.py:197 [:2] -> 绿
+  features.py:184 [:2] -> 绿
+  ledger.py:214 [:2] -> 绿
+  llm.py:118 [:2] -> 绿
+  llm.py:130 [:2] -> 绿
+  loop.py:145 [:2] -> 绿
+  loop.py:484 [:2] -> 绿
+  loop.py:146 [:2] -> 绿
+  memory.py:321 [:2] -> 绿
+  loop.py:304 [:2] -> 绿
+  loop.py:228 [:2] -> 绿
+  loop.py:229 [:2] -> 绿
+  memory.py:91 [:2] -> 红 1
+  memory.py:103 [:2] -> 红 6
+  memory.py:367 [:2] -> 绿
+  memory.py:504 [:2] -> 绿
+  metacog.py:457 [:2] -> 红 7
+  planner.py:858 [:2] -> 红 2
+  planner.py:921 [:2] -> 绿
+  planner.py:474 [:2] -> 绿
+  planner.py:887 [:2] -> 红 1
+  planner.py:864 [:2] -> 绿
+  planner.py:659 [:2] -> 绿
+  planner.py:772 [:2] -> 绿
+  tools.py:457 [:2] -> 红 4
+  planner.py:667 [:2] -> 绿
+  tools.py:250 [:2] -> 绿
+  tools.py:236 [:2] -> 红 1
+  tools.py:344 [:2] -> 红 3
+  tools.py:392 [:2] -> 绿
+  tools.py:368 [:2] -> 绿
+  tools.py:366 [:2] -> 绿
+  tools.py:353 [:2] -> 绿
+  values.py:226 [:2] -> 绿
+  verify.py:349 [:2] -> 绿
+  verify.py:491 [:2] -> 绿
+  worldmodel.py:424 [:2] -> 绿
+  worldmodel.py:442 [:2] -> 绿
+  worldmodel.py:254 [:2] -> 绿
+  worldmodel.py:255 [:2] -> 绿
+  worldmodel.py:300 [:2] -> 绿
+  worldmodel.py:301 [:2] -> 绿
+  worldmodel.py:308 [:2] -> 绿
+  worldmodel.py:400 [:2] -> 红 2
+  worldmodel.py:399 [:2] -> 绿
+  worldmodel.py:516 [:2] -> 绿
+  worldmodel.py:580 [:2] -> 红 2
+  worldmodel.py:252 [:2] -> 绿
+  worldmodel.py:306 [:2] -> 绿
+
+==================================================================
+覆盖 17/89 = 19.1%   （34.8 分）
+==================================================================
+
+模块                     站点   被覆盖
+core.py                28     6
+worldmodel.py          13     2
+bench.py                8     0
+planner.py              8     2
+tools.py                8     3
+loop.py                 6     0
+memory.py               5     2
+abstractor.py           3     1
+llm.py                  2     0
+verify.py               2     0
+critique.py             1     0
+features.py             1     0
+guard.py                1     0
+ledger.py               1     0
+metacog.py              1     1
+values.py               1     0
+
+被覆盖的站点：
+  abstractor.py:169  原值=1200  distill
+  core.py:423  原值=60  external_summary
+  core.py:2246  原值=120  _state
+  core.py:1697  原值=240  run
+  core.py:2266  原值=140  _state
+  core.py:1199  原值=100  run
+  core.py:1791  原值=200  run
+  memory.py:91  原值=32  fingerprint
+  memory.py:103  原值=24  fts_query
+  metacog.py:457  原值=8  deterministic_u01
+  planner.py:858  原值=300  _extract
+  planner.py:887  原值=64  _fallback
+  tools.py:457  原值=16  catalog_sha
+  tools.py:236  原值=4000  register_core_tools
+  tools.py:344  原值=8000  register_external_agents
+  worldmodel.py:400  原值=300  predict
+  worldmodel.py:580  原值=200  record_reward
+
+落盘 coverage.json

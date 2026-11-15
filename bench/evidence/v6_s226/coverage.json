@@ -1,0 +1,808 @@
+{
+ "total": 89,
+ "covered": 17,
+ "rate": 0.191,
+ "sites": [
+  {
+   "mod": "abstractor.py",
+   "lineno": 182,
+   "orig": 120,
+   "func": "distill",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "abstractor.py",
+   "lineno": 187,
+   "orig": 120,
+   "func": "distill",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "abstractor.py",
+   "lineno": 169,
+   "orig": 1200,
+   "func": "distill",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "bench.py",
+   "lineno": 445,
+   "orig": 32,
+   "func": "sha",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "bench.py",
+   "lineno": 734,
+   "orig": 20,
+   "func": "as_dict",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "bench.py",
+   "lineno": 223,
+   "orig": 10,
+   "func": "as_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "bench.py",
+   "lineno": 225,
+   "orig": 12,
+   "func": "as_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "bench.py",
+   "lineno": 803,
+   "orig": 200,
+   "func": "run_suite",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "bench.py",
+   "lineno": 328,
+   "orig": 200,
+   "func": "score",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "bench.py",
+   "lineno": 317,
+   "orig": 200,
+   "func": "score",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "bench.py",
+   "lineno": 326,
+   "orig": 200,
+   "func": "score",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 423,
+   "orig": 60,
+   "func": "external_summary",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "core.py",
+   "lineno": 3173,
+   "orig": 1000,
+   "func": "_finish",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 371,
+   "orig": 60,
+   "func": "tool_result_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1050,
+   "orig": 120,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2130,
+   "orig": 300,
+   "func": "_gate_finish",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2135,
+   "orig": 120,
+   "func": "_gate_finish",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2246,
+   "orig": 120,
+   "func": "_state",
+   "npass": 627,
+   "nfail": 4,
+   "covered": true
+  },
+  {
+   "mod": "core.py",
+   "lineno": 3317,
+   "orig": 60,
+   "func": "_finish",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1878,
+   "orig": 1000,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2129,
+   "orig": 200,
+   "func": "_gate_finish",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2268,
+   "orig": 140,
+   "func": "_state",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2541,
+   "orig": 8,
+   "func": "_note_shell",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2939,
+   "orig": 300,
+   "func": "_close_out",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1689,
+   "orig": 200,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1697,
+   "orig": 240,
+   "func": "run",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1879,
+   "orig": 200,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2266,
+   "orig": 140,
+   "func": "_state",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2938,
+   "orig": 200,
+   "func": "_close_out",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 2940,
+   "orig": 120,
+   "func": "_close_out",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1199,
+   "orig": 100,
+   "func": "run",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1792,
+   "orig": 300,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1221,
+   "orig": 100,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1548,
+   "orig": 40,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1624,
+   "orig": 40,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1626,
+   "orig": 80,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1791,
+   "orig": 200,
+   "func": "run",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1862,
+   "orig": 120,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "core.py",
+   "lineno": 1860,
+   "orig": 100,
+   "func": "run",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "critique.py",
+   "lineno": 63,
+   "orig": 120,
+   "func": "as_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "features.py",
+   "lineno": 184,
+   "orig": 16,
+   "func": "feature_version_hash",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "guard.py",
+   "lineno": 197,
+   "orig": 4,
+   "func": "check_goal",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "ledger.py",
+   "lineno": 214,
+   "orig": 16,
+   "func": "signature_of",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "llm.py",
+   "lineno": 118,
+   "orig": 400,
+   "func": "complete",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "llm.py",
+   "lineno": 130,
+   "orig": 300,
+   "func": "complete",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "loop.py",
+   "lineno": 145,
+   "orig": 12,
+   "func": "as_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "loop.py",
+   "lineno": 146,
+   "orig": 8,
+   "func": "as_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "loop.py",
+   "lineno": 484,
+   "orig": 12,
+   "func": "main",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "loop.py",
+   "lineno": 304,
+   "orig": 3,
+   "func": "run_loop",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "loop.py",
+   "lineno": 228,
+   "orig": 12,
+   "func": "as_lines",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "loop.py",
+   "lineno": 229,
+   "orig": 8,
+   "func": "as_lines",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "memory.py",
+   "lineno": 91,
+   "orig": 32,
+   "func": "fingerprint",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "memory.py",
+   "lineno": 321,
+   "orig": 12,
+   "func": "capture",
+   "npass": 7,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "memory.py",
+   "lineno": 103,
+   "orig": 24,
+   "func": "fts_query",
+   "npass": 625,
+   "nfail": 6,
+   "covered": true
+  },
+  {
+   "mod": "memory.py",
+   "lineno": 367,
+   "orig": 12,
+   "func": "expand",
+   "npass": 7,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "memory.py",
+   "lineno": 504,
+   "orig": 64,
+   "func": "recall",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "metacog.py",
+   "lineno": 457,
+   "orig": 8,
+   "func": "deterministic_u01",
+   "npass": 624,
+   "nfail": 7,
+   "covered": true
+  },
+  {
+   "mod": "planner.py",
+   "lineno": 858,
+   "orig": 300,
+   "func": "_extract",
+   "npass": 629,
+   "nfail": 2,
+   "covered": true
+  },
+  {
+   "mod": "planner.py",
+   "lineno": 921,
+   "orig": 5,
+   "func": "stats",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "planner.py",
+   "lineno": 887,
+   "orig": 64,
+   "func": "_fallback",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "planner.py",
+   "lineno": 474,
+   "orig": 160,
+   "func": "reseek_block",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "planner.py",
+   "lineno": 864,
+   "orig": 200,
+   "func": "_extract",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "planner.py",
+   "lineno": 659,
+   "orig": 200,
+   "func": "propose",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "planner.py",
+   "lineno": 772,
+   "orig": 200,
+   "func": "replan",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "planner.py",
+   "lineno": 667,
+   "orig": 3,
+   "func": "propose",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "tools.py",
+   "lineno": 457,
+   "orig": 16,
+   "func": "catalog_sha",
+   "npass": 627,
+   "nfail": 4,
+   "covered": true
+  },
+  {
+   "mod": "tools.py",
+   "lineno": 250,
+   "orig": 8000,
+   "func": "register_core_tools",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "tools.py",
+   "lineno": 236,
+   "orig": 4000,
+   "func": "register_core_tools",
+   "npass": 630,
+   "nfail": 1,
+   "covered": true
+  },
+  {
+   "mod": "tools.py",
+   "lineno": 344,
+   "orig": 8000,
+   "func": "register_external_agents",
+   "npass": 628,
+   "nfail": 3,
+   "covered": true
+  },
+  {
+   "mod": "tools.py",
+   "lineno": 392,
+   "orig": 8000,
+   "func": "register_external_agents",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "tools.py",
+   "lineno": 353,
+   "orig": 400,
+   "func": "register_external_agents",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "tools.py",
+   "lineno": 368,
+   "orig": 160,
+   "func": "register_external_agents",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "tools.py",
+   "lineno": 366,
+   "orig": 160,
+   "func": "register_external_agents",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "values.py",
+   "lineno": 226,
+   "orig": 3,
+   "func": "check_irreversible",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "verify.py",
+   "lineno": 349,
+   "orig": 48,
+   "func": "as_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "verify.py",
+   "lineno": 491,
+   "orig": 80,
+   "func": "_check_one",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 424,
+   "orig": 400,
+   "func": "predict",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 442,
+   "orig": 300,
+   "func": "_predict_by_retrieval",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 254,
+   "orig": 160,
+   "func": "as_episode",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 255,
+   "orig": 160,
+   "func": "as_episode",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 300,
+   "orig": 60,
+   "func": "as_heuristic",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 301,
+   "orig": 60,
+   "func": "as_heuristic",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 308,
+   "orig": 60,
+   "func": "as_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 399,
+   "orig": 600,
+   "func": "predict",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 400,
+   "orig": 300,
+   "func": "predict",
+   "npass": 629,
+   "nfail": 2,
+   "covered": true
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 516,
+   "orig": 200,
+   "func": "learn",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 580,
+   "orig": 200,
+   "func": "record_reward",
+   "npass": 629,
+   "nfail": 2,
+   "covered": true
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 252,
+   "orig": 160,
+   "func": "as_episode",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  },
+  {
+   "mod": "worldmodel.py",
+   "lineno": 306,
+   "orig": 60,
+   "func": "as_line",
+   "npass": 631,
+   "nfail": 0,
+   "covered": false
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+剔除集合: 噪声6 + 源码派生3 = 16
+  abstractor.py:169 原1200 首判=EFFECT 复判=EFFECT 一致
+  core.py:1697 原240 首判=EFFECT 复判=EFFECT 一致
+  core.py:3317 原60 首判=NOOP 复判=NOOP 一致
+  memory.py:504 原64 首判=NOOP 复判=NOOP 一致
+  tools.py:457 原16 首判=EFFECT 复判=EFFECT 一致
+
+抽查 5 站，一致 5/5

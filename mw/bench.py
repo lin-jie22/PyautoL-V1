@@ -184,8 +184,16 @@ class Caliber:
         return signature_of(self.as_dict())
 
     def diff(self, other: "Caliber") -> list[str]:
-        """点名差异字段 —— 拒绝时必须说清**哪一项**变了（不许只说"不一致"）。"""
-        return [k for k in CALIBER_KEYS if _val(getattr(self, k)) != _val(getattr(other, k))]
+        """点名差异字段 —— 拒绝时必须说清**哪一项**变了（不许只说"不一致"）。
+
+        ⛔ V142 修的一处：这里原来用 `a != b` 直接比 Python 值，而
+        `signature()` 走的是 `_canon`（JSON）。同一件事两套判据，于是
+        **进程内 `(0, 0)` 与落盘回来的 `[0, 0]` 被读成"不同口径"，而签名相同**：
+        `--compare` 对任何写盘基线都拒绝比较（签名说同一把尺子，diff 说不是）。
+        现在两边都按 `_canon` 比 —— "同口径"只剩一个定义。
+        """
+        return [k for k in CALIBER_KEYS
+                if _canon(_val(getattr(self, k))) != _canon(_val(getattr(other, k)))]
 
     def diff_except(self, other: "Caliber", declared: Any) -> tuple[list[str], list[str]]:
         """**声明的变量豁免**：把差异分成 (意外的, 已声明的)。
@@ -853,6 +861,11 @@ def _atomic_write(path: Path, text: str) -> None:
     os.replace(tmp, path)
 
 
+#: 一次运行的结论，只有这三个值（V140 定的，V142 开始落盘）。
+#: ⛔ 迟席（键不在）不是第四个值 —— 缺席是 `UNKNOWN`，而 `UNKNOWN` 不等于绿。
+VERDICTS = ("GREEN", "RED", "CRASH")
+
+
 @dataclass
 class BaselineStore:
     """基线的**唯一**读写通道。内核侧没有任何其他写入口。
@@ -885,13 +898,36 @@ class BaselineStore:
             return None
         return caliber_from_dict(d["caliber"])
 
+    def load_verdict(self) -> str | None:
+        """这份基线**是哪种运行写下来的**。
+
+        ⛔ 没有这个键 ⇒ `None`，**不是** `"GREEN"`。V142 之前写下的基线全都没有
+        这个键；把它们默认成绿，就是「拿没量到的东西当标准」（本类要防的正是这个）。
+        """
+        d = self.load()
+        if not d:
+            return None
+        v = d.get("verdict")
+        return v if v in VERDICTS else None
+
     def save(self, m: Measurement, caliber: Caliber, *,
+             verdict: str,
              allow_supersede: bool = False) -> tuple[bool, str]:
         """写入基线。**口径不一致时拒绝并保持盘面不动**（契约①）。
 
         返回 (是否写入, 说明)。被拒绝时文件**一个字节都不变** ——
         这是"标准不可被被测者改写"的物理实现。
+
+        ⛔ `verdict` 是**必填**（没有默认值）。默认值就是一条「不写也能过」的路：
+        以后任何一个人加个新调用点，忘了说这次量到没有，就会静默拿到一个标准。
+        只有 `GREEN` 能写成基线；`RED`/`CRASH`/`UNKNOWN` 一律拒绝。
         """
+        if verdict not in VERDICTS:
+            return False, (f"拒绝写入：运行结论 {verdict!r} 不是 GREEN/RED/CRASH"
+                           " ⇒ 这次运行量到没有都不知道，不许当标准")
+        if verdict != "GREEN":
+            return False, (f"拒绝写入：本次运行的判据是 {verdict}"
+                           " ⇒ 一次没量全的运行不许成为下一轮的标准")
         old = self.load()
         if old is not None:
             old_cal = self.load_caliber()
@@ -915,6 +951,10 @@ class BaselineStore:
             "caliber": caliber.as_dict(),
             "caliber_sig": caliber.signature(),
             "measurement": measurement_to_dict(m),
+            # ★ V142：**这份基线是哪种运行写下来的**。没有这一格，下一轮的
+            #   `--compare` 就不知道自己在拿什么当参照 —— 一次崩掉的运行
+            #   与一次跑完的运行，在旧文件里长得一模一样。
+            "verdict": verdict,
             "saved_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         })
         _atomic_write(self.path, body)
@@ -931,6 +971,20 @@ def verdict_against_baseline(base: Measurement, cand: Measurement, *,
     return paired_compare(base, cand, min_gain=min_gain)
 
 
+def baseline_verdict_gate(verdict: str | None) -> tuple[bool, str]:
+    """**这份基线能不能当参照**。返回 `(可比较, 拒绝理由)`。
+
+    ⛔ `None`（没有这个键）**不是** GREEN：V142 之前写下的每一份基线都没有这一格，
+    它们可能来自一次崩掉的运行、也可能来自一次跑完的运行 —— 从文件里看不出来。
+    「看不出来」的正确答案是**不判定**，不是「按绿处理」。
+    """
+    if verdict == "GREEN":
+        return True, ""
+    if verdict is None:
+        return False, ("基线里没有 `verdict` 字段（V142 之前的旧基线 ⇒ 来源不明）")
+    return False, f"基线来自一次 {verdict} 的运行（没有量全）"
+
+
 # ===========================================================================
 # 8. 落盘出口（契约④ 最后一步）—— 内存态计数必须能被别的进程读到
 # ===========================================================================
@@ -941,3 +995,92 @@ def append_jsonl(path: Path, record: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "a", encoding="utf-8") as f:
         f.write(_canon(record) + "\n")
+
+
+# ── 账本里「结论」这一格的两个出口（V142，§209）─────────────────────────────
+# 为什么需要它们：`runs.jsonl` 是**活文件**，每一行是一次运行的读数；但在 V142
+# 之前，那一行**不知道自己这次量到没有**。读它的人只有两条路 ——
+#   ① 不读（现状）；② `.get("verdict", "GREEN")`（默认成绿）。
+# 两条都等于「拿没量到的东西当标准」。所以结论必须**写进它自己那一行**，
+# 并且读的时候**缺席 = UNKNOWN**，不是绿。
+#
+# ⛔ 为什么钉的是 `run_id` 而不是「最后一行」：最后一行是**位置**，不是**身份**。
+#    并发、重跑、被别的进程插一行，位置就指错了人。身份对不上 ⇒ 拒绝钉。
+def _read_records(path: Path) -> list[dict] | None:
+    """整份账本读成记录表。任何一行不是 JSON ⇒ `None`（不跳过坏行：
+    跳过等于把「账本坏了」读成「账本少一行」）。"""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    out = []
+    for ln in text.splitlines():
+        s = ln.strip()
+        if not s:
+            continue
+        try:
+            out.append(json.loads(s))
+        except json.JSONDecodeError:
+            return None
+    return out
+
+
+def ledger_verdict(path: Path, run_id: str) -> tuple[str, str]:
+    """读**某一次运行自己的**结论。返回 `(状态, 理由)`。
+
+    状态 ∈ `GREEN/RED/CRASH/UNKNOWN`。⛔ `UNKNOWN` 出现在三种情形：
+    账本读不出来、没有这一行、这一行没有结论（`verdict` 键缺席或不是三值之一，
+    包括本轮的占位值 `PENDING`）。三种都**不是** GREEN —— 缺席不许冒充零失败
+    （纪律 5），这里是它的孪生：缺席不许冒充完成。
+    """
+    recs = _read_records(path)
+    if recs is None:
+        return "UNKNOWN", f"账本读不出来或有一行不是 JSON（{path}）"
+    hit = None
+    for rec in reversed(recs):
+        if rec.get("run_id") == run_id:
+            hit = rec
+            break
+    if hit is None:
+        return "UNKNOWN", f"账本 {len(recs)} 行里没有 run_id={run_id} 这一行"
+    v = hit.get("verdict")
+    if v not in VERDICTS:
+        return "UNKNOWN", (f"这一行没有结论（verdict={v!r}）"
+                           " ⇒ 不知道这次量到没有")
+    return v, f"verdict={v}（run_id={run_id}）"
+
+
+def stamp_verdict(path: Path, run_id: str, verdict: str) -> tuple[bool, str]:
+    """把结论钉进账本里**它自己那一行**。返回 `(是否写入, 说明)`。
+
+    ⛔ 最后一条的 `run_id` 对不上 ⇒ **拒绝**（不写盘、不改任何字节）。
+       「钉最后一行」在并发/重跑/被插行时会钉到别人身上，而且钉错了没人看得出来
+       —— 错的那一行也带一个看起来合法的 verdict。
+    ⛔ 整个文件原子重写：半截账本比没有账本更坏（谁也说不清哪几行是真的）。
+    """
+    if verdict not in VERDICTS:
+        return False, f"拒绝钉：{verdict!r} 不是 GREEN/RED/CRASH"
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as e:
+        return False, f"账本读不出来（{type(e).__name__}: {e}）"
+    idx = None
+    for i in range(len(lines) - 1, -1, -1):
+        if lines[i].strip():
+            idx = i
+            break
+    if idx is None:
+        return False, "账本是空的，没有可钉的行"
+    try:
+        rec = json.loads(lines[idx])
+    except json.JSONDecodeError:
+        return False, f"第 {idx + 1} 行不是 JSON，拒绝改一份读不懂的账本"
+    if rec.get("run_id") != run_id:
+        return False, (f"最后一条不是这次运行（{rec.get('run_id')!r} ≠ {run_id!r}）"
+                       " ⇒ 拒绝钉：位置不是身份")
+    rec["verdict"] = verdict
+    rec["verdict_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    lines[idx] = _canon(rec)
+    _atomic_write(path, "\n".join(lines) + "\n")
+    return True, f"已把 {verdict} 钉在 run_id={run_id}"
+

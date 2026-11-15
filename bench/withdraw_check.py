@@ -1613,11 +1613,97 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
         return "CRASH", "汇总行存在但解析不出 PASS/FAIL ⇒ 格式退化"''',
      '''    if not m:
         return "GREEN", "汇总行存在但解析不出 PASS/FAIL ⇒ 格式退化"'''),
+
+    # ── AZ126：三值判据本身（V140 / §207）—— V141 登记的欠账，第 142 轮补 ────
+    #: 撤的语义：把那份**真实崩溃日志的材料**改一个数（7→8）。AZ126a 断言的是
+    #:   「旧口径读到 7/0」，改材料 ⇒ 读到 8/0 ⇒ 必红。这不是改实现，是改**输入**：
+    #:   一条只描述历史材料的断言，能撤的东西就只有材料本身（登记为「材料型」）。
+    ("AZ126a", "tests/contract_test.py",
+     r'''    "  ✅ H8 汇总行可被外部 runner 正则解析（§134/§135 的坑）  (PASS=7  FAIL=0)\n"''',
+     r'''    "  ✅ H8 汇总行可被外部 runner 正则解析（§134/§135 的坑）  (PASS=8  FAIL=0)\n"'''),
+    #: 撤的语义：**判据缺席时改判绿**（规则 1 失效）—— 这正是「缺席冒充零失败」。
+    #:   ⇒ AZ126b 必红。@ 不撤成 raise，那会让契约进程崩掉（转红 ≠ 崩）。
+    ("AZ126b", "mw/measure.py",
+     '''    if not lines:
+        return "CRASH", ("日志里没有汇总行（判据缺席）"''',
+     '''    if not lines:
+        return "GREEN", ("日志里没有汇总行（判据缺席）"'''),
+    #: 撤的语义：**失败计数不再判红**（规则 4 失效）⇒ 有失败的运行落进规则 6 变绿。
+    #:   ⇒ AZ126c（红两值仍与旧口径一致）必红。
+    ("AZ126c", "mw/measure.py",
+     '''    if n_fail:
+        return "RED", f"{n_fail} 条断言失败（通过 {n_pass} 条）"''',
+     '''    if False:
+        return "RED", f"{n_fail} 条断言失败（通过 {n_pass} 条）"'''),
+    #: 撤的语义：**把默认方向翻回旧世界**（不声明也算跑完）⇒ AZ126d 必红。
+    #:   这一条撤的是 fail-closed 本身，不是它的某个分支。
+    ("AZ126d", "mw/measure.py",
+     '''    finished: bool = False''',
+     '''    finished: bool = True'''),
+    #: 撤的语义：**允许多行判据**（规则 2 失效）⇒ 有东西能冒充判据。⇒ AZ126e 必红。
+    ("AZ126e", "mw/measure.py",
+     '''    if len(lines) > 1:''',
+     '''    if False:'''),
+    #: 撤的语义：人读行**带上判据前缀**（它就成了第二个能冒充判据的字符串）。
+    #:   ⚠️ 前缀放在**行尾**不是行首：行首会让 `_SUMMARY` 正则失配 ⇒ 撤回驱动器
+    #:   自己读不出汇总行、「基线不绿」而拒绝开工 —— 那是装置坏了，不是断言红了。
+    ("AZ126f", "mw/measure.py",
+     '''        return f"PASS={self.pass_n}  FAIL={self.fail_n}"''',
+     '''        return f"PASS={self.pass_n}  FAIL={self.fail_n} {SENTINEL}"'''),
+
+    # ── AZ128：结论要有去处（V142 / §209）──────────────────────────────────
+    #: 撤的语义：**没有结论也当绿**（这正是「缺席默认成绿」）⇒ AZ128a 必红；
+    #:   连 AZ128e/c 的「旧记录仍是 UNKNOWN」也一起红（同一判据的三个面）。
+    ("AZ128a", "mw/bench.py",
+     '''    if v not in VERDICTS:
+        return "UNKNOWN", (f"这一行没有结论（verdict={v!r}）"''',
+     '''    if v not in VERDICTS:
+        return "GREEN", (f"这一行没有结论（verdict={v!r}）"'''),
+    #: 撤的语义：**钉最后一行**（位置当身份）⇒ AZ128b 必红（错的那行也被钉上）。
+    ("AZ128b", "mw/bench.py",
+     '''    if rec.get("run_id") != run_id:''',
+     '''    if False:'''),
+    #: 撤的语义：**钉的内容不是这次的结论**（写死 GREEN）⇒ AZ128c 必红。
+    ("AZ128c", "mw/bench.py",
+     '''    rec["verdict"] = verdict''',
+     '''    rec["verdict"] = "GREEN"'''),
+    #: 撤的语义：**没量全的运行也能当标准**（RED 放行）⇒ AZ128d 必红。
+    ("AZ128d", "mw/bench.py",
+     '''        if verdict != "GREEN":''',
+     '''        if False:'''),
+    #: 撤的语义：**旧基线读成绿**（缺席补默认值）⇒ AZ128e 必红。
+    ("AZ128e", "mw/bench.py",
+     '''        return v if v in VERDICTS else None''',
+     '''        return v if v in VERDICTS else "GREEN"'''),
+    #: 撤的语义：**来源不明也放行比较**⇒ AZ128f 必红。
+    ("AZ128f", "mw/bench.py",
+     '''    if verdict is None:
+        return False, ("基线里没有 `verdict` 字段（V142 之前的旧基线 ⇒ 来源不明）")''',
+     '''    if verdict is None:
+        return True, ""'''),
+    #: 撤的语义：**函数体里也写一次基线**（先签收后验货回来了）⇒ AZ128g 必红。
+    #:   ⚠️ 只撤「多一处调用点」，不撤外壳那一处 —— 两个变量一次只动一个。
+    ("AZ128g", "run.py",
+     '''            gate.request_save(store, m, caliber)''',
+     '''            gate.request_save(store, m, caliber)
+            store.save(m, caliber, verdict="GREEN")  # 撤回态：函数体里也写一次'''),
+    #: 撤的语义：**「同口径」回到 Python 值比较**（tuple ≠ list）⇒ AZ128h 必红。
+    #:   这正是 V142 修掉的那个 bug 的原形。
+    ("AZ128h", "mw/bench.py",
+     '''        return [k for k in CALIBER_KEYS
+                if _canon(_val(getattr(self, k))) != _canon(_val(getattr(other, k)))]''',
+     '''        return [k for k in CALIBER_KEYS
+                if _val(getattr(self, k)) != _val(getattr(other, k))]'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
 #: ⛔ 写成白名单而不是"允许任意多条"：允许多条就等于不再检查锚定跑偏。
 COUPLED: dict[str, frozenset[str]] = {
+    #: ★第 142 轮：AZ128a 撤的是「账本里没有结论也当绿」。AZ128c 的**第三半句**
+    #:   是「钉完 r-pend 之后，旧记录 r-old 仍然是 UNKNOWN」—— 它测的是同一个
+    #:   判据的另一个面（同一函数、同一行）。撤了那个分支，两个面一起翻。
+    #:   ⚠️ 实测就多红这一个，且 汇总行 648/2 与「两条断言」对得上（分母自证）。
+    "AZ128a": frozenset({"AZ128c"}),
     #: AZ22a（把全表兜底加回）⇒ 前两题的"零命中"又变成 4 条 ⇒ AZ23 的
     #: `[0,0,1,1]` 立刻不成立。**同一段 SQL 的两个面**，合理连带。
     #: ★第三十八轮补登 AZ26/AZ30：兜底回来了 ⇒ n0 档命中 4 条（AZ26 红）；

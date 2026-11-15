@@ -1,0 +1,18 @@
+# V142 / §209.2 —— 口径闸死锁的复现与修复（同一段代码，两个版本）
+# 脚本见下（这里贴的就是它的全文）：
+
+
+from mw.bench import Caliber
+import json
+c = Caliber(memory_seed=(0,0), repeat=1)
+disk = Caliber(**{k: v for k, v in json.loads(json.dumps(c.as_dict())).items()})
+print('sig 相同 :', c.signature()==disk.signature())
+print('same_as :', c.same_as(disk), '| diff:', c.diff(disk))
+
+== 旧版（f9fed87，memory_seed 刚进口径的那一版）==
+sig 相同 : True
+same_as : False | diff: ['memory_seed']
+
+== 新版（V142 之后，diff 也走 _canon）==
+sig 相同 : True
+same_as : True | diff: []

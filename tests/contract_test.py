@@ -507,6 +507,122 @@ check(RS, "AZ127e 读者无记忆：先判半截日志（CRASH）再判完整日
       f"half={judge_run_log(_az127_half, 0)[0]} good={judge_run_log(_az127_good, 0)[0]}")
 
 
+# ── AZ128 结论要有去处：账本 / 基线 / 比较（第 142 轮）────────────────────
+# 上一轮（V141）让系统**读**了自己的日志；这一轮要它**不许忘记自己读到什么**。
+# 三条链各自独立、各配一条断言：
+#   账本（runs.jsonl）：每一行带自己的结论；缺席 = UNKNOWN，**不是绿**；
+#   基线（bench_baseline.json）：只有 GREEN 的运行能写成标准；
+#   比较（--compare）：来源不明或没量全的基线 ⇒ **拒绝比较**，不出一句「改进成立」。
+from mw.bench import (BaselineStore, Caliber, baseline_verdict_gate,  # noqa: E402
+                      caliber_from_dict, ledger_verdict, stamp_verdict)
+
+_az128_dir = Path(tempfile.mkdtemp(prefix="v142_ledger_"))
+_az128_log = _az128_dir / "runs.jsonl"
+
+
+def _az128_write(*recs: dict) -> None:
+    _az128_log.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n"
+                                 for r in recs), encoding="utf-8")
+
+
+_az128_write({"run_id": "r-old", "measurement": {"mean": 1.0}},          # 旧格式：无 verdict
+             {"run_id": "r-pend", "verdict": "PENDING"})                 # 本轮占位：没钉上
+_az128_old = ledger_verdict(_az128_log, "r-old")
+_az128_pend = ledger_verdict(_az128_log, "r-pend")
+_az128_missing = ledger_verdict(_az128_log, "r-不存在")
+check(RS, "AZ128a 账本里**没有结论**的三条路都读成 UNKNOWN ≠ GREEN\n"
+          "              ①键缺席（V142 之前的 145 条真实记录全是这种）\n"
+          "              ②占位值 PENDING（进程在钉结论之前死了）\n"
+          "              ③账本里没有这一行 ——— 缺席不许冒充完成",
+      _az128_old[0] == "UNKNOWN" and _az128_pend[0] == "UNKNOWN"
+      and _az128_missing[0] == "UNKNOWN",
+      f"旧={_az128_old[0]} 占位={_az128_pend[0]} 无此行={_az128_missing[0]}")
+
+# ⛔ 钉结论钉的是**身份**不是**位置**：最后一行若不是这次运行，必须拒绝。
+_az128_before = _az128_log.read_bytes()
+_az128_stamped, _az128_why = stamp_verdict(_az128_log, "r-别人", "GREEN")
+check(RS, "AZ128b `stamp_verdict` 只钉 run_id 匹配的那一行；位置不是身份\n"
+          "              ⛔ 「钉最后一行」在并发/重跑/被插行时会钉到别人身上，\n"
+          "              而且钉错了没人看得出来 —— 错的那行也带一个合法的 verdict",
+      (not _az128_stamped) and _az128_log.read_bytes() == _az128_before,
+      _az128_why[:80])
+_az128_ok, _az128_why2 = stamp_verdict(_az128_log, "r-pend", "RED")
+check(RS, "AZ128c 钉对了才写盘，且**读回**拿到刚钉的值（写 ≠ 写进去了）",
+      _az128_ok and ledger_verdict(_az128_log, "r-pend")[0] == "RED"
+      and ledger_verdict(_az128_log, "r-old")[0] == "UNKNOWN",
+      f"{_az128_why2} 读回={ledger_verdict(_az128_log, 'r-pend')[0]}")
+
+_az128_store = BaselineStore(_az128_dir / "bench_baseline.json")
+_az128_m = summarize([0.8, 0.8, 0.8], candidate="A", budget_tag="1x")
+_az128_cal = Caliber(scorer_sha="s", suite_sha="u", repeat=1)
+_az128_r1, _az128_w1 = _az128_store.save(_az128_m, _az128_cal, verdict="RED")
+_az128_r2, _az128_w2 = _az128_store.save(_az128_m, _az128_cal, verdict="PENDING")
+_az128_r3, _az128_w3 = _az128_store.save(_az128_m, _az128_cal, verdict="GREEN")
+check(RS, "AZ128d 只有 GREEN 的运行能写成基线（RED / 未知一律拒绝，盘面不动）\n"
+          "              ⛔ `verdict` 是**必填**参数：给它一个默认值，就等于给\n"
+          "              「忘了说这次量到没有」留了一条静默通过的路",
+      (not _az128_r1) and (not _az128_r2) and _az128_r3
+      and _az128_store.load_verdict() == "GREEN",
+      f"RED={_az128_r1} 未知={_az128_r2} GREEN={_az128_r3} 落盘={_az128_store.load_verdict()}")
+_az128_doc = json.loads(_az128_store.path.read_text(encoding="utf-8"))
+_az128_doc.pop("verdict", None)
+_az128_old_bl = _az128_dir / "old_baseline.json"
+_az128_old_bl.write_text(json.dumps(_az128_doc), encoding="utf-8")
+check(RS, "AZ128e 旧基线（无 verdict 键）读回来是 **None**，不是 \"GREEN\"\n"
+          "              这是「拿没量到的东西当标准」的唯一入口，必须在反序列化处堵死",
+      BaselineStore(_az128_old_bl).load_verdict() is None,
+      f"load_verdict={BaselineStore(_az128_old_bl).load_verdict()!r}")
+
+_az128_gates = {v: baseline_verdict_gate(v)[0]
+                for v in ("GREEN", "RED", "CRASH", None)}
+check(RS, "AZ128f 基线比较闸：只有 GREEN 放行（无关来源的三种都拒绝）",
+      _az128_gates == {"GREEN": True, "RED": False, "CRASH": False, None: False},
+      f"{_az128_gates}")
+
+# ⛔ 写基线的调用点必须**唯一且在外壳**（读回之后）。函数体里再出现一处，
+#    「先签收后验货」就回来了 —— 而它看起来完全正常。
+#    ⚠️ 只数 `store.save(...)`：`run.py` 里还有 `_ans_log.save(...)`（答案落盘），
+#       按方法名数会把两件事算成一件（分母口径，纪律 4）。
+def _az128_store_saves(node) -> int:
+    """数 `store.save(...)` 与 `xxx.store.save(...)` —— 两种都算同一个写入口。
+
+    ⚠️ 第一版只认 `ast.Name == "store"`，而外壳里写的是 `gate.store.save(...)`
+       ⇒ 三处全数成 0，断言当场红。「计数器的形状要跟着被数的东西长」。
+    """
+    n = 0
+    for x in ast.walk(node):
+        if not (isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute)
+                and x.func.attr == "save"):
+            continue
+        recv = x.func.value
+        if ((isinstance(recv, ast.Name) and recv.id == "store")
+                or (isinstance(recv, ast.Attribute) and recv.attr == "store")):
+            n += 1
+    return n
+
+
+_az128_bodies = {n.name: n for n in ast.walk(_az127_tree)
+                 if isinstance(n, ast.FunctionDef) and n.name in ("cmd_bench", "_bench_main")}
+_az128_save_sites = _az128_store_saves(_az127_tree)
+_az128_in_shell = _az128_store_saves(_az128_bodies["cmd_bench"])
+_az128_in_body = _az128_store_saves(_az128_bodies["_bench_main"])
+check(RS, "AZ128g 写基线只在**外壳**里发生一次，函数体内 0 次（AST 现算）\n"
+          "              ⛔ 函数体那一处就是「判据还没产生就先写标准」",
+      _az128_save_sites == 1 and _az128_in_shell == 1 and _az128_in_body == 0,
+      f"全文件 .save( 调用={_az128_save_sites} 外壳={_az128_in_shell} 函数体={_az128_in_body}")
+
+# ⛔ 「同口径」只能有**一个**定义。V142 修的那处：`signature()` 走 JSON、
+#    `diff()` 走 Python 值 ⇒ 落盘回来的 `[0, 0]` 与进程内的 `(0, 0)` 被读成
+#    不同口径，于是 `--compare` 对**任何**写盘基线都拒绝比较。
+_az128_c = Caliber(memory_seed=(0, 0), repeat=1, limits={"a": 1})
+_az128_rt = caliber_from_dict(json.loads(json.dumps(_az128_c.as_dict())))
+check(RS, "AZ128h 签名相同 ⇒ `diff` 必须为空（同一个「同口径」不许有两套判据）\n"
+          "              tuple/list 的差别只是序列化形状，不是尺子变了",
+      _az128_c.signature() == _az128_rt.signature() and _az128_c.same_as(_az128_rt),
+      f"sig同={_az128_c.signature() == _az128_rt.signature()} "
+      f"diff={_az128_c.diff(_az128_rt)}")
+
+
 # ===========================================================================
 print()
 print("=" * 74)

@@ -1,0 +1,69 @@
+{
+  "A_old": {
+    "账本": "/Users/linshaojie/V1/bench_out/runs.jsonl",
+    "行数": 145,
+    "有verdict键的行": 0,
+    "有run_id可以查的": 62,
+    "没有run_id查不了的": 83,
+    "可查行里UNKNOWN": 62,
+    "可查行里GREEN": 0,
+    "对照_默认成绿会把多少条读成GREEN": 145
+  },
+  "B_new": {
+    "run_id": "55525@1794757482",
+    "verdict": "GREEN",
+    "verdict_at": "2026-11-15T23:44:42",
+    "回读": "GREEN",
+    "rc": 0,
+    "sentinel行数": 1
+  },
+  "C_red": {
+    "退出码": 1,
+    "基线sha_跑前": "1b97287afb78f9279857e0850e55ab770d63165de2609a5b7215cd65d0cab0e8",
+    "基线sha_跑后": "1b97287afb78f9279857e0850e55ab770d63165de2609a5b7215cd65d0cab0e8",
+    "判据": [
+      "::VERDICT:: RED  PASS=0  FAIL=1"
+    ],
+    "拒绝句": [
+      "⛔ 不写基线：本次运行的判据是 RED ⇒ 一次没量全的运行不许成为下一轮的标准。"
+    ]
+  },
+  "D_crash": {
+    "rc": 0,
+    "出现判定行": false,
+    "拒绝句": [
+      "⛔ 基线来自一次 CRASH 的运行（没有量全） ⇒ **拒绝比较**（不出一句「改进成立」）。"
+    ],
+    "verdict": "CRASH"
+  },
+  "E_old": {
+    "rc": 0,
+    "出现判定行": false,
+    "拒绝句": [
+      "⛔ 基线里没有 `verdict` 字段（V142 之前的旧基线 ⇒ 来源不明） ⇒ **拒绝比较**（不出一句「改进成立」）。"
+    ],
+    "verdict": "<缺席>"
+  },
+  "F_green": {
+    "rc": 0,
+    "出现判定行": true,
+    "拒绝句": [],
+    "verdict": "GREEN"
+  },
+  "G_nostamp": {
+    "rc": 1,
+    "账本状态": "UNKNOWN",
+    "读回行": [
+      "判据读回  CRASH  — 账本与日志不一致：钉=True（控制变异：故意不写盘）；账本读到 UNKNOWN（这一行没有结论（verdict='PENDING'） ⇒ 不知道这次量到没有）"
+    ]
+  },
+  "bets": {
+    "W1 旧记录不默认成绿": true,
+    "W2 新记录带 verdict": true,
+    "W3 RED 写不进基线": true,
+    "W4 CRASH 基线拒绝比较": true,
+    "W5 旧基线拒绝比较": true,
+    "W6 GREEN 基线仍可比": true,
+    "W7 账本没钉上 ⇒ CRASH": true
+  }
+}

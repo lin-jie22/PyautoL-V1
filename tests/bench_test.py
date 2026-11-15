@@ -526,17 +526,17 @@ _store = B.BaselineStore(_TMP / "baseline" / "bench_baseline.json")
 _mA = summarize([0.80, 0.82, 0.81], candidate="A", budget_tag="1x")
 _mB = summarize([0.55, 0.54, 0.56], candidate="B", budget_tag="1x")
 
-_w1, _why1 = _store.save(_mA, _c1)
+_w1, _why1 = _store.save(_mA, _c1, verdict="GREEN")
 check(RS, "F1 首次写入基线成功", _w1, _why1)
 check(RS, "F2 读回的读数与写入一致",
       (lambda r: r is not None and abs(r.mean - _mA.mean) < 1e-9)(_store.load_measurement()))
 
-_w2, _why2 = _store.save(_mA, _c2)
+_w2, _why2 = _store.save(_mA, _c2, verdict="GREEN")
 check(RS, "F3 同口径再写 ⇒ 覆盖成功", _w2, _why2)
 
 # ⛔ 核心：口径不同 ⇒ **拒绝**，且盘面**一个字节都不变**
 _before = _md5(_store.path)
-_w3, _why3 = _store.save(_mB, _c3)          # _c3 的 budget_tag 是 2x
+_w3, _why3 = _store.save(_mB, _c3, verdict="GREEN")          # _c3 的 budget_tag 是 2x
 _after = _md5(_store.path)
 check(RS, "F4 口径不一致 ⇒ 拒绝写入", not _w3, _why3[:100] if _why3 else "")
 check(RS, "F5 被拒绝后基线文件**字节不变**（标准不可被改写）",
@@ -545,7 +545,7 @@ check(RS, "F6 拒绝时**点名**差异字段", "budget_tag" in _why3, _why3[:12
 check(RS, "F7 拒绝后读回的仍是旧口径读数",
       (lambda r: r is not None and abs(r.mean - _mA.mean) < 1e-9)(_store.load_measurement()))
 
-_w4, _why4 = _store.save(_mB, _c3, allow_supersede=True)
+_w4, _why4 = _store.save(_mB, _c3, verdict="GREEN", allow_supersede=True)
 check(RS, "F8 allow_supersede=True ⇒ 写入成功", _w4, _why4[:80])
 _sups = list(_store.path.parent.glob("*_superseded_*.json"))
 check(RS, "F9 旧值被**另存**为 superseded（不销毁）", len(_sups) == 1,
@@ -564,7 +564,7 @@ check(RS, "F12 原子写：目录内无 .tmp 残留",
       not list(_store.path.parent.glob("*.tmp")),
       str([p.name for p in _store.path.parent.glob("*.tmp")]))
 
-_w5, _why5 = _store.save(_mB, _c3)
+_w5, _why5 = _store.save(_mB, _c3, verdict="GREEN")
 check(RS, "F13 口径已切换后，同口径再写是覆盖而非再另存",
       _w5 and len(list(_store.path.parent.glob("*_superseded_*.json"))) == 1)
 

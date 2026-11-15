@@ -1864,6 +1864,31 @@ def _bench_log_path() -> Path:
     return cfg.settings().paths.bench / "last_run.log"
 
 
+class _BenchGate:
+    """**待办与身份**：里面那个 700 行的函数登记，外壳在判据出来后执行。
+
+    为什么非要绕这一道（V142）：`--save-baseline` 原来在函数体里直接写盘，
+    而那时**判据还没产生**（日志还没关、还没读回）。于是
+    「一次崩掉的运行能不能当标准」这个问题在代码里压根没有被问过。
+
+    ⛔ 现在写基线的**唯一**入口在外壳里，在 `state` 之后。函数体只登记待办。
+    """
+
+    def __init__(self) -> None:
+        self.pending_save = False          # 有人要写基线，但还没到写的时候
+        self.store = None                  # BaselineStore
+        self.measure = None                # Measurement
+        self.caliber = None                # Caliber
+        self.run_id: str = ""              # 这次运行在账本里的身份证
+
+    def request_save(self, store, m, caliber) -> None:
+        self.pending_save = True
+        self.store, self.measure, self.caliber = store, m, caliber
+
+    def claim_run(self, run_id: str) -> None:
+        self.run_id = run_id
+
+
 def judge_run_log(path, rc: int = 0) -> tuple[str, str]:
     """**生产读取点**：从落盘的日志判读一次运行。返回 `(状态, 理由)`。
 
@@ -1908,9 +1933,11 @@ def cmd_bench(args) -> int:
     """
     # ⚠️ 已知缺口（§208 边界 4）：`--suite-dir` 走 `_cross_domain`，不产生判据行。
     #    本轮不接线 —— 硬接线会让门禁 5a/5b 的两条跨领域冒烟变成 CRASH。
+    #    ★ V142：正因为没有判据行，这条路径**也不许写基线**（gate=None ⇒ 函数体拒绝）。
     if getattr(args, "suite_dir", ""):
         return _bench_main(args)
 
+    gate = _BenchGate()
     log_path = _bench_log_path()
     log_path.parent.mkdir(parents=True, exist_ok=True)
     # ⛔ `"w"` 不是随手写的：上一次运行的判据行必须**物理上消失**。
@@ -1921,7 +1948,7 @@ def cmd_bench(args) -> int:
     _crashed: BaseException | None = None
     sys.stdout = tee
     try:
-        rc = _bench_main(args)
+        rc = _bench_main(args, gate)
     except BaseException as e:            # ⛔ 只登记判据态，**不吞**异常
         _crashed = e
         raise
@@ -1942,13 +1969,49 @@ def cmd_bench(args) -> int:
         return rc
 
     state, why = judge_run_log(log_path, rc)
+
+    # ── V142：把结论钉回账本里**它自己那一行**，再读回来核对 ──────────────
+    # 为什么钉完还要读回：钉是**写**，读是**证据**。写成功不等于写进去了
+    # （磁盘满、路径被换、函数被改），而"我自己说钉上了"正是要被校验的那句话。
+    save_ok: bool | None = None
+    if gate.run_id:
+        from mw.bench import ledger_verdict, stamp_verdict
+        runs_path = cfg.settings().paths.bench / "runs.jsonl"
+        _stamped, _msg = stamp_verdict(runs_path, gate.run_id, state)
+        _stated, _swhy = ledger_verdict(runs_path, gate.run_id)
+        if not _stamped or _stated != state:
+            why = (f"账本与日志不一致：钉={_stamped}（{_msg}）；"
+                   f"账本读到 {_stated}（{_swhy}）")
+            state = "CRASH"
+        else:
+            why = f"{why}；账本已钉 {_stated}"
+
+    # ── V142：写基线的**唯一**入口，在判据之后 ────────────────────────────
+    if gate.pending_save:
+        if state != "GREEN":
+            print()
+            print(f"  ⛔ 不写基线：本次运行的判据是 {state}"
+                  " ⇒ 一次没量全的运行不许成为下一轮的标准。")
+            print("     盘面一个字节没动。要看它错成什么样，读上面那些读数。")
+            save_ok = False
+        else:
+            ok, msg = gate.store.save(gate.measure, gate.caliber, verdict=state,
+                                      allow_supersede=args.allow_supersede)
+            print()
+            print(f"  {'✅' if ok else '⛔'} {msg}")
+            save_ok = ok
+
     print("─" * 74)
     print(f"  判据读回  {state}  — {why}")
     print(f"  运行日志  {log_path}  （判据行唯一；同目录 `runs.jsonl` 是账本）")
-    return _rc_after_readback(rc, state)
+    rc = _rc_after_readback(rc, state)
+    # 有人要写基线而没写成 ⇒ 退出码必须说话：`rc=0` 会被调用方读成「存好了」。
+    if save_ok is False and rc == 0:
+        rc = 1
+    return rc
 
 
-def _bench_main(args) -> int:
+def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     """外部锚层模式 —— 系统与"分数自娱自乐"的分界线就在这个函数里。
 
     一个再大的自演化系统，也可能没有任何地方能回答
@@ -1962,8 +2025,9 @@ def _bench_main(args) -> int:
         3. **后闸**：写基线前校验口径签名，口径变了就拒绝，旧值另存。
     """
     from mw.bench import (BaselineStore, Caliber, ExternalScorer, Suite,
-                          append_jsonl, calibrate, measurement_to_dict,
-                          run_suite, verdict_against_baseline)
+                          append_jsonl, baseline_verdict_gate, calibrate,
+                          measurement_to_dict, run_suite,
+                          verdict_against_baseline)
 
     # ⚠️ 把 CLI 的温度**写进环境**，让内核（planner / worldmodel）也遵守它。
     #
@@ -2633,20 +2697,35 @@ def _bench_main(args) -> int:
     if args.compare and old is None:
         print("  无基线可比（这是第一次）。")
     elif args.compare:
-        base = store.load_measurement()
-        if base is None:
-            print("  基线文件存在但读数不可解析 ⇒ 拒绝比较。")
-        elif not old.same_as(caliber):
-            print(f"  ⛔ 口径不一致（差异字段 {old.diff(caliber)}）⇒ **拒绝比较**。")
-            print("     跨口径的两个数字放在一张表里，结论就是作废的。")
+        # ★ V142：先问**这份基线是怎么来的**，再问它说多少。
+        #   一次崩掉的运行写下的数字也是数字；拿它当参照，`paired_compare`
+        #   会一本正经地算出「改进成立」——而参照物本身没量到东西。
+        _bv = store.load_verdict()
+        _okv, _whyv = baseline_verdict_gate(_bv)
+        if not _okv:
+            print(f"  ⛔ {_whyv} ⇒ **拒绝比较**（不出一句「改进成立」）。")
+            print("     改用一次判据为 GREEN 的运行重写基线：--save-baseline。")
         else:
-            ok, why = verdict_against_baseline(base, m)
-            print(f"  基线 {base.as_line()}")
-            print(f"  判定 {'改进成立' if ok else '不成立'} — {why}")
+            base = store.load_measurement()
+            if base is None:
+                print("  基线文件存在但读数不可解析 ⇒ 拒绝比较。")
+            elif not old.same_as(caliber):
+                print(f"  ⛔ 口径不一致（差异字段 {old.diff(caliber)}）⇒ **拒绝比较**。")
+                print("     跨口径的两个数字放在一张表里，结论就是作废的。")
+            else:
+                ok, why = verdict_against_baseline(base, m)
+                print(f"  基线 {base.as_line()}  （verdict={_bv}）")
+                print(f"  判定 {'改进成立' if ok else '不成立'} — {why}")
 
     if args.save_baseline:
-        ok, why = store.save(m, caliber, allow_supersede=args.allow_supersede)
-        print(f"  {'✅' if ok else '⛔'} {why}")
+        # ★ V142：**这里不写盘**。判据还没产生（日志未关、未读回），
+        #   此刻写基线等于「先签收，后验货」。登记待办，由外壳在 state 之后执行。
+        if gate is None:
+            print("  ⛔ 拒绝写基线：没有判据通道（本路径不产生判据行）"
+                  " ⇒ 不知道这次量到没有，不许当标准。")
+        else:
+            gate.request_save(store, m, caliber)
+            print("  ⏳ 基线待写：等本次运行的判据读出 GREEN 才落盘。")
 
     # ── 这一轮的身份证：**先算一次，两处共用** ───────────────────────────
     # 第七十九轮：`answers.jsonl` 要能与 `runs.jsonl` 靠 `run_id` 直接 join。
@@ -2661,6 +2740,11 @@ def _bench_main(args) -> int:
         # 于是 `--repeat 2` 的两次重复与"跑了两个进程"在证据里长得一模一样，
         # 而前者系统性低估噪声（DESIGN §35 实测 0.2619 vs 0.0000）。
         "run_id": _run_id,
+        # ★ V142：这一行**自己**知道自己量到没有 —— 现在还只是占位。
+        #   真正的结论由外壳（读回日志之后）用 `stamp_verdict` 钉回这一行；
+        #   若进程在那之前死掉，这一格就永远停在 PENDING，读者拿到 UNKNOWN。
+        #   ⛔ 不能在这里先写 GREEN：那正是「先签收，后验货」。
+        "verdict": "PENDING",
         "solver": label, "budget_tag": tag, "repeat": repeat_n,
         "caliber_sig": caliber.signature(), "caliber": caliber.as_dict(),
         "measurement": measurement_to_dict(m), "report": rep.as_dict(),
@@ -2716,6 +2800,10 @@ def _bench_main(args) -> int:
                         "evidence_id": (cal.evidence.evidence_id()
                                         if cal.evidence is not None else None)},
     })
+    if gate is not None:
+        # 把这轮的身份证交给外壳：待会儿它要用**这个 id** 去钉结论，
+        # 而不是「最后一行」（位置不是身份，见 mw.bench.stamp_verdict）。
+        gate.claim_run(_run_id)
     print(f"  读数已落盘 {s.paths.bench / 'runs.jsonl'}")
 
     # ── 答案本体：跑完之后写一次（与账本同理，轮内写会污染下一题）────────

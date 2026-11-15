@@ -1,0 +1,24 @@
+命名不一致的站点: 73 / 89
+  bench.py:445       旧=mw.bench.sha                             新=mw.bench.Suite.sha
+  bench.py:734       旧=mw.bench.as_dict                         新=mw.bench.BenchReport.as_dict
+  bench.py:223       旧=mw.bench.as_line                         新=mw.bench.Caliber.as_line
+  bench.py:225       旧=mw.bench.as_line                         新=mw.bench.Caliber.as_line
+  bench.py:328       旧=mw.bench.score                           新=mw.bench.ExternalScorer.score
+  bench.py:317       旧=mw.bench.score                           新=mw.bench.ExternalScorer.score
+
+=== 89 站三档：旧 vs 新（qualname）===
+档              旧     新
+SPILL         32    27
+SELF_ONLY      3     8
+NOOP          54    54
+
+翻转 5 站（全部 SPILL -> SELF_ONLY）:
+  bench.py:445           SPILL -> SELF_ONLY diff=['mw.bench.Suite.sha']
+  worldmodel.py:252      SPILL -> SELF_ONLY diff=['mw.worldmodel.Mismatch.as_episode']
+  worldmodel.py:254      SPILL -> SELF_ONLY diff=['mw.worldmodel.Mismatch.as_episode']
+  worldmodel.py:255      SPILL -> SELF_ONLY diff=['mw.worldmodel.Mismatch.as_episode']
+  worldmodel.py:306      SPILL -> SELF_ONLY diff=['mw.worldmodel.Mismatch.as_line']
+
+=== 按 V137 标签拆（新口径）===
+  COV    n= 17  SPILL= 17 SELF_ONLY=  0 NOOP=  0
+  BLIND  n= 72  SPILL= 10 SELF_ONLY=  8 NOOP= 54

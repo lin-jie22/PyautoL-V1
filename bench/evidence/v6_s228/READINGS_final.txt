@@ -1,0 +1,32 @@
+=== 89 站四档（判据态分 绿/红/崩）===
+  SPILL_RED     17
+  SPILL_GREEN    8
+  SPILL_CRASH    2
+  SELF_ONLY      8
+  NOOP          54
+
+按 V137 标签：
+  COV    n= 17 SPILL_RED=17 SPILL_GREEN=0 SPILL_CRASH=0 SELF_ONLY=0 NOOP=0
+  BLIND  n= 72 SPILL_RED=0 SPILL_GREEN=8 SPILL_CRASH=2 SELF_ONLY=8 NOOP=54
+
+=== 调用图（实际边）· 全部 SPILL（27 站）===
+  up    命中   24/  108 精度  0.222 | 召回  0.039 | 富集中位  0.00×
+  down  命中   39/ 1355 精度  0.029 | 召回  0.064 | 富集中位  1.71×
+  both  命中   52/ 1436 精度  0.036 | 召回  0.085 | 富集中位  1.59×
+  基线率（|真值|均值 / 331）= 0.069
+
+=== 调用图（实际边）· 真盲区（绿∧SPILL）（8 站）===
+  up    命中    6/   29 精度  0.207 | 召回  0.136 | 富集中位  0.00×
+  down  命中   17/  646 精度  0.026 | 召回  0.386 | 富集中位  1.70×
+  both  命中   20/  667 精度  0.030 | 召回  0.455 | 富集中位  2.28×
+  基线率（|真值|均值 / 331）= 0.017
+
+=== 真盲区逐站 ===
+  core.py:1548       f=mw.core.Core.run                       |T|= 2 |up|= 2 命中=0 漏=['mw.core.Core._state', 'mw.flow._tokens']
+  core.py:1626       f=mw.core.Core.run                       |T|= 1 |up|= 2 命中=0 漏=['mw.core.Core._state']
+  core.py:1878       f=mw.core.Core.run                       |T|= 5 |up|= 2 命中=0 漏=['mw.verify._check_one', 'mw.verify._walk_symbols', 'mw.verify.extract_code']
+  critique.py:63     f=mw.critique.Critique.as_line           |T|= 3 |up|= 5 命中=2 漏=['mw.flow._tokens']
+  guard.py:197       f=mw.guard.Guard.check_goal              |T|= 1 |up|= 3 命中=0 漏=['mw.guard.Verdict.as_line']
+  ledger.py:214      f=mw.ledger.signature_of                 |T|=15 |up|= 6 命中=3 漏=['mw.ledger.ScoreLedger.admissible', 'mw.ledger.ScoreLedger.load', 'mw.ledger.ScoreLedger.report']
+  verify.py:491      f=mw.verify._check_one                   |T|=12 |up|= 6 命中=1 漏=['mw.core.Core._state', 'mw.flow.FlowMeter.as_line', 'mw.flow.FlowMeter.coverage']
+  worldmodel.py:399  f=mw.worldmodel.WorldModel.predict       |T|= 5 |up|= 3 命中=0 漏=['mw.core._LedgeredLLM.complete', 'mw.llm.Message.__repr__', 'mw.llm.StubLLM.complete']

@@ -1,0 +1,27 @@
+{
+ "never_called": [
+  "tools.py:236",
+  "tools.py:344",
+  "bench.py:223",
+  "bench.py:225",
+  "bench.py:734",
+  "loop.py:228",
+  "loop.py:229",
+  "loop.py:484",
+  "tools.py:250",
+  "tools.py:353",
+  "tools.py:366",
+  "tools.py:368",
+  "tools.py:392",
+  "verify.py:349"
+ ],
+ "auc": {
+  "in_base": 0.5740740740740741,
+  "base_n": 0.7026748971193416,
+  "indeg": 0.5216049382716049
+ },
+ "rule": {
+  "tp": 10,
+  "fp": 18
+ }
+}

@@ -1,0 +1,730 @@
+{
+ "rows": [
+  {
+   "key": "abstractor.py:169",
+   "f": "mw.abstractor.distill",
+   "ntruth": 2,
+   "up": [
+    0.0,
+    0.0,
+    2,
+    0.0
+   ],
+   "down": [
+    0.0,
+    0.0,
+    7,
+    0.009285714285714286
+   ],
+   "both": [
+    0.0,
+    0.0,
+    8,
+    0.005
+   ]
+  },
+  {
+   "key": "core.py:1199",
+   "f": "mw.core.Core.run",
+   "ntruth": 2,
+   "up": [
+    0.0,
+    0.0,
+    2,
+    0.0
+   ],
+   "down": [
+    0.0,
+    0.0,
+    200,
+    0.006025
+   ],
+   "both": [
+    0.0,
+    0.0,
+    201,
+    0.006194029850746269
+   ]
+  },
+  {
+   "key": "core.py:1548",
+   "f": "mw.core.Core.run",
+   "ntruth": 2,
+   "up": [
+    0.0,
+    0.0,
+    2,
+    0.0025
+   ],
+   "down": [
+    0.01,
+    1.0,
+    200,
+    0.00585
+   ],
+   "both": [
+    0.01,
+    1.0,
+    201,
+    0.006368159203980099
+   ]
+  },
+  {
+   "key": "core.py:1626",
+   "f": "mw.core.Core.run",
+   "ntruth": 1,
+   "up": [
+    0.0,
+    0.0,
+    2,
+    0.0
+   ],
+   "down": [
+    0.005,
+    1.0,
+    200,
+    0.0029000000000000002
+   ],
+   "both": [
+    0.005,
+    1.0,
+    201,
+    0.003134328358208955
+   ]
+  },
+  {
+   "key": "core.py:1697",
+   "f": "mw.core.Core.run",
+   "ntruth": 3,
+   "up": [
+    0.0,
+    0.0,
+    2,
+    0.0025
+   ],
+   "down": [
+    0.005,
+    0.333,
+    200,
+    0.00845
+   ],
+   "both": [
+    0.005,
+    0.333,
+    201,
+    0.008980099502487562
+   ]
+  },
+  {
+   "key": "core.py:1791",
+   "f": "mw.core.Core.run",
+   "ntruth": 2,
+   "up": [
+    0.0,
+    0.0,
+    2,
+    0.0
+   ],
+   "down": [
+    0.0,
+    0.0,
+    200,
+    0.005875
+   ],
+   "both": [
+    0.0,
+    0.0,
+    201,
+    0.006169154228855721
+   ]
+  },
+  {
+   "key": "core.py:1878",
+   "f": "mw.core.Core.run",
+   "ntruth": 5,
+   "up": [
+    0.0,
+    0.0,
+    2,
+    0.0075
+   ],
+   "down": [
+    0.025,
+    1.0,
+    200,
+    0.0156
+   ],
+   "both": [
+    0.025,
+    1.0,
+    201,
+    0.01482587064676617
+   ]
+  },
+  {
+   "key": "core.py:2246",
+   "f": "mw.core.Core._state",
+   "ntruth": 4,
+   "up": [
+    0.25,
+    0.25,
+    4,
+    0.01
+   ],
+   "down": [
+    0.1,
+    0.5,
+    20,
+    0.00825
+   ],
+   "both": [
+    0.087,
+    0.5,
+    23,
+    0.011739130434782608
+   ]
+  },
+  {
+   "key": "core.py:2266",
+   "f": "mw.core.Core._state",
+   "ntruth": 4,
+   "up": [
+    0.25,
+    0.25,
+    4,
+    0.0075
+   ],
+   "down": [
+    0.1,
+    0.5,
+    20,
+    0.013000000000000001
+   ],
+   "both": [
+    0.087,
+    0.5,
+    23,
+    0.011739130434782608
+   ]
+  },
+  {
+   "key": "core.py:423",
+   "f": "mw.core.external_summary",
+   "ntruth": 3,
+   "up": [
+    0.2,
+    0.333,
+    5,
+    0.008
+   ],
+   "down": [
+    1.0,
+    0.333,
+    1,
+    0.01
+   ],
+   "both": [
+    0.2,
+    0.333,
+    5,
+    0.006
+   ]
+  },
+  {
+   "key": "critique.py:63",
+   "f": "mw.critique.Critique.as_line",
+   "ntruth": 3,
+   "up": [
+    0.4,
+    0.667,
+    5,
+    0.007
+   ],
+   "down": [
+    1.0,
+    0.333,
+    1,
+    0.02
+   ],
+   "both": [
+    0.4,
+    0.667,
+    5,
+    0.007
+   ]
+  },
+  {
+   "key": "guard.py:197",
+   "f": "mw.guard.Guard.check_goal",
+   "ntruth": 1,
+   "up": [
+    0.0,
+    0.0,
+    3,
+    0.0
+   ],
+   "down": [
+    0.0,
+    0.0,
+    4,
+    0.0025
+   ],
+   "both": [
+    0.0,
+    0.0,
+    6,
+    0.0016666666666666666
+   ]
+  },
+  {
+   "key": "ledger.py:214",
+   "f": "mw.ledger.signature_of",
+   "ntruth": 15,
+   "up": [
+    0.5,
+    0.2,
+    6,
+    0.04416666666666667
+   ],
+   "down": [
+    1.0,
+    0.133,
+    2,
+    0.045
+   ],
+   "both": [
+    0.571,
+    0.267,
+    7,
+    0.03642857142857143
+   ]
+  },
+  {
+   "key": "memory.py:103",
+   "f": "mw.memory.fts_query",
+   "ntruth": 19,
+   "up": [
+    0.333,
+    0.158,
+    9,
+    0.05833333333333333
+   ],
+   "down": [
+    1.0,
+    0.053,
+    1,
+    0.07
+   ],
+   "both": [
+    0.333,
+    0.158,
+    9,
+    0.051666666666666666
+   ]
+  },
+  {
+   "key": "memory.py:321",
+   "f": "mw.memory.MemoryStore.capture",
+   "ntruth": 203,
+   "up": [
+    0.333,
+    0.005,
+    3,
+    0.42166666666666663
+   ],
+   "down": [
+    0.5,
+    0.005,
+    2,
+    0.6075
+   ],
+   "both": [
+    0.5,
+    0.01,
+    4,
+    0.47125
+   ]
+  },
+  {
+   "key": "memory.py:367",
+   "f": "mw.memory.MemoryStore.expand",
+   "ntruth": 203,
+   "up": [
+    0.75,
+    0.015,
+    4,
+    0.42625
+   ],
+   "down": [
+    1.0,
+    0.005,
+    1,
+    0.655
+   ],
+   "both": [
+    0.75,
+    0.015,
+    4,
+    0.47125
+   ]
+  },
+  {
+   "key": "memory.py:91",
+   "f": "mw.memory.fingerprint",
+   "ntruth": 14,
+   "up": [
+    0.1,
+    0.071,
+    10,
+    0.0405
+   ],
+   "down": [
+    0.5,
+    0.071,
+    2,
+    0.0425
+   ],
+   "both": [
+    0.091,
+    0.071,
+    11,
+    0.045454545454545456
+   ]
+  },
+  {
+   "key": "metacog.py:457",
+   "f": "mw.metacog.deterministic_u01",
+   "ntruth": 18,
+   "up": [
+    0.5,
+    0.333,
+    12,
+    0.05708333333333333
+   ],
+   "down": [
+    1.0,
+    0.056,
+    1,
+    0.08
+   ],
+   "both": [
+    0.5,
+    0.333,
+    12,
+    0.05458333333333333
+   ]
+  },
+  {
+   "key": "planner.py:858",
+   "f": "mw.planner.Planner._extract",
+   "ntruth": 14,
+   "up": [
+    0.0,
+    0.0,
+    5,
+    0.035
+   ],
+   "down": [
+    0.0,
+    0.0,
+    3,
+    0.04333333333333333
+   ],
+   "both": [
+    0.0,
+    0.0,
+    7,
+    0.03857142857142857
+   ]
+  },
+  {
+   "key": "planner.py:887",
+   "f": "mw.planner.Planner._fallback",
+   "ntruth": 23,
+   "up": [
+    0.0,
+    0.0,
+    6,
+    0.05833333333333333
+   ],
+   "down": [
+    0.0,
+    0.0,
+    3,
+    0.051666666666666666
+   ],
+   "both": [
+    0.0,
+    0.0,
+    8,
+    0.063125
+   ]
+  },
+  {
+   "key": "tools.py:236",
+   "f": "mw.tools.register_core_tools._run_shell",
+   "ntruth": 11,
+   "up": [
+    0.0,
+    0.0,
+    1,
+    0.0
+   ],
+   "down": [
+    0.0,
+    0.0,
+    1,
+    0.0
+   ],
+   "both": [
+    0.0,
+    0.0,
+    1,
+    0.0
+   ]
+  },
+  {
+   "key": "tools.py:344",
+   "f": "mw.tools.register_external_agents._handler",
+   "ntruth": 2,
+   "up": [
+    0.0,
+    0.0,
+    1,
+    0.0
+   ],
+   "down": [
+    0.0,
+    0.0,
+    1,
+    0.0
+   ],
+   "both": [
+    0.0,
+    0.0,
+    1,
+    0.0
+   ]
+  },
+  {
+   "key": "tools.py:457",
+   "f": "mw.tools.catalog_sha",
+   "ntruth": 3,
+   "up": [
+    0.5,
+    0.333,
+    2,
+    0.0025
+   ],
+   "down": [
+    0.1,
+    0.333,
+    10,
+    0.006
+   ],
+   "both": [
+    0.091,
+    0.333,
+    11,
+    0.007727272727272728
+   ]
+  },
+  {
+   "key": "verify.py:491",
+   "f": "mw.verify._check_one",
+   "ntruth": 12,
+   "up": [
+    0.167,
+    0.083,
+    6,
+    0.021666666666666664
+   ],
+   "down": [
+    0.2,
+    0.083,
+    5,
+    0.036000000000000004
+   ],
+   "both": [
+    0.1,
+    0.083,
+    10,
+    0.0235
+   ]
+  },
+  {
+   "key": "worldmodel.py:399",
+   "f": "mw.worldmodel.WorldModel.predict",
+   "ntruth": 5,
+   "up": [
+    0.0,
+    0.0,
+    3,
+    0.006666666666666666
+   ],
+   "down": [
+    0.147,
+    1.0,
+    34,
+    0.01411764705882353
+   ],
+   "both": [
+    0.139,
+    1.0,
+    36,
+    0.017916666666666664
+   ]
+  },
+  {
+   "key": "worldmodel.py:400",
+   "f": "mw.worldmodel.WorldModel.predict",
+   "ntruth": 35,
+   "up": [
+    0.0,
+    0.0,
+    3,
+    0.065
+   ],
+   "down": [
+    0.294,
+    0.286,
+    34,
+    0.10808823529411765
+   ],
+   "both": [
+    0.278,
+    0.286,
+    36,
+    0.10541666666666666
+   ]
+  },
+  {
+   "key": "worldmodel.py:580",
+   "f": "mw.worldmodel.WorldModel.record_reward",
+   "ntruth": 5,
+   "up": [
+    0.0,
+    0.0,
+    2,
+    0.005
+   ],
+   "down": [
+    0.0,
+    0.0,
+    2,
+    0.0175
+   ],
+   "both": [
+    0.0,
+    0.0,
+    3,
+    0.015
+   ]
+  }
+ ],
+ "agg": {
+  "up": [
+   24,
+   108,
+   614
+  ],
+  "down": [
+   39,
+   1355,
+   614
+  ],
+  "both": [
+   52,
+   1436,
+   614
+  ]
+ },
+ "rich_median": {
+  "up": 8.75912408759124,
+  "down": 2.7210884353741496,
+  "both": 2.0
+ },
+ "edges": 604,
+ "top_truth": [
+  [
+   "mw.measure.Report.summary_line",
+   19
+  ],
+  [
+   "mw.measure.check",
+   19
+  ],
+  [
+   "mw.core.Core._state",
+   14
+  ],
+  [
+   "mw.flow._tokens",
+   13
+  ],
+  [
+   "mw.flow.FlowMeter.as_line",
+   8
+  ],
+  [
+   "mw.flow.FlowMeter.coverage",
+   8
+  ],
+  [
+   "mw.flow.FlowMeter.report",
+   8
+  ],
+  [
+   "mw.memory.MemoryStore.stats",
+   8
+  ],
+  [
+   "mw.memory.MemoryStore.working_view",
+   8
+  ],
+  [
+   "mw.memory.MemoryStore.blob_stats",
+   7
+  ],
+  [
+   "mw.tools.ToolResult.as_observation",
+   7
+  ],
+  [
+   "mw.worldmodel.Mismatch.as_episode",
+   7
+  ],
+  [
+   "mw.memory.normalize",
+   6
+  ],
+  [
+   "mw.memory.Fact.__init__",
+   5
+  ],
+  [
+   "mw.memory.MemoryStore._fact",
+   5
+  ],
+  [
+   "mw.memory.MemoryStore.recall",
+   5
+  ],
+  [
+   "mw.memory.fts_query",
+   5
+  ],
+  [
+   "mw.memory.MemoryStore.expand",
+   5
+  ],
+  [
+   "mw.core.external_summary",
+   4
+  ],
+  [
+   "mw.verify._check_one",
+   4
+  ]
+ ]
+}

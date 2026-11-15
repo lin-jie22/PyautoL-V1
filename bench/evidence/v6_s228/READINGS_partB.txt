@@ -1,0 +1,22 @@
+分母：SPILL 27 站 ｜ NOOP 54 站 ｜ 排除 SELF_ONLY 8 站
+
+=== W5：owner 从没被调用过的站，是不是全 NOOP ===
+owner ∉ base_per_fn 的站: 14  → 其中 SPILL 2 / NOOP 12
+   tools.py:236       SPILL      owner=mw.tools.register_core_tools._run_shell
+   tools.py:344       SPILL      owner=mw.tools.register_external_agents._handler
+   bench.py:223       NOOP       owner=mw.bench.Caliber.as_line
+   bench.py:225       NOOP       owner=mw.bench.Caliber.as_line
+   bench.py:734       NOOP       owner=mw.bench.BenchReport.as_dict
+   loop.py:228        NOOP       owner=mw.loop.Curve.as_lines
+   loop.py:229        NOOP       owner=mw.loop.Curve.as_lines
+   loop.py:484        NOOP       owner=mw.loop.main
+   tools.py:250       NOOP       owner=mw.tools.register_core_tools._http_get
+   tools.py:353       NOOP       owner=mw.tools.register_external_agents._handler
+
+=== W6：三个免费特征的 AUC ===
+  in_base  AUC=0.574 置换 p=0.0750 (零分布均值 0.500)  阳性中位 1.0 / 阴性中位 1.0
+  base_n   AUC=0.703 置换 p=0.0010 (零分布均值 0.500)  阳性中位 99.0 / 阴性中位 31.0
+  indeg    AUC=0.522 置换 p=0.3645 (零分布均值 0.500)  阳性中位 0.0 / 阴性中位 0.0
+
+=== 组合规则（先 in_base，再 indeg>0）===
+  规则命中 SPILL 10/27，误报 NOOP 18/54 ⇒ 精度 0.357 召回 0.370

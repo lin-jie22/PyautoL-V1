@@ -1,0 +1,45 @@
+{
+ "base": 1381,
+ "saved0": 793,
+ "saved1": 347,
+ "n_rec0": 21,
+ "n_rec1": 19,
+ "n_same": 25,
+ "n_impls": 25,
+ "records": {
+  "('T2', \"'on'\")": {
+   "tried": 18,
+   "win": 4
+  },
+  "('T2', \"'true'\")": {
+   "tried": 12,
+   "win": 0
+  },
+  "('ret', \".replace(',',' ')\")": {
+   "tried": 8,
+   "win": 2
+  },
+  "('C1', \"'…' + s[-n:]\")": {
+   "tried": 3,
+   "win": 2
+  },
+  "('key', '.strip()')": {
+   "tried": 1,
+   "win": 0
+  },
+  "('key', '.strip().lower()')": {
+   "tried": 1,
+   "win": 1
+  }
+ },
+ "dead": [
+  "('T2', \"'true'\")",
+  "('key', '.strip()')"
+ ],
+ "alive": [
+  "('C1', \"'…' + s[-n:]\")",
+  "('T2', \"'on'\")",
+  "('key', '.strip().lower()')",
+  "('ret', \".replace(',',' ')\")"
+ ]
+}

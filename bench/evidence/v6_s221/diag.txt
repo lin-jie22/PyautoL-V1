@@ -1,0 +1,40 @@
+## §A 留一法：去掉一个点后的 R²（Δ 越大 = 这个点越撑）
+  去掉 g7e1_p a579b07a n_cand=130 saved= 213 → R² 0.755（Δ -0.053）
+  去掉 g7e1_p 1aa5099d n_cand=120 saved= 194 → R² 0.769（Δ -0.039）
+  去掉 g7e1_p 37a4f17f n_cand=115 saved= 184 → R² 0.775（Δ -0.033）
+  去掉 g7e1_p f2d1efa6 n_cand=105 saved= 164 → R² 0.785（Δ -0.023）
+  去掉 g7d3_f 0a6acc93 n_cand= 11 saved=   0 → R² 0.802（Δ -0.006）
+  去掉 g7d3_f 8c8ac7f0 n_cand=  7 saved=   0 → R² 0.803（Δ -0.006）
+  去掉 g7d3_f 5755e033 n_cand=  6 saved=   0 → R² 0.803（Δ -0.005）
+  去掉 g7d3_f 17747356 n_cand=  5 saved=   0 → R² 0.803（Δ -0.005）
+  去掉 g7d2_d 480ada8e n_cand= 15 saved=   0 → R² 0.803（Δ -0.005）
+  去掉 g7d3_f 075b4099 n_cand= 11 saved=   3 → R² 0.803（Δ -0.005）
+  去掉 g7d3_f 419ec792 n_cand= 11 saved=   3 → R² 0.803（Δ -0.005）
+  去掉 g7d2_d 74aa48d8 n_cand= 12 saved=   9 → R² 0.805（Δ -0.004）
+  去掉 g7e2_t 8184ec4d n_cand= 14 saved=  11 → R² 0.805（Δ -0.003）
+  去掉 g7e2_t bc8c4b09 n_cand= 14 saved=  12 → R² 0.805（Δ -0.003）
+  去掉 g7e1_p 200ebf6e n_cand= 95 saved=   0 → R² 0.998（Δ +0.189）
+
+## §B 去掉 200ebf6e（saved=0 但 n_cand=95）之后
+  n = 14｜y = 1.73·n_cand -14.5｜R² = 0.998（全量 0.808）
+  箱1 n_cand   5~ 11｜实测均值    0.6｜[0, 0, 0, 3, 0]
+  箱2 n_cand  11~ 15｜实测均值    7.0｜[3, 9, 11, 12, 0]
+
+## §C MAG 为什么只剩 1/25（限额 vs 实际需要）
+  g7e1_p a579b07a n_cand=130 saved= 213 pred=  182.4 lim= 182
+  g7e1_p 1aa5099d n_cand=120 saved= 194 pred=  167.2 lim= 167
+  g7e1_p 37a4f17f n_cand=115 saved= 184 pred=  159.6 lim= 160
+  g7e1_p f2d1efa6 n_cand=105 saved= 164 pred=  144.4 lim= 144
+  g7e1_p 200ebf6e n_cand= 95 saved=   0 pred=  129.2 lim= 129
+  g7d2_d 480ada8e n_cand= 15 saved=   0 pred=    7.7 lim=   8
+  g7e2_t 8184ec4d n_cand= 14 saved=  11 pred=    6.2 lim=   6
+  g7e2_t bc8c4b09 n_cand= 14 saved=  12 pred=    6.2 lim=   6
+  g7d2_d 74aa48d8 n_cand= 12 saved=   9 pred=    3.1 lim=   3
+  g7d3_f 075b4099 n_cand= 11 saved=   3 pred=    1.6 lim=   2
+  g7d3_f 0a6acc93 n_cand= 11 saved=   0 pred=    1.6 lim=   2
+  g7d3_f 419ec792 n_cand= 11 saved=   3 pred=    1.6 lim=   2
+  g7d3_f 8c8ac7f0 n_cand=  7 saved=   0 pred=    1.0 lim=   1
+  g7d3_f 5755e033 n_cand=  6 saved=   0 pred=    1.0 lim=   1
+  g7d3_f 17747356 n_cand=  5 saved=   0 pred=    1.0 lim=   1
+
+  ⇒ 限额超过 saved 的（给了也用不完）与限额不足的（做不完）各占多少，见上表对齐看

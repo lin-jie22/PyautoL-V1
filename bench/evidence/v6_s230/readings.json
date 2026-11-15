@@ -1,0 +1,36 @@
+{
+  "W1_pre_sentinel": 0,
+  "W2": {
+    "same": true,
+    "states": [
+      "GREEN",
+      "GREEN"
+    ],
+    "rc": [
+      0,
+      0
+    ]
+  },
+  "W3": {
+    "整行删掉（判据缺席）": {
+      "state": "CRASH",
+      "rc": 1,
+      "why": "日志里没有汇总行（判据缺席） ⇒ 不判通过，也不判失败 —— 判据没说话"
+    },
+    "判据行断在半截": {
+      "state": "CRASH",
+      "rc": 1,
+      "why": "汇总行存在但解析不出 PASS/FAIL ⇒ 格式退化"
+    }
+  },
+  "W4": {
+    "state_rc1": "CRASH",
+    "state_rc0": "GREEN"
+  },
+  "W5": {
+    "crash_rc": 1,
+    "sentinel_after": 0,
+    "state": "CRASH",
+    "why": "日志里没有汇总行（判据缺席） ⇒ 不判通过，也不判失败 —— 判据没说话"
+  }
+}

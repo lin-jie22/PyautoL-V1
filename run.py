@@ -39,8 +39,8 @@ from mw.llm import Message                        # noqa: E402
 #: 一旦 run.py 自己算一遍趋势，就有两套口径，迟早一套改了另一套没改。
 from mw.loop import Curve as _Curve               # noqa: E402
 from mw.loop import run_loop as _run_curve        # noqa: E402
-from mw.measure import (Measurement, budget_curve, noise_floor,  # noqa: E402
-                        paired_compare, repeat, summarize)
+from mw.measure import (Measurement, Report, budget_curve, noise_floor,  # noqa: E402
+                        paired_compare, repeat, summarize, verdict_from)
 #: 工具目录指纹的**唯一**实现（契约 AF1 拿它与真实 `Core.tools.catalog()` 对撞）。
 from mw.tools import catalog_sha as tools_catalog_sha     # noqa: E402
 
@@ -1818,7 +1818,137 @@ def _curve_mode(args, *, solver, scorer, suite, caliber, repeat_n: int,
     return 2 if stopped else 0
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# V141（§208）：bench 路径的**运行日志**与它的**读者**
+# ══════════════════════════════════════════════════════════════════════════
+# V140 给了内核一个三值判据（`mw.measure.verdict_from`），但它只在**测试跑完
+# 那一刻**有用 —— 系统平时不读自己的日志。这一层是那句话的落地：
+# 一次 bench 运行**留下**一份日志，然后**从磁盘读回**它，用同一套规则判读。
+#
+# ⛔ 这里没有新装置：日志就是这次运行自己的 stdout，读者就是 V140 那个
+#    `verdict_from`。变的只有「谁在读」。
+
+
+class _Tee:
+    """把 stdout 双写到日志文件。**每次 write 后立刻 flush**。
+
+    ⛔ 为什么必须立刻 flush：读回发生在**同一次运行内**，日志如果是
+    块缓冲的，读回来的就是半截（而「半截」恰好是本轮要判的那件事之一，
+    不能让装置自己制造它）。
+    """
+
+    def __init__(self, orig, fh) -> None:
+        self.orig = orig
+        self.fh = fh
+
+    def write(self, s):                     # noqa: D401 —— 与 io.TextIOBase 同签名
+        self.orig.write(s)
+        self.fh.write(s)
+        self.fh.flush()
+        return len(s)
+
+    def flush(self) -> None:
+        self.orig.flush()
+        self.fh.flush()
+
+    def __getattr__(self, name):            # isatty / encoding / fileno …… 一律转发
+        return getattr(self.orig, name)
+
+
+def _bench_log_path() -> Path:
+    """运行日志落在**这个 bench 目录**里 —— 与 `runs.jsonl` 同级。
+
+    ⚠️ 刻意不新开 env：`V1_BENCH_DIR` 已经把「这次运行的账本放哪」说清楚了，
+    日志是同一件事的另一个视图，再开一个开关就多一处「忘了设 ⇒ 写到生产目录」。
+    """
+    return cfg.settings().paths.bench / "last_run.log"
+
+
+def judge_run_log(path, rc: int = 0) -> tuple[str, str]:
+    """**生产读取点**：从落盘的日志判读一次运行。返回 `(状态, 理由)`。
+
+    ⛔ 唯一的读者就在这儿 —— 契约 AZ127b 用静态计数钉住这一点：
+    `run.py` 里 `verdict_from` 的调用点**恰好一个**。
+    多一个读者就多一套口径，迟早一套改了另一套没改。
+
+    ⛔ 它**没有缓存**、不记「上次判成什么」。日志读不出来 ⇒ CRASH；
+    日志里没有判据行 ⇒ CRASH（规则 1）。「上次是绿的」不构成任何证据 ——
+    这正是 W5 要打的靶子。
+    """
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError as e:
+        # 文件不在了 / 没权限：判据**没说话**，不是「零失败」。
+        return "CRASH", f"日志读不出来（{type(e).__name__}: {e}）"
+    return verdict_from(text, rc)
+
+
+def _rc_after_readback(rc: int, state: str) -> int:
+    """读回不是 GREEN 而退出码是 0 ⇒ **抬到 1**（fail-closed 落到退出码）。
+
+    ⛔ 为什么不能只在屏幕上念一句：`rc=0` 会被调用方（脚本 / CI / 门禁）
+    当成「这次跑完了」。状态与退出码打架时，**保守的那个赢**。
+    """
+    if state != "GREEN":
+        return rc if rc else 1
+    return rc
+
+
 def cmd_bench(args) -> int:
+    """bench 路径的**外壳**：留下日志 → 跑 → 从磁盘读回 → 判读。
+
+    分工：
+        `_bench_main` = 原来那个 700 行的函数，**语义一字不动**，
+                       只在最后多打一行判据（`verdict_line()`）；
+        本函数       = 日志的生命周期 + 读回。
+
+    ⚠️ 读回读的是**文件**，不是内存里那串字符串。差别在于：文件可能被截断、
+    可能残留上一次的内容、可能根本没写完 —— 而「这次运行到底有没有量到东西」
+    这个问题，必须由**落盘的证据**回答。
+    """
+    # ⚠️ 已知缺口（§208 边界 4）：`--suite-dir` 走 `_cross_domain`，不产生判据行。
+    #    本轮不接线 —— 硬接线会让门禁 5a/5b 的两条跨领域冒烟变成 CRASH。
+    if getattr(args, "suite_dir", ""):
+        return _bench_main(args)
+
+    log_path = _bench_log_path()
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    # ⛔ `"w"` 不是随手写的：上一次运行的判据行必须**物理上消失**。
+    #    用 `"a"` 追加，然后 `tail -1` 读最后一行，就复发了 V140 那个病
+    #    （「上一轮的绿」冒充「这一轮的绿」）。
+    fh = open(log_path, "w", encoding="utf-8")
+    tee = _Tee(sys.stdout, fh)
+    _crashed: BaseException | None = None
+    sys.stdout = tee
+    try:
+        rc = _bench_main(args)
+    except BaseException as e:            # ⛔ 只登记判据态，**不吞**异常
+        _crashed = e
+        raise
+    finally:
+        sys.stdout = tee.orig
+        fh.flush()
+        fh.close()
+        if _crashed is not None:
+            state, why = judge_run_log(log_path, 1)
+            print(f"  判据读回  {state}  — 运行抛了 {type(_crashed).__name__}：{why}")
+            print(f"  运行日志  {log_path}")
+
+    # rc=2 = 用法/数据错误，**根本没进入测量**：没有可判读的运行，
+    # 不许把「没跑」念成「崩了」（那会让真正的崩失去分辨力）。
+    if rc == 2:
+        print("  判据读回  —（rc=2：本次没进入测量，没有可判读的运行）")
+        print(f"  运行日志  {log_path}")
+        return rc
+
+    state, why = judge_run_log(log_path, rc)
+    print("─" * 74)
+    print(f"  判据读回  {state}  — {why}")
+    print(f"  运行日志  {log_path}  （判据行唯一；同目录 `runs.jsonl` 是账本）")
+    return _rc_after_readback(rc, state)
+
+
+def _bench_main(args) -> int:
     """外部锚层模式 —— 系统与"分数自娱自乐"的分界线就在这个函数里。
 
     一个再大的自演化系统，也可能没有任何地方能回答
@@ -2599,6 +2729,21 @@ def cmd_bench(args) -> int:
         print(f"  答案已落盘 {_w['path']}  {_w['n_answers']} 条  "
               f"共 {_w['chars']} 字符  最长 {_w['max_chars']} 字符  "
               f"截断 {_w['truncated']} 条答案")
+
+    # ── 本次运行的判据行（**唯一**一行，V141 / §208）──────────────────────
+    # 分母口径（纪律 4/46）：**1 道闸** —— 「这次运行的读数是否可用于判定」。
+    # ⛔ 它**不是**断言数，不许与契约的 640 比大小。
+    # ⚠️ 只有一道闸，是因为这个函数里**其它**失败形态全都提前 `return 2`
+    #    （血缘闸 / 数据缺失 / 选项冲突）⇒ 根本走不到这里；把那些也算进
+    #    PASS 就成了恒真断言（纪律 5：断言恒真 = 假绿）。
+    _brs = Report()
+    if rep.trustworthy():
+        _brs.pass_n += 1
+    else:
+        _brs.fail_n += 1
+    _brs.finish()          # ⛔ 不声明「跑完了」⇒ verdict() 永远是 CRASH
+    print(f"  判据      分母=1 道闸（读数可否用于判定）  可信={rep.trustworthy()}")
+    print(_brs.verdict_line())
     return 0 if rep.trustworthy() else 1
 
 

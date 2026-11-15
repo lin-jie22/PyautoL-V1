@@ -1580,6 +1580,39 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ147", "mw/memory.py",
      '''        return self._recall_char(query, k)''',
      '''        return []'''),
+    # ── AZ127：`verdict_from` 的**生产消费者**（V141 / §208）─────────────────
+    #: 撤的语义：读取点读不出日志时**改成报 GREEN**（而不是 CRASH）——
+    #:   这正是「缺席冒充零失败」这个变量本身。⇒ AZ127a 必红。
+    #: ⚠️ 不撤成 `raise`：那会让契约进程崩掉，而“转红”与“崩”是两件事
+    #:   （R13 的第三条硬要求：Traceback 必须为 0）。
+    ("AZ127a", "run.py",
+     '''        return "CRASH", f"日志读不出来（{type(e).__name__}: {e}）"''',
+     '''        return "GREEN", f"日志读不出来（{type(e).__name__}: {e}）"'''),
+    #: 撤的语义：**多一个读者**。AZ127b 数是「run.py 里 verdict_from 的调用点」，
+    #:   多一个 ⇒ 从 1 变 2 ⇒ 必红。这条守的是「读者唯一」而不是任何行为。
+    ("AZ127b", "run.py", "",
+     "\n\ndef _v141_extra_reader(text: str):  # 撤回态：第二个读者\n"
+     "    return verdict_from(text, 0)\n"),
+    #: 撤的语义：**多一个写者**（第二行 sentinel 的开始，AZ126e 已判 CRASH）。
+    ("AZ127c", "run.py", "",
+     "\n\ndef _v141_extra_writer(rs):  # 撤回态：第二个写者\n"
+     "    return rs.verdict_line()\n"),
+    #: 撤的语义：读回**不再管状态**，退出码原样返回 —— 这正是 fail-closed
+    #:   在「状态与退出码打架时谁赢」这个变量本身。⇒ AZ127d 必红。
+    ("AZ127d", "run.py",
+     '''    if state != "GREEN":
+        return rc if rc else 1
+    return rc
+''',
+     '''    return rc
+'''),
+    #: 撤的语义：判据行**解析不出计数时不再判崩**（规则 3 失效）⇒ 半截行会被读成绿，
+    #:   于是 AZ127e（读者无记忆：半截必须先 CRASH）必红。
+    ("AZ127e", "mw/measure.py",
+     '''    if not m:
+        return "CRASH", "汇总行存在但解析不出 PASS/FAIL ⇒ 格式退化"''',
+     '''    if not m:
+        return "GREEN", "汇总行存在但解析不出 PASS/FAIL ⇒ 格式退化"'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1925,7 +1958,12 @@ def _run_suite() -> tuple[bool, set[str], str]:
     #:    新加的 AE 组（外部能力）若不进来，"撤回 AE7 却没转红"就会被读成通过。
     #:    只认"❌ 紧跟标签"的形状 —— 被撤掉的子进程自己打印的 `❌ 长度不等…`
     #:    不带标签，不会被误算进红集。
-    red = set(re.findall(r"❌\s*([A-Z]{1,2}\d+)\b", out))
+    #: ⚠️ V141：**允许小写子号**（`AZ127a`）。第 140 轮起断言按 `AZ126a…f`
+    #:    这种分条命名，而旧正则 `[A-Z]{1,2}\d+\b` 在 `AZ127a` 上**匹配失败**
+    #:    （`\b` 卡在 `7` 与 `a` 之间）⇒ 红集恒为空 ⇒ 五条撤回态全被读成
+    #:    「目标=✘ 红=无」。这不是断言恒真，是**检测器不认自己的标签**。
+    #:    没有小写后缀的旧标签行为不变（多出来的 `[a-z]?` 为空）。
+    red = set(re.findall(r"❌\s*([A-Z]{1,2}\d+[a-z]?)\b", out))
     #: ⚠️ 第四十九轮（§115）实测的假阳性：裸子串 `"Traceback"` 会被**断言自己的
     #:    说明文字**命中 —— AZ111 的 detail 里写着「无 Traceback」，于是每一次
     #:    撤回态都报 `Traceback=有`。**检测器的判据不许被它要读的输出里的一句

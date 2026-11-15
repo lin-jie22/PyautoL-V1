@@ -445,6 +445,68 @@ check(RS, "AZ126f `summary_line()` 里**不含** SENTINEL（人读行不许冒�
       f" 计数在={'PASS=631' in _mz_r.verdict_line()}")
 
 
+# ── AZ127：`verdict_from` 的**生产消费者**（V141 / §208）─────────────────
+# V140 把三值判据装进了内核，但**只有测试在读它**（`run_tests.sh` 从外面 grep）。
+# 系统平时跑 `run.py --bench` 时，谁也不读 —— 「这次到底有没有量到东西」
+# 这个问题在数据里不存在。AZ127 钉住「日常运行时谁在读、读什么、读坏了怎么办」。
+from run import _rc_after_readback, judge_run_log  # noqa: E402
+
+_az127_dir = Path(tempfile.mkdtemp(prefix="v141_log_"))
+_az127_good = _az127_dir / "good.log"
+_az127_good.write_text("  ✅ 某条读数\n"
+                       f"{SENTINEL} GREEN  PASS=1  FAIL=0\n", encoding="utf-8")
+# ⚠️ 截断**判据行本身**（`::VERDICT:: GRE`）：行还在，但解析不出计数 ⇒ 规则 3。
+#    造这个形态而不是「整行删掉」，是因为它更接近真实事故：写盘被截在半行。
+_az127_half = _az127_dir / "half.log"
+_az127_half.write_text("  ✅ 某条读数\n" f"{SENTINEL} GRE", encoding="utf-8")
+
+check(RS, "AZ127a 日志不存在 ⇒ CRASH（缺席不许冒充零失败；读取点不许抛异常）",
+      judge_run_log(_az127_dir / "absent.log", 0)[0] == "CRASH",
+      judge_run_log(_az127_dir / "absent.log", 0)[1][:60])
+
+_az127_src = (V1 / "run.py").read_text(encoding="utf-8")
+_az127_tree = ast.parse(_az127_src)
+
+
+def _az127_calls(name: str) -> int:
+    """数 `run.py` 里这个名字被**调用**了几次（定义/注释/字符串都不算）。"""
+    n = 0
+    for node in ast.walk(_az127_tree):
+        if not isinstance(node, ast.Call):
+            continue
+        fn = node.func
+        if isinstance(fn, ast.Name) and fn.id == name:
+            n += 1
+        elif isinstance(fn, ast.Attribute) and fn.attr == name:
+            n += 1
+    return n
+
+
+_az127_read = _az127_calls("verdict_from")
+_az127_write = _az127_calls("verdict_line")
+check(RS, "AZ127b `verdict_from` 在 run.py 里恰好 **1** 个调用点（读者唯一）\n"
+          "              多一个读者就多一套口径；这一条让「谁在读判据」变成可数的东西",
+      _az127_read == 1,
+      f"verdict_from 调用点={_az127_read}  写者 verdict_line 调用点={_az127_write}")
+check(RS, "AZ127c 写者唯一：`verdict_line()` 在 run.py 里恰好 1 个调用点\n"
+          "              ⛔ 第 2 个调用点就是「两行 sentinel」的开始（AZ126e 已判 CRASH）",
+      _az127_write == 1, f"调用点={_az127_write}")
+
+check(RS, "AZ127d 读回非 GREEN 而 rc==0 ⇒ 退出码抬到 1（fail-closed 落到退出码）\n"
+          "              ⛔ 只念一句不算：rc=0 会被脚本/CI 当成「跑完了」",
+      _rc_after_readback(0, "CRASH") == 1 and _rc_after_readback(0, "RED") == 1
+      and _rc_after_readback(0, "GREEN") == 0 and _rc_after_readback(1, "RED") == 1,
+      f"CRASH/0→{_rc_after_readback(0, 'CRASH')} RED/0→{_rc_after_readback(0, 'RED')}"
+      f" GREEN/0→{_rc_after_readback(0, 'GREEN')} RED/1→{_rc_after_readback(1, 'RED')}")
+
+check(RS, "AZ127e 读者无记忆：先判半截日志（CRASH）再判完整日志（GREEN）\n"
+          "              ⇒ 「上一次是绿的」不参与这一次的判读（V141 的 W5 打的就是它）",
+      judge_run_log(_az127_half, 0)[0] == "CRASH"
+      and judge_run_log(_az127_good, 0)[0] == "GREEN"
+      and judge_run_log(_az127_half, 0)[0] == "CRASH",
+      f"half={judge_run_log(_az127_half, 0)[0]} good={judge_run_log(_az127_good, 0)[0]}")
+
+
 # ===========================================================================
 print()
 print("=" * 74)

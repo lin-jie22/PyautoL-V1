@@ -1,0 +1,102 @@
+## 语料：g7d3_fmt_amount 可解析 8 个
+
+==========================================================================
+## 075b4099：T5 候选 9｜兄弟字面量 14 种
+    T5:c21:del0      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del1      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del2      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del3      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del4      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del5      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del6      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c28:del0      字面量 ')'            P1跳过=True P5跳过=True
+    T5:c29:del0      字面量 '('            P1跳过=True P5跳过=True
+  （P1,P5）分布：{(True, True): 9}
+
+==========================================================================
+## 0a6acc93：T5 候选 13｜兄弟字面量 12 种
+    T5:c13:del0      字面量 '('            P1跳过=True P5跳过=True
+    T5:c15:del0      字面量 ')'            P1跳过=True P5跳过=True
+  ★ T5:c22:del0      字面量 '_,>.2f'       P1跳过=False P5跳过=False
+  ★ T5:c25:del0      字面量 '_,.2f'        P1跳过=False P5跳过=False
+  （P1,P5）分布：{(True, True): 2, (False, False): 11}
+  ★ 已知路径 T5:c22:del0 字面量 '_,>.2f'：P1 跳过=False｜P5 跳过=False
+  ★ 已知路径 T5:c25:del0 字面量 '_,.2f'：P1 跳过=False｜P5 跳过=False
+  ⚠ 已知路径标签 T5:c27:del1 不在当前候选里（口径变了？）
+
+==========================================================================
+## 17747356：T5 候选 13｜兄弟字面量 10 种
+    T5:c12:del0      字面量 '-'            P1跳过=True P5跳过=False
+  ★ T5:c16:del0      字面量 '$'            P1跳过=False P5跳过=False
+    T5:c21:del0      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c21:del1      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c21:del2      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c21:del3      字面量 ',.2f'         P1跳过=True P5跳过=True
+  （P1,P5）分布：{(False, False): 8, (True, False): 1, (True, True): 4}
+  ★ 已知路径 T5:c16:del0 字面量 '$'：P1 跳过=False｜P5 跳过=False
+
+==========================================================================
+## 309f1027：T5 候选 11｜兄弟字面量 14 种
+    T5:c21:del0      字面量 ','            P1跳过=True P5跳过=True
+    T5:c22:del0      字面量 ' '            P1跳过=True P5跳过=True
+    T5:c23:del0      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del1      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del2      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del3      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del4      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del5      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del6      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c30:del0      字面量 ')'            P1跳过=True P5跳过=True
+    T5:c33:del0      字面量 '('            P1跳过=True P5跳过=True
+  （P1,P5）分布：{(True, True): 11}
+
+==========================================================================
+## 419ec792：T5 候选 9｜兄弟字面量 14 种
+    T5:c21:del0      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del1      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del2      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del3      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del4      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del5      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c21:del6      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c28:del0      字面量 ')'            P1跳过=True P5跳过=True
+    T5:c29:del0      字面量 '('            P1跳过=True P5跳过=True
+  （P1,P5）分布：{(True, True): 9}
+
+==========================================================================
+## 5755e033：T5 候选 11｜兄弟字面量 13 种
+    T5:c11:del0      字面量 '-'            P1跳过=True P5跳过=False
+  ★ T5:c12:del1      字面量 '( '           P1跳过=False P5跳过=False
+    T5:c19:del0      字面量 '('            P1跳过=True P5跳过=True
+    T5:c22:del0      字面量 ')'            P1跳过=True P5跳过=True
+    T5:c25:del0      字面量 ','            P1跳过=True P5跳过=True
+    T5:c26:del0      字面量 ' '            P1跳过=True P5跳过=True
+    T5:c37:del0      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c37:del1      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c37:del2      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c37:del3      字面量 ',.2f'         P1跳过=True P5跳过=True
+  （P1,P5）分布：{(True, False): 1, (False, False): 2, (True, True): 8}
+  ★ 已知路径 T5:c12:del1 字面量 '( '：P1 跳过=False｜P5 跳过=False
+
+==========================================================================
+## 8089eee6：T5 候选 11｜兄弟字面量 14 种
+    T5:c21:del0      字面量 ','            P1跳过=True P5跳过=True
+    T5:c22:del0      字面量 ' '            P1跳过=True P5跳过=True
+    T5:c23:del0      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del1      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del2      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del3      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del4      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del5      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c23:del6      字面量 '{:,.2f}'      P1跳过=True P5跳过=True
+    T5:c30:del0      字面量 ')'            P1跳过=True P5跳过=True
+    T5:c33:del0      字面量 '('            P1跳过=True P5跳过=True
+  （P1,P5）分布：{(True, True): 11}
+
+==========================================================================
+## 8c8ac7f0：T5 候选 4｜兄弟字面量 14 种
+    T5:c10:del0      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c10:del1      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c10:del2      字面量 ',.2f'         P1跳过=True P5跳过=True
+    T5:c10:del3      字面量 ',.2f'         P1跳过=True P5跳过=True
+  （P1,P5）分布：{(True, True): 4}

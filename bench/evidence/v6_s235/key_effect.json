@@ -1,0 +1,62 @@
+{
+ "g7e1_parse_flag::('T4', 'lower')": {
+  "seen": 8,
+  "dead": 5,
+  "n": 8,
+  "max": 1.0
+ },
+ "g7e1_parse_flag::('C1', 'False')": {
+  "seen": 8,
+  "dead": 5,
+  "n": 8,
+  "max": 1.0
+ },
+ "g7e1_parse_flag::('T2', \"'y'\")": {
+  "seen": 8,
+  "dead": 5,
+  "n": 8,
+  "max": 1.0
+ },
+ "g7d3_fmt_amount::('T3', 'strip')": {
+  "seen": 8,
+  "dead": 6,
+  "n": 8,
+  "max": 1.0
+ },
+ "g7d3_fmt_amount::('T3', 'strip().lower')": {
+  "seen": 8,
+  "dead": 8,
+  "n": 8,
+  "max": 0.0
+ },
+ "g7d3_fmt_amount::('T3', 'lower')": {
+  "seen": 8,
+  "dead": 6,
+  "n": 8,
+  "max": 1.0
+ },
+ "g7d2_dedupe_keep::('T4', 'lower')": {
+  "seen": 5,
+  "dead": 2,
+  "n": 5,
+  "max": 1.0
+ },
+ "g7d2_dedupe_keep::('T4', 'strip')": {
+  "seen": 5,
+  "dead": 2,
+  "n": 5,
+  "max": 1.0
+ },
+ "g7e2_truncate_tail::('C1', 's')": {
+  "seen": 4,
+  "dead": 2,
+  "n": 4,
+  "max": 1.0
+ },
+ "g7e2_truncate_tail::('T3', 'lower')": {
+  "seen": 4,
+  "dead": 2,
+  "n": 4,
+  "max": 1.0
+ }
+}

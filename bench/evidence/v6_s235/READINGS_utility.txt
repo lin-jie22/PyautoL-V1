@@ -1,0 +1,43 @@
+## 记忆条目：可匹配面 vs 有效面（轨迹口径 = 冷启动实际判过的候选）
+
+  tid                    源         键                           spread  useful  ratio
+  g7d3_fmt_amount        075b4099  ('ret', ".replace(',',' ')")       6       2   0.33
+  g7d3_fmt_amount        419ec792  ('ret', ".replace(',',' ')")       6       2   0.33
+  g7e1_parse_flag        200ebf6e  ('T2', "'true'")                 5       1   0.20
+  g7e1_parse_flag        1aa5099d  ('T2', "'on'")                   5       4   0.80
+  g7e1_parse_flag        37a4f17f  ('T2', "'on'")                   5       4   0.80
+  g7e1_parse_flag        a579b07a  ('T2', "'on'")                   5       4   0.80
+  g7e1_parse_flag        f2d1efa6  ('T2', "'on'")                   5       4   0.80
+  g7d2_dedupe_keep       74aa48d8  ('key', '.strip()')              2       1   0.50
+  g7e2_truncate_tail     8184ec4d  ('C1', "'…' + s[-n:]")           2       2   1.00
+  g7e2_truncate_tail     bc8c4b09  ('C1', "'…' + s[-n:]")           2       2   1.00
+  g7d2_dedupe_keep       480ada8e  ('key', '.strip().lower()')       1       1   1.00
+  g7d2_dedupe_keep       1ac9e8da  ('?', '<baseline>')              0       0      —
+  g7d2_dedupe_keep       6c9204fe  ('?', '<baseline>')              0       0      —
+  g7d2_dedupe_keep       85e6d3bc  ('?', '<baseline>')              0       0      —
+  g7d3_fmt_amount        309f1027  ('?', '<baseline>')              0       0      —
+  g7d3_fmt_amount        8089eee6  ('?', '<baseline>')              0       0      —
+  g7e1_parse_flag        644f0618  ('?', '<baseline>')              0       0      —
+  g7e1_parse_flag        c1f49180  ('?', '<baseline>')              0       0      —
+  g7e1_parse_flag        cd7e0eb9  ('?', '<baseline>')              0       0      —
+  g7e2_truncate_tail     697caecc  ('?', '<baseline>')              0       0      —
+  g7e2_truncate_tail     c21ee3b8  ('?', '<baseline>')              0       0      —
+
+## 汇总
+  条目总数 = 21｜`('?','<baseline>')` = 10｜其余 = 11
+  spread == 0（一条也匹配不上）= 10
+  ⭐ 可匹配但**不是每个实现上都有效**的条目 = 8/11
+     其中 useful == 0（完全无效）= 0
+     useful == spread（全有效）= 3
+
+## 每条「部分有效」条目：无效面在哪几个实现上
+  g7d3_fmt_amount ('ret', ".replace(',',' ')")：spread=6 useful=2｜无效 ['0a6acc93', '17747356', '5755e033', '8c8ac7f0']
+  g7d3_fmt_amount ('ret', ".replace(',',' ')")：spread=6 useful=2｜无效 ['0a6acc93', '17747356', '5755e033', '8c8ac7f0']
+  g7e1_parse_flag ('T2', "'true'")：spread=5 useful=1｜无效 ['1aa5099d', '37a4f17f', 'a579b07a', 'f2d1efa6']
+  g7e1_parse_flag ('T2', "'on'")：spread=5 useful=4｜无效 ['200ebf6e']
+  g7e1_parse_flag ('T2', "'on'")：spread=5 useful=4｜无效 ['200ebf6e']
+  g7e1_parse_flag ('T2', "'on'")：spread=5 useful=4｜无效 ['200ebf6e']
+  g7e1_parse_flag ('T2', "'on'")：spread=5 useful=4｜无效 ['200ebf6e']
+  g7d2_dedupe_keep ('key', '.strip()')：spread=2 useful=1｜无效 ['480ada8e']
+
+  已落盘 `utility.json`

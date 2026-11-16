@@ -1,0 +1,94 @@
+{
+ "g7d2_dedupe_keep": [
+  {
+   "key": [
+    "T4",
+    "lower"
+   ],
+   "n_impl": 5
+  },
+  {
+   "key": [
+    "T4",
+    "strip"
+   ],
+   "n_impl": 5
+  },
+  {
+   "key": [
+    "T4",
+    "strip().lower"
+   ],
+   "n_impl": 5
+  }
+ ],
+ "g7d3_fmt_amount": [
+  {
+   "key": [
+    "T3",
+    "strip"
+   ],
+   "n_impl": 8
+  },
+  {
+   "key": [
+    "T3",
+    "strip().lower"
+   ],
+   "n_impl": 8
+  },
+  {
+   "key": [
+    "T3",
+    "lower"
+   ],
+   "n_impl": 8
+  }
+ ],
+ "g7e1_parse_flag": [
+  {
+   "key": [
+    "T4",
+    "lower"
+   ],
+   "n_impl": 8
+  },
+  {
+   "key": [
+    "C1",
+    "False"
+   ],
+   "n_impl": 8
+  },
+  {
+   "key": [
+    "T2",
+    "'y'"
+   ],
+   "n_impl": 8
+  }
+ ],
+ "g7e2_truncate_tail": [
+  {
+   "key": [
+    "C1",
+    "s"
+   ],
+   "n_impl": 4
+  },
+  {
+   "key": [
+    "T3",
+    "lower"
+   ],
+   "n_impl": 4
+  },
+  {
+   "key": [
+    "T3",
+    "strip"
+   ],
+   "n_impl": 4
+  }
+ ]
+}

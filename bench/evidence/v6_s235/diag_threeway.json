@@ -1,0 +1,790 @@
+{
+ "matrix": {
+  "UNTRIED|UNKNOWN": 41,
+  "FAILED|INVALID": 10,
+  "OK|UNKNOWN": 1,
+  "OK|VALID": 8
+ },
+ "rows": [
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "1ac9e8da",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "1ac9e8da",
+   "key": [
+    "key",
+    ".strip()"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "1ac9e8da",
+   "key": [
+    "key",
+    ".strip().lower()"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "480ada8e",
+   "key": [
+    "key",
+    ".strip()"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 1,
+   "bscore": 0.2,
+   "cold_tries": 1
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "6c9204fe",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "6c9204fe",
+   "key": [
+    "key",
+    ".strip()"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "6c9204fe",
+   "key": [
+    "key",
+    ".strip().lower()"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "74aa48d8",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "74aa48d8",
+   "key": [
+    "key",
+    ".strip().lower()"
+   ],
+   "system": "OK",
+   "truth": "UNKNOWN",
+   "tries": 1,
+   "bscore": 1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "85e6d3bc",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "85e6d3bc",
+   "key": [
+    "key",
+    ".strip()"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d2_dedupe_keep",
+   "h": "85e6d3bc",
+   "key": [
+    "key",
+    ".strip().lower()"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "075b4099",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "075b4099",
+   "key": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "system": "OK",
+   "truth": "VALID",
+   "tries": 1,
+   "bscore": 1.0,
+   "cold_tries": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "0a6acc93",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "0a6acc93",
+   "key": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 1,
+   "bscore": 0.0,
+   "cold_tries": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "17747356",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "17747356",
+   "key": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 1,
+   "bscore": 0.0,
+   "cold_tries": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "309f1027",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "309f1027",
+   "key": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "419ec792",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "419ec792",
+   "key": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "system": "OK",
+   "truth": "VALID",
+   "tries": 1,
+   "bscore": 1.0,
+   "cold_tries": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "5755e033",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "5755e033",
+   "key": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 1,
+   "bscore": 0.6,
+   "cold_tries": 1
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8089eee6",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8089eee6",
+   "key": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8c8ac7f0",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7d3_fmt_amount",
+   "h": "8c8ac7f0",
+   "key": [
+    "ret",
+    ".replace(',',' ')"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 3,
+   "bscore": 0.6,
+   "cold_tries": 3
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "key": [
+    "T2",
+    "'on'"
+   ],
+   "system": "OK",
+   "truth": "VALID",
+   "tries": 4,
+   "bscore": 1.0,
+   "cold_tries": 6
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "1aa5099d",
+   "key": [
+    "T2",
+    "'true'"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 3,
+   "bscore": 0.8,
+   "cold_tries": 5
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "200ebf6e",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "200ebf6e",
+   "key": [
+    "T2",
+    "'on'"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 2,
+   "bscore": 0.6,
+   "cold_tries": 2
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "key": [
+    "T2",
+    "'on'"
+   ],
+   "system": "OK",
+   "truth": "VALID",
+   "tries": 4,
+   "bscore": 1.0,
+   "cold_tries": 6
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "37a4f17f",
+   "key": [
+    "T2",
+    "'true'"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 3,
+   "bscore": 0.8,
+   "cold_tries": 5
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "644f0618",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "644f0618",
+   "key": [
+    "T2",
+    "'on'"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "644f0618",
+   "key": [
+    "T2",
+    "'true'"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "key": [
+    "T2",
+    "'on'"
+   ],
+   "system": "OK",
+   "truth": "VALID",
+   "tries": 4,
+   "bscore": 1.0,
+   "cold_tries": 6
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "a579b07a",
+   "key": [
+    "T2",
+    "'true'"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 3,
+   "bscore": 0.8,
+   "cold_tries": 5
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "c1f49180",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "c1f49180",
+   "key": [
+    "T2",
+    "'on'"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "c1f49180",
+   "key": [
+    "T2",
+    "'true'"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "cd7e0eb9",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "cd7e0eb9",
+   "key": [
+    "T2",
+    "'on'"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "cd7e0eb9",
+   "key": [
+    "T2",
+    "'true'"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "key": [
+    "T2",
+    "'on'"
+   ],
+   "system": "OK",
+   "truth": "VALID",
+   "tries": 4,
+   "bscore": 1.0,
+   "cold_tries": 6
+  },
+  {
+   "tid": "g7e1_parse_flag",
+   "h": "f2d1efa6",
+   "key": [
+    "T2",
+    "'true'"
+   ],
+   "system": "FAILED",
+   "truth": "INVALID",
+   "tries": 3,
+   "bscore": 0.8,
+   "cold_tries": 5
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "697caecc",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "697caecc",
+   "key": [
+    "C1",
+    "'…' + s[-n:]"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "8184ec4d",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "8184ec4d",
+   "key": [
+    "C1",
+    "'…' + s[-n:]"
+   ],
+   "system": "OK",
+   "truth": "VALID",
+   "tries": 1,
+   "bscore": 1.0,
+   "cold_tries": 1
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "bc8c4b09",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "bc8c4b09",
+   "key": [
+    "C1",
+    "'…' + s[-n:]"
+   ],
+   "system": "OK",
+   "truth": "VALID",
+   "tries": 2,
+   "bscore": 1.0,
+   "cold_tries": 2
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "c21ee3b8",
+   "key": [
+    "?",
+    "<baseline>"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  },
+  {
+   "tid": "g7e2_truncate_tail",
+   "h": "c21ee3b8",
+   "key": [
+    "C1",
+    "'…' + s[-n:]"
+   ],
+   "system": "UNTRIED",
+   "truth": "UNKNOWN",
+   "tries": 0,
+   "bscore": -1.0,
+   "cold_tries": 0
+  }
+ ]
+}

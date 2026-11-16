@@ -1,0 +1,32 @@
+{
+ "w1": {
+  "n_real": 11,
+  "n_part": 8,
+  "ok": true
+ },
+ "arms": {
+  "warm": 588,
+  "online": 588,
+  "rev": 588,
+  "warm_bad": 590,
+  "online_bad": 590,
+  "online_thresh0": 588
+ },
+ "to1": {
+  "warm": 21,
+  "online": 21,
+  "bad": 21,
+  "online_bad": 21
+ },
+ "hit_eval": {
+  "warm": 43,
+  "online": 43
+ },
+ "w2": false,
+ "w3": true,
+ "w4a": true,
+ "w4b": false,
+ "w5": false,
+ "dmg": [],
+ "diff": []
+}

@@ -1,0 +1,41 @@
+## 混淆矩阵：系统三值 × 真值（口径 = 冷启动轨迹）
+
+  OK        VALID=  8  INVALID=  0  UNKNOWN=  1
+  FAILED    VALID=  0  INVALID= 10  UNKNOWN=  0
+  UNTRIED   VALID=  0  INVALID=  0  UNKNOWN= 41
+
+  合计格数 = 60
+
+  判对(OK↔VALID) = 8｜抓对(FAILED↔INVALID) = 10｜误报(FAILED↔VALID) = 0
+  没试到(UNTRIED) = 41 ⇒ ⛔ 这些是「不知道」，不许算成「有效」
+  在**作出判断的 18 格**上，准确 = 18/18 = 100.0%（⛔ 分母不含 UNTRIED）
+
+## 关键对照：g7d3 那条知识（spread=6 useful=2）
+  075b4099 系统 tries=1 bscore=1.00｜真值 VALID（冷启动 tries=1）
+  0a6acc93 系统 tries=1 bscore=0.00｜真值 INVALID（冷启动 tries=1）
+  17747356 系统 tries=1 bscore=0.00｜真值 INVALID（冷启动 tries=1）
+  309f1027 系统 tries=0 bscore=-1.00｜真值 UNKNOWN（冷启动 tries=0）
+  419ec792 系统 tries=1 bscore=1.00｜真值 VALID（冷启动 tries=1）
+  5755e033 系统 tries=1 bscore=0.60｜真值 INVALID（冷启动 tries=1）
+  8089eee6 系统 tries=0 bscore=-1.00｜真值 UNKNOWN（冷启动 tries=0）
+  8c8ac7f0 系统 tries=3 bscore=0.60｜真值 INVALID（冷启动 tries=3）
+
+## g7e1：'on' 与 'true' —— 「没试到」的形态
+  1aa5099d ('T2', "'on'")   tries=  4 bscore= 1.0｜真值 VALID
+  1aa5099d ('T2', "'true'") tries=  3 bscore= 0.8｜真值 INVALID
+  200ebf6e ('T2', "'on'")   tries=  2 bscore= 0.6｜真值 INVALID
+  200ebf6e ('T2', "'true'") tries=  2 bscore= 1.0｜真值 VALID
+  37a4f17f ('T2', "'on'")   tries=  4 bscore= 1.0｜真值 VALID
+  37a4f17f ('T2', "'true'") tries=  3 bscore= 0.8｜真值 INVALID
+  644f0618 ('T2', "'on'")   tries=  0 bscore=-1.0｜真值 UNKNOWN
+  644f0618 ('T2', "'true'") tries=  0 bscore=-1.0｜真值 UNKNOWN
+  a579b07a ('T2', "'on'")   tries=  4 bscore= 1.0｜真值 VALID
+  a579b07a ('T2', "'true'") tries=  3 bscore= 0.8｜真值 INVALID
+  c1f49180 ('T2', "'on'")   tries=  0 bscore=-1.0｜真值 UNKNOWN
+  c1f49180 ('T2', "'true'") tries=  0 bscore=-1.0｜真值 UNKNOWN
+  cd7e0eb9 ('T2', "'on'")   tries=  0 bscore=-1.0｜真值 UNKNOWN
+  cd7e0eb9 ('T2', "'true'") tries=  0 bscore=-1.0｜真值 UNKNOWN
+  f2d1efa6 ('T2', "'on'")   tries=  4 bscore= 1.0｜真值 VALID
+  f2d1efa6 ('T2', "'true'") tries=  3 bscore= 0.8｜真值 INVALID
+
+  已落盘 `diag_threeway.json`

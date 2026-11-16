@@ -1,0 +1,32 @@
+## Q0 分母
+  tids = 4｜parseable impls = 25
+
+## Q1/Q2 每个 tid：可匹配的非答案键
+  tid                      实现     不同键     答案键      非答案键     ≥3实现  覆盖率最高的键
+  g7d2_dedupe_keep          5      15       2        13       13  5/5 实现 ('T4', 'lower')
+  g7d3_fmt_amount           8      11       1        10       10  8/8 实现 ('T3', 'strip')
+  g7e1_parse_flag           8      54       2        52       44  8/8 实现 ('T4', 'lower')
+  g7e2_truncate_tail        4       7       1         6        6  4/4 实现 ('C1', 's')
+
+## Q3 V121 错记忆臂为什么「一次没省」——直接数出来
+  g7d2_dedupe_keep       别题键   5 个｜本题能被它们匹配到的实现 0/5
+  g7d3_fmt_amount        别题键   6 个｜本题能被它们匹配到的实现 0/8
+  g7e1_parse_flag        别题键   5 个｜本题能被它们匹配到的实现 0/8
+  g7e2_truncate_tail     别题键   6 个｜本题能被它们匹配到的实现 0/4
+  ⇒ 合计 0 个实现「被别题键排序影响」
+
+## Q4 判据可承载的注入点（按覆盖实现数排序，取前 3/tid）
+  g7d2_dedupe_keep       n_impl= 5 key=('T4', 'lower')
+  g7d2_dedupe_keep       n_impl= 5 key=('T4', 'strip')
+  g7d2_dedupe_keep       n_impl= 5 key=('T4', 'strip().lower')
+  g7d3_fmt_amount        n_impl= 8 key=('T3', 'strip')
+  g7d3_fmt_amount        n_impl= 8 key=('T3', 'strip().lower')
+  g7d3_fmt_amount        n_impl= 8 key=('T3', 'lower')
+  g7e1_parse_flag        n_impl= 8 key=('T4', 'lower')
+  g7e1_parse_flag        n_impl= 8 key=('C1', 'False')
+  g7e1_parse_flag        n_impl= 8 key=('T2', "'y'")
+  g7e2_truncate_tail     n_impl= 4 key=('C1', 's')
+  g7e2_truncate_tail     n_impl= 4 key=('T3', 'lower')
+  g7e2_truncate_tail     n_impl= 4 key=('T3', 'strip')
+
+  注入点已落盘 `inject_points.json`

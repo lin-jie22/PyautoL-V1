@@ -1,0 +1,42 @@
+## §1 W1 现象：可匹配面 > 可用面（来自 trace.json，零判分）
+  可匹配条目 = 11｜其中 spread > useful = 8
+    g7e1_parse_flag        ('T2', "'true'")           spread=5 useful=1 ratio=0.20
+    g7d3_fmt_amount        ('ret', ".replace(',',' ')") spread=6 useful=2 ratio=0.33
+    g7d3_fmt_amount        ('ret', ".replace(',',' ')") spread=6 useful=2 ratio=0.33
+    g7d2_dedupe_keep       ('key', '.strip()')        spread=2 useful=1 ratio=0.50
+    g7e1_parse_flag        ('T2', "'on'")             spread=5 useful=4 ratio=0.80
+    g7e1_parse_flag        ('T2', "'on'")             spread=5 useful=4 ratio=0.80
+    g7e1_parse_flag        ('T2', "'on'")             spread=5 useful=4 ratio=0.80
+    g7e1_parse_flag        ('T2', "'on'")             spread=5 useful=4 ratio=0.80
+  ⇒ W1 ✅ 成立（线 ≥6，实得 8）
+
+## §2 三臂读数（无注入）
+  WARM_ALL     n_eval =   588｜命中记忆的判分 =    43｜到 1.0 = 21/25
+  ONLINE       n_eval =   588｜命中记忆的判分 =    43｜到 1.0 = 21/25
+  REV（反证）      n_eval =   588｜命中记忆的判分 =    43｜到 1.0 = 21/25
+
+  W2 在线有效：588 ≤ 588 × 0.98 = 576.2
+     ⇒ ⛔ 不成立（省 0，0.00%）
+  W3 不伤正确性：到 1.0 21/25 vs 21/25；逐实现 s1 降 []
+     ⇒ ✅ 成立
+  W5 反证：REV n_eval = 588 vs WARM_ALL 588
+     ⇒ ⛔ 判据无牙（恒真）
+
+## §3 注入完全无效的键（W4）
+  WARM_BAD     n_eval =   590｜命中记忆的判分 =    51｜到 1.0 = 21/25
+  ONLINE_BAD   n_eval =   590｜命中记忆的判分 =    51｜到 1.0 = 21/25
+
+  W4a 扰动可见：590 > 588？
+     ⇒ ✅ 成立（+2）
+  W4b 在线吸收：590 ≤ 588 + 1 = 589？
+     ⇒ ⛔ 不成立（相对 WARM_BAD 省 0）
+
+## §4 反证组 R1~R3
+  R1 去掉 fails（应等于 WARM_ALL 588）：588 ⇒ ✅
+  R2 阈值 0（第一次失败就降权）：n_eval = 588（阈值 2 时 588）⇒ 不更低
+  R3 REV 应上升：588 vs 588 ⇒ ⛔
+
+## §5 逐实现对比（WARM_ALL vs ONLINE，只看有差异的）
+  （无差异 —— 在线降权一次也没生效）
+
+  已落盘 `readings.json`

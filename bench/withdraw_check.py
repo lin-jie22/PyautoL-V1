@@ -1785,11 +1785,83 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '''        _ast, _awhy = (ledger_audit(_runs_path, _brid) if _brid
                        else ("UNVERIFIABLE", "没有身份证，定位不到要重算的那一行"))''',
      '''        _ast, _awhy = ("UNVERIFIABLE", "撤回态：比较前不重算")'''),
+
+    # ── V145 / §212：复核的**粒度**（AZ131a~h）───────────────────────────
+    #: 撤的语义：抽掉「按行定位」的**每一个前提**，而不是算术。
+    #: ⛔ AZ131e 刻意不撤成「目标行坏了也放行」（那不真实），而是撤成
+    #:   「看不见它是目标行」——那才是真实的失效方向：坏行被读成「查无此账」。
+    ("AZ131a", "mw/bench.py",
+     '''        if want and want not in ln:
+            continue                      # 不可能命中 ⇒ 不解析，也不计坏行''',
+     '''        if False:
+            continue'''),
+    ("AZ131b", "mw/bench.py",
+     '''        if rec.get("run_id") == run_id:
+            hit = rec
+            info["hit_lineno"] = i''',
+     '''        if run_id in s:
+            hit = rec
+            info["hit_lineno"] = i'''),
+    ("AZ131c", "mw/bench.py",
+     '''            info["hit_broken"] = True     # 读不懂就无法否认它就是目标行
+            info["broken_lineno"] = i''',
+     '''            info["hit_broken"] = True
+            info["broken_lineno"] = i
+            return None, info'''),
+    ("AZ131d", "mw/bench.py",
+     '''    hit, info = _scan_rows(path, run_id)
+    if info["io"]:
+        return "UNKNOWN", f"账本读不出来（{info[\'io\']}）"''',
+     '''    recs = _read_records(path)
+    if recs is None:
+        return "UNKNOWN", f"账本读不出来或有一行不是 JSON（{path}）"
+    hit, info = None, {"lines": len(recs), "hit_broken": False,
+                       "broken_lineno": 0, "io": "", "parsed": 0}
+    for _r in reversed(recs):
+        if _r.get("run_id") == run_id:
+            hit = _r
+            break'''),
+    ("AZ131e", "mw/bench.py",
+     '''            info["hit_broken"] = True     # 读不懂就无法否认它就是目标行''',
+     '''            info["hit_broken"] = False'''),
+    ("AZ131f", "mw/bench.py",
+     '''    return bool(run_id) and all(c in _RID_LITERAL for c in run_id)''',
+     '''    return True'''),
+    ("AZ131g", "mw/bench.py",
+     '''            out["bad_lines"] += 1
+            continue''',
+     '''            continue'''),
+    ("AZ131h", "mw/bench.py",
+     '''    hit, info = _scan_rows(path, run_id)
+    if info["io"]:
+        return "UNVERIFIABLE", f"账本读不出来（{info[\'io\']}）"''',
+     '''    recs = _read_records(path)
+    hit = None
+    for _r in reversed(recs or []):
+        if _r.get("run_id") == run_id:
+            hit = _r
+            break
+    if hit is None:
+        return "UNVERIFIABLE", "查无此账"'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
 #: ⛔ 写成白名单而不是"允许任意多条"：允许多条就等于不再检查锚定跑偏。
 COUPLED: dict[str, frozenset[str]] = {
+    #: ★V145（§212）：AZ131 这一组的连带是**结构性的，解不开** ——
+    #:   六个断言锚的是同一处 `_scan_rows`：
+    #:   · c（行为：夹坏行仍可审）与 d（结论侧：夹坏行仍读得出）用的是**同一份**
+    #:     坏账本 fixture，撤掉扫描的中途退出，两个面一起翻；
+    #:   · d 把结论侧改回整份解析 ⇒ h 的 AST 判据（读者不许调 `_read_records`）
+    #:     必然红 —— 一个测行为、一个测结构，同一缺陷；
+    #:   · h 撤掉行局部 ⇒ c 与 e 一起红（c 是"目标仍可审"，e 是"目标坏了也别放行"，
+    #:     两句话都建立"能按身份找到那一行"上）；
+    #:   · f（允许表真值表）与 b（guard 生效后**仍找得到**）是同一个 guard 的两面。
+    #:   ⚠️ 已逐条实测：每一步的汇总行与断言数对得上（671/1、670/2、669/3）。
+    "AZ131c": frozenset({"AZ131d"}),
+    "AZ131d": frozenset({"AZ131h"}),
+    "AZ131f": frozenset({"AZ131b"}),
+    "AZ131h": frozenset({"AZ131c", "AZ131e"}),
     #: ★第 142 轮：AZ128a 撤的是「账本里没有结论也当绿」。AZ128c 的**第三半句**
     #:   是「钉完 r-pend 之后，旧记录 r-old 仍然是 UNKNOWN」—— 它测的是同一个
     #:   判据的另一个面（同一函数、同一行）。撤了那个分支，两个面一起翻。

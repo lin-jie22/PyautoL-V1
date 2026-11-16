@@ -1,0 +1,64 @@
+[账本] bench_out/runs.jsonl  行=145  字节=482357
+[账本] 可寻址（带 run_id）=62  不可寻址=83  ⇒ 等价性分母只能是 62，不是 145
+
+[J0] 『只重算结论依赖的那几条明细』对 mean 不成立（V144 登记的方案撤回一半）
+   取一条 10 条明细的记录：删任意一条 ⇒ 重算值改变的次数 9/10
+   ⇒ 每一条明细都在结论的依赖集里 ⇒ 可增量的是「解析哪些行」，不是「算哪些明细」
+
+[J1] 一次复核的成本落在哪（真实账本，中位数 ×11）
+   整份解析 _read_records         4.097 ms
+   旧路径（解析+定位+算术）    ≈   4.097 ms
+   新路径 ledger_audit           1.289 ms   （只解析 1/145 行）
+   其中纯算术 audit_measurement   0.004 ms  ⇒ 占总 0.10%
+   新/旧 = 0.31×（⭐ 阶没变，见 J3；这只是常数）
+
+[J2] 与**真旧码**逐格对比（不是重写一份旧逻辑再比：纪律 50）
+   探针 65 个 run_id（62 真实 + 3 缺席）× 2 读者 = 130 格
+   不同 0 格
+   分层普查 旧={'MISMATCH': 0, 'UNVERIFIABLE': 9, 'VERIFIED': 136, 'rows': 145} 新={'MISMATCH': 0, 'UNVERIFIABLE': 9, 'VERIFIED': 136, 'rows': 145} 相同=True
+
+[J2c] 覆盖全部 145 行（给 83 行不可寻址的记录在**副本**里补唯一 run_id）
+   148 个 run_id × 2 读者 = 296 格，不同 0 格
+   分层普查 旧={'MISMATCH': 0, 'UNVERIFIABLE': 9, 'VERIFIED': 136, 'rows': 145} 新={'MISMATCH': 0, 'UNVERIFIABLE': 9, 'VERIFIED': 136, 'rows': 145} 相同=True
+
+[J3] 阶没变（合成账本 ×N，⛔ 只量阶，不报「真实账本多快」）
+     N行     旧路径     新路径   新/旧
+      145     4.19     1.57    0.38  
+      580    15.25     4.07    0.27  （×4 行 ⇒ 新 ×2.59）
+     1450    38.05     9.04    0.24  （×2 行 ⇒ 新 ×2.22）
+     2900    77.71    17.23    0.22  （×2 行 ⇒ 新 ×1.91）
+     5800   159.16    34.17    0.21  （×2 行 ⇒ 新 ×1.98）
+
+[J4] 非目标行坏 JSON：目标行还审不审得了
+   旧码（真跑在快照上）       UNVERIFIABLE
+   新码 ledger_audit         VERIFIED
+   新码 ledger_verdict       UNKNOWN
+   理由与干净账本逐字相同     True
+   整份普查 {'readable': False, 'rows': 145, 'bad_lines': 1, 'lines': 146, 'VERIFIED': 136, 'MISMATCH': 0, 'UNVERIFIABLE': 9} ｜ 守恒 V+M+U=145 == rows=145 ｜ 总行数 rows+bad=146 == lines=146
+   旧码在同一份坏账本上 ledger_audit ⇒ VERIFIED  重算 0.54284 == 写下的值（10 条明细 / 1 轮 / 分母 10）
+   ⇒ 行为分叉成立：同一份账本、同一个 run_id，旧码连审都审不了
+
+[J5] 目标行本身坏 JSON：必须 UNVERIFIABLE
+   run_id 仍可见 ⇒ ('UNVERIFIABLE', '账本第 145 行含 run_id=5425@1792919669 却不是 JSON ⇒ 疑似那一行，读不懂就不许当读过')
+   run_id 都读不出 ⇒ ('UNVERIFIABLE', '账本 145 行里没有 run_id=5425@1792919669 这一行')
+   ⚠️ 两者都**不放行**；但后者理由会说「没有这一行」—— 修法指错（见边界 4）
+
+[J6] 预筛只在 run_id 以字面量出现时成立
+   run_id='5425@1792919669'    字面量=True  ensure_ascii=True 含子串=True  False 含子串=True
+   run_id='r-不存在'              字面量=False ensure_ascii=True 含子串=False False 含子串=True
+   run_id='a"b'                字面量=False ensure_ascii=True 含子串=False False 含子串=False
+   run_id='a\\b'               字面量=False ensure_ascii=True 含子串=False False 含子串=False
+   run_id='a\tb'               字面量=False ensure_ascii=True 含子串=False False 含子串=False
+   run_id=''                   字面量=False ensure_ascii=True 含子串=—     False 含子串=—
+   ensure_ascii=True 写盘的非 ASCII run_id ⇒ VERIFIED（guard 退回全解析，没误报查无此账）
+   诱饵行（别的字段含该 run_id）⇒ 被解析 2 行，命中 run_id='5425@1792919669' ⇒ 子串只影响成本，命中仍按 == 判定
+
+[R] 反证组
+   R1 全解析 vs 预筛：62 行，不同 0 ⇒ 预筛只改成本，不改结论
+   R2 被跳过的坏行 ⇒ parsed=1 bad_in_parsed=0（⛔ 不是 0=没坏，是「没看过」）；整份普查 bad_lines=1
+   R3 定位换成「返回第一行」⇒ 62/62 行结果改变 ⇒ 判据能变
+   R4 「静默跳过坏行」与「隔离」的差别：跳过会让 bad_lines 丢计数；本实现 bad_lines=1 且 readable=False
+
+[W1] 通电
+   run.py 里 ledger_audit=2 调用点、ledger_verdict=2 调用点
+   mw/bench.py 里 _read_records 剩余调用点=1（应只剩 ledger_strata —— 整份诊断，故意不预筛）

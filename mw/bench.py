@@ -1102,6 +1102,92 @@ def _read_records(path: Path) -> list[dict] | None:
     return out
 
 
+# ── 按身份定位一行（V145，§212）──────────────────────────────────────────
+# 为什么需要它：`_read_records` 是**整份**解析。审一行要把整份账本 `json.loads`
+# 一遍，而且**任何一行**坏 JSON 就整份返回 `None` ⇒ 一行坏，全账本上所有结论、
+# 所有复核一起失效。账本只会变长，这条连坐路径的概率单调上升。
+#
+# 但 `record_verdict(rec)` 与 `audit_measurement(rec)` 的**依赖集只有那一个记录
+# 对象** —— 函数体里没有任何跨行引用（静态可查）。所以「别的行坏」在逻辑上
+# **不可能**影响这一行的结论。整份粒度比必要更严，而更严的代价是**可用性**：
+# 一个永远给不出结论的闸最后会被绕过（纪律 62 的同一形态，只是粒度从
+# 「每个闸」变成「整份文件」）。
+#
+# ⛔ 这里换掉的是**粒度**，不是严格性：目标行自己坏 ⇒ 照样不许放行。
+
+#: 这些字符 JSON 从不转义 ⇒ `run_id` 会以**字面量**出现在那一行里，于是
+#: 「原始行含子串」可以当预筛。⛔ 非 ASCII（会被写成 `\uXXXX`）、`"`、`\` 与
+#: 控制符**都不在**表里 —— 它们会让预筛**漏选**目标行，把「有这一行」读成
+#: 「查无此账」，而这两种情形在原子上不可区分（纪律 46：分母不同不许比大小，
+#: 这里是它的孪生：漏选与缺席不许混为一谈）。
+_RID_LITERAL = frozenset("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                         "abcdefghijklmnopqrstuvwxyz@._:+-")
+
+
+def _rid_is_literal(run_id: str) -> bool:
+    """`run_id` 会不会以字面量出现在 JSON 行里 ⇒ 预筛能不能用。"""
+    return bool(run_id) and all(c in _RID_LITERAL for c in run_id)
+
+
+def _scan_rows(path: Path, run_id: str) -> tuple[dict | None, dict]:
+    """按 `run_id` 定位**那一行，并且只解析它**。返回 `(命中记录, 扫描账目)`。
+
+    账目字段（⛔ 名字即口径，纪律 4）::
+
+        lines          非空行数（= 整份账本的行数；与 `len(_read_records())` 同值）
+        parsed         真正 `json.loads` 过的行数（启用预筛时远小于 lines）
+        bad_in_parsed  已解析范围里的坏 JSON 行数 —— ⛔ **不是**「账本坏行总数」：
+                       被预筛跳过的行没被看过，它们的坏没坏**未知**。
+                       「没看过」不许写成 0（纪律 8：缺席不许冒充零）。
+        prefilter      是否启用了预筛
+        hit_lineno     命中行号（从 1 起）
+        hit_broken     有一行含这个 `run_id` 却读不懂 ⇒ **疑似**目标行
+        io             OSError 描述（读不出来时非空）
+
+    ★ 命中判据是解析之后的 `rec["run_id"] == run_id`，**不是**子串相等。
+      预筛只决定「要不要解析这一行」，而且它**只会多选、不会漏选**
+      （目标行必然含自己的字面量 `run_id`）⇒ 预筛只影响成本，不影响结论。
+    ★ 重复 `run_id` ⇒ 取**最后一处**（与旧的 `reversed()` 扫法一致）。
+    """
+    info = {"lines": 0, "parsed": 0, "bad_in_parsed": 0, "prefilter": False,
+            "hit_lineno": 0, "hit_broken": False, "broken_lineno": 0, "io": ""}
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as e:
+        info["io"] = f"{type(e).__name__}: {e}"
+        return None, info
+    want = run_id if _rid_is_literal(run_id) else ""
+    info["prefilter"] = bool(want)
+    hit = None
+    for i, ln in enumerate(text.splitlines(), 1):
+        s = ln.strip()
+        if not s:
+            continue
+        info["lines"] += 1
+        if want and want not in ln:
+            continue                      # 不可能命中 ⇒ 不解析，也不计坏行
+        info["parsed"] += 1
+        try:
+            rec = json.loads(s)
+        except json.JSONDecodeError:
+            info["bad_in_parsed"] += 1
+            info["hit_broken"] = True     # 读不懂就无法否认它就是目标行
+            info["broken_lineno"] = i
+            continue
+        if rec.get("run_id") == run_id:
+            hit = rec
+            info["hit_lineno"] = i
+    return hit, info
+
+
+def _scan_why(info: dict, run_id: str) -> str:
+    """定位失败的**共同**说法（两个读者共用一份措辞，⛔ 不许各写一套）。"""
+    if info["hit_broken"]:
+        return (f"账本第 {info['broken_lineno']} 行含 run_id={run_id} 却"
+                "不是 JSON ⇒ 疑似那一行，读不懂就不许当读过")
+    return f"账本 {info['lines']} 行里没有 run_id={run_id} 这一行"
+
+
 def record_verdict(rec: Mapping[str, Any]) -> str:
     """**一条账本记录自己**的结论。缺席 / `PENDING` / 非法值 ⇒ `UNKNOWN`。
 
@@ -1146,17 +1232,15 @@ def ledger_verdict(path: Path, run_id: str) -> tuple[str, str]:
     账本读不出来、没有这一行、这一行没有结论（`verdict` 键缺席或不是三值之一，
     包括本轮的占位值 `PENDING`）。三种都**不是** GREEN —— 缺席不许冒充零失败
     （纪律 5），这里是它的孪生：缺席不许冒充完成。
+
+    ★ V145：走 `_scan_rows`，**只解析候选行**。`record_verdict(rec)` 只吃这一个
+      记录对象 ⇒ 别的行坏不坏，在逻辑上影响不到这一行的结论。
     """
-    recs = _read_records(path)
-    if recs is None:
-        return "UNKNOWN", f"账本读不出来或有一行不是 JSON（{path}）"
-    hit = None
-    for rec in reversed(recs):
-        if rec.get("run_id") == run_id:
-            hit = rec
-            break
+    hit, info = _scan_rows(path, run_id)
+    if info["io"]:
+        return "UNKNOWN", f"账本读不出来（{info['io']}）"
     if hit is None:
-        return "UNKNOWN", f"账本 {len(recs)} 行里没有 run_id={run_id} 这一行"
+        return "UNKNOWN", _scan_why(info, run_id)
     v = record_verdict(hit)
     if v == "UNKNOWN":
         return "UNKNOWN", (f"这一行没有结论（verdict={hit.get('verdict')!r}）"
@@ -1342,17 +1426,16 @@ def ledger_audit(path: Path, run_id: str) -> tuple[str, str]:
 
     与 `ledger_verdict` 同构：身份按 `run_id` 找，⛔ 不按「最后一行」。
     账本读不出 / 查无此行 ⇒ `UNVERIFIABLE`（⛔ 不是 `VERIFIED`：缺席不许冒充完成）。
+
+    ★ V145：只解析候选行。⭐ **理由字符串在干净账本上与旧版逐字相同** ——
+      跳过别的行不改变任何**主张**，只改变成本。⛔ 但跳过的行也**没被体检**：
+      想知道整份账本坏没坏，用 `ledger_audit_strata`（那里一行都不许跳）。
     """
-    recs = _read_records(path)
-    if recs is None:
-        return "UNVERIFIABLE", f"账本读不出来或有一行不是 JSON（{path}）"
-    hit = None
-    for rec in reversed(recs):
-        if rec.get("run_id") == run_id:
-            hit = rec
-            break
+    hit, info = _scan_rows(path, run_id)
+    if info["io"]:
+        return "UNVERIFIABLE", f"账本读不出来（{info['io']}）"
     if hit is None:
-        return "UNVERIFIABLE", f"账本 {len(recs)} 行里没有 run_id={run_id} 这一行"
+        return "UNVERIFIABLE", _scan_why(info, run_id)
     return audit_measurement(hit)
 
 
@@ -1362,14 +1445,30 @@ def ledger_audit_strata(path: Path) -> dict:
     ★ 与 `ledger_strata`（按结论分层）并列而不是并进去：一格答「这次跑完没有」，
       另一格答「这个数算得回来吗」。两个问题都有答案才算读过账本。
     ★ 守恒式（契约 AZ130e）：`VERIFIED + MISMATCH + UNVERIFIABLE == rows`。
+    ★ V145：这里是**整份**诊断，所以一行都不许预筛跳过 —— 它必须看得见坏行。
+      `rows` 仍是**解析成功**的行数（守恒式的分母不变），坏行单列 `bad_lines`，
+      于是「总行数 = rows + bad_lines」；`readable` 收窄为「整份无损」。
+      ⛔ 坏行**不许**被静默跳过：跳过等于把「账本坏了」读成「账本少一行」。
     """
-    recs = _read_records(path)
-    out: dict = {"readable": recs is not None, "rows": 0,
+    out: dict = {"readable": True, "rows": 0, "bad_lines": 0, "lines": 0,
                  "VERIFIED": 0, "MISMATCH": 0, "UNVERIFIABLE": 0}
-    if recs is None:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        out["readable"] = False
         return out
-    out["rows"] = len(recs)
-    for rec in recs:
+    for ln in text.splitlines():
+        s = ln.strip()
+        if not s:
+            continue
+        out["lines"] += 1
+        try:
+            rec = json.loads(s)
+        except json.JSONDecodeError:
+            out["bad_lines"] += 1
+            continue
+        out["rows"] += 1
         out[audit_measurement(rec)[0]] += 1
+    out["readable"] = out["bad_lines"] == 0
     return out
 

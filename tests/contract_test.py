@@ -517,7 +517,8 @@ from mw.bench import (BaselineStore, Caliber, baseline_provenance_gate,  # noqa:
                       baseline_recompute_gate, baseline_verdict_gate,
                       caliber_from_dict, ledger_audit, ledger_audit_strata,
                       ledger_strata, ledger_verdict, record_verdict,
-                      recompute_mean, stamp_verdict, audit_measurement)
+                      recompute_mean, stamp_verdict, audit_measurement,
+                      _rid_is_literal, _scan_rows)
 
 _az128_dir = Path(tempfile.mkdtemp(prefix="v142_ledger_"))
 _az128_log = _az128_dir / "runs.jsonl"
@@ -883,6 +884,156 @@ check(RS, "AZ130g `run.py` 里 `ledger_audit` **恰好 2 个**调用点（外壳
           "              重算闸恰好 1 个 —— 多一个读者就多一套口径（同 AZ129e）",
       _az130_la == 2 and _az130_gc == 1,
       f"ledger_audit={_az130_la} recompute_gate={_az130_gc}")
+
+
+# ── V145（§212）：复核的**粒度** —— 一行坏不该连坐全账本 ────────────────────
+# 为什么要有这一组：`_read_records` 是整份解析，任何一行坏 ⇒ 整份 None ⇒
+# 全账本上所有结论、所有复核一起失效。账本只会变长，这条连坐路径的概率单调上升。
+# ⛔ 换的是**粒度**，不是严格性：目标行自己坏 ⇒ 照样不许放行。
+_az131_dir = Path(tempfile.mkdtemp(prefix="v145_scan_"))
+
+
+def _az131_row(rid: str, verdict: str | None = "GREEN", score: float = 1.0,
+               n: int = 2) -> dict:
+    pt = [{"rep": 1, "id": f"t{i}", "score": score} for i in range(n)]
+    total = 0.0
+    for row in pt:
+        total += row["score"]
+    rec = {"run_id": rid, "repeat": 1,
+           "report": {"attempted": n, "recorded": n, "skipped_no_answer": 0,
+                      "failed_scorer": 0, "per_task": pt},
+           "measurement": {"n": 1, "mean": total / n}}
+    if verdict is not None:
+        rec["verdict"] = verdict
+    return rec
+
+
+def _az131_write(name: str, recs: list, bad_at: int | None = None,
+                 bad_text: str = '{"run_id": "broken", "report": ') -> Path:
+    lines = [json.dumps(r, ensure_ascii=False, sort_keys=True) for r in recs]
+    if bad_at is not None:
+        lines.insert(bad_at, bad_text)
+    p = _az131_dir / name
+    p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return p
+
+
+_az131_3 = [_az131_row("r0"), _az131_row("r1"), _az131_row("r2", verdict="RED")]
+_az131_clean = _az131_write("clean.jsonl", _az131_3)
+_hit131, _inf131 = _scan_rows(_az131_clean, "r2")
+check(RS, "AZ131a 定位器只解析**候选行**：3 行账本审 1 行 ⇒ parsed==1，而 lines==3\n"
+          "              ⛔ 省掉的是「解析」，不是「账本有多长」这个事实 ——\n"
+          "              跳过别的行**不改变任何主张**，只改变成本",
+      _inf131["parsed"] == 1 and _inf131["lines"] == 3
+      and _inf131["prefilter"] is True and _hit131["run_id"] == "r2"
+      and _inf131["bad_in_parsed"] == 0,
+      f"{_inf131}")
+
+# 诱饵：别的字段里含同一个 run_id ⇒ 会被解析，但**不会**被当成命中
+_az131_dec = _az131_row("rD")
+_az131_dec["note"] = "see r2 for details"
+#: ⚠️ 诱饵放在**最后**：语义是「重复 run_id 取最后一处」，所以只有「末行是诱饵」
+#:   才能区分「按 == 命中」与「按子串命中」—— 排在前面时两种实现都取到真目标，
+#:   断言会**恒真**（纪律 5 第一形态）。
+#: ⚠️ 这里刻意**不断言 `parsed`**：预筛计数由 AZ131a 管，混进来会让两条断言同生同死。
+_hit_dec, _inf_dec = _scan_rows(_az131_write("decoy131.jsonl", _az131_3 + [_az131_dec]), "r2")
+#: 非 ASCII 端到端（guard 生效 ⇒ 退回全解析 ⇒ 仍必须找得到）。放在这里而不是
+#: AZ131f：它验的是**命中规则**，而 AZ131f 只验允许表本身（分开才不会同生同死）。
+_az131_na = _az131_dir / "nonascii.jsonl"
+_az131_na.write_text(json.dumps({"run_id": "r-不存在", "repeat": 1,
+                                 "report": {"attempted": 2, "recorded": 2,
+                                            "skipped_no_answer": 0, "failed_scorer": 0,
+                                            "per_task": [{"rep": 1, "id": "t0", "score": 1.0},
+                                                         {"rep": 1, "id": "t1", "score": 1.0}]},
+                                 "measurement": {"n": 1, "mean": 1.0}},
+                                ensure_ascii=True, sort_keys=True) + "\n",
+                     encoding="utf-8")
+_az131_na_got = ledger_audit(_az131_na, "r-不存在")
+check(RS, "AZ131b 预筛**只多选、不漏选**：诱饵行（别的字段含该 run_id）被解析，\n"
+          "              命中仍按解析后的 `run_id ==` 判定 ⇒ 子串只影响成本、不影响结论；\n"
+          "              且 run_id 需转义时退回全解析后**仍找得到**（不许把存在读成查无此账）",
+      _hit_dec["run_id"] == "r2" and _az131_na_got[0] == "VERIFIED",
+      f"命中={_hit_dec.get('run_id')!r} 非ASCII端到端={_az131_na_got[0]}")
+
+# ── 坏行隔离：非目标行坏 ⇒ 目标行照样审得了；目标行坏 ⇒ 照样不放行 ──────────
+#: ⛔ 坏行**必须含目标 run_id** 才叫「候选」：不含的坏行会被预筛直接跳过，
+#:   注入就变成**不可见**的（v6_s234 第一次跑就栽在这里：AZ131c 撤回了也不红）。
+#:   含 run_id 的坏行一定会被解析 ⇒ 一定会撞上 `JSONDecodeError` ⇒ 才真的在测隔离。
+_az131_bad = _az131_write("bad.jsonl", _az131_3, bad_at=1,
+                          bad_text='{"note": "see r2 too", "report": ')
+_az131_st_clean = ledger_audit(_az131_clean, "r2")
+_az131_st_bad = ledger_audit(_az131_bad, "r2")
+check(RS, "AZ131c 非目标行坏 JSON ⇒ 目标行仍 VERIFIED，且**理由与干净账本逐字相同**\n"
+          "              （`audit_measurement` 的依赖集只有那一个记录对象 —— 别的行坏\n"
+          "              在逻辑上影响不到它）。旧行为是整份 None ⇒ 一律不可复核",
+      _az131_st_clean[0] == "VERIFIED" and _az131_st_bad == _az131_st_clean,
+      f"干净={_az131_st_clean[0]} 夹坏行={_az131_st_bad[0]} 逐字相同={_az131_st_bad == _az131_st_clean}")
+
+_az131_vclean = ledger_verdict(_az131_clean, "r2")
+_az131_vbad = ledger_verdict(_az131_bad, "r2")
+check(RS, "AZ131d 结论侧同样按行隔离：夹一行坏 JSON 时 `ledger_verdict` 仍读出 RED\n"
+          "              ⛔ 只修行读而不修结论侧 ⇒ 溯源闸在结论那一步照样死掉，端到端没修",
+      _az131_vclean == _az131_vbad and _az131_vbad[0] == "RED",
+      f"干净={_az131_vclean} 夹坏行={_az131_vbad}")
+
+_az131_self = _az131_write(
+    "selfbad.jsonl", [_az131_row("r0"), _az131_row("r1")],
+    bad_at=2, bad_text='{"run_id": "r2", "repeat": 1, "report": {"attempted"')
+_az131_self_st = ledger_audit(_az131_self, "r2")
+_az131_self_v = ledger_verdict(_az131_self, "r2")
+check(RS, "AZ131e ⛔ 目标行**自己**坏 ⇒ 仍然不许放行（UNVERIFIABLE / UNKNOWN），\n"
+          "              理由含「疑似」：读不懂就无法否认它就是那一行 ⇒ 不许当读过\n"
+          "              ⇒ 换粒度没换严格性",
+      _az131_self_st[0] == "UNVERIFIABLE" and _az131_self_v[0] == "UNKNOWN"
+      and "疑似" in _az131_self_st[1],
+      f"{_az131_self_st[0]}/{_az131_self_v[0]} 理由={_az131_self_st[1][:40]}")
+
+# ── 预筛的前提：run_id 必须以**字面量**出现 ───────────────────────────────
+_az131_lit = {p: _rid_is_literal(p) for p in
+              ("41509@1794809015", "r-不存在", 'a"b', "a\\b", "a\tb", "", "a b")}
+_az131_esc = json.dumps({"run_id": "r-不存在"}, ensure_ascii=True)
+check(RS, "AZ131f 预筛前置条件：`run_id` 必须**原样**出现在那一行里\n"
+          "              非 ASCII 会被写成 `\\uXXXX`、`\"`/`\\`/控制符会被转义 ⇒ 子串不在\n"
+          "              ⇒ 预筛会**漏选**（存在被读成查无此账）⇒ 表外一律退回全解析\n"
+          "              （端到端见 AZ131b；这里只管允许表本身，免得两条断言同生同死）",
+      _az131_lit == {"41509@1794809015": True, "r-不存在": False, 'a"b': False,
+                     "a\\b": False, "a\tb": False, "": False, "a b": False}
+      and "r-不存在" not in _az131_esc,            # ensure_ascii=True 下子串确实不在
+      f"{_az131_lit}")
+
+# ── 整份诊断：一行都不许跳，坏行必须计数 ──────────────────────────────────
+_az131_str = ledger_audit_strata(_az131_bad)
+_az131_tot131 = (_az131_str["VERIFIED"] + _az131_str["MISMATCH"]
+                 + _az131_str["UNVERIFIABLE"])
+check(RS, "AZ131g 整份普查看得见坏行：`bad_lines==1`、`readable` 收窄为 False，\n"
+          "              守恒式仍在 `rows`（**解析成功**的行数）上，总行数 = rows + bad_lines\n"
+          "              ⛔ 坏行不许静默跳过 —— 跳过等于把「账本坏了」读成「账本少一行」",
+      _az131_str["bad_lines"] == 1 and _az131_str["readable"] is False
+      and _az131_str["rows"] == 3 and _az131_tot131 == 3
+      and _az131_str["rows"] + _az131_str["bad_lines"] == _az131_str["lines"] == 4,
+      f"{_az131_str}")
+
+# ── 静态：两个读者都不许再整份解析 ───────────────────────────────────────
+_az131_src = (Path(__file__).resolve().parents[1] / "mw/bench.py").read_text(encoding="utf-8")
+_az131_btree = ast.parse(_az131_src)
+
+
+def _az131_calls_of(fn: str) -> set:
+    for nd in ast.walk(_az131_btree):
+        if isinstance(nd, ast.FunctionDef) and nd.name == fn:
+            return {getattr(c.func, "id", getattr(c.func, "attr", ""))
+                    for c in ast.walk(nd) if isinstance(c, ast.Call)}
+    return set()
+
+
+_az131_readers = {f: _az131_calls_of(f) for f in ("ledger_verdict", "ledger_audit")}
+check(RS, "AZ131h 两个按身份读账本的读者都**不再**调 `_read_records`（整份解析），\n"
+          "              都改走 `_scan_rows`；而整份普查仍走自己那条全解析路径\n"
+          "              ⛔ 只改一个读者 ⇒ 另一个在坏行上照样死，端到端没修（AZ131d）",
+      all("_read_records" not in v and "_scan_rows" in v
+          for v in _az131_readers.values())
+      and "_read_records" in _az131_calls_of("ledger_strata"),
+      f"{ {k: sorted(v) for k, v in _az131_readers.items()} }")
 
 
 # ===========================================================================

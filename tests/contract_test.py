@@ -20,6 +20,7 @@ import contextlib
 import inspect
 import io
 import json
+import math
 import os
 import re
 import sys
@@ -766,15 +767,18 @@ _az130_rec = {
 }
 _az130_got = recompute_mean(_az130_rec)
 check(RS, "AZ130a 重算公式：每轮 fold(score)/n_tasks，再对轮 fold\n"
-          "              ⛔ 求和**必须**是朴素左折叠 —— 内置 `sum()` 走补偿求和，\n"
-          "              同一份账本 39/136 行会差 1 ulp ⇒ 全部判成假红（纪律 48 的形态：\n"
-          "              判「逐格相同」必须把算法写进判据，否则判的是算法差异）",
+          "              ⛔ 求和**必须**是朴素左折叠（纪律 48 的形态：判「逐格相同」\n"
+          "              必须把算法写进判据，否则判的是算法差异）。\n"
+          "              ⚠️ 「与精确求和不同」的见证用 `math.fsum`，**不用内置 `sum()`**：\n"
+          "              3.12+ 的 `sum()` 走补偿求和（同一份账本 39/136 行差 1 ulp），\n"
+          "              而 3.11 的 `sum()` 就是朴素折叠 ⇒ 拿它当见证会让本条在 3.11 上**恒假**\n"
+          "              （V169 实测：CI py3.11 从 V144 起红了 32 次，根因就是这一行）",
       _az130_got is not None
       and _az130_got[0] == _az130_fold / 4
-      and _az130_got[0] != sum(_az130_pt) / 4
+      and _az130_got[0] != math.fsum(_az130_pt) / 4
       and _az130_got[1]["n_tasks"] == 4,
       f"重算={_az130_got[0]!r} fold={_az130_fold / 4!r} "
-      f"sum={sum(_az130_pt) / 4!r}")
+      f"fsum={math.fsum(_az130_pt) / 4!r} sum={sum(_az130_pt) / 4!r}")
 
 
 def _az130_mut(**kw) -> dict:

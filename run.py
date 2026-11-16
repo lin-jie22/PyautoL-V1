@@ -48,6 +48,14 @@ from mw.tools import catalog_sha as tools_catalog_sha     # noqa: E402
 #: site-packages（第五十八轮实测，见 `data_path()` 的说明）。
 _PKG_DIR = Path(__file__).resolve().parent
 
+#: 默认任务集 / 打分器 / 题集目录 —— **唯一**真相。
+#: ⚠️ 原先是 `_bench_main` 里手写的三处字面量。V170 新增 `--goals` 入口时
+#:    如果各写一份，两个入口的默认值迟早漂成两把尺子（同一个病：手抄的数字有 N 个副本）。
+#:    ⛔ 显式 `--suite` / `--scorer` **不经** `data_path`（悄悄换文件 = 假成功）。
+DEF_SUITE = Path("bench") / "tasks" / "coding_small.jsonl"
+DEF_SCORER = Path("bench") / "scorers" / "code_exec.py"
+DEF_TASK_DIR = Path("bench") / "tasks"
+
 
 def data_path(rel: Path, root: Path | None = None) -> Path:
     """仓库里的**数据文件**（任务集 / 打分器）放哪儿：**当前目录优先，包目录兜底**。
@@ -2097,9 +2105,9 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
             return 2
         return _cross_domain(args, d)
     suite_path = (Path(args.suite).expanduser() if args.suite
-                  else _data_path(Path("bench") / "tasks" / "coding_small.jsonl"))
+                  else _data_path(DEF_SUITE))
     scorer_path = (Path(args.scorer).expanduser() if args.scorer
-                   else _data_path(Path("bench") / "scorers" / "code_exec.py"))
+                   else _data_path(DEF_SCORER))
     for p in (suite_path, scorer_path):
         if not p.exists():
             print(f"❌ 找不到 {p}")
@@ -2867,6 +2875,142 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     return 0 if rep.trustworthy() else 1
 
 
+def _goals_main(args) -> int:
+    """自主目标模式（L5 的可判定入口）。
+
+    提议阶段**零模型零网络**：只读自己的账本（`score_ledger.jsonl`）与
+    仓库里有哪些题（`bench/tasks/*.jsonl` 的 `id`），⛔ 不读题面、不读 `--goal`。
+
+    `--goals-act N` 才会动真格：对前 N 条目标各跑一次、判一次、记账一次。
+    ⛔ 观测写 `goal_obs.jsonl`，**不写** `score_ledger.jsonl` —— 后者带口径闸，
+       混进不同口径的观测等于伪造履历（见 `mw/goals.py` 模块头边界 3）。
+    """
+    from mw import goals as G
+
+    root = Path(__file__).resolve().parent
+
+    def _data_path(rel: Path) -> Path:
+        """与 `_bench_main` 同一条规则（当前目录优先、包目录兜底），同一个常量。"""
+        return data_path(rel, root=root)
+
+    paths = cfg.Paths()
+    led_path = Path(args.ledger).expanduser() if args.ledger else paths.score_ledger
+    obs_path = (Path(args.goals_obs).expanduser() if args.goals_obs
+                else paths.state / "goal_obs.jsonl")
+    log_path = (Path(args.goals_log).expanduser() if args.goals_log
+                else paths.state / "goal_ledger.jsonl")
+    suite_dir = (Path(args.goals_suite_dir).expanduser() if args.goals_suite_dir
+                 else _data_path(DEF_TASK_DIR))
+
+    obs, bad_led = G.coerce_all(G.load(led_path))
+    obs_g, bad_obs = G.coerce_all(G.load(obs_path))
+    obs += obs_g
+    suites = G.scan_suites(suite_dir)
+    suite_ids = [tid for ids in suites.values() for tid in ids]
+    log_rows = G.load(log_path)
+    done = G.done_gids(log_rows)
+
+    covered = sorted({o["task_id"] for o in obs} & set(suite_ids))
+    goals = G.propose(obs, suite_ids, done=done)
+
+    print("=" * 74)
+    print("L5 自主目标 —— 目标来自**自己的账本**，不是 `--goal`")
+    print("=" * 74)
+    print(f"  账本    {led_path.name} {len(obs) - len(obs_g)} 行（坏行 {bad_led}）")
+    print(f"  观测    {obs_path.name} {len(obs_g)} 行（坏行 {bad_obs}）")
+    print(f"  套件    {suite_dir}：{len(suites)} 个共 {len(suite_ids)} 题；"
+          f"账本覆盖 {len(covered)} 题；**零覆盖 {len(suite_ids) - len(covered)} 题**")
+    print(f"  已 MET  {len(set(done))} 条（不再重复提）")
+    kinds = {k: sum(1 for g in goals if g.kind == k) for k in G.KINDS}
+    print(f"  提议    {len(goals)} 条：" + "｜".join(f"{k} {v}" for k, v in kinds.items()))
+    print()
+    print(G.render(goals, obs))
+    print()
+
+    acted: list[dict] = []
+    again: list = []
+    if args.goals_act and goals:
+        from mw.bench import (ExternalScorer, Suite, calibrate, run_suite)
+
+        scorer_path = (Path(args.scorer).expanduser() if args.scorer
+                       else _data_path(DEF_SCORER))
+        scorer = ExternalScorer([sys.executable, str(scorer_path)], source=scorer_path)
+        core = _build("", args, allow_shell=args.allow_shell)
+        path_of: dict[str, Path] = {}
+        for stem, ids in suites.items():
+            for tid in ids:
+                path_of.setdefault(tid, suite_dir / f"{stem}.jsonl")
+        cal_ok: dict[Path, bool] = {}
+        print(f"--- 执行前 {min(args.goals_act, len(goals))} 条 ---")
+        for g in goals[: max(0, int(args.goals_act))]:
+            p = path_of.get(g.cell)
+            if p is None:
+                print(f"  ⛔ {g.cell} 找不到套件，跳过")
+                continue
+            one = Suite(name=p.stem, tasks=tuple(t for t in Suite.load(p).tasks if t.id == g.cell))
+            if p not in cal_ok:
+                cal = calibrate(scorer, one)
+                cal_ok[p] = cal.ok
+            if not cal_ok[p]:
+                print(f"  ⛔ 尺子在 {p.name} 上自证失败 ⇒ 不执行、不判定（fail-closed）")
+                continue
+            _m, rep = run_suite(lambda t: core.run(t.prompt, task_id=t.id, family=p.stem).answer,
+                                scorer, one, repeat_n=1, budget_tag="1x",
+                                candidate=f"goals-act:{g.kind}")
+            row = next((r for r in rep.per_task if r.get("id") == g.cell), None)
+            if row is None:
+                # ⛔ 没产出答案 ≠ 得了 0 分：这是**动作失败**，不是观测。
+                #    写成 0 就成了「缺失被读成否定」，与整份仓库的口径相反。
+                print(f"  ⛔ {g.cell} 没有产出答案（{rep.errors[:1]}）⇒ 不记观测")
+                v, rd = G.evaluate(g, obs)
+                G.record(log_path, g, v, dict(rd, note="act_failed"), source="goals-act")
+                acted.append({"gid": g.gid, "kind": g.kind, "cell": g.cell,
+                              "verdict": v, "reading": rd, "act": "failed"})
+                continue
+            obs.append({"task_id": g.cell, "score": float(row["score"]),
+                        "session": None, "source": "goal_obs"})
+            _row = {"task_id": g.cell, "score": float(row["score"]),
+                    "session": None, "source": "goals-act", "kind": g.kind}
+            obs_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(obs_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(_row, ensure_ascii=False, sort_keys=True) + "\n")
+            v, rd = G.evaluate(g, obs)
+            G.record(log_path, g, v, rd, source="goals-act")
+            acted.append({"gid": g.gid, "kind": g.kind, "cell": g.cell,
+                          "verdict": v, "reading": rd, "score": float(row["score"])})
+            print(f"  {g.kind:<5} {g.cell:<24} 测到 {row['score']:.4f} ⇒ **{v}**"
+                  f"（现 n={rd['n_obs']} mean={rd['mean_score']:.4f}）")
+
+        print()
+        print("--- 执行后重新提议（已 MET 的 gid 不该再出现）---")
+        again = G.propose(obs, suite_ids, done=done + G.done_gids(
+            [a for a in acted if a["verdict"] == "MET"]))
+        same_cell = [g for g in again if g.cell in {a["cell"] for a in acted}]
+        if same_cell:
+            for g in same_cell:
+                print(f"  {g.kind:<5} {g.cell:<24} {g.statement}")
+        else:
+            print("  （执行过的格子已无剩余目标）")
+
+    print()
+    print(f"  判据行  提议={len(goals)} 执行={len(acted)} "
+          f"MET={sum(1 for a in acted if a['verdict'] == 'MET')} "
+          f"NOT_MET={sum(1 for a in acted if a['verdict'] == 'NOT_MET')}")
+    if args.goals_json:
+        outp = Path(args.goals_json).expanduser()
+        outp.parent.mkdir(parents=True, exist_ok=True)
+        outp.write_text(json.dumps({
+            "ledger": str(led_path), "obs": str(obs_path), "goal_log": str(log_path),
+            "suite_dir": str(suite_dir), "n_suite": len(suite_ids),
+            "n_covered": len(covered),
+            "goals": [g.as_dict() for g in goals],
+            "acted": acted,
+            "reproposed": [g.as_dict() for g in again],
+        }, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"  读数     {outp}")
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="V1 —— 一个可测量的 agent 内核")
     p.add_argument("--goal", default="", help="任务目标")
@@ -2953,6 +3097,18 @@ def main() -> int:
                    help="把每次 `_state()` 的产物追加到该文件（JSONL，**只读证据**）。"
                         "R1 的第二层用它：按块切开、查 `[语义记忆]` 之外有没有事实文本。"
                         "不给 ⇒ 内核一次都不写盘（零开销）。")
+    # ── 自主目标（L5）：目标来自**自己的账本**，不是 --goal ──────────────
+    p.add_argument("--goals", action="store_true",
+                   help="自主目标模式：从分数账本提议该做什么（零模型零网络）")
+    p.add_argument("--goals-act", type=int, default=0, metavar="N",
+                   help="对前 N 条目标**真执行一次**测量并判定（0=只提议）")
+    p.add_argument("--goals-suite-dir", default="",
+                   help="可用题集目录（默认 bench/tasks）—— 这是**环境边界**，不是人的指令")
+    p.add_argument("--goals-log", default="",
+                   help="目标账本（默认 $V1_STATE_DIR/goal_ledger.jsonl）")
+    p.add_argument("--goals-obs", default="",
+                   help="目标观测（默认 $V1_STATE_DIR/goal_obs.jsonl）；⛔ 不写分数账本")
+    p.add_argument("--goals-json", default="", help="提议/判定读数落盘（JSON）")
     p.add_argument("--loop", type=int, default=0, metavar="N",
                    help="**循环模式**：用同一套 solver / 尺子 / 口径连跑 N 轮，"
                         "把每轮读数写成一条能力曲线（≥3 轮才判趋势）。"
@@ -2965,6 +3121,8 @@ def main() -> int:
                         "默认 0 等于『任何微小差值都算改进』。")
     args = p.parse_args()
 
+    if args.goals:
+        return _goals_main(args)
     if args.bench:
         return cmd_bench(args)
     if args.repeat:

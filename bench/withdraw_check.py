@@ -1845,6 +1845,14 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
             break
     if hit is None:
         return "UNVERIFIABLE", "查无此账"'''),
+    # ── L5 自主目标（V170）：把 `>=` 判成恒真 ⇒ 三类目标的翻转见证全部失效 ──
+    #    ⛔ 这是「判据不是恒真式」的最小反例：目标照样提、照样记账，
+    #    只是**永远判成 MET** —— 一个永远达成的目标账本，看起来最漂亮。
+    ("AZ132d", "mw/goals.py",
+     '''        if op == ">=":
+            ok = ok and (got >= want)''',
+     '''        if op == ">=":
+            ok = ok and True'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

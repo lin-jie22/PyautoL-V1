@@ -8782,10 +8782,25 @@ finally:
 
 # 显式路径**不进兜底**：用户给的 `--suite` / `--scorer` 一律原样解析 ——
 # 找不到就是找不到。悄悄换成别处的同名文件是比报错更坏的假成功（D-a 的边界）。
-_az48_def_sites = re.findall(
-    r'else _data_path\(Path\("bench"\) / "(\w+)" / "([\w.]+)"\)\)', _AE_RUN)
-_az48_expl = re.findall(
-    r'(suite|scorer)_path = \(Path\(args\.\1\)\.expanduser\(\) if args\.\1', _AE_RUN)
+# ⚠️ V170 改成 **AST**：原先是正则数「`else _data_path(Path("bench")/…)` 恰好两处」。
+#    新增 `--goals` 入口后默认站点合法地变成 3 处，正则当场红 —— 但它真正要防的
+#    不是「站点个数」，是「**显式值不许进兜底**」。改成 AST 后这条更强：
+#    检查的是**实参**，无论将来有几个入口都管得住。
+# ⚠️ 必须解析**原文**：`_AE_RUN` 是 `_code_only()` 处理过的（去注释/字符串），
+#    不是合法 Python，`ast.parse` 会当场 SyntaxError。
+_az48_tree = ast.parse((V1 / "run.py").read_text(encoding="utf-8"))
+_az48_calls = [n for n in ast.walk(_az48_tree)
+               if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+               and n.func.id in ("data_path", "_data_path")]
+_az48_argnames = set()
+_az48_from_args = []
+for _c in _az48_calls:
+    for _a in _c.args:
+        if isinstance(_a, ast.Name):
+            _az48_argnames.add(_a.id)
+        if any(isinstance(_x, ast.Attribute) and isinstance(_x.value, ast.Name)
+               and _x.value.id == "args" for _x in ast.walk(_a)):
+            _az48_from_args.append(ast.unparse(_a))
 check(RS, "AZ48 ★D-a 默认数据路径：`run.py:data_path()` 必须**当前目录优先、包目录兜底**\n"
           "          （安装形态实测：`pip install .` 后包目录落在 site-packages，\n"
           "          只按包目录找会「明明脚下有 bench/ 却报找不到」）。\n"
@@ -8794,11 +8809,12 @@ check(RS, "AZ48 ★D-a 默认数据路径：`run.py:data_path()` 必须**当前�
           "          ⛔ `--suite` / `--scorer` 显式值**不许**走兜底（悄悄换文件 = 假成功）。\n"
           "          撤回语义：把优先序倒过来 / 删掉兜底 / 让显式值也进兜底 ⇒ 必须红。",
       _az48_both and _az48_pkgonly and _az48_none
-      and _az48_def_sites == [("tasks", "coding_small.jsonl"),
-                              ("scorers", "code_exec.py")]
-      and _az48_expl == ["suite", "scorer"],
+      and len(_az48_calls) >= 3
+      and not _az48_from_args
+      and {"DEF_SUITE", "DEF_SCORER", "DEF_TASK_DIR"} <= _az48_argnames,
       f"两处都有={_az48_both} 仅包目录={_az48_pkgonly} 都没有={_az48_none} "
-      f"默认站点={_az48_def_sites} 显式站点={_az48_expl} 实测={_az48_seen}")
+      f"默认站点={len(_az48_calls)} 显式值进兜底={_az48_from_args or '无'} "
+      f"常量={sorted(_az48_argnames)} 实测={_az48_seen}")
 
 # ── AZ49（第六十一轮）：落地页必须真的**零外部请求** ────────────────────────
 # 为什么这需要一条断言：`site/index.html` 上写着"本页自身也是零外部请求"。
@@ -13989,6 +14005,103 @@ check(RS, "AZ125 ★★★三个「截断」分居三处，单位写进名字（
       + f" ｜ 运行时 planner={_AZ125_PL.get('truncated_responses')}"
       + f" plan={_AZ125_PN.get('truncated_cands')}"
       + f" ｜ rate(0)={_AZ125_RATE_ZERO} rate(4/1)={_AZ125_RATE_ONE} sum={_AZ125_SUM}")
+
+# ===========================================================================
+# AZ132 —— L5 自主目标：提议器必须是「自己账本的函数」，不是常量，也不是题面的复述
+#
+# 这一组锚的是**入口**而不是效果：目标提议的效果由 `bench/evidence/l5_s258/`
+# 的 V170 判据量（P1~P5），这里只钉四条不许退化的性质。
+# ===========================================================================
+import mw.goals as _G                                      # noqa: E402
+
+_az132_rows = [
+    {"task_id": "a", "score": 1.0, "session": 1},
+    {"task_id": "a", "score": 1.0, "session": 2},
+    {"task_id": "a", "score": 1.0, "session": 3},
+    {"task_id": "b", "score": 0.5, "session": 1},
+    {"task_id": "b", "score": 0.5, "session": 2},
+    {"task_id": "b", "score": 0.5, "session": 3},
+    {"task_id": "c", "score": 0.0, "session": 1},
+]
+_az132_obs, _az132_bad = _G.coerce_all(_az132_rows)
+_az132_ids = ["a", "b", "c", "d"]
+_az132_empty = _G.propose([], [])
+_az132_bare = _G.propose([], _az132_ids)
+
+check(RS, "AZ132a 目标提议 fail-closed：没账本也没题 ⇒ **0 条**；有题但一次没测 ⇒ 只出 COVER\n"
+          "              （0 次观测是**读数**，不是编出来的分数目标；⛔ 两者不能混）",
+      _az132_empty == []
+      and [g.kind for g in _az132_bare] == ["COVER"] * 4,
+      f"空={len(_az132_empty)} 空账本={[g.kind for g in _az132_bare]}")
+
+_az132_gs = _G.propose(_az132_obs, _az132_ids)
+_az132_kind = {g.cell: g.kind for g in _az132_gs}
+
+check(RS, "AZ132b 三类按**读数**分派：3 次观测且均分 1.0 ⇒ 无目标；3 次 0.5 ⇒ RAISE；\n"
+          "              1 次 ⇒ PROBE；0 次 ⇒ COVER（⛔ 不是按题号/字母猜）",
+      _az132_kind == {"b": "RAISE", "c": "PROBE", "d": "COVER"} and "a" not in _az132_kind,
+      f"{_az132_kind}")
+
+_az132_g = _az132_gs[0]
+_az132_same = _G.Goal(kind=_az132_g.kind, cell=_az132_g.cell, statement="换一种说法",
+                      criterion=_az132_g.criterion, provenance=())
+_az132_other = _G.Goal(kind=_az132_g.kind, cell=_az132_g.cell, statement=_az132_g.statement,
+                       criterion=(("n_obs", ">=", 2.0),), provenance=())
+
+check(RS, "AZ132c gid 是**内容寻址**：同内容同 id（措辞不进哈希），改判据数值就是另一条目标\n"
+          "              ⇒「这条做完没有」与「这是不是同一条」是同一个问题，不用两套账",
+      _az132_same.gid == _az132_g.gid and _az132_other.gid != _az132_g.gid,
+      f"同={_az132_same.gid == _az132_g.gid} 异={_az132_other.gid != _az132_g.gid}")
+
+_az132_cover = next(g for g in _az132_gs if g.kind == "COVER")
+_az132_probe = next(g for g in _az132_gs if g.kind == "PROBE")
+_az132_raise = next(g for g in _az132_gs if g.kind == "RAISE")
+_az132_f1 = (_G.evaluate(_az132_cover, _az132_obs)[0],
+             _G.evaluate(_az132_cover, _az132_obs + [{"task_id": "d", "score": 0.0}])[0])
+_az132_f2 = (_G.evaluate(_az132_probe, _az132_obs)[0],
+             _G.evaluate(_az132_probe, _az132_obs + [{"task_id": "c", "score": 0.0}] * 2)[0])
+_az132_f3 = (_G.evaluate(_az132_raise, _az132_obs)[0],
+             _G.evaluate(_az132_raise, [{"task_id": "b", "score": 1.0}] * 3)[0])
+_az132_v = [_G.evaluate(g, _az132_obs)[0] for g in _az132_gs]
+
+check(RS, "AZ132d 判定只有两个值（没有 UNKNOWN —— 判不了只可能是装置 bug），\n"
+          "              且三类**各有一个能翻转的见证**（⛔ 恒真/恒假的谓词不叫判据）",
+      set(_az132_v) <= {"MET", "NOT_MET"}
+      and all(a != b for a, b in (_az132_f1, _az132_f2, _az132_f3)),
+      f"值域={sorted(set(_az132_v))} 翻转={[_az132_f1, _az132_f2, _az132_f3]}")
+
+# ⛔ 题面整段换掉 ⇒ id 与目标必须逐条不变。
+#    这是「目标不是把题目复述一遍」的**结构**见证 —— 子串匹配会被 id 里的
+#    函数名跨界命中（V166/V170 各踩过一次，纪律 89）。
+_az132_dir = Path(tempfile.mkdtemp(prefix="v1_az132_"))
+for _az132_f in sorted((V1 / "bench" / "tasks").glob("*.jsonl")):
+    _az132_lines = []
+    for _az132_l in _az132_f.read_text(encoding="utf-8").splitlines():
+        if not _az132_l.strip():
+            continue
+        _az132_d = json.loads(_az132_l)
+        _az132_d["prompt"] = "X" * 40
+        _az132_lines.append(json.dumps(_az132_d, ensure_ascii=False))
+    (_az132_dir / _az132_f.name).write_text("\n".join(_az132_lines) + "\n", encoding="utf-8")
+_az132_i1 = [t for v in _G.scan_suites(V1 / "bench" / "tasks").values() for t in v]
+_az132_i2 = [t for v in _G.scan_suites(_az132_dir).values() for t in v]
+
+check(RS, "AZ132e ⛔ 题面一个字都不读：把全部 prompt 换成占位符 ⇒ 题 id 不变、目标逐条不变\n"
+          "              （`scan_suites` 只读 id；一旦它开始读 prompt，「自主」就可能是复述）",
+      len(_az132_i1) > 0 and _az132_i1 == _az132_i2
+      and _G.propose(_az132_obs, _az132_i1) == _G.propose(_az132_obs, _az132_i2),
+      f"id={len(_az132_i1)} 相同={_az132_i1 == _az132_i2}")
+
+_az132_done = _G.done_gids([{"gid": _az132_cover.gid, "verdict": "MET"},
+                            {"gid": _az132_probe.gid, "verdict": "NOT_MET"}])
+_az132_again = {g.gid for g in _G.propose(_az132_obs, _az132_ids, done=_az132_done)}
+
+check(RS, "AZ132f 记账后的行为：MET 的**不再提**，NOT_MET 的**必须重新提**\n"
+          "              （反例组：两件反过来 ⇒ 做成的反复做、做不成的被悄悄丢掉）",
+      _az132_done == [_az132_cover.gid]
+      and _az132_cover.gid not in _az132_again
+      and _az132_probe.gid in _az132_again,
+      f"done={len(_az132_done)} 再来={len(_az132_again)}")
 
 print()
 print("=" * 74)

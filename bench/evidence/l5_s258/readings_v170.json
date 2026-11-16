@@ -1,0 +1,192 @@
+{
+ "p1": {
+  "empty_both": 0,
+  "empty_ledger": 40,
+  "real": 40,
+  "kinds_empty_ledger": [
+   "COVER"
+  ]
+ },
+ "p2": {
+  "n_goals": 40,
+  "n_bad_prov": 0,
+  "hits_raw": 33,
+  "hits_after_strip": 0,
+  "n_prompts": 40,
+  "ids_unchanged": true,
+  "goals_unchanged": true
+ },
+ "p3": {
+  "n": 40,
+  "met": 0,
+  "not_met": 40,
+  "flips": {
+   "COVER": [
+    "NOT_MET",
+    "MET"
+   ],
+   "PROBE": [
+    "NOT_MET",
+    "MET"
+   ],
+   "RAISE": [
+    "NOT_MET",
+    "MET"
+   ]
+  }
+ },
+ "p4": {
+  "base_top": "4d784f269a28a7a1",
+  "changed_top": 0,
+  "changed_set": 1,
+  "variants": {
+   "drop_last_session": {
+    "gid": "4d784f269a28a7a1",
+    "n": 40,
+    "set_delta": 0,
+    "liveness": 36
+   },
+   "boost_one": {
+    "gid": "4d784f269a28a7a1",
+    "n": 40,
+    "set_delta": 0,
+    "liveness": 0
+   },
+   "drop_cell": {
+    "gid": "4d784f269a28a7a1",
+    "n": 40,
+    "set_delta": 2,
+    "liveness": 6
+   },
+   "append_round": {
+    "gid": "4d784f269a28a7a1",
+    "n": 40,
+    "set_delta": 0,
+    "liveness": 11
+   }
+  },
+  "fill_top_cell_top": "22986b43debb321d",
+  "n_base": 40,
+  "per_goal_responsive": 40,
+  "n_goals": 40,
+  "dead_perturbations": [
+   "boost_one"
+  ],
+  "n_live": 3
+ },
+ "p5": {
+  "acted": [
+   {
+    "gid": "4d784f269a28a7a1",
+    "kind": "COVER",
+    "cell": "g7d1_parse_date_flex",
+    "verdict": "MET",
+    "reading": {
+     "cell": "g7d1_parse_date_flex",
+     "n_obs": 1,
+     "mean_score": 0.0,
+     "criterion": [
+      [
+       "n_obs",
+       ">=",
+       1.0
+      ]
+     ]
+    },
+    "score": 0.0
+   }
+  ],
+  "n_again": 40,
+  "repeat_gid": 0,
+  "successor_kinds": [
+   "PROBE"
+  ]
+ },
+ "p6": {
+  "cell": "g7d1_parse_date_flex",
+  "chain": [
+   {
+    "step": 1,
+    "kind": "COVER",
+    "verdict": "MET",
+    "n_obs": 1,
+    "mean": 0.0,
+    "next": "PROBE"
+   },
+   {
+    "step": 2,
+    "kind": "PROBE",
+    "verdict": "NOT_MET",
+    "n_obs": 2,
+    "mean": 0.0,
+    "next": "PROBE"
+   },
+   {
+    "step": 3,
+    "kind": "PROBE",
+    "verdict": "MET",
+    "n_obs": 3,
+    "mean": 0.0,
+    "next": "RAISE"
+   },
+   {
+    "step": 4,
+    "kind": "RAISE",
+    "verdict": "NOT_MET",
+    "n_obs": 4,
+    "mean": 0.0,
+    "next": "RAISE"
+   }
+  ],
+  "kinds": [
+   "COVER",
+   "PROBE",
+   "PROBE",
+   "RAISE"
+  ]
+ },
+ "p7": {
+  "before_kinds": {
+   "COVER": 34,
+   "PROBE": 6,
+   "RAISE": 0
+  },
+  "after_kinds": {
+   "COVER": 0,
+   "PROBE": 40,
+   "RAISE": 0
+  },
+  "n_acted": 34,
+  "wall_s": 8.5,
+  "met": 34,
+  "n_after": 40
+ },
+ "verdicts": [
+  {
+   "tag": "P1",
+   "verdict": "PASS",
+   "detail": "空套件 0 条；空账本只出 COVER（0 次观测是**真读数**，不是编的分数目标）"
+  },
+  {
+   "tag": "P2",
+   "verdict": "PASS",
+   "detail": "溯源 40/40 自洽；去 id 后题面交集 0 次；换掉全部题面目标不变=True"
+  },
+  {
+   "tag": "P3",
+   "verdict": "PASS",
+   "detail": "判定 40 条无 UNKNOWN；3 类翻转 3/3"
+  },
+  {
+   "tag": "P4",
+   "verdict": "FAIL",
+   "detail": "预注册 4 个扰动里 top-1 改变 **0/4**（阈值 ≥2）｜活的扰动 3/4 （哑火：boost_one）｜目标集变化 1/4｜逐目标读数依赖 40/40"
+  },
+  {
+   "tag": "P5",
+   "verdict": "PASS",
+   "detail": "CODE→MET 后同 gid 不再出现=True；同格换类=['PROBE']"
+  }
+ ],
+ "n_pass": 4
+}

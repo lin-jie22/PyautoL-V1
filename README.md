@@ -30,7 +30,7 @@ python -m mw.loop --rounds 3 --noise-floor 0  --out /tmp/curve.jsonl   # 常驻�
 | 要件 | 状态 | 说明 |
 |---|---|---|
 | `LICENSE` | ✅ MIT | 与 `pyproject.toml` 的 `license = { text = "MIT" }` 同一份 |
-| `.github/workflows/ci.yml` | ✅ **已上线**（第六十轮） | 首跑 [run 39728371572](https://github.com/lin-jie22/PyautoL-V1/actions/runs/39728371572)：py3.11 / 3.12 / 3.13 三个 job 全绿，且**三档读数行逐字相同**（契约、锚层、文档计数三行读数三档完全相同；两次 run 都是）。绿勾不算读数，所以日志抽取器也入库：`bench/evidence/knowledge_s63/read_ci_log.py` |
+| `.github/workflows/ci.yml` | ✅ **当前全绿**（V169 修后） | [run 43915858205](https://github.com/lin-jie22/PyautoL-V1/actions/runs/43915858205)（`454c49f`）：py3.11 / 3.12 / 3.13 三个 job 全绿、无失败步。⚠️ **V144~V168 曾连续 32 次红**（只有 py3.11 档）：根因是 `AZ130a` 拿「3.12+ 的 `sum()` 补偿求和」当差异见证，3.11 上该子句恒假、且它的撤回态在同版本恒不红 —— 双向失效。修复与两版本验证见 `bench/evidence/ci_s257/`、DESIGN §237。⛔ 「绿勾不算读数」：抽取器 `bench/evidence/knowledge_s63/read_ci_log.py` 仍在，但它核的是**历史**那次 run；当前状态以 run 号为准 |
 | 发布 tag | ✅ `v1.0.0` | 打在**本文档所在的提交**（= CI 首次全绿的那一提交），与 `pyproject.toml` 的 `version = 1.0.0` 对应 |
 | CI 覆盖到哪 | ⚠️ **只到离线部分** | 七步全离线、零密钥；**bench 不跑**（需要本机 Ollama + qwen2.5:7b），分数证据以 `bench/evidence/knowledge_s*/`（PROVENANCE + FILES.sha256）入库 |
 

@@ -2926,6 +2926,10 @@ def _goals_main(args) -> int:
     print(f"  已 MET  {len(set(done))} 条（不再重复提）")
     kinds = {k: sum(1 for g in goals if g.kind == k) for k in G.KINDS}
     print(f"  提议    {len(goals)} 条：" + "｜".join(f"{k} {v}" for k, v in kinds.items()))
+    # ⚠️ 「提议 0 条」有三种成因，⛔ 不许合成一句（V172）：
+    #    空套件（无从提议）/ 全转运维（测量已用尽）/ 真做完。状态行把它们分开。
+    st, det = G.state(goals, esc, suite_ids, obs)
+    print(f"  状态    {G.render_state(st, det)}")
     print()
     print(G.render(goals, obs))
     print()
@@ -3006,10 +3010,13 @@ def _goals_main(args) -> int:
             print("  （执行过的格子已无剩余目标）")
 
     print()
+    # 执行后重算一次状态：本轮新记的 MET / 新凑够 k 次的 NOT_MET 都会改它。
+    # ⛔ 没有执行时**不重算**（`again` 是空列表，拿它算状态会得出 WORK=0 的假读数）。
+    st_final, det_final = (G.state(again, esc, suite_ids, obs) if acted else (st, det))
     print(f"  判据行  提议={len(goals)} 执行={len(acted)} "
           f"MET={sum(1 for a in acted if a['verdict'] == 'MET')} "
           f"NOT_MET={sum(1 for a in acted if a['verdict'] == 'NOT_MET')} "
-          f"转运维={len(esc)}")
+          f"转运维={len(esc)} 状态={st_final}")
     if args.goals_json:
         outp = Path(args.goals_json).expanduser()
         outp.parent.mkdir(parents=True, exist_ok=True)
@@ -3018,6 +3025,8 @@ def _goals_main(args) -> int:
             "suite_dir": str(suite_dir), "n_suite": len(suite_ids),
             "n_covered": len(covered),
             "goals": [g.as_dict() for g in goals],
+            "state": st, "state_detail": det,
+            "state_after": st_final, "state_detail_after": det_final,
             "acted": acted,
             "escalations": {c: e for c, e in esc.items()},
             "escalated_cells": sorted(esc),

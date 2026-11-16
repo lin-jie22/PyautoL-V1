@@ -14165,6 +14165,119 @@ check(RS, "AZ133d 转运维的格**不再提 RAISE**，但别的格照常提；�
       and "c1" in _az133_fmt and "0.000000" in _az133_fmt,
       f"转运维后提={_az133_with} 不转时提={_az133_without} 留痕={'c1' in _az133_fmt}")
 
+# ===========================================================================
+# AZ134 —— 「无事可做」与「做完了」必须是两个量（V172）
+#
+# 锚的是**判定形状**，不是效果：效果由 `bench/evidence/l5_s260/` 的 P1~P8 量。
+# 旧形态是**一句带「或」的话**（「账本与套件都对不上，或该做的都做完了」），
+# 把三种停法合成一种 ⇒ 「无事可做」永远会被读成「做完了」。
+# ===========================================================================
+_AZ134_IDS = ["k0", "k1", "k2", "k3", "k4"]
+
+
+def _az134_sat(ids, score):
+    return [{"task_id": c, "score": score} for c in ids for _ in range(3)]
+
+
+_az134_obs0 = _az134_sat(_AZ134_IDS, 0.0)
+_az134_obs1 = _az134_sat(_AZ134_IDS, 1.0)
+_az134_raise = {g.cell: g for g in _G.propose(_az134_obs0, _AZ134_IDS)}
+_az134_log = [_az133_row(_az134_raise[c].gid, c, "NOT_MET", 0.0) for c in _AZ134_IDS
+              for _ in range(3)]
+_az134_esc = _G.escalations(_az134_log, _az134_obs0)
+
+_az134_st_obs = _az134_sat(["s0"], 0.5)
+_az134_st_g = _G.propose(_az134_st_obs, ["s0"])[0]
+_az134_st_log = [_az133_row(_az134_st_g.gid, "s0", "MET", 1.0)]
+_az134_st_done = _G.done_gids(_az134_st_log)
+
+_az134_arms = {
+    "sat": (_G.propose(_az134_obs0, _AZ134_IDS, escalated=list(_az134_esc)),
+            _az134_esc, _AZ134_IDS, _az134_obs0),
+    "done": (_G.propose(_az134_obs1, _AZ134_IDS), {}, _AZ134_IDS, _az134_obs1),
+    "stale": (_G.propose(_az134_st_obs, ["s0"], done=_az134_st_done), {},
+              ["s0"], _az134_st_obs),
+    "empty": ([], _az134_esc, [], _az134_obs0),
+    "work": (_G.propose([], ["k0"]), {}, ["k0"], []),
+}
+_az134 = {k: _G.state(*v) for k, v in _az134_arms.items()}
+_az134_names = {k: v[0] for k, v in _az134.items()}
+
+check(RS, "AZ134a 「没有目标」有四种成因，⛔ 不许合成一句：五个构造输入 ⇒ 五个不同的名字\n"
+          "              （全饱和 IDLE｜全达标 DONE｜被 done 挡 STALE｜空套件 EMPTY｜有活 WORK）",
+      len(set(_az134_names.values())) == 5
+      and _az134_names == {"sat": "IDLE", "done": "DONE", "stale": "STALE",
+                           "empty": "EMPTY", "work": "WORK"},
+      f"{_az134_names}")
+
+# ⛔ 三头都咬：**同一份观测**（5 格全 0.0、都不达标）只换一个输入就换一个名字。
+#    给 esc ⇒ IDLE；不给 ⇒ 提议会重新提 RAISE ⇒ WORK；把 5 条 RAISE 的 gid 都记成 MET ⇒ STALE。
+#    ⚠️ 我原先押「不给 esc ⇒ STALE」，实测是 WORK（`propose()` 会重提 RAISE，提议不为 0）——
+#       自踩登记在 RESULTS：这个名字不是「读数状态」，是**账本结论**。
+_az134_noesc = _G.state(_G.propose(_az134_obs0, _AZ134_IDS), {}, _AZ134_IDS, _az134_obs0)[0]
+_az134_alldone = _G.done_gids([{"gid": g.gid, "verdict": "MET"}
+                               for g in _G.propose(_az134_obs0, _AZ134_IDS)])
+_az134_withdone = _G.state(
+    _G.propose(_az134_obs0, _AZ134_IDS, done=_az134_alldone), {},
+    _AZ134_IDS, _az134_obs0)[0]
+
+check(RS, "AZ134b IDLE ≠ DONE：全饱和 ⇒ IDLE、全达标 ⇒ DONE；**同一份观测**只换一个输入\n"
+          "              ⇒ 给 esc 是 IDLE、不给是 WORK、全记成 MET 是 STALE（三个名字互不相同）\n"
+          "              ⇒ 它们由不同的量决定，不是同一个数的三种措辞",
+      _az134_names["sat"] == "IDLE" and _az134_names["done"] == "DONE"
+      and _az134_names["sat"] != _az134_names["done"]
+      and len({_az134_names["sat"], _az134_noesc, _az134_withdone}) == 3
+      and (_az134_noesc, _az134_withdone) == ("WORK", "STALE"),
+      f"sat={_az134_names['sat']} done={_az134_names['done']} "
+      f"去esc={_az134_noesc} 全MET={_az134_withdone}")
+
+_az134_blk = _az134["stale"][1]["blocked"]
+
+check(RS, "AZ134c DONE 由**读数**算，不由「提议 0 条」算：某格 0.5 且它那条 RAISE 已判过 MET\n"
+          "              ⇒ 提议 0 条但**不**是 DONE（是 STALE），且必须点名该格\n"
+          "              （反例：拿提议数当判据 ⇒ 这一格谎报成做完；`done_gids` 是单调的）",
+      _az134["stale"][0] == "STALE" and len(_az134_blk) == 1
+      and _az134_blk[0]["cell"] == "s0" and _az134_blk[0]["gid"] == _az134_st_g.gid,
+      f"名字={_az134['stale'][0]} blocked={[b['cell'] for b in _az134_blk]}")
+
+_az134_emp = _G.state([], _az134_esc, _AZ134_IDS, _az134_obs0)[0]
+_az134_emp2 = _G.state([], _az134_esc, [], _az134_obs0)[0]
+
+check(RS, "AZ134d EMPTY 优先于 IDLE：同一份「转运维」证据，套件非空 ⇒ IDLE、套件 0 题 ⇒ EMPTY\n"
+          "              ⇒ 决定因素是「有没有题」，不是「转运维几格」\n"
+          "              （⛔ 否则「套件里没题」会被说成「测量已用尽」= 缺席冒充零）",
+      _az134_emp == "IDLE" and _az134_emp2 == "EMPTY",
+      f"套件非空={_az134_emp} 套件为空={_az134_emp2}")
+
+# ⛔ 两处判据不许分叉：`satisfied()`（决定 DONE）与 `evaluate()`（决定提议）
+#    对 n_obs ≥ MIN_OBS 的格必须同值；一旦分叉，就会出现「提议 0 条但不是 DONE」
+#    或「DONE 了却还在提议」—— 两种都自相矛盾，且都不报错。
+_az134_agree = []
+for _az134_s in (0.0, 0.5, 1.0):
+    _az134_o = _az134_sat(["a0"], _az134_s)
+    _az134_g = _G.Goal(kind="RAISE", cell="a0", statement="x",
+                       criterion=(("mean_score", ">=", _G.TARGET),), provenance=())
+    _az134_agree.append(_G.satisfied(_az134_o, "a0")
+                        == (_G.evaluate(_az134_g, _az134_o)[0] == "MET"))
+
+check(RS, "AZ134e `satisfied()`（判 DONE）与 `evaluate()`（判提议）**同源**：\n"
+          "              均分 0.0/0.5/1.0 三格上逐格同值 ⇒ 不会出现「DONE 了却还在提议」",
+      _az134_agree == [True, True, True],
+      f"{_az134_agree}")
+
+import ast as _ast                                              # noqa: E402
+
+_az134_tree = _ast.parse((V1 / "mw" / "goals.py").read_text(encoding="utf-8"))
+_az134_consts = sorted(t.id for _n in _az134_tree.body if isinstance(_n, _ast.Assign)
+                       for t in _n.targets
+                       if isinstance(t, _ast.Name) and t.id.isupper())
+
+check(RS, "AZ134f ⛔ 五个状态名**不做成模块级常量**：常量集合仍是 KINDS/MIN_OBS/TARGET\n"
+          "              （V171 的 Q6 钉的是「常量集合不变」，它分不出阈值与名字表 ⇒\n"
+          "               与其改旧判据，不如让名字只活在返回值与文档里）",
+      _az134_consts == ["KINDS", "MIN_OBS", "TARGET"],
+      f"{_az134_consts}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

@@ -1865,6 +1865,15 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
             tail.append(r)
         tail.reverse()''',
      '''        tail = [r for r in rows if r.get("verdict") == "NOT_MET"]'''),
+    # ── 「无事可做」与「做完了」分成两个量（V172）：把 IDLE 的判据接成 DONE 的量 ──
+    #    ⛔ 这是最顺手的错解：既然「没目标」看起来像「做完了」，就让 IDLE 也要求
+    #    全部达标。后果不是报错，是**全饱和时 IDLE 消失、被说成 STALE** ——
+    #    「测量已用尽」这句话再也说不出，而输出看起来完全合理。
+    ("AZ134b", "mw/goals.py",
+     '''    if esc:
+        return "IDLE", det''',
+     '''    if esc and det["n_sat"] == len(ids):
+        return "IDLE", det'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2115,6 +2124,13 @@ COUPLED: dict[str, frozenset[str]] = {
     #: 请求体）。⛔ 不许为了"做成单红"换更巧的变异：那会伪造出"两条断言各管
     #: 一件事"的假象，而它们防的是同一个漏传。
     "TH2": frozenset({"TH3"}),
+
+    #: ★V172（§240）：AZ134b 撤的是「IDLE 只看转运维、与达标无关」。三处一起红，
+    #:   是**结构性的**：AZ134a 是五态表（少了 IDLE 就不再有五个名字）、
+    #:   AZ134d 用的是同一份「套件非空 + 转运维 > 0」的证据来要 IDLE。
+    #:   三者锚的是**同一处顺序**（EMPTY → IDLE → DONE），任何针对它的变异都会一起翻。
+    #:   ⚠️ 反向不成立：AZ134e/f 撤的是 `satisfied()` 与常量表，实测只红它们自己。
+    "AZ134b": frozenset({"AZ134a", "AZ134d"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

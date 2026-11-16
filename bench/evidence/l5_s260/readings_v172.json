@@ -1,0 +1,1846 @@
+{
+ "arms": {
+  "A_sat": {
+   "name": "IDLE",
+   "detail": {
+    "n_goals": 0,
+    "n_esc": 40,
+    "n_cells": 40,
+    "n_sat": 0,
+    "n_obs": 120,
+    "escalated": [
+     "g7d1_parse_date_flex",
+     "g7d2_dedupe_keep",
+     "g7d3_fmt_amount",
+     "g7d4_slugify",
+     "g7e1_parse_flag",
+     "g7e2_truncate_tail",
+     "g7e3_dedupe_last",
+     "g7n1_split_amount",
+     "g7n2_next_permutation",
+     "g7n3_spiral_order",
+     "g7n4_min_meeting_rooms",
+     "g7s1_flatten_nested",
+     "g7s2_parse_headers",
+     "g7s3_csv_row",
+     "g7s4_xml_escape_attrs",
+     "g7t1_split_top_level",
+     "g7t2_parse_pairs",
+     "g7t3_encode_attrs",
+     "g7t4_quote_join",
+     "t01_parse_duration",
+     "t02_dedupe",
+     "t03_commas",
+     "t04_merge_ranges",
+     "t05_top_k",
+     "t06_rle",
+     "x01_slugify",
+     "x02_mask_email",
+     "x03_word_freq",
+     "x04_truncate",
+     "x05_normalize_ws",
+     "y01_roman_to_int",
+     "y02_is_valid_brackets",
+     "y03_base_convert",
+     "y04_gcd_lcm",
+     "y05_median",
+     "z01_flatten",
+     "z02_to_csv",
+     "z03_parse_query",
+     "z04_deep_get",
+     "z05_group_by"
+    ],
+    "blocked": []
+   }
+  },
+  "A_done": {
+   "name": "DONE",
+   "detail": {
+    "n_goals": 0,
+    "n_esc": 0,
+    "n_cells": 40,
+    "n_sat": 40,
+    "n_obs": 120,
+    "escalated": [],
+    "blocked": []
+   }
+  },
+  "A_stale": {
+   "name": "STALE",
+   "detail": {
+    "n_goals": 0,
+    "n_esc": 0,
+    "n_cells": 1,
+    "n_sat": 0,
+    "n_obs": 3,
+    "escalated": [],
+    "blocked": [
+     {
+      "cell": "t01_parse_duration",
+      "kind": "RAISE",
+      "gid": "afbd739753eb66f8",
+      "statement": "把 t01_parse_duration 的均分从 0.5000 提到 1"
+     }
+    ]
+   }
+  },
+  "A_empty": {
+   "name": "EMPTY",
+   "detail": {
+    "n_goals": 0,
+    "n_esc": 1,
+    "n_cells": 0,
+    "n_sat": 0,
+    "n_obs": 3,
+    "escalated": [
+     "z"
+    ],
+    "blocked": []
+   }
+  },
+  "A_work": {
+   "name": "WORK",
+   "detail": {
+    "n_goals": 1,
+    "n_esc": 0,
+    "n_cells": 1,
+    "n_sat": 0,
+    "n_obs": 0,
+    "escalated": [],
+    "blocked": []
+   }
+  }
+ },
+ "consts": [
+  "KINDS",
+  "MIN_OBS",
+  "TARGET"
+ ],
+ "p8_dead": [
+  "P1",
+  "P2",
+  "P3",
+  "P4"
+ ],
+ "cli": {
+  "B_real": {
+   "exit": 0,
+   "state_line": "状态    WORK（有 40 条可执行的目标）",
+   "has_old": false,
+   "json": {
+    "ledger": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_real/score_ledger.jsonl",
+    "obs": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_real/goal_obs.jsonl",
+    "goal_log": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_real/goal_ledger.jsonl",
+    "suite_dir": "/Users/linshaojie/V1/bench/tasks",
+    "n_suite": 40,
+    "n_covered": 6,
+    "goals": [
+     {
+      "gid": "4d784f269a28a7a1",
+      "kind": "COVER",
+      "cell": "g7d1_parse_date_flex",
+      "statement": "补齐从未测过的题 g7d1_parse_date_flex：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7d1_parse_date_flex",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "22986b43debb321d",
+      "kind": "COVER",
+      "cell": "g7d2_dedupe_keep",
+      "statement": "补齐从未测过的题 g7d2_dedupe_keep：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7d2_dedupe_keep",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "2ed90381b05f4501",
+      "kind": "COVER",
+      "cell": "g7d3_fmt_amount",
+      "statement": "补齐从未测过的题 g7d3_fmt_amount：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7d3_fmt_amount",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "efc0c920fb8c0daa",
+      "kind": "COVER",
+      "cell": "g7d4_slugify",
+      "statement": "补齐从未测过的题 g7d4_slugify：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7d4_slugify",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "c902b0ebeb185a2d",
+      "kind": "COVER",
+      "cell": "g7e1_parse_flag",
+      "statement": "补齐从未测过的题 g7e1_parse_flag：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7e1_parse_flag",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "c9b0d53b0b9fc19b",
+      "kind": "COVER",
+      "cell": "g7e2_truncate_tail",
+      "statement": "补齐从未测过的题 g7e2_truncate_tail：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7e2_truncate_tail",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "24f577f832669806",
+      "kind": "COVER",
+      "cell": "g7e3_dedupe_last",
+      "statement": "补齐从未测过的题 g7e3_dedupe_last：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7e3_dedupe_last",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "2550c3b1e764fa4a",
+      "kind": "COVER",
+      "cell": "g7n1_split_amount",
+      "statement": "补齐从未测过的题 g7n1_split_amount：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7n1_split_amount",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "e391f075dc022f84",
+      "kind": "COVER",
+      "cell": "g7n2_next_permutation",
+      "statement": "补齐从未测过的题 g7n2_next_permutation：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7n2_next_permutation",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "c269c6bf32c25683",
+      "kind": "COVER",
+      "cell": "g7n3_spiral_order",
+      "statement": "补齐从未测过的题 g7n3_spiral_order：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7n3_spiral_order",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "4aae983b9bae7603",
+      "kind": "COVER",
+      "cell": "g7n4_min_meeting_rooms",
+      "statement": "补齐从未测过的题 g7n4_min_meeting_rooms：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7n4_min_meeting_rooms",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "f2e1670f8471410f",
+      "kind": "COVER",
+      "cell": "g7s1_flatten_nested",
+      "statement": "补齐从未测过的题 g7s1_flatten_nested：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7s1_flatten_nested",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "3c6c6c2e02bc7cf7",
+      "kind": "COVER",
+      "cell": "g7s2_parse_headers",
+      "statement": "补齐从未测过的题 g7s2_parse_headers：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7s2_parse_headers",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "6d0ed26186719bbd",
+      "kind": "COVER",
+      "cell": "g7s3_csv_row",
+      "statement": "补齐从未测过的题 g7s3_csv_row：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7s3_csv_row",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "37171724999b2930",
+      "kind": "COVER",
+      "cell": "g7s4_xml_escape_attrs",
+      "statement": "补齐从未测过的题 g7s4_xml_escape_attrs：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7s4_xml_escape_attrs",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "b8d60cb0c2ec12ee",
+      "kind": "COVER",
+      "cell": "g7t1_split_top_level",
+      "statement": "补齐从未测过的题 g7t1_split_top_level：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7t1_split_top_level",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "5d9d2cf02500a3d5",
+      "kind": "COVER",
+      "cell": "g7t2_parse_pairs",
+      "statement": "补齐从未测过的题 g7t2_parse_pairs：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7t2_parse_pairs",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "f495e55caeae5d13",
+      "kind": "COVER",
+      "cell": "g7t3_encode_attrs",
+      "statement": "补齐从未测过的题 g7t3_encode_attrs：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7t3_encode_attrs",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "0c8141cf8bbb8e7f",
+      "kind": "COVER",
+      "cell": "g7t4_quote_join",
+      "statement": "补齐从未测过的题 g7t4_quote_join：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "g7t4_quote_join",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "5bc6b988d9aea71e",
+      "kind": "COVER",
+      "cell": "x01_slugify",
+      "statement": "补齐从未测过的题 x01_slugify：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "x01_slugify",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "6a9a35aaa0a1ca5d",
+      "kind": "COVER",
+      "cell": "x02_mask_email",
+      "statement": "补齐从未测过的题 x02_mask_email：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "x02_mask_email",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "0df997c9794ce590",
+      "kind": "COVER",
+      "cell": "x03_word_freq",
+      "statement": "补齐从未测过的题 x03_word_freq：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "x03_word_freq",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "78fb5a071f95726b",
+      "kind": "COVER",
+      "cell": "x04_truncate",
+      "statement": "补齐从未测过的题 x04_truncate：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "x04_truncate",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "cf877e984fd873d7",
+      "kind": "COVER",
+      "cell": "x05_normalize_ws",
+      "statement": "补齐从未测过的题 x05_normalize_ws：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "x05_normalize_ws",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "f915f8e1fdf18233",
+      "kind": "COVER",
+      "cell": "y01_roman_to_int",
+      "statement": "补齐从未测过的题 y01_roman_to_int：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "y01_roman_to_int",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "5abdb3eb26b926d9",
+      "kind": "COVER",
+      "cell": "y02_is_valid_brackets",
+      "statement": "补齐从未测过的题 y02_is_valid_brackets：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "y02_is_valid_brackets",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "83f14dfbd4724e21",
+      "kind": "COVER",
+      "cell": "y03_base_convert",
+      "statement": "补齐从未测过的题 y03_base_convert：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "y03_base_convert",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "b5bcb4d501e4bb65",
+      "kind": "COVER",
+      "cell": "y04_gcd_lcm",
+      "statement": "补齐从未测过的题 y04_gcd_lcm：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "y04_gcd_lcm",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "93291d573bfa0c23",
+      "kind": "COVER",
+      "cell": "y05_median",
+      "statement": "补齐从未测过的题 y05_median：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "y05_median",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "774f41c33971442c",
+      "kind": "COVER",
+      "cell": "z01_flatten",
+      "statement": "补齐从未测过的题 z01_flatten：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "z01_flatten",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "e7801515e49882b8",
+      "kind": "COVER",
+      "cell": "z02_to_csv",
+      "statement": "补齐从未测过的题 z02_to_csv：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "z02_to_csv",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "2f6f2636fb802373",
+      "kind": "COVER",
+      "cell": "z03_parse_query",
+      "statement": "补齐从未测过的题 z03_parse_query：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "z03_parse_query",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "ef4f96972e39d737",
+      "kind": "COVER",
+      "cell": "z04_deep_get",
+      "statement": "补齐从未测过的题 z04_deep_get：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "z04_deep_get",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "732ee5a3062f0b01",
+      "kind": "COVER",
+      "cell": "z05_group_by",
+      "statement": "补齐从未测过的题 z05_group_by：至少测 1 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        1.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "z05_group_by",
+        "0"
+       ]
+      ]
+     },
+     {
+      "gid": "cdfa95b9821bed80",
+      "kind": "PROBE",
+      "cell": "t01_parse_duration",
+      "statement": "把 t01_parse_duration 的观测从 1 次提到 3 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        3.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "t01_parse_duration",
+        "1"
+       ]
+      ]
+     },
+     {
+      "gid": "547be64249545bad",
+      "kind": "PROBE",
+      "cell": "t02_dedupe",
+      "statement": "把 t02_dedupe 的观测从 1 次提到 3 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        3.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "t02_dedupe",
+        "1"
+       ]
+      ]
+     },
+     {
+      "gid": "24490d215d5a9bf7",
+      "kind": "PROBE",
+      "cell": "t03_commas",
+      "statement": "把 t03_commas 的观测从 1 次提到 3 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        3.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "t03_commas",
+        "1"
+       ]
+      ]
+     },
+     {
+      "gid": "7aa83d544b7ebf9a",
+      "kind": "PROBE",
+      "cell": "t04_merge_ranges",
+      "statement": "把 t04_merge_ranges 的观测从 1 次提到 3 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        3.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "t04_merge_ranges",
+        "1"
+       ]
+      ]
+     },
+     {
+      "gid": "df80f5934720ae85",
+      "kind": "PROBE",
+      "cell": "t05_top_k",
+      "statement": "把 t05_top_k 的观测从 1 次提到 3 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        3.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "t05_top_k",
+        "1"
+       ]
+      ]
+     },
+     {
+      "gid": "9cddc0eecaff38dd",
+      "kind": "PROBE",
+      "cell": "t06_rle",
+      "statement": "把 t06_rle 的观测从 1 次提到 3 次",
+      "criterion": [
+       [
+        "n_obs",
+        ">=",
+        3.0
+       ]
+      ],
+      "provenance": [
+       [
+        "rows",
+        "t06_rle",
+        "1"
+       ]
+      ]
+     }
+    ],
+    "state": "WORK",
+    "state_detail": {
+     "n_goals": 40,
+     "n_esc": 0,
+     "n_cells": 40,
+     "n_sat": 0,
+     "n_obs": 36,
+     "escalated": [],
+     "blocked": []
+    },
+    "state_after": "WORK",
+    "state_detail_after": {
+     "n_goals": 40,
+     "n_esc": 0,
+     "n_cells": 40,
+     "n_sat": 0,
+     "n_obs": 36,
+     "escalated": [],
+     "blocked": []
+    },
+    "acted": [],
+    "escalations": {},
+    "escalated_cells": [],
+    "reproposed": []
+   }
+  },
+  "B_idle": {
+   "exit": 0,
+   "state_line": "状态    IDLE（提议 0 条，40 格已转运维：这 40 格的均分 3 次逐位相同 ⇒ 测量没让它动）　⛔ 不是做完了",
+   "has_old": false,
+   "json": {
+    "ledger": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_idle/score_ledger.jsonl",
+    "obs": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_idle/goal_obs.jsonl",
+    "goal_log": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_idle/goal_ledger.jsonl",
+    "suite_dir": "/Users/linshaojie/V1/bench/tasks",
+    "n_suite": 40,
+    "n_covered": 40,
+    "goals": [],
+    "state": "IDLE",
+    "state_detail": {
+     "n_goals": 0,
+     "n_esc": 40,
+     "n_cells": 40,
+     "n_sat": 0,
+     "n_obs": 120,
+     "escalated": [
+      "g7d1_parse_date_flex",
+      "g7d2_dedupe_keep",
+      "g7d3_fmt_amount",
+      "g7d4_slugify",
+      "g7e1_parse_flag",
+      "g7e2_truncate_tail",
+      "g7e3_dedupe_last",
+      "g7n1_split_amount",
+      "g7n2_next_permutation",
+      "g7n3_spiral_order",
+      "g7n4_min_meeting_rooms",
+      "g7s1_flatten_nested",
+      "g7s2_parse_headers",
+      "g7s3_csv_row",
+      "g7s4_xml_escape_attrs",
+      "g7t1_split_top_level",
+      "g7t2_parse_pairs",
+      "g7t3_encode_attrs",
+      "g7t4_quote_join",
+      "t01_parse_duration",
+      "t02_dedupe",
+      "t03_commas",
+      "t04_merge_ranges",
+      "t05_top_k",
+      "t06_rle",
+      "x01_slugify",
+      "x02_mask_email",
+      "x03_word_freq",
+      "x04_truncate",
+      "x05_normalize_ws",
+      "y01_roman_to_int",
+      "y02_is_valid_brackets",
+      "y03_base_convert",
+      "y04_gcd_lcm",
+      "y05_median",
+      "z01_flatten",
+      "z02_to_csv",
+      "z03_parse_query",
+      "z04_deep_get",
+      "z05_group_by"
+     ],
+     "blocked": []
+    },
+    "state_after": "IDLE",
+    "state_detail_after": {
+     "n_goals": 0,
+     "n_esc": 40,
+     "n_cells": 40,
+     "n_sat": 0,
+     "n_obs": 120,
+     "escalated": [
+      "g7d1_parse_date_flex",
+      "g7d2_dedupe_keep",
+      "g7d3_fmt_amount",
+      "g7d4_slugify",
+      "g7e1_parse_flag",
+      "g7e2_truncate_tail",
+      "g7e3_dedupe_last",
+      "g7n1_split_amount",
+      "g7n2_next_permutation",
+      "g7n3_spiral_order",
+      "g7n4_min_meeting_rooms",
+      "g7s1_flatten_nested",
+      "g7s2_parse_headers",
+      "g7s3_csv_row",
+      "g7s4_xml_escape_attrs",
+      "g7t1_split_top_level",
+      "g7t2_parse_pairs",
+      "g7t3_encode_attrs",
+      "g7t4_quote_join",
+      "t01_parse_duration",
+      "t02_dedupe",
+      "t03_commas",
+      "t04_merge_ranges",
+      "t05_top_k",
+      "t06_rle",
+      "x01_slugify",
+      "x02_mask_email",
+      "x03_word_freq",
+      "x04_truncate",
+      "x05_normalize_ws",
+      "y01_roman_to_int",
+      "y02_is_valid_brackets",
+      "y03_base_convert",
+      "y04_gcd_lcm",
+      "y05_median",
+      "z01_flatten",
+      "z02_to_csv",
+      "z03_parse_query",
+      "z04_deep_get",
+      "z05_group_by"
+     ],
+     "blocked": []
+    },
+    "acted": [],
+    "escalations": {
+     "t01_parse_duration": {
+      "cell": "t01_parse_duration",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "afbd739753eb66f8"
+      ]
+     },
+     "t02_dedupe": {
+      "cell": "t02_dedupe",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "485857ee2339fa19"
+      ]
+     },
+     "t03_commas": {
+      "cell": "t03_commas",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "d4893a60ae1a0218"
+      ]
+     },
+     "t04_merge_ranges": {
+      "cell": "t04_merge_ranges",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "2abed81d473e71d8"
+      ]
+     },
+     "t05_top_k": {
+      "cell": "t05_top_k",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "6a1bcb61f1aaa2e8"
+      ]
+     },
+     "t06_rle": {
+      "cell": "t06_rle",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "06c2b3211ddb1e2a"
+      ]
+     },
+     "g7t1_split_top_level": {
+      "cell": "g7t1_split_top_level",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "2cb0b93b12b5fad9"
+      ]
+     },
+     "g7t2_parse_pairs": {
+      "cell": "g7t2_parse_pairs",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "413f2686bc237436"
+      ]
+     },
+     "g7t3_encode_attrs": {
+      "cell": "g7t3_encode_attrs",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "15f7e4cb78c74fa5"
+      ]
+     },
+     "g7t4_quote_join": {
+      "cell": "g7t4_quote_join",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "3fc040c25d22ce2d"
+      ]
+     },
+     "g7n1_split_amount": {
+      "cell": "g7n1_split_amount",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "25a5e68f06f48d52"
+      ]
+     },
+     "g7n2_next_permutation": {
+      "cell": "g7n2_next_permutation",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "d41ae5f7f15923b3"
+      ]
+     },
+     "g7n3_spiral_order": {
+      "cell": "g7n3_spiral_order",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "c93fc66b2ac69694"
+      ]
+     },
+     "g7n4_min_meeting_rooms": {
+      "cell": "g7n4_min_meeting_rooms",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "c03404b24f582913"
+      ]
+     },
+     "g7s1_flatten_nested": {
+      "cell": "g7s1_flatten_nested",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "6adb65bd0f4a7c65"
+      ]
+     },
+     "g7s2_parse_headers": {
+      "cell": "g7s2_parse_headers",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "df8af43e31f3ac2a"
+      ]
+     },
+     "g7s3_csv_row": {
+      "cell": "g7s3_csv_row",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "d130d6b9639c36e6"
+      ]
+     },
+     "g7s4_xml_escape_attrs": {
+      "cell": "g7s4_xml_escape_attrs",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "f4206c46c31d315f"
+      ]
+     },
+     "g7d1_parse_date_flex": {
+      "cell": "g7d1_parse_date_flex",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "29b566d53de134bd"
+      ]
+     },
+     "g7d2_dedupe_keep": {
+      "cell": "g7d2_dedupe_keep",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "392e4ea51a77eed7"
+      ]
+     },
+     "g7d3_fmt_amount": {
+      "cell": "g7d3_fmt_amount",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "639f1ca073c942e0"
+      ]
+     },
+     "g7d4_slugify": {
+      "cell": "g7d4_slugify",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "d6e95cb0f49b9723"
+      ]
+     },
+     "g7e1_parse_flag": {
+      "cell": "g7e1_parse_flag",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "d71a948ce5ce1ad9"
+      ]
+     },
+     "g7e2_truncate_tail": {
+      "cell": "g7e2_truncate_tail",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "44f223c54c858e3c"
+      ]
+     },
+     "g7e3_dedupe_last": {
+      "cell": "g7e3_dedupe_last",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "b0b0be1e550af4d3"
+      ]
+     },
+     "y01_roman_to_int": {
+      "cell": "y01_roman_to_int",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "721df5c446b37927"
+      ]
+     },
+     "y02_is_valid_brackets": {
+      "cell": "y02_is_valid_brackets",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "a262ec91f4960588"
+      ]
+     },
+     "y03_base_convert": {
+      "cell": "y03_base_convert",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "34927b4f675d4321"
+      ]
+     },
+     "y04_gcd_lcm": {
+      "cell": "y04_gcd_lcm",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "971e3f54912f7d78"
+      ]
+     },
+     "y05_median": {
+      "cell": "y05_median",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "13c988d155c47179"
+      ]
+     },
+     "z01_flatten": {
+      "cell": "z01_flatten",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "e7a2d94cace17bfb"
+      ]
+     },
+     "z02_to_csv": {
+      "cell": "z02_to_csv",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "fdbfac6d48b1a7bc"
+      ]
+     },
+     "z03_parse_query": {
+      "cell": "z03_parse_query",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "e0b2b82307918b98"
+      ]
+     },
+     "z04_deep_get": {
+      "cell": "z04_deep_get",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "a0cdd9782dd810fd"
+      ]
+     },
+     "z05_group_by": {
+      "cell": "z05_group_by",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "eb46772d28039068"
+      ]
+     },
+     "x01_slugify": {
+      "cell": "x01_slugify",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "125195c3b8e81b33"
+      ]
+     },
+     "x02_mask_email": {
+      "cell": "x02_mask_email",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "ab1200c87eb2b82b"
+      ]
+     },
+     "x03_word_freq": {
+      "cell": "x03_word_freq",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "a3f8cd0de9a03bbd"
+      ]
+     },
+     "x04_truncate": {
+      "cell": "x04_truncate",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "bdd06e0c51da1915"
+      ]
+     },
+     "x05_normalize_ws": {
+      "cell": "x05_normalize_ws",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "56c4705051706e6c"
+      ]
+     }
+    },
+    "escalated_cells": [
+     "g7d1_parse_date_flex",
+     "g7d2_dedupe_keep",
+     "g7d3_fmt_amount",
+     "g7d4_slugify",
+     "g7e1_parse_flag",
+     "g7e2_truncate_tail",
+     "g7e3_dedupe_last",
+     "g7n1_split_amount",
+     "g7n2_next_permutation",
+     "g7n3_spiral_order",
+     "g7n4_min_meeting_rooms",
+     "g7s1_flatten_nested",
+     "g7s2_parse_headers",
+     "g7s3_csv_row",
+     "g7s4_xml_escape_attrs",
+     "g7t1_split_top_level",
+     "g7t2_parse_pairs",
+     "g7t3_encode_attrs",
+     "g7t4_quote_join",
+     "t01_parse_duration",
+     "t02_dedupe",
+     "t03_commas",
+     "t04_merge_ranges",
+     "t05_top_k",
+     "t06_rle",
+     "x01_slugify",
+     "x02_mask_email",
+     "x03_word_freq",
+     "x04_truncate",
+     "x05_normalize_ws",
+     "y01_roman_to_int",
+     "y02_is_valid_brackets",
+     "y03_base_convert",
+     "y04_gcd_lcm",
+     "y05_median",
+     "z01_flatten",
+     "z02_to_csv",
+     "z03_parse_query",
+     "z04_deep_get",
+     "z05_group_by"
+    ],
+    "reproposed": []
+   }
+  },
+  "B_done": {
+   "exit": 0,
+   "state_line": "状态    DONE（套件 40 格全部达标：观测 ≥3 次且均分 ≥1）",
+   "has_old": false,
+   "json": {
+    "ledger": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_done/score_ledger.jsonl",
+    "obs": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_done/goal_obs.jsonl",
+    "goal_log": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_done/goal_ledger.jsonl",
+    "suite_dir": "/Users/linshaojie/V1/bench/tasks",
+    "n_suite": 40,
+    "n_covered": 40,
+    "goals": [],
+    "state": "DONE",
+    "state_detail": {
+     "n_goals": 0,
+     "n_esc": 0,
+     "n_cells": 40,
+     "n_sat": 40,
+     "n_obs": 120,
+     "escalated": [],
+     "blocked": []
+    },
+    "state_after": "DONE",
+    "state_detail_after": {
+     "n_goals": 0,
+     "n_esc": 0,
+     "n_cells": 40,
+     "n_sat": 40,
+     "n_obs": 120,
+     "escalated": [],
+     "blocked": []
+    },
+    "acted": [],
+    "escalations": {},
+    "escalated_cells": [],
+    "reproposed": []
+   }
+  },
+  "B_empty": {
+   "exit": 0,
+   "state_line": "状态    EMPTY（套件里 0 题；账本 3 行对不上任何题）　⛔ 不是做完了",
+   "has_old": false,
+   "json": {
+    "ledger": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_empty/score_ledger.jsonl",
+    "obs": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_empty/goal_obs.jsonl",
+    "goal_log": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/B_empty/goal_ledger.jsonl",
+    "suite_dir": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v1_v172_b4unrn2j/empty_suite",
+    "n_suite": 0,
+    "n_covered": 0,
+    "goals": [],
+    "state": "EMPTY",
+    "state_detail": {
+     "n_goals": 0,
+     "n_esc": 1,
+     "n_cells": 0,
+     "n_sat": 0,
+     "n_obs": 3,
+     "escalated": [
+      "z"
+     ],
+     "blocked": []
+    },
+    "state_after": "EMPTY",
+    "state_detail_after": {
+     "n_goals": 0,
+     "n_esc": 1,
+     "n_cells": 0,
+     "n_sat": 0,
+     "n_obs": 3,
+     "escalated": [
+      "z"
+     ],
+     "blocked": []
+    },
+    "acted": [],
+    "escalations": {
+     "z": {
+      "cell": "z",
+      "kind": "RAISE",
+      "n_fail": 3,
+      "mean": 0.0,
+      "means": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "gids": [
+       "8ab41bd55c0d6f90"
+      ]
+     }
+    },
+    "escalated_cells": [
+     "z"
+    ],
+    "reproposed": []
+   }
+  }
+ },
+ "prod_untouched": true,
+ "old_text_gone": true,
+ "old_semantics_wrong": {
+  "A_sat": [
+   "DONE",
+   "IDLE"
+  ],
+  "A_stale": [
+   "DONE",
+   "STALE"
+  ],
+  "A_empty": [
+   "DONE",
+   "EMPTY"
+  ]
+ },
+ "verdicts": [
+  {
+   "tag": "P1",
+   "ok": true,
+   "note": "分母=5 个构造输入｜不同名字 5/5｜逐个对得上=True｜实测 {'A_sat': 'IDLE', 'A_done': 'DONE', 'A_stale': 'STALE', 'A_empty': 'EMPTY', 'A_work': 'WORK'}"
+  },
+  {
+   "tag": "P2",
+   "ok": true,
+   "note": "分母=2 臂×40 格｜全饱和=IDLE（转运维 40 格）｜全达标=DONE（达标 40 格）｜互不相同=True"
+  },
+  {
+   "tag": "P3",
+   "ok": true,
+   "note": "分母=1 个构造格｜名字=STALE｜blocked 长度=1｜点名=['t01_parse_duration']"
+  },
+  {
+   "tag": "P4",
+   "ok": true,
+   "note": "分母=1 个构造｜名字=EMPTY｜套件格数=0｜账本里的转运维格=1（⇒ 若按『转运维>0』就判 IDLE，那是错的）"
+  },
+  {
+   "tag": "P5",
+   "ok": true,
+   "note": "分母=40 格｜删 1 行后：名字=WORK｜转运维 39‹40｜其余格仍转运维=True｜提议 1 条（该格回到 RAISE）"
+  },
+  {
+   "tag": "P7",
+   "ok": true,
+   "note": "模块级常量=['KINDS', 'MIN_OBS', 'TARGET']｜`state()` 里的数值默认值=无"
+  },
+  {
+   "tag": "P8",
+   "ok": true,
+   "note": "分母=4 条（P1~P4）｜恒返回 WORK 的变异体上 FAIL 的条数=4/4｜['P1', 'P2', 'P3', 'P4']（⇒ 这 4 条判的是判别力，不是常量）"
+  },
+  {
+   "tag": "P6",
+   "ok": true,
+   "note": "分母=4 份输出｜状态行={'B_real': '状态    WORK（有 40 条可执行的目标）', 'B_idle': '状态    IDLE（提议 0 条，40 格已转运维：这 40 格的均分 3 次逐位相同 ⇒ 测量没让它动）\\u3000⛔ 不是做完了', 'B_done': '状态    DONE（套件 40 格全部达标：观测 ≥3 次且均分 ≥1）', 'B_empty': '状态    EMPTY（套件里 0 题；账本 3 行对不上任何题）\\u3000⛔ 不是做完了'}｜旧文案仍在={'B_real': False, 'B_idle': False, 'B_done': False, 'B_empty': False}"
+  }
+ ],
+ "n_pass": 8,
+ "n_fail": 0,
+ "n_na": 0
+}

@@ -404,6 +404,114 @@ def escalations(
     return out
 
 
+# ===========================================================================
+# 状态：「没有目标」有两种，⛔ 必须分开报
+# ===========================================================================
+def satisfied(obs: Sequence[dict], cell: str, *,
+              min_obs: int = MIN_OBS, target: float = TARGET) -> bool:
+    """这一格「该做的都做完了」吗 —— 按**读数**算，不按「提不出目标」算。
+
+    ⛔ 两者的区别是本轮的全部内容：`propose()` 返回 0 条**不代表**做完了，
+    它也可能是「全转运维」或「套件里根本没有题」。拿前者当后者，
+    就是把「无事可做」报成「做完了」。
+    """
+    st = stats(obs, cell)
+    return st["n_obs"] >= min_obs and st["mean_score"] >= target
+
+
+def state(
+    goals: Sequence[Goal],
+    esc: dict[str, dict],
+    suite_ids: Sequence[str],
+    obs: Sequence[dict],
+    *,
+    min_obs: int = MIN_OBS,
+    target: float = TARGET,
+) -> tuple[str, dict]:
+    """判「系统现在处于哪一种停/不停」—— 返回 `(名字, 证据)`。
+
+    ## 五个名字（⛔ 不做成常量表：见下）
+
+    | 名字 | 条件 | 它说的是 |
+    |---|---|---|
+    | `WORK`  | 提议 > 0 | 有活可干 |
+    | `EMPTY` | 提议 0、**套件 0 题** | 无从提议（装置/口径问题） |
+    | `IDLE`  | 提议 0、**转运维 > 0** | 测量已用尽，提不出目标了 |
+    | `DONE`  | 提议 0、转运维 0、**每格读数都达标** | 真的做完了 |
+    | `STALE` | 提议 0、转运维 0、**有格没达标** | 目标被已 MET 的 gid 挡住了 |
+
+    ## 为什么顺序是 EMPTY → IDLE → DONE
+
+    `EMPTY` 优先于 `IDLE`：套件为空时「转运维 > 0」也能成立（历史账本里的格
+    不在套件里），此时说「测量已用尽」是拿一个读数冒充另一个
+    （纪律 8：缺席冒充零）。**先报最具体的那条事实。**
+
+    ## 为什么 `DONE` 要重算而不是看「提议 0 条」
+
+    因为 `done_gids()` 是**单调**的：某格 `RAISE` 判过 MET 之后，若后来的观测把均分
+    拉回阈值以下，`propose()` 会因为 gid 在 `done` 里而**不再提它** ⇒ 提议 0 条，
+    但读数明明没达标。拿提议数当「做完」的判据，正好在这一格上谎报。
+    所以 `DONE` 由 `satisfied()` 逐格算，`STALE` 是它的反证。
+
+    ## ⛔ 不新增模块级常量
+
+    五个名字刻意不写成 `STATES = (...)`：V171 的 Q6 钉的是「模块级常量集合不变」，
+    而那份判据只有名字集合可查、分不出「阈值」与「名字表」。与其去改那份旧判据
+    （⛔ 不许给旧记录补字段），不如让名字只活在**返回值与文档**里 ——
+    值域由契约锚 `AZ134a` 钉（五个构造输入 ⇒ 五个不同的名字）。
+    """
+    ids = sorted(set(suite_ids))
+    det: dict = {
+        "n_goals": len(goals),
+        "n_esc": len(esc),
+        "n_cells": len(ids),
+        "n_sat": sum(1 for c in ids if satisfied(obs, c, min_obs=min_obs, target=target)),
+        "n_obs": len(obs),
+        "escalated": sorted(esc),
+        "blocked": [],
+    }
+    if goals:
+        return "WORK", det
+    if not ids:
+        return "EMPTY", det
+    if esc:
+        return "IDLE", det
+    if det["n_sat"] == len(ids):
+        return "DONE", det
+    # 走到这里：提议 0、转运维 0、却还有格没达标 ⇒ 一定是被 `done` 挡住了。
+    # 把它**点名**而不是吞掉：这正是「提议 0 条 = 做完了」会谎报的那一格。
+    # ⚠️ `propose()` 唯一会丢目标的地方就是 `done` 过滤，所以这里的差集
+    #    必然等于「被 done 挡住的」；不许写成「大概是被挡」。
+    done_set = {g.gid for g in goals}
+    det["blocked"] = [{"cell": g.cell, "kind": g.kind, "gid": g.gid,
+                       "statement": g.statement}
+                      for g in propose(obs, ids, escalated=list(esc))
+                      if g.gid not in done_set]
+    return "STALE", det
+
+
+def render_state(name: str, det: dict) -> str:
+    """把状态渲染成一行 —— **读数在前，解释在后**（纪律 10）。"""
+    if name == "WORK":
+        return f"WORK（有 {det['n_goals']} 条可执行的目标）"
+    if name == "IDLE":
+        return (f"IDLE（提议 0 条，{det['n_esc']} 格已转运维：这 {det['n_esc']} 格"
+                f"最后 {MIN_OBS} 次被判 NOT_MET 且均分逐位相同 ⇒ 测量没让它动）"
+                f"　⛔ 不是做完了")
+    if name == "DONE":
+        return (f"DONE（套件 {det['n_cells']} 格全部达标：观测 ≥{MIN_OBS} 次"
+                f"且均分 ≥{TARGET:g}）")
+    if name == "EMPTY":
+        return (f"EMPTY（套件里 0 题；账本 {det['n_obs']} 行对不上任何题）"
+                f"　⛔ 不是做完了")
+    if name == "STALE":
+        cells = "、".join(b["cell"] for b in det["blocked"]) or "（未点名）"
+        return (f"STALE（提议 0 条、转运维 0 格，但只有 {det['n_sat']}/{det['n_cells']} 格达标；"
+                f"{len(det['blocked'])} 格的目标被已 MET 的 gid 挡住：{cells}）"
+                f"　⛔ 账本说做完了，读数说没有")
+    return f"UNKNOWN_STATE({name})"
+
+
 def render_escalations(esc: dict[str, dict]) -> str:
     """把「已转运维」渲染成一段 —— ⛔ 不许静默丢弃（许撤不许藏）。
 
@@ -450,7 +558,11 @@ def scan_suites(dirpath: Path | str) -> dict[str, list[str]]:
 
 def render(goals: Sequence[Goal], obs: Sequence[dict], limit: int = 12) -> str:
     if not goals:
-        return "（没有可提的目标：账本与套件都对不上，或该做的都做完了）"
+        # ⛔ 这里**不解释**为什么 0 条。旧文案写的是「账本与套件都对不上，
+        #    或该做的都做完了」—— 把三种成因（空套件 / 转运维 / 真做完）
+        #    合成一句，于是「无事可做」永远会被读成「做完了」。
+        #    原因由 `state()` 单独报（V172）。
+        return "（0 条 —— 原因见「状态」行；⛔ 不在这里猜）"
     lines = [f"  {'#':<2} {'类':<5} {'格子':<24} {'判据':<18} {'现状':<18} 目标"]
     for i, g in enumerate(goals[:limit], 1):
         verdict, rd = evaluate(g, obs)

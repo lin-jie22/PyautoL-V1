@@ -1,0 +1,27 @@
+## §0 自校验 BASE 命中 21/25（记 21）
+
+## §1 路径宽度：逐条移除「非命中键上的改进候选」
+  非命中键上的改进事件 = 18 条
+    g7d2_dedupe_keep::480ada8e  3 条  ["('T4', 'lower')", "('cmp', '.strip().lower()')", "('key', '.lower()')"]
+    g7e1_parse_flag::1aa5099d  3 条  ['(\'T2\', "\'on\'")', '(\'T2\', "\'true\'")', "('T1', 'False')"]
+    g7e1_parse_flag::37a4f17f  3 条  ['(\'T2\', "\'on\'")', '(\'T2\', "\'true\'")', "('T1', 'False')"]
+    g7e1_parse_flag::a579b07a  3 条  ['(\'T2\', "\'on\'")', '(\'T2\', "\'true\'")', "('T1', 'False')"]
+    g7e1_parse_flag::f2d1efa6  3 条  ['(\'T2\', "\'on\'")', '(\'T2\', "\'true\'")', "('T1', 'False')"]
+    g7d3_fmt_amount::8c8ac7f0  2 条  ['(\'ret\', ".replace(\',\',\' \')")', '(\'ret\', ".replace(\',\',\' \').replace(\'-\',\'( \')")']
+    g7e1_parse_flag::200ebf6e  1 条  ["('T1', 'False')"]
+  ⇒ 单条移除就打掉命中的「承重踏脚石」= 0/18
+
+## §2 两个尾部命中各自需要的最小预算 B
+  g7d2_dedupe_keep::480ada8e 需 B = 15
+  g7e1_parse_flag::200ebf6e 需 B = 60
+
+## §3 4 个阶梯命中：BASE / MEM / BUD(60)
+  impl                           BASE    MEM  BUD60   hit B/M/60
+  g7e1_parse_flag::a579b07a       129      7     67   True/True/True
+  g7e1_parse_flag::1aa5099d       119      7     67   True/True/True
+  g7e1_parse_flag::37a4f17f       114      7     67   True/True/True
+  g7e1_parse_flag::f2d1efa6       104      7     67   True/True/True
+  g7e1_parse_flag::200ebf6e        59      2     59   True/False/True
+  g7d3_fmt_amount::8c8ac7f0        21      2     21   False/False/False
+  g7d2_dedupe_keep::480ada8e       14      1     14   True/False/True
+  g7d3_fmt_amount::0a6acc93        11      1     11   False/False/False

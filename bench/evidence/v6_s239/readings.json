@@ -1,0 +1,489 @@
+{
+ "n_impl": 25,
+ "n_universe_real": 35,
+ "n_base": 10,
+ "tot": {
+  "ASK": 2710,
+  "ASK_EARLY": 609
+ },
+ "to1": {
+  "ASK": 21,
+  "ASK_EARLY": 21
+ },
+ "n_key_cells": 528,
+ "n_inst": 1093,
+ "n_multi": 386,
+ "dist": {
+  "1": 142,
+  "2": 207,
+  "3": 179
+ },
+ "n_judged": 33,
+ "n_multi_judged": 20,
+ "n_multi_closure": 19,
+ "tab": {
+  "MAX": {
+   "VALID": 26,
+   "INVALID": 7,
+   "UNTRIED": 2
+  },
+  "FIRST": {
+   "VALID": 10,
+   "INVALID": 23,
+   "UNTRIED": 2
+  },
+  "MIN": {
+   "VALID": 9,
+   "INVALID": 24,
+   "UNTRIED": 2
+  }
+ },
+ "diff_mf": 16,
+ "diff_mm": 17,
+ "both": 17,
+ "cells": {
+  "g7d2_dedupe_keep::1ac9e8da::('key', '.strip()')": {
+   "scores": [
+    1.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d2_dedupe_keep::1ac9e8da::('key', '.strip().lower()')": {
+   "scores": [
+    1.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d2_dedupe_keep::480ada8e::('key', '.strip()')": {
+   "scores": [
+    0.2
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "INVALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7d2_dedupe_keep::6c9204fe::('key', '.strip()')": {
+   "scores": [
+    1.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d2_dedupe_keep::6c9204fe::('key', '.strip().lower()')": {
+   "scores": [
+    1.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d2_dedupe_keep::74aa48d8::('key', '.strip().lower()')": {
+   "scores": [
+    1.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d2_dedupe_keep::85e6d3bc::('key', '.strip()')": {
+   "scores": [],
+   "n_src": 0,
+   "closure": 0,
+   "max": "UNTRIED",
+   "first": "UNTRIED",
+   "min": "UNTRIED"
+  },
+  "g7d2_dedupe_keep::85e6d3bc::('key', '.strip().lower()')": {
+   "scores": [],
+   "n_src": 0,
+   "closure": 0,
+   "max": "UNTRIED",
+   "first": "UNTRIED",
+   "min": "UNTRIED"
+  },
+  "g7d3_fmt_amount::075b4099::('ret', \".replace(',',' ')\")": {
+   "scores": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "n_src": 3,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d3_fmt_amount::0a6acc93::('ret', \".replace(',',' ')\")": {
+   "scores": [
+    0.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "INVALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7d3_fmt_amount::17747356::('ret', \".replace(',',' ')\")": {
+   "scores": [
+    0.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "INVALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7d3_fmt_amount::309f1027::('ret', \".replace(',',' ')\")": {
+   "scores": [
+    1.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d3_fmt_amount::419ec792::('ret', \".replace(',',' ')\")": {
+   "scores": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "n_src": 3,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d3_fmt_amount::5755e033::('ret', \".replace(',',' ')\")": {
+   "scores": [
+    0.6
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "INVALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7d3_fmt_amount::8089eee6::('ret', \".replace(',',' ')\")": {
+   "scores": [
+    1.0
+   ],
+   "n_src": 1,
+   "closure": 1,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "VALID"
+  },
+  "g7d3_fmt_amount::8c8ac7f0::('ret', \".replace(',',' ')\")": {
+   "scores": [
+    0.6,
+    0.6,
+    0.6
+   ],
+   "n_src": 3,
+   "closure": 1,
+   "max": "INVALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::1aa5099d::('T2', \"'on'\")": {
+   "scores": [
+    0.4,
+    0.6,
+    0.8,
+    1.0,
+    0.6,
+    0.8,
+    0.8,
+    1.0
+   ],
+   "n_src": 8,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::1aa5099d::('T2', \"'true'\")": {
+   "scores": [
+    0.4,
+    0.8,
+    0.4,
+    0.8,
+    0.4,
+    0.8,
+    0.6,
+    1.0
+   ],
+   "n_src": 8,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::200ebf6e::('T2', \"'on'\")": {
+   "scores": [
+    0.4,
+    0.6,
+    0.8,
+    1.0,
+    0.6,
+    0.8
+   ],
+   "n_src": 6,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::37a4f17f::('T2', \"'on'\")": {
+   "scores": [
+    0.4,
+    0.6,
+    0.8,
+    1.0,
+    0.6,
+    0.8,
+    0.8,
+    1.0
+   ],
+   "n_src": 8,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::37a4f17f::('T2', \"'true'\")": {
+   "scores": [
+    0.4,
+    0.8,
+    0.4,
+    0.8,
+    0.4,
+    0.8,
+    0.6,
+    1.0
+   ],
+   "n_src": 8,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::644f0618::('T2', \"'on'\")": {
+   "scores": [
+    0.8,
+    1.0
+   ],
+   "n_src": 2,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::644f0618::('T2', \"'true'\")": {
+   "scores": [
+    0.6,
+    1.0
+   ],
+   "n_src": 2,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::a579b07a::('T2', \"'on'\")": {
+   "scores": [
+    0.4,
+    0.6,
+    0.8,
+    1.0,
+    0.6,
+    0.8,
+    0.8,
+    1.0
+   ],
+   "n_src": 8,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::a579b07a::('T2', \"'true'\")": {
+   "scores": [
+    0.4,
+    0.8,
+    0.4,
+    0.8,
+    0.4,
+    0.8,
+    0.6,
+    1.0
+   ],
+   "n_src": 8,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::c1f49180::('T2', \"'on'\")": {
+   "scores": [
+    0.8,
+    1.0
+   ],
+   "n_src": 2,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::c1f49180::('T2', \"'true'\")": {
+   "scores": [
+    0.6,
+    1.0
+   ],
+   "n_src": 2,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::cd7e0eb9::('T2', \"'on'\")": {
+   "scores": [
+    0.8,
+    1.0
+   ],
+   "n_src": 2,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::cd7e0eb9::('T2', \"'true'\")": {
+   "scores": [
+    0.6,
+    1.0
+   ],
+   "n_src": 2,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::f2d1efa6::('T2', \"'on'\")": {
+   "scores": [
+    0.4,
+    0.6,
+    0.8,
+    1.0,
+    0.6,
+    0.8,
+    0.8,
+    1.0
+   ],
+   "n_src": 8,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e1_parse_flag::f2d1efa6::('T2', \"'true'\")": {
+   "scores": [
+    0.4,
+    0.8,
+    0.4,
+    0.8,
+    0.4,
+    0.8,
+    0.6,
+    1.0
+   ],
+   "n_src": 8,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e2_truncate_tail::697caecc::('C1', \"'…' + s[-n:]\")": {
+   "scores": [
+    0.8
+   ],
+   "n_src": 1,
+   "closure": 2,
+   "max": "INVALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e2_truncate_tail::8184ec4d::('C1', \"'…' + s[-n:]\")": {
+   "scores": [
+    1.0,
+    0.0,
+    0.8
+   ],
+   "n_src": 3,
+   "closure": 2,
+   "max": "VALID",
+   "first": "VALID",
+   "min": "INVALID"
+  },
+  "g7e2_truncate_tail::bc8c4b09::('C1', \"'…' + s[-n:]\")": {
+   "scores": [
+    0.0,
+    1.0,
+    0.8
+   ],
+   "n_src": 3,
+   "closure": 2,
+   "max": "VALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  },
+  "g7e2_truncate_tail::c21ee3b8::('C1', \"'…' + s[-n:]\")": {
+   "scores": [
+    0.8
+   ],
+   "n_src": 1,
+   "closure": 2,
+   "max": "INVALID",
+   "first": "INVALID",
+   "min": "INVALID"
+  }
+ },
+ "cut": 18,
+ "flip": [
+  "g7d2_dedupe_keep::1ac9e8da::('key', '.strip().lower()')",
+  "g7d2_dedupe_keep::6c9204fe::('key', '.strip().lower()')",
+  "g7e1_parse_flag::1aa5099d::('T2', \"'true'\")",
+  "g7e1_parse_flag::200ebf6e::('T2', \"'on'\")",
+  "g7e1_parse_flag::37a4f17f::('T2', \"'true'\")",
+  "g7e1_parse_flag::644f0618::('T2', \"'true'\")",
+  "g7e1_parse_flag::a579b07a::('T2', \"'true'\")",
+  "g7e1_parse_flag::c1f49180::('T2', \"'true'\")",
+  "g7e1_parse_flag::cd7e0eb9::('T2', \"'true'\")",
+  "g7e1_parse_flag::f2d1efa6::('T2', \"'true'\")"
+ ],
+ "w1": true,
+ "w2": true,
+ "w3": false,
+ "w4": true,
+ "w5": true,
+ "w6": true,
+ "wall_s": 4.457447052001953
+}

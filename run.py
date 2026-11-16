@@ -1975,7 +1975,7 @@ def cmd_bench(args) -> int:
     # （磁盘满、路径被换、函数被改），而"我自己说钉上了"正是要被校验的那句话。
     save_ok: bool | None = None
     if gate.run_id:
-        from mw.bench import ledger_verdict, stamp_verdict
+        from mw.bench import ledger_audit, ledger_verdict, stamp_verdict
         runs_path = cfg.settings().paths.bench / "runs.jsonl"
         _stamped, _msg = stamp_verdict(runs_path, gate.run_id, state)
         _stated, _swhy = ledger_verdict(runs_path, gate.run_id)
@@ -1985,6 +1985,18 @@ def cmd_bench(args) -> int:
             state = "CRASH"
         else:
             why = f"{why}；账本已钉 {_stated}"
+
+        # ── V144：把**这个数**也复核一遍 —— 它能不能从自己的明细算回来 ──────
+        # V143 证明了「这次跑完没有」（`verdict` 那一格），但 `mean` 本身还是
+        # 自述：它与 `per_task` 写在同一行，却从没有代码从明细把它算回来一次。
+        # ⛔ 审计结果**不落盘** —— 写进账本就成第二个自述，正是 V143 拆掉的东西。
+        _aud, _awhy = ledger_audit(runs_path, gate.run_id)
+        print(f"  读数复核  {_aud}  — {_awhy}")
+        if _aud != "VERIFIED":
+            # ⚠️ 不抬 rc：本轮只让「结论可重算」，还没到「不可重算就不许记账」。
+            #    先量出这条路的覆盖面，再决定要不要把它变成闸（纪律 62：
+            #    闸要有正例路径；现在正例 136/145，反例 9 行无明细 —— 数据够，先报）。
+            print("           （⚠️ 这个数无法从明细重算 ⇒ 引用它之前先看明细）")
 
     # ── V142：写基线的**唯一**入口，在判据之后 ────────────────────────────
     if gate.pending_save:
@@ -2026,7 +2038,8 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
         3. **后闸**：写基线前校验口径签名，口径变了就拒绝，旧值另存。
     """
     from mw.bench import (BaselineStore, Caliber, ExternalScorer, Suite,
-                          append_jsonl, baseline_provenance_gate, calibrate,
+                          append_jsonl, baseline_provenance_gate,
+                          baseline_recompute_gate, calibrate, ledger_audit,
                           ledger_verdict, measurement_to_dict, run_suite,
                           verdict_against_baseline)
 
@@ -2710,10 +2723,20 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
                        else ("UNKNOWN", "没有身份证，无从查账"))
         _okv, _whyv = baseline_provenance_gate(
             store_verdict=_bv, store_run_id=_brid, ledger_state=_lst)
+        # ★ V144：第五格只证明了「那次运行是 GREEN」。那个 `mean` 本身仍是自述 ——
+        #   第六格把它从账本的明细算回来，⚖ 逐位相等才放行（PREREG §3 的公式）。
+        _ast, _awhy = (ledger_audit(_runs_path, _brid) if _brid
+                       else ("UNVERIFIABLE", "没有身份证，定位不到要重算的那一行"))
+        _okr, _whyr = baseline_recompute_gate(
+            store_run_id=_brid, audit_state=_ast, audit_why=_awhy)
         print(f"  账本复核  {_lst}  — {_lwhy}")
+        print(f"  读数复核  {_ast}  — {_awhy}")
         if not _okv:
             print(f"  ⛔ {_whyv} ⇒ **拒绝比较**（不出一句「改进成立」）。")
             print("     改用一次判据为 GREEN 的运行重写基线：--save-baseline。")
+        elif not _okr:
+            print(f"  ⛔ {_whyr} ⇒ **拒绝比较**（不出一句「改进成立」）。")
+            print("     基线的那个数必须能从账本明细逐位算回来，否则它只是一个数字。")
         else:
             base = store.load_measurement()
             if base is None:

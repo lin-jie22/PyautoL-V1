@@ -514,8 +514,10 @@ check(RS, "AZ127e 读者无记忆：先判半截日志（CRASH）再判完整日
 #   基线（bench_baseline.json）：只有 GREEN 的运行能写成标准；
 #   比较（--compare）：来源不明或没量全的基线 ⇒ **拒绝比较**，不出一句「改进成立」。
 from mw.bench import (BaselineStore, Caliber, baseline_provenance_gate,  # noqa: E402
-                      baseline_verdict_gate, caliber_from_dict, ledger_strata,
-                      ledger_verdict, record_verdict, stamp_verdict)
+                      baseline_recompute_gate, baseline_verdict_gate,
+                      caliber_from_dict, ledger_audit, ledger_audit_strata,
+                      ledger_strata, ledger_verdict, record_verdict,
+                      recompute_mean, stamp_verdict, audit_measurement)
 
 _az128_dir = Path(tempfile.mkdtemp(prefix="v142_ledger_"))
 _az128_log = _az128_dir / "runs.jsonl"
@@ -739,6 +741,148 @@ check(RS, "AZ129g 复核闸的**第一层**是 `baseline_verdict_gate`（理由�
           "              ⛔ 两个闸各写一份「自述能不能用」，改了一处另一处就成了漏洞",
       _az129_why == baseline_verdict_gate(None)[1],
       _az129_why[:60])
+
+
+# ── AZ130 结论可被第三方从账本重算（第 144 轮）────────────────────────────
+# V143 让「基线的可信度」由账本复核，但账本里的 `measurement.mean` 仍是自述：
+# 它与 `per_task` 写在同一行，却从来没有代码从明细把它算回来一次。
+# ⛔ 审计结果不落盘 —— 账本里只放事实，复核结论永远现算（否则就是第二个自述）。
+
+# ── 第一条：公式必须写死，而且**求和算法也是公式的一部分** ──────────────
+# 实测（v6_s233 / bench_out/runs.jsonl）：改用内置 `sum()` 重算，39/136 行
+# （28.7%）与写下的 mean 差 1 ulp。CPython 3.12+ 的 `sum()` 对 float 走补偿求和。
+_az130_pt = [1.0, 0.4, 0.2, 0.2]
+_az130_fold = 0.0
+for _x in _az130_pt:
+    _az130_fold += _x
+_az130_rec = {
+    "run_id": "v144a", "repeat": 1,
+    "report": {"attempted": 4, "recorded": 4, "skipped_no_answer": 0,
+               "failed_scorer": 0,
+               "per_task": [{"rep": 1, "id": f"t{i}", "score": s}
+                            for i, s in enumerate(_az130_pt)]},
+    "measurement": {"n": 1, "mean": _az130_fold / 4},
+}
+_az130_got = recompute_mean(_az130_rec)
+check(RS, "AZ130a 重算公式：每轮 fold(score)/n_tasks，再对轮 fold\n"
+          "              ⛔ 求和**必须**是朴素左折叠 —— 内置 `sum()` 走补偿求和，\n"
+          "              同一份账本 39/136 行会差 1 ulp ⇒ 全部判成假红（纪律 48 的形态：\n"
+          "              判「逐格相同」必须把算法写进判据，否则判的是算法差异）",
+      _az130_got is not None
+      and _az130_got[0] == _az130_fold / 4
+      and _az130_got[0] != sum(_az130_pt) / 4
+      and _az130_got[1]["n_tasks"] == 4,
+      f"重算={_az130_got[0]!r} fold={_az130_fold / 4!r} "
+      f"sum={sum(_az130_pt) / 4!r}")
+
+
+def _az130_mut(**kw) -> dict:
+    """在 `_az130_rec` 上做一处改动，返回深拷贝。"""
+    import copy
+    r = copy.deepcopy(_az130_rec)
+    for k, v in kw.items():
+        if k == "drop_last":
+            r["report"]["per_task"] = r["report"]["per_task"][:-1]
+        elif k == "score0":
+            r["report"]["per_task"][0]["score"] = v
+        elif k == "mean":
+            r["measurement"]["mean"] = v
+        elif k == "no_mean":
+            r["measurement"].pop("mean", None)
+        elif k == "no_pt":
+            r["report"].pop("per_task", None)
+        elif k == "empty_pt":
+            r["report"]["per_task"] = []
+        elif k == "skip":
+            r["report"]["skipped_no_answer"] = v
+    return r
+
+
+_az130_ok = audit_measurement(_az130_rec)
+_az130_drop = audit_measurement(_az130_mut(drop_last=True))
+_az130_drop_val = recompute_mean(_az130_mut(drop_last=True))
+check(RS, "AZ130b 删掉一条明细 ⇒ MISMATCH，理由落在**条数**而不是数值\n"
+          "              ⛔ 缺一条**不许补 0、也不许跳过**：分母仍从 attempted 推得，\n"
+          "              所以照样算得出一个数 —— 只有先对账才能把「记录被改过」\n"
+          "              与「这次有一题没做」分开（后者在 recorded 里另有计数）",
+      _az130_ok[0] == "VERIFIED"
+      and _az130_drop[0] == "MISMATCH"
+      and "明细条数" in _az130_drop[1]
+      and _az130_drop_val is not None,
+      f"正例={_az130_ok[0]} 删一条={_az130_drop[0]} 仍算得出={_az130_drop_val[0]!r}")
+
+# ── 对称两格：改证据不改结论 / 改结论不改证据 ──────────────────────────
+_az130_sc = audit_measurement(_az130_mut(score0=1.01))
+_az130_mn = audit_measurement(_az130_mut(mean=_az130_fold / 4 + 0.001))
+check(RS, "AZ130c 改明细 ⇒ MISMATCH；改 mean ⇒ MISMATCH（两个方向都要抓）\n"
+          "              ⛔ 只抓一边，另一边就是最便宜的造假方式",
+      _az130_sc[0] == "MISMATCH" and _az130_mn[0] == "MISMATCH"
+      and "重算" in _az130_sc[1] and "重算" in _az130_mn[1],
+      f"改明细={_az130_sc[0]} 改结论={_az130_mn[0]}")
+
+# ── 缺席四态：⛔ 一条都不许读成 VERIFIED ───────────────────────────────
+_az130_abs = {
+    "无 per_task 键": audit_measurement(_az130_mut(no_pt=True)),
+    "per_task 为空": audit_measurement(_az130_mut(empty_pt=True)),
+    "无 mean 键": audit_measurement(_az130_mut(no_mean=True)),
+    "查无此账": ledger_audit(Path(tempfile.mkdtemp(prefix="v144_led_")) / "none.jsonl",
+                          "v144a"),
+}
+check(RS, "AZ130d 缺席四态（无明细键 / 明细空 / 无均值 / 查无此账）一律 UNVERIFIABLE\n"
+          "              ⛔ 「不可复核」不等于「没问题」—— 缺席不许冒充完成",
+      all(v[0] == "UNVERIFIABLE" for v in _az130_abs.values()),
+      f"{ {k: v[0] for k, v in _az130_abs.items()} }")
+
+# ── 分层守恒（分母 = 账本行数，不是断言数）──────────────────────────────
+_az130_led = Path(tempfile.mkdtemp(prefix="v144_strata_")) / "runs.jsonl"
+_az130_bad = _az130_mut(drop_last=True)
+_az130_bad["run_id"] = "v144b"
+_az130_unk = {"run_id": "v144c", "repeat": 1,
+              "report": {"attempted": 2, "recorded": 2, "per_task": []},
+              "measurement": {"n": 1, "mean": 0.5}}
+_az130_led.write_text("".join(json.dumps(r) + "\n" for r in
+                              [_az130_rec, _az130_bad, _az130_unk]),
+                      encoding="utf-8")
+_az130_st = ledger_audit_strata(_az130_led)
+_az130_tot = _az130_st["VERIFIED"] + _az130_st["MISMATCH"] + _az130_st["UNVERIFIABLE"]
+check(RS, "AZ130e 可重算性分层守恒：VERIFIED + MISMATCH + UNVERIFIABLE == 总行数\n"
+          "              ⛔ 与 AZ129b（按结论分层）并列而不是并进去：\n"
+          "              一格答「跑完没有」，另一格答「这个数算得回来吗」",
+      _az130_st["rows"] == 3 and _az130_tot == 3
+      and (_az130_st["VERIFIED"], _az130_st["MISMATCH"],
+           _az130_st["UNVERIFIABLE"]) == (1, 1, 1),
+      f"{_az130_st} 守恒={_az130_tot}")
+
+# ── 第六格的真值表 + 四种拒法各说各的原因 ──────────────────────────────
+_az130_tbl = {
+    ("r1", "VERIFIED"): True,
+    ("r1", "MISMATCH"): False,
+    ("r1", "UNVERIFIABLE"): False,
+    ("", "VERIFIED"): False,
+}
+_az130_gate = {k: baseline_recompute_gate(store_run_id=k[0], audit_state=k[1],
+                                         audit_why="w")[0]
+               for k in _az130_tbl}
+_az130_why = {s: baseline_recompute_gate(store_run_id="r1", audit_state=s,
+                                         audit_why="w")[1]
+              for s in ("MISMATCH", "UNVERIFIABLE")}
+_az130_why["无身份证"] = baseline_recompute_gate(store_run_id="", audit_state="VERIFIED",
+                                            audit_why="w")[1]
+check(RS, "AZ130f 重算闸真值表：只有 VERIFIED 放行；无身份证 / 打架 / 不可复核各拒\n"
+          "              ⛔ 三种拒法理由互不相同 —— 「该补明细」与「该查改动」修法相反",
+      _az130_gate == _az130_tbl
+      and len(set(_az130_why.values())) == 3
+      and all(k in _az130_why[n] for n, k in
+              {"MISMATCH": "打架", "UNVERIFIABLE": "不可重算",
+               "无身份证": "身份证"}.items()),
+      f"{_az130_gate} 理由数={len(set(_az130_why.values()))}")
+
+_az130_la = _az129_calls("ledger_audit")
+_az130_gc = _az129_calls("baseline_recompute_gate")
+check(RS, "AZ130g `run.py` 里 `ledger_audit` **恰好 2 个**调用点（外壳复核 + 比较复核）；\n"
+          "              重算闸恰好 1 个 —— 多一个读者就多一套口径（同 AZ129e）",
+      _az130_la == 2 and _az130_gc == 1,
+      f"ledger_audit={_az130_la} recompute_gate={_az130_gc}")
 
 
 # ===========================================================================

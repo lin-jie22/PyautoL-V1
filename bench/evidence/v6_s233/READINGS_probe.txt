@@ -1,0 +1,19 @@
+账本 bench_out/runs.jsonl  行数=145
+有 run_id=62  有 verdict 键=0
+
+分类（分母=145）：
+  R1_明细空                        9  (6.2%)
+  R6_重算                       136  (93.8%)
+
+重算差值：n=136 max=1.110e-16 非零=39
+
+非 R6 的行：
+  L 12 <无身份证>             R1_明细空  attempted=1
+  L 13 <无身份证>             R1_明细空  attempted=1
+  L 22 <无身份证>             R1_明细空  attempted=6
+  L 25 <无身份证>             R1_明细空  attempted=6
+  L 26 <无身份证>             R1_明细空  attempted=6
+  L 29 <无身份证>             R1_明细空  attempted=6
+  L 72 <无身份证>             R1_明细空  attempted=6
+  L 74 <无身份证>             R1_明细空  attempted=1
+  L 75 <无身份证>             R1_明细空  attempted=1

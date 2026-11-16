@@ -1739,6 +1739,52 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '''    ok, why = baseline_verdict_gate(store_verdict)''',
      '''    ok = store_verdict == "GREEN"
     why = "" if ok else (f"来源 {store_verdict}")'''),
+
+    # ── V144 / §211：结论可被第三方从账本重算（AZ130a~g）────────────────
+    #: 撤的语义：重算改用内置 `sum()`（补偿求和）⇒ 末位与写下的值差 1 ulp
+    #:    ⇒ AZ130a 必红。这正是 v6_s233 实测的 28.7% 假红来源。
+    ("AZ130a", "mw/bench.py",
+     '''    t = 0.0
+    for x in xs:
+        t += x
+    return t''',
+     '''    return float(sum(xs))'''),
+    #: 撤的语义：删掉 R4（条数对账）⇒ 删一条明细落到 R6（数值），
+    #:    理由里不再有「明细条数」⇒ AZ130b 必红。
+    ("AZ130b", "mw/bench.py",
+     '''    if len(per_task) != recorded:''',
+     '''    if False and len(per_task) != recorded:'''),
+    #: 撤的语义：R6 的比较失效（只验字段在不在）⇒ 改明细/改结论都不再被抓
+    #:    ⇒ AZ130c 必红。
+    ("AZ130c", "mw/bench.py",
+     '''    if val != float(recorded_mean):''',
+     '''    if False and val != float(recorded_mean):'''),
+    #: 撤的语义：空明细**放行**（缺席冒充完成）⇒ AZ130d 必红。
+    ("AZ130d", "mw/bench.py",
+     '''    if not per_task:
+        return "UNVERIFIABLE", "`per_task` 为空 ⇒ 这次运行没有留下任何明细"''',
+     '''    if not per_task:
+        return "VERIFIED", "撤回态：空明细也放行"'''),
+    #: 撤的语义：分层**漏掉 MISMATCH** 那一层（守恒式当场不成立）⇒ AZ130e 必红。
+    ("AZ130e", "mw/bench.py",
+     '''    for rec in recs:
+        out[audit_measurement(rec)[0]] += 1''',
+     '''    for rec in recs:
+        _st = audit_measurement(rec)[0]
+        if _st != "MISMATCH":
+            out[_st] += 1'''),
+    #: 撤的语义：`UNVERIFIABLE` 也放行 ⇒ 真值表那一格翻转 ⇒ AZ130f 必红。
+    ("AZ130f", "mw/bench.py",
+     '''    if audit_state == "VERIFIED":
+        return True, f"读数可重算（{audit_why}）"''',
+     '''    if audit_state in ("VERIFIED", "UNVERIFIABLE"):
+        return True, f"读数可重算（{audit_why}）"'''),
+    #: 撤的语义：比较路径不再重算（外壳那一处保留）⇒ `ledger_audit` 调用点 2→1
+    #:    ⇒ AZ130g 必红。⚠️ 只撤「比较那一处」，两个变量一次只动一个。
+    ("AZ130g", "run.py",
+     '''        _ast, _awhy = (ledger_audit(_runs_path, _brid) if _brid
+                       else ("UNVERIFIABLE", "没有身份证，定位不到要重算的那一行"))''',
+     '''        _ast, _awhy = ("UNVERIFIABLE", "撤回态：比较前不重算")'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1753,6 +1799,15 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   **四种拒法各说各的原因**，少掉这一种它就少一条。同一条规则的两个面
     #:   （一个测真值表，一个测可诊断性）⇒ 合理连带，不当作锚定跑偏。
     "AZ129c": frozenset({"AZ129f"}),
+    #: ★第 144 轮：AZ130a 撤的是「求和用朴素左折叠」。三个断言都建立在
+    #:   **同一个 `_fold_sum`** 上：AZ130a 直接测它；AZ130b 的**正例**要靠它算对
+    #:   （换成 `sum()` ⇒ 正例变 MISMATCH）；AZ130e 的分层三元组 (1,1,1) 也靠它。
+    #:   同一处实现被三个断言锚定 ⇒ 合理连带（不是锚定跑偏）。
+    "AZ130a": frozenset({"AZ130b", "AZ130e"}),
+    #: ★第 144 轮：AZ130d 撤的是「空明细 ⇒ UNVERIFIABLE」。AZ130e 的构造账本里
+    #:   正好有一行空明细（`v144c`），它被放行之后分层从 (1,1,1) 变 (2,1,0)
+    #:   ⇒ 守恒仍成立但三元组不符 ⇒ 红。同一规则的另一个面，合理连带。
+    "AZ130d": frozenset({"AZ130e"}),
     #: AZ22a（把全表兜底加回）⇒ 前两题的"零命中"又变成 4 条 ⇒ AZ23 的
     #: `[0,0,1,1]` 立刻不成立。**同一段 SQL 的两个面**，合理连带。
     #: ★第三十八轮补登 AZ26/AZ30：兜底回来了 ⇒ n0 档命中 4 条（AZ26 红）；

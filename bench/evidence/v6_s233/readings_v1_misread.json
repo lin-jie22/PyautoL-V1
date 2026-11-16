@@ -1,0 +1,50 @@
+{
+ "strata": {
+  "readable": true,
+  "rows": 145,
+  "VERIFIED": 136,
+  "MISMATCH": 0,
+  "UNVERIFIABLE": 9
+ },
+ "j2": [
+  "MISMATCH",
+  "明细条数 9 ≠ recorded=10 ⇒ 明细被删或被截断（⛔ 不许补 0、不许跳过）"
+ ],
+ "j2b": [
+  "UNVERIFIABLE",
+  "`per_task` 为空 ⇒ 这次运行没有留下任何明细"
+ ],
+ "j3": [
+  "MISMATCH",
+  "重算 0.54384 ≠ 写下的 0.54284（Δ=1.000e-03） ⇒ 结论与明细打架"
+ ],
+ "j4": [
+  "UNVERIFIABLE",
+  "记录缺 `report.per_task` 或 `measurement.mean` ⇒ 没有可复核的对象"
+ ],
+ "j5": [
+  "UNVERIFIABLE",
+  "`per_task` 为空 ⇒ 这次运行没有留下任何明细"
+ ],
+ "j6_bad": [
+  39,
+  136
+ ],
+ "j7": [
+  "VERIFIED",
+  "重算 0.54384 == 写下的值（10 条明细 / 1 轮 / 分母 10）"
+ ],
+ "rebuttal": [
+  "MISMATCH",
+  "VERIFIED"
+ ],
+ "rebuttal_no_r4": [
+  "MISMATCH",
+  "重算 0.5357000000000001 ≠ 写下的 0.54284（Δ=7.140e-03）⇒ 结论与明细打架"
+ ],
+ "call_sites": [
+  "ledger_audit@1993",
+  "baseline_recompute_gate@2730",
+  "ledger_audit@2728"
+ ]
+}

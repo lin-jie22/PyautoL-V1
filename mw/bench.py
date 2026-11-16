@@ -1034,6 +1034,34 @@ def baseline_provenance_gate(*, store_verdict: str | None, store_run_id: str,
     return True, f"账本复核通过（run_id={store_run_id} 那次也是 GREEN）"
 
 
+def baseline_recompute_gate(*, store_run_id: str, audit_state: str,
+                            audit_why: str) -> tuple[bool, str]:
+    """**基线的读数能不能被重算**。返回 `(可比较, 拒绝理由)`。
+
+    第五格（`baseline_provenance_gate`）证明了「这次运行确实是 GREEN」，
+    但它读的是账本里 `verdict` 那一格 —— 而那个数（`measurement.mean`）本身
+    还是**自述**：它与 `per_task` 写在同一行里，却从来没有代码从明细算回来一次。
+    第六格把它算回来。
+
+    规则（顺序即语义）：
+        1. 没有身份证（`run_id`） ⇒ 拒 —— 定位不到要重算的那一行
+        2. `UNVERIFIABLE`         ⇒ 拒 —— ⛔ 这不是「没问题」，是**没有可复核的明细**
+        3. `MISMATCH`             ⇒ 拒 —— 结论与明细打架
+        4. `VERIFIED`             ⇒ 放行
+
+    ⛔ 「不可复核」与「不一致」要分开拒：前者是**缺证据**，后者是**证据反着说话**。
+       合并成一句「拒绝」之后，修法就再也分不清（该补明细还是该查改动）。
+    """
+    if not store_run_id:
+        return False, "基线没有身份证（`run_id`）⇒ 无法定位到要重算的那一行"
+    if audit_state == "VERIFIED":
+        return True, f"读数可重算（{audit_why}）"
+    if audit_state == "MISMATCH":
+        return False, f"结论与明细打架，拒绝比较：{audit_why}"
+    return False, (f"读数不可重算（{audit_why}）"
+                   " ⇒ 「不可复核」不等于「没问题」，拒绝比较")
+
+
 # ===========================================================================
 # 8. 落盘出口（契约④ 最后一步）—— 内存态计数必须能被别的进程读到
 # ===========================================================================
@@ -1169,4 +1197,179 @@ def stamp_verdict(path: Path, run_id: str, verdict: str) -> tuple[bool, str]:
     lines[idx] = _canon(rec)
     _atomic_write(path, "\n".join(lines) + "\n")
     return True, f"已把 {verdict} 钉在 run_id={run_id}"
+
+
+# ── 账本里「这个数」的复核出口（V144，§211）───────────────────────────────
+# 为什么需要它们：V143 让**基线的可信度**必须由账本复核，但账本里的
+# `measurement.mean` 自己仍是**自述** —— 它与 `per_task` 写在同一行，
+# 却从来没有代码从明细把它算回来一次。第三方拿到 `run_id` 只能**读**到一个数，
+# 不能**验**这个数。结论有出处（V143）之后，出处必须能被复算（V144）。
+#
+# ⛔ 审计结果**不落盘**。账本里只放事实（明细 + 写下的均值），复核结论永远现算。
+#    写进账本就成了第二个自述 —— 正是 V143 刚拆掉的那个东西。
+#: 一条记录的读数**能不能被重算**。只有三个值，且**不参与任何加权**
+#: （⛔ 不新造「可信度分数」：三值就是三值，没有 0.8 这种中间态）。
+AUDITS = ("VERIFIED", "MISMATCH", "UNVERIFIABLE")
+
+
+def _fold_sum(xs: Sequence[float]) -> float:
+    """朴素左折叠求和 —— 与 `run_suite` 里 `total += sc.score` **逐位对齐**。
+
+    ⛔ 不能用内置 `sum()`：CPython 3.12+ 对 float 走**补偿求和**，末位与朴素
+       累加不等价。v6_s233 实测（`bench_out/runs.jsonl` 145 行）：同一份账本
+       用 `sum()` 重算，39/136 行（28.7%）与写下的 `mean` 差 1 ulp
+       ⇒ 全部判成假红，而假红会让人去「修数据」。
+       「逐格相同」的判据必须把**求和算法**写进来 —— 否则判的是算法差异，
+       不是数据差异（纪律 48 的形态：判相等必须写出公式）。
+    """
+    t = 0.0
+    for x in xs:
+        t += x
+    return t
+
+
+def recompute_mean(rec: Mapping[str, Any]) -> tuple[float, dict] | None:
+    """从 `per_task` 把 `mean` 算回来。返回 `(均值, 口径)`；算不出来 ⇒ `None`。
+
+    ⛔ `None` 与「算出来但不等」是两件事：前者是**不可复核**（缺输入），
+       后者是**对不上**（输入与结论打架）。合并了，修法就分不清该补明细还是查改动。
+
+    口径与 `run_suite` 一致：每轮 `sum(score) / n_tasks`（**跳过的题记 0，
+    不从分母里剔除**），再对轮取均值。`n_tasks` 由 `attempted // repeat` 反推 ——
+    记录里没有单列这一格，而 `attempted = n_tasks × repeat` 是守恒的。
+    """
+    report = rec.get("report") or {}
+    per_task = report.get("per_task")
+    repeat = rec.get("repeat")
+    attempted = report.get("attempted")
+    if not isinstance(per_task, list) or not per_task:
+        return None
+    if not isinstance(repeat, int) or isinstance(repeat, bool) or repeat <= 0:
+        return None
+    if not isinstance(attempted, int) or isinstance(attempted, bool):
+        return None
+    if attempted % repeat:
+        return None
+    n_tasks = attempted // repeat
+    if n_tasks <= 0:
+        return None
+    by_rep: dict[int, list[float]] = {}
+    for row in per_task:
+        if not isinstance(row, Mapping):
+            return None
+        r = row.get("rep")
+        sc = row.get("score")
+        if not isinstance(r, int) or isinstance(r, bool):
+            return None
+        if not isinstance(sc, (int, float)) or isinstance(sc, bool):
+            return None
+        by_rep.setdefault(r, []).append(float(sc))
+    if not by_rep:
+        return None
+    rounds = [_fold_sum(by_rep[r]) / n_tasks for r in sorted(by_rep)]
+    return _fold_sum(rounds) / len(rounds), {
+        "n_tasks": n_tasks, "rounds": len(rounds),
+        "rows": len(per_task), "repeat": repeat,
+    }
+
+
+def audit_measurement(rec: Mapping[str, Any]) -> tuple[str, str]:
+    """这条记录写下的 `mean`，能不能从它**自己的** `per_task` 重算出来。
+
+    规则顺序即语义：先看**能不能算**（R1/R2/R3/R5），再看**明细全不全**（R4），
+    最后才比数（R6）。顺序不是风格 —— 删掉一条明细时，分母仍从
+    `attempted` 推得，所以**照样算得出一个数**；只有先对账才能把
+    「这条记录被改过」与「这次运行确实有题没做」分开。
+
+        R1 缺 `per_task` / 缺 `mean`          ⇒ UNVERIFIABLE
+        R2 `per_task` 为空                     ⇒ UNVERIFIABLE
+        R3 `attempted ≠ recorded+skip+failed`  ⇒ UNVERIFIABLE（输入自相矛盾）
+        R4 `len(per_task) ≠ recorded`          ⇒ MISMATCH（明细被删/截断）
+        R5 分母推不出来 / 轮数与 `n` 不符       ⇒ MISMATCH
+        R6 `mean' ≠ mean`                      ⇒ MISMATCH
+        其余                                    ⇒ VERIFIED
+
+    ★ R4 是本轮的核心：⛔ 缺一条明细**不许补 0、也不许跳过** —— 补 0 会把
+      「记录被改过」伪装成「这次有一题没做」，而后者在 `recorded` 里已经有
+      自己的计数器。两者混同之后，删行就成了最便宜的造假方式。
+    """
+    report = rec.get("report") or {}
+    measurement = rec.get("measurement") or {}
+    if "per_task" not in report or "mean" not in measurement:
+        return "UNVERIFIABLE", ("记录缺 `report.per_task` 或 `measurement.mean` "
+                                "⇒ 没有可复核的对象")
+    per_task = report.get("per_task")
+    if not per_task:
+        return "UNVERIFIABLE", "`per_task` 为空 ⇒ 这次运行没有留下任何明细"
+    attempted = report.get("attempted")
+    recorded = report.get("recorded")
+    if not isinstance(attempted, int) or not isinstance(recorded, int):
+        return "UNVERIFIABLE", ("记录缺 `attempted` / `recorded` "
+                                "⇒ 分母与对账都无从谈起")
+    skip = report.get("skipped_no_answer", 0)
+    fail = report.get("failed_scorer", 0)
+    if attempted != recorded + skip + fail:
+        return "UNVERIFIABLE", (f"账不平：attempted={attempted} ≠ recorded={recorded}"
+                                f"+skipped={skip}+failed={fail} ⇒ 输入本身自相矛盾")
+    if not isinstance(per_task, list):
+        return "UNVERIFIABLE", f"`per_task` 不是列表（{type(per_task).__name__}）"
+    if len(per_task) != recorded:
+        return "MISMATCH", (f"明细条数 {len(per_task)} ≠ recorded={recorded} "
+                            "⇒ 明细被删或被截断（⛔ 不许补 0、不许跳过）")
+    got = recompute_mean(rec)
+    if got is None:
+        return "UNVERIFIABLE", (f"分母推不出来（attempted={attempted} "
+                                f"repeat={rec.get('repeat')!r}）")
+    val, meta = got
+    n_rec = measurement.get("n")
+    if isinstance(n_rec, int) and n_rec != meta["rounds"]:
+        return "MISMATCH", (f"轮数不符：明细 {meta['rounds']} 轮，"
+                            f"`measurement.n`={n_rec}")
+    recorded_mean = measurement.get("mean")
+    if not isinstance(recorded_mean, (int, float)) or isinstance(recorded_mean, bool):
+        return "MISMATCH", f"`measurement.mean` 不是数（{recorded_mean!r}）"
+    if val != float(recorded_mean):
+        return "MISMATCH", (f"重算 {val!r} ≠ 写下的 {float(recorded_mean)!r}"
+                            f"（Δ={abs(val - float(recorded_mean)):.3e}）"
+                            " ⇒ 结论与明细打架")
+    return "VERIFIED", (f"重算 {val!r} == 写下的值"
+                        f"（{meta['rows']} 条明细 / {meta['rounds']} 轮 / "
+                        f"分母 {meta['n_tasks']}）")
+
+
+def ledger_audit(path: Path, run_id: str) -> tuple[str, str]:
+    """对**某一次运行那一行**做重算审计。返回 `(状态, 理由)`。
+
+    与 `ledger_verdict` 同构：身份按 `run_id` 找，⛔ 不按「最后一行」。
+    账本读不出 / 查无此行 ⇒ `UNVERIFIABLE`（⛔ 不是 `VERIFIED`：缺席不许冒充完成）。
+    """
+    recs = _read_records(path)
+    if recs is None:
+        return "UNVERIFIABLE", f"账本读不出来或有一行不是 JSON（{path}）"
+    hit = None
+    for rec in reversed(recs):
+        if rec.get("run_id") == run_id:
+            hit = rec
+            break
+    if hit is None:
+        return "UNVERIFIABLE", f"账本 {len(recs)} 行里没有 run_id={run_id} 这一行"
+    return audit_measurement(hit)
+
+
+def ledger_audit_strata(path: Path) -> dict:
+    """账本按**可重算性**分层。返回 `{readable, rows, VERIFIED, MISMATCH, UNVERIFIABLE}`。
+
+    ★ 与 `ledger_strata`（按结论分层）并列而不是并进去：一格答「这次跑完没有」，
+      另一格答「这个数算得回来吗」。两个问题都有答案才算读过账本。
+    ★ 守恒式（契约 AZ130e）：`VERIFIED + MISMATCH + UNVERIFIABLE == rows`。
+    """
+    recs = _read_records(path)
+    out: dict = {"readable": recs is not None, "rows": 0,
+                 "VERIFIED": 0, "MISMATCH": 0, "UNVERIFIABLE": 0}
+    if recs is None:
+        return out
+    out["rows"] = len(recs)
+    for rec in recs:
+        out[audit_measurement(rec)[0]] += 1
+    return out
 

@@ -1,0 +1,57 @@
+====================================================================
+V144 读数 · 账本 runs.jsonl · 145 行
+====================================================================
+
+[J1] 真实账本按可重算性分层
+  {"MISMATCH": 0, "UNVERIFIABLE": 9, "VERIFIED": 136, "readable": true, "rows": 145}
+  守恒 VERIFIED+MISMATCH+UNVERIFIABLE == rows : True
+  W4 押「VERIFIED > 0 且 < 145」                      : True (136)
+  J1 押「不符数 == 0」                              : True (checked=136)
+
+样本行 run_id='5425@1792919669'  attempted=10 recorded=10 明细=10 轮=1
+
+[J2] 删掉一条 per_task（⛔ 不许补 0、不许跳过）
+  判定 = MISMATCH
+  理由 = 明细条数 9 ≠ recorded=10 ⇒ 明细被删或被截断（⛔ 不许补 0、不许跳过）
+  仍算得出一个数 = 0.5357000000000001
+  W1 押「理由落在 R4（条数）」                      : True
+  W1 押「不是落在 R6（数值）」                      : True
+
+[J2b] 删掉整轮明细
+  判定 = UNVERIFIABLE  理由 = `per_task` 为空 ⇒ 这次运行没有留下任何明细
+
+[J3] 改掉一个 score（0.0714 → 0.0814）
+  判定 = MISMATCH
+  理由 = 重算 0.54384 ≠ 写下的 0.54284（Δ=1.000e-03） ⇒ 结论与明细打架
+  重算值随改动变化 = True (0.54384 vs 原 0.54284)
+
+[J4] 删掉 measurement.mean
+  判定 = UNVERIFIABLE  理由 = 记录缺 `report.per_task` 或 `measurement.mean` ⇒ 没有可复核的对象
+
+[J5] 明细置空（缺席）
+  判定 = UNVERIFIABLE（⛔ 必须是 UNVERIFIABLE，不是 VERIFIED）  True
+
+[J6] 把 _fold_sum 换成内置 sum()（⛔ 补偿求和）
+  不符/不可复核 39 / 136
+  W2 押「不符数 > 0」                               : True
+  换回朴素左折叠后不符数 = 0
+
+[反证1] 让 recompute_mean 直接返回写下的 mean（只验字段在不在）
+  删一条 ⇒ MISMATCH（⛔ 必须 MISMATCH，若 VERIFIED 说明判据失效）
+  改分数 ⇒ VERIFIED（⛔ 必须 MISMATCH）
+  反证成立 = False
+
+[反证2] 删掉 R4（条数对账）后，删一条明细落到哪条规则
+  判定 = MISMATCH  理由 = 重算 0.5357000000000001 ≠ 写下的 0.54284（Δ=7.140e-03）⇒ 结论与明细打架
+
+[J7] 边界（⛔ 不是判据）：改明细**同时**把 mean 改成重算值
+  判定 = VERIFIED
+  ⇒ 审计保证的是**内部一致**，不是**真实性**：
+     抓得到「改了明细没改结论」与「改了结论没改明细」，
+     抓不到「两者一起改」。这条必须写进结果，不许说「账本不可篡改」。
+
+[缺席] ledger_audit 查一个不存在的 run_id
+  判定 = UNVERIFIABLE  理由 = 账本 145 行里没有 run_id=no-such-run-id@0 这一行
+
+[W3] 审计函数在非测试代码里的调用点
+  run.py 里 ledger_audit/audit_measurement 调用点 = 3 ['ledger_audit@1993', 'baseline_recompute_gate@2730', 'ledger_audit@2728']

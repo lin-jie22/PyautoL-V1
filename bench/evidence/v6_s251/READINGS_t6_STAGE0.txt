@@ -1,0 +1,116 @@
+
+==============================================================================
+## 17747356 [orig] s=0.00 bm=[False, False, False, False, False]
+    def fmt_amount(x):
+        return f'${x:,.2f}'.replace('-', '(-').replace('.-', '(.-')
+    T6-A: s=0.00 bm=[False, False, False, False, False]
+      def fmt_amount(x):
+          _t6 = f'${x:,.2f}'.replace('-', '(-').replace('.-', '(.-')
+          return _t6 + ')' if _t6.startswith('(') else _t6
+    T6-B: s=0.00 bm=[False, False, False, False, False]
+      def fmt_amount(x):
+          _t6 = f'${x:,.2f}'.replace('-', '(-').replace('.-', '(.-')
+          if _t6.startswith('-'):
+              _t6 = '(' + _t6[1:] + ')'
+          return _t6
+    T6-C: s=0.00 bm=[False, False, False, False, False]
+      def fmt_amount(x):
+          _t6 = f'${x:,.2f}'.replace('-', '(-').replace('.-', '(.-')
+          if _t6.startswith('(-'):
+              _t6 = '(' + _t6[2:] + ')'
+          return _t6
+    T6-BC: s=0.00 bm=[False, False, False, False, False]
+      def fmt_amount(x):
+          _t6 = f'${x:,.2f}'.replace('-', '(-').replace('.-', '(.-')
+          if _t6.startswith('(-'):
+              _t6 = '(' + _t6[2:] + ')'
+          elif _t6.startswith('-'):
+              _t6 = '(' + _t6[1:] + ')'
+          return _t6
+
+==============================================================================
+## 17747356 [U5终点] s=0.60 bm=[True, False, True, True, False]
+    def fmt_amount(x):
+        return f'{x:,.2f}'.replace('-', '(-').replace('.-', '(.-').replace(',', ' ')
+    T6-A: s=0.60 bm=[True, False, True, True, False]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'.replace('-', '(-').replace('.-', '(.-').replace(',', ' ')
+          return _t6 + ')' if _t6.startswith('(') else _t6
+    T6-B: s=0.60 bm=[True, False, True, True, False]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'.replace('-', '(-').replace('.-', '(.-').replace(',', ' ')
+          if _t6.startswith('-'):
+              _t6 = '(' + _t6[1:] + ')'
+          return _t6
+  ★ T6-C: s=1.00 bm=[True, True, True, True, True]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'.replace('-', '(-').replace('.-', '(.-').replace(',', ' ')
+          if _t6.startswith('(-'):
+              _t6 = '(' + _t6[2:] + ')'
+          return _t6
+  ★ T6-BC: s=1.00 bm=[True, True, True, True, True]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'.replace('-', '(-').replace('.-', '(.-').replace(',', ' ')
+          if _t6.startswith('(-'):
+              _t6 = '(' + _t6[2:] + ')'
+          elif _t6.startswith('-'):
+              _t6 = '(' + _t6[1:] + ')'
+          return _t6
+
+==============================================================================
+## 8c8ac7f0 [orig] s=0.20 bm=[False, False, True, False, False]
+    def fmt_amount(x):
+        return f"{x:,.2f}"
+    T6-A: s=0.20 bm=[False, False, True, False, False]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'
+          return _t6 + ')' if _t6.startswith('(') else _t6
+  ★ T6-B: s=0.40 bm=[False, False, True, False, True]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'
+          if _t6.startswith('-'):
+              _t6 = '(' + _t6[1:] + ')'
+          return _t6
+    T6-C: s=0.20 bm=[False, False, True, False, False]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'
+          if _t6.startswith('(-'):
+              _t6 = '(' + _t6[2:] + ')'
+          return _t6
+  ★ T6-BC: s=0.40 bm=[False, False, True, False, True]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'
+          if _t6.startswith('(-'):
+              _t6 = '(' + _t6[2:] + ')'
+          elif _t6.startswith('-'):
+              _t6 = '(' + _t6[1:] + ')'
+          return _t6
+
+==============================================================================
+## 8c8ac7f0 [U5终点] s=0.60 bm=[True, False, True, True, False]
+    def fmt_amount(x):
+        return f'{x:,.2f}'.replace(',', ' ')
+    T6-A: s=0.60 bm=[True, False, True, True, False]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'.replace(',', ' ')
+          return _t6 + ')' if _t6.startswith('(') else _t6
+  ★ T6-B: s=1.00 bm=[True, True, True, True, True]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'.replace(',', ' ')
+          if _t6.startswith('-'):
+              _t6 = '(' + _t6[1:] + ')'
+          return _t6
+    T6-C: s=0.60 bm=[True, False, True, True, False]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'.replace(',', ' ')
+          if _t6.startswith('(-'):
+              _t6 = '(' + _t6[2:] + ')'
+          return _t6
+  ★ T6-BC: s=1.00 bm=[True, True, True, True, True]
+      def fmt_amount(x):
+          _t6 = f'{x:,.2f}'.replace(',', ' ')
+          if _t6.startswith('(-'):
+              _t6 = '(' + _t6[2:] + ')'
+          elif _t6.startswith('-'):
+              _t6 = '(' + _t6[1:] + ')'
+          return _t6

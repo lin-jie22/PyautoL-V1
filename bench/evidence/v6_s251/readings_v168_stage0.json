@@ -1,0 +1,71 @@
+{
+ "t5cut": {
+  "n": 20,
+  "vals": [
+   "g7d3_fmt_amount:: ",
+   "g7d3_fmt_amount::(",
+   "g7d3_fmt_amount::)",
+   "g7d3_fmt_amount::,",
+   "g7d3_fmt_amount::,.2f",
+   "g7d3_fmt_amount::-",
+   "g7d3_fmt_amount::{:,.2f}",
+   "g7e1_parse_flag::0",
+   "g7e1_parse_flag::1",
+   "g7e1_parse_flag::false",
+   "g7e1_parse_flag::n",
+   "g7e1_parse_flag::no",
+   "g7e1_parse_flag::none",
+   "g7e1_parse_flag::null",
+   "g7e1_parse_flag::off",
+   "g7e1_parse_flag::on",
+   "g7e1_parse_flag::true",
+   "g7e1_parse_flag::y",
+   "g7e1_parse_flag::yes",
+   "g7e2_truncate_tail::…"
+  ]
+ },
+ "t5keep": {
+  "n": 10,
+  "vals": [
+   "g7d3_fmt_amount::$",
+   "g7d3_fmt_amount::( ",
+   "g7d3_fmt_amount::(-",
+   "g7d3_fmt_amount::(.-",
+   "g7d3_fmt_amount::.-",
+   "g7d3_fmt_amount::_,.2f",
+   "g7d3_fmt_amount::_,>.2f",
+   "g7e1_parse_flag::na",
+   "g7e1_parse_flag::unk",
+   "g7e1_parse_flag::unknown"
+  ]
+ },
+ "t2keep": {
+  "n": 12,
+  "vals": [
+   "g7e1_parse_flag::0",
+   "g7e1_parse_flag::1",
+   "g7e1_parse_flag::false",
+   "g7e1_parse_flag::n",
+   "g7e1_parse_flag::no",
+   "g7e1_parse_flag::none",
+   "g7e1_parse_flag::null",
+   "g7e1_parse_flag::off",
+   "g7e1_parse_flag::on",
+   "g7e1_parse_flag::true",
+   "g7e1_parse_flag::y",
+   "g7e1_parse_flag::yes"
+  ]
+ },
+ "t2cut": {
+  "n": 7,
+  "vals": [
+   "g7e1_parse_flag::",
+   "g7e1_parse_flag::assert",
+   "g7e1_parse_flag::is",
+   "g7e1_parse_flag::maybe",
+   "g7e1_parse_flag::na",
+   "g7e1_parse_flag::s",
+   "g7e1_parse_flag::unk"
+  ]
+ }
+}

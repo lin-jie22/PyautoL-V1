@@ -1,0 +1,117 @@
+{
+ "n_impl": 25,
+ "n_universe_real": 35,
+ "n_base_impl": 10,
+ "n_base_cells": 16,
+ "tot": {
+  "STOP": 588,
+  "NOSTOP": 2301,
+  "ASK": 2710,
+  "ASK_EARLY": 609
+ },
+ "to1": {
+  "STOP": 21,
+  "NOSTOP": 21,
+  "ASK": 21,
+  "ASK_EARLY": 21
+ },
+ "verdict": {
+  "g7d2_dedupe_keep::1ac9e8da::('key', '.strip()')": [
+   "VALID",
+   1.0,
+   1
+  ],
+  "g7d2_dedupe_keep::1ac9e8da::('key', '.strip().lower()')": [
+   "VALID",
+   1.0,
+   1
+  ],
+  "g7d2_dedupe_keep::6c9204fe::('key', '.strip()')": [
+   "VALID",
+   1.0,
+   1
+  ],
+  "g7d2_dedupe_keep::6c9204fe::('key', '.strip().lower()')": [
+   "VALID",
+   1.0,
+   1
+  ],
+  "g7d2_dedupe_keep::85e6d3bc::('key', '.strip()')": [
+   "UNTRIED",
+   null,
+   0
+  ],
+  "g7d2_dedupe_keep::85e6d3bc::('key', '.strip().lower()')": [
+   "UNTRIED",
+   null,
+   0
+  ],
+  "g7d3_fmt_amount::309f1027::('ret', \".replace(',',' ')\")": [
+   "VALID",
+   1.0,
+   1
+  ],
+  "g7d3_fmt_amount::8089eee6::('ret', \".replace(',',' ')\")": [
+   "VALID",
+   1.0,
+   1
+  ],
+  "g7e1_parse_flag::644f0618::('T2', \"'on'\")": [
+   "VALID",
+   1.0,
+   2
+  ],
+  "g7e1_parse_flag::644f0618::('T2', \"'true'\")": [
+   "VALID",
+   1.0,
+   2
+  ],
+  "g7e1_parse_flag::c1f49180::('T2', \"'on'\")": [
+   "VALID",
+   1.0,
+   2
+  ],
+  "g7e1_parse_flag::c1f49180::('T2', \"'true'\")": [
+   "VALID",
+   1.0,
+   2
+  ],
+  "g7e1_parse_flag::cd7e0eb9::('T2', \"'on'\")": [
+   "VALID",
+   1.0,
+   2
+  ],
+  "g7e1_parse_flag::cd7e0eb9::('T2', \"'true'\")": [
+   "VALID",
+   1.0,
+   2
+  ],
+  "g7e2_truncate_tail::697caecc::('C1', \"'…' + s[-n:]\")": [
+   "INVALID",
+   0.8,
+   1
+  ],
+  "g7e2_truncate_tail::c21ee3b8::('C1', \"'…' + s[-n:]\")": [
+   "INVALID",
+   0.8,
+   1
+  ]
+ },
+ "tab": {
+  "目标已正确|VALID": 12,
+  "目标已正确|UNTRIED": 2,
+  "目标待修|VALID": 14,
+  "目标已正确|INVALID": 2,
+  "目标待修|INVALID": 5
+ },
+ "base_evals": 409,
+ "nonmem": 389,
+ "alpha_ok": 10,
+ "alpha_bad": 0,
+ "w1": true,
+ "w2": true,
+ "w3": true,
+ "w4": true,
+ "w5": true,
+ "w6": true
+}

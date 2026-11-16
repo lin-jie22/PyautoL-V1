@@ -1,0 +1,73 @@
+## §0 装置自校验（⛔ 不成立则下面全部作废）
+  基线已 1.0 的实现 = 10/25（V148 记 10）｜真实格 universe_real = 35（记 35）｜基线格 = 16（记 16）
+  STOP       n_eval =   588｜到 1.0 = 21/25
+  NOSTOP     n_eval =  2301｜到 1.0 = 21/25
+  ASK        n_eval =  2710｜到 1.0 = 21/25
+  ASK_EARLY  n_eval =   609｜到 1.0 = 21/25
+  ⭐ STOP 588 / 21、NOSTOP 2301 / 21 必须逐字复现（V146/V147）
+  等价性（活跃实现的 NOSTOP 事件 == ASK 事件）：✅（坏 0）
+
+## §1 成本：短路省了多少次判分（分母 = NOSTOP 的 2301）
+  ASK        比 NOSTOP 多  409 次（×1.18，占 NOSTOP 的 17.8%）
+  ASK_EARLY  比 NOSTOP 多 -1692 次（×0.26，占 NOSTOP 的 -73.5%）
+  基线实现各自的事件数（STOP/NOSTOP 应为 0，ASK 应为该实现的 d=1 候选数）：
+  | 实现 | s0 | STOP | NOSTOP | ASK | ASK_EARLY |
+  |---|---|---|---|---|---|
+  | g7d2_d::1ac9e8da | 1.00 | 0 | 0 | 15 | 1 |
+  | g7d2_d::6c9204fe | 1.00 | 0 | 0 | 15 | 1 |
+  | g7d2_d::85e6d3bc | 1.00 | 0 | 0 | 12 | 4 |
+  | g7d3_f::309f1027 | 1.00 | 0 | 0 | 11 | 1 |
+  | g7d3_f::8089eee6 | 1.00 | 0 | 0 | 11 | 1 |
+  | g7e1_p::644f0618 | 1.00 | 0 | 0 | 112 | 3 |
+  | g7e1_p::c1f49180 | 1.00 | 0 | 0 | 117 | 3 |
+  | g7e1_p::cd7e0eb9 | 1.00 | 0 | 0 | 92 | 3 |
+  | g7e2_t::697caecc | 1.00 | 0 | 0 | 12 | 2 |
+  | g7e2_t::c21ee3b8 | 1.00 | 0 | 0 | 12 | 2 |
+
+## §2 14 个可寻址格得到什么三值（口径 = ASK 臂对该 (实现,键) 的全部判分）
+  基线格 16 个：VALID=12  INVALID=2  UNTRIED=2
+    VALID    max=1.00 n=1  g7d2_dedupe_keep     1ac9e8da  ('key', '.strip()')
+    VALID    max=1.00 n=1  g7d2_dedupe_keep     1ac9e8da  ('key', '.strip().lower()')
+    VALID    max=1.00 n=1  g7d2_dedupe_keep     6c9204fe  ('key', '.strip()')
+    VALID    max=1.00 n=1  g7d2_dedupe_keep     6c9204fe  ('key', '.strip().lower()')
+    UNTRIED  max=- n=0  g7d2_dedupe_keep     85e6d3bc  ('key', '.strip()')
+    UNTRIED  max=- n=0  g7d2_dedupe_keep     85e6d3bc  ('key', '.strip().lower()')
+    VALID    max=1.00 n=1  g7d3_fmt_amount      309f1027  ('ret', ".replace(',',' ')")
+    VALID    max=1.00 n=1  g7d3_fmt_amount      8089eee6  ('ret', ".replace(',',' ')")
+    VALID    max=1.00 n=2  g7e1_parse_flag      644f0618  ('T2', "'on'")
+    VALID    max=1.00 n=2  g7e1_parse_flag      644f0618  ('T2', "'true'")
+    VALID    max=1.00 n=2  g7e1_parse_flag      c1f49180  ('T2', "'on'")
+    VALID    max=1.00 n=2  g7e1_parse_flag      c1f49180  ('T2', "'true'")
+    VALID    max=1.00 n=2  g7e1_parse_flag      cd7e0eb9  ('T2', "'on'")
+    VALID    max=1.00 n=2  g7e1_parse_flag      cd7e0eb9  ('T2', "'true'")
+    INVALID  max=0.80 n=1  g7e2_truncate_tail   697caecc  ('C1', "'…' + s[-n:]")
+    INVALID  max=0.80 n=1  g7e2_truncate_tail   c21ee3b8  ('C1', "'…' + s[-n:]")
+
+## §3 ⭐ 交叉表：目标正确性 × 知识有效性（35 个真实格）
+  | | VALID | INVALID | UNTRIED |
+  |---|---|---|---|
+  | 目标待修 | 14 | 5 | 0 |
+  | 目标已正确 | 12 | 2 | 2 |
+  ⇒ 若两轴可互相推出，表里只会有一条对角线；四格都非空即证明两件事必须分开记。
+
+## §4 这笔钱买到什么：每次判分的去向（ASK 臂，基线实现的判分）
+  基线实现共判 409 次｜其中键不落在本实现的任何记忆格上 = 389（95.1%）
+  买到 VALID/INVALID 判定的格 = 14 ⇒ 29.2 次判分 / 格
+  答案（s1）变化：STOP → ASK 逐实现 s1 有差异 = 0 个
+  轮次（结构性）：ASK 臂基线实现的事件轮次分布 = {1: 409}
+
+## §5 反证组
+  C1 伪键 ('Z9', 'nonsense') 在 ASK 臂被判过 0 次 ⇒ ✅ 「没判定」不是「判定成伪键」
+  C2 短路确实省了钱：NOSTOP 里基线实现的判分 = 0（应为 0）｜ASK 里 = 409 ⇒ 省下的正是这 409 次
+  C3 计数器两侧都非空：拿到判定的格 = 14｜一直没判到的格 = 2（V148 枚举预测 2 个硬墙）
+  C4 正例路径（语义等价变换能被判成 VALID）：10/10 个基线实现的 alpha 改名版 bitmap 逐位相同 ⇒ ✅ 检测器能输出 VALID
+
+## §6 判据（预注册 §4）
+  W1 ✅ 自校验 STOP 588/21、NOSTOP 2301/21、等价性✅
+  W2 ✅ 不短路也不会更深：基线实现的事件轮次分布 = {1: 409}（押全在 rnd=1）
+  W3 ✅ 16 格里拿到三值 = 14、一直没判到 = 2（押 14 / 2，与 V148 枚举独立吻合）
+  W4 ✅ 答案不变：25 个实现 s1 逐实现相同 = 25/25
+  W5 ✅ 反证三条：伪键 0 次｜NOSTOP 基线判分 0｜alpha 正例 10/10
+  W6 ✅ 两轴不可互推：目标已正确 × VALID 12 / INVALID 2（四格都非空才算）
+
+  已落盘 `readings.json`

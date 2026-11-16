@@ -1,0 +1,7 @@
+{
+ "constructed": 39072,
+ "cell_pairs": 3142,
+ "ev_calls": 3126,
+ "pairs_all": 80737,
+ "per_impl_keys": 528
+}

@@ -1,0 +1,31 @@
+# V152 跑前量测（来源 v6_s240/readings.json，C_FULL 臂的 35 格）
+格总数 = 35｜有实例的格 = 33
+
+## P1 键的样本量：不同的键 = 6 条
+| 键 | 题 | 覆盖实现数 | n_c 明细 |
+|---|---|---|---|
+| `('ret', ".replace(',',' ')")` | g7d3_fmt_amount | 8 | [6, 7, 8, 12, 12, 12, 12, 12] |
+| `('T2', "'on'")` | g7e1_parse_flag | 8 | [163, 163, 183, 203, 203, 213, 213, 233] |
+| `('T2', "'true'")` | g7e1_parse_flag | 7 | [163, 183, 203, 203, 213, 213, 233] |
+| `('key', '.strip()')` | g7d2_dedupe_keep | 4 | [0, 5, 5, 5] |
+| `('key', '.strip().lower()')` | g7d2_dedupe_keep | 4 | [0, 5, 5, 5] |
+| `('C1', "'…' + s[-n:]")` | g7e2_truncate_tail | 4 | [11, 11, 12, 12] |
+
+## P2 键与题可分离吗：每条键只落在 1 个题上 = True
+题 → 键数：{'g7d2_dedupe_keep': 2, 'g7d3_fmt_amount': 1, 'g7e1_parse_flag': 2, 'g7e2_truncate_tail': 1}
+⇒ 有键内对比的题 = ['g7d2_dedupe_keep', 'g7e1_parse_flag']（格 23）｜单键题 = ['g7d3_fmt_amount', 'g7e2_truncate_tail']（格 12，这些格上「键级」= 「题级」恒等）
+
+## P3 每个实现的键数：{1: 15, 2: 10}（实现-键格 = 25）
+
+## P4 留一法（LOO）每格可用的「同键其他格」数
+  每个格的同键其他格数分布 = {3: 12, 6: 7, 7: 16}｜最小 3｜中位 6
+
+## P5 分母 n_c（有实例的 33 格）：min 5｜median 12｜max 233｜极差 47×
+  按题：
+    g7d2_dedupe_keep     n=6  min 5｜max 5
+    g7d3_fmt_amount      n=8  min 6｜max 12
+    g7e1_parse_flag      n=15  min 163｜max 233
+    g7e2_truncate_tail   n=4  min 11｜max 12
+
+## P6 成本：V151 已量过，C_FULL 的重算 = 39072 次 `ev`（618 ev/s ⇒ ~63s）
+  本轮不新增任何判分口径，只把「每格 1.0 实例数」记下来（V151 只记了 max/min）。

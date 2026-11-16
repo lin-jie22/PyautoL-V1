@@ -1,0 +1,89 @@
+## §1 键宇宙：深度 1 vs 深度 2（零判分）
+  g7d2_d 1ac9e8da  d1 keys= 15 nodes=  11｜d2 keys= 15 nodes=   54｜d2⊆d1 ✅｜d2−d1=0
+  g7d2_d 480ada8e  d1 keys= 15 nodes=  11｜d2 keys= 15 nodes=   54｜d2⊆d1 ✅｜d2−d1=0
+  g7d2_d 6c9204fe  d1 keys= 15 nodes=  11｜d2 keys= 15 nodes=   54｜d2⊆d1 ✅｜d2−d1=0
+  g7d2_d 74aa48d8  d1 keys= 12 nodes=  10｜d2 keys= 12 nodes=   49｜d2⊆d1 ✅｜d2−d1=0
+  g7d2_d 85e6d3bc  d1 keys= 12 nodes=   8｜d2 keys= 12 nodes=   39｜d2⊆d1 ✅｜d2−d1=0
+  g7d3_f 075b4099  d1 keys= 11 nodes=  11｜d2 keys= 11 nodes=   88｜d2⊆d1 ✅｜d2−d1=0
+  g7d3_f 0a6acc93  d1 keys= 11 nodes=  11｜d2 keys= 11 nodes=   88｜d2⊆d1 ✅｜d2−d1=0
+  g7d3_f 17747356  d1 keys=  5 nodes=   5｜d2 keys=  5 nodes=   30｜d2⊆d1 ✅｜d2−d1=0
+  g7d3_f 309f1027  d1 keys= 11 nodes=  11｜d2 keys= 11 nodes=   88｜d2⊆d1 ✅｜d2−d1=0
+  g7d3_f 419ec792  d1 keys= 11 nodes=  11｜d2 keys= 11 nodes=   88｜d2⊆d1 ✅｜d2−d1=0
+  g7d3_f 5755e033  d1 keys=  6 nodes=   6｜d2 keys=  6 nodes=   42｜d2⊆d1 ✅｜d2−d1=0
+  g7d3_f 8089eee6  d1 keys= 11 nodes=  11｜d2 keys= 11 nodes=   88｜d2⊆d1 ✅｜d2−d1=0
+  g7d3_f 8c8ac7f0  d1 keys=  7 nodes=   7｜d2 keys=  7 nodes=   56｜d2⊆d1 ✅｜d2−d1=0
+  g7e1_p 1aa5099d  d1 keys= 48 nodes= 106｜d2 keys= 48 nodes= 5499｜d2⊆d1 ✅｜d2−d1=0
+  g7e1_p 200ebf6e  d1 keys= 38 nodes=  81｜d2 keys= 38 nodes= 3234｜d2⊆d1 ✅｜d2−d1=0
+  g7e1_p 37a4f17f  d1 keys= 46 nodes= 101｜d2 keys= 46 nodes= 4998｜d2⊆d1 ✅｜d2−d1=0
+  g7e1_p 644f0618  d1 keys= 46 nodes= 101｜d2 keys= 46 nodes= 4998｜d2⊆d1 ✅｜d2−d1=0
+  g7e1_p a579b07a  d1 keys= 52 nodes= 116｜d2 keys= 52 nodes= 6573｜d2⊆d1 ✅｜d2−d1=0
+  g7e1_p c1f49180  d1 keys= 48 nodes= 106｜d2 keys= 48 nodes= 5499｜d2⊆d1 ✅｜d2−d1=0
+  g7e1_p cd7e0eb9  d1 keys= 38 nodes=  81｜d2 keys= 38 nodes= 3234｜d2⊆d1 ✅｜d2−d1=0
+  g7e1_p f2d1efa6  d1 keys= 42 nodes=  91｜d2 keys= 42 nodes= 4068｜d2⊆d1 ✅｜d2−d1=0
+  g7e2_t 697caecc  d1 keys=  7 nodes=  10｜d2 keys=  7 nodes=   73｜d2⊆d1 ✅｜d2−d1=0
+  g7e2_t 8184ec4d  d1 keys=  7 nodes=  12｜d2 keys=  7 nodes=   84｜d2⊆d1 ✅｜d2−d1=0
+  g7e2_t bc8c4b09  d1 keys=  7 nodes=  12｜d2 keys=  7 nodes=   84｜d2⊆d1 ✅｜d2−d1=0
+  g7e2_t c21ee3b8  d1 keys=  7 nodes=  10｜d2 keys=  7 nodes=   73｜d2⊆d1 ✅｜d2−d1=0
+
+  汇总：d2⊆d1 的实现数 = 25/25｜d2 新增键总数 = 0｜「新造站点」计数 = 0｜被截断 = 0
+
+## §2 覆盖对照：NOSTOP 判过的键（2301 次判分，同 V147 装置）
+  覆盖 = 19/35｜missed = 16（V147 记 19/35、16）
+  「深度 1 可产出但 NOSTOP 一次都没判过」的 (实现, 键数) = 12 处｜合计键 = 212｜其中属于**活跃**实现 = 2 处 / 2 个键
+    基线 g7d2_d 1ac9e8da  未判过的键 = 15/15
+    活跃 g7d2_d 480ada8e  未判过的键 = 1/15
+    基线 g7d2_d 6c9204fe  未判过的键 = 15/15
+    活跃 g7d2_d 74aa48d8  未判过的键 = 1/12
+    基线 g7d2_d 85e6d3bc  未判过的键 = 12/12
+    基线 g7d3_f 309f1027  未判过的键 = 11/11
+    基线 g7d3_f 8089eee6  未判过的键 = 11/11
+    基线 g7e1_p 644f0618  未判过的键 = 46/46
+
+## §3 19 个已覆盖格：键在深度 1 键集里吗（W1 自校验）
+  在 = 19/19  ✅
+
+## §4 16 个 missed 格：可寻址（软）还是产不出（硬）
+  g7d2_dedupe_keep       1ac9e8da  ('key', '.strip()')            软（可寻址）
+  g7d2_dedupe_keep       1ac9e8da  ('key', '.strip().lower()')    软（可寻址）
+  g7d2_dedupe_keep       6c9204fe  ('key', '.strip()')            软（可寻址）
+  g7d2_dedupe_keep       6c9204fe  ('key', '.strip().lower()')    软（可寻址）
+  g7d2_dedupe_keep       85e6d3bc  ('key', '.strip()')            硬（产不出）：无 `In` + 同容器 `.add(var)` 对
+  g7d2_dedupe_keep       85e6d3bc  ('key', '.strip().lower()')    硬（产不出）：无 `In` + 同容器 `.add(var)` 对
+  g7d3_fmt_amount        309f1027  ('ret', ".replace(',',' ')")   软（可寻址）
+  g7d3_fmt_amount        8089eee6  ('ret', ".replace(',',' ')")   软（可寻址）
+  g7e1_parse_flag        644f0618  ('T2', "'on'")                 软（可寻址）
+  g7e1_parse_flag        644f0618  ('T2', "'true'")               软（可寻址）
+  g7e1_parse_flag        c1f49180  ('T2', "'on'")                 软（可寻址）
+  g7e1_parse_flag        c1f49180  ('T2', "'true'")               软（可寻址）
+  g7e1_parse_flag        cd7e0eb9  ('T2', "'on'")                 软（可寻址）
+  g7e1_parse_flag        cd7e0eb9  ('T2', "'true'")               软（可寻址）
+  g7e2_truncate_tail     697caecc  ('C1', "'…' + s[-n:]")         软（可寻址）
+  g7e2_truncate_tail     c21ee3b8  ('C1', "'…' + s[-n:]")         软（可寻址）
+
+  软 = 14｜硬 = 2
+
+## §4b 跑后诊断（⛔ 未预注册）：第三层分母 —— 「已经答对的实现」没有自省问题
+  基线已到 1.0 的实现 = 10/25（`v121.search:77-78` 在 `s0>=1.0` 时**直接返回，一次也不搜**）
+  ⇒ 这些实现的格在 60 格口径下占 26 个
+  missed 分组：属于基线实现（问题为空） = 16｜属于活跃实现（真有问题） = 0
+  活跃格 = 19｜其中被覆盖 = 19｜没触到 = 0
+
+## §5 硬墙的成因分布
+   2 × 无 `In` + 同容器 `.add(var)` 对
+  缺失站点汇总（只看硬墙所在实现）：
+    g7d2_dedupe_keep       85e6d3bc  sites={'ret_c': 0, 'ret_any': 1, 'in_cont': 0, 'cmp_name': 1, 'pair': 0}｜chains=3｜exprs=0
+    g7d2_dedupe_keep       85e6d3bc  sites={'ret_c': 0, 'ret_any': 1, 'in_cont': 0, 'cmp_name': 1, 'pair': 0}｜chains=3｜exprs=0
+
+## §6 反证组（W5）
+  C1 伪键 ('Z9', 'nonsense') 出现在任何实现的键集里？0 处 ⇒ ✅ 能说「产不出」
+  C2 已覆盖 19 格全部可产出？✅（19/19）
+  C3 「新造站点」计数 = 0 ⇒ ✅ 站点单调（没有模板新增站点）
+
+## §7 判据（预注册 §4）
+  W1 ✅ 已覆盖格键在 d1 键集里 19/19
+  W2 ✅ d2 键集 == d1 键集：25/25（d2 多出 0 个键）
+  W3 ⛔ missed 里可寻址（软）= 14（押 0）
+  W4 ✅ 硬墙归因覆盖 = 2/2
+  W5 ✅ 反证三条：伪键 0 处｜已覆盖 19/19｜新造站点 0
+
+  已落盘 `readings.json`

@@ -1,0 +1,68 @@
+{
+ "per_impl": {
+  "g7d2_dedupe_keep::480ada8e": {
+   "n": 14,
+   "fresh": 11
+  },
+  "g7d2_dedupe_keep::74aa48d8": {
+   "n": 1,
+   "fresh": 1
+  },
+  "g7d3_fmt_amount::075b4099": {
+   "n": 1,
+   "fresh": 1
+  },
+  "g7d3_fmt_amount::0a6acc93": {
+   "n": 11,
+   "fresh": 11
+  },
+  "g7d3_fmt_amount::17747356": {
+   "n": 5,
+   "fresh": 5
+  },
+  "g7d3_fmt_amount::419ec792": {
+   "n": 1,
+   "fresh": 1
+  },
+  "g7d3_fmt_amount::5755e033": {
+   "n": 6,
+   "fresh": 6
+  },
+  "g7d3_fmt_amount::8c8ac7f0": {
+   "n": 21,
+   "fresh": 21
+  },
+  "g7e1_parse_flag::1aa5099d": {
+   "n": 119,
+   "fresh": 109
+  },
+  "g7e1_parse_flag::200ebf6e": {
+   "n": 59,
+   "fresh": 59
+  },
+  "g7e1_parse_flag::37a4f17f": {
+   "n": 114,
+   "fresh": 104
+  },
+  "g7e1_parse_flag::a579b07a": {
+   "n": 129,
+   "fresh": 119
+  },
+  "g7e1_parse_flag::f2d1efa6": {
+   "n": 104,
+   "fresh": 94
+  },
+  "g7e2_truncate_tail::8184ec4d": {
+   "n": 1,
+   "fresh": 1
+  },
+  "g7e2_truncate_tail::bc8c4b09": {
+   "n": 2,
+   "fresh": 2
+  }
+ },
+ "total": 588,
+ "fresh": 545,
+ "dup": 43,
+ "note": "ev 有 CACHE ⇒ 墙钟 0，仅账本口径"
+}

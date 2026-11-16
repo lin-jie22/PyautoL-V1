@@ -1,0 +1,347 @@
+{
+ "total": 588,
+ "per_impl": {
+  "g7d2_dedupe_keep::1ac9e8da": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7d2_dedupe_keep::480ada8e": {
+   "n": 14,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    3
+   ],
+   "evicted": [
+    1
+   ],
+   "mem_n": 1,
+   "mem_hit": false,
+   "mem_pools": []
+  },
+  "g7d2_dedupe_keep::6c9204fe": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7d2_dedupe_keep::74aa48d8": {
+   "n": 1,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    0
+   ],
+   "evicted": [
+    0
+   ],
+   "mem_n": 1,
+   "mem_hit": true,
+   "mem_pools": [
+    0
+   ]
+  },
+  "g7d2_dedupe_keep::85e6d3bc": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7d3_fmt_amount::075b4099": {
+   "n": 1,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    0
+   ],
+   "evicted": [
+    0
+   ],
+   "mem_n": 1,
+   "mem_hit": true,
+   "mem_pools": [
+    0
+   ]
+  },
+  "g7d3_fmt_amount::0a6acc93": {
+   "n": 11,
+   "hit": false,
+   "s1": 0.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 1,
+   "mem_hit": false,
+   "mem_pools": []
+  },
+  "g7d3_fmt_amount::17747356": {
+   "n": 5,
+   "hit": false,
+   "s1": 0.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 1,
+   "mem_hit": false,
+   "mem_pools": []
+  },
+  "g7d3_fmt_amount::309f1027": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7d3_fmt_amount::419ec792": {
+   "n": 1,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    0
+   ],
+   "evicted": [
+    0
+   ],
+   "mem_n": 1,
+   "mem_hit": true,
+   "mem_pools": [
+    0
+   ]
+  },
+  "g7d3_fmt_amount::5755e033": {
+   "n": 6,
+   "hit": false,
+   "s1": 0.6,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 1,
+   "mem_hit": false,
+   "mem_pools": []
+  },
+  "g7d3_fmt_amount::8089eee6": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7d3_fmt_amount::8c8ac7f0": {
+   "n": 21,
+   "hit": false,
+   "s1": 0.6,
+   "pools": [
+    2
+   ],
+   "evicted": [
+    0
+   ],
+   "mem_n": 2,
+   "mem_hit": false,
+   "mem_pools": [
+    1
+   ]
+  },
+  "g7e1_parse_flag::1aa5099d": {
+   "n": 119,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    3,
+    0
+   ],
+   "evicted": [
+    1,
+    0
+   ],
+   "mem_n": 7,
+   "mem_hit": true,
+   "mem_pools": [
+    2,
+    0
+   ]
+  },
+  "g7e1_parse_flag::200ebf6e": {
+   "n": 59,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    1
+   ],
+   "evicted": [
+    0
+   ],
+   "mem_n": 2,
+   "mem_hit": false,
+   "mem_pools": []
+  },
+  "g7e1_parse_flag::37a4f17f": {
+   "n": 114,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    3,
+    0
+   ],
+   "evicted": [
+    1,
+    0
+   ],
+   "mem_n": 7,
+   "mem_hit": true,
+   "mem_pools": [
+    2,
+    0
+   ]
+  },
+  "g7e1_parse_flag::644f0618": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7e1_parse_flag::a579b07a": {
+   "n": 129,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    3,
+    0
+   ],
+   "evicted": [
+    1,
+    0
+   ],
+   "mem_n": 7,
+   "mem_hit": true,
+   "mem_pools": [
+    2,
+    0
+   ]
+  },
+  "g7e1_parse_flag::c1f49180": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7e1_parse_flag::cd7e0eb9": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7e1_parse_flag::f2d1efa6": {
+   "n": 104,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    3,
+    0
+   ],
+   "evicted": [
+    1,
+    0
+   ],
+   "mem_n": 7,
+   "mem_hit": true,
+   "mem_pools": [
+    2,
+    0
+   ]
+  },
+  "g7e2_truncate_tail::697caecc": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  },
+  "g7e2_truncate_tail::8184ec4d": {
+   "n": 1,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    0
+   ],
+   "evicted": [
+    0
+   ],
+   "mem_n": 1,
+   "mem_hit": true,
+   "mem_pools": [
+    0
+   ]
+  },
+  "g7e2_truncate_tail::bc8c4b09": {
+   "n": 2,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [
+    0
+   ],
+   "evicted": [
+    0
+   ],
+   "mem_n": 2,
+   "mem_hit": true,
+   "mem_pools": [
+    0
+   ]
+  },
+  "g7e2_truncate_tail::c21ee3b8": {
+   "n": 0,
+   "hit": true,
+   "s1": 1.0,
+   "pools": [],
+   "evicted": [],
+   "mem_n": 0,
+   "mem_hit": true,
+   "mem_pools": []
+  }
+ },
+ "width_dist": {
+  "0": 9,
+  "1": 1,
+  "2": 1,
+  "3": 5
+ },
+ "mem_width_dist": {
+  "0": 9,
+  "1": 1,
+  "2": 4
+ },
+ "cache_len": 569
+}

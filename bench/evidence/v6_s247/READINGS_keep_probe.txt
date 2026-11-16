@@ -1,0 +1,29 @@
+## §0 集中度（BASE, kept=2）
+  总判分 = 588（记 588）
+  最大实现 = g7e1_parse_flag::a579b07a → 129 次（21.9%）
+    g7e1_parse_flag::a579b07a n=129 hit=True s1=1.00 pools=[3, 0] evicted=1
+    g7e1_parse_flag::1aa5099d n=119 hit=True s1=1.00 pools=[3, 0] evicted=1
+    g7e1_parse_flag::37a4f17f n=114 hit=True s1=1.00 pools=[3, 0] evicted=1
+    g7e1_parse_flag::f2d1efa6 n=104 hit=True s1=1.00 pools=[3, 0] evicted=1
+    g7e1_parse_flag::200ebf6e n= 59 hit=True s1=1.00 pools=[1] evicted=0
+    g7d3_fmt_amount::8c8ac7f0 n= 21 hit=False s1=0.60 pools=[2] evicted=0
+
+## §1 池宽分布（BASE）
+  逐轮池宽（16 轮）：{0: 9, 1: 1, 2: 1, 3: 5}
+  有过挤掉的实现 = 5/25（其中真的搜索的 = 15）
+  被挤掉的节点总数 = 5（kept=3 时要多展开的节点数下界）
+    g7d2_dedupe_keep::480ada8e n=14 hit=True pools=[3] evicted=1
+    g7e1_parse_flag::1aa5099d n=119 hit=True pools=[3, 0] evicted=1
+    g7e1_parse_flag::37a4f17f n=114 hit=True pools=[3, 0] evicted=1
+    g7e1_parse_flag::f2d1efa6 n=104 hit=True pools=[3, 0] evicted=1
+
+## §2 MEM 下的池宽（kept 是否生效）
+  逐轮池宽（14 轮）：{0: 9, 1: 1, 2: 4}
+  池宽 > 2 的轮数 = 0｜被挤掉节点 = 0
+  MEM 总判分 = 42（记 42）｜命中 19（记 19）
+
+## §3 阶梯实现 a579b07a 的逐轮细节（BASE vs MEM）
+  BASE: n=129 hit=True s1=1.00 pools=[3, 0] evicted=[1, 0]
+  MEM : n=7 hit=True s1=1.00 pools=[2, 0] evicted=[0, 0]
+
+  CACHE 条目 = 569（纪律 73：构造过的 ≠ 看过的）

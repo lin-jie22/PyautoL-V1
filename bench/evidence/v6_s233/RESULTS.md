@@ -5,6 +5,8 @@
 - 证据：`READINGS_probe.txt`（跑前）、`READINGS.txt` / `readings.json`（判据读数）、
   `READINGS_v1_misread.txt`（判读写反的第一次，留证）、`probe_recompute.py`、`consume.py`
 - 改动：`mw/bench.py` +~180 行、`run.py` +~22 行、契约 +7 条（`AZ130a~g`）、撤回态 +7（245）
+- 门禁：`run_tests.sh` **EXIT=0**、契约 **664/0**、锚层 97/0、`check_counts` **0 漂移**、
+  撤回态 **245**（新增 7 条逐条演练通过；2 条多红已按 `COUPLED` 登记）
 
 ---
 

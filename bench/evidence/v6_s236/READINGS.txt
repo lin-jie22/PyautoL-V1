@@ -1,0 +1,106 @@
+## §-1 通道取证：记忆条目的消费点（零判分）
+  v121.py:144  mine = {(a, b) for k in mem[tid] if k["h"] != h for a, b in [tuple(k["act"])]}
+  v121.py:167  bad.add(tuple(k["act"]))
+  v146.py:103  mine = {(a, b) for k in mem[tid] if k["h"] != h for a, b in [tuple(k["act"])]}
+  v146.py:147  if tuple(it["act"]) != ("?", "<baseline>")]
+  v146.py:150  k = tuple(it["act"])
+  v147.py:92  mine = {(a, b) for k in mem[tid] if k["h"] != h for a, b in [tuple(k["act"])]}
+  v147.py:155  if '["act"]' in ln or "['act']" in ln]
+  v147.py:182  uni_all.add((tid, h, tuple(k["act"])))
+  ⇒ 每一处都只是把 `act` 变成**集合/元组**用于 `k in mine` 排序；
+     没有任何一处用它构造候选。候选唯一来源 = `X.gen(...)`，
+     `X.abstract(lab)` 只是事后**读**出来的标签。
+
+## §0 装置自校验（⛔ 不成立则下面全部作废）
+  STOP   n_eval = 588（V146 记 588）｜到 1.0 = 21/25（记 21）
+  NOSTOP n_eval = 2301｜到 1.0 = 21/25
+  前缀性（逐实现：NOSTOP 的前 n_eval 个事件 == STOP 全部事件）：✅（25 个实现，坏 0）
+  答案不变：逐实现 s1 有差异的实现数 = 0
+
+## §0b 格的两个分母（纪律 46）
+  universe_all  = 60（V146 口径：本 tid 的、来自别的实现的记忆条目）
+  其中哨兵格（键 == ('?', '<baseline>')，没有任何候选能命中）= 25
+  universe_real = 35  ← 本轮判据用这个分母
+
+## §1 曲线：前 N 次判分买到多少格（分母 universe_real = 35）
+  | N | STOP 覆盖 | STOP 成立 | NOSTOP 覆盖 | NOSTOP 成立 |
+  |---|---|---|---|---|
+  | 0 | 0 | 0 | 0 | 0 |
+  | 25 | 4 | 2 | 1 | 0 |
+  | 50 | 8 | 3 | 3 | 2 |
+  | 100 | 10 | 3 | 6 | 3 |
+  | 150 | 10 | 3 | 8 | 3 |
+  | 200 | 11 | 4 | 10 | 3 |
+  | 250 | 13 | 4 | 10 | 3 |
+  | 300 | 13 | 4 | 10 | 4 |
+  | 350 | 13 | 4 | 10 | 4 |
+  | 400 | 15 | 5 | 10 | 4 |
+  | 450 | 15 | 5 | 10 | 4 |
+  | 500 | 17 | 6 | 10 | 4 |
+  | 550 | 17 | 6 | 10 | 5 |
+  | 588 | 19 | 9 | 10 | 5 |
+
+## §2 四分类（每次判分归一类，互斥；分母 = 该臂的全部判分）
+  STOP    NONMEM= 545  NEW= 19  RESOLVE=  5  REFINE=  19
+  NOSTOP  NONMEM=2211  NEW= 19  RESOLVE= 10  REFINE=  61
+  ⇒ 部署预算的 92.7% 花在**与记忆无关**的候选上（545/588）
+  追加段（第 589~2301 次）：NEW=0 RESOLVE=5｜每 100 次新判分买到新格 = 0.00
+
+## §3 覆盖上界诊断：NOSTOP 之后仍然没试到的格（口径 universe_real）
+  没试到的格 = 16/35
+    两条路径（冷启动 1381 次 + 本轮 NOSTOP 2301 次）都没生成过该键 = 16
+    冷启动生成过、本臂没排到 = 0
+      g7d2_dedupe_keep       1ac9e8da  ('key', '.strip()')            cold_tries=0
+      g7d2_dedupe_keep       1ac9e8da  ('key', '.strip().lower()')    cold_tries=0
+      g7d2_dedupe_keep       6c9204fe  ('key', '.strip()')            cold_tries=0
+      g7d2_dedupe_keep       6c9204fe  ('key', '.strip().lower()')    cold_tries=0
+      g7d2_dedupe_keep       85e6d3bc  ('key', '.strip()')            cold_tries=0
+      g7d2_dedupe_keep       85e6d3bc  ('key', '.strip().lower()')    cold_tries=0
+      g7d3_fmt_amount        309f1027  ('ret', ".replace(',',' ')")   cold_tries=0
+      g7d3_fmt_amount        8089eee6  ('ret', ".replace(',',' ')")   cold_tries=0
+      g7e1_parse_flag        644f0618  ('T2', "'on'")                 cold_tries=0
+      g7e1_parse_flag        644f0618  ('T2', "'true'")               cold_tries=0
+      g7e1_parse_flag        c1f49180  ('T2', "'on'")                 cold_tries=0
+      g7e1_parse_flag        c1f49180  ('T2', "'true'")               cold_tries=0
+      g7e1_parse_flag        cd7e0eb9  ('T2', "'on'")                 cold_tries=0
+      g7e1_parse_flag        cd7e0eb9  ('T2', "'true'")               cold_tries=0
+      g7e2_truncate_tail     697caecc  ('C1', "'…' + s[-n:]")         cold_tries=0
+      g7e2_truncate_tail     c21ee3b8  ('C1', "'…' + s[-n:]")         cold_tries=0
+  对照：V146 口径（universe_all=60）下没试到 = 41/60（其中 25 个是哨兵格，结构上不可能被命中）
+
+## §3b 跑后诊断（⛔ 未预注册）：NEW 事件发生在第几轮
+  STOP    NEW 的轮次分布 = {1: 19}｜第 1 轮占比 = 100.0%
+  NOSTOP  NEW 的轮次分布 = {1: 19}｜第 1 轮占比 = 100.0%
+
+## §4 反证（预注册 §4 的 W5）：反转事件序列
+  正序 coverage(588) = 19｜反序 coverage(588) = 19
+  ⇒ ⛔ 顺序无关
+  ⚠️ 这个反证**结构上不可能变**：反转一个排列不改变它在全长上的集合。
+     ⇒ W5/R3 的押破是**装置自证不可能**（纪律 47），不是对世界的读数。
+
+## §4b 修正后的灵敏度对照（跑后补，替代无效的 W5）
+  C1 计数器随预算动：coverage 序列 = [0, 4, 8, 10, 10, 11, 13, 13] … → 19
+  C2 匹配器两侧都非空：认出 19 格｜判「从未出现」16 格
+  C3 换分母只改分母、不改分子：19/35 = 54.3%｜19/60 = 31.7%（V146 口径，哨兵格永远进不了分子）
+
+## §5 拐点（达到终值某比例所需的最小预算；描述性，不押）
+   25% of NOSTOP(19) =   5 格 → N=92
+   50% of NOSTOP(19) =  10 格 → N=158
+   75% of NOSTOP(19) =  15 格 → N=1341
+   90% of NOSTOP(19) =  18 格 → N=2250
+  100% of NOSTOP(19) =  19 格 → N=2276
+  STOP 在 N=588 处覆盖 19 = NOSTOP 终值的 100.0%
+
+## §6 判据（预注册 §4）
+  W1 ✅ 自校验 588/21/前缀✅/NOSTOP 21 —— 588/21/21
+  W2 ⛔ 追加预算买到新格：coverage 19 → 19（+0，预算 ×3.91）
+  W3 ✅ 结构性上界：coverage(NOSTOP)=19 < |universe_real|=35
+  W4 ✅ 到 1.0 21 → 21；s1 有差异的实现 0 个
+  W5 ⛔ 反序 coverage 19 ≠ 正序 19
+
+## §7 反证组（预注册 §5）
+  R1 ✅ STOP == 588/21
+  R2 ✅ 前缀性 25/25
+  R3 ⛔ 反转改变覆盖
+
+  已落盘 `readings.json`

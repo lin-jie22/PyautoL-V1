@@ -1,0 +1,12 @@
+{
+ "n_obs": 36,
+ "n_bad": 0,
+ "kinds": {
+  "PROBE": 6,
+  "COVER": 34
+ },
+ "multi_cells": 8,
+ "multi_same": 5,
+ "raise_cells": [],
+ "gid_stable": {}
+}

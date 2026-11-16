@@ -2909,9 +2909,12 @@ def _goals_main(args) -> int:
     suite_ids = [tid for ids in suites.values() for tid in ids]
     log_rows = G.load(log_path)
     done = G.done_gids(log_rows)
+    # 「测量路径已用尽」的格 —— **每轮从账本重算**，⛔ 不是持久化状态位。
+    # 这样换了模型、均分真上去了，这条判定会自动消失（fail-open）。
+    esc = G.escalations(log_rows, obs)
 
     covered = sorted({o["task_id"] for o in obs} & set(suite_ids))
-    goals = G.propose(obs, suite_ids, done=done)
+    goals = G.propose(obs, suite_ids, done=done, escalated=list(esc))
 
     print("=" * 74)
     print("L5 自主目标 —— 目标来自**自己的账本**，不是 `--goal`")
@@ -2925,6 +2928,11 @@ def _goals_main(args) -> int:
     print(f"  提议    {len(goals)} 条：" + "｜".join(f"{k} {v}" for k, v in kinds.items()))
     print()
     print(G.render(goals, obs))
+    print()
+    # ⚠️ 这一节必须**永远**打印，哪怕 0 条：ESCALATE 的格提不出目标，
+    #    如果连这一节都省掉，它们就从输出里彻底消失了 —— 「许撤不许藏」。
+    print(f"--- 已转运维 {len(esc)} 格（测量已用尽，不再重复提；⛔ 不是做到了）---")
+    print(G.render_escalations(esc))
     print()
 
     acted: list[dict] = []
@@ -2983,8 +2991,13 @@ def _goals_main(args) -> int:
 
         print()
         print("--- 执行后重新提议（已 MET 的 gid 不该再出现）---")
+        # ⚠️ 重新算一次：本轮新记的 NOT_MET 可能刚好把某格凑够 k 次 ⇒ 当场转运维。
+        esc2 = G.escalations(G.load(log_path), obs)
         again = G.propose(obs, suite_ids, done=done + G.done_gids(
-            [a for a in acted if a["verdict"] == "MET"]))
+            [a for a in acted if a["verdict"] == "MET"]), escalated=list(esc2))
+        if set(esc2) - set(esc):
+            print(f"  ⚑ 本轮新转运维：{sorted(set(esc2) - set(esc))}")
+        esc = esc2
         same_cell = [g for g in again if g.cell in {a["cell"] for a in acted}]
         if same_cell:
             for g in same_cell:
@@ -2995,7 +3008,8 @@ def _goals_main(args) -> int:
     print()
     print(f"  判据行  提议={len(goals)} 执行={len(acted)} "
           f"MET={sum(1 for a in acted if a['verdict'] == 'MET')} "
-          f"NOT_MET={sum(1 for a in acted if a['verdict'] == 'NOT_MET')}")
+          f"NOT_MET={sum(1 for a in acted if a['verdict'] == 'NOT_MET')} "
+          f"转运维={len(esc)}")
     if args.goals_json:
         outp = Path(args.goals_json).expanduser()
         outp.parent.mkdir(parents=True, exist_ok=True)
@@ -3005,6 +3019,8 @@ def _goals_main(args) -> int:
             "n_covered": len(covered),
             "goals": [g.as_dict() for g in goals],
             "acted": acted,
+            "escalations": {c: e for c, e in esc.items()},
+            "escalated_cells": sorted(esc),
             "reproposed": [g.as_dict() for g in again],
         }, ensure_ascii=False, indent=1), encoding="utf-8")
         print(f"  读数     {outp}")

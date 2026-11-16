@@ -1853,6 +1853,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
             ok = ok and (got >= want)''',
      '''        if op == ">=":
             ok = ok and True'''),
+    # ── 「做不到」写进账本（V171）：把「**连**判 k 次」数成「失败总次数」 ──
+    #    ⛔ 这是最顺手的错解：`NOT_MET, MET, NOT_MET, NOT_MET` 末尾只连 2 次，
+    #    但「失败总数 3 次」也成立 ⇒ 一个已经恢复过的格会被判成「测不动」，
+    #    从此不再提 —— 做不成的被悄悄丢掉，且账本上看起来完全合理。
+    ("AZ133b", "mw/goals.py",
+     '''        tail: list[dict] = []
+        for r in reversed(rows):
+            if r.get("verdict") != "NOT_MET":
+                break
+            tail.append(r)
+        tail.reverse()''',
+     '''        tail = [r for r in rows if r.get("verdict") == "NOT_MET"]'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

@@ -1,0 +1,124 @@
+{
+ "cell": "t06_rle",
+ "rounds": 8,
+ "arm": "A_noesc",
+ "rows": [
+  {
+   "round": 1,
+   "kinds_before": [
+    "COVER"
+   ],
+   "acted_kind": "COVER",
+   "verdict": "MET",
+   "n_obs": 1,
+   "mean": 0.0,
+   "kinds_after": [
+    "PROBE"
+   ],
+   "n_raise_after": 0
+  },
+  {
+   "round": 2,
+   "kinds_before": [
+    "PROBE"
+   ],
+   "acted_kind": "PROBE",
+   "verdict": "NOT_MET",
+   "n_obs": 2,
+   "mean": 0.0,
+   "kinds_after": [
+    "PROBE"
+   ],
+   "n_raise_after": 0
+  },
+  {
+   "round": 3,
+   "kinds_before": [
+    "PROBE"
+   ],
+   "acted_kind": "PROBE",
+   "verdict": "MET",
+   "n_obs": 3,
+   "mean": 0.0,
+   "kinds_after": [
+    "RAISE"
+   ],
+   "n_raise_after": 1
+  },
+  {
+   "round": 4,
+   "kinds_before": [
+    "RAISE"
+   ],
+   "acted_kind": "RAISE",
+   "verdict": "NOT_MET",
+   "n_obs": 4,
+   "mean": 0.0,
+   "kinds_after": [
+    "RAISE"
+   ],
+   "n_raise_after": 1
+  },
+  {
+   "round": 5,
+   "kinds_before": [
+    "RAISE"
+   ],
+   "acted_kind": "RAISE",
+   "verdict": "NOT_MET",
+   "n_obs": 5,
+   "mean": 0.0,
+   "kinds_after": [
+    "RAISE"
+   ],
+   "n_raise_after": 1
+  },
+  {
+   "round": 6,
+   "kinds_before": [
+    "RAISE"
+   ],
+   "acted_kind": "RAISE",
+   "verdict": "NOT_MET",
+   "n_obs": 6,
+   "mean": 0.0,
+   "kinds_after": [
+    "RAISE"
+   ],
+   "n_raise_after": 1
+  },
+  {
+   "round": 7,
+   "kinds_before": [
+    "RAISE"
+   ],
+   "acted_kind": "RAISE",
+   "verdict": "NOT_MET",
+   "n_obs": 7,
+   "mean": 0.0,
+   "kinds_after": [
+    "RAISE"
+   ],
+   "n_raise_after": 1
+  },
+  {
+   "round": 8,
+   "kinds_before": [
+    "RAISE"
+   ],
+   "acted_kind": "RAISE",
+   "verdict": "NOT_MET",
+   "n_obs": 8,
+   "mean": 0.0,
+   "kinds_after": [
+    "RAISE"
+   ],
+   "n_raise_after": 1
+  }
+ ],
+ "n_raise_total": 6,
+ "distinct_means": [
+  0.0
+ ],
+ "tmp": "/var/folders/x7/pt_pky992jv04px88bwyxh140000gn/T/v171_loop_uucyz2wl"
+}

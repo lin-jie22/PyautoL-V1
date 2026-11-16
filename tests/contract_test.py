@@ -14103,6 +14103,68 @@ check(RS, "AZ132f 记账后的行为：MET 的**不再提**，NOT_MET 的**必�
       and _az132_probe.gid in _az132_again,
       f"done={len(_az132_done)} 再来={len(_az132_again)}")
 
+# ===========================================================================
+# AZ133 —— 「做不到」必须写进账本（V171）
+#
+# 锚的是**判定的形状**，不是效果：效果由 `bench/evidence/l5_s259/` 的 Q1~Q6 量。
+# 这里只钉四条不许退化的性质 —— 每条都对应一个**会静默失效**的实现写法。
+# ===========================================================================
+
+
+def _az133_row(gid, cell, v, mean, kind="RAISE"):
+    """与 `G.record()` 写出的形状逐字段相同（⛔ 不许只造 `verdict` 字段：
+    少一个 `reading.mean_score`，判据就永远拿不到「读数动没动」）。"""
+    return {"gid": gid, "kind": kind, "cell": cell, "verdict": v,
+            "reading": {"cell": cell, "n_obs": 4, "mean_score": mean},
+            "criterion": [["mean_score", ">=", 1.0]], "source": "contract"}
+
+
+_az133_ok = [_az133_row("z1", "c1", "NOT_MET", 0.0) for _ in range(3)]
+_az133_trend = [_az133_row("z2", "c2", "NOT_MET", m) for m in (0.2, 0.4, 0.6)]
+_az133_gap = [_az133_row("z3", "c3", "NOT_MET", 0.0) for _ in range(2)]
+_az133_broken = [_az133_row("z4", "c4", "NOT_MET", 0.0),
+                 _az133_row("z4", "c4", "MET", 1.0),
+                 _az133_row("z4", "c4", "NOT_MET", 0.0),
+                 _az133_row("z4", "c4", "NOT_MET", 0.0)]
+
+_az133_r = {n: sorted(_G.escalations(r)) for n, r in
+            (("ok", _az133_ok), ("trend", _az133_trend),
+             ("gap", _az133_gap), ("broken", _az133_broken))}
+
+check(RS, "AZ133a 触发要同时满足三条：连判 ≥3 次 NOT_MET **且** 这几次均分逐位相同\\n"
+          "              ⇒ 少任何一条都不许转（`0.2→0.4→0.6` 在收敛，不是做不到）",
+      _az133_r["ok"] == ["c1"] and _az133_r["trend"] == [] and _az133_r["gap"] == [],
+      f"{_az133_r}")
+
+check(RS, "AZ133b 「连判」的「连」是字面意思：从最后一行往前数、遇到 MET 就停\\n"
+          "              ⇒ `NOT_MET, MET, NOT_MET, NOT_MET` 末尾只连 2 次，**不许**转\\n"
+          "              （反例：数「失败总次数」会把这一条判成试了 3 次 —— V171 首版正是这么错的）",
+      _az133_r["broken"] == [],
+      f"broken={_az133_r['broken']}")
+
+_az133_fail_open = sorted(_G.escalations(
+    _az133_ok, [{"task_id": "c1", "score": 1.0}] * 3))
+_az133_still = sorted(_G.escalations(
+    _az133_ok, [{"task_id": "c1", "score": 0.0}] * 3))
+
+check(RS, "AZ133c fail-open：**现在**真的达标 ⇒ 这条判定自动消失（不做持久化状态位）\\n"
+          "              ⛔ 反例：一旦转出就永久锁死 —— 换了模型、分真上去了，它还卡在那里",
+      _az133_fail_open == [] and _az133_still == ["c1"],
+      f"达标={_az133_fail_open} 未达标={_az133_still}")
+
+_az133_suites = ["c1", "c9"]
+_az133_esc = set(_G.escalations(_az133_ok))
+_az133_obs = [{"task_id": "c1", "score": 0.0}] * 3 + [{"task_id": "c9", "score": 0.5}] * 3
+_az133_with = [g.cell for g in _G.propose(_az133_obs, _az133_suites, escalated=_az133_esc)]
+_az133_without = [g.cell for g in _G.propose(_az133_obs, _az133_suites)]
+_az133_fmt = _G.render_escalations(_G.escalations(_az133_ok))
+
+check(RS, "AZ133d 转运维的格**不再提 RAISE**，但别的格照常提；且它必须**留痕**\\n"
+          "              （`render_escalations` 的输出里出现该格 —— 许撤不许藏：静默丢弃 = 做不成的被悄悄忘掉）",
+      _az133_with == ["c9"] and sorted(_az133_without) == ["c1", "c9"]
+      and "c1" in _az133_fmt and "0.000000" in _az133_fmt,
+      f"转运维后提={_az133_with} 不转时提={_az133_without} 留痕={'c1' in _az133_fmt}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

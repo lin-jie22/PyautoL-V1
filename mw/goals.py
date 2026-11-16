@@ -52,6 +52,11 @@ TARGET = 1.0
 #: ⛔ 不允许拼接题面文本（见边界 2）。
 KINDS = ("COVER", "PROBE", "RAISE")
 
+# ⛔ 这里**没有** `ESCALATE_AFTER` 之类的第四个常量。
+#    「试够 k 次」与「测够 3 次」用的是同一个数（`MIN_OBS`），
+#    特意不做成独立参数：多一个可调阈值，就多一把需要单独验证的尺子
+#    （V171 判据 Q6 就是钉这一条：模块级常量集合不许变）。
+
 
 @dataclass(frozen=True)
 class Goal:
@@ -155,6 +160,7 @@ def propose(
     min_obs: int = MIN_OBS,
     target: float = TARGET,
     done: Sequence[str] = (),
+    escalated: Sequence[str] = (),
 ) -> list[Goal]:
     """从读数里挑出目标。纯函数：同样的入参永远同样的输出。
 
@@ -163,8 +169,13 @@ def propose(
 
     `done` 是**已经 MET 的 gid**。⛔ 不用「按 cell 去掉」：同一格可以有两代目标
     （补空白 → 补观测次数 → 提分数），前一代成了不该把后一代也掐掉。
+
+    `escalated` 是**已判定「测量解决不了」的格**（`escalations()` 的输出）。
+    这些格不再提 `RAISE` —— 但 ⛔ 不等于「这格被忘了」：
+    调用方必须把它们单独渲染出来（许撤不许藏）。
     """
     done_set = set(done)
+    esc_set = set(escalated)
     per_cell = {c: stats(obs, c) for c in {o["task_id"] for o in obs}}
     goals: list[Goal] = []
 
@@ -185,6 +196,10 @@ def propose(
                 provenance=(("rows", c, str(st["n_obs"])),),
             ))
         elif st["mean_score"] < target:
+            if c in esc_set:
+                # 这一格的 RAISE 判据（均分 >= 1.0）是**测量作用下的不动点**：
+                # 同分布的再测只让均分更稳，不会让它上去。再提就是无限重复。
+                continue
             goals.append(Goal(
                 kind="RAISE", cell=c,
                 statement=f"把 {c} 的均分从 {st['mean_score']:.4f} 提到 {target:g}",
@@ -298,6 +313,114 @@ def done_gids(rows: Iterable[dict]) -> list[str]:
         if isinstance(r, dict) and r.get("verdict") == "MET" and r.get("gid"):
             out.append(str(r["gid"]))
     return out
+
+
+# ===========================================================================
+# 「做不到」：把测量已经用尽这件事写进账本
+# ===========================================================================
+def escalations(
+    log_rows: Iterable[dict],
+    obs: Sequence[dict] = (),
+    *,
+    after: int = MIN_OBS,
+) -> dict[str, dict]:
+    """判出「这一格的测量路径已经用尽」的格 —— 返回 `{cell: 证据}`。
+
+    ## 为什么需要它
+
+    `RAISE` 的判据是「均分 >= 1.0」。而**同分布的再测只让均分更稳，不会让它上去**
+    （V171 STAGE0c 实测：`t06_rle` 连跑 5 轮，均分逐位相同 0.0，同一 gid 每轮都被重提）。
+    所以 `RAISE` 是这个系统里**唯一一类「提得出、闭不了」的目标**：
+    `COVER`/`PROBE` 的判据是出现次数，测量自己就能满足；`RAISE` 的判据是均值，
+    测量**不改变**它。
+
+    ## 触发条件（三条同时，缺一不转）
+
+    1. 同一 `gid` 被判 `NOT_MET` **≥ after** 次（试够了）
+    2. 这 after 次的 `mean_score` **逐位相同**（读数没动）
+       ⛔ 少了这条，`0.2 → 0.4 → 0.6` 这种明明在收敛的会被误判成做不到
+    3. **当前仍未达标**（`fail-open`：分真的上去了，这条判定自动消失）
+
+    ## ⛔ 它不是 `Goal`
+
+    因为「需换能力」这件事没有可执行的判据 —— 写成 `Goal` 只能给空判据，
+    而空判据恒真（`AZ132d` 那条撤回态锚的就是这个坏形态）。
+    所以它是**账本的结论**，不是 `propose()` 的返回值。
+
+    ## ⛔ 它不提高任何分数
+
+    只是**停止重复**。这是「知道自己做不到」，不是「做到」。
+    """
+    by_gid: dict[str, list[dict]] = {}
+    for r in log_rows:
+        if not isinstance(r, dict) or not r.get("gid"):
+            continue
+        if r.get("verdict") not in ("MET", "NOT_MET"):
+            continue
+        by_gid.setdefault(str(r["gid"]), []).append(r)
+
+    out: dict[str, dict] = {}
+    for gid, rows in by_gid.items():
+        # ⚠️ 「**连**判 k 次 NOT_MET」的「连」是字面意思：从**最后一行往前数**，
+        #    遇到 MET 就停。首版写成「取最近 k 次 NOT_MET」，
+        #    于是 `NOT_MET, MET, NOT_MET, NOT_MET`（末尾只连 2 次）被判成「试了 3 次」——
+        #    那是在数「失败总次数」，不是在数「连续失败」。V171 自踩第 2 条。
+        tail: list[dict] = []
+        for r in reversed(rows):
+            if r.get("verdict") != "NOT_MET":
+                break
+            tail.append(r)
+        tail.reverse()
+        if len(tail) < after:
+            continue
+        tail = tail[-after:]
+        means: list[float] = []
+        for r in tail:
+            m = (r.get("reading") or {}).get("mean_score")
+            if m is None:
+                break
+            means.append(float(m))
+        if len(means) != after:
+            continue
+        if len({repr(m) for m in means}) != 1:     # 读数在动 ⇒ 不转（这条是判据的牙）
+            continue
+        cell = str(tail[-1].get("cell") or "")
+        kind = str(tail[-1].get("kind") or "")
+        if not cell or kind != "RAISE":
+            continue
+        if obs:                                    # fail-open：已经达标就不该挂在这
+            st = stats(obs, cell)
+            if st["n_obs"] and st["mean_score"] >= TARGET:
+                continue
+        cur = out.get(cell)
+        if cur is None:
+            out[cell] = {"cell": cell, "kind": kind, "n_fail": len(tail),
+                         "mean": means[-1], "means": list(means),
+                         "gids": [gid]}
+        else:                                      # 同一格有两代 RAISE ⇒ 合并证据
+            cur["n_fail"] += len(tail)
+            cur["means"].extend(means)
+            cur["gids"].append(gid)
+    return out
+
+
+def render_escalations(esc: dict[str, dict]) -> str:
+    """把「已转运维」渲染成一段 —— ⛔ 不许静默丢弃（许撤不许藏）。
+
+    ⚠️ 措辞只许写**读数**：「3 次均分逐位相同」是事实；「再测也不会变」是外推，
+    而这条外推正是本判定要停止重复的**理由**，不是它的**证据**。两者不许混写
+    （纪律 10：数值对得上 ≠ 解释对）。
+    """
+    if not esc:
+        return "  （没有：没有任何一格的测量路径被用尽）"
+    lines = []
+    for cell in sorted(esc):
+        e = esc[cell]
+        lines.append(f"  {cell:<24} RAISE 判 NOT_MET {e['n_fail']} 次，"
+                     f"这 {len(e['means'])} 次的均分逐位相同 {e['mean']:.6f}"
+                     f" ⇒ 测量没让它动；继续提同一条是重复")
+    return "\n".join(lines)
+
 
 
 def scan_suites(dirpath: Path | str) -> dict[str, list[str]]:

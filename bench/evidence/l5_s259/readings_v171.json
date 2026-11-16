@@ -1,0 +1,114 @@
+{
+ "a": {
+  "A": {
+   "rounds": 8,
+   "n_raise_total": 6,
+   "distinct_means": [
+    0.0
+   ]
+  },
+  "B": {
+   "rounds": 8,
+   "n_raise_total": 3,
+   "distinct_means": [
+    0.0
+   ]
+  },
+  "zero_from_round": 6,
+  "after_trigger_B": [
+   0,
+   0,
+   0
+  ],
+  "after_trigger_A": [
+   1,
+   1,
+   1
+  ]
+ },
+ "b": {
+  "cases": {
+   "① 3 次 NOT_MET + mean 逐位相同（该转）": [
+    "c1"
+   ],
+   "② 3 次 NOT_MET 但 mean 在涨（不该转）": [],
+   "③ 只 2 次 NOT_MET（试不够，不该转）": [],
+   "④ NOT_MET 总数 3 次但末尾只连 2 次（该按连续算，不转）": []
+  },
+  "q1": true,
+  "q3": true,
+  "extra": true,
+  "revoke_before": [
+   "c1"
+  ],
+  "revoke_after": [],
+  "fail_open": []
+ },
+ "c": {
+  "has_section": true,
+  "section_lines": [
+   "t06_rle                  RAISE 判 NOT_MET 3 次，这 3 次的均分逐位相同 0.000000 ⇒ 测量没让它动；继续提同一条是重复"
+  ],
+  "escalated_cells": [
+   "t06_rle"
+  ],
+  "n_goals": 0,
+  "rc": 0
+ },
+ "d": {
+  "consts": [
+   "KINDS",
+   "MIN_OBS",
+   "TARGET"
+  ],
+  "extra": [],
+  "defaults_note": [
+   [
+    "render",
+    12
+   ]
+  ]
+ },
+ "e": {
+  "n_ids": 40,
+  "n_goals": 0,
+  "n_escalated": 40
+ },
+ "verdicts": [
+  {
+   "tag": "Q2",
+   "ok": true,
+   "note": "触发后 RAISE 提议 B=0 次 vs A=3 次（分母 = 触发后 3 轮）"
+  },
+  {
+   "tag": "Q1",
+   "ok": true,
+   "note": "① 触发 = ['c1']（分母 1 格，期望 ['c1']）"
+  },
+  {
+   "tag": "Q3",
+   "ok": true,
+   "note": "② 读数在动（0.2→0.4→0.6）触发 = []（期望 []）"
+  },
+  {
+   "tag": "Q4",
+   "ok": true,
+   "note": "删 1 行后 []（期望 []）"
+  },
+  {
+   "tag": "Q5",
+   "ok": true,
+   "note": "输出有该节=True｜json 里 1 格｜该节 1 行｜提议 0 条（期望 0）"
+  },
+  {
+   "tag": "Q6",
+   "ok": true,
+   "note": "模块级常量 ['KINDS', 'MIN_OBS', 'TARGET']｜新增 无（分母 = 常量集合）"
+  }
+ ],
+ "summary": {
+  "pass": 6,
+  "fail": 0,
+  "na": 0
+ }
+}

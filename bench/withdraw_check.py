@@ -1654,11 +1654,16 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # ── AZ128：结论要有去处（V142 / §209）──────────────────────────────────
     #: 撤的语义：**没有结论也当绿**（这正是「缺席默认成绿」）⇒ AZ128a 必红；
     #:   连 AZ128e/c 的「旧记录仍是 UNKNOWN」也一起红（同一判据的三个面）。
+    # ⚠️ V143 重锚：`ledger_verdict` 里那段判据已抽成 `record_verdict`（同一判断
+    #    只有一处定义），旧锚点 `if v not in VERDICTS:` 在源码里不再存在。
+    #    撤的语义不变：**没有结论的行读成绿** ⇒ AZ128a 必红。
     ("AZ128a", "mw/bench.py",
-     '''    if v not in VERDICTS:
-        return "UNKNOWN", (f"这一行没有结论（verdict={v!r}）"''',
-     '''    if v not in VERDICTS:
-        return "GREEN", (f"这一行没有结论（verdict={v!r}）"'''),
+     '''    v = record_verdict(hit)
+    if v == "UNKNOWN":
+        return "UNKNOWN", (f"这一行没有结论（verdict={hit.get('verdict')!r}）"''',
+     '''    v = record_verdict(hit)
+    if v == "UNKNOWN":
+        return "GREEN", (f"这一行没有结论（verdict={hit.get('verdict')!r}）"'''),
     #: 撤的语义：**钉最后一行**（位置当身份）⇒ AZ128b 必红（错的那行也被钉上）。
     ("AZ128b", "mw/bench.py",
      '''    if rec.get("run_id") != run_id:''',
@@ -1694,6 +1699,46 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
                 if _canon(_val(getattr(self, k))) != _canon(_val(getattr(other, k)))]''',
      '''        return [k for k in CALIBER_KEYS
                 if _val(getattr(self, k)) != _val(getattr(other, k))]'''),
+
+    # ── V143 / §210：账本才是权威（AZ129a~g）────────────────────────────
+    #: 撤的语义：`record_verdict` **不认识 CRASH**（把它读成 UNKNOWN）⇒ AZ129a 必红。
+    #:    ⛔ 刻意不动「缺席 ⇒ UNKNOWN」那条：动了 AZ128a 也会红（见 COUPLED）。
+    ("AZ129a", "mw/bench.py",
+     '''    return v if v in VERDICTS else "UNKNOWN"''',
+     '''    return v if v in VERDICTS and v != "CRASH" else "UNKNOWN"'''),
+    #: 撤的语义：普查**漏掉 GREEN 那一层**（守恒式当场不成立）⇒ AZ129b 必红。
+    ("AZ129b", "mw/bench.py",
+     '''        out[record_verdict(rec)] += 1''',
+     '''        if record_verdict(rec) != "GREEN":
+            out[record_verdict(rec)] += 1'''),
+    #: 撤的语义：**不要身份证**也能过 ⇒ 「自述无法复核」这一层没了 ⇒ AZ129c 必红。
+    #:    ⚠️ 连带 AZ129f：那条断言的正是四种拒法**各说各的原因**，第 2 种被删，
+    #:       它就少一条（同一条规则的两个面，见 COUPLED）。
+    ("AZ129c", "mw/bench.py",
+     '''    if not store_run_id:''',
+     '''    if False and not store_run_id:'''),
+    #: 撤的语义：身份证**不落盘**（写死空串）⇒ 基线读回来是空串 ⇒ AZ129d 必红。
+    ("AZ129d", "mw/bench.py",
+     '''            "run_id": str(run_id or ""),''',
+     '''            "run_id": "",'''),
+    #: 撤的语义：比较路径退回 V142 那个**只看自述**的闸 ⇒ 复核闸的调用点变 0 ⇒ AZ129e 必红。
+    ("AZ129e", "run.py",
+     '''        _okv, _whyv = baseline_provenance_gate(
+            store_verdict=_bv, store_run_id=_brid, ledger_state=_lst)''',
+     '''        _okv, _whyv = baseline_verdict_gate(_bv)'''),
+    #: 撤的语义：第 2 种拒法**不再点名**原因（只说「不可复核」）⇒ AZ129f 必红
+    #:    （四种理由仍互不相同，但少了一个关键词 —— 「都念一句拒绝」正是它要防的）。
+    ("AZ129f", "mw/bench.py",
+     '''        return False, ("基线没有身份证（`run_id`）⇒ 它说自己 GREEN，但没有东西"''',
+     '''        return False, ("基线不可复核"''',
+     ),
+    #: 撤的语义：复核闸**另写一份**自述判据（不调 `baseline_verdict_gate`）⇒
+    #:    None 那条路的话语变了 ⇒ AZ129g 必红。⚠️ 刻意保持布尔语义不变，
+    #:    所以 AZ129c 的七格真值表**不红** —— 这一条只打「同一判断两处定义」。
+    ("AZ129g", "mw/bench.py",
+     '''    ok, why = baseline_verdict_gate(store_verdict)''',
+     '''    ok = store_verdict == "GREEN"
+    why = "" if ok else (f"来源 {store_verdict}")'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -1704,6 +1749,10 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   判据的另一个面（同一函数、同一行）。撤了那个分支，两个面一起翻。
     #:   ⚠️ 实测就多红这一个，且 汇总行 648/2 与「两条断言」对得上（分母自证）。
     "AZ128a": frozenset({"AZ128c"}),
+    #: ★第 143 轮：AZ129c 撤的是「没有身份证也能过」这条规则；AZ129f 断言的正是
+    #:   **四种拒法各说各的原因**，少掉这一种它就少一条。同一条规则的两个面
+    #:   （一个测真值表，一个测可诊断性）⇒ 合理连带，不当作锚定跑偏。
+    "AZ129c": frozenset({"AZ129f"}),
     #: AZ22a（把全表兜底加回）⇒ 前两题的"零命中"又变成 4 条 ⇒ AZ23 的
     #: `[0,0,1,1]` 立刻不成立。**同一段 SQL 的两个面**，合理连带。
     #: ★第三十八轮补登 AZ26/AZ30：兜底回来了 ⇒ n0 档命中 4 条（AZ26 红）；

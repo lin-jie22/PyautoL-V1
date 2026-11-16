@@ -1996,6 +1996,7 @@ def cmd_bench(args) -> int:
             save_ok = False
         else:
             ok, msg = gate.store.save(gate.measure, gate.caliber, verdict=state,
+                                      run_id=gate.run_id,
                                       allow_supersede=args.allow_supersede)
             print()
             print(f"  {'✅' if ok else '⛔'} {msg}")
@@ -2025,8 +2026,8 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
         3. **后闸**：写基线前校验口径签名，口径变了就拒绝，旧值另存。
     """
     from mw.bench import (BaselineStore, Caliber, ExternalScorer, Suite,
-                          append_jsonl, baseline_verdict_gate, calibrate,
-                          measurement_to_dict, run_suite,
+                          append_jsonl, baseline_provenance_gate, calibrate,
+                          ledger_verdict, measurement_to_dict, run_suite,
                           verdict_against_baseline)
 
     # ⚠️ 把 CLI 的温度**写进环境**，让内核（planner / worldmodel）也遵守它。
@@ -2700,8 +2701,16 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
         # ★ V142：先问**这份基线是怎么来的**，再问它说多少。
         #   一次崩掉的运行写下的数字也是数字；拿它当参照，`paired_compare`
         #   会一本正经地算出「改进成立」——而参照物本身没量到东西。
+        # ★ V143：还要问**账本同不同意**。基线自述写在同一份文件里，谁都能改；
+        #   可信度必须能被第三方复算 —— 同一次运行在 `runs.jsonl` 里有自己的一行。
         _bv = store.load_verdict()
-        _okv, _whyv = baseline_verdict_gate(_bv)
+        _brid = store.load_run_id()
+        _runs_path = s.paths.bench / "runs.jsonl"
+        _lst, _lwhy = (ledger_verdict(_runs_path, _brid) if _brid
+                       else ("UNKNOWN", "没有身份证，无从查账"))
+        _okv, _whyv = baseline_provenance_gate(
+            store_verdict=_bv, store_run_id=_brid, ledger_state=_lst)
+        print(f"  账本复核  {_lst}  — {_lwhy}")
         if not _okv:
             print(f"  ⛔ {_whyv} ⇒ **拒绝比较**（不出一句「改进成立」）。")
             print("     改用一次判据为 GREEN 的运行重写基线：--save-baseline。")
@@ -2714,7 +2723,7 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
                 print("     跨口径的两个数字放在一张表里，结论就是作废的。")
             else:
                 ok, why = verdict_against_baseline(base, m)
-                print(f"  基线 {base.as_line()}  （verdict={_bv}）")
+                print(f"  基线 {base.as_line()}  （verdict={_bv}，{_whyv}）")
                 print(f"  判定 {'改进成立' if ok else '不成立'} — {why}")
 
     if args.save_baseline:

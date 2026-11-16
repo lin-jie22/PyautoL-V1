@@ -513,8 +513,9 @@ check(RS, "AZ127e 读者无记忆：先判半截日志（CRASH）再判完整日
 #   账本（runs.jsonl）：每一行带自己的结论；缺席 = UNKNOWN，**不是绿**；
 #   基线（bench_baseline.json）：只有 GREEN 的运行能写成标准；
 #   比较（--compare）：来源不明或没量全的基线 ⇒ **拒绝比较**，不出一句「改进成立」。
-from mw.bench import (BaselineStore, Caliber, baseline_verdict_gate,  # noqa: E402
-                      caliber_from_dict, ledger_verdict, stamp_verdict)
+from mw.bench import (BaselineStore, Caliber, baseline_provenance_gate,  # noqa: E402
+                      baseline_verdict_gate, caliber_from_dict, ledger_strata,
+                      ledger_verdict, record_verdict, stamp_verdict)
 
 _az128_dir = Path(tempfile.mkdtemp(prefix="v142_ledger_"))
 _az128_log = _az128_dir / "runs.jsonl"
@@ -621,6 +622,123 @@ check(RS, "AZ128h 签名相同 ⇒ `diff` 必须为空（同一个「同口径�
       _az128_c.signature() == _az128_rt.signature() and _az128_c.same_as(_az128_rt),
       f"sig同={_az128_c.signature() == _az128_rt.signature()} "
       f"diff={_az128_c.diff(_az128_rt)}")
+
+
+# ── AZ129 账本才是权威：基线的可信度必须由账本复核（第 143 轮）──────────────
+# V142 让基线带上「我是哪种运行写的」，但那是**自述** —— 写在同一份文件里，
+# 谁都能改，改了没人知道。可信度必须能被第三方复算，第三方就是账本。
+# ⛔ 「这一行的结论是什么」只许有一个定义（`record_verdict`），否则两份判据
+#    迟早会长成两个答案。
+_az129_cases = [
+    ({"verdict": "GREEN"}, "GREEN"), ({"verdict": "RED"}, "RED"),
+    ({"verdict": "CRASH"}, "CRASH"), ({}, "UNKNOWN"),
+    ({"verdict": "PENDING"}, "UNKNOWN"), ({"verdict": "green"}, "UNKNOWN"),
+    ({"verdict": None}, "UNKNOWN"),
+]
+check(RS, "AZ129a `record_verdict` 是「这一行结论」的**唯一**定义\n"
+          "              三值原样返回；键缺席 / 占位 PENDING / 大小写变体 / None\n"
+          "              一律 UNKNOWN —— 缺席不许冒充完成（V142 纪律的孪生）",
+      [record_verdict(c) for c, _ in _az129_cases] == [e for _, e in _az129_cases],
+      f"{[record_verdict(c) for c, _ in _az129_cases]}")
+
+# ── 普查的**守恒式**：每一条记录都必须落进某一层，落不进去就是普查漏了人 ──
+# 分母口径（纪律 4/46）：`rows` 是**账本行数**，不是断言数。
+_az129_led = Path(tempfile.mkdtemp(prefix="v143_strata_")) / "runs.jsonl"
+_az129_led.write_text("".join(json.dumps(r) + "\n" for r in [
+    {"run_id": "a", "verdict": "GREEN"}, {"run_id": "b", "verdict": "RED"},
+    {"run_id": "c"}, {"run_id": "d", "verdict": "PENDING"},
+    {"verdict": "GREEN"},                    # 没有身份证 ⇒ 查无可查
+]), encoding="utf-8")
+_az129_st = ledger_strata(_az129_led)
+_az129_sum = (_az129_st["no_run_id"] + _az129_st["GREEN"] + _az129_st["RED"]
+              + _az129_st["CRASH"] + _az129_st["UNKNOWN"])
+check(RS, "AZ129b 账本分层普查守恒：无身份证 + 四层 == 总行数（构造账本 5 行）\n"
+          "              ⛔ 「无 run_id」单独一层：那是**查无可查**，不是「问了没答」；\n"
+          "              混进 UNKNOWN 会把「问不到」说成「问了没答」（分母口径）",
+      _az129_st["rows"] == 5 and _az129_sum == 5
+      and (_az129_st["GREEN"], _az129_st["RED"], _az129_st["UNKNOWN"],
+           _az129_st["no_run_id"]) == (1, 1, 2, 1),
+      f"{_az129_st} 守恒={_az129_sum}")
+
+# ── 复核闸五条规则的真值表 ──────────────────────────────────────────────
+_az129_tbl = {
+    ("GREEN", "r1", "GREEN"): True,       # 三处对齐 ⇒ 放行
+    ("RED", "r1", "GREEN"): False,        # ① 自述不是绿
+    (None, "r1", "GREEN"): False,         # ① 无 verdict 键
+    ("GREEN", "", "GREEN"): False,        # ② 没有身份证
+    ("GREEN", "r1", "UNKNOWN"): False,    # ③ 账本查不到
+    ("GREEN", "r1", "RED"): False,        # ④ 两处打架
+    ("GREEN", "r1", "CRASH"): False,
+}
+_az129_got = {k: baseline_provenance_gate(store_verdict=k[0], store_run_id=k[1],
+                                          ledger_state=k[2])[0]
+              for k in _az129_tbl}
+check(RS, "AZ129c 复核闸：自称 + 身份证 + 账本**三处对齐**才放行\n"
+          "              规则顺序即语义：①自述非绿 ②无身份证 ③查无此账 ④两处打架\n"
+          "              ⛔ 两处打架时**保守的那个赢** —— 不是取平均，也不是信文件",
+      _az129_got == _az129_tbl,
+      f"{ {k: v for k, v in _az129_got.items() if v != _az129_tbl[k]} }")
+
+# ── 身份证真的写进去了、真的读得回来；旧基线读回空串 ────────────────────
+_az129_store = BaselineStore(Path(tempfile.mkdtemp(prefix="v143_bl_")) / "b.json")
+_az129_m = summarize([0.8, 0.8, 0.8], candidate="A", budget_tag="1x")
+_az129_cal = Caliber(scorer_sha="s", suite_sha="u", repeat=1)
+_az129_w, _az129_wm = _az129_store.save(_az129_m, _az129_cal, verdict="GREEN",
+                                       run_id="42@1700000000")
+_az129_doc = json.loads(_az129_store.path.read_text(encoding="utf-8"))
+_az129_doc.pop("run_id", None)
+_az129_legacy = _az129_store.path.with_name("legacy.json")
+_az129_legacy.write_text(json.dumps(_az129_doc), encoding="utf-8")
+check(RS, "AZ129d 基线里的身份证：写进盘面、读得回来；V143 之前的旧基线读回 **空串**\n"
+          "              ⛔ 空串不是「随便挑一行」—— 它是一个明确的「无从复核」",
+      _az129_w and _az129_store.load_run_id() == "42@1700000000"
+      and _az129_doc.get("verdict") == "GREEN"
+      and BaselineStore(_az129_legacy).load_run_id() == "",
+      f"写入={_az129_w} 读回={_az129_store.load_run_id()!r} "
+      f"旧基线={BaselineStore(_az129_legacy).load_run_id()!r}")
+
+
+def _az129_calls(name: str) -> int:
+    return sum(1 for x in ast.walk(_az127_tree)
+               if isinstance(x, ast.Call) and getattr(x.func, "id", "") == name)
+
+
+_az129_mine, _az129_thel = _az129_calls("baseline_provenance_gate"), _az129_calls("ledger_verdict")
+check(RS, "AZ129e `run.py` 里复核闸**恰好 1 个**调用点；`ledger_verdict` 恰好 2 个\n"
+          "              （外壳钉完读回 + 比较复核）。多一个读者就多一套口径，\n"
+          "              迟早一套改了另一套没改（与 AZ127b 同一条纪律）",
+      _az129_mine == 1 and _az129_thel == 2,
+      f"复核闸={_az129_mine} ledger_verdict={_az129_thel}")
+
+# ── 四种拒法必须**各说各的原因** ────────────────────────────────────────
+# ⛔ 拒绝句都写「拒绝比较」时，使用者无法知道该修哪一处。这不是文案问题：
+#    「基线写坏了」与「账本被人换了」修法完全不同（纪律 4 的同一形态）。
+_az129_reasons = {
+    "自述非绿": baseline_provenance_gate(store_verdict="RED", store_run_id="r1",
+                                        ledger_state="GREEN")[1],
+    "无身份证": baseline_provenance_gate(store_verdict="GREEN", store_run_id="",
+                                        ledger_state="GREEN")[1],
+    "查无此账": baseline_provenance_gate(store_verdict="GREEN", store_run_id="r1",
+                                        ledger_state="UNKNOWN")[1],
+    "两处打架": baseline_provenance_gate(store_verdict="GREEN", store_run_id="r1",
+                                        ledger_state="RED")[1],
+}
+_az129_keys = {"自述非绿": "RED", "无身份证": "身份证",
+               "查无此账": "查不到", "两处打架": "打架"}
+check(RS, "AZ129f 四种拒法**各说各的原因**（互不相同，且各自点名自己的那一条）\n"
+          "              ⛔ 「基线写坏了」与「账本被人换了」修法完全不同；\n"
+          "              都念一句「拒绝比较」，等于让人去猜",
+      len(set(_az129_reasons.values())) == 4
+      and all(kw in _az129_reasons[name] for name, kw in _az129_keys.items()),
+      f"{ {k: v[:24] for k, v in _az129_reasons.items()} }")
+
+# ── 第一层仍是 V142 那个闸：同一个判断只有一处定义 ──────────────────────
+_az129_why = baseline_provenance_gate(store_verdict=None, store_run_id="x",
+                                      ledger_state="GREEN")[1]
+check(RS, "AZ129g 复核闸的**第一层**是 `baseline_verdict_gate`（理由逐字相同）\n"
+          "              ⛔ 两个闸各写一份「自述能不能用」，改了一处另一处就成了漏洞",
+      _az129_why == baseline_verdict_gate(None)[1],
+      _az129_why[:60])
 
 
 # ===========================================================================

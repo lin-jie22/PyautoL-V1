@@ -46,7 +46,7 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 # 方向是单向的：**bench 可以读内核，内核不许读 bench**（契约钉死）。
 # bench 是环外的裁判 —— 它 import 内核模块没问题，反过来就是"尺子被内核碰到"。
@@ -910,8 +910,21 @@ class BaselineStore:
         v = d.get("verdict")
         return v if v in VERDICTS else None
 
+    def load_run_id(self) -> str:
+        """写这份基线的**是哪一次运行**。没有键 ⇒ `""`。
+
+        ⛔ 缺身份证不等于「随便挑一行」：V143 之前写下的基线全都没有这一格，
+        它们只能自述、不能被账本复核（`baseline_provenance_gate` 第 2 条拒之）。
+        """
+        d = self.load()
+        if not d:
+            return ""
+        rid = d.get("run_id")
+        return str(rid) if rid else ""
+
     def save(self, m: Measurement, caliber: Caliber, *,
              verdict: str,
+             run_id: str = "",
              allow_supersede: bool = False) -> tuple[bool, str]:
         """写入基线。**口径不一致时拒绝并保持盘面不动**（契约①）。
 
@@ -955,6 +968,9 @@ class BaselineStore:
             #   `--compare` 就不知道自己在拿什么当参照 —— 一次崩掉的运行
             #   与一次跑完的运行，在旧文件里长得一模一样。
             "verdict": verdict,
+            # ★ V143：**写这份基线的是哪一次运行**。没有这一格，「这份基线可不可信」
+            #   就只能听基线自己说 —— 而那句话恰好写在同一份文件里。
+            "run_id": str(run_id or ""),
             "saved_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         })
         _atomic_write(self.path, body)
@@ -983,6 +999,39 @@ def baseline_verdict_gate(verdict: str | None) -> tuple[bool, str]:
     if verdict is None:
         return False, ("基线里没有 `verdict` 字段（V142 之前的旧基线 ⇒ 来源不明）")
     return False, f"基线来自一次 {verdict} 的运行（没有量全）"
+
+
+def baseline_provenance_gate(*, store_verdict: str | None, store_run_id: str,
+                             ledger_state: str) -> tuple[bool, str]:
+    """**这份基线的可信度能不能被复核**。返回 `(可比较, 拒绝理由)`。
+
+    V142 的 `baseline_verdict_gate` 只读基线**自述**。而自述写在同一份文件里 ——
+    谁都能改，改了也没人知道。可信度必须能被**第三方复算**，本项目里的第三方
+    就是账本：同一次运行在 `runs.jsonl` 里有自己的一行，两处必须说同一句话。
+
+    规则（顺序即语义，前一条成立就不再看后面）：
+        1. 自述不是 GREEN           ⇒ 拒（沿用 `baseline_verdict_gate`，同一处定义）
+        2. 没有身份证（`run_id`）   ⇒ 拒 —— 自述**无从复核**
+        3. 账本里查不到这一行       ⇒ 拒 —— 自说自话
+        4. 账本对这一行的结论非 GREEN ⇒ 拒 —— 两处打架，**保守的那个赢**
+        5. 其余                     ⇒ 放行
+
+    ⛔ `ledger_state=UNKNOWN` 与「账本里根本没这行」都要拒：前者是「有一行、没结论」，
+       后者是「查无此账」，两种都不是 GREEN。缺席不许冒充完成（纪律 5 的孪生）。
+    """
+    ok, why = baseline_verdict_gate(store_verdict)
+    if not ok:
+        return False, why
+    if not store_run_id:
+        return False, ("基线没有身份证（`run_id`）⇒ 它说自己 GREEN，但没有东西"
+                       "能证明是哪一次运行写的，**无从复核**")
+    if ledger_state == "UNKNOWN":
+        return False, (f"账本里查不到 `run_id={store_run_id}` 这次运行的结论"
+                       " ⇒ 基线在自说自话，拒绝比较")
+    if ledger_state != "GREEN":
+        return False, (f"两处打架：基线自称 GREEN，账本说 `run_id={store_run_id}` "
+                       f"那一次是 {ledger_state} ⇒ **保守的那个赢**，拒绝比较")
+    return True, f"账本复核通过（run_id={store_run_id} 那次也是 GREEN）"
 
 
 # ===========================================================================
@@ -1025,6 +1074,43 @@ def _read_records(path: Path) -> list[dict] | None:
     return out
 
 
+def record_verdict(rec: Mapping[str, Any]) -> str:
+    """**一条账本记录自己**的结论。缺席 / `PENDING` / 非法值 ⇒ `UNKNOWN`。
+
+    ⛔ 「这一行的结论是什么」只许有**一个**定义。V143 之前它散在两处
+    （`ledger_verdict` 里一段、将来任何新读者再写一段），而两份判据迟早
+    会长成两个答案 —— 那时「账本说 GREEN」这句话就没人知道信哪一份。
+    """
+    v = rec.get("verdict")
+    return v if v in VERDICTS else "UNKNOWN"
+
+
+def ledger_strata(path: Path) -> dict:
+    """账本按结论**分层**的人口普查。
+
+    返回 `{"readable", "rows", "no_run_id", "GREEN", "RED", "CRASH", "UNKNOWN"}`。
+
+    ★ 为什么「无 `run_id`」单独一层而不是并进 `UNKNOWN`：那一批记录
+      **查无可查**（连身份证都没有，`ledger_verdict` 连它的行都找不到），
+      与「有一行、但这一行没结论」是两种不同的缺席。混在一起，
+      分母就会把「问不到」说成「问了没答」。
+    ★ 守恒式（契约 AZ129b）：`no_run_id + GREEN + RED + CRASH + UNKNOWN == rows`。
+      任何记录都必须落进某一层 —— 落不进去就是普查漏了人。
+    """
+    recs = _read_records(path)
+    out: dict = {"readable": recs is not None, "rows": 0, "no_run_id": 0,
+                 "GREEN": 0, "RED": 0, "CRASH": 0, "UNKNOWN": 0}
+    if recs is None:
+        return out
+    out["rows"] = len(recs)
+    for rec in recs:
+        if not rec.get("run_id"):
+            out["no_run_id"] += 1
+            continue
+        out[record_verdict(rec)] += 1
+    return out
+
+
 def ledger_verdict(path: Path, run_id: str) -> tuple[str, str]:
     """读**某一次运行自己的**结论。返回 `(状态, 理由)`。
 
@@ -1043,9 +1129,9 @@ def ledger_verdict(path: Path, run_id: str) -> tuple[str, str]:
             break
     if hit is None:
         return "UNKNOWN", f"账本 {len(recs)} 行里没有 run_id={run_id} 这一行"
-    v = hit.get("verdict")
-    if v not in VERDICTS:
-        return "UNKNOWN", (f"这一行没有结论（verdict={v!r}）"
+    v = record_verdict(hit)
+    if v == "UNKNOWN":
+        return "UNKNOWN", (f"这一行没有结论（verdict={hit.get('verdict')!r}）"
                            " ⇒ 不知道这次量到没有")
     return v, f"verdict={v}（run_id={run_id}）"
 

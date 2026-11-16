@@ -1,0 +1,26 @@
+## `0a6acc93`：s0=0.00 → s1=1.00｜判分 113｜命中 True
+  路径 4 跳：T5:c22:del0 → T5:c25:del0 → B:ret3:.replace(',',' ') → T5:c27:del1
+
+  [0] （原码）  s=0.00  bitmap=['EXC:ValueError', 'EXC:ValueError', 'EXC:ValueError', 'EXC:ValueError', 'EXC:ValueError']
+      def fmt_amount(x): return f"{x:_,>.2f}" if x >= 0 else f"({abs(x):_,.2f})"
+
+  [1] T5:c22:del0  s=0.20  bitmap=[False, 'EXC:ValueError', True, False, 'EXC:ValueError']
+      def fmt_amount(x):
+          return f'{x:,>.2f}' if x >= 0 else f'({abs(x):_,.2f})'
+
+  [2] T5:c25:del0  s=0.40  bitmap=[False, False, True, False, True]
+      def fmt_amount(x):
+          return f'{x:,>.2f}' if x >= 0 else f'({abs(x):,.2f})'
+
+  [3] B:ret3:.replace(',',' ')  s=0.60  bitmap=[False, True, True, False, True]
+      def fmt_amount(x):
+          return (f'{x:,>.2f}' if x >= 0 else f'({abs(x):,.2f})').replace(',', ' ')
+
+  [4] T5:c27:del1  s=1.00  bitmap=[True, True, True, True, True]
+      def fmt_amount(x):
+          return (f'{x:,.2f}' if x >= 0 else f'({abs(x):,.2f})').replace(',', ' ')
+
+## 逐跳：被删的是哪个字面量的第几个字符
+  T5:c22:del0: '_,>.2f' → ',>.2f'（删掉 '_'）
+  T5:c25:del0: '_,.2f' → ',.2f'（删掉 '_'）
+  T5:c27:del1: ',>.2f' → ',.2f'（删掉 '>'）

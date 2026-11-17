@@ -2177,14 +2177,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '''    if spec["arity"] != n_args:
         out["code"] = "TYPES"  # 撤回态：按 V184 的口径归到类型'''),
     # AZ148b：不查槽 ⇒ SLOT 这一类永不可达（四类退化成三类）。
+    #        ⚠️V188（§256）修：撤点里那行还是 `DECODERS if key == "decode" else KEEPS`，
+    #        而 V187 已经把它换成 `SLOT_TABLES[key]` ⇒ 从 V187 起这条报「变异锚点出现 0 次」
+    #        （**先于本轮**的失效，不是本轮引入）。改用 `diagnose()` 独有的四行，
+    #        顺带避开 `validate()` 里同形的循环（同一段文本在文件里出现两次会被驱动器拦下）。
     ("AZ148b", "mw/critgen.py",
      '''    for key in spec["slots"]:
-        table = DECODERS if key == "decode" else KEEPS
+        table = SLOT_TABLES[key]
         v = str((slots or {}).get(key) or "")
         if not v:
             out["code"] = "SLOT"''',
      '''    for key in ():  # 撤回态：不查槽
-        table = DECODERS if key == "decode" else KEEPS
+        table = SLOT_TABLES[key]
         v = str((slots or {}).get(key) or "")
         if not v:
             out["code"] = "SLOT"'''),
@@ -2236,6 +2240,30 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ150d", "mw/critgen.py",
      '", ".join([tslot] * n)',
      'tslot'),
+    # ── V188（§256）：三条坏信号收口（AZ151a~d）──────────────────────────
+    # AZ151a：放行异类型 `EMPTY_IFF_EQUAL` ⇒ 恒真形态回来（`a == b` 的 ⟸ 支缺席）。
+    #        ⚠️ 撤的是 `diagnose()` 那一处，不是 `validate()`：AZ151a 用 `diagnose` 数
+    #        「30 组异类型是否全被拒」。撤 validate 只让 AZ148c 红、本条不红
+    #        （V187 自踩 6：撤回态要撤断言所钉的那一处）。
+    ("AZ151a", "mw/critgen.py",
+     '''    if k == "EMPTY_IFF_EQUAL" and len(types) == 2 and types[0] != types[1]:''',
+     '''    if False:  # 撤回态：放行异类型 EMPTY_IFF'''),
+    # AZ151b：`constant_on()` 永远报「不恒定」⇒ 池退化再也不会被认出来。
+    ("AZ151b", "mw/critgen.py",
+     '''            return isinstance(outs, list) and len(set(outs)) <= 1''',
+     '''            return isinstance(outs, list) and len(set(outs)) <= 0  # 撤回态'''),
+    # AZ151c：把 PASS 抢在 UNDECIDED 前面 ⇒ 池退化但断言通过的那些格又变回「通过」。
+    ("AZ151c", "mw/critgen.py",
+     '''    if oracle_const:
+        return "UNDECIDED"
+    return "PASS" if pass_oracle else "FAIL"''',
+     '''    if pass_oracle:  # 撤回态：二值优先
+        return "PASS"
+    return "UNDECIDED" if oracle_const else "FAIL"'''),
+    # AZ151d：去掉「必须是形参」那一半 ⇒ 模块级同名变量也能冒充规格参数。
+    ("AZ151d", "mw/metacrit.py",
+     '''                if isinstance(other, ast.Name) and other.id in allow and other.id in formals:''',
+     '''                if isinstance(other, ast.Name) and other.id in allow:  # 撤回态'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2560,6 +2588,17 @@ COUPLED: dict[str, frozenset[str]] = {
     "AZ136f": frozenset({"AZ136b", "AZ137c", "AZ137f", "AZ139e"}),
     "AZ136g": frozenset({"AZ136a", "AZ136c", "AZ136f", "AZ137f", "AZ139c", "AZ139f"}),
 
+    #: ★V188（§256）：下面两条连带**先于本轮就存在**，不是本轮引入的。
+    #:   取证：在 `d56230b`（V187）的干净工作树上跑同三条，读数逐字相同 ——
+    #:   `AZ145c` 红={AZ145c,AZ148c}、`AZ145d` 红={AZ145d,AZ150c}、`AZ148b` 报
+    #:   「变异锚点出现 0 次」（那条撤点从 V187 起就已失效，本轮一并修好，见 CASES 注释）。
+    #:   结构理由：`AZ145c` 撤的是 `validate()` 的 `reachable` 门 ⇒ 同一个不可达组合在
+    #:   `validate` 放行、`diagnose` 仍拒 ⇒ `AZ148c` 的「两面逐例一致」必然翻；
+    #:   `AZ145d` 撤的是单参数不包 1-tuple ⇒ 任何 `for x, in INPUTS` 的判据全炸，
+    #:   而 `AZ150c` 正是拿 `INVARIANT`（一元）去跑正确实现的那条。
+    "AZ145c": frozenset({"AZ148c"}),
+    "AZ145d": frozenset({"AZ150c"}),
+
     #: ★V185（§253）：`diagnose()` 这一组是**同一个分类器**的四个面，连带解不开：
     #:   · AZ148a 撤「ARITY 归到自己的类」⇒ code 变 TYPES ⇒ AZ148b 的
     #:     「四类互不相同」立刻少一类（它正是拿 ARITY 当第三个见证）；
@@ -2576,6 +2615,10 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   一个问候选集，一个问提示里陈列了什么）。b 单红（755/1），a 连带 c（754/2）。
     "AZ149a": frozenset({"AZ149c"}),
     #: ★V187（§255）：未登记连带 —— 先按「各自单红」跑，实测若有多红再按结构理由补登。
+    #: ★V188（§256）：AZ151a 撤 `diagnose()` 的同类型分支 ⇒ `diagnose` 放行异类型而
+    #:   `validate()` 仍拒 ⇒ `AZ148c` 的「两面逐例一致」立刻翻（同一处实现的两个门）。
+    #:   ⚠️ 这条连带是**撤在 diagnose 上才有的**；撤 validate 只红 AZ148c、不红 AZ151a。
+    "AZ151a": frozenset({"AZ148c"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

@@ -1,0 +1,6665 @@
+{
+ "n": 264,
+ "cells": [
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": true,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'int'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'dict'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'list'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'num'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'flag'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'str'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'dict'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'list'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'num'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'flag'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'str'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'int'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'list'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'num'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'flag'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'str'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'int'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'dict'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": true,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'num'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'flag'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'str'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'int'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'dict'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'list'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'flag'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'str'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'int'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'dict'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'list'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'num'"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "BOUND",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "BOUND",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "BOUND",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "BOUND",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "BOUND",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "BOUND",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "op": "TAIL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "op": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "op": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "op": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "op": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "op": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": true,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "op": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'int'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'dict'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'list'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'num'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'str' 与 'flag'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'str'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'dict'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'list'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'num'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'int' 与 'flag'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'str'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": false,
+    "const": null,
+    "cls": "HARMFUL"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'int'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'list'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": false,
+    "const": null,
+    "cls": "HARMFUL"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'num'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'dict' 与 'flag'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'str'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'int'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'dict'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'num'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'list' 与 'flag'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'str'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'int'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'dict'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'list'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'num' 与 'flag'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "str"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'str'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'int'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "dict"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'dict'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "list"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'list'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "num"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": false,
+    "fail": "TYPES",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP",
+    "msg": "EMPTY_IFF_EQUAL 比较的是两个输入之间的关系，两个输入必须**同类型**；拿到的是 'flag' 与 'num'"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "flag"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "BOUND",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "BOUND",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "BOUND",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": false,
+    "cls": "VACUOUS"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": false,
+    "cls": "VACUOUS"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": false,
+    "cls": "VACUOUS"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "BOUND",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": false,
+    "cls": "VACUOUS"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": false,
+    "cls": "VACUOUS"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": null,
+    "cls": "VACUOUS"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": false,
+    "const": false,
+    "cls": "VACUOUS"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "BOUND",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   },
+   "new": {
+    "built": false,
+    "fail": "OUT_OF_DOMAIN",
+    "pass_oracle": null,
+    "bite_stub": null,
+    "const": null,
+    "cls": "SKIP"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "BOUND",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {},
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": null,
+    "cls": "MIXED"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "const": false,
+    "cls": "MIXED"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {
+    "keep": "ellipsis_tail_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "op": "TAIL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "slots": {
+    "keep": "head_n"
+   },
+   "old": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": null,
+    "cls": "INFORMATIVE"
+   },
+   "new": {
+    "built": true,
+    "fail": "",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "const": false,
+    "cls": "INFORMATIVE"
+   }
+  }
+ ]
+}

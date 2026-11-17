@@ -15605,12 +15605,16 @@ _az148_pairs = [
     ("ROUNDTRIP", ["str", "int"], {"decode": "json.loads"}, 1),
     ("CONSERVE", ["list"], {}, 1),
     ("EMPTY_IFF_EQUAL", ["dict"], {}, 1),
+    # ★V188（§256）：补一组「异类型 EMPTY_IFF」。撤回 `AZ151a` 时两面会分叉，
+    #   而原来的 10 组里没有一组能看见它 ⇒ 检测器对这一处是瞎的。
+    #   加它进来不是为了让某条断言变红，是为了让 AZ148c 的一致性覆盖**真的覆盖**。
+    ("EMPTY_IFF_EQUAL", ["str", "int"], {}, 2),
 ]
 _az148_disagree = [(k, _CG.diagnose(k, t, s, n)["ok"], _CG.validate(k, t, s, n))
                    for k, t, s, n in _az148_pairs
                    if _CG.diagnose(k, t, s, n)["ok"] != (_CG.validate(k, t, s, n) == "")]
 
-check(RS, "AZ148c `diagnose()` 与 `validate()` 对**过/不过**必须逐例一致（10 组枚举）：\n"
+check(RS, "AZ148c `diagnose()` 与 `validate()` 对**过/不过**必须逐例一致（11 组枚举）：\n"
           "              两者只允许在「为什么」上不同 —— 分层是加解释，⛔ 不是放宽门槛；\n"
           "              撤回语义：把 diagnose 的 `len(types) != n_args` 改成 `<`（允许多填）\n"
           "              ⇒ 第 8 组变 OK 而 validate 仍拒 ⇒ 必须红",
@@ -15779,6 +15783,106 @@ check(RS, "AZ150d `skeleton(n_args)` 的 `types` 占位个数 == `n_args`：骨�
       and len(_az150_sk3.get("types") or []) == 3
       and len(set(_az150_sk3["types"])) == 1,
       f"n1={len(_az150_sk1.get('types') or [])} n3={len(_az150_sk3.get('types') or [])}")
+
+# ═══════════ V188（§256）：三条坏信号收口（AZ151） ═══════════
+#
+# 三处改动都**不改判据本体**：S2 是结构约束（挡住恒真形态）、S1 是读数三值（改「算不算证据」）、
+# S3 是准入口径（区分「写死答案」与「写死规格」）。⇒ 本轮没有一条契约在断言「分数变好」。
+
+# ── AZ151a：`EMPTY_IFF_EQUAL` 的两输入必须同类型 ──────────────────────
+_az151_diff = [(a, b) for a in _CG.TYPES for b in _CG.TYPES if a != b]
+_az151_same = [(a, a) for a in _CG.TYPES]
+_az151_diff_codes = {_CG.diagnose("EMPTY_IFF_EQUAL", [a, b], {}, 2)["code"]
+                     for a, b in _az151_diff}
+_az151_same_ok = all(_CG.validate("EMPTY_IFF_EQUAL", [a, a], {}, 2) == ""
+                     for a in _CG.TYPES)
+#: 异类型里**靠池值撞车**才拿到相等对的组数。⚠️ 这个数必须落在 (0, 30) ——
+#: ① 若为 0，说明 `_inputs_for()` 改了生成规则；② 若为 30，说明「异类型必然没有相等对」
+#: 是恒真的，那 `iff` 的 ⟸ 支就永远缺席 —— 两种情形下本约束的前提都要重写。
+_az151_eq = [1 for a, b in _az151_diff
+             if any(x[0] == x[1] for x in _CG.inputs_for("EMPTY_IFF_EQUAL", [a, b]))]
+
+check(RS, "AZ151a `EMPTY_IFF_EQUAL` 要求**两输入同类型**：30 个异类型组合全部以 `TYPES` 拒、\n"
+          "              6 个同类型组合全部放行。理由不是「方便」而是算子自身的语义 ——\n"
+          "              断言是 `(got == {}) != (a == b)`，异类型时 `a == b` 的 ⟸ 支只能靠\n"
+          "              **两个池的值恰好撞车**（如 `int` 与 `num` 共享 `0`）才可能被行使，\n"
+          "              不是结构保证 ⇒ 那一条判据是「恒真」而不是「判得严」（V187 §1.4-1）；\n"
+          "              撤回语义：删掉 `validate()` 里那条 `EMPTY_IFF_EQUAL` 分支 ⇒ 异类型被放行 ⇒ 必须红",
+      _az151_diff_codes == {"TYPES"} and _az151_same_ok
+      and 0 <= len(_az151_eq) < len(_az151_diff),
+      f"diff_codes={_az151_diff_codes} same_ok={_az151_same_ok} "
+      f"equal_pairs={len(_az151_eq)}/{len(_az151_diff)}")
+
+# ── AZ151b：`constant_on()` 只回答「输出是不是全同」 ────────────────────
+_az151_c = "def _az151_f(x):\n    return None\n"
+_az151_v = "def _az151_f(x):\n    return len(str(x)) > 2\n"
+_az151_empty = "def _az151_f(x):\n    return []\n"
+_az151_ins = [("a",), ("bb",), ("ccc",)]
+
+check(RS, "AZ151b `critgen.constant_on()` 在**目标实现**上判「输出是否全同」：\n"
+          "              常量实现 ⇒ True；随输入变化的实现 ⇒ False；每次都返回**新对象但相同值**\n"
+          "              （`[]`）⇒ 仍 True（比的是 `repr`，不是对象身份）。\n"
+          "              ⛔ 它**不判对错**（与 `legal_indexes()` 同一条边界：可达性免费、有效性收费）；\n"
+          "              撤回语义：`len(set(outs)) <= 1` 改成 `<= 0` ⇒ 常量实现报 False ⇒ 必须红",
+      _CG.constant_on(_az151_c, "_az151_f", _az151_ins) is True
+      and _CG.constant_on(_az151_v, "_az151_f", _az151_ins) is False
+      and _CG.constant_on(_az151_empty, "_az151_f", _az151_ins) is True,
+      f"const={_CG.constant_on(_az151_c, '_az151_f', _az151_ins)} "
+      f"vary={_CG.constant_on(_az151_v, '_az151_f', _az151_ins)} "
+      f"empty={_CG.constant_on(_az151_empty, '_az151_f', _az151_ins)}")
+
+# ── AZ151c：三值读数 —— `UNDECIDED` 优先于 PASS/FAIL ───────────────────
+_az151_v3 = [
+    _CG.verdict(built=False, pass_oracle=False, oracle_const=None, fail="TYPES"),
+    _CG.verdict(built=True, pass_oracle=True, oracle_const=True),
+    _CG.verdict(built=True, pass_oracle=False, oracle_const=True),
+    _CG.verdict(built=True, pass_oracle=True, oracle_const=False),
+    _CG.verdict(built=True, pass_oracle=False, oracle_const=False),
+]
+
+check(RS, "AZ151c `critgen.verdict()` 的三值：`UNDECIDED` **优先**于 PASS/FAIL ——\n"
+          "              正确实现在该池上输出全同时，即使断言通过也记 `UNDECIDED`\n"
+          "              （那说明判据在池上不承载信息，而不是「通过了」）。\n"
+          "              ③④⑤ 与二值逐格相同 ⇒ 三值不是「多给了几条命」；\n"
+          "              撤回语义：把 `if oracle_const:` 挪到 `return \"PASS\"` 之后 ⇒ 第 2 条变 PASS ⇒ 必须红",
+      _az151_v3 == ["TYPES", "UNDECIDED", "UNDECIDED", "PASS", "FAIL"],
+      f"{_az151_v3}")
+
+# ── AZ151d：`admit(src, params=())` 区分「写死答案」与「写死规格」 ──────
+_az151_specsrc = ('def _ref(x, sep):\n'
+                  '    if sep == " ":\n'
+                  '        return str(x)\n'
+                  '    return str(x)\n'
+                  '\n'
+                  'def _rel():\n'
+                  '    return True\n')
+_az151_shadow = ('sep = " "\n'
+                 '\n'
+                 'def _rel():\n'
+                 '    if sep == " ":\n'
+                 '        return True\n'
+                 '    return True\n')
+_az151_numf = _CG.build("NUMFMT", ["num"], {"sep": "space", "dec": "2", "neg": "paren"},
+                        "_az151_num")
+
+check(RS, "AZ151d `metacrit.admit(src, params=)` 只放行**规格参数**的比较：\n"
+          "              ① `params` 里声明、且确是源码中某函数**形参**的名字 ⇒ 不计为期望值；\n"
+          "              ② 同样的源码不给 `params` ⇒ 仍拒（口径默认没变）；\n"
+          "              ③ 同名但**模块级变量**（不是形参）⇒ 即使给了 `params` 也必须拒\n"
+          "              （否则 `sep = \" \"` 一行就能冒充规格）；\n"
+          "              ④ `NUMFMT` 渲染出的真判据：默认拒、带 `spec_params()` 放行；\n"
+          "              撤回语义：去掉 `and other.id in formals` ⇒ ③ 被放行 ⇒ 必须红",
+      _MC.admit(_az151_specsrc, ("sep",))[0] is True
+      and _MC.admit(_az151_specsrc)[0] is False
+      and _MC.admit(_az151_shadow, ("sep",))[0] is False
+      and bool(_az151_numf)
+      and _MC.admit(_az151_numf)[0] is False
+      and _MC.admit(_az151_numf, _CG.spec_params("NUMFMT"))[0] is True,
+      f"spec={_MC.admit(_az151_specsrc, ('sep',))[0]} "
+      f"plain={_MC.admit(_az151_specsrc)[0]} "
+      f"shadow={_MC.admit(_az151_shadow, ('sep',))[0]} "
+      f"numfmt={_MC.admit(_az151_numf)[0]}/"
+      f"{_MC.admit(_az151_numf, _CG.spec_params('NUMFMT'))[0]}")
 
 print()
 print("=" * 74)

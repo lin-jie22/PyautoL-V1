@@ -169,6 +169,11 @@ def validate(kind: str, types: list, slots: dict, n_args: int) -> str:
             return f"types[{i}] = {t!r} 不是类型名；可选：{list(TYPES)}"
     if kind in ("TAIL", "BOUND") and (len(types) != 2 or types[1] != "int"):
         return f"{kind} 需要一个输入加一个长度；types 的第二个必须是 \"int\""
+    if kind == "EMPTY_IFF_EQUAL" and len(types) == 2 and types[0] != types[1]:
+        # V188（§256）：iff 的两端必须可比 —— 异类型时 `a == b` 恒假，
+        # 断言 `(got == {}) != (a == b)` 的 ⟸ 支永远走不到 ⇒ 判据**恒真**。
+        return (f"{kind} 比较的是两个输入之间的关系，两个输入必须**同类型**；"
+                f"拿到的是 {types[0]!r} 与 {types[1]!r}")
     if not reachable(kind, n_args):
         return f"{kind} 需要 {spec['arity']} 个输入，本题函数有 {n_args} 个 ⇒ 结构不可达"
     for key in spec["slots"]:
@@ -229,6 +234,12 @@ def diagnose(kind: str, types: list, slots: dict, n_args: int) -> dict:
     if k in ("TAIL", "BOUND") and types[1] != "int":
         out["code"] = "TYPES"
         out["msg"] = f"{k} 的第二个类型必须是 \"int\"（长度），拿到的是 {types[1]!r}"
+        return out
+    if k == "EMPTY_IFF_EQUAL" and len(types) == 2 and types[0] != types[1]:
+        # V188（§256）：与 `validate()` 同一条件 —— 两边只允许在「为什么」上不同（`AZ148c`）。
+        out["code"] = "TYPES"
+        out["msg"] = (f"{k} 比较的是两个输入之间的关系，两个输入必须**同类型**；"
+                      f"拿到的是 {types[0]!r} 与 {types[1]!r}")
         return out
     for key in spec["slots"]:
         table = SLOT_TABLES[key]
@@ -387,6 +398,95 @@ def legal_indexes(code: str, fn: str, inputs: list) -> list | None:
 def inputs_for(kind: str, types: list) -> list:
     """全池输入（未圈域）。臂先拿它，再用 `legal_indexes()` 收敛后回填 `build()`。"""
     return _inputs_for(kind, types)
+
+
+def constant_on(code: str, fn: str, inputs: list) -> bool | None:
+    """在**目标实现**上跑一遍池，回答「输出是不是全同」。`None` = 探测失败。
+
+    ## 为什么需要它（V188，§256）
+
+    V187 C 臂在 `g7e1` 上 `INVARIANT` 判红：模型选了 `str` 池，而 `parse_flag` 对
+    `"abcdef"` / `""` / `"  a b  "` 一律返回 `None` ⇒ 判据的非退化检查失败。
+    **正确实现被判红**，可读数里那一格看起来和「判据写错」一模一样。
+
+    装置能分辨的只有一件事：**这个实现在这组输入上有没有产出差异**。
+    没有 ⇒ 这一格**不构成关于判据的证据**（`UNDECIDED`），而不是「判据错」。
+
+    ⛔ 边界与 `legal_indexes()` 相同：只回答「恒定吗」，⛔ 不问「对不对」。
+       正确与否仍是收费那一半（`mw.verify`）。
+    ⛔ 不可分辨的已知情形：常量实现（stub）与「正确实现落在池外」在装置眼里同一个现象
+       （输出全同）⇒ 本函数只声明「不可归因」，⛔ 不声明「判据没问题」。
+    """
+    if not (code or "").strip() or not inputs:
+        return None
+    lines = [code.rstrip("\n"), "", "_OUT = []", "",
+             "def _v188_probe(*a):",
+             "    try:",
+             f"        _OUT.append(repr({fn}(*a)))",
+             "    except Exception as e:",
+             "        _OUT.append('EXC:' + type(e).__name__)"]
+    for a in inputs:
+        lines.append("_v188_probe(*%r)" % (tuple(a),))
+    lines.append(f"print({_MARK!r} + __import__('json').dumps(_OUT))")
+    tmp = tempfile.mkdtemp(prefix="v1cg-")
+    try:
+        p = Path(tmp) / "probe.py"
+        p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        r = subprocess.run([sys.executable, "-I", "-B", str(p)], cwd=tmp,
+                           capture_output=True, text=True, timeout=EX_TIMEOUT_S)
+    except (subprocess.TimeoutExpired, OSError, ValueError):
+        return None
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    for ln in (r.stdout or "").splitlines():
+        if ln.startswith(_MARK):
+            try:
+                outs = json.loads(ln[len(_MARK):])
+            except json.JSONDecodeError:
+                return None
+            return isinstance(outs, list) and len(set(outs)) <= 1
+    return None
+
+
+#: 哪些算子的字面量是**装置渲染的规格参数**（不是模型写下的期望值）。
+#: 键 = 算子，值 = 渲染出来的参考实现里那些**形参名**。
+#: ⛔ 这张表由装置维护：模型无权声明某个名字是「规格」。
+SPEC_PARAMS: dict[str, tuple[str, ...]] = {
+    "NUMFMT": ("sep", "dec", "neg"),
+}
+
+
+def spec_params(kind: str) -> tuple[str, ...]:
+    """该算子的规格参数名（`metacrit.admit(..., params=...)` 的入参）。"""
+    return SPEC_PARAMS.get(str(kind or ""), ())
+
+
+def verdict(*, built: bool, pass_oracle: bool, oracle_const: bool | None,
+            fail: str = "") -> str:
+    """一格判据读数的**三值**（V188，§256）。`UNDECIDED` 优先于 PASS/FAIL。
+
+    ## 为什么要有第三值
+
+    二值的问题不是「不准」，是**把两种不同的东西记成同一种**：
+
+    · 「判据在正确实现上失败」—— 关于判据的结论
+    · 「正确实现在这组输入上没有任何产出差异」—— 关于**池**的结论，判据无话可说
+
+    V187 C 臂 `g7e1`：模型给 `parse_flag` 选了 `str` 池，池里每个值都返回 `None`。
+    判据的断言确实失败了，但失败的原因不在断言里。二值口径把这一格记成
+    「判据写错」，而那是不成立的归因（纪律 10：数值对得上 ≠ 解释对）。
+
+    ⛔ 本函数**不判对错**、不进 `mw.verify`：判分仍是同一把尺，这里只改
+       「这次判定算不算关于判据的证据」。
+    ⚠️ 已知不可分辨：常量实现（stub）与「正确实现落在池外」在装置眼里同一个现象。
+       所以 `UNDECIDED` 只声明**不可归因**，⛔ 不声明「判据没问题」。
+    """
+    if not built:
+        return fail or "NOT_BUILT"
+    if oracle_const:
+        return "UNDECIDED"
+    return "PASS" if pass_oracle else "FAIL"
+
 
 
 def build(kind: str, types: list, slots: dict, fn: str, inputs: list | None = None) -> str:

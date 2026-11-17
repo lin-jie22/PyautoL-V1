@@ -1,0 +1,14 @@
+{
+ "note": "V187 装置快照（git show d56230b:mw/...），供 V188 重判的『老装置』一侧使用。",
+ "commit": "d56230b",
+ "files": {
+  "_critgen_v187.py": {
+   "sha256": "7cbf1ad4f2ab176204e8fbb683c679196a3785a5ed15a305e6eb5e1364cdcb63",
+   "bytes": 25696
+  },
+  "_metacrit_v187.py": {
+   "sha256": "5e75ba0651b5ae9b1adef7c4162f0f22503ee67b8299b6b75fd361cdafca9352",
+   "bytes": 5562
+  }
+ }
+}

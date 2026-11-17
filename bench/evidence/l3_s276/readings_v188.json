@@ -1,0 +1,1275 @@
+{
+ "frozen": {
+  "critgen_v187_sha256": "7cbf1ad4f2ab1762",
+  "metacrit_v187_sha256": "5e75ba0651b5ae9b"
+ },
+ "checks": {
+  "I1_replay_mismatch": [],
+  "I2_src_changed": []
+ },
+ "arms_old": {
+  "A": {
+   "pass": 3,
+   "pass_set": [
+    "g7d2_dedupe_keep",
+    "g7e2_truncate_tail",
+    "k01_diff_tree"
+   ],
+   "disc": 2,
+   "disc_set": [
+    "g7d2_dedupe_keep",
+    "g7e2_truncate_tail"
+   ],
+   "admit": 7,
+   "admit_set": [
+    "g7d2_dedupe_keep",
+    "g7e1_parse_flag",
+    "g7e2_truncate_tail",
+    "k01_diff_tree",
+    "k02_encode_cookie",
+    "k03_unflatten",
+    "k04_to_ini"
+   ],
+   "n": 8
+  },
+  "B": {
+   "pass": 3,
+   "pass_set": [
+    "g7e1_parse_flag",
+    "g7e2_truncate_tail",
+    "k01_diff_tree"
+   ],
+   "disc": 1,
+   "disc_set": [
+    "g7e2_truncate_tail"
+   ],
+   "admit": 7,
+   "admit_set": [
+    "g7d2_dedupe_keep",
+    "g7e1_parse_flag",
+    "g7e2_truncate_tail",
+    "k01_diff_tree",
+    "k02_encode_cookie",
+    "k03_unflatten",
+    "k04_to_ini"
+   ],
+   "n": 8
+  },
+  "C": {
+   "pass": 3,
+   "pass_set": [
+    "g7d3_fmt_amount",
+    "g7e2_truncate_tail",
+    "k01_diff_tree"
+   ],
+   "disc": 2,
+   "disc_set": [
+    "g7d3_fmt_amount",
+    "g7e2_truncate_tail"
+   ],
+   "admit": 7,
+   "admit_set": [
+    "g7d2_dedupe_keep",
+    "g7e1_parse_flag",
+    "g7e2_truncate_tail",
+    "k01_diff_tree",
+    "k02_encode_cookie",
+    "k03_unflatten",
+    "k04_to_ini"
+   ],
+   "n": 8
+  }
+ },
+ "arms_new": {
+  "A": {
+   "pass": 3,
+   "pass_set": [
+    "g7d2_dedupe_keep",
+    "g7e2_truncate_tail",
+    "k01_diff_tree"
+   ],
+   "disc": 2,
+   "disc_set": [
+    "g7d2_dedupe_keep",
+    "g7e2_truncate_tail"
+   ],
+   "admit": 7,
+   "admit_set": [
+    "g7d2_dedupe_keep",
+    "g7e1_parse_flag",
+    "g7e2_truncate_tail",
+    "k01_diff_tree",
+    "k02_encode_cookie",
+    "k03_unflatten",
+    "k04_to_ini"
+   ],
+   "n": 8
+  },
+  "B": {
+   "pass": 3,
+   "pass_set": [
+    "g7e1_parse_flag",
+    "g7e2_truncate_tail",
+    "k01_diff_tree"
+   ],
+   "disc": 1,
+   "disc_set": [
+    "g7e2_truncate_tail"
+   ],
+   "admit": 8,
+   "admit_set": [
+    "g7d2_dedupe_keep",
+    "g7d3_fmt_amount",
+    "g7e1_parse_flag",
+    "g7e2_truncate_tail",
+    "k01_diff_tree",
+    "k02_encode_cookie",
+    "k03_unflatten",
+    "k04_to_ini"
+   ],
+   "n": 8
+  },
+  "C": {
+   "pass": 3,
+   "pass_set": [
+    "g7d3_fmt_amount",
+    "g7e2_truncate_tail",
+    "k01_diff_tree"
+   ],
+   "disc": 2,
+   "disc_set": [
+    "g7d3_fmt_amount",
+    "g7e2_truncate_tail"
+   ],
+   "admit": 8,
+   "admit_set": [
+    "g7d2_dedupe_keep",
+    "g7d3_fmt_amount",
+    "g7e1_parse_flag",
+    "g7e2_truncate_tail",
+    "k01_diff_tree",
+    "k02_encode_cookie",
+    "k03_unflatten",
+    "k04_to_ini"
+   ],
+   "n": 8
+  }
+ },
+ "flipped_verdict": [
+  {
+   "arm": "A",
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "322fc649da658f23"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "322fc649da658f23",
+    "oracle_const": true
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "UNDECIDED"
+  },
+  {
+   "arm": "C",
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "0fffbf55d14c000c"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "0fffbf55d14c000c",
+    "oracle_const": true
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "UNDECIDED"
+  }
+ ],
+ "admit_flip": [
+  {
+   "arm": "B",
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": false,
+    "admit_plain": false,
+    "fail": "SEMANTIC",
+    "src_sha": "a597491b48575de1"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": false,
+    "fail": "SEMANTIC",
+    "src_sha": "a597491b48575de1",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "C",
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": false,
+    "admit_plain": false,
+    "fail": "",
+    "src_sha": "8b4503ffeffab518"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": false,
+    "fail": "",
+    "src_sha": "8b4503ffeffab518",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  }
+ ],
+ "type_reject": [],
+ "undecided": [
+  {
+   "arm": "A",
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ]
+  },
+  {
+   "arm": "C",
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ]
+  }
+ ],
+ "v79": {
+  "n": 22,
+  "flip": [],
+  "rejected_new": 19,
+  "rows": [
+   {
+    "id": "k01_diff_tree",
+    "i": 0,
+    "old": true,
+    "new": true,
+    "src": "assert diff_tree({'a': 1, 'b': {'c': 2}}, {'a': 1, 'b': {'c': 2}}) == {}"
+   },
+   {
+    "id": "k01_diff_tree",
+    "i": 1,
+    "old": false,
+    "new": false,
+    "src": "assert diff_tree({'a': 1, 'b': {'c': 2}}, {'a': 1, 'b': {'c': 3}}) == {'b.c': [2, 3]}"
+   },
+   {
+    "id": "k01_diff_tree",
+    "i": 2,
+    "old": false,
+    "new": false,
+    "src": "assert diff_tree({'a': 1, 'b': {'c': 2}}, {'a': 1, 'b': {'d': 3}}) == {'b.c': [2, None], 'b.d': [None, 3]}"
+   },
+   {
+    "id": "k02_encode_cookie",
+    "i": 0,
+    "old": false,
+    "new": false,
+    "src": "assert encode_cookie({'a': 'b c', 'd': None, 'e': 'f;g,h'}) == 'a=b%20c;e=f%3Bg%2Ch'"
+   },
+   {
+    "id": "k03_unflatten",
+    "i": 0,
+    "old": false,
+    "new": false,
+    "src": "assert unflatten({'a.b': 1, 'c': 2}) == {'a': {'b': 1}, 'c': 2}"
+   },
+   {
+    "id": "k03_unflatten",
+    "i": 1,
+    "old": false,
+    "new": false,
+    "src": "assert unflatten({'foo[0].bar': 1, 'foo[2].baz': 3}) == {'foo': [None, None, {'bar': 1, 'baz': 3}]}"
+   },
+   {
+    "id": "k03_unflatten",
+    "i": 2,
+    "old": false,
+    "new": false,
+    "src": "assert unflatten({'x[1].y[0].z': 1}) == {'x': [None, {'y': [None, {'z': 1}]}]}"
+   },
+   {
+    "id": "k04_to_ini",
+    "i": 0,
+    "old": false,
+    "new": false,
+    "src": "assert to_ini({'section1': {'key1': True, 'key2': None}}) == '[section1]\\nkey1=true\\nkey2=\\n\\n'"
+   },
+   {
+    "id": "k04_to_ini",
+    "i": 1,
+    "old": false,
+    "new": false,
+    "src": "assert to_ini({'se1': {'k1': 123, 'k2': False}}) == '[se1]\\nk1=123\\nk2=false\\n\\n'"
+   },
+   {
+    "id": "k04_to_ini",
+    "i": 2,
+    "old": true,
+    "new": true,
+    "src": "assert to_ini({}) == ''"
+   },
+   {
+    "id": "g7d2_dedupe_keep",
+    "i": 0,
+    "old": false,
+    "new": false,
+    "src": "assert dedupe_keep(['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']) == ['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK2']"
+   },
+   {
+    "id": "g7d2_dedupe_keep",
+    "i": 1,
+    "old": false,
+    "new": false,
+    "src": "assert dedupe_keep(['ZK4', 'ZK3', 'ZK2', 'ZK1', 'ZK4', 'ZK3']) == ['ZK4', 'ZK3', 'ZK2', 'ZK1', 'ZK4', 'ZK3']"
+   },
+   {
+    "id": "g7d2_dedupe_keep",
+    "i": 2,
+    "old": false,
+    "new": false,
+    "src": "assert dedupe_keep(['ZK1', 'ZK2', 'ZK3', 'ZK4']) == ['ZK1', 'ZK2', 'ZK3', 'ZK4']"
+   },
+   {
+    "id": "g7d3_fmt_amount",
+    "i": 0,
+    "old": false,
+    "new": false,
+    "src": "assert fmt_amount(1000) == \"1,000.00\""
+   },
+   {
+    "id": "g7d3_fmt_amount",
+    "i": 1,
+    "old": false,
+    "new": false,
+    "src": "assert fmt_amount(-250.50) == \"-250.50\""
+   },
+   {
+    "id": "g7d3_fmt_amount",
+    "i": 2,
+    "old": false,
+    "new": false,
+    "src": "assert fmt_amount(123456.789) == \"123,456.79\""
+   },
+   {
+    "id": "g7e1_parse_flag",
+    "i": 0,
+    "old": false,
+    "new": false,
+    "src": "assert parse_flag(\"on\") == True"
+   },
+   {
+    "id": "g7e1_parse_flag",
+    "i": 1,
+    "old": false,
+    "new": false,
+    "src": "assert parse_flag(\"OFF\") == False"
+   },
+   {
+    "id": "g7e1_parse_flag",
+    "i": 2,
+    "old": true,
+    "new": true,
+    "src": "assert parse_flag(\" \") == None"
+   },
+   {
+    "id": "g7e2_truncate_tail",
+    "i": 0,
+    "old": false,
+    "new": false,
+    "src": "assert truncate_tail(\"abcdef\", 5) == \"abcde\""
+   },
+   {
+    "id": "g7e2_truncate_tail",
+    "i": 1,
+    "old": false,
+    "new": false,
+    "src": "assert truncate_tail(\"abc\", 5) == \"abc\""
+   },
+   {
+    "id": "g7e2_truncate_tail",
+    "i": 2,
+    "old": false,
+    "new": false,
+    "src": "assert truncate_tail(\"abc\", 2) == \"ab...\""
+   }
+  ]
+ },
+ "rows": [
+  {
+   "arm": "A",
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "a0fee5a8860a7c0a"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "a0fee5a8860a7c0a",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  },
+  {
+   "arm": "B",
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "a0fee5a8860a7c0a"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "a0fee5a8860a7c0a",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  },
+  {
+   "arm": "C",
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "a0fee5a8860a7c0a"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "a0fee5a8860a7c0a",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  },
+  {
+   "arm": "A",
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "56bb4ef60b81a434"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "56bb4ef60b81a434",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "B",
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "56bb4ef60b81a434"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "56bb4ef60b81a434",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "C",
+   "id": "k02_encode_cookie",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "ae47e6c8ef899ebd"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "ae47e6c8ef899ebd",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "A",
+   "id": "k03_unflatten",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "07287f9e48746f58"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "07287f9e48746f58",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "B",
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "5b89dd6025000e4c"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "5b89dd6025000e4c",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "C",
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "5b89dd6025000e4c"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "5b89dd6025000e4c",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "A",
+   "id": "k04_to_ini",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "fddf8fcd014a136d"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "fddf8fcd014a136d",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "B",
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "278f682051e448ec"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "278f682051e448ec",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "C",
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "278f682051e448ec"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "278f682051e448ec",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "A",
+   "id": "g7d2_dedupe_keep",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "776aeb3b981add36"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "776aeb3b981add36",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  },
+  {
+   "arm": "B",
+   "id": "g7d2_dedupe_keep",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "178463fccbcdd4d9"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "178463fccbcdd4d9",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "C",
+   "id": "g7d2_dedupe_keep",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "93a38a44e1815a0d"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "93a38a44e1815a0d",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "A",
+   "id": "g7d3_fmt_amount",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int",
+    "float"
+   ],
+   "old": {
+    "built": false,
+    "pass_oracle": false,
+    "bite_partial": false,
+    "bite_stub": false,
+    "disc": false,
+    "admit": false,
+    "admit_plain": false,
+    "fail": "TYPES",
+    "src_sha": ""
+   },
+   "new": {
+    "built": false,
+    "pass_oracle": false,
+    "bite_partial": false,
+    "bite_stub": false,
+    "disc": false,
+    "admit": false,
+    "admit_plain": false,
+    "fail": "TYPES",
+    "src_sha": "",
+    "oracle_const": null
+   },
+   "verdict_old": "TYPES",
+   "verdict_new": "TYPES"
+  },
+  {
+   "arm": "B",
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": false,
+    "admit_plain": false,
+    "fail": "SEMANTIC",
+    "src_sha": "a597491b48575de1"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": false,
+    "fail": "SEMANTIC",
+    "src_sha": "a597491b48575de1",
+    "oracle_const": false
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "FAIL"
+  },
+  {
+   "arm": "C",
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": false,
+    "admit_plain": false,
+    "fail": "",
+    "src_sha": "8b4503ffeffab518"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": false,
+    "fail": "",
+    "src_sha": "8b4503ffeffab518",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  },
+  {
+   "arm": "A",
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "322fc649da658f23"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "322fc649da658f23",
+    "oracle_const": true
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "UNDECIDED"
+  },
+  {
+   "arm": "B",
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "7fff651b1c862465"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "7fff651b1c862465",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  },
+  {
+   "arm": "C",
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "0fffbf55d14c000c"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "SEMANTIC",
+    "src_sha": "0fffbf55d14c000c",
+    "oracle_const": true
+   },
+   "verdict_old": "FAIL",
+   "verdict_new": "UNDECIDED"
+  },
+  {
+   "arm": "A",
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "afee161ef06f5404"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "afee161ef06f5404",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  },
+  {
+   "arm": "B",
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "afee161ef06f5404"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "afee161ef06f5404",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  },
+  {
+   "arm": "C",
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "old": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "eb8e2da71930e2a2"
+   },
+   "new": {
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "admit_plain": true,
+    "fail": "",
+    "src_sha": "eb8e2da71930e2a2",
+    "oracle_const": false
+   },
+   "verdict_old": "PASS",
+   "verdict_new": "PASS"
+  }
+ ]
+}

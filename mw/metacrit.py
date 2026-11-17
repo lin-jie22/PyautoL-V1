@@ -65,7 +65,22 @@ def _nonempty_literal(node: ast.AST) -> str | None:
     return None
 
 
-def literal_expectations(src: str) -> list[str]:
+def _param_names(tree: ast.AST) -> set[str]:
+    """源码里所有 `FunctionDef` 的形参名（含 only/kw-only）。
+
+    ⛔ 只认形参，不认模块级同名变量 —— 否则 `sep = " "` 这种自由赋值就能冒充规格参数。
+    """
+    out: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef):
+            a = node.args
+            for grp in (a.posonlyargs, a.args, a.kwonlyargs):
+                for x in grp:
+                    out.add(x.arg)
+    return out
+
+
+def literal_expectations(src: str, params: Sequence[str] = ()) -> list[str]:
     """返回判据里所有「拿非空字面量当期望值」的位置摘要（空列表 = 判据干净）。
 
     判定口径（写死，可撤回）：`Compare` 节点，运算符 ∈ {==, !=, is, is not}，
@@ -73,12 +88,23 @@ def literal_expectations(src: str) -> list[str]:
 
     ⛔ 不做文本匹配：`'==' in src` 会把 `(got == {}) != (a == b)` 也算上，而那是
        结构断言。用 AST 是为了让「算不算」有唯一答案。
+
+    ## V188（§256）：`params` —— 「写死答案」与「写死规格」的分界
+
+    V187 的 `NUMFMT` 判据含 `if neg == "paren"`，被旧口径判为「字面量期望值」⇒ 误伤 2 格。
+    但那个字面量**不是模型写的**：它是装置按枚举 id 渲染进参数化参考实现的**规格参数**。
+    模型能选的只有枚举 id，而 id 选得对不对由**同一把尺**在 oracle 上判（`AZ150a`）。
+
+    ⇒ 若非字面量侧是 `Name`、该名字 ∈ `params`、且它确实是源码里某个函数的**形参**，
+       这一条不计。⛔ `params` 由装置给定的算子表决定，判据本身无权声明。
     """
     hits: list[str] = []
     try:
         tree = ast.parse(src)
     except SyntaxError as e:
         return [f"UNPARSABLE: {e.msg} (line {e.lineno})"]
+    allow = {str(x) for x in (params or ())}
+    formals = _param_names(tree) if allow else set()
     for node in ast.walk(tree):
         if not isinstance(node, ast.Compare):
             continue
@@ -94,17 +120,25 @@ def literal_expectations(src: str) -> list[str]:
                 if isinstance(other, ast.Call) and isinstance(other.func, ast.Name) \
                         and other.func.id == "len":
                     continue
-                if txt and isinstance(other, (ast.Call, ast.Name)):
+                if not txt:
+                    continue
+                if isinstance(other, ast.Name) and other.id in allow and other.id in formals:
+                    continue        # 规格参数的分派，不是期望值（V188）
+                if isinstance(other, (ast.Call, ast.Name)):
                     hits.append(f"line {getattr(node, 'lineno', 0)}: "
                                 f"{txt[:40]} vs {ast.unparse(other)[:40]}")
     return hits
 
 
-def admit(src: str) -> tuple[bool, str]:
-    """准入判定：`(通过?, 理由)`。⛔ 不含「像不像」的启发式，只有一条结构规则。"""
+def admit(src: str, params: Sequence[str] = ()) -> tuple[bool, str]:
+    """准入判定：`(通过?, 理由)`。⛔ 不含「像不像」的启发式，只有一条结构规则。
+
+    `params`：该判据所用算子的**规格参数名**（`critgen.spec_params(kind)`）。
+    手写判据一律 `params=()` ⇒ 口径与 V183 逐字相同。
+    """
     if not (src or "").strip():
         return False, "EMPTY"
-    hits = literal_expectations(src)
+    hits = literal_expectations(src, params)
     if not hits:
         return True, "OK"
     if hits[0].startswith("UNPARSABLE"):

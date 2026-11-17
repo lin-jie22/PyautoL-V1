@@ -33856,7 +33856,7 @@ L2（`scope="one"` vs `"class"`）：216 格里删除集合不同的只有 **3 �
 ### 257.6 门禁
 
 契约 **769/0**（+`AZ152a~e`）、锚层 **97/0**、撤回态 **327**（五条各自精确转红）、
-文档计数 11 处 0 漂移、`run_tests.sh` EXIT=0。
+文档计数 11 处 0 漂移、`run_tests.sh` EXIT=0；CI 三档绿（run **183**，提交 `51b8073`）。
 
 `AZ152a` 钉五类映射（含 `OUT_OF_DOMAIN` 归 TYPES、`(1,1,0)` 归 SEMANTIC）；
 `AZ152b` 钉只问可达；`AZ152c` 钉 `one` 恰好 = `ops_for(n) - {chosen}`；

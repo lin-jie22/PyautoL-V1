@@ -186,3 +186,14 @@ V185 是「目录只是陈列，模型可以选别的」；这里是「模型不
 | `arms_v189_d.py` / `readings_v189_d.json` | D 臂（不收窄的三轮对照） |
 | `readings_v189_buggy_nonmonotone.json` | 自踩 2 的有 bug 读数（收窄不单调） |
 | `_critgen_v188.py` | 冻结装置快照 |
+
+## 十、门禁
+
+| 项 | 结果 |
+|---|---|
+| `tests/contract_test.py` | **769/0**（+`AZ152a~e`） |
+| `tests/bench_test.py` | **97/0** |
+| `bench/withdraw_check.py` | **327** 条在册；`AZ152a~e` 五条精确转红（`AZ152b` 连带 `AZ152d`，结构理由已登 `COUPLED`） |
+| `bench/check_counts.py` | 11 处声明 **0 漂移** |
+| `run_tests.sh` | **EXIT=0**（八步全绿，生产记忆库与评审账本指纹未变） |
+| CI | **三档绿**（py3.11 / 3.12 / 3.13，run **183**，提交 `51b8073`） |

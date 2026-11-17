@@ -1,0 +1,998 @@
+{
+ "matrix": [
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": false,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "INPUTS = [({'b': 1, 'a': 2}, {'b': 1, 'a': 2}), ({'b': 1, 'a': 2}, {}), ({}, {})]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = diff_tree(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n"
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "BOUND",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "slots": {},
+   "code": "TYPES",
+   "built": false,
+   "pass_oracle": false,
+   "bite_partial": false,
+   "bite_stub": false
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "TAIL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "code": "TYPES",
+   "built": false,
+   "pass_oracle": false,
+   "bite_partial": false,
+   "bite_stub": false
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "import json\ndecode = json.loads\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n"
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n"
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "INPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for xs, in INPUTS:\n        got = encode_cookie(list(xs))\n        if not isinstance(got, list):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ 非 list\")\n        keys = [str(v).strip().lower() for v in got]\n        if len(keys) != len(set(keys)):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 归一化后仍有重复\")\n        it = iter(xs)\n        for x in got:\n            if not any(x == y for y in it):\n                raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 不是子序列\")\n    return True\n"
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        want = _numfmt(x, ' ', 0, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n"
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = encode_cookie(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n"
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "import json\ndecode = json.loads\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = unflatten(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n"
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": false,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = unflatten(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n"
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "INPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for xs, in INPUTS:\n        got = unflatten(list(xs))\n        if not isinstance(got, list):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ 非 list\")\n        keys = [str(v).strip().lower() for v in got]\n        if len(keys) != len(set(keys)):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 归一化后仍有重复\")\n        it = iter(xs)\n        for x in got:\n            if not any(x == y for y in it):\n                raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 不是子序列\")\n    return True\n"
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = unflatten(x)\n        want = _numfmt(x, ' ', 0, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n"
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = unflatten(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = unflatten(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n"
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    2,
+    3
+   ],
+   "disc": false,
+   "src": "import json\ndecode = json.loads\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = to_ini(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n"
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    2,
+    3
+   ],
+   "disc": false,
+   "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = to_ini(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n"
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    2,
+    3
+   ],
+   "disc": false,
+   "src": "INPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for xs, in INPUTS:\n        got = to_ini(list(xs))\n        if not isinstance(got, list):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ 非 list\")\n        keys = [str(v).strip().lower() for v in got]\n        if len(keys) != len(set(keys)):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 归一化后仍有重复\")\n        it = iter(xs)\n        for x in got:\n            if not any(x == y for y in it):\n                raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 不是子序列\")\n    return True\n"
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    2,
+    3
+   ],
+   "disc": false,
+   "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = to_ini(x)\n        want = _numfmt(x, ' ', 0, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n"
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    2,
+    3
+   ],
+   "disc": false,
+   "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = to_ini(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = to_ini(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n"
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "import json\ndecode = json.loads\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": true,
+   "src": "INPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    for xs, in INPUTS:\n        got = dedupe_keep(list(xs))\n        if not isinstance(got, list):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ 非 list\")\n        keys = [str(v).strip().lower() for v in got]\n        if len(keys) != len(set(keys)):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 归一化后仍有重复\")\n        it = iter(xs)\n        for x in got:\n            if not any(x == y for y in it):\n                raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 不是子序列\")\n    return True\n"
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        want = _numfmt(x, ' ', 0, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = dedupe_keep(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n"
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    6,
+    6
+   ],
+   "disc": false,
+   "src": "import json\ndecode = json.loads\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    6,
+    6
+   ],
+   "disc": false,
+   "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    6,
+    6
+   ],
+   "disc": false,
+   "src": "INPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for xs, in INPUTS:\n        got = fmt_amount(list(xs))\n        if not isinstance(got, list):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ 非 list\")\n        keys = [str(v).strip().lower() for v in got]\n        if len(keys) != len(set(keys)):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 归一化后仍有重复\")\n        it = iter(xs)\n        for x in got:\n            if not any(x == y for y in it):\n                raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 不是子序列\")\n    return True\n"
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "2",
+    "neg": "paren"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    6,
+    6
+   ],
+   "disc": true,
+   "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        want = _numfmt(x, ' ', 2, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": false,
+   "bite_stub": true,
+   "domain": [
+    6,
+    6
+   ],
+   "disc": false,
+   "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = fmt_amount(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    8,
+    8
+   ],
+   "disc": false,
+   "src": "import json\ndecode = json.loads\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = parse_flag(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    8,
+    8
+   ],
+   "disc": false,
+   "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = parse_flag(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    8,
+    8
+   ],
+   "disc": false,
+   "src": "INPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    for xs, in INPUTS:\n        got = parse_flag(list(xs))\n        if not isinstance(got, list):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ 非 list\")\n        keys = [str(v).strip().lower() for v in got]\n        if len(keys) != len(set(keys)):\n            raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 归一化后仍有重复\")\n        it = iter(xs)\n        for x in got:\n            if not any(x == y for y in it):\n                raise AssertionError(f\"SUBSEQ: {xs!r} ⇒ {got!r} 不是子序列\")\n    return True\n"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "flag"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    8,
+    8
+   ],
+   "disc": false,
+   "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = parse_flag(x)\n        want = _numfmt(x, ' ', 0, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": false,
+   "bite_stub": true,
+   "domain": [
+    8,
+    8
+   ],
+   "disc": false,
+   "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = parse_flag(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = parse_flag(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n"
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": false,
+   "bite_stub": false,
+   "domain": [
+    3,
+    3
+   ],
+   "disc": false,
+   "src": "INPUTS = [('abcdef', 0), ('abcdef', 3), ('', 0)]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = truncate_tail(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n"
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "BOUND",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {},
+   "code": "OK",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    4,
+    4
+   ],
+   "disc": false,
+   "src": "INPUTS = [('abcdef', 1), ('abcdef', 9), ('  a b  ', 3), ('', 1)]\n\n\ndef _rel():\n    for s, n in INPUTS:\n        got = truncate_tail(s, n)\n        if len(s) <= n:\n            if got != s:\n                raise AssertionError(f\"BOUND: {(s, n)!r} ⇒ {got!r} 改了短串\")\n        elif len(got) > n:\n            raise AssertionError(f\"BOUND: {(s, n)!r} ⇒ {got!r} 超界\")\n    return True\n"
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "slots": {
+    "keep": "tail_n"
+   },
+   "code": "OK",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": true,
+   "bite_stub": true,
+   "domain": [
+    4,
+    4
+   ],
+   "disc": true,
+   "src": "INPUTS = [('abcdef', 1), ('abcdef', 9), ('  a b  ', 3), ('', 1)]\n\n\ndef _rel():\n    for s, n in INPUTS:\n        got = truncate_tail(s, n)\n        if len(s) > n and not got.endswith(s[-n:]):\n            raise AssertionError(f\"TAIL: {(s, n)!r} ⇒ {got!r}\")\n    return True\n"
+  }
+ ],
+ "flatness": [
+  {
+   "sep": "space",
+   "dec": "0",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "space",
+   "dec": "0",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "space",
+   "dec": "1",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "space",
+   "dec": "1",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "space",
+   "dec": "2",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": true,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": true
+  },
+  {
+   "sep": "space",
+   "dec": "2",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "space",
+   "dec": "3",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "space",
+   "dec": "3",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "comma",
+   "dec": "0",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "comma",
+   "dec": "0",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "comma",
+   "dec": "1",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "comma",
+   "dec": "1",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "comma",
+   "dec": "2",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "comma",
+   "dec": "2",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": false,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "comma",
+   "dec": "3",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "comma",
+   "dec": "3",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "us",
+   "dec": "0",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "us",
+   "dec": "0",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "us",
+   "dec": "1",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "us",
+   "dec": "1",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "us",
+   "dec": "2",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "us",
+   "dec": "2",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "us",
+   "dec": "3",
+   "neg": "paren",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  },
+  {
+   "sep": "us",
+   "dec": "3",
+   "neg": "minus",
+   "built": true,
+   "pass_oracle": false,
+   "bite_partial": true,
+   "bite_stub": true,
+   "disc": false
+  }
+ ],
+ "pool": [
+  {
+   "pool": "num（V187）",
+   "n": 6,
+   "legal": 6,
+   "pass_oracle": true,
+   "bite_partial": true,
+   "disc": true
+  },
+  {
+   "pool": "int（V184 旧池）",
+   "n": 3,
+   "legal": 3,
+   "pass_oracle": true,
+   "bite_partial": false,
+   "disc": false
+  },
+  {
+   "pool": "只小值",
+   "n": 4,
+   "legal": 4,
+   "pass_oracle": true,
+   "bite_partial": false,
+   "disc": false
+  },
+  {
+   "pool": "只大值",
+   "n": 2,
+   "legal": 2,
+   "pass_oracle": true,
+   "bite_partial": true,
+   "disc": true
+  }
+ ]
+}

@@ -45,13 +45,22 @@ POOL: dict[str, tuple] = {
     "int": (0, 3, 5),
     "dict": ({"b": 1, "a": 2}, {}, {"x": {"y": 1}}),
     "list": (["b", "a", "b"], [], ["A", "a"]),
+    # ── V187 新增两个域。⛔ 它们只回答「喂什么」，⛔ 不回答「该返回什么」。 ──
+    # `num`：必须跨过三位一组的**边界**（999 < 1000 ≤ 1234.5），否则千分位槽在
+    #        判据里是**平坦**的 —— 小值池上 `sep="space"` 与 `sep="comma"` 产出同一个串，
+    #        那样「槽选对了」这件事根本不可能被看见（纪律 51）。
+    #        必须含负数与小数：负号写法槽同理。
+    "num": (0, 7, 1234.5, -1234.5, 1234567.891, -0.5),
+    # `flag`：短小的配置字面量 —— 大小写混合、带首尾空白、单字符、无法识别的串。
+    #         ⛔ 池里没有一处写着「哪个算真」。
+    "flag": ("y", " YES ", "0", "on", "  ", "xyz", "1", "OFF"),
 }
 
 #: 长度池（nat⁺）。⛔ 不含 0：`s[-0:]` 是整串，`n=0` 会让 TAIL 自相矛盾 ——
 #: 那是装置坑，不是模型错（V183 的 `TAIL` 就踩过这个边）。
 LEN_POOL: tuple[int, ...] = (1, 3, 9)
 
-TYPES: tuple[str, ...] = ("str", "int", "dict", "list")
+TYPES: tuple[str, ...] = ("str", "int", "dict", "list", "num", "flag")
 
 #: 槽的枚举表。键 = 模型写的 id，值 = 渲染进判据的表达式（空串 = 未填）。
 DECODERS: dict[str, str] = {
@@ -70,6 +79,18 @@ KEEPS: dict[str, str] = {
     "head_n": "s[:n]",
 }
 
+#: `NUMFMT`（V187）的三个规格槽。⛔ 表里没有任何一项被标成「正确」——
+#: 正确答案在**惯例**里（记忆），不在装置里。
+SEPS: dict[str, str] = {"": "", "space": " ", "comma": ",", "us": "_"}
+DECS: dict[str, int] = {"": -1, "0": 0, "1": 1, "2": 2, "3": 3}
+NEGS: dict[str, str] = {"": "", "paren": "paren", "minus": "minus"}
+
+#: 槽 key → 该槽的枚举表。V187 起槽不止两张表，用分发表取代「decode 还是不 decode」的三元判断。
+SLOT_TABLES: dict[str, dict] = {
+    "decode": DECODERS, "keep": KEEPS,
+    "sep": SEPS, "dec": DECS, "neg": NEGS,
+}
+
 #: 算子签名。`arity` 是**结构要求**（几个位置参数）；`slots` 是该算子要模型填的槽。
 OPS: dict[str, dict] = {
     "ROUNDTRIP": {"arity": 1, "slots": ("decode",),
@@ -84,6 +105,13 @@ OPS: dict[str, dict] = {
               "what": "输出长度不超过 n；输入不超长时必须原样返回"},
     "TAIL": {"arity": 2, "slots": ("keep",),
              "what": "超长输出的结尾必须是 keep 指定的形状"},
+    # ── V187 新增 ────────────────────────────────────────────────────────
+    # ⚠️ `NUMFMT` 与上面五个**不同质**：上面是关系，这个是**规格**（装置渲染一份
+    #    参数化的参考格式化再逐字比对）。判别力口径要分开报，⛔ 不许混一起当「关系型能力」。
+    "NUMFMT": {"arity": 1, "slots": ("sep", "dec", "neg"),
+               "what": "输出必须等于按 (sep, dec, neg) 渲染的规范数字串"},
+    "INVARIANT": {"arity": 1, "slots": (),
+                  "what": "输出在大小写/首尾空白规范化下不变，且不是常量（无槽：关系来自题面）"},
 }
 
 
@@ -144,7 +172,7 @@ def validate(kind: str, types: list, slots: dict, n_args: int) -> str:
     if not reachable(kind, n_args):
         return f"{kind} 需要 {spec['arity']} 个输入，本题函数有 {n_args} 个 ⇒ 结构不可达"
     for key in spec["slots"]:
-        table = DECODERS if key == "decode" else KEEPS
+        table = SLOT_TABLES[key]
         v = str((slots or {}).get(key) or "")
         if not v:
             return f"{kind} 需要槽 `{key}`；可选：{[k for k in table if k]}"
@@ -203,7 +231,7 @@ def diagnose(kind: str, types: list, slots: dict, n_args: int) -> dict:
         out["msg"] = f"{k} 的第二个类型必须是 \"int\"（长度），拿到的是 {types[1]!r}"
         return out
     for key in spec["slots"]:
-        table = DECODERS if key == "decode" else KEEPS
+        table = SLOT_TABLES[key]
         v = str((slots or {}).get(key) or "")
         if not v:
             out["code"] = "SLOT"
@@ -274,6 +302,31 @@ _LEAVES = '''def _leaf_values(v):
     else:
         yield v
 '''
+
+#: `NUMFMT` 的**参数化**参考渲染（V187）。⚠️ 这里没有一处写着「空格 / 2 / 括号」是答案 ——
+#: 它们是形参。答案在惯例里，由槽值送进来（`SEPS`/`DECS`/`NEGS` 三张表都含多项）。
+_NUMFMT = '''def _numfmt(x, sep, dec, neg):
+    s = "%.*f" % (dec, abs(float(x)))
+    ip, _, fp = s.partition(".")
+    g = []
+    while len(ip) > 3:
+        g.insert(0, ip[-3:])
+        ip = ip[:-3]
+    g.insert(0, ip)
+    body = sep.join(g) + ("." + fp if dec else "")
+    if float(x) < 0:
+        return ("(" + body + ")") if neg == "paren" else ("-" + body)
+    return body
+'''
+
+#: `INVARIANT` 的规范化变换（无槽 ⇒ 全部五种都要过）。
+_NORMS: dict[str, str] = {
+    "upper": "s.upper()", "lower": "s.lower()", "strip": "s.strip()",
+    "strip_upper": "s.strip().upper()", "strip_lower": "s.strip().lower()",
+}
+_NORM = ("def _norm_v187(s, how):\n"
+         "    s = str(s)\n"
+         "    return {" + ", ".join(f"{k!r}: {v}" for k, v in _NORMS.items()) + "}[how]\n")
 
 
 def _render(pre: str, inputs: list, body: str) -> str:
@@ -415,18 +468,56 @@ def build(kind: str, types: list, slots: dict, fn: str, inputs: list | None = No
             '            raise AssertionError(f"TAIL: {(s, n)!r} ⇒ {got!r}")'
         )
         pre = ""
+    elif kind == "NUMFMT":
+        sep = SEPS[str(slots.get("sep") or "")]
+        dec = DECS[str(slots.get("dec") or "")]
+        neg = NEGS[str(slots.get("neg") or "")]
+        body = (
+            "    for x, in INPUTS:\n"
+            f"        got = {fn}(x)\n"
+            f"        want = _numfmt(x, {sep!r}, {dec!r}, {neg!r})\n"
+            "        if got != want:\n"
+            '            raise AssertionError(f"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}")'
+        )
+        pre = _NUMFMT.strip("\n")
+    elif kind == "INVARIANT":
+        body = (
+            "    seen = []\n"
+            "    for x, in INPUTS:\n"
+            f"        got = {fn}(x)\n"
+            "        for how in " + repr(tuple(_NORMS)) + ":\n"
+            f"            alt = {fn}(_norm_v187(x, how))\n"
+            "            if repr(got) != repr(alt):\n"
+            '                raise AssertionError('
+            'f"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}")\n'
+            "        seen.append(repr(got))\n"
+            "    if len(set(seen)) < 2:\n"
+            '        raise AssertionError("INVARIANT: 所有输入同一个输出 —— 判据不承载信息")'
+        )
+        pre = _NORM.strip("\n")
     else:  # pragma: no cover - validate 已拦住
         return ""
     return _render(pre, inputs, body)
 
 
-def skeleton(kind: str | None = None) -> str:
-    """给模型看的 JSON 骨架（`kind` 为空 ⇒ 通用版）。⛔ 不含任何题目信息。"""
+def skeleton(n_args: int = 1, kind: str | None = None) -> str:
+    """给模型看的 JSON 骨架。⛔ 不含任何题目信息。
+
+    ⭐ V187：`types` 的占位**重复 `n_args` 次** —— V186 实测模型写
+    `types: ["int","float"]`（两个类型、还编了个 `float`），骨架里只有一个占位时它不会
+    自己数参数。骨架的**长度**就是它看到的约束（V185 已证：话不是约束）。
+    ⛔ 槽的可选值全部列出，但那只是陈列（与 `catalogue()` 同一批事实），不是推荐。
+    """
     kinds = [kind] if kind else sorted(OPS)
+    n = n_args if isinstance(n_args, int) and n_args >= 1 else 1
+    tslot = '"<' + "|".join(TYPES) + '>"'
     return ('{"kind": "<' + "|".join(kinds) + '>", '
-            '"types": ["<' + "|".join(TYPES) + '>"], '
+            '"types": [' + ", ".join([tslot] * n) + '], '
             '"decode": "<' + "|".join(k for k in DECODERS if k) + '>", '
-            '"keep": "<' + "|".join(k for k in KEEPS if k) + '>"}')
+            '"keep": "<' + "|".join(k for k in KEEPS if k) + '>", '
+            '"sep": "<' + "|".join(k for k in SEPS if k) + '>", '
+            '"dec": "<' + "|".join(k for k in DECS if k) + '>", '
+            '"neg": "<' + "|".join(k for k in NEGS if k) + '>"}')
 
 
 def ops_for(n_args: int) -> dict:
@@ -451,7 +542,7 @@ def catalogue(n_args: int | None = None) -> str:
     for k, spec in (OPS if n_args is None else ops_for(n_args)).items():
         extra = ""
         for key in spec["slots"]:
-            table = DECODERS if key == "decode" else KEEPS
+            table = SLOT_TABLES[key]
             extra += f"；{key} 可选 {[x for x in table if x]}"
         out.append(f"- {k}（{spec['arity']} 个参数）：{spec['what']}{extra}")
     return "\n".join(out)

@@ -15632,12 +15632,19 @@ check(RS, "AZ148d 回错句子**只提模型自己选的算子**，⛔ 不点名
 _az149_one = _CG.ops_for(1)
 _az149_two = _CG.ops_for(2)
 
+# ⚠️ V187 口径修正：原来的断言把「算子清单」写死成三个常量 —— 而算子库本来就是
+#    可扩展的（V187 加了 NUMFMT/INVARIANT），那样的断言会在**合法的**扩展上转红。
+#    ⇒ 改成结构断言：并集覆盖、互不相交、各自 arity 相符、且二元算子不出现在一元组。
+#    这几条合起来**不是恒真**：`ops_for` 退回全量 ⇒ 不相交破裂；返回空 ⇒ 并集破裂。
 check(RS, "AZ149a `critgen.ops_for(n)` 只返回 arity 相符的算子：一元题**拿不到**任何二元算子，\n"
           "              二元题反之。⛔ 这不是提示语而是候选集 —— 提示可以不理（V185 实测\n"
           "              它把 TAIL 换成另一个二元算子），候选集不行；\n"
           "              撤回语义：改成 `return dict(OPS)` ⇒ 一元题里冒出 TAIL ⇒ 必须红",
-      set(_az149_one) == {"ROUNDTRIP", "CONSERVE", "SUBSEQ"}
-      and set(_az149_two) == {"EMPTY_IFF_EQUAL", "BOUND", "TAIL"},
+      set(_az149_one) | set(_az149_two) == set(_CG.OPS)
+      and not (set(_az149_one) & set(_az149_two))
+      and all(_CG.OPS[k]["arity"] == 1 for k in _az149_one)
+      and all(_CG.OPS[k]["arity"] == 2 for k in _az149_two)
+      and "TAIL" not in _az149_one and "BOUND" not in _az149_one,
       f"one={sorted(_az149_one)} two={sorted(_az149_two)}")
 
 _az149_unknown = _CG.ops_for(-1)
@@ -15662,6 +15669,116 @@ check(RS, "AZ149c `catalogue(n)` 的行数 == `len(ops_for(n))`，且每行只�
       and all(any(k in ln for ln in _az149_cat1) for k in _az149_one)
       and not any("TAIL" in ln or "BOUND" in ln for ln in _az149_cat1),
       f"1={len(_az149_cat1)} 2={len(_az149_cat2)} all={len(_az149_cat_all)}")
+
+# ═══════════ V187（§255）：补算子缺口 + 骨架等长（AZ150） ═══════════
+
+from mw.verify import run_example as _az150_run                # noqa: E402
+
+
+#: 夹具：**与 `critgen._NUMFMT` 不同写法**的同一规格（倒序切组 + `str.format`）。
+#: ⛔ 两份实现交叉验证 —— 契约与产品各自独立写一遍，任何一边的舍入/切组走样都会红
+#:    （纪律 63：判「数值相同」时原语也是判据）。
+def _az150_fmt(x, sep=" ", dec=2, neg="paren"):
+    v = abs(float(x))
+    body = ("{:." + str(dec) + "f}").format(v)
+    ip, _, fp = body.partition(".")
+    out = ""
+    for i, ch in enumerate(reversed(ip)):
+        if i and i % 3 == 0:
+            out = sep + out
+        out = ch + out
+    body = out + ("." + fp if dec else "")
+    if float(x) < 0:
+        return ("(" + body + ")") if neg == "paren" else ("-" + body)
+    return body
+
+
+_AZ150_NUM = (0, 7, 1234.5, -1234.5, 1234567.891, -0.5)
+#: 生成的判据里 `_rel()` 调 `_az150_num_fn`，所以夹具的两个函数都要拼进代码。
+_AZ150_PRE = (inspect.getsource(_az150_fmt) + "\n\n"
+              "def _az150_num_fn(x, sep=' ', dec=2, neg='paren'):\n"
+              "    return _az150_fmt(x, sep, dec, neg)\n")
+
+
+def _az150_src(slots, pool=None):
+    pool = _AZ150_NUM if pool is None else pool
+    return _CG.build("NUMFMT", ["num"], slots, "_az150_num_fn",
+                     [(v,) for v in pool])
+
+
+def _az150_judge(src, impl=None):
+    """在给定实现上跑判据。`impl` 为 None ⇒ 用夹具的正确实现。通过 ⇒ `""`。"""
+    code = _AZ150_PRE if impl is None else impl
+    return _az150_run(code + "\n" + src, "assert _rel()")
+
+
+_az150_ok = []
+for _sep in [k for k in _CG.SEPS if k]:
+    for _dec in [k for k in _CG.DECS if k]:
+        for _neg in [k for k in _CG.NEGS if k]:
+            _s = _az150_src({"sep": _sep, "dec": _dec, "neg": _neg})
+            if _s and _az150_judge(_s) == "":
+                _az150_ok.append((_sep, _dec, _neg))
+
+check(RS, "AZ150a `NUMFMT` 的三个规格槽**唯一**可定：24 组合（sep 3 × dec 4 × neg 2）里\n"
+          "              恰好 1 个能在正确实现上通过 ⇒ 「三槽全对」⟺ `disc=True`，两者可互推。\n"
+          "              ⛔ 若出现 ≥2 个 ⇒ 槽不唯一，「槽选对了」不能单独当判别力（V187 STAGE0 实测 1 个）；\n"
+          "              撤回语义：`SEPS` 里 `\"space\": \" \"` 改成无分隔 ⇒ 通过数变 0 ⇒ 必须红",
+      _az150_ok == [("space", "2", "paren")],
+      f"ok={_az150_ok}")
+
+#: 同一份判据、同一个槽值，只换**输入池**：小值池上「逗号实现」与「空格实现」输出相同
+#: ⇒ 判据咬不住；跨过三位边界后立刻咬住。这是「判别力是 (判据, 输入域) 的函数」的机械证据。
+_AZ150_COMMA_IMPL = (inspect.getsource(_az150_fmt) + "\n\n"
+                     "def _az150_num_fn(x, sep=' ', dec=2, neg='paren'):\n"
+                     "    return _az150_fmt(x, ',', dec, neg)\n")
+_az150_slot = {"sep": "space", "dec": "2", "neg": "paren"}
+_az150_small = _az150_src(_az150_slot, (0, 3, 5))
+_az150_big = _az150_src(_az150_slot, (1234.5, -1234.5))
+_az150_bite_small = (_az150_small != "") and _az150_judge(_az150_small, _AZ150_COMMA_IMPL) != ""
+_az150_bite_big = (_az150_big != "") and _az150_judge(_az150_big, _AZ150_COMMA_IMPL) != ""
+
+check(RS, "AZ150b 「判别力是 `(判据, 输入域)` 的函数」：**同一份判据、同一个槽值**，\n"
+          "              只把输入池从小值（0/3/5）换成跨三位边界（1234.5/−1234.5），\n"
+          "              对「逗号千分位」这个错误实现的判定就从**通过**变成**失败**。\n"
+          "              ⇒ 池不是「喂数据的管道」，它是判据的一部分（V187 STAGE0 §1.3）；\n"
+          "              撤回语义：`POOL[\"num\"]` 去掉 1234.5/−1234.5 ⇒ 本条必须红",
+      (not _az150_bite_small) and _az150_bite_big,
+      f"small_bite={_az150_bite_small} big_bite={_az150_bite_big}")
+
+#: `INVARIANT` 的非退化：常量实现在**任何**池上都必须被判据拒绝。
+_AZ150_FLAG = ("def _az150_flag_ok(s):\n"
+               "    t = str(s).strip().lower()\n"
+               "    if t in ('y', 'yes', '1'):\n"
+               "        return True\n"
+               "    if t in ('n', 'no', '0', 'off', 'false'):\n"
+               "        return False\n"
+               "    return None\n")
+_AZ150_FLAG_CONST = "def _az150_flag_ok(s):\n    return None\n"
+_az150_inv = _CG.build("INVARIANT", ["flag"], {}, "_az150_flag_ok")
+_az150_inv_ok = bool(_az150_inv) and \
+    _az150_run(_AZ150_FLAG + "\n" + _az150_inv, "assert _rel()") == ""
+_az150_inv_const = bool(_az150_inv) and \
+    _az150_run(_AZ150_FLAG_CONST + "\n" + _az150_inv, "assert _rel()") != ""
+
+check(RS, "AZ150c `INVARIANT` 的**非退化**谓词：同一份判据，正确实现通过、常量实现必须失败。\n"
+          "              ⛔ 这一条防的是「不变性」单独成立时的恒真判据 —— 常量函数对任何\n"
+          "              规范化变换都不变（纪律 5 的教科书形态）；\n"
+          "              撤回语义：删掉 `if len(set(seen)) < 2` 那段 ⇒ 常量实现也通过 ⇒ 必须红",
+      _az150_inv_ok and _az150_inv_const,
+      f"built={bool(_az150_inv)} ok_pass={_az150_inv_ok} const_bitten={_az150_inv_const}")
+
+_az150_sk1 = json.loads(_CG.skeleton(1))
+_az150_sk3 = json.loads(_CG.skeleton(3))
+
+check(RS, "AZ150d `skeleton(n_args)` 的 `types` 占位个数 == `n_args`：骨架的**长度**就是\n"
+          "              模型看到的约束（V186 实测它写 `[\"int\",\"float\"]` —— 两个类型、\n"
+          "              还编了个 `float`；V185 已证「话说给它听」不构成约束）；\n"
+          "              撤回语义：`\", \".join([tslot] * n)` 改回 `[tslot]` ⇒ 本条必须红",
+      len(_az150_sk1.get("types") or []) == 1
+      and len(_az150_sk3.get("types") or []) == 3
+      and len(set(_az150_sk3["types"])) == 1,
+      f"n1={len(_az150_sk1.get('types') or [])} n3={len(_az150_sk3.get('types') or [])}")
 
 print()
 print("=" * 74)

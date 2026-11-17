@@ -1,0 +1,54 @@
+k01_diff_tree            n=2 cand=3  A=EMPTY_IFF_EQPxS    B=EMPTY_IFF_EQPxS    C=EMPTY_IFF_EQPxS    mem=70
+k02_encode_cookie        n=1 cand=5  A=ROUNDTRIP   xBS    B=ROUNDTRIP   xBS    C=INVARIANT   xBS    mem=70
+k03_unflatten            n=1 cand=5  A=ROUNDTRIP   xBS    B=INVARIANT   xBS    C=INVARIANT   xBS    mem=70
+k04_to_ini               n=1 cand=5  A=ROUNDTRIP   xBS    B=INVARIANT   xBS    C=INVARIANT   xBS    mem=0
+g7d2_dedupe_keep         n=1 cand=5  A=SUBSEQ      PBS    B=CONSERVE    xBS    C=INVARIANT   xBS    mem=218
+g7d3_fmt_amount          n=1 cand=5  A=×TYPES             B=NUMFMT      xBS    C=NUMFMT      PBS    mem=218
+g7e1_parse_flag          n=1 cand=5  A=ROUNDTRIP   xBS    B=INVARIANT   PxS    C=INVARIANT   xBS    mem=218
+g7e2_truncate_tail       n=2 cand=3  A=TAIL        PBS    B=TAIL        PBS    C=TAIL        PBS    mem=218
+
+== 汇总 ==
+A  可跑 7/8 过正确 3/8 咬错 6/8 咬桩 7/8 判别 2/8 准入 7/8  分类={'OK': 3, 'SEMANTIC': 4, 'TYPES': 1}
+B  可跑 8/8 过正确 3/8 咬错 6/8 咬桩 8/8 判别 1/8 准入 7/8  分类={'OK': 3, 'SEMANTIC': 5}
+C  可跑 8/8 过正确 3/8 咬错 7/8 咬桩 8/8 判别 2/8 准入 7/8  分类={'OK': 3, 'SEMANTIC': 5}
+
+== 新算子的采用（B/C 臂）==
+  C k02_encode_cookie        INVARIANT  types=['dict'] slots={'decode': 'json.loads', 'keep': 'tail_n', 'sep': 'space', 'dec': '0', 'neg': 'minus'} fail=SEMANTIC
+  B k03_unflatten            INVARIANT  types=['dict'] slots={'decode': 'dict', 'keep': 'tail_n'} fail=SEMANTIC
+  C k03_unflatten            INVARIANT  types=['dict'] slots={'decode': 'dict', 'keep': 'tail_n'} fail=SEMANTIC
+  B k04_to_ini               INVARIANT  types=['dict'] slots={'decode': 'json.loads', 'keep': 'tail_n'} fail=SEMANTIC
+  C k04_to_ini               INVARIANT  types=['dict'] slots={'decode': 'json.loads', 'keep': 'tail_n'} fail=SEMANTIC
+  C g7d2_dedupe_keep         INVARIANT  types=['list'] slots={'decode': 'str', 'keep': 'tail_n', 'sep': 'space', 'dec': '2', 'neg': 'paren'} fail=SEMANTIC
+  B g7d3_fmt_amount          NUMFMT     types=['num'] slots={'decode': 'us', 'sep': 'comma', 'dec': '2', 'neg': 'paren'} fail=SEMANTIC
+  C g7d3_fmt_amount          NUMFMT     types=['num'] slots={'decode': 'us', 'keep': 'ellipsis_tail_n', 'sep': 'space', 'dec': '2', 'neg': 'paren'} fail=-
+  B g7e1_parse_flag          INVARIANT  types=['flag'] slots={'decode': 'str', 'keep': 'tail_n'} fail=-
+  C g7e1_parse_flag          INVARIANT  types=['str'] slots={'decode': 'str', 'keep': 'tail_n'} fail=SEMANTIC
+
+== P5/P7：g7d3 的三槽（记忆值 = space / 2 / paren）==
+  A: kind=ROUNDTRIP slots={'decode': 'str', 'keep': 'ellipsis_tail_n'} 命中记忆值=False mem_chars=0
+  B: kind=NUMFMT slots={'decode': 'us', 'sep': 'comma', 'dec': '2', 'neg': 'paren'} 命中记忆值=False mem_chars=0
+  C: kind=NUMFMT slots={'decode': 'us', 'keep': 'ellipsis_tail_n', 'sep': 'space', 'dec': '2', 'neg': 'paren'} 命中记忆值=True mem_chars=218
+
+== P1/P2：g7d3 的 types 长度与首错 ==
+  A: types=['int', 'float'] len=2 fail=TYPES code=types 长度 2 与函数必填参数个数 1 不符；每个参数一个类型名，可选：['str', 'int', 'dict'
+  B: types=['num'] len=1 fail=SEMANTIC code=
+  C: types=['num'] len=1 fail=- code=
+
+== P4/P8：逐题 pass 变化（A→B→C）==
+  k01_diff_tree            pass A/B/C=111  kind A/B/C=EMPTY_IFF_EQUAL/EMPTY_IFF_EQUAL/EMPTY_IFF_EQUAL
+  k02_encode_cookie        pass A/B/C=000  kind A/B/C=ROUNDTRIP/ROUNDTRIP/INVARIANT
+  k03_unflatten            pass A/B/C=000  kind A/B/C=ROUNDTRIP/INVARIANT/INVARIANT
+  k04_to_ini               pass A/B/C=000  kind A/B/C=ROUNDTRIP/INVARIANT/INVARIANT
+  g7d2_dedupe_keep         pass A/B/C=100  kind A/B/C=SUBSEQ/CONSERVE/INVARIANT  ← 变化
+  g7d3_fmt_amount          pass A/B/C=001  kind A/B/C=ROUNDTRIP/NUMFMT/NUMFMT  ← 变化
+  g7e1_parse_flag          pass A/B/C=010  kind A/B/C=ROUNDTRIP/INVARIANT/INVARIANT  ← 变化
+  g7e2_truncate_tail       pass A/B/C=111  kind A/B/C=TAIL/TAIL/TAIL
+
+== I1/I2 不变量 ==
+  I1 g7e1 B 臂：built=True pass=True bite_partial=False ⇒ 期望 built→pass=T ∧ bite=F
+  I2 新算子过 oracle 却不咬桩的行 = 0（必须 0）：[]
+
+== 自检：built 与 fail 必须互相说得通 ==
+  矛盾行 = 0（必须为 0）
+
+落盘 /Users/linshaojie/V1/bench/evidence/l3_s275/readings_v187.json（24 行）

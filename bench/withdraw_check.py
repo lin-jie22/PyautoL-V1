@@ -2213,6 +2213,29 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ149c", "mw/critgen.py",
      '''    for k, spec in (OPS if n_args is None else ops_for(n_args)).items():''',
      '''    for k, spec in OPS.items():  # 撤回态：忽略 n_args'''),
+    # ── V187（§255）：补算子缺口 + 骨架等长（AZ150a~d）────────────────────
+    # AZ150a：空格千分位退化成无分隔 ⇒ 24 组合里没有一个是正确的那个。
+    ("AZ150a", "mw/critgen.py",
+     '''SEPS: dict[str, str] = {"": "", "space": " ", "comma": ",", "us": "_"}''',
+     '''SEPS: dict[str, str] = {"": "", "space": "", "comma": ",", "us": "_"}  # 撤回态'''),
+    # AZ150b：`build()` 无视调用方给的输入域（永远用全池）⇒ 小值池也跨到三位边界，
+    #        「换池 ⇒ 判定翻转」这个现象消失。⚠️ 第一版撤的是 `_numfmt` 的分组循环，
+    #        实测**不会**让本条红（判据 want 不分组、逗号实现也只在 ≥1000 才分组，
+    #        两条结论仍各自成立）⇒ 撤回点选错了实现，已换。
+    ("AZ150b", "mw/critgen.py",
+     '''    if inputs is None:
+        inputs = _inputs_for(kind, types)''',
+     '''    inputs = _inputs_for(kind, types)  # 撤回态：无视调用方给的域'''),
+    # AZ150c：删掉非退化检查 ⇒ 常量实现对任何规范化变换都不变 ⇒ 恒真。
+    #        ⚠️ 判据是**拼进源码的字符串片段**，所以撤回目标必须带引号（第一版撤裸行，
+    #        报「变异锚点出现 0 次」—— 那条裸行只存在于生成的代码里，不在源文件里）。
+    ("AZ150c", "mw/critgen.py",
+     '''            "    if len(set(seen)) < 2:\\n"''',
+     '''            "    if False:\\n"'''),
+    # AZ150d：骨架只留一个 types 占位 ⇒ 模型看到的长度与参数个数脱钩。
+    ("AZ150d", "mw/critgen.py",
+     '", ".join([tslot] * n)',
+     'tslot'),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2552,6 +2575,7 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   二元算子」—— 它建立的就是这个过滤，撤了必然一起翻（同一实现的两个面：
     #:   一个问候选集，一个问提示里陈列了什么）。b 单红（755/1），a 连带 c（754/2）。
     "AZ149a": frozenset({"AZ149c"}),
+    #: ★V187（§255）：未登记连带 —— 先按「各自单红」跑，实测若有多红再按结构理由补登。
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

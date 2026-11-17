@@ -1,0 +1,6 @@
+{
+ "cat_all": "- ROUNDTRIP（1 个参数）：把输出用 decode 解回来必须等于输入；decode 可选 ['json.loads', 'parse_qsl', 'int', 'str', 'list']\n- CONSERVE（1 个参数）：输出的叶子多重集必须等于输入的叶子多重集\n- EMPTY_IFF_EQUAL（2 个参数）：两个输入之间的差异为空 ⟺ 两输入相等\n- SUBSEQ（1 个参数）：输出必须是输入的子序列，且归一化后两两不等\n- BOUND（2 个参数）：输出长度不超过 n；输入不超长时必须原样返回\n- TAIL（2 个参数）：超长输出的结尾必须是 keep 指定的形状；keep 可选 ['tail_n', 'ellipsis_tail_n', 'head_n']",
+ "cat1": "- ROUNDTRIP（1 个参数）：把输出用 decode 解回来必须等于输入；decode 可选 ['json.loads', 'parse_qsl', 'int', 'str', 'list']\n- CONSERVE（1 个参数）：输出的叶子多重集必须等于输入的叶子多重集\n- SUBSEQ（1 个参数）：输出必须是输入的子序列，且归一化后两两不等",
+ "cat2": "- EMPTY_IFF_EQUAL（2 个参数）：两个输入之间的差异为空 ⟺ 两输入相等\n- BOUND（2 个参数）：输出长度不超过 n；输入不超长时必须原样返回\n- TAIL（2 个参数）：超长输出的结尾必须是 keep 指定的形状；keep 可选 ['tail_n', 'ellipsis_tail_n', 'head_n']",
+ "skel": "{\"kind\": \"<BOUND|CONSERVE|EMPTY_IFF_EQUAL|ROUNDTRIP|SUBSEQ|TAIL>\", \"types\": [\"<str|int|dict|list>\"], \"decode\": \"<json.loads|parse_qsl|int|str|list>\", \"keep\": \"<tail_n|ellipsis_tail_n|head_n>\"}"
+}

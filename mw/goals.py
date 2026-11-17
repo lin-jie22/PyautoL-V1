@@ -761,6 +761,125 @@ def scan_suites(dirpath: Path | str) -> dict[str, list[str]]:
     return out
 
 
+# ===========================================================================
+# 口径构成（V182，§250）—— 一格里的观测来自**几把尺子**
+# ===========================================================================
+
+
+def _is_num(x) -> bool:
+    """`bool` 是 `int` 的子类 ⇒ 必须显式排除（与 `scoreinfo` 的行闸同义）。"""
+    return (isinstance(x, (int, float)) and not isinstance(x, bool)
+            and x == x and x not in (float("inf"), float("-inf")))
+
+
+def sig_report(
+    rows: Iterable[dict],
+    cells: Sequence[str] | None = None,
+    *,
+    min_obs: int = MIN_OBS,
+) -> list[dict]:
+    """逐格的**口径构成**读数（V182）。⛔ 纯读：不改 `propose`/`stats` 的判据。
+
+    ## 为什么需要它
+
+    `stats()` 的均分把一格里的所有行一起平均，而 `caliber_sig` 不同的行是
+    **两把尺子量出来的**。混起来平均得到的数**不对应任何一个口径**：
+    实测（会话 4 全对 / 会话 5 全错）⇒ 混池报 0.5，而两个读数分别在 1.0 与 0.0，
+    0.5 谁也不是。
+
+    ## 字段
+
+        cell        格 id
+        n_sigs      已知口径的个数（⛔ 无签名行不计）
+        sigs        [(口径, 行数, 该口径均分)]，按行数降序、同数按字面 —— 顺序确定
+        n_unknown   没有 `caliber_sig` 的行数（⛔ 不并入任何口径）
+        n_obs       总行数（跨口径累加：**次数是事实**）
+        mean_all    混池均分（**现状**，用于对照，⛔ 不删）
+        major       行数最多的口径；**并列第一 ⇒ None**（⛔ 不许用「最新/字典序」猜）
+        tie         并列第一 ⇒ True
+        mean_major  只在 `major` 非 None 时给；`tie` ⇒ None
+        need_split  ⚠️ 升级条件：`tie` 且前两名都 ≥ `min_obs` 行
+                    （两把尺子都测够了 ⇒ 两个读数都成立 ⇒ 必须报冲突，不能选一个）
+
+    ⛔ **不猜**：平票时 `major=None`。挑一个口径出来的数会被当成「那格的读数」，
+    而它恰恰是「两个读数都成立」的情形 —— 选一个就是把冲突藏起来。
+    """
+    rows = [r for r in rows if isinstance(r, dict)]
+
+    def _tid(r: dict) -> str:
+        return str(r.get("task_id") or "").strip()
+
+    def _sig(r: dict) -> str:
+        s = r.get("caliber_sig")
+        return s.strip() if isinstance(s, str) else ""
+
+    wanted = (sorted({_tid(r) for r in rows}) if cells is None else list(cells))
+    out: list[dict] = []
+    for c in wanted:
+        sub = [r for r in rows if _tid(r) == c]
+        buckets: dict[str, list[float]] = {}
+        n_unknown = 0
+        for r in sub:
+            s = _sig(r)
+            if not s:
+                n_unknown += 1
+                continue
+            sc = r.get("score")
+            buckets.setdefault(s, [])
+            if _is_num(sc):
+                buckets[s].append(float(sc))
+        ordered = sorted(((s, len([1 for r in sub if _sig(r) == s]),
+                           (_mean(buckets[s]) if buckets[s] else None))
+                          for s in buckets),
+                         key=lambda t: (-t[1], t[0]))
+        major, tie = None, False
+        if len(ordered) >= 2:
+            if ordered[0][1] == ordered[1][1]:
+                tie = True                    # 并列第一 ⇒ 不选
+            else:
+                major = ordered[0][0]
+        elif ordered:
+            major = ordered[0][0]
+        scores_all = [float(r["score"]) for r in sub if _is_num(r.get("score"))]
+        mm = next((m for s, _n, m in ordered if s == major), None)
+        out.append({
+            "cell": c, "n_sigs": len(buckets), "sigs": ordered,
+            "n_unknown": n_unknown, "n_obs": len(sub),
+            "mean_all": (_mean(scores_all) if scores_all else None),
+            "major": major, "tie": tie, "mean_major": (None if tie else mm),
+            "need_split": bool(tie and len(ordered) >= 2
+                               and ordered[0][1] >= min_obs and ordered[1][1] >= min_obs),
+        })
+    return out
+
+
+def _fmt4(x) -> str:
+    return "—" if x is None else f"{x:.4f}"
+
+
+def render_sig_report(rep: Sequence[dict], limit: int = 8) -> str:
+    """印成三行。⛔ 不解释、不建议 —— 只报数与**每个口径各自的**均分。"""
+    if not rep:
+        return "  口径      （无观测）"
+    mixed = [r for r in rep if r["n_sigs"] >= 2]
+    ties = [r for r in mixed if r["tie"]]
+    need = [r for r in rep if r["need_split"]]
+    lines = [f"  口径      {len(rep)} 格有观测：单口径 {len(rep) - len(mixed)} 格，"
+             f"混口径 {len(mixed)} 格，其中**平票 {len(ties)} 格**"]
+    if ties:
+        lines.append("  平票      两把尺子都有行且并列 ⇒ 混池均分**不对应任何口径**：")
+        for r in ties[:limit]:
+            per = "｜".join(f"{s[:8]} n={n} mean={_fmt4(m)}" for s, n, m in r["sigs"])
+            lines.append(f"            {r['cell'][:22]:<22} 混池={_fmt4(r['mean_all'])}  "
+                         f"{per}")
+        if len(ties) > limit:
+            lines.append(f"            … 另有 {len(ties) - limit} 格")
+    if need:
+        lines.append(f"  ⚠️ 需改判据  {len(need)} 格平票且两口径都 ≥ {MIN_OBS} 行 "
+                     f"⇒ 混池均分在这种格上**没有定义**（本行只报警，不改行为）")
+    return "\n".join(lines)
+
+
 def render(goals: Sequence[Goal], obs: Sequence[dict], limit: int = 12) -> str:
     if not goals:
         # ⛔ 这里**不解释**为什么 0 条。旧文案写的是「账本与套件都对不上，

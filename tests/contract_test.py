@@ -15349,6 +15349,74 @@ check(RS, "AZ142e 只动归一化层：判据常量一个没变"
                             "impl_sha", "vec"},
       f"{(_SI.MIN_POOL, _SI.MIN_IMPLS, _SI.MIN_BEHAVIORS, _SI.TARGET)} keys={sorted(_az142_c)}")
 
+# ═══════════ V182（§250）：一格里的观测来自**几把尺子**（AZ143） ═══════════
+# 这一组钉的是「混池均分不对应任何口径」这件事**可见**，且**不猜**。
+_az143_rows = [
+    {"task_id": "c1", "score": 1.0, "caliber_sig": "SIG_A", "session": 1},
+    {"task_id": "c1", "score": 0.0, "caliber_sig": "SIG_B", "session": 2},   # 1:1 平票
+    {"task_id": "c2", "score": 0.2, "caliber_sig": "SIG_A", "session": 1},
+    {"task_id": "c2", "score": 0.4, "caliber_sig": "SIG_A", "session": 1},
+    {"task_id": "c2", "score": 0.6, "caliber_sig": "SIG_A", "session": 2},
+    {"task_id": "c2", "score": 1.0, "caliber_sig": "SIG_B", "session": 3},   # 3:1 有主口径
+    {"task_id": "c3", "score": 0.5, "session": 1},                            # 无签名
+    {"task_id": "c3", "score": 0.7, "caliber_sig": "  ", "session": 2},       # 空白签名
+]
+_az143 = {r["cell"]: r for r in _G.sig_report(_az143_rows)}
+
+check(RS, "AZ143a `sig_report()` 逐格报口径构成，且**平票不猜**：\n"
+          "              `c1`（SIG_A 1 行 / SIG_B 1 行）⇒ `tie=True`、`major=None`、\n"
+          "              `mean_major=None`，而 `mean_all=0.5`（混池那两个读数是 1.0 与 0.0，0.5 谁也不是）；\n"
+          "              `c2`（3:1）⇒ `major=SIG_A`、`mean_major=0.4`，`mean_all=0.55`；\n"
+          "              `c3`（两条无签名）⇒ `n_sigs=0`、`n_unknown=2`（⛔ 无签名不是一把尺子）；\n"
+          "              撤回语义：平票时用「最新/字典序」挑一个 ⇒ `major`/`mean_major` 非 None ⇒ 本条必须红",
+      (_az143["c1"]["tie"] is True and _az143["c1"]["major"] is None
+       and _az143["c1"]["mean_major"] is None
+       and round(_az143["c1"]["mean_all"], 6) == 0.5
+       and _az143["c2"]["tie"] is False and _az143["c2"]["major"] == "SIG_A"
+       and round(_az143["c2"]["mean_major"], 6) == 0.4
+       and round(_az143["c2"]["mean_all"], 6) == 0.55
+       and _az143["c3"]["n_sigs"] == 0 and _az143["c3"]["n_unknown"] == 2
+       and _az143["c3"]["major"] is None and _az143["c3"]["tie"] is False),
+      f"c1={ {k: _az143['c1'][k] for k in ('tie','major','mean_major','mean_all')} } "
+      f"c2={ {k: _az143['c2'][k] for k in ('tie','major','mean_major','mean_all')} } "
+      f"c3={ {k: _az143['c3'][k] for k in ('n_sigs','n_unknown','major','tie')} }")
+
+_az143b_rows = _az143_rows + [
+    {"task_id": "c4", "score": 0.2, "caliber_sig": "SIG_A", "session": 1},
+    {"task_id": "c4", "score": 0.4, "caliber_sig": "SIG_A", "session": 2},
+    {"task_id": "c4", "score": 0.6, "caliber_sig": "SIG_A", "session": 3},
+    {"task_id": "c4", "score": 1.0, "caliber_sig": "SIG_B", "session": 4},
+    {"task_id": "c4", "score": 1.0, "caliber_sig": "SIG_B", "session": 5},
+    {"task_id": "c4", "score": 1.0, "caliber_sig": "SIG_B", "session": 6},
+]
+_az143b = {r["cell"]: r for r in _G.sig_report(_az143b_rows)}
+
+check(RS, "AZ143b `need_split` 只在一格「平票**且**两把尺子都测够」时为真：\n"
+          "              `c1`（1:1，各 1 行 < MIN_OBS=3）⇒ False；\n"
+          "              `c4`（3:3，都 ≥ 3）⇒ True —— 这时两个读数**都成立**，\n"
+          "              混池均分在那格上**没有定义**（本行只报警，⛔ 不改任何行为）；\n"
+          "              撤回语义：`need_split = tie`（丢掉行数闸）⇒ `c1` 变 True ⇒ 本条必须红",
+      _az143b["c1"]["need_split"] is False and _az143b["c4"]["need_split"] is True
+      and _az143b["c4"]["tie"] is True and _az143b["c4"]["major"] is None,
+      f"c1={_az143b['c1']['need_split']} c4={_az143b['c4']['need_split']}/{_az143b['c4']['tie']}")
+
+_az143_snap = json.dumps(_az143_rows, sort_keys=True, ensure_ascii=False)
+_az143_p1 = [g.gid for g in _G.propose(_G.coerce_all(_az143_rows)[0], ["c1", "c2", "c3"],
+                                       done=[], escalated=[])]
+_az143_rep = _G.sig_report(_az143_rows)
+_az143_p2 = [g.gid for g in _G.propose(_G.coerce_all(_az143_rows)[0], ["c1", "c2", "c3"],
+                                       done=[], escalated=[])]
+_az143_st = [_G.stats(_G.coerce_all(_az143_rows)[0], c)["mean_score"] for c in ("c1", "c2")]
+
+check(RS, "AZ143c 纯读、且**不入判据**：调 `sig_report()` 前后 `propose()` 逐字相同、\n"
+          "              入参行不被改写（快照逐字相等），而 `stats()` 的均分仍是混池均分\n"
+          "              （c1=0.5 / c2=0.55 —— ⛔ 本轮没动 `stats`/`propose` 一个字）。\n"
+          "              撤回语义：让 `sig_report` 顺手把 obs 按主口径过滤 ⇒ 本条必须红",
+      _az143_p1 == _az143_p2
+      and json.dumps(_az143_rows, sort_keys=True, ensure_ascii=False) == _az143_snap
+      and round(_az143_st[0], 6) == 0.5 and round(_az143_st[1], 6) == 0.55,
+      f"propose 前/后={_az143_p1}/{_az143_p2} stats={[round(x, 4) for x in _az143_st]}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

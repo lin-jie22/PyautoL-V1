@@ -1,0 +1,44 @@
+==========================================================================
+L5 自主目标 —— 目标来自**自己的账本**，不是 `--goal`
+==========================================================================
+  账本    score_ledger.jsonl 66 行（坏行 0）
+  观测    goal_obs.jsonl 0 行（坏行 0）
+  套件    /Users/linshaojie/V1/bench/tasks：9 个共 46 题；账本覆盖 6 题；**零覆盖 40 题**
+  口径      24 格有观测：单口径 14 格，混口径 10 格，其中**平票 4 格**
+  平票      两把尺子都有行且并列 ⇒ 混池均分**不对应任何口径**：
+            sg01                   混池=1.0000  487a78e8 n=1 mean=1.0000｜8974b37b n=1 mean=1.0000
+            sg02                   混池=0.5000  487a78e8 n=1 mean=1.0000｜8974b37b n=1 mean=0.0000
+            sg03                   混池=0.6429  487a78e8 n=1 mean=1.0000｜8974b37b n=1 mean=0.2857
+            sg04                   混池=0.7143  487a78e8 n=1 mean=1.0000｜8974b37b n=1 mean=0.4286
+  已 MET  0 条（不再重复提）
+  提议    40 条：COVER 40｜PROBE 0｜RAISE 0
+  状态    WORK（有 40 条可执行的目标）
+
+  #  类     格子                       判据                 现状                 目标
+  1  COVER g7d1_parse_date_flex     n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7d1_parse_date_flex：至少测 1 次  [NOT_MET]
+  2  COVER g7d2_dedupe_keep         n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7d2_dedupe_keep：至少测 1 次  [NOT_MET]
+  3  COVER g7d3_fmt_amount          n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7d3_fmt_amount：至少测 1 次  [NOT_MET]
+  4  COVER g7d4_slugify             n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7d4_slugify：至少测 1 次  [NOT_MET]
+  5  COVER g7e1_parse_flag          n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7e1_parse_flag：至少测 1 次  [NOT_MET]
+  6  COVER g7e2_truncate_tail       n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7e2_truncate_tail：至少测 1 次  [NOT_MET]
+  7  COVER g7e3_dedupe_last         n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7e3_dedupe_last：至少测 1 次  [NOT_MET]
+  8  COVER g7n1_split_amount        n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7n1_split_amount：至少测 1 次  [NOT_MET]
+  9  COVER g7n2_next_permutation    n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7n2_next_permutation：至少测 1 次  [NOT_MET]
+  10 COVER g7n3_spiral_order        n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7n3_spiral_order：至少测 1 次  [NOT_MET]
+  11 COVER g7n4_min_meeting_rooms   n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7n4_min_meeting_rooms：至少测 1 次  [NOT_MET]
+  12 COVER g7s1_flatten_nested      n_obs>=1           n=0 mean=0.0000    补齐从未测过的题 g7s1_flatten_nested：至少测 1 次  [NOT_MET]
+  … 另有 28 条
+
+--- 已转运维 4 格（套件内 2｜套件外 2；⛔ 不是做到了）---
+  t01_parse_duration       判据按定义不可满足：历史 6 次里 5 次 <1（最低 0.333300），现均分 0.749983 ⇒ 均分 = (Σ_old + Σ_new)/(n+k) < 1 恒成立（Σ_old < n·1，因有 5 个分数 < 1）
+                           修复轴：CRITERION（改判据：目标定义/聚合）+RULER（改尺子：打分轴/分辨力）｜可动性：COARSE（5 实现 3 档｜bits=1.3710｜无身份行 1）｜行为级：COARSE（5 行为类） ⇐ 存在异行为同分
+  t04_merge_ranges         判据按定义不可满足：历史 6 次里 5 次 <1（最低 0.333300），现均分 0.666683 ⇒ 均分 = (Σ_old + Σ_new)/(n+k) < 1 恒成立（Σ_old < n·1，因有 5 个分数 < 1）
+                           修复轴：CRITERION（改判据：目标定义/聚合）｜可动性：COARSE（3 实现 2 档｜bits=0.9183｜无身份行 1）｜行为级：INJECTIVE（2 行为类）
+  套件外（不在提议范围，但账本里确实打着）：
+  k02_encode_cookie        判据按定义不可满足：历史 3 次里 3 次 <1（最低 0.800000），现均分 0.800000 ⇒ 均分 = (Σ_old + Σ_new)/(n+k) < 1 恒成立（Σ_old < n·1，因有 3 个分数 < 1）
+                           修复轴：CRITERION（改判据：目标定义/聚合）｜可动性：无（缺身份/弃权 ⇒ 不判）
+  k03_unflatten            判据按定义不可满足：历史 3 次里 3 次 <1（最低 0.400000），现均分 0.400000 ⇒ 均分 = (Σ_old + Σ_new)/(n+k) < 1 恒成立（Σ_old < n·1，因有 3 个分数 < 1）
+                           修复轴：CRITERION（改判据：目标定义/聚合）｜可动性：无（缺身份/弃权 ⇒ 不判）
+
+
+  判据行  提议=40 执行=0 MET=0 NOT_MET=0 转运维=2 状态=WORK

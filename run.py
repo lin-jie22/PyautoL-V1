@@ -2922,7 +2922,10 @@ def _goals_main(args) -> int:
     suite_dir = (Path(args.goals_suite_dir).expanduser() if args.goals_suite_dir
                  else _data_path(DEF_TASK_DIR))
 
-    obs, bad_led = G.coerce_all(G.load(led_path))
+    # ⚠️ V182：`coerce()` 之后 `caliber_sig` 就没了（四键语义 + V181 的两个键），
+    #    而「这一格的观测来自几把尺子」必须看**裸行** ⇒ 先留一份，再归一。
+    raw_led = G.load(led_path)
+    obs, bad_led = G.coerce_all(raw_led)
     obs_g, bad_obs = G.coerce_all(G.load(obs_path))
     obs += obs_g
     suites = G.scan_suites(suite_dir)
@@ -2949,6 +2952,9 @@ def _goals_main(args) -> int:
     print(f"  观测    {obs_path.name} {len(obs_g)} 行（坏行 {bad_obs}）")
     print(f"  套件    {suite_dir}：{len(suites)} 个共 {len(suite_ids)} 题；"
           f"账本覆盖 {len(covered)} 题；**零覆盖 {len(suite_ids) - len(covered)} 题**")
+    # V182（§250）：一格的观测可能来自**几把尺子**（`caliber_sig` 不同）。
+    # ⛔ 这里只报数：`propose()` 的均分判据一个字没改（下面会逐字比）。
+    print(G.render_sig_report(G.sig_report(raw_led)))
     print(f"  已 MET  {len(set(done))} 条（不再重复提）")
     kinds = {k: sum(1 for g in goals if g.kind == k) for k in G.KINDS}
     print(f"  提议    {len(goals)} 条：" + "｜".join(f"{k} {v}" for k, v in kinds.items()))

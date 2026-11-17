@@ -2123,6 +2123,22 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     if isinstance(_vec, (list, tuple)):
         out["vec"] = list(_vec)''',
      '''    out["vec"] = row.get("vec")  # 撤回态'''),
+    # ── V182（§250）──
+    # AZ143a：平票时也不许猜 —— 撤掉 `tie` 判定（按行数降序取第一）⇒
+    #   `c1` 的 `major`/`mean_major` 变非 None（把「两个读数都成立」挑成一个）。
+    ("AZ143a", "mw/goals.py",
+     '''        if len(ordered) >= 2:
+            if ordered[0][1] == ordered[1][1]:
+                tie = True                    # 并列第一 ⇒ 不选
+            else:
+                major = ordered[0][0]''',
+     '''        if len(ordered) >= 2:
+            major = ordered[0][0]  # 撤回态：并列也取第一'''),
+    # AZ143b：`need_split` 丢掉行数闸（只留 tie）⇒ c1（各 1 行）也报「该改判据了」。
+    ("AZ143b", "mw/goals.py",
+     '''            "need_split": bool(tie and len(ordered) >= 2
+                               and ordered[0][1] >= min_obs and ordered[1][1] >= min_obs),''',
+     '''            "need_split": bool(tie),  # 撤回态：丢掉行数闸'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2168,6 +2184,10 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   `list()` 归一）。AZ142a 钉的正是「vec 统一成 list」这一半 ⇒ 同一行的
     #:   另一半，合理连带。⚠️ 实测：红=['AZ142a','AZ142b']，无第三条。
     "AZ142b": frozenset({"AZ142a"}),
+    #: ★第 182 轮：AZ143a 撤的是「平票不猜」。AZ143b 的 c4 分支（3:3）建立在
+    #:   `tie` 上 —— 撤掉 `tie` ⇒ c4 的 tie 变 False ⇒ AZ143b 必红。同一处实现的
+    #:   两个面，合理连带。⚠️ 实测：红集就是这两条，无第三条。
+    "AZ143a": frozenset({"AZ143b"}),
     #: AZ22a（把全表兜底加回）⇒ 前两题的"零命中"又变成 4 条 ⇒ AZ23 的
     #: `[0,0,1,1]` 立刻不成立。**同一段 SQL 的两个面**，合理连带。
     #: ★第三十八轮补登 AZ26/AZ30：兜底回来了 ⇒ n0 档命中 4 条（AZ26 红）；

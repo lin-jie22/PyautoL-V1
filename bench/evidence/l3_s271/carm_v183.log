@@ -1,0 +1,20 @@
+k01_diff_tree            kind=EMPTY_IFF_EQUAL  过正确=❌ 咬错=✅ 过空=✅ 判别=❌ admit=True
+    oracle: 题面示例未通过：ValueError: too many values to unpack (expected 2)
+k02_encode_cookie        kind=ROUNDTRIP        过正确=❌ 咬错=❌ 过空=⚠️ 判别=❌ admit=False
+    oracle: NO_BUILD
+k03_unflatten            kind=ROUNDTRIP        过正确=❌ 咬错=❌ 过空=⚠️ 判别=❌ admit=False
+    oracle: NO_BUILD
+k04_to_ini               kind=EMPTY_IFF_EQUAL  过正确=❌ 咬错=✅ 过空=✅ 判别=❌ admit=True
+    oracle: 题面示例未通过：ValueError: too many values to unpack (expected 2)
+g7d2_dedupe_keep         kind=TAIL             过正确=❌ 咬错=✅ 过空=✅ 判别=❌ admit=True
+    oracle: 题面示例未通过：ValueError: too many values to unpack (expected 2)
+g7d3_fmt_amount          kind=ROUNDTRIP        过正确=❌ 咬错=❌ 过空=⚠️ 判别=❌ admit=False
+    oracle: NO_BUILD
+g7e1_parse_flag          kind=BOUND            过正确=❌ 咬错=✅ 过空=✅ 判别=❌ admit=True
+    oracle: 题面示例未通过：ValueError: too many values to unpack (expected 2)
+g7e2_truncate_tail       kind=TAIL             过正确=❌ 咬错=✅ 过空=✅ 判别=❌ admit=True
+    oracle: 题面示例未通过：ValueError: too many values to unpack (expected 2)
+
+C 臂：可跑判据 5/8 过正确 0/8 咬错 5/8 判别力 0/8 准入 5/8
+  题面自足 0/4
+EXIT=0

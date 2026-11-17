@@ -1,0 +1,199 @@
+[
+ {
+  "id": "k01_diff_tree",
+  "n_rel": 3,
+  "v79_true": true,
+  "v79_bite": true,
+  "rel_true": true,
+  "rel_bite": true,
+  "rel_stub_bite": true,
+  "rel_fails_on_oracle": [],
+  "detail": {
+   "oracle": [
+    true,
+    true,
+    true
+   ],
+   "partial": [
+    true,
+    true,
+    false
+   ],
+   "stub": [
+    false,
+    false,
+    false
+   ]
+  },
+  "memory_dependent": false
+ },
+ {
+  "id": "k02_encode_cookie",
+  "n_rel": 2,
+  "v79_true": false,
+  "v79_bite": true,
+  "rel_true": true,
+  "rel_bite": true,
+  "rel_stub_bite": true,
+  "rel_fails_on_oracle": [],
+  "detail": {
+   "oracle": [
+    true,
+    true
+   ],
+   "partial": [
+    false,
+    true
+   ],
+   "stub": [
+    false,
+    true
+   ]
+  },
+  "memory_dependent": false
+ },
+ {
+  "id": "k03_unflatten",
+  "n_rel": 3,
+  "v79_true": false,
+  "v79_bite": true,
+  "rel_true": true,
+  "rel_bite": true,
+  "rel_stub_bite": true,
+  "rel_fails_on_oracle": [],
+  "detail": {
+   "oracle": [
+    true,
+    true,
+    true
+   ],
+   "partial": [
+    true,
+    true,
+    false
+   ],
+   "stub": [
+    false,
+    false,
+    true
+   ]
+  },
+  "memory_dependent": false
+ },
+ {
+  "id": "k04_to_ini",
+  "n_rel": 2,
+  "v79_true": false,
+  "v79_bite": true,
+  "rel_true": true,
+  "rel_bite": true,
+  "rel_stub_bite": true,
+  "rel_fails_on_oracle": [],
+  "detail": {
+   "oracle": [
+    true,
+    true
+   ],
+   "partial": [
+    false,
+    true
+   ],
+   "stub": [
+    false,
+    false
+   ]
+  },
+  "memory_dependent": false
+ },
+ {
+  "id": "g7d2_dedupe_keep",
+  "n_rel": 1,
+  "v79_true": false,
+  "v79_bite": true,
+  "rel_true": true,
+  "rel_bite": true,
+  "rel_stub_bite": true,
+  "rel_fails_on_oracle": [],
+  "detail": {
+   "oracle": [
+    true
+   ],
+   "partial": [
+    false
+   ],
+   "stub": [
+    false
+   ]
+  },
+  "memory_dependent": true
+ },
+ {
+  "id": "g7d3_fmt_amount",
+  "n_rel": 1,
+  "v79_true": false,
+  "v79_bite": false,
+  "rel_true": true,
+  "rel_bite": false,
+  "rel_stub_bite": true,
+  "rel_fails_on_oracle": [],
+  "detail": {
+   "oracle": [
+    true
+   ],
+   "partial": [
+    true
+   ],
+   "stub": [
+    false
+   ]
+  },
+  "memory_dependent": true
+ },
+ {
+  "id": "g7e1_parse_flag",
+  "n_rel": 1,
+  "v79_true": false,
+  "v79_bite": false,
+  "rel_true": true,
+  "rel_bite": false,
+  "rel_stub_bite": false,
+  "rel_fails_on_oracle": [],
+  "detail": {
+   "oracle": [
+    true
+   ],
+   "partial": [
+    true
+   ],
+   "stub": [
+    true
+   ]
+  },
+  "memory_dependent": true
+ },
+ {
+  "id": "g7e2_truncate_tail",
+  "n_rel": 2,
+  "v79_true": false,
+  "v79_bite": true,
+  "rel_true": true,
+  "rel_bite": true,
+  "rel_stub_bite": true,
+  "rel_fails_on_oracle": [],
+  "detail": {
+   "oracle": [
+    true,
+    true
+   ],
+   "partial": [
+    false,
+    true
+   ],
+   "stub": [
+    false,
+    false
+   ]
+  },
+  "memory_dependent": true
+ }
+]

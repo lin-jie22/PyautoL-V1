@@ -1,0 +1,112 @@
+[
+ {
+  "id": "k01_diff_tree",
+  "fn": "diff_tree",
+  "ok_src": true,
+  "src": "import json\n\ndef diff_tree(a, b):\n    def _traverse(node, path):\n        if isinstance(node, dict):\n            result = {}\n            for k, v in node.items():\n                new_path = f\"{path}.{k}\" if path else k\n                result.update(_traverse(v, new_path))\n            return result\n        else:\n            return {path: [node, node] if path else [node, node]}\n    \n    result_a = _traverse(a, \"\")\n    result_b = _traverse(b, \"\")\n    diff = {}\n    \n    for key in set(result_a.keys()).union(set(result_b.keys())):\n        if key in result_a and key in result_b:\n            if result_a[key] != result_b[key]:\n                diff[key] = result_a[key]\n        elif key in result_a:\n            diff[key] = result_a[key]\n        elif key in result_b:\n            diff[key] = result_b[key]\n    \n    return diff\n\ndef _rel():\n    import json\n    \n    def check_output(a, b, expected):\n        actual = diff_tree(a, b)\n        if json.dumps(actual, ensure_ascii=False) == json.dumps(expected, ensure_ascii=False):\n            return True\n        else:\n            raise AssertionError(f\"Expected {expected}, but got {actual}\")\n\n    # 自选输入\n    check_output(\n        {\"a\": 1, \"b\": {\"c\": 2, \"d\": 3}, \"e\": 4},\n        {\"a\": 1, \"b\": {\"c\": 2, \"d\": 4}, \"e\": 4},\n        {\"b.d\": [3, 4]}\n    )\n\n    check_output(\n        {\"x\": {\"y\": {\"z\": 1}}}, \n        {\"x\": {\"y\": {\"z\": 2}}}, \n        {\"x.y.z\": [1, 2]}\n    )\n\n    check_output(\n        {\"a\": 1, \"b\": 2}, \n        {\"a\": 1, \"b\": 2}, \n        {}\n    )\n\n    check_output(\n        {\"a\": 1, \"b\": 2}, \n        {}, \n        {\"a\": [1, None], \"b\": [2, None]}\n    )\n\n    check_output(\n        {}, \n        {\"a\": 1, \"b\": 2}, \n        {\"a\": [None, 1], \"b\": [None, 2]}\n    )\n\n    check_output(\n        {\"a\": 1, \"b\": 2}, \n        {\"a\": 1, \"b\": 3, \"c\": 4}, \n        {\"b\": [2, 3]}\n    )\n\n    _rel()",
+  "literal_hits": [],
+  "pass_oracle": false,
+  "why_oracle": "题面示例未通过：AssertionError: Expected {'b.d': [3, 4]}, but got {'b.d': [3, 3]}",
+  "bite_partial": true,
+  "why_partial": "题面示例未通过：AssertionError: Expected {'b.d': [3, 4]}, but got {'b.d': [3, 3]}",
+  "bite_stub": true,
+  "disc": false
+ },
+ {
+  "id": "k02_encode_cookie",
+  "fn": "encode_cookie",
+  "ok_src": true,
+  "src": "```python\nimport urllib.parse\nimport re\n\ndef _rel():\n    def encode_cookie(d):\n        items = sorted((k, v) for k, v in d.items() if v is not None)\n        encoded_items = []\n        for k, v in items:\n            encoded_k = urllib.parse.quote(k)\n            encoded_v = urllib.parse.quote(str(v))\n            encoded_items.append(f'{encoded_k}={encoded_v}')\n        return '; '.join(encoded_items)\n\n    # 自选输入\n    inputs = [\n        {},\n        {'a': None},\n        {'a': 1, 'b': 2},\n        {'a': 1, 'b': 2, 'c': 3},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11, 'l': 12},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11, 'l': 12, 'm': 13},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11, 'l': 12, 'm': 13, 'n': 14},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11, 'l': 12, 'm': 13, 'n': 14, 'o': 15},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11, 'l': 12, 'm': 13, 'n': 14, 'o': 15, 'p': 16},\n        {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f",
+  "literal_hits": [],
+  "pass_oracle": false,
+  "why_oracle": "题面示例未通过：SyntaxError: unterminated string literal (detected at line 46)",
+  "bite_partial": true,
+  "why_partial": "题面示例未通过：SyntaxError: unterminated string literal (detected at line 37)",
+  "bite_stub": true,
+  "disc": false
+ },
+ {
+  "id": "k03_unflatten",
+  "fn": "unflatten",
+  "ok_src": true,
+  "src": "import re\nfrom collections import defaultdict\n\ndef unflatten(flat):\n    result = defaultdict(dict)\n    for k, v in flat.items():\n        keys = k.split('.')\n        d = result\n        for key in keys[:-1]:\n            if key.startswith('['):\n                key, i = key[1:-1].split(']')\n                i = int(i)\n                d.setdefault(key, [None] * (i + 1))\n            else:\n                d = d[key]\n        d[keys[-1]] = v\n    return dict(result)\n\ndef _rel():\n    def check_dict(d):\n        for k, v in d.items():\n            if isinstance(v, dict):\n                check_dict(v)\n            elif isinstance(v, list):\n                for i in range(len(v)):\n                    if v[i] is not None and not isinstance(v[i], (dict, list)):\n                        raise AssertionError(f\"List element {i} is not None or a nested structure\")\n\n    # 测试用例\n    test_cases = [\n        ({'a.b': 1, 'a.c': 2}, {'a': {'b': 1, 'c': 2}}),\n        ({'x[0]': 'apple', 'x[1]': 'banana', 'y[2]': 'cherry'}, {'x': ['apple', 'banana', None], 'y': [None, None, 'cherry']}),\n        ({'z[3].w': 10, 'z[3].x': 20}, {'z': [{}, {}, {}, {'w': 10, 'x': 20}]}),\n        ({}, {}),\n    ]\n\n    for flat, expected in test_cases:\n        actual = unflatten(flat)\n        check_dict(actual)\n        if actual != expected:\n            raise AssertionError(f\"unflatten({flat}) == {actual} != {expected}\")\n\n    raise AssertionError(\"All test cases passed, but no error was raised. This is expected.\")",
+  "literal_hits": [
+   "{"
+  ],
+  "pass_oracle": false,
+  "why_oracle": "题面示例未通过：AssertionError: unflatten({'x[0]': 'apple', 'x[1]': 'banana', 'y[2]': 'cherry'}) == {'x[0]': 'apple', 'x[1]': 'banana', 'y[2]': 'cherry'} != {'x': ['apple', 'banana', None], 'y': [None, None, ",
+  "bite_partial": true,
+  "why_partial": "题面示例未通过：AssertionError: unflatten({'x[0]': 'apple', 'x[1]': 'banana', 'y[2]': 'cherry'}) == {'x[0]': 'apple', 'x[1]': 'banana', 'y[2]': 'cherry'} != {'x': ['apple', 'banana', None], 'y': [None, None, ",
+  "bite_stub": true,
+  "disc": false
+ },
+ {
+  "id": "k04_to_ini",
+  "fn": "to_ini",
+  "ok_src": true,
+  "src": "import re\nfrom collections.abc import Mapping\n\ndef _rel():\n    def to_ini(d):\n        sections = []\n        for section, values in d.items():\n            if not isinstance(values, Mapping):\n                raise TypeError(\"Values must be a mapping\")\n            section_line = f\"[{section}]\\n\"\n            lines = [f\"{k}={v}\" if v is not None else f\"{k}=\" for k, v in values.items()]\n            if any(isinstance(v, bool) for v in values.values()):\n                lines = [re.sub(r\"True$\", \"true\", line) for line in lines]\n                lines = [re.sub(r\"False$\", \"false\", line) for line in lines]\n            sections.append(section_line + \"\\n\".join(lines) + \"\\n\")\n        return \"\".join(sections).rstrip()\n\n    def check_output(input_dict, expected_output):\n        output = to_ini(input_dict)\n        if output != expected_output:\n            raise AssertionError(f\"Output does not match expected output. Input: {input_dict}, Output: {output}, Expected: {expected_output}\")\n\n    # 自选输入和预期输出\n    check_output({}, \"\")\n    check_output({\"section1\": {\"key1\": \"value1\", \"key2\": None}}, \"[section1]\\nkey1=value1\\nkey2=\\n\")\n    check_output({\"section1\": {\"key1\": True, \"key2\": False}}, \"[section1]\\nkey1=true\\nkey2=false\\n\")\n    check_output({\"section1\": {\"key1\": 123, \"key2\": \"value2\"}}, \"[section1]\\nkey1=123\\nkey2=value2\\n\")\n    check_output({\"section1\": {\"key1\": {\"subkey1\": \"subvalue1\"}}, \"section2\": {\"key2\": \"value2\"}}, \"[section1]\\nkey1=[section1.subkey1]\\nsubvalue1=\\n[section2]\\nkey2=value2\\n\")\n\n    # 如果所有检查通过，则返回 True\n    return True",
+  "literal_hits": [],
+  "pass_oracle": false,
+  "why_oracle": "题面示例未通过：key2=",
+  "bite_partial": true,
+  "why_partial": "题面示例未通过：key2=",
+  "bite_stub": true,
+  "disc": false
+ },
+ {
+  "id": "g7d2_dedupe_keep",
+  "fn": "dedupe_keep",
+  "ok_src": true,
+  "src": "import collections\n\ndef _rel():\n    def dedupe_keep(xs):\n        seen = set()\n        seen_add = seen.add\n        return [x for x in xs if not (x in seen or seen_add(x))]\n\n    # 自选输入\n    inputs = [\n        [],\n        ['a'],\n        ['a', 'b', 'a'],\n        ['a', 'b', 'a', 'c', 'b'],\n        ['a', 'b', 'c', 'a', 'b', 'c'],\n        ['a', 'b', 'c', 'd', 'e', 'f', 'g'],\n        ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'c', 'd', 'e', 'f', 'g']\n    ]\n\n    for input_list in inputs:\n        output = dedupe_keep(input_list)\n        # 解回输入\n        reconstructed_input = [x for x in input_list if not (x in set(output) or set(output).add(x))]\n        # 比较\n        if output != reconstructed_input:\n            raise AssertionError(f\"Input: {input_list} -> Output: {output} -> Reconstructed Input: {reconstructed_input}\")\n    return True",
+  "literal_hits": [],
+  "pass_oracle": false,
+  "why_oracle": "题面示例未通过：AssertionError: Input: ['a'] -> Output: ['a'] -> Reconstructed Input: []",
+  "bite_partial": true,
+  "why_partial": "题面示例未通过：AssertionError: Input: ['a'] -> Output: ['a'] -> Reconstructed Input: []",
+  "bite_stub": true,
+  "disc": false
+ },
+ {
+  "id": "g7d3_fmt_amount",
+  "fn": "fmt_amount",
+  "ok_src": true,
+  "src": "import re\nimport decimal\n\ndef fmt_amount(x):\n    # 实现 fmt_amount 函数\n    d = decimal.Decimal(str(x))\n    formatted = f\"{d:,.2f}\".replace(',', '，').replace('.', '．')\n    if x < 0:\n        return f\"-{formatted}\"\n    return formatted\n\ndef _rel():\n    # 定义一些测试用例\n    test_cases = [\n        (1000, \"1,000．00\"),\n        (123456789, \"123,456,789．00\"),\n        (-123456789, \"-123,456,789．00\"),\n        (123456.789, \"123,456．79\"),\n        (-123456.789, \"-123,456．79\"),\n        (0, \"0．00\"),\n        (123456789.12345, \"123,456,789．12\"),\n        (-123456789.12345, \"-123,456,789．12\"),\n    ]\n    \n    # 检查 fmt_amount 函数是否符合要求\n    for input_val, expected_output in test_cases:\n        output = fmt_amount(input_val)\n        if re.fullmatch(expected_output, output):\n            continue\n        raise AssertionError(f\"fmt_amount({input_val}) should be {expected_output}, but got {output}\")",
+  "literal_hits": [],
+  "pass_oracle": false,
+  "why_oracle": "题面示例未通过：AssertionError: fmt_amount(1000) should be 1,000．00, but got 1，000．00",
+  "bite_partial": true,
+  "why_partial": "题面示例未通过：AssertionError: fmt_amount(1000) should be 1,000．00, but got 1，000．00",
+  "bite_stub": true,
+  "disc": false
+ },
+ {
+  "id": "g7e1_parse_flag",
+  "fn": "parse_flag",
+  "ok_src": true,
+  "src": "import re\n\ndef parse_flag(s):\n    s = s.strip().lower()\n    if s in ('true', '1', 'on'):\n        return True\n    elif s in ('false', '0', 'off'):\n        return False\n    elif s == '':\n        return None\n    else:\n        raise ValueError(\"Invalid flag value\")\n\ndef _rel():\n    test_cases = [\n        (\" true \", True),\n        (\"false\", False),\n        (\" 0 \", False),\n        (\"on\", True),\n        (\"1\", True),\n        (\"off\", False),\n        (\"0\", False),\n        (\"\", None),\n        (\"invalid\", None),\n        (\"TRUE\", True),\n        (\"FALSE\", False),\n        (\"ON\", True),\n        (\"OFF\", False),\n        (\"123\", None),\n        (\"abc\", None)\n    ]\n    \n    for s, expected in test_cases:\n        try:\n            result = parse_flag(s)\n            if result != expected:\n                raise AssertionError(f\"Input: {s}, Expected: {expected}, Got: {result}\")\n        except ValueError as e:\n            if expected is not None:\n                raise AssertionError(f\"Input: {s}, Expected: {expected}, Got: {e}\")\n    \n    return True",
+  "literal_hits": [
+   "''"
+  ],
+  "pass_oracle": true,
+  "why_oracle": "",
+  "bite_partial": false,
+  "why_partial": "",
+  "bite_stub": false,
+  "disc": false
+ },
+ {
+  "id": "g7e2_truncate_tail",
+  "fn": "truncate_tail",
+  "ok_src": true,
+  "src": "import re\n\ndef _rel():\n    def truncate_tail(s, n):\n        if len(s) <= n:\n            return s\n        else:\n            if n <= 2:\n                return s[:n] + '...'\n            elif n % 2 == 0:\n                return s[:n//2] + '...' + s[-n//2:]\n            else:\n                return s[:n//2+1] + '...' + s[-n//2:]\n\n    def check(s, n, expected):\n        actual = truncate_tail(s, n)\n        if actual != expected:\n            raise AssertionError(f\"truncate_tail({s!r}, {n}) expected {expected!r}, got {actual!r}\")\n\n    # 自选输入\n    check(\"\", 5, \"\")\n    check(\"abc\", 3, \"abc\")\n    check(\"abc\", 2, \"a...\")\n    check(\"abc\", 4, \"abc\")\n    check(\"abc\", 1, \"...\")\n    check(\"abc\", 0, \"...\")\n    check(\"abc\", 6, \"a...bc\")\n    check(\"abc\", 5, \"a...c\")\n    check(\"abc\", 7, \"a...bc\")\n    check(\"abc\", 8, \"a...bc\")\n\n    print(\"All checks passed.\")",
+  "literal_hits": [
+   "0"
+  ],
+  "pass_oracle": false,
+  "why_oracle": "题面示例未通过：AssertionError: truncate_tail('abc', 2) expected 'a...', got 'ab...'",
+  "bite_partial": true,
+  "why_partial": "题面示例未通过：AssertionError: truncate_tail('abc', 2) expected 'a...', got 'ab...'",
+  "bite_stub": true,
+  "disc": false
+ }
+]

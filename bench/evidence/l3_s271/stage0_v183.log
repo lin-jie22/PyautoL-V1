@@ -1,0 +1,14 @@
+task                     impls  v79_t  v79_b  rel_t  rel_b  rel_s  rel_break
+k01_diff_tree                3   True   True   True   True   True  -
+k02_encode_cookie            2  False   True   True   True   True  -
+k03_unflatten                3  False   True   True   True   True  -
+k04_to_ini                   2  False   True   True   True   True  -
+g7d2_dedupe_keep             1  False   True   True   True   True  -
+g7d3_fmt_amount              1  False  False   True  False   True  -
+g7e1_parse_flag              1  False  False   True  False  False  -
+g7e2_truncate_tail           2  False   True   True   True   True  -
+
+v79: 过正确 1/8 咬错 6/8 判别力 1/8
+rel: 过正确 8/8 咬错 6/8 判别力 6/8
+题面自足 4 题：v79 判别力 1/4，rel 判别力 4/4
+题面不完备 4 题：v79 判别力 0/4，rel 判别力 2/4

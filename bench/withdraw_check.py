@@ -2139,6 +2139,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '''            "need_split": bool(tie and len(ordered) >= 2
                                and ordered[0][1] >= min_obs and ordered[1][1] >= min_obs),''',
      '''            "need_split": bool(tie),  # 撤回态：丢掉行数闸'''),
+    # ── V183（§251）──
+    # AZ144a：把「相等类」收成只有 `ast.Eq` ⇒ `is True` 不再算字面量期望
+    #   （V79 的 g7e1 恰好是这条）⇒ 拒不掉。
+    ("AZ144a", "mw/metacrit.py",
+     '''_EQ_OPS = (ast.Eq, ast.NotEq, ast.Is, ast.IsNot)''',
+     '''_EQ_OPS = (ast.Eq,)  # 撤回态：只认 `==`'''),
+    # AZ144b：删掉 `len(...)` 豁免 ⇒ `len(v) == 2` 这种结构计数被当成格式期望。
+    ("AZ144b", "mw/metacrit.py",
+     '''                if isinstance(other, ast.Call) and isinstance(other.func, ast.Name) \\
+                        and other.func.id == "len":
+                    continue''',
+     '''                pass  # 撤回态：不豁免 len(...)'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2188,6 +2200,11 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   `tie` 上 —— 撤掉 `tie` ⇒ c4 的 tie 变 False ⇒ AZ143b 必红。同一处实现的
     #:   两个面，合理连带。⚠️ 实测：红集就是这两条，无第三条。
     "AZ143a": frozenset({"AZ143b"}),
+    #: ★第 183 轮：AZ144a 撤的是「相等类运算符的集合」。AZ144b 撤的 `len(...)` 豁免
+    #:   作用在**同一处** `literal_expectations()` 的比较判定里 —— 撤 a 会让 `is True`
+    #:   变成「非字面量」，于是 AZ144b 的 `_az144_struct` 里没有 `is True`，不受影响；
+    #:   实测红集只有 {AZ144a}，故此处不声明耦合（多红=无）。
+    "AZ144a": frozenset(),
     #: AZ22a（把全表兜底加回）⇒ 前两题的"零命中"又变成 4 条 ⇒ AZ23 的
     #: `[0,0,1,1]` 立刻不成立。**同一段 SQL 的两个面**，合理连带。
     #: ★第三十八轮补登 AZ26/AZ30：兜底回来了 ⇒ n0 档命中 4 条（AZ26 红）；

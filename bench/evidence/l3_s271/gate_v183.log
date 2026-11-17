@@ -1,0 +1,11 @@
+V79  k01_diff_tree            admit=False LITERAL_EXPECTATION×2: line 2: {'b.c': [2, 3]} vs diff_tree({'a': 1, '
+V79  k02_encode_cookie        admit=False LITERAL_EXPECTATION×1: line 1: 'a=b%20c;e=f%3Bg%2Ch' vs encode_cookie(
+V79  k03_unflatten            admit=False LITERAL_EXPECTATION×3: line 1: {'a': {'b': 1}, 'c': 2} vs unflatten({'
+V79  k04_to_ini               admit=False LITERAL_EXPECTATION×2: line 1: '[section1]\nkey1=true\nkey2=\n\n' vs t
+V79  g7d2_dedupe_keep         admit=False LITERAL_EXPECTATION×3: line 1: ['ZK1', 'ZK2', 'ZK3', 'ZK4', 'ZK1', 'ZK
+V79  g7d3_fmt_amount          admit=False LITERAL_EXPECTATION×3: line 1: '1,000.00' vs fmt_amount(1000)
+V79  g7e1_parse_flag          admit=False LITERAL_EXPECTATION×2: line 1: True vs parse_flag('on')
+V79  g7e2_truncate_tail       admit=False LITERAL_EXPECTATION×3: line 1: 'abcde' vs truncate_tail('abcdef', 5)
+V79 断言被拒 8/8
+REL  被拒 k04_to_ini/ROUNDTRIP_CONFIGPARSER: LITERAL_EXPECTATION×2: line 23: True vs v
+关系库被拒 1/15（放行 14）

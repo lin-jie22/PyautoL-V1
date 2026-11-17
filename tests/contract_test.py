@@ -15417,6 +15417,94 @@ check(RS, "AZ143c 纯读、且**不入判据**：调 `sig_report()` 前后 `prop
       and round(_az143_st[0], 6) == 0.5 and round(_az143_st[1], 6) == 0.55,
       f"propose 前/后={_az143_p1}/{_az143_p2} stats={[round(x, 4) for x in _az143_st]}")
 
+# ═══════════ V183（§251）：判据准入闸 —— 挡住「期望值写成字面量」（AZ144） ═══════════
+import mw.metacrit as _MC                                       # noqa: E402
+
+#: V79 那 22 条断言的原物（`bench/evidence/v6_s168/probe_selfasserts.json`），
+#: 逐题拼成一条判据。它们**全部**把期望输出写成了字面量。
+_az144_v79 = {
+    "k01": [
+        "assert diff_tree({'a': 1, 'b': {'c': 2}}, {'a': 1, 'b': {'c': 2}}) == {}",
+        "assert diff_tree({'a': 1}, {'a': 2}) == {'a': [1, 2]}",
+    ],
+    "k02": ["assert encode_cookie({'a': 'b c'}) == 'a=b%20c'"],
+    # ⚠️ 自踩：第一版这里写的是 `== True`（Eq）⇒ 撤回 `Is/IsNot` 时本条**不红**，
+    #    而锚文本声称「`is True` 漏网 ⇒ 必须红」。夹具必须让 `is` 语义成为承重点。
+    "g7e1": ["assert parse_flag('on') is True", "assert parse_flag('maybe') is None"],
+}
+_az144_refuse = {k: _MC.admit("\n".join(v)) for k, v in _az144_v79.items()}
+
+check(RS, "AZ144a `admit()` 把「期望值写成字面量」的判据**全部**拒掉（V79 那批）：\n"
+          "              字符串 / 非空容器 / `is True` 都算字面量期望；\n"
+          "              ⛔ 空容器（`== {}`）、`None`、`0` **不算**（那是结构，不是格式细节）；\n"
+          "              撤回语义：把 `_EQ_OPS` 收成只有 `ast.Eq` ⇒ `is True` 漏网 ⇒ 本条必须红",
+      all(not ok for ok, _ in _az144_refuse.values())
+      and all(why.startswith("LITERAL_EXPECTATION") for _, why in _az144_refuse.values()),
+      f"{ {k: (v[0], v[1][:28]) for k, v in _az144_refuse.items()} }")
+
+_az144_clean = """
+from urllib.parse import parse_qsl
+
+
+def _rel():
+    for d in ({'a': 'b c'}, {'a': 'p%q'}):
+        got = encode_cookie(d)
+        back = {k.strip(): v for k, v in
+                parse_qsl(got, keep_blank_values=True, separator=';')}
+        if back != {str(k): str(v) for k, v in d.items()}:
+            raise AssertionError(f"往返不成立：{d!r} -> {got!r}")
+    return True
+"""
+_az144_struct = """
+def _rel():
+    for v in ([1, 2], {}, []):
+        if len(v) == 2 and v != {}:
+            pass
+    return True
+"""
+
+check(RS, "AZ144b 反过来不能误伤**关系型**判据：`decode(f(x)) == x` 这种\n"
+          "              （字面量只在探针输入里、判定靠 stdlib）必须**放行**；\n"
+          "              而 `len(v) == 2` 这种**结构计数**也不算字面量期望；\n"
+          "              撤回语义：把 `len(...)` 豁免删掉 ⇒ 结构计数被拒 ⇒ 本条必须红",
+      _MC.admit(_az144_clean) == (True, "OK")
+      and _MC.admit(_az144_struct) == (True, "OK"),
+      f"clean={_MC.admit(_az144_clean)} struct={_MC.admit(_az144_struct)}")
+
+_az144_codes = [
+    ("ok_empty_if_equal", "def f(a, b):\n    return {} if a == b else {'k': [1, 2]}\n",
+     "def _rel():\n    for a, b in (({'x': 1}, {'x': 1}), ({'x': 1}, {'x': 2})):\n"
+     "        got = f(a, b)\n        if (got == {}) != (a == b):\n"
+     "            raise AssertionError('坏了')\n    return True\n", ""),
+    ("bad_always_empty", "def f(a, b):\n    return {}\n",
+     "def _rel():\n    a, b = {'x': 1}, {'x': 2}\n    if (f(a, b) == {}) != (a == b):\n"
+     "        raise AssertionError('坏了')\n    return True\n",
+     "坏了"),
+]
+
+check(RS, "AZ144c `run()` 走的是**内核同一把尺**（`mw.verify.run_example`）：\n"
+          "              好的实现过、坏的实现不过且带回实得；\n"
+          "              撤回语义：让 `run()` 自己 `exec` 而不经 `run_example` ⇒ 隔离/超时/\n"
+          "              `EXEC_FAULT` 前缀全丢 ⇒ 本条必须红（本条只钉「过/不过与错误串」）",
+      all(_MC.run(c, s) == want for _n, c, s, want in
+          [(a, b, c, d) for a, b, c, d in _az144_codes if d == ""])
+      and all(_MC.run(c, s) != "" for _n, c, s, _w in _az144_codes if _w),
+      f"{[_MC.run(c, s)[:24] for _n, c, s, _w in _az144_codes]}")
+
+_az144_snap = "\n".join(_az144_v79["k02"])
+
+# ⚠️ py3.11 不许在 f-string 表达式里出现反斜杠（3.12+ 才行）⇒ 先算再拼。
+_az144_loop_src = "while True:\n    pass\n"
+_az144_loop = _MC.admit(_az144_loop_src)
+_az144_exit = _MC.admit("def _rel():\n    raise SystemExit(3)\n")
+
+check(RS, "AZ144d 准入闸**不执行**判据源码（纯 AST）：\n"
+          "              `admit()` 对一段会 `raise`/死循环的判据也必须立刻返回，且不改入参；\n"
+          "              撤回语义：让 `admit()` 先 parse 再 `compile+exec` 试跑 ⇒ 本条超时/抛错 ⇒ 必须红",
+      _az144_exit[0] is True and _az144_loop[0] is True
+      and _MC.admit("\n".join(_az144_v79["k02"]))[0] is False,
+      f"{_az144_loop}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

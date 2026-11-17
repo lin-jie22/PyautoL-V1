@@ -1,0 +1,19 @@
+k01_diff_tree            kind=EMPTY_IFF_EQUAL  fix=Y 过正确=❌ 咬错=✅ 判别=❌
+    oracle: 题面示例未通过：AttributeError: 'str' object has no attribute 'get'
+k02_encode_cookie        kind=ROUNDTRIP        fix=Y 过正确=❌ 咬错=❌ 判别=❌
+    err: ROUNDTRIP 需要非空槽 `decode`
+k03_unflatten            kind=ROUNDTRIP        fix=Y 过正确=❌ 咬错=✅ 判别=❌
+    oracle: 题面示例未通过：SyntaxError: closing parenthesis ']' does not match opening parenthesis '('
+k04_to_ini               kind=EMPTY_IFF_EQUAL  fix=Y 过正确=❌ 咬错=❌ 判别=❌
+    err: inputs[0] = ['{}']：EMPTY_IFF_EQUAL 的每个元素必须是长度为 2 的 [输入, 参数]（例：[["abcdef", 3]]）
+g7d2_dedupe_keep         kind=TAIL             fix=N 过正确=❌ 咬错=✅ 判别=❌
+    oracle: 题面示例未通过：TypeError: dedupe_keep() takes 1 positional argument but 2 were given
+g7d3_fmt_amount          kind=ROUNDTRIP        fix=Y 过正确=❌ 咬错=✅ 判别=❌
+    oracle: 题面示例未通过：AssertionError: ROUNDTRIP: '1234567.89' ⇒ '1 234 567.89' 解不开：name 'decode' is not defined
+g7e1_parse_flag          kind=BOUND            fix=N 过正确=❌ 咬错=✅ 判别=❌
+    oracle: 题面示例未通过：TypeError: parse_flag() takes 1 positional argument but 2 were given
+g7e2_truncate_tail       kind=TAIL             fix=N 过正确=❌ 咬错=✅ 判别=❌
+    oracle: 题面示例未通过：TypeError: endswith first arg must be str or a tuple of str, not int
+
+R 臂：可跑 6/8 过正确 0/8 咬错 6/8 判别力 0/8 发生修复 5/8
+EXIT=0

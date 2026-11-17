@@ -1,0 +1,22 @@
+k01_diff_tree            src=Y lit=0 过正确=❌ 咬错=✅ 过空=✅ 判别=❌
+    oracle: 题面示例未通过：AssertionError: Expected {'b.d': [3, 4]}, but got {'b.d': [3, 3]}
+k02_encode_cookie        src=Y lit=0 过正确=❌ 咬错=✅ 过空=✅ 判别=❌
+    oracle: 题面示例未通过：SyntaxError: unterminated string literal (detected at line 46)
+k03_unflatten            src=Y lit=1 过正确=❌ 咬错=✅ 过空=✅ 判别=❌
+    oracle: 题面示例未通过：AssertionError: unflatten({'x[0]': 'apple', 'x[1]': 'banana', 'y[2]': 'cherry'}) == {'x[0]': 'apple', 'x[1]': 'banana', 'y[2]': 'cherry'} != {
+k04_to_ini               src=Y lit=0 过正确=❌ 咬错=✅ 过空=✅ 判别=❌
+    oracle: 题面示例未通过：key2=
+g7d2_dedupe_keep         src=Y lit=0 过正确=❌ 咬错=✅ 过空=✅ 判别=❌
+    oracle: 题面示例未通过：AssertionError: Input: ['a'] -> Output: ['a'] -> Reconstructed Input: []
+g7d3_fmt_amount          src=Y lit=0 过正确=❌ 咬错=✅ 过空=✅ 判别=❌
+    oracle: 题面示例未通过：AssertionError: fmt_amount(1000) should be 1,000．00, but got 1，000．00
+g7e1_parse_flag          src=Y lit=1 过正确=✅ 咬错=❌ 过空=⚠️ 判别=❌
+g7e2_truncate_tail       src=Y lit=1 过正确=❌ 咬错=✅ 过空=✅ 判别=❌
+    oracle: 题面示例未通过：AssertionError: truncate_tail('abc', 2) expected 'a...', got 'ab...'
+
+B 臂：可执行判据 8/8 过正确 1/8 咬错 7/8 判别力 0/8
+  题面自足 0/4；题面不完备 0/4
+0/8
+  题面自足 0/4；题面不完备 0/4
+EXIT=0
+EXIT=0

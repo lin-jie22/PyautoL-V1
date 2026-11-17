@@ -2169,6 +2169,35 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ145d", "mw/critgen.py",
      '''        return [(v,) for v in POOL[types[0]]]''',
      '''        return list(POOL[types[0]])  # 撤回态：不包 1-tuple'''),
+    # ── V185（§253）：诊断分层与回错（AZ148a~d）─────────────────────────────
+    # AZ148a：ARITY 归到 TYPES 类 ⇒ 「参数个数对不上」又变回「类型填错」。
+    ("AZ148a", "mw/critgen.py",
+     '''    if spec["arity"] != n_args:
+        out["code"] = "ARITY"''',
+     '''    if spec["arity"] != n_args:
+        out["code"] = "TYPES"  # 撤回态：按 V184 的口径归到类型'''),
+    # AZ148b：不查槽 ⇒ SLOT 这一类永不可达（四类退化成三类）。
+    ("AZ148b", "mw/critgen.py",
+     '''    for key in spec["slots"]:
+        table = DECODERS if key == "decode" else KEEPS
+        v = str((slots or {}).get(key) or "")
+        if not v:
+            out["code"] = "SLOT"''',
+     '''    for key in ():  # 撤回态：不查槽
+        table = DECODERS if key == "decode" else KEEPS
+        v = str((slots or {}).get(key) or "")
+        if not v:
+            out["code"] = "SLOT"'''),
+    # AZ148c：允许多填类型 ⇒ diagnose 与 validate 在「过/不过」上分叉。
+    ("AZ148c", "mw/critgen.py",
+     '''    if len(types) != n_args:
+        out["code"] = "TYPES"''',
+     '''    if len(types) < n_args:  # 撤回态：允许多填
+        out["code"] = "TYPES"'''),
+    # AZ148d：回错里点名推荐 ⇒ 把答案递给模型。
+    ("AZ148d", "mw/critgen.py",
+     '''        return f"你选的是 {k}，它要 {need} 个位置参数；本题函数只有 {got} 个。"''',
+     '''        return f"你选的是 {k}，它要 {need} 个位置参数；本题函数只有 {got} 个。建议改用 ROUNDTRIP。"'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2492,6 +2521,17 @@ COUPLED: dict[str, frozenset[str]] = {
     "AZ139a": frozenset({"AZ139c"}),
     "AZ136f": frozenset({"AZ136b", "AZ137c", "AZ137f", "AZ139e"}),
     "AZ136g": frozenset({"AZ136a", "AZ136c", "AZ136f", "AZ137f", "AZ139c", "AZ139f"}),
+
+    #: ★V185（§253）：`diagnose()` 这一组是**同一个分类器**的四个面，连带解不开：
+    #:   · AZ148a 撤「ARITY 归到自己的类」⇒ code 变 TYPES ⇒ AZ148b 的
+    #:     「四类互不相同」立刻少一类（它正是拿 ARITY 当第三个见证）；
+    #:   · AZ148b 撤「查槽」⇒ SLOT 永不可达 ⇒ AZ148c 的一致性枚举里那一组
+    #:     变成 diagnose 放行 / validate 拒 ⇒ 两面对同一处实现。
+    #:   ⚠️ 已逐条实测：a 多红 b（751/2）、b 多红 c（751/2）、c 多红 b（751/2），
+    #:      汇总行条数与「两条断言」一一对得上；d 单红（752/1）。
+    "AZ148a": frozenset({"AZ148b"}),
+    "AZ148b": frozenset({"AZ148c"}),
+    "AZ148c": frozenset({"AZ148b"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

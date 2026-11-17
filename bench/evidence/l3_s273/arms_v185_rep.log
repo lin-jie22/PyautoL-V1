@@ -1,0 +1,38 @@
+k01_diff_tree            typed=EMPTY_IFF_EQUAL/Px     retry=EMPTY_IFF_EQUAL/Px     a1=OK       retry_used=0 -> -
+k02_encode_cookie        typed=ROUNDTRIP/xB           retry=ROUNDTRIP/xB           a1=OK       retry_used=0 -> -
+k03_unflatten            typed=ROUNDTRIP/xB           retry=ROUNDTRIP/xB           a1=OK       retry_used=0 -> -
+k04_to_ini               typed=ROUNDTRIP/xB           retry=ROUNDTRIP/xB           a1=OK       retry_used=0 -> -
+g7d2_dedupe_keep         typed=×ARITY                 retry=×ARITY                 a1=ARITY    retry_used=1 -> ARITY
+g7d3_fmt_amount          typed=ROUNDTRIP/xB           retry=ROUNDTRIP/xB           a1=OK       retry_used=0 -> -
+g7e1_parse_flag          typed=ROUNDTRIP/xB           retry=ROUNDTRIP/xB           a1=OK       retry_used=0 -> -
+g7e2_truncate_tail       typed=TAIL/PB                retry=TAIL/PB                a1=OK       retry_used=0 -> -
+
+== 汇总 ==
+typed        可跑 7/8 过正确 2/8 咬错 6/8 判别 1/8 准入 7/8
+             首轮 code 分布：{'OK': 7, 'ARITY': 1}
+typed_retry  可跑 7/8 过正确 2/8 咬错 6/8 判别 1/8 准入 7/8
+             首轮 code 分布：{'OK': 7, 'ARITY': 1}
+
+== P2：retry_used 的题集 是否 == 首轮非 OK 的题集 ==
+  首轮非 OK = ['g7d2_dedupe_keep']
+  retry_used = ['g7d2_dedupe_keep']
+  集合相等 = True
+
+== P5：未重选的 7 题，两臂逐题三元组是否相同 ==
+  k01_diff_tree            same=True (EMPTY_IFF_EQUAL True False)
+  k02_encode_cookie        same=True (ROUNDTRIP False True)
+  k03_unflatten            same=True (ROUNDTRIP False True)
+  k04_to_ini               same=True (ROUNDTRIP False True)
+  g7d3_fmt_amount          same=True (ROUNDTRIP False True)
+  g7e1_parse_flag          same=True (ROUNDTRIP False True)
+  g7e2_truncate_tail       same=True (TAIL True True)
+  全同 = True
+
+== P4：过正确题集逐题 ==
+  k01_diff_tree            typed=True retry=True kind=EMPTY_IFF_EQUAL->EMPTY_IFF_EQUAL
+  g7e2_truncate_tail       typed=True retry=True kind=TAIL->TAIL
+
+== 自检：`built` 与 `fail` 必须互相说得通 ==
+  矛盾行 = 0（必须为 0；V185 自踩 ① 就是这里曾经 16/16 全错）
+
+落盘 /Users/linshaojie/V1/bench/evidence/l3_s273/readings_v185_rep.json（16 行）

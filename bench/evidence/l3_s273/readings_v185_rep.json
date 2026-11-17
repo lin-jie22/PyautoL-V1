@@ -1,0 +1,537 @@
+[
+ {
+  "arm": "typed",
+  "id": "k01_diff_tree",
+  "n_args": 2,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"EMPTY_IFF_EQUAL\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\"}",
+  "kind": "EMPTY_IFF_EQUAL",
+  "types": [
+   "dict",
+   "dict"
+  ],
+  "built": true,
+  "pass_oracle": true,
+  "bite_partial": false,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   3,
+   3
+  ],
+  "why_oracle": "",
+  "src": "INPUTS = [({'b': 1, 'a': 2}, {'b': 1, 'a': 2}), ({'b': 1, 'a': 2}, {}), ({}, {})]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = diff_tree(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n",
+  "fail": ""
+ },
+ {
+  "arm": "typed_retry",
+  "id": "k01_diff_tree",
+  "n_args": 2,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"EMPTY_IFF_EQUAL\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\"}",
+  "kind": "EMPTY_IFF_EQUAL",
+  "types": [
+   "dict",
+   "dict"
+  ],
+  "built": true,
+  "pass_oracle": true,
+  "bite_partial": false,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   3,
+   3
+  ],
+  "why_oracle": "",
+  "src": "INPUTS = [({'b': 1, 'a': 2}, {'b': 1, 'a': 2}), ({'b': 1, 'a': 2}, {}), ({}, {})]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = diff_tree(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n",
+  "fail": ""
+ },
+ {
+  "arm": "typed",
+  "id": "k02_encode_cookie",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "dict"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   3,
+   3
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2; b=1' 解回 {'a': '2; b=1'}",
+  "src": "from urllib.parse import parse_qsl\ndecode = lambda s: dict(parse_qsl(s))\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed_retry",
+  "id": "k02_encode_cookie",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "dict"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   3,
+   3
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2; b=1' 解回 {'a': '2; b=1'}",
+  "src": "from urllib.parse import parse_qsl\ndecode = lambda s: dict(parse_qsl(s))\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed",
+  "id": "k03_unflatten",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"json.loads\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "dict"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   3,
+   3
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ {'b': 1, 'a': 2} 解不开：the JSON object must be str, bytes or bytearray, not dict",
+  "src": "import json\ndecode = json.loads\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = unflatten(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed_retry",
+  "id": "k03_unflatten",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"json.loads\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "dict"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   3,
+   3
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ {'b': 1, 'a': 2} 解不开：the JSON object must be str, bytes or bytearray, not dict",
+  "src": "import json\ndecode = json.loads\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = unflatten(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed",
+  "id": "k04_to_ini",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"json.loads\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "dict"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   2,
+   3
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {} ⇒ '' 解不开：Expecting value: line 1 column 1 (char 0)",
+  "src": "import json\ndecode = json.loads\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = to_ini(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed_retry",
+  "id": "k04_to_ini",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"json.loads\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "dict"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   2,
+   3
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {} ⇒ '' 解不开：Expecting value: line 1 column 1 (char 0)",
+  "src": "import json\ndecode = json.loads\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = to_ini(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed",
+  "id": "g7d2_dedupe_keep",
+  "n_args": 1,
+  "a1": {
+   "ok": false,
+   "code": "ARITY",
+   "kind": "TAIL",
+   "types": [
+    "list"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"TAIL\", \"types\": [\"list\"], \"decode\": \"str\", \"keep\": \"tail_n\"}",
+  "kind": "TAIL",
+  "types": [
+   "list"
+  ],
+  "built": false,
+  "pass_oracle": false,
+  "bite_partial": false,
+  "bite_stub": false,
+  "disc": false,
+  "admit": false,
+  "fail": "ARITY",
+  "err": "TAIL 要 2 个位置参数，本题函数只有 1 个 ⇒ 参数个数对不上，这个算子在这道题上结构不可达"
+ },
+ {
+  "arm": "typed_retry",
+  "id": "g7d2_dedupe_keep",
+  "n_args": 1,
+  "a1": {
+   "ok": false,
+   "code": "ARITY",
+   "kind": "TAIL",
+   "types": [
+    "list"
+   ]
+  },
+  "retry_used": true,
+  "a2": {
+   "ok": false,
+   "code": "ARITY",
+   "kind": "BOUND",
+   "types": [
+    "list"
+   ]
+  },
+  "raw1": "{\"kind\": \"TAIL\", \"types\": [\"list\"], \"decode\": \"str\", \"keep\": \"tail_n\"}",
+  "raw2": "{\"kind\": \"BOUND\", \"types\": [\"list\"], \"decode\": \"str\", \"keep\": \"tail_n\"}",
+  "hint": "你选的是 TAIL，它要 2 个位置参数；本题函数只有 1 个。\n\n可用算子：\n- ROUNDTRIP（1 个参数）：把输出用 decode 解回来必须等于输入；decode 可选 ['json.loads', 'parse_qsl', 'int', 'str', 'list']\n- CONSERVE（1 个参数）：输出的叶子多重集必须等于输入的叶子多重集\n- EMPTY_IFF_EQUAL（2 个参数）：两个输入之间的差异为空 ⟺ 两输入相等\n- SUBSEQ（1 个参数）：输出必须是输入的子序列，且归一化后两两不等\n- BOUND（2 个参数）：输出长度不超过 n；输入不超长时必须原样返回\n- TAIL（2 个参数）：超长输出的结尾必须是 keep 指定的形状；keep 可选 ['tail_n', 'ellipsis_tail_n', 'head_n']\n本题函数的必填位置参数：1 个",
+  "kind": "BOUND",
+  "types": [
+   "list"
+  ],
+  "built": false,
+  "pass_oracle": false,
+  "bite_partial": false,
+  "bite_stub": false,
+  "disc": false,
+  "admit": false,
+  "fail": "ARITY",
+  "err": "BOUND 要 2 个位置参数，本题函数只有 1 个 ⇒ 参数个数对不上，这个算子在这道题上结构不可达"
+ },
+ {
+  "arm": "typed",
+  "id": "g7d3_fmt_amount",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"int\"], \"decode\": \"str\", \"keep\": \"\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "int"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   3,
+   3
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ '0.00' 解回 '0.00'",
+  "src": "decode = str\nINPUTS = [(0,), (3,), (5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed_retry",
+  "id": "g7d3_fmt_amount",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"int\"], \"decode\": \"str\", \"keep\": \"\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "int"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   3,
+   3
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ '0.00' 解回 '0.00'",
+  "src": "decode = str\nINPUTS = [(0,), (3,), (5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed",
+  "id": "g7e1_parse_flag",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"str\"], \"decode\": \"str\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "str"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   4,
+   4
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: 'abcdef' ⇒ None 解回 'None'",
+  "src": "decode = str\nINPUTS = [('abcdef',), ('',), ('  a b  ',), ('A;B=1,2',)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = parse_flag(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed_retry",
+  "id": "g7e1_parse_flag",
+  "n_args": 1,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"str\"], \"decode\": \"str\"}",
+  "kind": "ROUNDTRIP",
+  "types": [
+   "str"
+  ],
+  "built": true,
+  "pass_oracle": false,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": false,
+  "admit": true,
+  "domain": [
+   4,
+   4
+  ],
+  "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: 'abcdef' ⇒ None 解回 'None'",
+  "src": "decode = str\nINPUTS = [('abcdef',), ('',), ('  a b  ',), ('A;B=1,2',)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = parse_flag(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+  "fail": "SEMANTIC"
+ },
+ {
+  "arm": "typed",
+  "id": "g7e2_truncate_tail",
+  "n_args": 2,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"TAIL\", \"types\": [\"str\", \"int\"], \"decode\": \"str\", \"keep\": \"tail_n\"}",
+  "kind": "TAIL",
+  "types": [
+   "str",
+   "int"
+  ],
+  "built": true,
+  "pass_oracle": true,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": true,
+  "admit": true,
+  "domain": [
+   4,
+   4
+  ],
+  "why_oracle": "",
+  "src": "INPUTS = [('abcdef', 1), ('abcdef', 9), ('  a b  ', 3), ('', 1)]\n\n\ndef _rel():\n    for s, n in INPUTS:\n        got = truncate_tail(s, n)\n        if len(s) > n and not got.endswith(s[-n:]):\n            raise AssertionError(f\"TAIL: {(s, n)!r} ⇒ {got!r}\")\n    return True\n",
+  "fail": ""
+ },
+ {
+  "arm": "typed_retry",
+  "id": "g7e2_truncate_tail",
+  "n_args": 2,
+  "a1": {
+   "ok": true,
+   "code": "OK",
+   "kind": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ]
+  },
+  "retry_used": false,
+  "a2": null,
+  "raw1": "{\"kind\": \"TAIL\", \"types\": [\"str\", \"int\"], \"decode\": \"str\", \"keep\": \"tail_n\"}",
+  "kind": "TAIL",
+  "types": [
+   "str",
+   "int"
+  ],
+  "built": true,
+  "pass_oracle": true,
+  "bite_partial": true,
+  "bite_stub": true,
+  "disc": true,
+  "admit": true,
+  "domain": [
+   4,
+   4
+  ],
+  "why_oracle": "",
+  "src": "INPUTS = [('abcdef', 1), ('abcdef', 9), ('  a b  ', 3), ('', 1)]\n\n\ndef _rel():\n    for s, n in INPUTS:\n        got = truncate_tail(s, n)\n        if len(s) > n and not got.endswith(s[-n:]):\n            raise AssertionError(f\"TAIL: {(s, n)!r} ⇒ {got!r}\")\n    return True\n",
+  "fail": ""
+ }
+]

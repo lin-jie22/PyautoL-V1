@@ -15561,6 +15561,72 @@ check(RS, "AZ145d `critgen.inputs_for()` 的输入由**装置**生成：\n"
       and _az145_pair[2][0] == _az145_pair[2][1],
       f"tail={_az145_tail[:2]} one0={_az145_one[0]!r} pair={_az145_pair}")
 
+# ═══════════ V185（§253）：诊断分层 + 回错可行动（AZ148） ═══════════
+
+#: 分类优先级 **KIND → ARITY → TYPES → SLOT**。V184 的 `validate()` 先判 types 长度，
+#: 于是「一元函数 + 二元算子」被说成「类型填错」⇒ 回给模型的话指错方向（A4 假阴）。
+_az148_d = _CG.diagnose("TAIL", ["dict"], {"keep": "tail_n"}, 1)
+_az148_ok = _CG.diagnose("TAIL", ["str", "int"], {"keep": "tail_n"}, 2)
+
+check(RS, "AZ148a `critgen.diagnose()` 的优先级是 **KIND → ARITY → TYPES → SLOT**：\n"
+          "              一元函数选 `TAIL`（二元算子）⇒ `code=\"ARITY\"`、`need=2`、`got=1`；\n"
+          "              ⛔ 不是 `TYPES`（`validate()` 报的是「第二个类型必须是 int」，\n"
+          "              那句话把「参数个数对不上」说成了「类型填错」）；合法组合 ⇒ `OK`；\n"
+          "              撤回语义：把 ARITY 分支的 code 改回 \"TYPES\" ⇒ 本条必须红",
+      _az148_d["code"] == "ARITY" and _az148_d["need"] == 2 and _az148_d["got"] == 1
+      and _az148_d["ok"] is False and _az148_ok["code"] == "OK",
+      f"{_az148_d['code']} need={_az148_d['need']} got={_az148_d['got']} "
+      f"ok={_az148_d['ok']}")
+
+_az148_codes = {
+    "KIND": _CG.diagnose("NOPE", ["str"], {}, 1)["code"],
+    "ARITY": _az148_d["code"],
+    "TYPES": _CG.diagnose("ROUNDTRIP", ["str", "int"], {"decode": "json.loads"}, 1)["code"],
+    "SLOT": _CG.diagnose("ROUNDTRIP", ["str"], {}, 1)["code"],
+}
+
+check(RS, "AZ148b 四种「不过」各自可达、且互不吞并：KIND（不存在的算子）/ ARITY（参数个数）/\n"
+          "              TYPES（长度或类型名）/ SLOT（槽缺失或不在枚举里）；\n"
+          "              ⛔ 四条必须各不相同 —— 归成两类就等于回错又变回一句话；\n"
+          "              撤回语义：槽循环改成 `for key in ()`（不查槽）⇒ SLOT 变 OK ⇒ 必须红",
+      set(_az148_codes.values()) == set(_CG.CODES)
+      and _CG.diagnose("ROUNDTRIP", ["str"], {}, 1)["ok"] is False,
+      f"{_az148_codes}")
+
+#: `diagnose()` 与 `validate()` 只允许在「为什么」上有差别，⛔ 不许在「过/不过」上分叉。
+_az148_pairs = [
+    ("ROUNDTRIP", ["dict"], {"decode": "json.loads"}, 1),
+    ("TAIL", ["dict"], {"keep": "tail_n"}, 1),
+    ("TAIL", ["str", "int"], {"keep": "tail_n"}, 2),
+    ("TAIL", ["str"], {"keep": "tail_n"}, 1),
+    ("NOPE", ["str"], {}, 1),
+    ("ROUNDTRIP", ["str"], {}, 1),
+    ("ROUNDTRIP", ["str"], {"decode": "nope"}, 1),
+    ("ROUNDTRIP", ["str", "int"], {"decode": "json.loads"}, 1),
+    ("CONSERVE", ["list"], {}, 1),
+    ("EMPTY_IFF_EQUAL", ["dict"], {}, 1),
+]
+_az148_disagree = [(k, _CG.diagnose(k, t, s, n)["ok"], _CG.validate(k, t, s, n))
+                   for k, t, s, n in _az148_pairs
+                   if _CG.diagnose(k, t, s, n)["ok"] != (_CG.validate(k, t, s, n) == "")]
+
+check(RS, "AZ148c `diagnose()` 与 `validate()` 对**过/不过**必须逐例一致（10 组枚举）：\n"
+          "              两者只允许在「为什么」上不同 —— 分层是加解释，⛔ 不是放宽门槛；\n"
+          "              撤回语义：把 diagnose 的 `len(types) != n_args` 改成 `<`（允许多填）\n"
+          "              ⇒ 第 8 组变 OK 而 validate 仍拒 ⇒ 必须红",
+      _az148_disagree == [],
+      f"{_az148_disagree}")
+
+_az148_txt = _CG.diagnose_text(_az148_d)
+_az148_leak = [k for k in _CG.OPS if k != "TAIL" and k in _az148_txt]
+
+check(RS, "AZ148d 回错句子**只提模型自己选的算子**，⛔ 不点名该换哪个（那是答案）：\n"
+          "              ARITY 类的句子除 `TAIL` 外不得出现任何其它算子 id；\n"
+          "              ⛔ 也别按「目录里有的就能推荐」放行 —— 目录是全量陈列，不是推荐；\n"
+          "              撤回语义：句尾追加「建议改用 ROUNDTRIP」⇒ 本条必须红",
+      _az148_leak == [] and "TAIL" in _az148_txt and _az148_txt != "",
+      f"leak={_az148_leak} txt={_az148_txt!r}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

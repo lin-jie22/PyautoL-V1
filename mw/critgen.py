@@ -153,6 +153,96 @@ def validate(kind: str, types: list, slots: dict, n_args: int) -> str:
     return ""
 
 
+#: `diagnose()` 的四种「不过」原因 + `OK`。顺序即优先级（V185 §252.8 第 2 条）。
+CODES: tuple[str, ...] = ("KIND", "ARITY", "TYPES", "SLOT")
+
+
+def diagnose(kind: str, types: list, slots: dict, n_args: int) -> dict:
+    """**为什么**不过 —— 比 `validate()` 多两个字段：`code`（哪一类）与 `need/got`（差几个参数）。
+
+    ⛔ 与 `validate()` 的分工：`validate()` 只回答「过/不过」，且**逐字不动**（`AZ145c` 钉着
+       它的原串）；本函数回答「哪一类、差多少」，供**回错**用。
+    ⚠️ 优先级 **KIND → ARITY → TYPES → SLOT** 是 V185 的改动本体：V184 的 `validate()`
+       先判 `len(types)==n_args`，于是「一元函数选了二元算子」被报成**类型**问题
+       （`g7d2` + `TAIL`：`len(["dict"])==1==n_args` 先过，再撞上 TAIL 的 `types[1]` 特判）
+       ⇒ 回给模型的话指错了方向，A4 因此假阴。
+    ⛔ 句子本身不许点名「该换哪个算子」（那是答案）；`AZ146d` 钉这条。
+    """
+    k = str(kind or "")
+    spec = OPS.get(k)
+    out = {"kind": k, "need": None, "got": n_args, "ok": False, "code": "KIND", "msg": ""}
+    if spec is None:
+        out["msg"] = f"kind {kind!r} 不在可用算子里：{sorted(OPS)}"
+        return out
+    out["need"] = spec["arity"]
+    if n_args < 0:
+        out["code"] = "ARITY"
+        out["msg"] = "读不出本题函数的必填参数个数（没有 def 或语法错）"
+        return out
+    if spec["arity"] != n_args:
+        out["code"] = "ARITY"
+        out["msg"] = (f"{k} 要 {spec['arity']} 个位置参数，本题函数只有 {n_args} 个"
+                      f" ⇒ 参数个数对不上，这个算子在这道题上结构不可达")
+        return out
+    if not isinstance(types, list) or not types:
+        out["code"] = "TYPES"
+        out["msg"] = "types 必须是类型名组成的非空 list"
+        return out
+    if len(types) != n_args:
+        out["code"] = "TYPES"
+        out["msg"] = (f"types 长度 {len(types)} 与函数必填参数个数 {n_args} 不符；"
+                      f"每个参数一个类型名，可选：{list(TYPES)}")
+        return out
+    for i, t in enumerate(types):
+        if t not in TYPES:
+            out["code"] = "TYPES"
+            out["msg"] = f"types[{i}] = {t!r} 不是类型名；可选：{list(TYPES)}"
+            return out
+    if k in ("TAIL", "BOUND") and types[1] != "int":
+        out["code"] = "TYPES"
+        out["msg"] = f"{k} 的第二个类型必须是 \"int\"（长度），拿到的是 {types[1]!r}"
+        return out
+    for key in spec["slots"]:
+        table = DECODERS if key == "decode" else KEEPS
+        v = str((slots or {}).get(key) or "")
+        if not v:
+            out["code"] = "SLOT"
+            out["msg"] = f"{k} 需要槽 `{key}`；可选：{[x for x in table if x]}"
+            return out
+        if v not in table:
+            out["code"] = "SLOT"
+            out["msg"] = f"槽 `{key}` = {v!r} 不在枚举里；可选：{[x for x in table if x]}"
+            return out
+    out.update({"ok": True, "code": "OK", "msg": ""})
+    return out
+
+
+def diagnose_text(d: dict) -> str:
+    """把 `diagnose()` 的结果说成**一句人话**（不含目录、不含其它算子名）。"""
+    code, k, need, got = d.get("code"), d.get("kind"), d.get("need"), d.get("got")
+    if code == "ARITY":
+        if got is not None and got < 0:
+            return f"你选的是 {k}，它要 {need} 个位置参数；{d.get('msg')}"
+        return f"你选的是 {k}，它要 {need} 个位置参数；本题函数只有 {got} 个。"
+    if code == "KIND":
+        return f"你选的 {k!r} 不是一个可用算子。"
+    if code == "OK":
+        return ""
+    return f"你选的是 {k}（它要 {need} 个位置参数，本题也是 {got} 个），但：{d.get('msg')}"
+
+
+def retry_hint(d: dict) -> str:
+    """**一次重选**时回给用户的整段话：结构事实 + 目录 + 同一份 JSON 要求。
+
+    ⛔ 只给结构事实，⛔ 不给「该换哪个」 —— 目录是全量陈列，与首轮 system 里那份**同一份**，
+       陈列不等于推荐。
+    """
+    return (diagnose_text(d) + "\n\n"
+            "可用算子：\n" + catalogue() + "\n"
+            f"本题函数的必填位置参数：{d.get('got')} 个。\n"
+            "⛔ 仍然不要写 inputs。请只输出一个 JSON。")
+
+
 def _inputs_for(kind: str, types: list) -> list:
     """按类型生成输入（PREREG §2.2 的三条规则，逐字实现）。
 

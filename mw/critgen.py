@@ -429,10 +429,26 @@ def skeleton(kind: str | None = None) -> str:
             '"keep": "<' + "|".join(k for k in KEEPS if k) + '>"}')
 
 
-def catalogue() -> str:
-    """算子目录（给 prompt 用）：每个算子一行，含 arity 与槽的可选值。"""
+def ops_for(n_args: int) -> dict:
+    """**候选集过滤**：只留下 arity 相符的算子（V186 的 arity 硬约束本体）。
+
+    ⛔ 与「告诉模型它有几个参数」的区别：那是提示，模型可以不理（V185 实测：它把二元算子
+       换成了另一个二元算子）；这里是**它选不到**。
+    ⚠️ `n_args < 0`（读不出 `def`）⇒ 退回全量 —— 签名未知时不许假装有约束，
+       否则「过滤」变成了一个恒真动作（纪律 5：断言恒真 = 假绿）。
+    """
+    if n_args < 0:
+        return dict(OPS)
+    return {k: v for k, v in OPS.items() if v["arity"] == n_args}
+
+
+def catalogue(n_args: int | None = None) -> str:
+    """算子目录（给 prompt 用）：每个算子一行，含 arity 与槽的可选值。
+
+    `n_args` 给了 ⇒ 只列该 arity 的算子（V186 臂用）；`None` ⇒ 全量（`retry_hint` 用）。
+    """
     out = []
-    for k, spec in OPS.items():
+    for k, spec in (OPS if n_args is None else ops_for(n_args)).items():
         extra = ""
         for key in spec["slots"]:
             table = DECODERS if key == "decode" else KEEPS

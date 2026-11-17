@@ -1,0 +1,32 @@
+k01_diff_tree            n=2 cand=3  typed=EMPTY_IFF_EQUAL/Px     filtered=EMPTY_IFF_EQUAL/Px    
+k02_encode_cookie        n=1 cand=3  typed=ROUNDTRIP/xB           filtered=ROUNDTRIP/xB          
+k03_unflatten            n=1 cand=3  typed=ROUNDTRIP/xB           filtered=ROUNDTRIP/xB          
+k04_to_ini               n=1 cand=3  typed=ROUNDTRIP/xB           filtered=ROUNDTRIP/xB          
+g7d2_dedupe_keep         n=1 cand=3  typed=×ARITY                 filtered=SUBSEQ/PB             
+g7d3_fmt_amount          n=1 cand=3  typed=ROUNDTRIP/xB           filtered=×TYPES                
+g7e1_parse_flag          n=1 cand=3  typed=ROUNDTRIP/xB           filtered=ROUNDTRIP/xB          
+g7e2_truncate_tail       n=2 cand=3  typed=TAIL/PB                filtered=TAIL/PB               
+
+== 汇总 ==
+typed            可跑 7/8 过正确 2/8 咬错 6/8 判别 1/8 准入 7/8
+                 失败分类：{'OK': 2, 'SEMANTIC': 5, 'ARITY': 1}
+                 ARITY 计数 = 1
+typed_filtered   可跑 7/8 过正确 3/8 咬错 6/8 判别 2/8 准入 7/8
+                 失败分类：{'OK': 3, 'SEMANTIC': 4, 'TYPES': 1}
+                 ARITY 计数 = 0
+
+== P6：其余 7 题的算子选择是否与 V185 相同 ==
+  k01_diff_tree            v185=EMPTY_IFF_EQUAL    v186=EMPTY_IFF_EQUAL    same=True
+  k02_encode_cookie        v185=ROUNDTRIP          v186=ROUNDTRIP          same=True
+  k03_unflatten            v185=ROUNDTRIP          v186=ROUNDTRIP          same=True
+  k04_to_ini               v185=ROUNDTRIP          v186=ROUNDTRIP          same=True
+  g7d2_dedupe_keep         v185=TAIL               v186=SUBSEQ             same=False
+  g7d3_fmt_amount          v185=ROUNDTRIP          v186=ROUNDTRIP          same=True
+  g7e1_parse_flag          v185=ROUNDTRIP          v186=ROUNDTRIP          same=True
+  g7e2_truncate_tail       v185=TAIL               v186=TAIL               same=True
+  变化 = [('g7d2_dedupe_keep', 'TAIL', 'SUBSEQ')]
+
+== 自检：`built` 与 `fail` 必须互相说得通 ==
+  矛盾行 = 0（必须为 0）
+
+落盘 /Users/linshaojie/V1/bench/evidence/l3_s274/readings_v186.json（16 行）

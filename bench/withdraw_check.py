@@ -2198,6 +2198,21 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ148d", "mw/critgen.py",
      '''        return f"你选的是 {k}，它要 {need} 个位置参数；本题函数只有 {got} 个。"''',
      '''        return f"你选的是 {k}，它要 {need} 个位置参数；本题函数只有 {got} 个。建议改用 ROUNDTRIP。"'''),
+    # ── V186（§254）：arity 硬约束 = 候选集过滤（AZ149a~c）──────────────────
+    # AZ149a：不过滤 ⇒ 一元题也能选到二元算子（回到 V185 的状态）。
+    ("AZ149a", "mw/critgen.py",
+     '''    return {k: v for k, v in OPS.items() if v["arity"] == n_args}''',
+     '''    return dict(OPS)  # 撤回态：不过滤'''),
+    # AZ149b：签名未知就返回空集 ⇒ 让「没有可用算子」冒充约束。
+    ("AZ149b", "mw/critgen.py",
+     '''    if n_args < 0:
+        return dict(OPS)''',
+     '''    if n_args < 0:
+        return {}  # 撤回态：未知签名即空集'''),
+    # AZ149c：目录忽略 n_args ⇒ 提示里仍列全部算子，过滤只活在代码里。
+    ("AZ149c", "mw/critgen.py",
+     '''    for k, spec in (OPS if n_args is None else ops_for(n_args)).items():''',
+     '''    for k, spec in OPS.items():  # 撤回态：忽略 n_args'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2532,6 +2547,11 @@ COUPLED: dict[str, frozenset[str]] = {
     "AZ148a": frozenset({"AZ148b"}),
     "AZ148b": frozenset({"AZ148c"}),
     "AZ148c": frozenset({"AZ148b"}),
+
+    #: ★V186（§254）：AZ149a 撤的是**过滤本体**；AZ149c 断言「一元题的目录里不许出现
+    #:   二元算子」—— 它建立的就是这个过滤，撤了必然一起翻（同一实现的两个面：
+    #:   一个问候选集，一个问提示里陈列了什么）。b 单红（755/1），a 连带 c（754/2）。
+    "AZ149a": frozenset({"AZ149c"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

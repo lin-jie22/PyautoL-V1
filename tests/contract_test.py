@@ -15627,6 +15627,42 @@ check(RS, "AZ148d 回错句子**只提模型自己选的算子**，⛔ 不点名
       _az148_leak == [] and "TAIL" in _az148_txt and _az148_txt != "",
       f"leak={_az148_leak} txt={_az148_txt!r}")
 
+# ═══════════ V186（§254）：arity 硬约束 = 候选集过滤（AZ149） ═══════════
+
+_az149_one = _CG.ops_for(1)
+_az149_two = _CG.ops_for(2)
+
+check(RS, "AZ149a `critgen.ops_for(n)` 只返回 arity 相符的算子：一元题**拿不到**任何二元算子，\n"
+          "              二元题反之。⛔ 这不是提示语而是候选集 —— 提示可以不理（V185 实测\n"
+          "              它把 TAIL 换成另一个二元算子），候选集不行；\n"
+          "              撤回语义：改成 `return dict(OPS)` ⇒ 一元题里冒出 TAIL ⇒ 必须红",
+      set(_az149_one) == {"ROUNDTRIP", "CONSERVE", "SUBSEQ"}
+      and set(_az149_two) == {"EMPTY_IFF_EQUAL", "BOUND", "TAIL"},
+      f"one={sorted(_az149_one)} two={sorted(_az149_two)}")
+
+_az149_unknown = _CG.ops_for(-1)
+
+check(RS, "AZ149b 读不出签名（`n_args < 0`）时 `ops_for()` 退回**全量**：\n"
+          "              ⛔ 不许返回空集 —— 那会让「这道题没有可用算子」冒充约束，\n"
+          "              而事实是装置不知道；签名未知时的过滤是恒真动作（纪律 5 同型）；\n"
+          "              撤回语义：`n_args < 0` 分支返回 `{}` ⇒ 本条必须红",
+      set(_az149_unknown) == set(_CG.OPS) and len(_az149_unknown) == len(_CG.OPS),
+      f"unknown={sorted(_az149_unknown)}")
+
+_az149_cat1 = _CG.catalogue(1).splitlines()
+_az149_cat2 = _CG.catalogue(2).splitlines()
+_az149_cat_all = _CG.catalogue().splitlines()
+
+check(RS, "AZ149c `catalogue(n)` 的行数 == `len(ops_for(n))`，且每行只讲**本算子**的事；\n"
+          "              `catalogue()`（无参）仍是全量 6 行 —— `retry_hint()` 靠它陈列，\n"
+          "              ⛔ 不能因为加了过滤就把回错也一起收窄（那会让重试看不见候选）；\n"
+          "              撤回语义：`catalogue()` 忽略 `n_args`（永远全量）⇒ 本条必须红",
+      len(_az149_cat1) == len(_az149_one) and len(_az149_cat2) == len(_az149_two)
+      and len(_az149_cat_all) == len(_CG.OPS)
+      and all(any(k in ln for ln in _az149_cat1) for k in _az149_one)
+      and not any("TAIL" in ln or "BOUND" in ln for ln in _az149_cat1),
+      f"1={len(_az149_cat1)} 2={len(_az149_cat2)} all={len(_az149_cat_all)}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

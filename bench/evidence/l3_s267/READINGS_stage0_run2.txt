@@ -1,0 +1,43 @@
+V179 STAGE0 —— 行为级读数进来以后，轴会不会变？
+  证据目录 /Users/linshaojie/V1/bench/evidence/l3_s267
+
+## P1 池可重建（6 格 / 32 行，3.7s）
+  ✅ P1 6 格各 ≥4 行、行内自洽（无 vec 6 行 —— 缺席单独计数，不当零） — 每格行数 {'m01_records': 5, 'm02_vfs': 6, 'm03_tiered': 6, 's01_kv_expiry': 5, 's02_limiter': 5, 's03_tx_journal': 5}｜自洽失败 0｜无 vec 6
+
+## P2 两层 label 逐格对照
+  m01_records      分数级 COARSE     行为级 INJECTIVE  分数claim=None behclaim=None 池 n=4 counts={'n_no_vec': 1, 'n_kept': 4}
+  m02_vfs          分数级 COARSE     行为级 COARSE     分数claim=None behclaim=None 池 n=5 counts={'n_no_vec': 1, 'n_kept': 5}
+  m03_tiered       分数级 COARSE     行为级 INJECTIVE  分数claim=None behclaim=None 池 n=5 counts={'n_no_vec': 1, 'n_kept': 5}
+  s01_kv_expiry    分数级 COARSE     行为级 INJECTIVE  分数claim=None behclaim=None 池 n=4 counts={'n_no_vec': 1, 'n_kept': 4}
+  s02_limiter      分数级 COARSE     行为级 INJECTIVE  分数claim=None behclaim=None 池 n=4 counts={'n_no_vec': 1, 'n_kept': 4}
+  s03_tx_journal   分数级 COARSE     行为级 INJECTIVE  分数claim=None behclaim=None 池 n=4 counts={'n_no_vec': 1, 'n_kept': 4}
+  ✅ P2 两层 label 至少 1 格不同（A） — 不同 5/6 格
+
+## P3 claim 触发矩阵（B = 只有行为层触发）
+  只有行为层触发 0：[]
+  只有分数层触发 0：[]
+  两层都触发     0：[]
+  ❌ P3 ≥1 格「行为级 claim 触发而分数级不触发」（B） — 只有行为层 0 格 ⇒ B=不成立
+
+## P4 轴对照
+  轴不同的格：0/6
+  ✅ P4 轴对照报出（是否不同即读数本身） — 0 格不同；0 格 = 行为层没改变任何一格的动作指向
+
+## P5 判据有牙：构造对照（3 实现 / 同分异行为）
+  行为级 kind=CONSTANT claim=BEHAVIOR_UNRESOLVED bits=0.0 轴=('MODEL', 'RULER')
+  分数级 kind=CONSTANT claim=SCORE_UNMOVABLE 轴=('MODEL', 'RULER')
+  ❌ P5 同分异行为 ⇒ 行为 claim 触发 + 轴含 RULER；同池分数级不触发 + 轴空 — beh=BEHAVIOR_UNRESOLVED/('MODEL', 'RULER') score=SCORE_UNMOVABLE/('MODEL', 'RULER')
+
+## P6 缺席不许当零
+  无 vec 格：行为级 kind=UNKNOWN reason=TOO_FEW 轴=('MODEL',)｜分数级 kind=CONSTANT claim=SCORE_UNMOVABLE
+  ❌ P6 无 vec ⇒ 行为级 UNKNOWN、轴空；⛔ 不报成「两层相同」 — UNKNOWN/TOO_FEW
+
+## P7 机制：两个 claim 都落 RULER ⇒ 轴丢掉了「哪一层坏」
+  ✅ P7 同分异行为池：两级 claim **不同名**，但两级轴 **tuple 相同**（都含 RULER） — claim BEHAVIOR_UNRESOLVED vs SCORE_UNMOVABLE｜轴 ('MODEL', 'RULER') vs ('MODEL', 'RULER')
+
+## P8 缺席被计数（不是被当零）
+  ✅ P8 3 行无 vec ⇒ 行为级 UNKNOWN ∧ n_no_vec==3（缺席可归因） — kind=UNKNOWN reason=TOO_FEW counts={'n_bad_row': 0, 'n_no_impl': 0, 'n_no_vec': 3, 'n_bad_vec': 0, 'n_inconsistent': 0, 'n_kept': 0}
+
+## 汇总 5 PASS / 3 FAIL
+  耗时 3.7s
+  读数 /Users/linshaojie/V1/bench/evidence/l3_s267/readings_stage0_v179.json

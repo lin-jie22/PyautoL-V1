@@ -2109,6 +2109,20 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '''    beh = (movability or {}).get("beh") or {}
     if (movability or {}).get("label") == _SI.KIND_COARSE:  # 撤回态
         beh = {"kind": _SI.KIND_COARSE, "n_behaviors": 99}'''),
+    # ── V181（§249）──
+    # AZ142a：不透传实现身份 ⇒ obs 上身份消失（池空 ⇒ AZ142c 的轴里没有 RULER；
+    #   AZ142b 的 b3 也少一个键）。同一处实现的三个面，合理连带。
+    ("AZ142a", "mw/goals.py",
+     '''    _impl = row.get("impl_sha")
+    if isinstance(_impl, str) and _impl:
+        out["impl_sha"] = _impl''',
+     '''    pass  # 撤回态：不透传实现身份'''),
+    # AZ142b：无条件透传 vec ⇒ None/"xy" 这类坏形状变成键值（缺席被写成在场）。
+    ("AZ142b", "mw/goals.py",
+     '''    _vec = row.get("vec")
+    if isinstance(_vec, (list, tuple)):
+        out["vec"] = list(_vec)''',
+     '''    out["vec"] = row.get("vec")  # 撤回态'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2146,6 +2160,14 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   正好有一行空明细（`v144c`），它被放行之后分层从 (1,1,1) 变 (2,1,0)
     #:   ⇒ 守恒仍成立但三元组不符 ⇒ 红。同一规则的另一个面，合理连带。
     "AZ130d": frozenset({"AZ130e"}),
+    #: ★第 181 轮：AZ142a 撤的是「透传实现身份」。AZ142b 的 b3（空 vec 透传、
+    #:   impl_sha 保留）与 AZ142c（coerce 之后的 obs 与裸行同源 ⇒ 轴含 RULER）
+    #:   都建立在那两行上 —— 同一处实现的两个面，合理连带。
+    "AZ142a": frozenset({"AZ142b", "AZ142c"}),
+    #: AZ142b 撤的是「按形状透传」（改成无条件赋值 = 去掉 `isinstance` 闸与
+    #:   `list()` 归一）。AZ142a 钉的正是「vec 统一成 list」这一半 ⇒ 同一行的
+    #:   另一半，合理连带。⚠️ 实测：红=['AZ142a','AZ142b']，无第三条。
+    "AZ142b": frozenset({"AZ142a"}),
     #: AZ22a（把全表兜底加回）⇒ 前两题的"零命中"又变成 4 条 ⇒ AZ23 的
     #: `[0,0,1,1]` 立刻不成立。**同一段 SQL 的两个面**，合理连带。
     #: ★第三十八轮补登 AZ26/AZ30：兜底回来了 ⇒ n0 档命中 4 条（AZ26 红）；

@@ -110,6 +110,18 @@ def coerce(row: dict) -> dict | None:
 
     ⛔ 坏行**不静默丢弃**：由调用方数出来（`n_bad`），否则「0 次观测」
     与「有 3 行但都读不出来」会变成同一个读数。
+
+    ## V181（§249）：`impl_sha` / `vec` **透传**
+
+    归一是为了「判据只看见它认识的东西」，但它一度把 V175/V178 刚长出来的
+    两个字段一起扔掉了 —— 账本行有 `impl_sha`+`vec`，`--goals` 的 obs 里却是 0，
+    于是 `movability()` 全弃权、`beh_pool_from_rows()` 池恒空。**第三道闸，
+    而且只有真账本 + 真 `--goals` 才看得见**（直接喂原始行的一切探针都绕过它）。
+
+    透传规则（fail-open，⛔ 不在归一化层二次判）：
+    - `impl_sha` 只在是**非空 str** 时透传（空串=缺席，不许冒充实现 "None"）；
+    - `vec` 只在是 **list/tuple** 时透传（原样，不转 bool、不查长度、不查自洽）——
+      形状坏的行由 `scoreinfo.beh_pool_from_rows()` 的行闸**计数**排除。
     """
     if not isinstance(row, dict):
         return None
@@ -120,8 +132,15 @@ def coerce(row: dict) -> dict | None:
         score = float(row.get("score"))
     except (TypeError, ValueError):
         return None
-    return {"task_id": tid, "score": score,
-            "session": row.get("session"), "source": str(row.get("source") or "score_ledger")}
+    out = {"task_id": tid, "score": score,
+           "session": row.get("session"), "source": str(row.get("source") or "score_ledger")}
+    _impl = row.get("impl_sha")
+    if isinstance(_impl, str) and _impl:
+        out["impl_sha"] = _impl
+    _vec = row.get("vec")
+    if isinstance(_vec, (list, tuple)):
+        out["vec"] = list(_vec)
+    return out
 
 
 def coerce_all(rows: Iterable[dict]) -> tuple[list[dict], int]:

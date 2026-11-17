@@ -1,0 +1,548 @@
+{
+ "new_sha": "e05c8ea8238e3dff1e300707b850c434c887f405d33caa74e3ecc32bfff95b3c",
+ "old_sha": "33b8e9c106a7217df54871931218d3a9df18868158f075b4fc0437c5caca8795",
+ "restored_sha": "e05c8ea8238e3dff1e300707b850c434c887f405d33caa74e3ecc32bfff95b3c",
+ "restored_ok": true,
+ "arm_new": {
+  "sha": "e05c8ea8238e3dff1e300707b850c434c887f405d33caa74e3ecc32bfff95b3c",
+  "file": "/Users/linshaojie/V1/mw/goals.py",
+  "n_bad": 0,
+  "n_obs": 66,
+  "n_obs_has_impl": 30,
+  "n_obs_has_vec": 30,
+  "esc_cells": [
+   "k02_encode_cookie",
+   "k03_unflatten",
+   "t01_parse_duration",
+   "t04_merge_ranges"
+  ],
+  "esc": {
+   "k02_encode_cookie": {
+    "reason": "CRITERION_UNREACHABLE",
+    "claim": null,
+    "beh": null,
+    "axes": [
+     "CRITERION"
+    ]
+   },
+   "k03_unflatten": {
+    "reason": "CRITERION_UNREACHABLE",
+    "claim": null,
+    "beh": null,
+    "axes": [
+     "CRITERION"
+    ]
+   },
+   "t01_parse_duration": {
+    "reason": "CRITERION_UNREACHABLE",
+    "claim": null,
+    "beh": "COARSE",
+    "axes": [
+     "CRITERION",
+     "RULER"
+    ]
+   },
+   "t04_merge_ranges": {
+    "reason": "CRITERION_UNREACHABLE",
+    "claim": null,
+    "beh": "INJECTIVE",
+    "axes": [
+     "CRITERION"
+    ]
+   }
+  },
+  "propose_gids": [],
+  "stats": {
+   "e1ni": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e1wi": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e2ni": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e2wi": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e3ni": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e3wi": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "k01_diff_tree": {
+    "n_obs": 3,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "k02_encode_cookie": {
+    "n_obs": 3,
+    "mean_score": 0.8000000000000002,
+    "scores": [
+     0.8,
+     0.8,
+     0.8
+    ]
+   },
+   "k03_unflatten": {
+    "n_obs": 3,
+    "mean_score": 0.4000000000000001,
+    "scores": [
+     0.4,
+     0.4,
+     0.4
+    ]
+   },
+   "k04_to_ini": {
+    "n_obs": 3,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sg01": {
+    "n_obs": 2,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0
+    ]
+   },
+   "sg02": {
+    "n_obs": 2,
+    "mean_score": 0.5,
+    "scores": [
+     1.0,
+     0.0
+    ]
+   },
+   "sg03": {
+    "n_obs": 2,
+    "mean_score": 0.64285,
+    "scores": [
+     1.0,
+     0.2857
+    ]
+   },
+   "sg04": {
+    "n_obs": 2,
+    "mean_score": 0.7142999999999999,
+    "scores": [
+     1.0,
+     0.4286
+    ]
+   },
+   "sg05": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "sg06": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "sg08": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "sg09": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "t01_parse_duration": {
+    "n_obs": 6,
+    "mean_score": 0.7499833333333332,
+    "scores": [
+     1.0,
+     0.3333,
+     0.8333,
+     0.8333,
+     0.8333,
+     0.6667
+    ]
+   },
+   "t02_dedupe": {
+    "n_obs": 6,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "t03_commas": {
+    "n_obs": 6,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "t04_merge_ranges": {
+    "n_obs": 6,
+    "mean_score": 0.6666833333333334,
+    "scores": [
+     1.0,
+     0.6667,
+     0.6667,
+     0.6667,
+     0.6667,
+     0.3333
+    ]
+   },
+   "t05_top_k": {
+    "n_obs": 6,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "t06_rle": {
+    "n_obs": 6,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   }
+  },
+  "evaluate": {}
+ },
+ "arm_old": {
+  "sha": "33b8e9c106a7217df54871931218d3a9df18868158f075b4fc0437c5caca8795",
+  "file": "/Users/linshaojie/V1/mw/goals.py",
+  "n_bad": 0,
+  "n_obs": 66,
+  "n_obs_has_impl": 0,
+  "n_obs_has_vec": 0,
+  "esc_cells": [
+   "k02_encode_cookie",
+   "k03_unflatten",
+   "t01_parse_duration",
+   "t04_merge_ranges"
+  ],
+  "esc": {
+   "k02_encode_cookie": {
+    "reason": "CRITERION_UNREACHABLE",
+    "claim": null,
+    "beh": null,
+    "axes": [
+     "CRITERION"
+    ]
+   },
+   "k03_unflatten": {
+    "reason": "CRITERION_UNREACHABLE",
+    "claim": null,
+    "beh": null,
+    "axes": [
+     "CRITERION"
+    ]
+   },
+   "t01_parse_duration": {
+    "reason": "CRITERION_UNREACHABLE",
+    "claim": null,
+    "beh": null,
+    "axes": [
+     "CRITERION"
+    ]
+   },
+   "t04_merge_ranges": {
+    "reason": "CRITERION_UNREACHABLE",
+    "claim": null,
+    "beh": null,
+    "axes": [
+     "CRITERION"
+    ]
+   }
+  },
+  "propose_gids": [],
+  "stats": {
+   "e1ni": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e1wi": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e2ni": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e2wi": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e3ni": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "e3wi": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "k01_diff_tree": {
+    "n_obs": 3,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "k02_encode_cookie": {
+    "n_obs": 3,
+    "mean_score": 0.8000000000000002,
+    "scores": [
+     0.8,
+     0.8,
+     0.8
+    ]
+   },
+   "k03_unflatten": {
+    "n_obs": 3,
+    "mean_score": 0.4000000000000001,
+    "scores": [
+     0.4,
+     0.4,
+     0.4
+    ]
+   },
+   "k04_to_ini": {
+    "n_obs": 3,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sg01": {
+    "n_obs": 2,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0
+    ]
+   },
+   "sg02": {
+    "n_obs": 2,
+    "mean_score": 0.5,
+    "scores": [
+     1.0,
+     0.0
+    ]
+   },
+   "sg03": {
+    "n_obs": 2,
+    "mean_score": 0.64285,
+    "scores": [
+     1.0,
+     0.2857
+    ]
+   },
+   "sg04": {
+    "n_obs": 2,
+    "mean_score": 0.7142999999999999,
+    "scores": [
+     1.0,
+     0.4286
+    ]
+   },
+   "sg05": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "sg06": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "sg08": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "sg09": {
+    "n_obs": 1,
+    "mean_score": 1.0,
+    "scores": [
+     1.0
+    ]
+   },
+   "t01_parse_duration": {
+    "n_obs": 6,
+    "mean_score": 0.7499833333333332,
+    "scores": [
+     1.0,
+     0.3333,
+     0.8333,
+     0.8333,
+     0.8333,
+     0.6667
+    ]
+   },
+   "t02_dedupe": {
+    "n_obs": 6,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "t03_commas": {
+    "n_obs": 6,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "t04_merge_ranges": {
+    "n_obs": 6,
+    "mean_score": 0.6666833333333334,
+    "scores": [
+     1.0,
+     0.6667,
+     0.6667,
+     0.6667,
+     0.6667,
+     0.3333
+    ]
+   },
+   "t05_top_k": {
+    "n_obs": 6,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "t06_rle": {
+    "n_obs": 6,
+    "mean_score": 1.0,
+    "scores": [
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   }
+  },
+  "evaluate": {}
+ },
+ "same": {
+  "esc_cells": true,
+  "propose_gids": true,
+  "stats": true,
+  "evaluate": true
+ },
+ "axes_diff": {
+  "t01_parse_duration": [
+   [
+    "CRITERION"
+   ],
+   [
+    "CRITERION",
+    "RULER"
+   ]
+  ]
+ }
+}

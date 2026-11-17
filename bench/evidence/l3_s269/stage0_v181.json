@@ -1,0 +1,93 @@
+{
+ "census": {
+  "path": "/Users/linshaojie/V1/state/score_ledger.jsonl",
+  "n_rows": 36,
+  "n_rows_has_impl": 0,
+  "n_rows_has_vec": 0,
+  "n_rows_both": 0,
+  "n_cells": 24,
+  "n_cells_both": 0,
+  "keys": {
+   "caliber": 36,
+   "caliber_sig": 36,
+   "candidate": 36,
+   "family": 36,
+   "passed": 36,
+   "score": 36,
+   "session": 36,
+   "task_id": 36
+  },
+  "sessions": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "families": {
+   "struct_convert_heldout": 12,
+   "coding_small": 6,
+   "tasks_v1": 6,
+   "tasks_v2": 6,
+   "tasks_v8": 6
+  }
+ },
+ "arms": [
+  {
+   "solver": "oracle",
+   "rc": 0,
+   "n_rows_appended": 0,
+   "ledger_exists": false,
+   "stdout_tail": [
+    "──────────────────────────────────────────────────────────────────────────",
+    "  判据读回  GREEN  — 全部 1 条断言通过，退出码 0；账本已钉 GREEN",
+    "  运行日志  /Users/linshaojie/V1/bench_out/last_run.log  （判据行唯一；同目录 `runs.jsonl` 是账本）"
+   ],
+   "stderr_tail": []
+  },
+  {
+   "solver": "null",
+   "rc": 1,
+   "n_rows_appended": 0,
+   "ledger_exists": false,
+   "stdout_tail": [
+    "──────────────────────────────────────────────────────────────────────────",
+    "  判据读回  RED  — 1 条断言失败（通过 0 条）；账本已钉 RED",
+    "  运行日志  /Users/linshaojie/V1/bench_out/last_run.log  （判据行唯一；同目录 `runs.jsonl` 是账本）"
+   ],
+   "stderr_tail": []
+  },
+  {
+   "solver": "partial",
+   "rc": 0,
+   "n_rows_appended": 0,
+   "ledger_exists": false,
+   "stdout_tail": [
+    "──────────────────────────────────────────────────────────────────────────",
+    "  判据读回  GREEN  — 全部 1 条断言通过，退出码 0；账本已钉 GREEN",
+    "  运行日志  /Users/linshaojie/V1/bench_out/last_run.log  （判据行唯一；同目录 `runs.jsonl` 是账本）"
+   ],
+   "stderr_tail": []
+  },
+  {
+   "solver": "llm-direct",
+   "rc": 0,
+   "n_rows_appended": 6,
+   "ledger_exists": true,
+   "stdout_tail": [
+    "──────────────────────────────────────────────────────────────────────────",
+    "  判据读回  GREEN  — 全部 1 条断言通过，退出码 0；账本已钉 GREEN",
+    "  运行日志  /Users/linshaojie/V1/bench_out/last_run.log  （判据行唯一；同目录 `runs.jsonl` 是账本）"
+   ],
+   "stderr_tail": []
+  }
+ ],
+ "zero_model_solvers_write": {
+  "oracle": 0,
+  "null": 0,
+  "partial": 0
+ },
+ "llm_direct_writes": 6
+}

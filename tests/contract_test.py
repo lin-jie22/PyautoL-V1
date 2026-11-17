@@ -15266,6 +15266,89 @@ check(RS, "AZ141f 纯函数 + 不改输入：同输入两次调用逐字相同�
       _az141_p1 == _az141_p2 == ("MODEL", "RULER") and _az141_m == _az141_snap,
       f"axes={_az141_p1} 实参不变={_az141_m == _az141_snap}")
 
+# ═══════════ V181（§249）：归一化不许吞掉身份与向量（AZ142） ═══════════
+# 这一组钉的是**第三道闸**：账本行长出 `impl_sha`/`vec` 之后，`coerce()` 曾是
+# 唯一一处把它们扔掉的地方 —— 而它只在真账本 + 真 `--goals` 上看得见。
+_az142_row = {"task_id": " t09 ", "score": "0.5", "session": 4,
+              "impl_sha": "abc123", "vec": (True, False), "candidate": "x"}
+_az142_c = _G.coerce(_az142_row)
+
+check(RS, "AZ142a `coerce()` 透传 `impl_sha` / `vec`（V175/V178 长出来的两个键）：\n"
+          "              四键语义一字不动（task_id 去空格、score 转 float、session 原样、"
+          "source 兜底），两键原样带上（vec 统一成 list）；⛔ 没有别名键；\n"
+          "              撤回语义：删掉透传 ⇒ 本条必须红（AZ142c 连带红）",
+      _az142_c == {"task_id": "t09", "score": 0.5, "session": 4,
+                   "source": "score_ledger", "impl_sha": "abc123",
+                   "vec": [True, False]},
+      f"{_az142_c}")
+
+_az142_bad = [{"task_id": "b", "score": 0.5, "impl_sha": "", "vec": "xy"},
+              {"task_id": "b", "score": 0.5, "impl_sha": 123, "vec": "xy"},
+              {"task_id": "b", "score": 0.5, "impl_sha": None, "vec": None},
+              {"task_id": "b", "score": 0.5, "impl_sha": "ok", "vec": []}]
+_az142_b = [_G.coerce(r) for r in _az142_bad]
+
+check(RS, "AZ142b 透传是 fail-open：空串/非 str 的 `impl_sha`、非 list/tuple 的 `vec`\n"
+          "              ⇒ **不透传该键**（缺席不是零）；空 list 的 `vec` 照样透传\n"
+          "              （形状坏由 `beh_pool_from_rows()` 的行闸计数，归一化不二次判）；\n"
+          "              四条都不许抛、四键都在；撤回语义："
+          "无条件 `out['vec']=row.get('vec')` ⇒ 本条必须红",
+      all(x is not None and {"task_id", "score", "session", "source"} <= set(x)
+          for x in _az142_b)
+      and "impl_sha" not in _az142_b[0] and "impl_sha" not in _az142_b[1]
+      and "impl_sha" not in _az142_b[2] and "vec" not in _az142_b[0]
+      and "vec" not in _az142_b[1] and "vec" not in _az142_b[2]
+      and _az142_b[3] == {"task_id": "b", "score": 0.5, "session": None,
+                          "source": "score_ledger", "impl_sha": "ok", "vec": []},
+      f"{_az142_b}")
+
+_az142_obs = [{"task_id": "d1", "impl_sha": "a", "score": 1.0, "vec": [True, True, True]},
+              {"task_id": "d1", "impl_sha": "b", "score": 0.3333, "vec": [True, False, False]},
+              {"task_id": "d1", "impl_sha": "c", "score": 0.3333, "vec": [False, True, False]},
+              {"task_id": "d1", "impl_sha": "d", "score": 0.3333, "vec": [False, False, True]}]
+_az142_forced = [{"gid": "g:d1", "cell": "d1", "kind": "RAISE",
+                  "verdict": "NOT_MET", "reading": {"mean_score": 0.5}}
+                 for _ in range(3)]
+_az142_esc_c = _G.escalations(_az142_forced, _G.coerce_all(_az142_obs)[0])
+_az142_esc_r = _G.escalations(_az142_forced, _az142_obs)
+_az142_axes_c = {c: _G.repair_axes(str(e.get("reason") or ""), e.get("movability"))
+                 for c, e in _az142_esc_c.items()}
+_az142_axes_r = {c: _G.repair_axes(str(e.get("reason") or ""), e.get("movability"))
+                 for c, e in _az142_esc_r.items()}
+
+check(RS, "AZ142c 部署路径同源：`coerce_all()` 之后的 obs 与原始行喂 `escalations()`\n"
+          "              ⇒ 逐格轴**完全相同**，且这一格（4 实现 / 3 行为类 / 异行为同分）\n"
+          "              拿到 `RULER`。⛔ 这正是 V180 在部署上 0 触发的那一格；\n"
+          "              撤回语义：coerce 吞掉两键 ⇒ 本条的轴里没有 RULER（连带红）",
+      _az142_axes_c == _az142_axes_r
+      and _az142_axes_c.get("d1") == ("CRITERION", "RULER"),
+      f"coerced={_az142_axes_c} raw={_az142_axes_r}")
+
+_az142_stats = {r: {c: _G.stats(v, c) for c in ("d1",)}
+                for r, v in (("coerced", _G.coerce_all(_az142_obs)[0]),
+                             ("raw", _az142_obs))}
+_az142_prop = {r: [g.gid for g in _G.propose(v, ["d1"], done=[], escalated=[])]
+               for r, v in (("coerced", _G.coerce_all(_az142_obs)[0]),
+                            ("raw", _az142_obs))}
+
+check(RS, "AZ142d 判据不敏感：同一批行，`stats()` 与 `propose()` 在透传前/后**逐字相同**\n"
+          "              （新键不参与任何判据 —— 透传只服务诊断层，⛔ 不许改目标提议）；\n"
+          "              撤回语义：拿 vec 去改 propose 的排序/判据 ⇒ 本条必须红",
+      _az142_stats["coerced"] == _az142_stats["raw"]
+      and _az142_prop["coerced"] == _az142_prop["raw"],
+      f"stats={_az142_stats['coerced'] == _az142_stats['raw']} "
+      f"propose={_az142_prop['coerced']}")
+
+check(RS, "AZ142e 只动归一化层：判据常量一个没变"
+          "（MIN_POOL=2 / MIN_IMPLS=3 / MIN_BEHAVIORS=3 / TARGET=1.0），\n"
+          "              且 `coerce()` 的输出键 ⊆ {task_id,score,session,source,impl_sha,vec}\n"
+          "              （⛔ 没有 `vec2`/`impl`/`behavior` 这类别名）；\n"
+          "              撤回语义：顺手改 MIN_BEHAVIORS ⇒ 本条必须红",
+      (_SI.MIN_POOL, _SI.MIN_IMPLS, _SI.MIN_BEHAVIORS, _SI.TARGET) == (2, 3, 3, 1.0)
+      and set(_az142_c) <= {"task_id", "score", "session", "source",
+                            "impl_sha", "vec"},
+      f"{(_SI.MIN_POOL, _SI.MIN_IMPLS, _SI.MIN_BEHAVIORS, _SI.TARGET)} keys={sorted(_az142_c)}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

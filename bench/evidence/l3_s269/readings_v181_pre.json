@@ -1,0 +1,760 @@
+{
+ "tag": "pre",
+ "ledger": "/Users/linshaojie/V1/state/score_ledger.jsonl",
+ "census": {
+  "n_rows": 66,
+  "n_rows_has_impl": 30,
+  "n_rows_has_vec": 30,
+  "n_rows_both": 30,
+  "n_cells": 24,
+  "n_cells_both": 6,
+  "cells_both": [
+   "t01_parse_duration",
+   "t02_dedupe",
+   "t03_commas",
+   "t04_merge_ranges",
+   "t05_top_k",
+   "t06_rle"
+  ],
+  "per_cell": {
+   "e1ni": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "e1wi": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "e2ni": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "e2wi": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "e3ni": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "e3wi": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "k01_diff_tree": {
+    "n_rows": 3,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "k02_encode_cookie": {
+    "n_rows": 3,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "k03_unflatten": {
+    "n_rows": 3,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "k04_to_ini": {
+    "n_rows": 3,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "sg01": {
+    "n_rows": 2,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "sg02": {
+    "n_rows": 2,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "sg03": {
+    "n_rows": 2,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "sg04": {
+    "n_rows": 2,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "sg05": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "sg06": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "sg08": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "sg09": {
+    "n_rows": 1,
+    "n_has_impl": 0,
+    "n_has_vec": 0,
+    "n_impls": 0
+   },
+   "t01_parse_duration": {
+    "n_rows": 6,
+    "n_has_impl": 5,
+    "n_has_vec": 5,
+    "n_impls": 5
+   },
+   "t02_dedupe": {
+    "n_rows": 6,
+    "n_has_impl": 5,
+    "n_has_vec": 5,
+    "n_impls": 1
+   },
+   "t03_commas": {
+    "n_rows": 6,
+    "n_has_impl": 5,
+    "n_has_vec": 5,
+    "n_impls": 2
+   },
+   "t04_merge_ranges": {
+    "n_rows": 6,
+    "n_has_impl": 5,
+    "n_has_vec": 5,
+    "n_impls": 3
+   },
+   "t05_top_k": {
+    "n_rows": 6,
+    "n_has_impl": 5,
+    "n_has_vec": 5,
+    "n_impls": 4
+   },
+   "t06_rle": {
+    "n_rows": 6,
+    "n_has_impl": 5,
+    "n_has_vec": 5,
+    "n_impls": 5
+   }
+  }
+ },
+ "suite": {
+  "name": "coding_small",
+  "ids": [
+   "t01_parse_duration",
+   "t02_dedupe",
+   "t03_commas",
+   "t04_merge_ranges",
+   "t05_top_k",
+   "t06_rle"
+  ]
+ },
+ "cells": {
+  "e1ni": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "e1wi": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "e2ni": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "e2wi": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "e3ni": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "e3wi": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "k01_diff_tree": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 3,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "k02_encode_cookie": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 3,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "k03_unflatten": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 3,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "k04_to_ini": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 3,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "sg01": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 2,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "sg02": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 2,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "sg03": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 2,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "sg04": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 2,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "sg05": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "sg06": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "sg08": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "sg09": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "NO_POOL",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 0
+   },
+   "axes": []
+  },
+  "t01_parse_duration": {
+   "score_label": "COARSE",
+   "score_reason": null,
+   "n_impls": 5,
+   "n_scores": 3,
+   "score_claim": null,
+   "beh_kind": "COARSE",
+   "beh_n_behaviors": 5,
+   "beh_claim": null,
+   "beh_reason": null,
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 5
+   },
+   "axes": [
+    "RULER"
+   ]
+  },
+  "t02_dedupe": {
+   "score_label": "UNKNOWN",
+   "score_reason": "TOO_FEW",
+   "n_impls": null,
+   "n_scores": null,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "TOO_FEW",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 5
+   },
+   "axes": []
+  },
+  "t03_commas": {
+   "score_label": "CONSTANT",
+   "score_reason": null,
+   "n_impls": 2,
+   "n_scores": 1,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "TOO_FEW",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 5
+   },
+   "axes": []
+  },
+  "t04_merge_ranges": {
+   "score_label": "COARSE",
+   "score_reason": null,
+   "n_impls": 3,
+   "n_scores": 2,
+   "score_claim": null,
+   "beh_kind": "INJECTIVE",
+   "beh_n_behaviors": 2,
+   "beh_claim": null,
+   "beh_reason": null,
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 5
+   },
+   "axes": []
+  },
+  "t05_top_k": {
+   "score_label": "CONSTANT",
+   "score_reason": null,
+   "n_impls": 4,
+   "n_scores": 1,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "TOO_FEW",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 5
+   },
+   "axes": []
+  },
+  "t06_rle": {
+   "score_label": "CONSTANT",
+   "score_reason": null,
+   "n_impls": 5,
+   "n_scores": 1,
+   "score_claim": null,
+   "beh_kind": "UNKNOWN",
+   "beh_n_behaviors": null,
+   "beh_claim": null,
+   "beh_reason": "TOO_FEW",
+   "pool_counts": {
+    "n_bad_row": 0,
+    "n_no_impl": 1,
+    "n_no_vec": 0,
+    "n_bad_vec": 0,
+    "n_inconsistent": 0,
+    "n_kept": 5
+   },
+   "axes": []
+  }
+ },
+ "deploy": {
+  "raw": {
+   "n_esc": 4,
+   "n_esc_with_overlay": 2,
+   "n_esc_with_beh": 2,
+   "n_esc_with_claim": 0,
+   "n_esc_with_ruler": 1,
+   "n_esc_with_criterion": 4,
+   "cells": [
+    "k02_encode_cookie",
+    "k03_unflatten",
+    "t01_parse_duration",
+    "t04_merge_ranges"
+   ],
+   "axes": {
+    "k02_encode_cookie": [
+     "CRITERION"
+    ],
+    "k03_unflatten": [
+     "CRITERION"
+    ],
+    "t01_parse_duration": [
+     "CRITERION",
+     "RULER"
+    ],
+    "t04_merge_ranges": [
+     "CRITERION"
+    ]
+   },
+   "beh_kind": {
+    "k02_encode_cookie": null,
+    "k03_unflatten": null,
+    "t01_parse_duration": "COARSE",
+    "t04_merge_ranges": "INJECTIVE"
+   },
+   "n_obs_has_impl": 30,
+   "n_obs_has_vec": 30
+  },
+  "deploy": {
+   "n_esc": 4,
+   "n_esc_with_overlay": 0,
+   "n_esc_with_beh": 0,
+   "n_esc_with_claim": 0,
+   "n_esc_with_ruler": 0,
+   "n_esc_with_criterion": 4,
+   "cells": [
+    "k02_encode_cookie",
+    "k03_unflatten",
+    "t01_parse_duration",
+    "t04_merge_ranges"
+   ],
+   "axes": {
+    "k02_encode_cookie": [
+     "CRITERION"
+    ],
+    "k03_unflatten": [
+     "CRITERION"
+    ],
+    "t01_parse_duration": [
+     "CRITERION"
+    ],
+    "t04_merge_ranges": [
+     "CRITERION"
+    ]
+   },
+   "beh_kind": {
+    "k02_encode_cookie": null,
+    "k03_unflatten": null,
+    "t01_parse_duration": null,
+    "t04_merge_ranges": null
+   },
+   "n_obs_has_impl": 0,
+   "n_obs_has_vec": 0
+  }
+ },
+ "mutants": {
+  "no_vec": {
+   "n_cells_ruler": 0,
+   "n_cells_criterion": 0,
+   "n_cells_beh_known": 0
+  },
+  "no_impl": {
+   "n_cells_ruler": 0,
+   "n_cells_criterion": 0,
+   "n_cells_beh_known": 0
+  }
+ },
+ "totals": {
+  "n_cells": 24,
+  "n_cells_both": 6,
+  "n_impls_min": 0,
+  "n_impls_max": 5,
+  "n_cells_score_constant": 3,
+  "n_cells_score_coarse": 2,
+  "n_cells_beh_coarse": 1,
+  "n_cells_beh_known": 2,
+  "n_cells_ruler": 1,
+  "n_cells_criterion": 0
+ }
+}

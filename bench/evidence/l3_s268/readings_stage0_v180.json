@@ -1,0 +1,474 @@
+{
+ "prereg": "PREREG_v180.md",
+ "stage": "STAGE0",
+ "rows": [
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:partial",
+   "score": 0.25,
+   "vec": [
+    true,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:wipe_state",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:wipe_ttl",
+   "score": 0.25,
+   "vec": [
+    true,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:partial",
+   "score": 0.75,
+   "vec": [
+    true,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:wipe_state",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:wipe_window",
+   "score": 0.75,
+   "vec": [
+    true,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:partial",
+   "score": 0.8,
+   "vec": [
+    true,
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:wipe_state",
+   "score": 0.2,
+   "vec": [
+    false,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:wipe_rollback",
+   "score": 0.8,
+   "vec": [
+    true,
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:partial",
+   "score": 0.75,
+   "vec": [
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:wipe_minvalue",
+   "score": 0.75,
+   "vec": [
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:flat_all",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:partial",
+   "score": 0.8,
+   "vec": [
+    true,
+    true,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:wipe_state",
+   "score": 0.2,
+   "vec": [
+    false,
+    false,
+    true,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:wipe_autodir",
+   "score": 0.2,
+   "vec": [
+    false,
+    true,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:flat_all",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:partial",
+   "score": 0.4,
+   "vec": [
+    false,
+    true,
+    true,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:wipe_state",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:wipe_promote",
+   "score": 0.6,
+   "vec": [
+    false,
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:flat_all",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  }
+ ],
+ "per_cell": {
+  "m01_records": {
+   "score_label": "COARSE",
+   "beh_kind": "INJECTIVE",
+   "beh_n": 3,
+   "tie": false,
+   "tie_txt": "",
+   "r_score": true,
+   "r_beh": false,
+   "score_claim": null,
+   "beh_claim": null
+  },
+  "m02_vfs": {
+   "score_label": "COARSE",
+   "beh_kind": "COARSE",
+   "beh_n": 5,
+   "tie": true,
+   "tie_txt": "0.2←2 种行为",
+   "r_score": true,
+   "r_beh": true,
+   "score_claim": null,
+   "beh_claim": null
+  },
+  "m03_tiered": {
+   "score_label": "COARSE",
+   "beh_kind": "INJECTIVE",
+   "beh_n": 4,
+   "tie": false,
+   "tie_txt": "",
+   "r_score": true,
+   "r_beh": false,
+   "score_claim": null,
+   "beh_claim": null
+  },
+  "s01_kv_expiry": {
+   "score_label": "COARSE",
+   "beh_kind": "INJECTIVE",
+   "beh_n": 3,
+   "tie": false,
+   "tie_txt": "",
+   "r_score": true,
+   "r_beh": false,
+   "score_claim": null,
+   "beh_claim": null
+  },
+  "s02_limiter": {
+   "score_label": "COARSE",
+   "beh_kind": "INJECTIVE",
+   "beh_n": 3,
+   "tie": false,
+   "tie_txt": "",
+   "r_score": true,
+   "r_beh": false,
+   "score_claim": null,
+   "beh_claim": null
+  },
+  "s03_tx_journal": {
+   "score_label": "COARSE",
+   "beh_kind": "INJECTIVE",
+   "beh_n": 3,
+   "tie": false,
+   "tie_txt": "",
+   "r_score": true,
+   "r_beh": false,
+   "score_claim": null,
+   "beh_claim": null
+  }
+ },
+ "n_cells": 6,
+ "n_score_fires": 6,
+ "n_beh_fires": 1,
+ "fp_score": [
+  "m01_records",
+  "m03_tiered",
+  "s01_kv_expiry",
+  "s02_limiter",
+  "s03_tx_journal"
+ ],
+ "fp_beh": [],
+ "tie_cells": [
+  "m02_vfs"
+ ],
+ "deploy": {
+  "ledger": "/Users/linshaojie/V1/state/score_ledger.jsonl",
+  "n_rows": 36,
+  "n_cells": 24,
+  "n_vec": 0,
+  "r_beh_fires": 0
+ },
+ "call_sites": [
+  [
+   "mw/goals.py",
+   666
+  ]
+ ],
+ "cases": [
+  {
+   "id": "P1",
+   "desc": "6 格各 ≥4 行；且与 V179 那批**独立重打**逐行相同（装置确定性）",
+   "ok": true,
+   "detail": "每格 {'m01_records': 5, 'm02_vfs': 6, 'm03_tiered': 6, 's01_kv_expiry': 5, 's02_limiter': 5, 's03_tx_journal': 5}｜与 V179 行相同=True"
+  },
+  {
+   "id": "P2",
+   "desc": "产品代码里 `repair_axes` 恰好 1 个调用点（`mw/goals.py`）",
+   "ok": true,
+   "detail": "[('mw/goals.py', 666)]"
+  },
+  {
+   "id": "P4",
+   "desc": "A：R_score 在有异行为同分的格之外也触发，假正例 ≥4",
+   "ok": true,
+   "detail": "假正例 5/6"
+  },
+  {
+   "id": "P5",
+   "desc": "B：R_beh 的触发集合 == 直接数出的集合（不同计算路径），且 R_score 真包含它",
+   "ok": true,
+   "detail": "R_beh=['m02_vfs'] 直接=['m02_vfs'] R_score=6 格"
+  },
+  {
+   "id": "P6",
+   "desc": "C：部署账本无 vec ⇒ R_beh 在部署上触发 0 格（有牙没猎物，照实报）",
+   "ok": true,
+   "detail": "vec 行 0｜R_beh 触发 0"
+  },
+  {
+   "id": "P7",
+   "desc": "强制进 esc 的格，overlay 的 claim 只能是 SCORE_UNMOVABLE 或 None —— **永远不是** BEHAVIOR_UNRESOLVED",
+   "ok": true,
+   "detail": "{'m01_records': None, 'm02_vfs': None, 'm03_tiered': None, 's01_kv_expiry': None, 's02_limiter': None, 's03_tx_journal': None}"
+  }
+ ],
+ "summary": {
+  "n": 6,
+  "ok": 6,
+  "pass": true
+ }
+}

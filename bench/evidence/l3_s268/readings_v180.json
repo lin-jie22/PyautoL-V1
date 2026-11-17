@@ -1,0 +1,454 @@
+{
+ "p1": {
+  "fp_score": [
+   "m01_records",
+   "m03_tiered",
+   "s01_kv_expiry",
+   "s02_limiter",
+   "s03_tx_journal"
+  ],
+  "r_beh": [
+   "m02_vfs"
+  ],
+  "tie": [
+   "m02_vfs"
+  ]
+ },
+ "p5": {
+  "n_with_beh": 6,
+  "no_vec_beh": null
+ },
+ "p6": {
+  "dep_diff": {},
+  "pool_diff": {
+   "m02_vfs": [
+    [
+     "CRITERION"
+    ],
+    [
+     "CRITERION",
+     "RULER"
+    ]
+   ]
+  },
+  "dep_cells": 24,
+  "dep_esc": 2
+ },
+ "p7": {
+  "real": [
+   "m02_vfs"
+  ],
+  "never": [],
+  "noninj": [
+   "m02_vfs"
+  ],
+  "p1_never": false,
+  "p2_never": false,
+  "p1_noninj": true
+ },
+ "p8": {
+  "real": [
+   "MODEL"
+  ],
+  "mut": [
+   "MODEL"
+  ],
+  "beh": null
+ },
+ "p9": {
+  "pools": [
+   "real:m01_records",
+   "real:m02_vfs",
+   "const3",
+   "inject",
+   "coarse",
+   "sat1"
+  ],
+  "diff": {}
+ },
+ "prereg": "PREREG_v180.md",
+ "cases": [
+  {
+   "id": "P1",
+   "ok": true,
+   "detail": "分母=6 格｜R_score 假正例 5｜R_beh 集合=['m02_vfs'] == 直接数=['m02_vfs']｜R_beh 假正例 0"
+  },
+  {
+   "id": "P2",
+   "ok": true,
+   "detail": "n=2 ⇒ ('MODEL',)｜n=3 ⇒ ('MODEL', 'RULER')（MIN_BEHAVIORS=3）"
+  },
+  {
+   "id": "P3",
+   "ok": true,
+   "detail": "CRITERION_UNREACHABLE/-=('CRITERION',)｜CRITERION_UNREACHABLE/claim=('CRITERION', 'RULER')｜STUCK_MEANS/-=('MODEL',)｜STUCK_MEANS/claim=('MODEL', 'RULER')｜STUCK_MEANS/claim=('MODEL',)｜X/-=()｜X/claim=('RULER',)"
+  },
+  {
+   "id": "P4",
+   "ok": true,
+   "detail": "claim+beh ⇒ ('MODEL', 'RULER')｜RULER 出现 1 次"
+  },
+  {
+   "id": "P5",
+   "ok": true,
+   "detail": "带 vec 的格 6/6 有 beh｜无 vec 格 beh 键=无（⛔ 不许写 INJECTIVE）"
+  },
+  {
+   "id": "P6",
+   "ok": true,
+   "detail": "部署轴不同 0 格（C 成立）｜带 vec 池不同 ['m02_vfs']（= 直接数出的 ['m02_vfs']）｜两臂自报 sha 对上=True｜还原=True"
+  },
+  {
+   "id": "P7",
+   "ok": false,
+   "detail": "A：P1 转红、P2 转红｜B：P1 仍成立(❌哑火)（B 集合与真值相同=True）"
+  },
+  {
+   "id": "P8",
+   "ok": false,
+   "detail": "真规则 不给 RULER｜变异体 B 不给 ⇒ 两者在「做完了」的格上**可分**（P7 的 B 半哑火是池里没有这种格，不是 B 没错）"
+  },
+  {
+   "id": "P9",
+   "ok": true,
+   "detail": "分母=6 池 × 2 reason｜B 与真规则差集 0 处（0 ⇒ B 不是错的变异体，是同一个规则的另一种写法）"
+  }
+ ],
+ "summary": {
+  "n": 9,
+  "ok": 7,
+  "pass": false
+ },
+ "rows": [
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:partial",
+   "score": 0.25,
+   "vec": [
+    true,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:wipe_state",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "s01_kv_expiry",
+   "impl_sha": "s01_kv_expiry:wipe_ttl",
+   "score": 0.25,
+   "vec": [
+    true,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:partial",
+   "score": 0.75,
+   "vec": [
+    true,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:wipe_state",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "s02_limiter",
+   "impl_sha": "s02_limiter:wipe_window",
+   "score": 0.75,
+   "vec": [
+    true,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:partial",
+   "score": 0.8,
+   "vec": [
+    true,
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:wipe_state",
+   "score": 0.2,
+   "vec": [
+    false,
+    false,
+    false,
+    true,
+    false
+   ]
+  },
+  {
+   "task_id": "s03_tx_journal",
+   "impl_sha": "s03_tx_journal:wipe_rollback",
+   "score": 0.8,
+   "vec": [
+    true,
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:partial",
+   "score": 0.75,
+   "vec": [
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:wipe_minvalue",
+   "score": 0.75,
+   "vec": [
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m01_records",
+   "impl_sha": "m01_records:flat_all",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:partial",
+   "score": 0.8,
+   "vec": [
+    true,
+    true,
+    false,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:wipe_state",
+   "score": 0.2,
+   "vec": [
+    false,
+    false,
+    true,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:wipe_autodir",
+   "score": 0.2,
+   "vec": [
+    false,
+    true,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m02_vfs",
+   "impl_sha": "m02_vfs:flat_all",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:oracle",
+   "score": 1.0,
+   "vec": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:partial",
+   "score": 0.4,
+   "vec": [
+    false,
+    true,
+    true,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:null",
+   "score": 0.0
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:wipe_state",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:wipe_promote",
+   "score": 0.6,
+   "vec": [
+    false,
+    false,
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "task_id": "m03_tiered",
+   "impl_sha": "m03_tiered:flat_all",
+   "score": 0.0,
+   "vec": [
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  }
+ ]
+}

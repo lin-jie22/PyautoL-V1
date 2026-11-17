@@ -477,6 +477,20 @@ def escalations(
     for c, e in out.items():
         m = _SI.movability(obs, cell=c) if obs else None
         e["movability"] = (m if m and m.get("label") != _SI.KIND_UNKNOWN else None)
+        # ── V180：行为级读数必须**到达**轴 ──
+        # V179 实测：overlay 只由 `movability()` 产生，其 claim 值域里没有
+        # `BEHAVIOR_UNRESOLVED` ⇒ `repair_axes` 里那条分支在部署上不可达。
+        # 这里把行为级读数接进 overlay（`beh` 子字段），让「存在异行为同分」
+        # 第一次有路走到轴。
+        # ⛔ fail-open：无 vec / 弃权 ⇒ 不写 `beh`（⛔ 不许写 INJECTIVE 冒充
+        #    「有分辨力」——缺席不是零，也不是好）。
+        if e["movability"] is not None and obs:
+            pool, _cnt = _SI.beh_pool_from_rows(obs, cell=c)
+            b = _SI.behavioral(pool) if pool else None
+            if b and b.get("kind") != _SI.KIND_UNKNOWN:
+                e["movability"]["beh"] = {"kind": b["kind"],
+                                          "n_behaviors": b.get("n_behaviors"),
+                                          "claim": b.get("claim")}
     return out
 
 
@@ -615,11 +629,25 @@ def repair_axes(reason: str, movability: dict | None = None) -> tuple[str, ...]:
     | reason=STUCK_MEANS | MODEL | 改**模型/方法**（换实现路径） |
     | claim=SCORE_UNMOVABLE（叠加） | RULER | 改**尺子**（打分轴/分辨力） |
     | claim=BEHAVIOR_UNRESOLVED（叠加） | RULER | 同上（V177 行为面：加/换测试、改聚合） |
+    | beh.kind=COARSE ∧ 行为类≥3（V180 叠加） | RULER | 同上（**存在异行为同分**） |
 
     ⛔ 这是**指向**不是处方：它说「该动哪一层」，不说「怎么改」。
     ⛔ 不叠加的情形：overlay 为 None / label 弃权 / 无 claim ⇒ 不给 RULER 轴
     （宁可不指，不许拿「没测出分辨力」冒充「尺子坏了」—— 后者是 V174 的
     RULER_BROKEN，形制不同）。
+
+    ## V180：行为级 COARSE 也说话（`beh` 是 overlay 的子字段）
+
+    V179 量出：`movability()` 的 `claim` 值域只有 `{SCORE_UNMOVABLE, None}`，
+    而 `repair_axes` 的产品调用点只有一个、实参就是这个 overlay ⇒
+    `BEHAVIOR_UNRESOLVED` 那条分支在**部署路径上不可达**。本轮把行为级读数
+    接进 overlay（`beh`），并补一条以**行为**为单位的轴触发：
+
+        行为级 COARSE ∧ n_behaviors ≥ MIN_BEHAVIORS ⇒ RULER
+
+    ⛔ **不用分数级 COARSE**：真池 6/6 都是分数级 COARSE，但其中 5 格行为级
+    INJECTIVE（多个实现**行为相同**、只是写法不同）⇒ 拿它当「尺子坏」的判据，
+    假正例 5/6（`PREREG_v180 §2` A）。分辨力是相对于**行为**说的，不是相对于实现。
     """
     axes: list[str] = []
     if reason == "CRITERION_UNREACHABLE":
@@ -628,6 +656,11 @@ def repair_axes(reason: str, movability: dict | None = None) -> tuple[str, ...]:
         axes.append("MODEL")
     if movability and movability.get("claim") in (_SI.CLAIM_UNMOVABLE,
                                                   _SI.CLAIM_BEHAVIOR_UNRESOLVED):
+        axes.append("RULER")
+    beh = (movability or {}).get("beh") or {}
+    if (beh.get("kind") == _SI.KIND_COARSE
+            and int(beh.get("n_behaviors") or 0) >= _SI.MIN_BEHAVIORS
+            and "RULER" not in axes):
         axes.append("RULER")
     return tuple(axes)
 
@@ -669,9 +702,15 @@ def render_escalations(esc: dict[str, dict]) -> str:
                  "RULER": "RULER（改尺子：打分轴/分辨力）"}
         axis_txt = "+".join(gloss[a] for a in axes) if axes else "（无）"
         if m:
-            lines.append(f"{'':<26} 修复轴：{axis_txt}｜可动性：{m['label']}"
-                         f"（{m['n_impls']} 实现 {m['n_scores']} 档"
-                         f"｜bits={m['bits']:.4f}｜无身份行 {m['n_no_impl']}）")
+            line = (f"{'':<26} 修复轴：{axis_txt}｜可动性：{m['label']}"
+                    f"（{m['n_impls']} 实现 {m['n_scores']} 档"
+                    f"｜bits={m['bits']:.4f}｜无身份行 {m['n_no_impl']}）")
+            b = m.get("beh")
+            if b:                        # V180：行为级读数到达这里才算「接了线」
+                line += (f"｜行为级：{b['kind']}（{b['n_behaviors']} 行为类）")
+                if b.get("kind") == _SI.KIND_COARSE:
+                    line += " ⇐ 存在异行为同分"
+            lines.append(line)
         else:
             lines.append(f"{'':<26} 修复轴：{axis_txt}｜可动性：无（缺身份/弃权 ⇒ 不判）")
     return "\n".join(lines)

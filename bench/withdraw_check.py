@@ -2098,6 +2098,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ140g", "mw/scoreinfo.py",
      '''    return pool, counts''',
      '''    return pool, dict(counts, _nonce=str(__import__("uuid").uuid4()))  # 撤回态'''),
+    # ── V180（§248）──
+    # AZ141c：无池时也塞一个 INJECTIVE ⇒ 「没量到」被写成「有分辨力」。
+    ("AZ141c", "mw/goals.py",
+     '''            b = _SI.behavioral(pool) if pool else None''',
+     '''            b = _SI.behavioral(pool) if pool else {"kind": _SI.KIND_INJECTIVE}  # 撤回态'''),
+    # AZ141e：拿**分数级** COARSE 冒充 (label==COARSE 就加 RULER) ⇒ 真池 5 格假正例。
+    ("AZ141e", "mw/goals.py",
+     '''    beh = (movability or {}).get("beh") or {}''',
+     '''    beh = (movability or {}).get("beh") or {}
+    if (movability or {}).get("label") == _SI.KIND_COARSE:  # 撤回态
+        beh = {"kind": _SI.KIND_COARSE, "n_behaviors": 99}'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

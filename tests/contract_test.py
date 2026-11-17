@@ -15136,6 +15136,136 @@ check(RS, "AZ140g 纯函数 + 形状封闭：同输入双调用逐字相同；co
       _az140_g1 == _az140_g2 and _az140_shape,
       f"pure={_az140_g1 == _az140_g2} shape={_az140_shape}")
 
+# ═══════════ V180（§248）：行为级 COARSE 也给轴（AZ141） ═══════════
+# 只锚纯函数面与渲染面（⛔ 契约里不跑真尺子 —— 池的证据在 `l3_s268/v180.py`）。
+# 这一组钉的是**哪一层**的 COARSE 算数：行为级算，分数级不算。
+_az141_obs_coarse = [
+    {"task_id": "c1", "impl_sha": "a", "score": 1.0, "vec": [True, True]},
+    {"task_id": "c1", "impl_sha": "b", "score": 0.5, "vec": [True, False]},
+    {"task_id": "c1", "impl_sha": "c", "score": 0.5, "vec": [False, True]},
+]
+_az141_obs_inject = [
+    {"task_id": "c2", "impl_sha": "a", "score": 1.0, "vec": [True, True]},
+    {"task_id": "c2", "impl_sha": "b", "score": 0.5, "vec": [True, False]},
+    {"task_id": "c2", "impl_sha": "c", "score": 0.0, "vec": [False, False]},
+]
+_az141_obs_novec = [{"task_id": "c3", "impl_sha": "a", "score": 1.0},
+                    {"task_id": "c3", "impl_sha": "b", "score": 0.5}]
+
+
+def _az141_forced(cell: str) -> list[dict]:
+    return [{"gid": f"g:{cell}", "cell": cell, "kind": "RAISE",
+             "verdict": "NOT_MET", "reading": {"mean_score": 0.5}} for _ in range(3)]
+
+
+def _az141_overlay(obs: list[dict], cell: str):
+    return (_G.escalations(_az141_forced(cell), obs).get(cell) or {}).get("movability")
+
+
+_az141_a = {
+    "coarse3": _G.repair_axes("STUCK_MEANS",
+                              {"claim": None, "beh": {"kind": _SI.KIND_COARSE,
+                                                      "n_behaviors": _SI.MIN_BEHAVIORS}}),
+    "coarse2": _G.repair_axes("STUCK_MEANS",
+                              {"claim": None, "beh": {"kind": _SI.KIND_COARSE,
+                                                      "n_behaviors": _SI.MIN_BEHAVIORS - 1}}),
+    "inject": _G.repair_axes("STUCK_MEANS",
+                             {"claim": None, "beh": {"kind": _SI.KIND_INJECTIVE,
+                                                     "n_behaviors": 5}}),
+    "unknown": _G.repair_axes("STUCK_MEANS",
+                              {"claim": None, "beh": {"kind": _SI.KIND_UNKNOWN,
+                                                      "n_behaviors": 9}}),
+    "nobeh": _G.repair_axes("STUCK_MEANS", {"claim": None}),
+}
+
+check(RS, "AZ141a 轴的新触发按**行为类**计数：beh.kind=COARSE ∧ n_behaviors≥MIN_BEHAVIORS\n"
+          "              ⇒ 加 RULER；n_behaviors 少 1 ⇒ 不加（门限与 claim 同源）；\n"
+          "              INJECTIVE / UNKNOWN / 无 beh ⇒ 一律不加（⛔ 不许把「分辨得清」当「尺子坏」）；\n"
+          "              撤回语义：把 beh 分支删掉 ⇒ 本条必须红",
+      _az141_a["coarse3"] == ("MODEL", "RULER")
+      and _az141_a["coarse2"] == ("MODEL",)
+      and _az141_a["inject"] == ("MODEL",)
+      and _az141_a["unknown"] == ("MODEL",)
+      and _az141_a["nobeh"] == ("MODEL",),
+      f"{_az141_a}")
+
+_az141_b_axes = [_G.repair_axes(r, m) for r in ("STUCK_MEANS", "CRITERION_UNREACHABLE", "X")
+                 for m in (None, {"claim": _SI.CLAIM_UNMOVABLE},
+                           {"claim": _SI.CLAIM_BEHAVIOR_UNRESOLVED},
+                           {"claim": None, "beh": {"kind": _SI.KIND_COARSE,
+                                                   "n_behaviors": 4}},
+                           {"claim": _SI.CLAIM_UNMOVABLE,
+                            "beh": {"kind": _SI.KIND_COARSE, "n_behaviors": 4}})]
+_az141_dedup = _G.repair_axes("STUCK_MEANS",
+                              {"claim": _SI.CLAIM_UNMOVABLE,
+                               "beh": {"kind": _SI.KIND_COARSE, "n_behaviors": 4}})
+_az141_dedup2 = _G.repair_axes("CRITERION_UNREACHABLE",
+                               {"claim": _SI.CLAIM_BEHAVIOR_UNRESOLVED,
+                                "beh": {"kind": _SI.KIND_COARSE, "n_behaviors": 4}})
+
+check(RS, "AZ141b 值域仍封闭 + 去重：15 个输入下轴 ⊆ {CRITERION,MODEL,RULER} 且**无重复项**\n"
+          "              （claim 与 beh 同时要 RULER ⇒ 只出现一次）；\n"
+          "              撤回语义：把 beh 分支直接 append 而不过滤 ⇒ 本条必须红",
+      all(set(a) <= {"CRITERION", "MODEL", "RULER"} for a in _az141_b_axes)
+      and all(len(set(a)) == len(a) for a in _az141_b_axes)
+      and _az141_dedup == ("MODEL", "RULER") and _az141_dedup2 == ("CRITERION", "RULER"),
+      f"dedup={_az141_dedup}/{_az141_dedup2}")
+
+_az141_ov_c = _az141_overlay(_az141_obs_coarse, "c1")
+_az141_ov_i = _az141_overlay(_az141_obs_inject, "c2")
+_az141_ov_n = _az141_overlay(_az141_obs_novec, "c3")
+
+check(RS, "AZ141c 行为级读数**接到了** overlay（V179 的死分支在这里被接上）：\n"
+          "              有 vec ⇒ `beh` 在场且 kind 与 behavioral() 一致；无 vec ⇒ **没有** beh 键\n"
+          "              （⛔ 缺席不许写成 INJECTIVE —— 那是拿「没量到」冒充「有分辨力」）；\n"
+          "              撤回语义：无池时也塞一个 INJECTIVE ⇒ 本条必须红",
+      _az141_ov_c is not None and (_az141_ov_c.get("beh") or {}).get("kind") == _SI.KIND_COARSE
+      and _az141_ov_i is not None and (_az141_ov_i.get("beh") or {}).get("kind") == _SI.KIND_INJECTIVE
+      and _az141_ov_n is not None and "beh" not in _az141_ov_n,
+      f"coarse={(_az141_ov_c or {}).get('beh')} inject={(_az141_ov_i or {}).get('beh')} "
+      f"novec={'有 beh' if (_az141_ov_n or {}).get('beh') else '无 beh'}")
+
+_az141_fmt_c = _G.render_escalations(_G.escalations(_az141_forced("c1"), _az141_obs_coarse))
+_az141_fmt_i = _G.render_escalations(_G.escalations(_az141_forced("c2"), _az141_obs_inject))
+
+check(RS, "AZ141d 传到渲染面：COARSE 那一格印「存在异行为同分」且轴含 RULER；\n"
+          "              INJECTIVE 那一格**不**印这句话（⛔ 只多印读数，不删旧行 —— 旧子串全在）；\n"
+          "              撤回语义：渲染里不看 beh ⇒ 本条必须红",
+      "存在异行为同分" in _az141_fmt_c and "RULER" in _az141_fmt_c
+      and "均分逐位相同" in _az141_fmt_c
+      and "存在异行为同分" not in _az141_fmt_i,
+      f"coarse 提到={('存在异行为同分' in _az141_fmt_c)} inject 提到={('存在异行为同分' in _az141_fmt_i)}")
+
+_az141_ov_mixed = _az141_overlay([
+    {"task_id": "c4", "impl_sha": "a", "score": 1.0, "vec": [True, True]},
+    {"task_id": "c4", "impl_sha": "b", "score": 0.0, "vec": [False, False]},
+    {"task_id": "c4", "impl_sha": "c", "score": 0.0, "vec": [False, False]},
+], "c4")
+
+check(RS, "AZ141e 负对照（这一条护住本轮的**取舍**）：分数级 COARSE 但行为级 INJECTIVE 的格\n"
+          "              ⇒ 轴里**没有** RULER。真池 6/6 都是分数级 COARSE，若按分数级判，\n"
+          "              5 格是假正例（多个实现行为相同、只是写法不同 ⇒ 尺子没问题，是模型没动）；\n"
+          "              撤回语义：拿分数级 COARSE 冒充（label==COARSE 就加 RULER）⇒ 本条必须红",
+      (_az141_ov_mixed or {}).get("label") == _SI.KIND_COARSE
+      and (_az141_ov_mixed.get("beh") or {}).get("kind") == _SI.KIND_INJECTIVE
+      and _G.repair_axes("STUCK_MEANS", _az141_ov_mixed) == ("MODEL",),
+      f"score_label={(_az141_ov_mixed or {}).get('label')} "
+      f"beh={(_az141_ov_mixed or {}).get('beh')} "
+      f"轴={_G.repair_axes('STUCK_MEANS', _az141_ov_mixed)}")
+
+import copy as _copy                                                      # noqa: E402
+_az141_m = {"label": _SI.KIND_COARSE, "claim": None,
+            "beh": {"kind": _SI.KIND_COARSE, "n_behaviors": 3}}
+_az141_snap = _copy.deepcopy(_az141_m)
+_az141_p1 = _G.repair_axes("STUCK_MEANS", _az141_m)
+_az141_p2 = _G.repair_axes("STUCK_MEANS", _az141_m)
+
+check(RS, "AZ141f 纯函数 + 不改输入：同输入两次调用逐字相同，且 `movability` 实参**逐键不变**\n"
+          "              （⛔ 判定不许在原地给 overlay 补字段 —— 那会让下游看到只被读过一次的字典）；\n"
+          "              撤回语义：函数内 `movability[\"axes\"]=...` ⇒ 本条必须红",
+      _az141_p1 == _az141_p2 == ("MODEL", "RULER") and _az141_m == _az141_snap,
+      f"axes={_az141_p1} 实参不变={_az141_m == _az141_snap}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

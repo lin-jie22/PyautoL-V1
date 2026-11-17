@@ -2151,6 +2151,24 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
                         and other.func.id == "len":
                     continue''',
      '''                pass  # 撤回态：不豁免 len(...)'''),
+    # ── V184（§252）：判据生成器的类型签名（AZ145a~d）───────────────────────
+    # AZ145a：把「有默认值的不算」去掉 ⇒ `arity` 把可选参数也数进来。
+    ("AZ145a", "mw/critgen.py",
+     '''    return len(a.args) - len(a.defaults)''',
+     '''    return len(a.args)  # 撤回态：把有默认值的也算成必填'''),
+    # AZ145b：不剔除越界组 ⇒ 圈域变成恒等映射 ⇒ 越界输入直接进判据。
+    ("AZ145b", "mw/critgen.py",
+     '''            return [i for i, v in enumerate(flags) if v]''',
+     '''            return list(range(len(flags)))  # 撤回态：不剔除'''),
+    # AZ145c：删掉可达性检查 ⇒ 2 参数的算子被放行到一元函数上。
+    ("AZ145c", "mw/critgen.py",
+     '''    if not reachable(kind, n_args):
+        return f"{kind} 需要 {spec['arity']} 个输入，本题函数有 {n_args} 个 ⇒ 结构不可达"''',
+     '''    pass  # 撤回态：不查可达性'''),
+    # AZ145d：单参数不包 1-tuple ⇒ 判据里 `for x, in INPUTS` 全炸。
+    ("AZ145d", "mw/critgen.py",
+     '''        return [(v,) for v in POOL[types[0]]]''',
+     '''        return list(POOL[types[0]])  # 撤回态：不包 1-tuple'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

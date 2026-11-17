@@ -1,0 +1,40 @@
+k01_diff_tree            base=EMPTY_IFF_EQUAL(xB)  typed=EMPTY_IFF_EQUAL(Px)  mem(70)=EMPTY_IFF_EQUAL(Px)  fail=-/
+k02_encode_cookie        base=ROUNDTRIP(xx)  typed=ROUNDTRIP(xB)  mem(70)=ROUNDTRIP(xB)  fail=SEMANTIC/SEMANTIC
+k03_unflatten            base=ROUNDTRIP(xx)  typed=ROUNDTRIP(xB)  mem(70)=ROUNDTRIP(xB)  fail=SEMANTIC/SEMANTIC
+k04_to_ini               base=ROUNDTRIP(xx)  typed=ROUNDTRIP(xB)  mem(0)=ROUNDTRIP(xB)  fail=SEMANTIC/SEMANTIC
+g7d2_dedupe_keep         base=TAIL(xB)  typed=TAIL(xx)  mem(218)=TAIL(xx)  fail=SHAPE/SHAPE
+g7d3_fmt_amount          base=ROUNDTRIP(xx)  typed=ROUNDTRIP(xB)  mem(218)=BOUND(xx)  fail=SEMANTIC/SHAPE
+g7e1_parse_flag          base=BOUND(xB)  typed=ROUNDTRIP(xB)  mem(218)=ROUNDTRIP(xB)  fail=SEMANTIC/SEMANTIC
+g7e2_truncate_tail       base=TAIL(xB)  typed=TAIL(PB)  mem(218)=TAIL(PB)  fail=-/
+
+== 汇总 ==
+base       可跑 4/8 过正确 0/8 咬错 4/8 判别 0/8 准入 4/8
+           失败分类：SHAPE=4 UNREACH=0 OUT_OF_DOMAIN=0 NO_JSON=0 SEMANTIC=0
+typed      可跑 7/8 过正确 2/8 咬错 6/8 判别 1/8 准入 7/8
+           失败分类：SHAPE=1 UNREACH=0 OUT_OF_DOMAIN=0 NO_JSON=0 SEMANTIC=5
+typed_mem  可跑 6/8 过正确 2/8 咬错 5/8 判别 1/8 准入 6/8
+           失败分类：SHAPE=2 UNREACH=0 OUT_OF_DOMAIN=0 NO_JSON=0 SEMANTIC=4
+
+== 4 道记忆依赖题（逐题三臂）==
+  g7d2_dedupe_keep         base=TAIL/xB  typed=TAIL/xx  typed_mem=TAIL/xx
+  g7d3_fmt_amount          base=ROUNDTRIP/xx  typed=ROUNDTRIP/xB  typed_mem=BOUND/xx
+  g7e1_parse_flag          base=BOUND/xB  typed=ROUNDTRIP/xB  typed_mem=ROUNDTRIP/xB
+  g7e2_truncate_tail       base=TAIL/xB  typed=TAIL/PB  typed_mem=TAIL/PB
+
+== 记忆注入量（0 = 该题 recall 空 ⇒ 这一题的「相同」不构成证据）==
+  k01_diff_tree            mem_chars=70
+  k02_encode_cookie        mem_chars=70
+  k03_unflatten            mem_chars=70
+  k04_to_ini               mem_chars=0
+  g7d2_dedupe_keep         mem_chars=218
+  g7d3_fmt_amount          mem_chars=218
+  g7e1_parse_flag          mem_chars=218
+  g7e2_truncate_tail       mem_chars=218
+
+== 自足 4 题：typed vs typed_mem 是否逐题相同 ==
+  k01_diff_tree            same=True mem_chars=70
+  k02_encode_cookie        same=True mem_chars=70
+  k03_unflatten            same=True mem_chars=70
+  k04_to_ini               same=True mem_chars=0
+
+落盘 /Users/linshaojie/V1/bench/evidence/l3_s272/readings_v184.json（24 行）

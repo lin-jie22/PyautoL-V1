@@ -15505,6 +15505,62 @@ check(RS, "AZ144d 准入闸**不执行**判据源码（纯 AST）：\n"
       and _MC.admit("\n".join(_az144_v79["k02"]))[0] is False,
       f"{_az144_loop}")
 
+# ═══════════ V184（§252）：判据生成器**带类型签名**（AZ145） ═══════════
+import mw.critgen as _CG                                        # noqa: E402
+
+#: `arity` 只数**必填位置参数**：默认值不算、`*args`/`**kw` 不算、没有 `def` ⇒ -1。
+_az145_arity = [
+    ("def f(a, b):\n    return a\n", 2),
+    ("def f(a, b=1):\n    return a\n", 1),
+    ("def f(*a, **k):\n    return a\n", 0),
+    ("x = 1\n", -1),
+]
+_az145_got = [_CG.arity(c) for c, _ in _az145_arity]
+
+check(RS, "AZ145a `critgen.arity()` 数的是**必填位置参数**：有默认值的不算、`*args` 不算、\n"
+          "              没有 `def` 返回 -1（⛔ 不是 0 —— 0 会被读成「一个都不需要」）；\n"
+          "              撤回语义：改成 `len(a.args)`（把默认值算上）⇒ 本例第 2 条变 2 ⇒ 必须红",
+      _az145_got == [n for _, n in _az145_arity],
+      f"{_az145_got}")
+
+#: 圈域：喂 `int` 给 `s[:n]` 会抛 ⇒ 只该保留吃得下的那几组。
+_az145_inputs = [("abcdef", 3), (1, 2), ("ab", 1)]
+_az145_legal = _CG.legal_indexes("def f(s, n):\n    return s[:n]\n", "f", _az145_inputs)
+
+check(RS, "AZ145b `critgen.legal_indexes()` 在**目标实现**上圈域：吃得下的保留、抛异常的剔除；\n"
+          "              ⛔ 只看「能不能吃」，不看返回值对不对（后者是判别力，属收费那一半）；\n"
+          "              撤回语义：不剔除（原样返回全部下标）⇒ 第 2 组也被保留 ⇒ 必须红",
+      _az145_legal == [0, 2],
+      f"{_az145_legal}")
+
+_az145_unreach = _CG.validate("EMPTY_IFF_EQUAL", ["dict"], {}, 1)
+_az145_enum = _CG.validate("TAIL", ["str", "int"], {"keep": "nope"}, 2)
+_az145_ok = _CG.validate("TAIL", ["str", "int"], {"keep": "tail_n"}, 2)
+
+check(RS, "AZ145c `critgen.validate()` 把**结构不可达**与**槽不在枚举里**分开报：\n"
+          "              前者（2 参数的算子用在一元函数上）说「结构不可达」，\n"
+          "              后者说「不在枚举里」，合法组合返回空串；\n"
+          "              撤回语义：删掉 `reachable()` 那道检查 ⇒ 不可达的算子被放行 ⇒ 必须红",
+      "结构不可达" in _az145_unreach and "不在枚举里" in _az145_enum and _az145_ok == "",
+      f"unreach={_az145_unreach[:24]!r} enum={_az145_enum[:24]!r} ok={_az145_ok!r}")
+
+#: 输入由装置生成 —— 三条规则各钉一条，且单参数必须是 **1-tuple**（实参元组）。
+_az145_tail = _CG.inputs_for("TAIL", ["str", "int"])
+_az145_one = _CG.inputs_for("CONSERVE", ["dict"])
+_az145_pair = _CG.inputs_for("EMPTY_IFF_EQUAL", ["dict", "dict"])
+
+check(RS, "AZ145d `critgen.inputs_for()` 的输入由**装置**生成：\n"
+          "              ① TAIL 4 组里既有超长也有不超长（`('abcdef',1)` 与 `('abcdef',9)`）；\n"
+          "              ② 单参数一律 1-tuple（`(v,)`）—— 判据里 `for x, in INPUTS` 才解包得对；\n"
+          "              ③ 双参数含**相等**对与**不等**对（`EMPTY_IFF_EQUAL` 两头都要考到）；\n"
+          "              撤回语义：单参数返回 `list(...)`（不包 tuple）⇒ ② 不成立 ⇒ 必须红",
+      _az145_tail[0] == ("abcdef", 1) and _az145_tail[1] == ("abcdef", 9)
+      and all(isinstance(x, tuple) and len(x) == 1 for x in _az145_one)
+      and _az145_pair[0][0] == _az145_pair[0][1]
+      and _az145_pair[1][0] != _az145_pair[1][1]
+      and _az145_pair[2][0] == _az145_pair[2][1],
+      f"tail={_az145_tail[:2]} one0={_az145_one[0]!r} pair={_az145_pair}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

@@ -1,0 +1,234 @@
+{
+ "arity": {
+  "k01_diff_tree": 2,
+  "k02_encode_cookie": 1,
+  "k03_unflatten": 1,
+  "k04_to_ini": 1,
+  "g7d2_dedupe_keep": 1,
+  "g7d3_fmt_amount": 1,
+  "g7e1_parse_flag": 1,
+  "g7e2_truncate_tail": 2
+ },
+ "recall": {
+  "k01_diff_tree": {
+   "n": 1,
+   "own": false,
+   "chars": 63
+  },
+  "k02_encode_cookie": {
+   "n": 1,
+   "own": false,
+   "chars": 63
+  },
+  "k03_unflatten": {
+   "n": 1,
+   "own": false,
+   "chars": 63
+  },
+  "k04_to_ini": {
+   "n": 0,
+   "own": false,
+   "chars": 0
+  },
+  "g7d2_dedupe_keep": {
+   "n": 4,
+   "own": true,
+   "chars": 202
+  },
+  "g7d3_fmt_amount": {
+   "n": 4,
+   "own": true,
+   "chars": 202
+  },
+  "g7e1_parse_flag": {
+   "n": 4,
+   "own": true,
+   "chars": 202
+  },
+  "g7e2_truncate_tail": {
+   "n": 4,
+   "own": true,
+   "chars": 202
+  }
+ },
+ "matrix": {
+  "k01_diff_tree": {
+   "ROUNDTRIP": "UNREACH",
+   "CONSERVE": "UNREACH",
+   "EMPTY_IFF_EQUAL": "PASS [3/3]",
+   "SUBSEQ": "UNREACH",
+   "BOUND": "OUT_OF_DOMAIN(0/4)",
+   "TAIL": "OUT_OF_DOMAIN(0/4)"
+  },
+  "k02_encode_cookie": {
+   "ROUNDTRIP": "FAIL:题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2;  [3/3]",
+   "CONSERVE": "FAIL:题面示例未通过：AssertionError: CONSERVE: {'b': 1, 'a': 2} ⇒ 叶子 {'a= [3/3]",
+   "EMPTY_IFF_EQUAL": "UNREACH",
+   "SUBSEQ": "FAIL:题面示例未通过：AttributeError: 'list' object has no attribute 'item [3/3]",
+   "BOUND": "UNREACH",
+   "TAIL": "UNREACH"
+  },
+  "k03_unflatten": {
+   "ROUNDTRIP": "FAIL:题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ {'b':  [3/3]",
+   "CONSERVE": "PASS [3/3]",
+   "EMPTY_IFF_EQUAL": "UNREACH",
+   "SUBSEQ": "FAIL:题面示例未通过：AttributeError: 'list' object has no attribute 'item [3/3]",
+   "BOUND": "UNREACH",
+   "TAIL": "UNREACH"
+  },
+  "k04_to_ini": {
+   "ROUNDTRIP": "FAIL:题面示例未通过：AssertionError: ROUNDTRIP: {} ⇒ '' 解不开：Expecting val [2/3]",
+   "CONSERVE": "FAIL:题面示例未通过：AssertionError: CONSERVE: {} ⇒ 叶子 {'': 1} ≠ {} [2/3]",
+   "EMPTY_IFF_EQUAL": "UNREACH",
+   "SUBSEQ": "FAIL:题面示例未通过：AttributeError: 'list' object has no attribute 'item [2/3]",
+   "BOUND": "UNREACH",
+   "TAIL": "UNREACH"
+  },
+  "g7d2_dedupe_keep": {
+   "ROUNDTRIP": "FAIL:题面示例未通过：AssertionError: ROUNDTRIP: ['b', 'a', 'b'] ⇒ ['b', ' [3/3]",
+   "CONSERVE": "FAIL:题面示例未通过：AssertionError: CONSERVE: ['b', 'a', 'b'] ⇒ 叶子 {'b': [3/3]",
+   "EMPTY_IFF_EQUAL": "UNREACH",
+   "SUBSEQ": "PASS [3/3]",
+   "BOUND": "UNREACH",
+   "TAIL": "UNREACH"
+  },
+  "g7d3_fmt_amount": {
+   "ROUNDTRIP": "OUT_OF_DOMAIN(0/4)",
+   "CONSERVE": "OUT_OF_DOMAIN(0/4)",
+   "EMPTY_IFF_EQUAL": "UNREACH",
+   "SUBSEQ": "OUT_OF_DOMAIN(0/4)",
+   "BOUND": "UNREACH",
+   "TAIL": "UNREACH"
+  },
+  "g7e1_parse_flag": {
+   "ROUNDTRIP": "FAIL:题面示例未通过：AssertionError: ROUNDTRIP: 'abcdef' ⇒ None 解不开：the J [4/4]",
+   "CONSERVE": "FAIL:题面示例未通过：AssertionError: CONSERVE: 'abcdef' ⇒ 叶子 {None: 1} ≠  [4/4]",
+   "EMPTY_IFF_EQUAL": "UNREACH",
+   "SUBSEQ": "FAIL:题面示例未通过：AssertionError: SUBSEQ: 'abcdef' ⇒ 非 list [4/4]",
+   "BOUND": "UNREACH",
+   "TAIL": "UNREACH"
+  },
+  "g7e2_truncate_tail": {
+   "ROUNDTRIP": "UNREACH",
+   "CONSERVE": "UNREACH",
+   "EMPTY_IFF_EQUAL": "OUT_OF_DOMAIN(0/3)",
+   "SUBSEQ": "UNREACH",
+   "BOUND": "FAIL:题面示例未通过：AssertionError: BOUND: ('abcdef', 1) ⇒ '…f' 超界 [4/4]",
+   "TAIL": "PASS [4/4]"
+  }
+ },
+ "domain": {
+  "k01_diff_tree": {
+   "EMPTY_IFF_EQUAL": [
+    3,
+    3
+   ],
+   "BOUND": [
+    0,
+    4
+   ],
+   "TAIL": [
+    0,
+    4
+   ]
+  },
+  "k02_encode_cookie": {
+   "ROUNDTRIP": [
+    3,
+    3
+   ],
+   "CONSERVE": [
+    3,
+    3
+   ],
+   "SUBSEQ": [
+    3,
+    3
+   ]
+  },
+  "k03_unflatten": {
+   "ROUNDTRIP": [
+    3,
+    3
+   ],
+   "CONSERVE": [
+    3,
+    3
+   ],
+   "SUBSEQ": [
+    3,
+    3
+   ]
+  },
+  "k04_to_ini": {
+   "ROUNDTRIP": [
+    2,
+    3
+   ],
+   "CONSERVE": [
+    2,
+    3
+   ],
+   "SUBSEQ": [
+    2,
+    3
+   ]
+  },
+  "g7d2_dedupe_keep": {
+   "ROUNDTRIP": [
+    3,
+    3
+   ],
+   "CONSERVE": [
+    3,
+    3
+   ],
+   "SUBSEQ": [
+    3,
+    3
+   ]
+  },
+  "g7d3_fmt_amount": {
+   "ROUNDTRIP": [
+    0,
+    4
+   ],
+   "CONSERVE": [
+    0,
+    4
+   ],
+   "SUBSEQ": [
+    0,
+    4
+   ]
+  },
+  "g7e1_parse_flag": {
+   "ROUNDTRIP": [
+    4,
+    4
+   ],
+   "CONSERVE": [
+    4,
+    4
+   ],
+   "SUBSEQ": [
+    4,
+    4
+   ]
+  },
+  "g7e2_truncate_tail": {
+   "EMPTY_IFF_EQUAL": [
+    0,
+    3
+   ],
+   "BOUND": [
+    4,
+    4
+   ],
+   "TAIL": [
+    4,
+    4
+   ]
+  }
+ }
+}

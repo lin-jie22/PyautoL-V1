@@ -16007,6 +16007,119 @@ check(RS, "AZ152e `catalogue(allow=)` / `skeleton(allow=)` 用 `is not None` 判
       f"cat0={_az152_cat0!r} sk0={_az152_sk0.get('kind')!r} "
       f"cat1_lines={_az152_cat1.count(chr(10)) + 1}")
 
+# ═══════════ V190（§258）：对弱点自己出题（AZ153） ═══════════
+#
+# 本轮**没有一条断言「分数变好」** —— 它钉的是「生成器看不见实现」这条边界，
+# 以及「扩池后判据只差 INPUTS 一行」。V190 实测：结构变异 0/17、随机噪声 0/17、
+# 记忆/题面/实现字面量三者**逐格同效**（5/17，其中 1 格是假绿）。
+
+import inspect as _az153_inspect                              # noqa: E402
+import mw.probe as _PB                                        # noqa: E402
+
+#: 与 `bench/build_g7d_seed.py` 的 `FACTS["g7e1_parse_flag"]` 逐字相同。
+_az153_mem = ("开关惯例：只把 y/yes/1 当成真，'true'、'on' 这类历史脏值一律算假，"
+              "其余无法识别的返回 None。")
+_az153_tok = _PB.tokens(_az153_mem)
+
+# ── AZ153a：词元提取的三条来源与三条拒绝 ──────────────────────────────
+#: ⚠️ 中文必须**放在引号里**才算测试：裸中文根本不会被三条提取正则捞到
+#:    （引号内 / 斜杠组 / 裸 ASCII 词）。V190 初版拿裸中文测 ⇒ 断言永远不可能红。
+_az153_cn = _PB.tokens("例：'把这一整句话当成一个词元是不对的' 以及 y")
+check(RS, "AZ153a `probe.tokens()` 从一段文本取候选词元，且**只取能当输入用的**：\n"
+          "              ① 引号内 / 斜杠组拆开 / 裸 ASCII 词三条来源都要覆盖 ——\n"
+          "              记忆正文 `只把 y/yes/1 当成真，'true'、'on' 这类…` 必须取到\n"
+          "              `y`、`yes`、`1`、`true`、`on`（V190 就是靠这几个词翻开了 5 格）；\n"
+          "              ② ⛔ 不产出长度 > 24 的串、⛔ 不产出空串、⛔ 不产出含非 ASCII 的串\n"
+          "              （把整句中文当一个词元 = 往池里塞一条谁都吃不下的垃圾，预注册 F3）；\n"
+          "              ⚠️ 这一条**必须拿引号里的中文**测：裸中文连提取正则都进不去，测不出东西；\n"
+          "              ③ 去重保序。\n"
+          "              撤回语义：删掉 `re.fullmatch(r\"[\\x20-\\x7e]+\", v)` 那道闸 ⇒ 引号里那句中文进池 ⇒ 必须红",
+      {"y", "yes", "1", "true", "on"} <= set(_az153_tok)
+      and all(0 < len(t) <= _PB.MAX_TOKEN and t.isascii() for t in _az153_tok)
+      and _az153_tok == list(dict.fromkeys(_az153_tok))
+      and _az153_cn == ["y"],
+      f"tok={_az153_tok} cn={_az153_cn}")
+
+# ── AZ153b：生成器的签名里没有实现 ────────────────────────────────────
+_az153_p1 = set(_az153_inspect.signature(_PB.expand).parameters)
+_az153_p2 = set(_az153_inspect.signature(_PB.structural).parameters)
+_az153_p3 = set(_az153_inspect.signature(_PB.tokens).parameters)
+
+check(RS, "AZ153b `probe.expand()` / `structural()` / `tokens()` 的参数表里**没有**实现：\n"
+          "              既没有 `oracle`、也没有 `fn` / `impl` / `code`。\n"
+          "              ⭐ 这不是风格问题：只要生成器能跑一遍实现，就能「先挑出会让输出变化的输入、\n"
+          "              再宣布池退化已修复」—— 那是重言式，读数一文不值。V190 全靠这条边界\n"
+          "              才让「转可判 5/17」有意义。\n"
+          "              唯一的例外是 `literals(src)`：它只吃**源码文本**、只做 AST，\n"
+          "              且 `expand()` 给它的产物一律标 `LEAK`（见 AZ153c）。\n"
+          "              撤回语义：给 `expand()` 加一个 `oracle=""` 形参 ⇒ 必须红",
+      not ({"oracle", "fn", "impl", "code"} & (_az153_p1 | _az153_p2 | _az153_p3))
+      and "fn" not in _az153_p1,
+      f"expand={sorted(_az153_p1)} structural={sorted(_az153_p2)} tokens={sorted(_az153_p3)}")
+
+# ── AZ153c：泄漏源必须自己承认是泄漏 ──────────────────────────────────
+_az153_src = ("def parse_flag(s):\n"
+              "    t = str(s).strip().lower()\n"
+              "    if t in ('y', 'yes', '1'):\n"
+              "        return True\n"
+              "    if t in ('n', 'no', '0', 'off', 'false', 'true', 'on'):\n"
+              "        return False\n"
+              "    return None\n")
+_az153_lit = _PB.literals(_az153_src)
+_az153_e_lit = _PB.expand("ROUNDTRIP", ["str"], sources=("literal",), oracle_src=_az153_src)
+_az153_e_mut = _PB.expand("ROUNDTRIP", ["str"], sources=("mutate",))
+_az153_e_none = _PB.expand("ROUNDTRIP", ["str"], sources=("literal",), oracle_src="def f(\n")
+_az153_e_dict = _PB.expand("ROUNDTRIP", ["dict"], sources=("literal",), oracle_src=_az153_src)
+
+check(RS, "AZ153c 唯一读实现的入口 `probe.literals(src)` 只取字符串字面量，且泄漏必须自标：\n"
+          "              ① 从 `parse_flag` 源码取到 `y/yes/1/n/no/0/off/false/true/on`（⛔ 不执行实现，只走 AST）；\n"
+          "              ② `sources=('literal',)` ⇒ `leak is True`；`sources=('mutate',)` ⇒ `leak is False`；\n"
+          "              ③ 源码解析失败 / 签名里没有字符串类型 ⇒ **没有东西可泄漏**，`leak` 必须为 `False`\n"
+          "              （V190 实测 `g7d2` 的实现一个字符串字面量都没有 —— 它那 10 格**连作弊都没料**）；\n"
+          "              ④ 每条新增值都要在 `prov` 里留 `source`，⛔ 不许只报总数。\n"
+          "              撤回语义：`if source == \"literal\" and vals:` 删掉 ⇒ ② 崩 ⇒ 必须红",
+      {"y", "yes", "1", "n", "no", "0", "off", "false", "true", "on"} <= set(_az153_lit)
+      and _az153_e_lit["leak"] is True and _az153_e_mut["leak"] is False
+      and _az153_e_none["leak"] is False and _az153_e_dict["leak"] is False
+      and len(_az153_e_lit["prov"]) == len(_az153_e_lit["pools"]["str"]) - 4
+      and all(p.get("source") for p in _az153_e_lit["prov"]),
+      f"lit={_az153_lit} leak={_az153_e_lit['leak']}/{_az153_e_mut['leak']}"
+      f"/{_az153_e_none['leak']}/{_az153_e_dict['leak']}")
+
+# ── AZ153d：外部池真的接进了输入生成，且「没给」与「给空的」不是一回事 ──
+_az153_base = _CG.inputs_for("ROUNDTRIP", ["str"])
+_az153_pool = {"str": ("only",)}
+_az153_use = _CG.inputs_for("ROUNDTRIP", ["str"], _az153_pool)
+_az153_empty = _CG.inputs_for("ROUNDTRIP", ["str"], {"str": ()})
+_az153_two = _CG.inputs_for("EMPTY_IFF_EQUAL", ["str", "str"], {"str": ("a", "b")})
+
+check(RS, "AZ153d `critgen.inputs_for(kind, types, pool=)` 用 `is not None` 判「给没给池」：\n"
+          "              ① `pool=None` ⇒ 与老行为**逐字相同**（V184~V189 的读数仍可复现）；\n"
+          "              ② `pool={\"str\": (\"only\",)}` ⇒ 只产出 `[('only',)]`；\n"
+          "              ③ `pool={\"str\": ()}` ⇒ **空列表**，⛔ 不许回退全池（V189 `AZ152e` 同一族）；\n"
+          "              ④ 二元签名下组合仍按原规则（同类型取 a[0]/a[1]）。\n"
+          "              撤回语义：`P = POOL if pool is None else pool` 改成 `pool or POOL` ⇒ ③ 变 4 条 ⇒ 必须红",
+      _az153_base == _CG._inputs_for("ROUNDTRIP", ["str"])
+      and _az153_use == [("only",)] and _az153_empty == []
+      and _az153_two == [("a", "a"), ("a", "b"), ("b", "b")],
+      f"base={_az153_base} use={_az153_use} empty={_az153_empty} two={_az153_two}")
+
+# ── AZ153e：结构变异必须带来「基池没有的那一维」 ──────────────────────
+_az153_st = _PB.structural(["int", "num"])
+_az153_int_new = [v for v in _az153_st["int"] if v not in _CG.POOL["int"]]
+_az153_num_new = [v for v in _az153_st["num"] if v not in _CG.POOL["num"]]
+
+check(RS, "AZ153e `probe.structural()` 的变异必须**真的多出一维**，而不是把原池抄一遍：\n"
+          "              ① `int` 的新值里要有**负数**（V190 唯一的那一格翻转就是靠它：\n"
+          "              `int` 基池 `(0,3,5)` 全是非负数 ⇒ `fmt_amount` 的负号分支从没被行使过）；\n"
+          "              ② `num` 的新值里要有 `0.5` 这类小数；\n"
+          "              ③ 新值一律 ≠ 原值（否则「加了 32 条」是假的）。\n"
+          "              撤回语义：`_mutate_int` 的 `-v` 删掉 ⇒ ① 崩 ⇒ 必须红",
+      any(v < 0 for v in _az153_int_new) and any(0 < abs(v) < 1 for v in _az153_num_new)
+      and all(v not in _CG.POOL["int"] for v in _az153_int_new)
+      and all(v not in _CG.POOL["num"] for v in _az153_num_new),
+      f"int_new={_az153_int_new} num_new={_az153_num_new}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

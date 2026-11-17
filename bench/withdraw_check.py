@@ -2296,6 +2296,33 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ152e", "mw/critgen.py",
      '''    src = allow if allow is not None else (OPS if n_args is None else ops_for(n_args))''',
      '''    src = allow or (OPS if n_args is None else ops_for(n_args))  # 撤回态'''),
+    # ── V190（§258）：对弱点自己出题（AZ153a~e）───────────────────────────
+    # AZ153a：去掉 ASCII 闸 ⇒ 引号里的整句中文被当成一个词元进池（预注册 F3 当场复活）。
+    # ⚠️ 初版撤的是「长度上限」，实测**不红**：裸中文根本进不了三条提取正则，
+    #    而 `v - 1` 那条路径也让「去掉长度闸」测不出东西 ⇒ 撤点必须对准断言钉的那一处。
+    ("AZ153a", "mw/probe.py",
+     '''        if not re.fullmatch(r"[\\x20-\\x7e]+", v):''',
+     '''        if False:  # 撤回态'''),
+    # AZ153b：给 `expand()` 加一个 `oracle` 形参 ⇒ 生成器可以「先看输出再挑输入」⇒
+    #        「池退化已修复」变重言式。
+    ("AZ153b", "mw/probe.py",
+     '''def expand(kind: str, types: Iterable[str], *, sources: tuple[str, ...] = ("mutate",),''',
+     '''def expand(kind: str, types: Iterable[str], *, oracle: str = "", sources: tuple[str, ...] = ("mutate",),  # 撤回态'''),
+    # AZ153c：泄漏旗标恒假 ⇒ 泄漏源可以冒充可部署臂（读数里分不开）。
+    ("AZ153c", "mw/probe.py",
+     '''        if source == "literal" and vals:''',
+     '''        if False:  # 撤回态'''),
+    # AZ153d：外部池整个不接（永远用模块级 `POOL`）⇒ AZ153d 的 ② 项崩。
+    # ⚠️ 初版撤成 `pool or POOL` **不红**：`{"str": ()}` 是真值 dict（空的是**值**不是 dict）
+    #    ⇒ `pool or POOL` 仍取外部池 ⇒ 断言根本没被行使。
+    ("AZ153d", "mw/critgen.py",
+     '''    P = POOL if pool is None else pool''',
+     '''    P = POOL  # 撤回态：外部池不接'''),
+    # AZ153e：把两条通往负数的路径都堵死 ⇒ 基池 `(0,3,5)` 里再也长不出负数。
+    # ⚠️ 初版只删 `-v` **不红**：`0 - 1 = -1` 仍是负数 ⇒ 断言照样成立。
+    ("AZ153e", "mw/probe.py",
+     '''    return [v + 1, v - 1, -v, v * 2, v * 10, 0, 1]''',
+     '''    return [v + 1, v + 2, v * 2, v * 10, 0, 1]  # 撤回态'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

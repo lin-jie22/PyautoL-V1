@@ -423,22 +423,27 @@ def narrow(signal: str, n_args: int, chosen: str, types: list,
     return out, why
 
 
-def _inputs_for(kind: str, types: list) -> list:
+def _inputs_for(kind: str, types: list, pool: dict | None = None) -> list:
     """按类型生成输入（PREREG §2.2 的三条规则，逐字实现）。
+
+    `pool` 非 None ⇒ 用外部池（V190 的自出题臂）；`None` ⇒ 模块级 `POOL`。
+    ⚠️ 必须用 `is not None` 判断：`{}` 是有效输入（一个值都没有），
+       ⛔ 不许被读成「没给」而回退全池（V189 `AZ152e` 同一族）。
 
     ⚠️ 单参数时元素**就是值本身**（不是 1-tuple）：判据里 `for x in INPUTS: fn(x)`。
        V184 自踩：初版写成 `[(v,) for v in ...]` ⇒ 把 tuple 塞进 `dedupe_keep`，
        8 题一起报 `'tuple' object has no attribute ...` —— 那是装置焊错了，不是能力。
     """
+    P = POOL if pool is None else pool
     if len(types) == 1:
-        return [(v,) for v in POOL[types[0]]]
+        return [(v,) for v in P[types[0]]]
     if kind in ("TAIL", "BOUND"):
-        p = POOL[types[0]]
+        p = P[types[0]]
         if types[0] == "str":
             return [(p[0], LEN_POOL[0]), (p[0], LEN_POOL[2]),
                     (p[2], LEN_POOL[1]), (p[1], LEN_POOL[0])]
         return [(p[0], LEN_POOL[0]), (p[0], LEN_POOL[2]), (p[1], LEN_POOL[0])]
-    a, b = POOL[types[0]], POOL[types[1]]
+    a, b = P[types[0]], P[types[1]]
     if types[0] == types[1]:
         return [(a[0], a[0]), (a[0], a[1]), (a[1], a[1])]
     return [(a[0], b[0]), (a[0], b[1]), (a[1], b[0])]
@@ -536,9 +541,12 @@ def legal_indexes(code: str, fn: str, inputs: list) -> list | None:
     return None
 
 
-def inputs_for(kind: str, types: list) -> list:
-    """全池输入（未圈域）。臂先拿它，再用 `legal_indexes()` 收敛后回填 `build()`。"""
-    return _inputs_for(kind, types)
+def inputs_for(kind: str, types: list, pool: dict | None = None) -> list:
+    """全池输入（未圈域）。臂先拿它，再用 `legal_indexes()` 收敛后回填 `build()`。
+
+    `pool` 给了 ⇒ 用外部池（V190 自出题）；没给 ⇒ `POOL`。⚠️ 空 dict 不算「没给」。
+    """
+    return _inputs_for(kind, types, pool)
 
 
 def constant_on(code: str, fn: str, inputs: list) -> bool | None:

@@ -19,3 +19,6 @@ dist/
 # SQLite 旁挂文件：只读/查询时自动生成，不该入库（V72 误提交一次）
 *-shm
 *-wal
+
+# WorkBuddy 会话记忆（运行时副产物，不是源码）
+.workbuddy/

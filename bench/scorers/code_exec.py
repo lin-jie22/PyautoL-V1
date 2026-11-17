@@ -14,10 +14,15 @@
 
 协议（一行进、一行出）
     stdin  : {"task": {"id","prompt","tests":[...]}, "answer": "<候选代码>"}
-    stdout : {"score": 0.0..1.0, "why": "..."}
+    stdout : {"score": 0.0..1.0, "why": "...", "vec": [bool, ...]}
     退出码 : 0 = 判分完成（score 可为 0，那是**真实**的 0 分）
              2 = 输入不可判（缺 tests 等）—— 这是"没量到"，不是"0 分"
              1 = 打分器自身故障
+
+⭐ `vec`（V178，PREREG_v178 §1.1）：逐 test 的通过与否，与 score 同一次
+    测量的两种渲染（`score == round(mean(vec), 4)` 恒真 —— T1 发射自洽）。
+    ⛔ 无可执行代码的路径**不发** `vec` 键：测试根本没跑，「没量到」不许
+       拿全零冒充「测过了全挂」（契约③：缺失不得被读作否定）。
 
 ⛔ 三个刻意的设计决定
     1. **每条 test 一个独立子进程**：候选代码崩溃 / 死循环 / 污染全局都不会
@@ -116,9 +121,10 @@ def main() -> int:
                          ensure_ascii=False))
         return 0
 
-    passed, fails = 0, []
+    passed, fails, vec = 0, [], []
     for t in tests:
         ok, why = run_one(code, str(t))
+        vec.append(bool(ok))
         if ok:
             passed += 1
         else:
@@ -128,7 +134,9 @@ def main() -> int:
     why = f"通过 {passed}/{len(tests)}"
     if fails:
         why += "；失败: " + " | ".join(fails[:3])
-    print(json.dumps({"score": round(score, 4), "why": why[:280]}, ensure_ascii=False))
+    # ⭐ vec 随 score 同发（V178）：`round(score, 4)` 与 score 公式一字不动。
+    print(json.dumps({"score": round(score, 4), "why": why[:280], "vec": vec},
+                     ensure_ascii=False))
     return 0
 
 

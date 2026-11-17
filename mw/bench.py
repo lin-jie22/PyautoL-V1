@@ -269,6 +269,10 @@ class Scored:
     #: `why` 是一句话，`detail` 是"哪一条没满足、那条在说什么"。
     #: 内核只读，不改 —— critique 通道消费的就是它。
     detail: tuple[dict, ...] = ()
+    #: ⭐ 逐测试通过向量（V178，PREREG_v178 §1.2）：与 score 同一次测量的
+    #: 两种渲染。`None` = 打分器没给（老打分器合法）—— 读侧「没量到」，
+    #: ⛔ 不许拿 () 或全零冒充。传输校验见 `ExternalScorer.score()`。
+    vec: tuple[bool, ...] | None = None
 
 
 class ExternalScorer:
@@ -276,7 +280,7 @@ class ExternalScorer:
 
     协议（一行进、一行出，零依赖）：
         stdin  : {"task": {...}, "answer": "..."}
-        stdout : {"score": 0.0..1.0, "why": "..."}
+        stdout : {"score": 0.0..1.0, "why": "..."}  # detail / vec 可选（V178）
         退出码 : 0 = 正常判分；非 0 = 打分器自身失败（⇒ ScoreError）
 
     为什么必须走子进程而不是 import 进来：
@@ -356,7 +360,25 @@ class ExternalScorer:
             if not isinstance(d, dict):
                 raise ScoreError(f"{self.name} detail[{i}] 不是对象")
             detail.append(dict(d))
-        return Scored(s, str(data.get("why", "")), tuple(detail))
+        # ── vec（V178，PREREG_v178 §1.2）：与 detail 同款传输口径 ──────────
+        # 缺席合法（老打分器）；**给了但格式坏 ⇒ 报错**，不许静默丢掉 ——
+        # 与 detail 同理：静默丢掉 = 一句"我不对"又变回没有理由。
+        # ⚠️ 长度闸**只在传输面**（这里手里有 task.tests）：读侧账本行
+        #    没有测试条数，长度不齐只能靠自洽闸间接发现（PREREG §0.4）。
+        vec: tuple[bool, ...] | None = None
+        if "vec" in data:
+            raw_vec = data["vec"]
+            if not isinstance(raw_vec, (list, tuple)):
+                raise ScoreError(f"{self.name} vec 不是列表: {type(raw_vec).__name__}")
+            n_tests = len((task.get("tests") if isinstance(task, dict) else None) or [])
+            if len(raw_vec) != n_tests:
+                raise ScoreError(
+                    f"{self.name} vec 长度 {len(raw_vec)} ≠ tests {n_tests}")
+            for i, b in enumerate(raw_vec):
+                if not isinstance(b, bool):
+                    raise ScoreError(f"{self.name} vec[{i}] 不是 bool: {b!r}")
+            vec = tuple(bool(b) for b in raw_vec)
+        return Scored(s, str(data.get("why", "")), tuple(detail), vec)
 
 
 # ===========================================================================
@@ -807,11 +829,16 @@ def run_suite(
                 continue
             rep.recorded += 1
             total += sc.score
-            rep.per_task.append({"rep": r + 1, "id": t.id, "score": sc.score,
-                                 "why": sc.why[:200],
-                                 # ★逐题墙钟（§17-7h）：只加字段，不改任何判据。
-                                 # 口径与整轮 `elapsed_s` 同源（time.time()）。
-                                 "elapsed_s": round(time.time() - _t_task, 2)})
+            _row = {"rep": r + 1, "id": t.id, "score": sc.score,
+                    "why": sc.why[:200],
+                    # ★逐题墙钟（§17-7h）：只加字段，不改任何判据。
+                    # 口径与整轮 `elapsed_s` 同源（time.time()）。
+                    "elapsed_s": round(time.time() - _t_task, 2)}
+            # ★ V178（PREREG_v178 §1.3）：捕到才写键 —— vec=None（老打分器）
+            #   ⇒ 键不在，⛔ 不写 None 值冒充「量了没通过」。
+            if sc.vec is not None:
+                _row["vec"] = sc.vec
+            rep.per_task.append(_row)
             # ── 外部评审落盘 ──────────────────────────────────────────
             # 打分器给的**理由**（`why`）此前只有一个去处：写进日志给人看。
             # 现在它进账本，成为下一轮可以被内核读取的只读输入。

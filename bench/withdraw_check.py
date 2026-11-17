@@ -1874,6 +1874,230 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
         return "IDLE", det''',
      '''    if esc and det["n_sat"] == len(ids):
         return "IDLE", det'''),
+    # ── 「提分」目标按定义不可能完成（V173）：结构不可达判据 ─────────────
+    # AZ135a：拆掉「尺子坏了弃权」那道闸 ⇒ 1.2 的池被判「不可达」而不是弃权。
+    ("AZ135a", "mw/goals.py",
+     '''    if any(s > target for s in st["scores"]):
+        return None''',
+     '''    if False:  # 撤回态
+        return None'''),
+    # AZ135b：把行为理由的名字改掉 ⇒ 两条路不再分得开（结构/行为混成一个读数）。
+    ("AZ135b", "mw/goals.py",
+     '''                         "gids": [gid], "reason": "STUCK_MEANS"}''',
+     '''                         "gids": [gid], "reason": "STUCK"}'''),
+    # AZ135c：propose 不认 escalated ⇒ 转运维的格照提 RAISE（死报告）。
+    ("AZ135c", "mw/goals.py",
+     '''    esc_set = set(escalated)''',
+     '''    esc_set = set()  # 撤回态'''),
+    # AZ135d：split 不过滤 ⇒ 套件外的格把状态带偏（IDLE 冒充 DONE）。
+    ("AZ135d", "mw/goals.py",
+     '''    inside = {c: e for c, e in esc.items() if c in ids}''',
+     '''    inside = dict(esc)  # 撤回态'''),
+    # AZ135e：结构行的留痕改没 ⇒ 「做不到」被静默忘掉。
+    ("AZ135e", "mw/goals.py",
+     '''            line = (f"  {cell:<24} 判据按定义不可满足：历史 {e['n_obs']} 次里 "''',
+     '''            line = (f"  {cell:<24} ？：历史 {e['n_obs']} 次里 "'''),
+    # ── 分数信息量（V174）：CONSTANT / INJECTIVE / COARSE / UNKNOWN ──────
+    # AZ136a：拆掉越界分闸 ⇒ 1.2 被当正常分（尺子坏了不再弃权）。
+    ("AZ136a", "mw/scoreinfo.py",
+     '''        if sf > target or sf < 0.0:''',
+     '''        if False:  # 撤回态'''),
+    # AZ136b：熵值整体偏移 ⇒ 三分类的 bits 自洽全破。
+    #   ⚠️ V177 锚点修复（AS12 同族）：`bits = _entropy_bits(sizes)` 这行文本
+    #   在 behavioral() 里也有一份 ⇒ 裸行锚点「出现 2 次」被驱动器拒（R16 实测）。
+    #   AZ136b 注册的命题是 **classify()** 的熵 ⇒ 锚点加宽到 classify 唯一的
+    #   分桶块（⛔ 不改实现躲锚点）。修后单红复测于 R16 复跑。
+    ("AZ136b", "mw/scoreinfo.py",
+     '''    # ---- 分桶 ----
+    buckets: dict[float, list[str]] = {}
+    for i, s in sorted(impl_score.items()):
+        buckets.setdefault(s, []).append(i)
+    k = len(buckets)
+    sizes = [len(v) for v in buckets.values()]
+
+    bits = _entropy_bits(sizes)''',
+     '''    # ---- 分桶 ----
+    buckets: dict[float, list[str]] = {}
+    for i, s in sorted(impl_score.items()):
+        buckets.setdefault(s, []).append(i)
+    k = len(buckets)
+    sizes = [len(v) for v in buckets.values()]
+
+    bits = _entropy_bits(sizes) + 0.5  # 撤回态'''),
+    # AZ136c：buckets 退化成只报桶数 ⇒ 逐桶点名的判据破。
+    ("AZ136c", "mw/scoreinfo.py",
+     '''            "buckets": {f"{s:g}": v for s, v in sorted(buckets.items())}}''',
+     '''            "buckets": {f"{s:g}": len(v) for s, v in sorted(buckets.items())}}  # 撤回态'''),
+    # AZ136d：输出掺随机 ⇒ 双跑不再逐字相同（纯函数破）。
+    #   ⚠️ 装置自踩：第一版用 `id(object())` —— CPython 立即回收对象、地址复用，
+    #   双跑拿到同一个 id ⇒ 撤了个寂寞（目标没转红）。改用 uuid4（必不重复）。
+    ("AZ136d", "mw/scoreinfo.py",
+     '''    return {"kind": kind, "reason": None, "n_impls": n, "n_scores": k,''',
+     '''    return {"ts": str(__import__("uuid").uuid4()), "kind": kind, "reason": None, "n_impls": n, "n_scores": k,  # 撤回态'''),
+    # AZ136e：min_pool 闸关掉 ⇒ 1 个实现的池被分类（样本不够却出结论）。
+    ("AZ136e", "mw/scoreinfo.py",
+     '''    if n < min_pool:''',
+     '''    if False:  # 撤回态'''),
+    # AZ136f：常量改名 ⇒ kind 值域破。
+    ("AZ136f", "mw/scoreinfo.py",
+     '''KIND_CONSTANT = "CONSTANT"''',
+     '''KIND_CONSTANT = "KONSTANT"  # 撤回态'''),
+    # AZ136g：上限改掉 ⇒ 与 goals.TARGET 的对撞判据破。
+    ("AZ136g", "mw/scoreinfo.py",
+     '''TARGET = 1.0''',
+     '''TARGET = 1.5  # 撤回态'''),
+    # ── 分数可动性消费接线（V175）：修复轴 + impl_sha + 覆盖定理锚 ──────
+    # AZ137a：缺身份行混进池（当实现 "None"）⇒ 可归因计数与池形状一起破。
+    ("AZ137a", "mw/scoreinfo.py",
+     '''        impl = r.get(impl_key)
+        if not impl or score_key not in r:''',
+     '''        impl = r.get(impl_key)
+        if score_key not in r:  # 撤回态'''),
+    # AZ137b：实现指纹退化成常数 ⇒ 同文异文不可分（身份失效）。
+    ("AZ137b", "mw/scoreinfo.py",
+     '''    return hashlib.sha256(str(text).encode("utf-8")).hexdigest()[:16]''',
+     '''    return "0" * 16  # 撤回态'''),
+    # AZ137c：overlay 恒 None ⇒ fail-open 写成恒不判（负对照转红）。
+    ("AZ137c", "mw/goals.py",
+     '''    for c, e in out.items():
+        m = _SI.movability(obs, cell=c) if obs else None
+        e["movability"] = (m if m and m.get("label") != _SI.KIND_UNKNOWN else None)
+    return out''',
+     '''    for c, e in out.items():
+        e["movability"] = None  # 撤回态
+    return out'''),
+    # AZ137d：修复轴映射退化成常数 ⇒ 诊断→动作的映射消失。
+    ("AZ137d", "mw/goals.py",
+     '''    return tuple(axes)''',
+     '''    return ("MODEL",)  # 撤回态'''),
+    # AZ137e：propose 偷偷读 movability 过滤 ⇒ 诊断字段变成 gate（覆盖定理被破坏）。
+    ("AZ137e", "mw/goals.py",
+     '''        elif st["mean_score"] < target:
+            if c in esc_set:''',
+     '''        elif st["mean_score"] < target:
+            if c in esc_set or _SI.movability(obs, cell=c).get("claim"):  # 撤回态'''),
+    # AZ137f：拆掉 <TARGET 门槛 ⇒ 已达标的格被标「做不到」（做完了 ≠ 做不到）。
+    ("AZ137f", "mw/scoreinfo.py",
+     '''        if pool and float(pool[0][1]) < target:''',
+     '''        if pool:  # 撤回态'''),
+
+    # ★V176（§244）：AZ138a~f —— 准入器 verdict 的四个判据分支 + 注册表 + 套件结构。
+    # AZ138a：A1 判据分支废掉 ⇒ oracle=0.99 不再被判拒（真值表当场破）。
+    ("AZ138a", "bench/admit_sys.py",
+     '''        if abs(oracle - _FULL) > _EPS:''',
+     '''        if False and abs(oracle - _FULL) > _EPS:  # 撤回态'''),
+    # AZ138b：缺键分支不触发 ⇒ 缺读数落进类型判（why 不再点名「缺读数」）。
+    ("AZ138b", "bench/admit_sys.py",
+     '''        if missing:''',
+     '''        if False:  # 撤回态'''),
+    # AZ138c：A5 分支废掉 ⇒ 复打分不一致不再被判拒。
+    ("AZ138c", "bench/admit_sys.py",
+     '''        elif abs(float(ro) - oracle) > _EPS or abs(float(rp) - partial) > _EPS:''',
+     '''        elif False and (abs(float(ro) - oracle) > _EPS or abs(float(rp) - partial) > _EPS):  # 撤回态'''),
+    # AZ138d：注册表删掉一题 ⇒ 题集对账当场红（连带 AZ138a：好读数的 A6 面也随之坏）。
+    ("AZ138d", "bench/admit_sys.py",
+     '''    "s01_kv_expiry": [''',
+     '''    "_dropped_s01": ['''),
+    # AZ138e：套件一题的 null 改成非空 ⇒ 三臂材料结构红。
+    ("AZ138e", "bench/tasks/sys_small.jsonl",
+     '''"null": "", "meta": {"tags": "stateful;ttl;kv"''',
+     '''"null": "x", "meta": {"tags": "stateful;ttl;kv"'''),
+    # AZ138f：failed 条目多一个键 ⇒ 输出形状封闭破。
+    ("AZ138f", "bench/admit_sys.py",
+     '''            failed.append({"task": tid, "check": "A1",''',
+     '''            failed.append({"task": tid, "check": "A1", "extra": 1,'''),
+
+    # ★V177（§245）：AZ139a~h —— 行为级信息量的分类分支 + claim 三合取 + 冲突闸 +
+    # 值域 + 陷阱 + repair_axes + 纯函数。
+    # AZ139a：行为级 CONSTANT 分支废掉 ⇒ 常数池被标成 COARSE（T1 当场破）。
+    ("AZ139a", "mw/scoreinfo.py",
+     '''    if k == 1:
+        kind = KIND_CONSTANT
+        bits = 0.0            # 常数信息恒 0（防 -0.0 进 JSON）''',
+     '''    if k == 1 and False:  # 撤回态
+        kind = KIND_CONSTANT
+        bits = 0.0            # 常数信息恒 0（防 -0.0 进 JSON）'''),
+    # AZ139b：行为级 INJECTIVE 分支废掉 ⇒ 单射池被标成 COARSE（T2 当场破）。
+    ("AZ139b", "mw/scoreinfo.py",
+     '''        bits = 0.0            # 常数信息恒 0（防 -0.0 进 JSON）
+    elif k == n:
+        kind = KIND_INJECTIVE''',
+     '''        bits = 0.0            # 常数信息恒 0（防 -0.0 进 JSON）
+    elif k == n and False:  # 撤回态
+        kind = KIND_INJECTIVE'''),
+    # AZ139c：MIN_BEHAVIORS 门槛拆掉 ⇒ 2 行为的池被标「没分辨过」（反巧合合取破）。
+    ("AZ139c", "mw/scoreinfo.py",
+     '''    if (kind == KIND_CONSTANT and n >= MIN_BEHAVIORS''',
+     '''    if (kind == KIND_CONSTANT and n >= 2  # 撤回态'''),
+    # AZ139d：同实现多行为子检查废掉 ⇒ 口径混了的池被分类（冲突闸半边失明）。
+    ("AZ139d", "mw/scoreinfo.py",
+     '''    for impl_s, vs in sorted(by_impl.items()):
+        if len(vs) > 1:''',
+     '''    for impl_s, vs in sorted(by_impl.items()):
+        if False and len(vs) > 1:  # 撤回态'''),
+    # AZ139e：冲突理由改名 ⇒ reason 词表不封闭。
+    ("AZ139e", "mw/scoreinfo.py",
+     '''REASON_BEHAVIOR_SCORE_CONFLICT = "BEHAVIOR_SCORE_CONFLICT"''',
+     '''REASON_BEHAVIOR_SCORE_CONFLICT = "BEHAVIOR_KONFLICT"  # 撤回态'''),
+    # AZ139f：NaN 检查废掉 ⇒ 非有限分被当合法分进池（尺子坏闸破一格）。
+    ("AZ139f", "mw/scoreinfo.py",
+     '''        if math.isnan(sf) or math.isinf(sf):
+            return _behavioral_unknown(REASON_RULER_BROKEN,
+                                       f"非有限分数 {impl_s}={s!r}")''',
+     '''        if False:  # 撤回态
+            return _behavioral_unknown(REASON_RULER_BROKEN,
+                                       f"非有限分数 {impl_s}={s!r}")'''),
+    # AZ139g：RULER 叠加缩回只认 SCORE_UNMOVABLE ⇒ 行为级 claim 不再指修复轴。
+    ("AZ139g", "mw/goals.py",
+     '''    if movability and movability.get("claim") in (_SI.CLAIM_UNMOVABLE,
+                                                  _SI.CLAIM_BEHAVIOR_UNRESOLVED):''',
+     '''    if movability and movability.get("claim") == _SI.CLAIM_UNMOVABLE:  # 撤回态'''),
+    # AZ139h：输出掺随机 ⇒ 双跑不再逐字相同（纯函数破）。
+    #   ⚠️ 变异形态选的是「detail 值掺 uuid」而不是 AZ136d 的「多一个 ts 键」——
+    #   后者会连带 AZ139e 的字段形状面（11 键封闭）；本轮 AZ139h 注册的命题
+    #   **只有**纯函数一条 ⇒ 变异只许打这一条（键形状不是它的观测面）。
+    ("AZ139h", "mw/scoreinfo.py",
+     '''            "claim": claim, "detail": None}''',
+     '''            "claim": claim, "detail": str(__import__("uuid").uuid4())}  # 撤回态'''),
+
+    # ★V178（§246，R17）：行为向量落账。⚠️ 七条全部按「观测面=注册命题」设计
+    #   单红（AZ139d 教训）：AZ140e 只比逐键计数值（形状归 AZ140g）、
+    #   AZ140f 只看旧读侧逐位不变（缺 vec 的排除归 AZ140e）—— 分面才不假耦合。
+    # AZ140a：删发射键 ⇒ code_exec 输出无 vec（发射面破 + T1 无锚）。
+    ("AZ140a", "bench/scorers/code_exec.py",
+     '''    print(json.dumps({"score": round(score, 4), "why": why[:280], "vec": vec},''',
+     '''    print(json.dumps({"score": round(score, 4), "why": why[:280]},  # 撤回态'''),
+    # AZ140b：拆 vec 格式校验 ⇒ 坏形态/长度错不再 fail-closed（静默丢复活）。
+    ("AZ140b", "mw/bench.py",
+     '''        if "vec" in data:''',
+     '''        if False and "vec" in data:  # 撤回态'''),
+    # AZ140c：run_suite 行构造删 vec ⇒ per_task 行不再带向量。
+    ("AZ140c", "mw/bench.py",
+     '''            if sc.vec is not None:
+                _row["vec"] = sc.vec''',
+     '''            pass  # 撤回态'''),
+    # AZ140d：删账本写点的落账行 ⇒ run.py 的 Subscript-assign「vec」计数 1→0。
+    ("AZ140d", "run.py",
+     '''            if "vec" in r:
+                row["vec"] = list(r["vec"])''',
+     '''            pass  # 撤回态'''),
+    # AZ140e：拆自洽闸 ⇒ inconsistent 行（翻转/NaN/bool 分）泄漏进池。
+    ("AZ140e", "mw/scoreinfo.py",
+     '''        if abs(sf - mean) > VEC_SCORE_TOL:
+            counts["n_inconsistent"] += 1
+            continue''',
+     '''        pass  # 撤回态（拆自洽闸）'''),
+    # AZ140f：旧读侧见 vec 键即拒 ⇒ 带 vec 的新账行把 V175 读侧砸崩。
+    #   ⚠️ 契约侧夹具已包 try（AP11 同型：转红不许变崩溃）。
+    ("AZ140f", "mw/scoreinfo.py",
+     '''        pool.append((str(impl), r[score_key]))''',
+     '''        if "vec" in r:
+            raise KeyError("vec")  # 撤回态
+        pool.append((str(impl), r[score_key]))'''),
+    # AZ140g：输出掺随机键 ⇒ 双跑不再逐字相同 + 形状 6 键封闭破。
+    ("AZ140g", "mw/scoreinfo.py",
+     '''    return pool, counts''',
+     '''    return pool, dict(counts, _nonce=str(__import__("uuid").uuid4()))  # 撤回态'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2131,6 +2355,55 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   三者锚的是**同一处顺序**（EMPTY → IDLE → DONE），任何针对它的变异都会一起翻。
     #:   ⚠️ 反向不成立：AZ134e/f 撤的是 `satisfied()` 与常量表，实测只红它们自己。
     "AZ134b": frozenset({"AZ134a", "AZ134d"}),
+
+    #: ★V173（§241）：AZ135c 撤的是「propose 认 escalated」。实测连带三处 ——
+    #:   AZ133d 锚的是同一件事的 V171 版（「转运维的格不再提 RAISE」）；
+    #:   AZ134a/b（V172 五态）的 fixture 走 `propose(..., escalated=…)` 造状态，
+    #:   esc_set 一拆它们的构造输入就变了。三者锚的是**同一处 esc_set 过滤**。
+    #:   ⚠️ 反向不成立：AZ133b 的注册表里没有它（实测单红）。
+    "AZ135c": frozenset({"AZ133d", "AZ134a", "AZ134b"}),
+
+    #: ★V175（§243）：AZ137b 撤的是 `impl_sha_of` 的哈希（改常数）。它同时是
+    #:   `mw/scoreinfo.py` 里 `hashlib` 的**唯一使用点** ⇒ 撤掉即死导入 ⇒ K5
+    #:   （内核无死导入）同翻。两个断言锚的是**同一行的两个观测面**（行为/导入
+    #:   卫生，TH2/TH3 同型）—— ⛔ 不许换成「哈希加盐」之类的巧变异做成单红，
+    #:   那会伪造出「两断言各管一件事」的假象。
+    #:   ⚠️ 反向不成立：K5 的注册表里没有它（K5 的变异在别处）。
+    "AZ137b": frozenset({"K5"}),
+
+    #: ★V174（§242）：AZ136 这一组的连带是**同 fixture、多观测点**（TH2/TH3 同型）：
+    #:   · a 拆掉越界分闸 ⇒ ruler 臂（1.2）不再弃权 ⇒ c 的「弃权不给半个读数」与
+    #:     f 的 reason 值域一起翻 —— 三个断言读的是**同一个** ruler 臂输出；
+    #:   · e 关掉 min_pool 闸 ⇒ few 臂出结论 ⇒ 同样打红 a/c/f（同一个 few 臂）；
+    #:   · g 改上限 ⇒ 1.2 落进合法区间 ⇒ 与 a 同一条变异路径（a/c/f）；
+    #:   ⛔ 不许为了「做成单红」给每条断言造独立 fixture：那会伪造出
+    #:   「三条断言各管一件事」的假象，而它们防的是**同一道闸**被拆。
+    #:   ⚠️ 反向不成立：b（熵偏移）/c（桶退化）/d（掺 id）实测只红它们自己。
+    "AZ136a": frozenset({"AZ136c", "AZ136f"}),
+    "AZ136e": frozenset({"AZ136a", "AZ136c", "AZ136f"}),
+
+    #: ★V176（§244）：AZ138d 撤的是注册表题集（MUTANTS 删一题）。AZ138a 的
+    #:   「好读数 ⇒ ok」用真注册表合成读数 ⇒ 缺题后 A6「缺 wipe_*」当场判拒 ⇒
+    #:   好读数不再 ok。两条锚的是**同一份注册表的完备性**（静态面 vs 裁决面）。
+    #:   ⚠️ 实测单红面：a/b/c/e/f 全部只红自己（2026-11-17 R15）。
+    "AZ138d": frozenset({"AZ138a"}),
+
+    #: ★V177（§245）：
+    #:   · AZ139a 撤的是行为级 CONSTANT 分支 —— 它同时是 T1（AZ139a）与
+    #:     claim 三合取第一合取（AZ139c）的**同一观测面**（TH2/TH3 同型）。
+    #:     ⚠️ 实测单红面：AZ139b/c/d/e/f/g/h 全部只红自己（R16 复跑）。
+    #:   · AZ136b 的熵行文本曾在 classify/behavioral 各一份（锚点腐烂 2 次）——
+    #:     已加宽锚点到 classify 唯一分桶块，复测恢复单红，不再登记耦合。
+    #:   · AZ136f（KIND 常量改名）连带 AZ136b（kind 字面比较）、AZ137c/AZ137f
+    #:     （label 字面比较）与 AZ139e（行为级 kind 词表）—— **R16 实测**。
+    #:     AZ137c/f 是 V175 加的，R13 跑在它们之前 ⇒ 这对耦合此前从未复测，
+    #:     本轮补登记（实测红 5：目标 + 4 连带）。
+    #:   · AZ136g（TARGET 改 1.5）连带 AZ137f（3×1.0 池冒出 claim）、
+    #:     AZ139c（@1.0 不给 claim）、AZ139f（1.2 越界弃权）—— R16 实测
+    #:     （原登记 {AZ136a,c,f} + 本轮补 137f/139c/139f）。
+    "AZ139a": frozenset({"AZ139c"}),
+    "AZ136f": frozenset({"AZ136b", "AZ137c", "AZ137f", "AZ139e"}),
+    "AZ136g": frozenset({"AZ136a", "AZ136c", "AZ136f", "AZ137f", "AZ139c", "AZ139f"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

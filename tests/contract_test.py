@@ -14278,6 +14278,864 @@ check(RS, "AZ134f ⛔ 五个状态名**不做成模块级常量**：常量集合
       _az134_consts == ["KINDS", "MIN_OBS", "TARGET"],
       f"{_az134_consts}")
 
+# ===========================================================================
+# AZ135 —— 「提分」这一类目标按定义不可能完成（V173）
+#
+# 锚的是**判定的形状**，效果由 `bench/evidence/l5_s261/` 的 P1~P7 量。
+# 一句话定理：均分 ≥ 1.0 ⟺ **每个**分数都 ≥ 1.0（分数上限就是 1.0），
+# 而 RAISE 只在均分 < 1.0 时提出 ⇒ 一条 RAISE 被提出时判据已经不可能满足。
+# ⛔ 这不是「模型不够强」，是**判据不可满足** —— 两者的区别是这一轮的全部内容。
+# ===========================================================================
+def _az135_obs(cell, scores):
+    return [{"task_id": cell, "score": float(s)} for s in scores]
+
+
+_az135_sat = _G.unreachable("a1", _az135_obs("a1", [1.0, 1.0, 1.0]))
+_az135_few = _G.unreachable("a1", _az135_obs("a1", [0.0, 1.0]))
+_az135_bad = _G.unreachable("a1", _az135_obs("a1", [0.0, 1.2, 1.2]))
+_az135_un = _G.unreachable("a1", _az135_obs("a1", [0.0, 0.0, 0.0]))
+_az135_more = _G.unreachable("a1", _az135_obs("a1", [0.0, 0.0, 0.0] + [1.0] * 6))
+_az135_more_mean = _G.stats(_az135_obs("a1", [0.0, 0.0, 0.0] + [1.0] * 6), "a1")["mean_score"]
+
+check(RS, "AZ135a 判「按定义不可达」要三条同时：n≥MIN_OBS｜有 <TARGET 的分数｜没有 >TARGET 的分数\n"
+          "              ⇒ 已达标/未到门槛/尺子坏了(1.2) 一律**弃权**；且追加 6 个满分后仍不可达\n"
+          "              （均分只趋近 1，永不等于 1 —— 过去的失败留在分母里）",
+      _az135_sat is None and _az135_few is None and _az135_bad is None
+      and _az135_un and _az135_more and _az135_more_mean < _G.TARGET
+      and _az135_un["reason"] == "CRITERION_UNREACHABLE"
+      and _az135_un["n_below"] == 3,
+      f"达标={_az135_sat} 未到门槛={_az135_few} 有1.2={_az135_bad} "
+      f"不可达={bool(_az135_un)} 追加满分后={bool(_az135_more)}(mean={_az135_more_mean:.6f})")
+
+_az135_struct = _G.escalations([], _az135_obs("c1", [0.0, 0.5, 1.0]))
+_az135_stuck = _G.escalations([_az133_row("z9", "c2", "NOT_MET", 0.0) for _ in range(3)])
+
+check(RS, "AZ135b 两条路都要在，且理由分得开：结构（一轮读数、**不需要任何账本行**）\n"
+          "              与行为（连判 3 次、均分逐位相同）⛔ 不许合成一句\n"
+          "              （合成 = 「没试过」与「试过没用」变成同一个读数）",
+      sorted(_az135_struct) == ["c1"] and sorted(_az135_stuck) == ["c2"]
+      and _az135_struct["c1"]["reason"] == "CRITERION_UNREACHABLE"
+      and _az135_struct["c1"]["n_below"] == 2
+      and _az135_stuck["c2"]["reason"] == "STUCK_MEANS"
+      and _az135_stuck["c2"]["n_fail"] == 3,
+      f"结构={sorted(_az135_struct)}:{_az135_struct.get('c1', {}).get('reason')} "
+      f"行为={sorted(_az135_stuck)}:{_az135_stuck.get('c2', {}).get('reason')}")
+
+_az135_o3 = _az135_obs("c3", [0.0, 0.0, 0.0])
+_az135_esc3 = _G.escalations([], _az135_o3)
+_az135_with = [g.kind for g in _G.propose(_az135_o3, ["c3"], escalated=list(_az135_esc3))]
+_az135_without = [g.kind for g in _G.propose(_az135_o3, ["c3"])]
+
+check(RS, "AZ135c **接上了**：同一条读数，转运维含该格 ⇒ 不再提 RAISE；不含 ⇒ 照提\n"
+          "              （反例：判出来了但 `propose()` 不认它 ⇒ 一份死报告，提议数一点不变）",
+      _az135_with == [] and _az135_without == ["RAISE"],
+      f"转运维后提={_az135_with} 不转时提={_az135_without}")
+
+_az135_esc_all = _G.escalations([], _az135_obs("x1", [0.0, 0.0, 0.0])
+                               + _az135_obs("zz", [0.0, 0.0, 0.0]))
+_az135_in, _az135_out = _G.split_escalations(_az135_esc_all, ["c3", "x1"])
+_az135_sat3 = _az135_obs("c3", [1.0, 1.0, 1.0])
+_az135_st_full = _G.state([], _az135_esc_all, ["c3"], _az135_sat3)[0]
+_az135_st_in = _G.state([], _G.split_escalations(_az135_esc_all, ["c3"])[0],
+                        ["c3"], _az135_sat3)[0]
+
+check(RS, "AZ135d 套件外的格不许把状态带偏：账本里 2 格转运维、套件只有 1 格且已达标\n"
+          "              ⇒ 用**全量** esc 是 IDLE（谎报「测量已用尽」）、只留套件内是 DONE\n"
+          "              ⛔ 两半都要留（`split_escalations` 返回两个 dict），不许静默丢掉套件外那半",
+      sorted(_az135_in) == ["x1"] and sorted(_az135_out) == ["zz"]
+      and not (set(_az135_in) & set(_az135_out))
+      and set(_az135_in) | set(_az135_out) == set(_az135_esc_all)
+      and (_az135_st_full, _az135_st_in) == ("IDLE", "DONE"),
+      f"套件内={sorted(_az135_in)} 套件外={sorted(_az135_out)} "
+      f"全量状态={_az135_st_full} 过滤后={_az135_st_in}")
+
+_az135_fmt = _G.render_escalations({**_az135_struct, **_az135_stuck})
+_az135_fmt0 = _G.render_escalations({})
+
+check(RS, "AZ135e 留痕：两种理由各自印出**读数**（结构印 n_below/min/mean，行为印均分逐位相同）；\n"
+          "              0 条时这一节仍然打印 —— ⛔ 静默丢弃 = 做不成的被悄悄忘掉",
+      "判据按定义不可满足" in _az135_fmt and "2 次 <1" in _az135_fmt
+      and "0.500000" in _az135_fmt and "均分逐位相同" in _az135_fmt
+      and "没有" in _az135_fmt0,
+      f"结构行={'判据按定义不可满足' in _az135_fmt} 行为行={'均分逐位相同' in _az135_fmt} "
+      f"0条={_az135_fmt0[:14]}…")
+
+# ===========================================================================
+# AZ136 —— 分数信息量：「这题的分数是单射还是常数」（V174）
+# 锚的是**判定的形状**，效果由 `bench/evidence/l3_s262/` 的 P1~P7 量。
+# 定义唯一来源：`bench/evidence/l3_s262/PREREG_v174.md` §1。
+# ⛔ 这不是新打分器：不判对错、不改分数，只对既有分数做二次读数（§169.7 排除项仍有效）。
+# ===========================================================================
+import mw.scoreinfo as _SI                                      # noqa: E402
+
+_az136_const = _SI.classify([("i1", 1.0), ("i2", 1.0)])
+_az136_inj = _SI.classify([("i1", 1.0), ("i2", 0.6), ("i3", 0.2)])
+_az136_coarse = _SI.classify([("a", 0.0), ("b", 0.0), ("c", 0.0), ("d", 0.2),
+                              ("e", 0.6), ("f", 0.6), ("g", 1.0)])
+_az136_few = _SI.classify([("only", 1.0)])
+_az136_rul = _SI.classify([("i1", 1.0), ("i2", 1.2)])
+_az136_conf = _SI.classify([("i1", 1.0), ("i1", 0.6), ("i2", 0.2)])
+_az136_nan = _SI.classify([("i1", float("nan")), ("i2", 0.2)])
+_az136_bool = _SI.classify([("i1", True), ("i2", 0.2)])
+
+check(RS, "AZ136a 弃权三条 + 两个陷阱：TOO_FEW / RULER_BROKEN / IMPL_SCORE_CONFLICT；\n"
+          "              NaN 与 bool 必须落 RULER_BROKEN（bool 是 int 子类，不挡会被记成 1.0）；\n"
+          "              撤回语义：删掉 `sf > target` 那一枝 ⇒ 本条必须红",
+      _az136_few["reason"] == "TOO_FEW"
+      and _az136_rul["reason"] == "RULER_BROKEN"
+      and _az136_conf["reason"] == "IMPL_SCORE_CONFLICT"
+      and _az136_nan["reason"] == "RULER_BROKEN"
+      and _az136_bool["reason"] == "RULER_BROKEN"
+      and all(r["kind"] == "UNKNOWN" for r in
+              (_az136_few, _az136_rul, _az136_conf, _az136_nan, _az136_bool)),
+      f"few={_az136_few['reason']} ruler={_az136_rul['reason']} "
+      f"conflict={_az136_conf['reason']} nan={_az136_nan['reason']} "
+      f"bool={_az136_bool['reason']}")
+
+check(RS, "AZ136b 三分类自洽：CONSTANT⇒bits=0｜INJECTIVE⇒bits=log2(n) 且 resolution=1｜\n"
+          "              COARSE⇒0<bits≤bits_max 且 resolution∈(0,1)；\n"
+          "              撤回语义：熵值 +0.5 ⇒ 本条必须红（⛔ 第一版写「不把 bits 归零」是空撤 ——\n"
+          "              单桶熵恒 0，撤了也绿；撤回态跑之前先自问『撤掉这行行为真的变吗』）",
+      _az136_const["kind"] == "CONSTANT" and _az136_const["bits"] == 0.0
+      and _az136_inj["kind"] == "INJECTIVE"
+      and abs(_az136_inj["bits"] - math.log2(3)) < 1e-12
+      and _az136_inj["resolution"] == 1.0
+      and _az136_coarse["kind"] == "COARSE"
+      and abs(_az136_coarse["resolution"] - 4 / 7) < 1e-12
+      and 0.0 < _az136_coarse["bits"] <= _az136_coarse["bits_max"] + 1e-12,
+      f"const bits={_az136_const['bits']}｜inj bits={_az136_inj['bits']:.6f} "
+      f"res={_az136_inj['resolution']}｜coarse res={_az136_coarse['resolution']:.6f} "
+      f"bits={_az136_coarse['bits']:.6f}/{_az136_coarse['bits_max']:.6f}")
+
+check(RS, "AZ136c 逐桶点名（0.0 桶恰 ['a','b','c']，⛔ 不许只报桶数）+ 弃权不给半个读数\n"
+          "              （bits/buckets 全空 —— 弃权就是弃权）；\n"
+          "              撤回语义：buckets 改成只报计数 ⇒ 本条必须红",
+      _az136_coarse["buckets"].get("0") == ["a", "b", "c"]
+      and _az136_coarse["n_scores"] == 4 and _az136_coarse["n_impls"] == 7
+      and all(r["bits"] is None and r["bits_max"] is None and r["buckets"] == {}
+              for r in (_az136_few, _az136_rul, _az136_conf)),
+      f"0.0桶={_az136_coarse['buckets'].get('0')} 弃权空读数=True")
+
+_az136_twice = _SI.classify([("a", 0.0), ("b", 0.0), ("c", 0.0), ("d", 0.2),
+                             ("e", 0.6), ("f", 0.6), ("g", 1.0)])
+check(RS, "AZ136d 纯函数确定性：同池双跑输出逐字相同（json.dumps sort_keys 对拍）；\n"
+          "              撤回语义：输出里掺时间戳/随机 ⇒ 本条必须红",
+      json.dumps(_az136_coarse, sort_keys=True) == json.dumps(_az136_twice, sort_keys=True),
+      "双跑逐字相同=True")
+
+check(RS, "AZ136e 闸优先于分类：全等但只 1 个实现的池 ⇒ TOO_FEW 弃权，\n"
+          "              ⛔ 不许因为「分都一样」就报 CONSTANT（样本不够就没有结论）；\n"
+          "              撤回语义：min_pool 闸挪到分类之后 ⇒ 本条必须红",
+      _az136_few["kind"] == "UNKNOWN" and _az136_few["reason"] == "TOO_FEW"
+      and _az136_few["n_scores"] is None,
+      f"kind={_az136_few['kind']} reason={_az136_few['reason']} k={_az136_few['n_scores']}")
+
+_az136_kinds = {_az136_const["kind"], _az136_inj["kind"], _az136_coarse["kind"],
+                _az136_few["kind"], _az136_rul["kind"], _az136_conf["kind"]}
+_az136_reasons = {_az136_few["reason"], _az136_rul["reason"], _az136_conf["reason"]}
+check(RS, "AZ136f 值域封闭：输出的 kind 恰落 {CONSTANT,INJECTIVE,COARSE,UNKNOWN}、\n"
+          "              弃权 reason 恰落 {TOO_FEW,RULER_BROKEN,IMPL_SCORE_CONFLICT}；\n"
+          "              撤回语义：引入第五个 kind 名字 ⇒ 本条必须红",
+      _az136_kinds == {"CONSTANT", "INJECTIVE", "COARSE", "UNKNOWN"}
+      and _az136_reasons == {"TOO_FEW", "RULER_BROKEN", "IMPL_SCORE_CONFLICT"},
+      # ⚠️ 详情里 sorted() 必须过 str —— 撤回态下 reason 会变 None，
+      #    `sorted({None, "X"})` 抛 TypeError ⇒ 异常逃出去、汇总行消失
+      #    （AP11 同型：撤回后不是转红而是崩 —— 崩溃会带走判据本身）。
+      f"kinds={sorted(str(x) for x in _az136_kinds)} "
+      f"reasons={sorted(str(x) for x in _az136_reasons)}")
+
+check(RS, "AZ136g 两模块解耦不许漂移：scoreinfo.TARGET 与 goals.TARGET 同值；\n"
+          "              撤回语义：任一侧改了上限 ⇒ 本条必须红（尺子的上限只许有一个数）",
+      _SI.TARGET == _G.TARGET == 1.0,
+      f"scoreinfo.TARGET={_SI.TARGET} goals.TARGET={_G.TARGET}")
+
+# ===========================================================================
+# AZ137 —— 分数可动性消费接线：修复轴映射 + impl_sha + 覆盖定理锚（V175）
+#
+# 锚的是**判定的形状**，效果由 `bench/evidence/l3_s263/` 的 P1~P6 量。
+# 覆盖定理（PREREG_v175 §0.2）：claim 能触发的格必已被 V173-A 结构判据收进
+# esc ⇒ 第三型 gate 在当前判据下无差别（AZ137e 钉的就是这个「不进 gate」）。
+# 本轮的正菜是**修复轴映射**：CRITERION（改判据）/ MODEL（改模型）/
+# RULER（改尺子）—— 「诊断产物 → 修复动作」的第一片。
+# ===========================================================================
+def _az137_rows(cell, specs):
+    rows = []
+    for impl, s in specs:
+        r = {"task_id": cell, "score": float(s)}
+        if impl is not None:
+            r["impl_sha"] = impl
+        rows.append(r)
+    return rows
+
+_az137_mixed = [{"task_id": "x", "impl_sha": "a", "score": 0.5},
+                {"task_id": "x", "impl_sha": "b", "score": 0.5},
+                {"task_id": "x", "score": 0.9},
+                {"task_id": "x", "impl_sha": "c"},
+                {"task_id": "y", "impl_sha": "z", "score": 1.0}]
+_az137_pool, _az137_nno = _SI.pool_from_rows(_az137_mixed, cell="x")
+_az137_pool_all, _az137_nno_all = _SI.pool_from_rows(_az137_mixed, cell=None)
+_az137_pool_c, _az137_nno_c = _SI.pool_from_rows(_az137_mixed + ["bad"], cell="x")
+_az137_pool_cg, _az137_nno_cg = _SI.pool_from_rows(_az137_mixed + ["bad"], cell=None)
+
+check(RS, "AZ137a 池抽取可归因：缺身份/缺分数行**计数排除**（⛔ 不许当成实现 \"None\" 混进池）；\n"
+          "              逐格 n_no 只数本格的行，非 dict 坏行只进全局计数（无从归属）；\n"
+          "              撤回语义：缺身份行混进池 ⇒ 本条必须红",
+      sorted(_az137_pool) == [("a", 0.5), ("b", 0.5)] and _az137_nno == 2
+      and len(_az137_pool_all) == 3 and _az137_nno_all == 2
+      and _az137_nno_c == 2 and _az137_nno_cg == 3,
+      f"逐格 pool={sorted(_az137_pool)} n_no={_az137_nno}｜全局 pool={len(_az137_pool_all)} "
+      f"n_no={_az137_nno_all}｜坏行 逐格={_az137_nno_c} 全局={_az137_nno_cg}")
+
+check(RS, "AZ137b impl_sha_of 纯函数：同文同值、异文异值、恒 16 位\n"
+          "              （⛔ 自由文本标签/session 当不了实现身份 —— PREREG_v175 §0.1）；\n"
+          "              撤回语义：返回常数 ⇒ 本条必须红",
+      _SI.impl_sha_of("hello") == _SI.impl_sha_of("hello")
+      and _SI.impl_sha_of("hello") != _SI.impl_sha_of("hell")
+      and len(_SI.impl_sha_of("hello")) == 16,
+      f"len={len(_SI.impl_sha_of('hello'))}")
+
+_az137_esc_legacy = _G.escalations([], _az137_rows("c1", [(None, 0.0), (None, 0.5), (None, 1.0)]))
+_az137_o_claim = _az137_rows("c4", [("i0", 0.4), ("i1", 0.4), ("i2", 0.4)])
+_az137_esc_claim = _G.escalations([], _az137_o_claim)
+# ⚠️ claim 读数直接取自 `movability()`，⛔ 不从 esc overlay 取 —— 否则
+#    AZ137c 的撤回（overlay 恒 None）会把它打成 None，下游 `.get()` 崩掉
+#    ⇒ 转红变崩溃（AP11 同型）。断言之间输入必须互相独立。
+_az137_m_claim = _SI.movability(_az137_o_claim, cell="c4")
+_az137_overlay = _az137_esc_claim["c4"].get("movability")
+_az137_log = [{"gid": "z", "cell": "c5", "kind": "RAISE", "verdict": "NOT_MET",
+               "reading": {"mean_score": 0.0}} for _ in range(3)]
+_az137_esc_stuck = _G.escalations(_az137_log, [])
+
+check(RS, "AZ137c overlay fail-open + 负对照：无身份 ⇒ overlay=None 且结构路旧字段逐位不变；\n"
+          "              无 obs 的行为路 ⇒ None（无池）；有池 ⇒ 必须在场且 claim 齐全\n"
+          "              （fail-open 不许写成恒 None）；\n"
+          "              撤回语义：overlay 恒 None ⇒ 本条必须红",
+      _az137_esc_legacy["c1"].get("movability") is None
+      and _az137_esc_legacy["c1"]["reason"] == "CRITERION_UNREACHABLE"
+      and _az137_esc_legacy["c1"]["n_below"] == 2
+      and _az137_esc_stuck["c5"].get("movability") is None
+      and _az137_overlay is not None
+      and _az137_overlay.get("claim") == "SCORE_UNMOVABLE"
+      and _az137_overlay.get("label") == "CONSTANT"
+      and _az137_overlay.get("n_impls") == 3,
+      f"legacy overlay={_az137_esc_legacy['c1'].get('movability')} "
+      f"stuck overlay={_az137_esc_stuck['c5'].get('movability')} overlay={_az137_overlay}")
+
+check(RS, "AZ137d repair_axes：值域恰 {CRITERION,MODEL,RULER}、映射逐条锚定\n"
+          "              （CRITERION_UNREACHABLE→CRITERION｜STUCK_MEANS→MODEL｜\n"
+          "               claim 叠加 RULER｜弃权/无 overlay 不加）；\n"
+          "              撤回语义：返回恒 (\"MODEL\",) ⇒ 本条必须红",
+      _G.repair_axes("CRITERION_UNREACHABLE", None) == ("CRITERION",)
+      and _G.repair_axes("CRITERION_UNREACHABLE", _az137_m_claim) == ("CRITERION", "RULER")
+      and _G.repair_axes("STUCK_MEANS", None) == ("MODEL",)
+      and _G.repair_axes("STUCK_MEANS", {"claim": "SCORE_UNMOVABLE"}) == ("MODEL", "RULER")
+      and _G.repair_axes("STUCK_MEANS", {"claim": None}) == ("MODEL",)
+      and _G.repair_axes("X", None) == (),
+      f"CRIT={_G.repair_axes('CRITERION_UNREACHABLE', None)} "
+      f"CRIT+RULER={_G.repair_axes('CRITERION_UNREACHABLE', _az137_m_claim)} "
+      f"MODEL={_G.repair_axes('STUCK_MEANS', None)}")
+
+_az137_g_raised = [g.kind for g in _G.propose(_az137_o_claim, ["c4"])]
+check(RS, "AZ137e 覆盖定理锚：claim 是**诊断**不是 gate —— claim 触发的格，propose 不传\n"
+          "              escalated 时照提 RAISE（⛔ 不许内部读 movability 过滤）；\n"
+          "              撤回语义：propose 读 movability 过滤 ⇒ 本条必须红",
+      _az137_g_raised == ["RAISE"] and _az137_m_claim.get("claim") == "SCORE_UNMOVABLE",
+      f"propose={_az137_g_raised} claim={_az137_m_claim.get('claim')}")
+
+_az137_m_two = _SI.movability(_az137_rows("t1", [("a", 0.5), ("b", 0.5)]), cell="t1")
+_az137_m_sat = _SI.movability(_az137_rows("t2", [("a", 1.0), ("b", 1.0), ("c", 1.0)]), cell="t2")
+_az137_m_coarse = _SI.movability(_az137_rows("t3", [("a", 0.4), ("b", 0.6), ("c", 0.6)]), cell="t3")
+_az137_m_broken = _SI.movability(_az137_rows("t4", [("a", 1.2), ("b", 0.4), ("c", 0.4)]), cell="t4")
+
+check(RS, "AZ137f claim 三合取缺一不给：label=CONSTANT ∧ n_impls≥MIN_IMPLS(3) ∧ 桶值<TARGET\n"
+          "              ⇒ 2 实现不给（样本不够）｜已达标 3×1.0 不给（那是「做完了」）｜\n"
+          "                COARSE 不给｜尺子坏(1.2)弃权不给；\n"
+          "              撤回语义：拆掉 <TARGET 门槛 ⇒ 本条必须红",
+      _az137_m_two.get("claim") is None and _az137_m_two.get("label") == "CONSTANT"
+      and _az137_m_sat.get("claim") is None
+      and _az137_m_coarse.get("claim") is None
+      and _az137_m_broken.get("claim") is None
+      and _az137_m_claim.get("claim") == "SCORE_UNMOVABLE",
+      f"two={_az137_m_two.get('claim')} sat={_az137_m_sat.get('claim')} "
+      f"coarse={_az137_m_coarse.get('claim')} broken={_az137_m_broken.get('claim')}")
+
+# ═══════════ V176（§244）：表现型扩容 —— 准入器与套件结构（AZ138） ═══════════
+# 只锚纯函数面与静态面（⛔ 不在契约里跑打分器 —— 那是 probe_v176 的事）。
+import bench.admit_sys as _AS                                            # noqa: E402
+from mw.bench import Suite as _Suite                                     # noqa: E402
+
+_az138_suite = _Suite.load(str(Path(__file__).resolve().parents[1]
+                               / "bench" / "tasks" / "sys_small.jsonl"))
+
+
+def _az138_good() -> dict:
+    """合成「全好」读数：分数面手造，身份面取自真注册表与真套件 meta。"""
+    rd: dict = {}
+    for t in _az138_suite.tasks:
+        m = dict(t.meta)
+        rd[t.id] = {
+            "oracle": 1.0, "null": 0.0, "partial": 0.5,
+            "mutants": {n: 0.0 for n, _ in _AS.MUTANTS.get(t.id, [])},
+            "oracle_replay": 1.0, "partial_replay": 0.5,
+            "format": m.get("format", "single"), "kind": m.get("kind", "pure"),
+        }
+    return rd
+
+
+def _az138_why(readings: dict, check: str) -> str:
+    v = _AS.verdict(readings)
+    return "｜".join(f["why"] for f in v.get("failed", []) if f.get("check") == check)
+
+
+_az138_g = _az138_good()
+
+# —— A1/A2/A3 真值表（单因变体：读数只坏一处，replay 同步改，⛔ 不牵连） ——
+_az138_b1 = _az138_good()
+_az138_b1["s01_kv_expiry"]["oracle"] = 0.99
+_az138_b1["s01_kv_expiry"]["oracle_replay"] = 0.99
+_az138_b2 = _az138_good()
+_az138_b2["s02_limiter"]["null"] = 0.1          # A2 坏、A3 仍严格（0.1<0.5<1.0）
+_az138_b3 = _az138_good()
+_az138_b3["s03_tx_journal"]["partial"] = 0.0    # partial==null ⇒ 只坏 A3
+_az138_b3["s03_tx_journal"]["partial_replay"] = 0.0
+_az138_v_b1 = _AS.verdict(_az138_b1)
+_az138_v_b2 = _AS.verdict(_az138_b2)
+_az138_v_b3 = _AS.verdict(_az138_b3)
+_az138_c1 = sorted({f.get("check") for f in _az138_v_b1.get("failed", [])})
+_az138_c2 = sorted({f.get("check") for f in _az138_v_b2.get("failed", [])})
+_az138_c3 = sorted({f.get("check") for f in _az138_v_b3.get("failed", [])})
+
+check(RS, "AZ138a verdict 真值表：好读数 ⇒ ok；oracle≠1.0 ⇒ 拒且点名 A1；null≠0 ⇒ A2；\n"
+          "              中段不严格（partial==null） ⇒ A3；\n"
+          "              撤回语义：废掉 A1 判据分支 ⇒ 本条必须红",
+      _AS.verdict(_az138_g)["ok"] is True
+      and not _az138_v_b1["ok"] and _az138_c1 == ["A1"]
+      and not _az138_v_b2["ok"] and _az138_c2 == ["A2"]
+      and not _az138_v_b3["ok"] and _az138_c3 == ["A3"],
+      f"good={_AS.verdict(_az138_g)['ok']} b1={_az138_c1} b2={_az138_c2} b3={_az138_c3}")
+
+# —— fail-open ——
+_az138_f1 = _az138_good()
+del _az138_f1["m01_records"]["format"]
+_az138_f2 = _az138_good()
+_az138_f2["m02_vfs"]["oracle"] = "x"
+_az138_f3 = _az138_good()
+_az138_f3["m03_tiered"]["mutants"] = [0.0]
+_az138_v_f1 = _AS.verdict(_az138_f1)
+_az138_v_f2 = _AS.verdict(_az138_f2)
+_az138_v_f3 = _AS.verdict(_az138_f3)
+
+check(RS, "AZ138b fail-open：缺键 ⇒ 拒且 why 点名「缺读数」；分数类型错 / mutants 非对象\n"
+          "              ⇒ 一律拒（⛔ 「没量到」不许读成「通过」）；\n"
+          "              撤回语义：缺键分支不触发（落进类型判）⇒ 本条必须红",
+      not _az138_v_f1["ok"] and "缺读数" in _az138_why(_az138_f1, "FAIL_OPEN")
+      and not _az138_v_f2["ok"] and "类型" in _az138_why(_az138_f2, "FAIL_OPEN")
+      and not _az138_v_f3["ok"],
+      f"f1={_az138_why(_az138_f1, 'FAIL_OPEN')[:40]} "
+      f"f2={_az138_why(_az138_f2, 'FAIL_OPEN')[:40]} f3={_az138_v_f3['ok']}")
+
+# —— A4 双向 + A5 ——
+_az138_m1 = _az138_good()
+_az138_m1["m03_tiered"]["mutants"]["wipe_state"] = 1.0
+_az138_m2 = _az138_good()
+_az138_m2["s01_kv_expiry"]["mutants"]["ghost_unregistered"] = 0.0
+_az138_m3 = _az138_good()
+_az138_m3["s02_limiter"]["oracle_replay"] = 0.5
+_az138_v_m1 = _AS.verdict(_az138_m1)
+_az138_v_m2 = _AS.verdict(_az138_m2)
+_az138_v_m3 = _AS.verdict(_az138_m3)
+
+check(RS, "AZ138c A4 双向 + A5：变异体得分 ≥ oracle ⇒ 拒；读数带未注册变异体名 ⇒ 拒；\n"
+          "              复打分与首打分不一致 ⇒ 拒且点名 A5；\n"
+          "              撤回语义：A5 分支恒不触发 ⇒ 本条必须红",
+      not _az138_v_m1["ok"] and _az138_why(_az138_m1, "A4")
+      and not _az138_v_m2["ok"] and _az138_why(_az138_m2, "A4")
+      and not _az138_v_m3["ok"] and _az138_why(_az138_m3, "A5"),
+      f"m1 A4={bool(_az138_why(_az138_m1, 'A4'))} m2 A4={bool(_az138_why(_az138_m2, 'A4'))} "
+      f"m3 A5={bool(_az138_why(_az138_m3, 'A5'))}")
+
+# —— 注册表形状（静态面）——
+_az138_ids = [t.id for t in _az138_suite.tasks]
+_az138_reg = _AS.MUTANTS
+_az138_shape = (
+    set(_az138_reg) == set(_az138_ids)
+    and all(_az138_reg.get(tid) for tid in _az138_ids)
+    and all(any(n.startswith("wipe_") for n, _ in _az138_reg.get(tid, []))
+            for tid in _az138_ids)
+    and all(any(n.startswith("flat_") for n, _ in _az138_reg.get(tid, []))
+            for tid in _az138_ids
+            if dict(next(t for t in _az138_suite.tasks if t.id == tid).meta)
+            .get("format") == "files")
+    and all(n.startswith("wipe_") or n.startswith("flat_")
+            for tid in _az138_ids for n, _ in _az138_reg.get(tid, []))
+)
+
+check(RS, "AZ138d 注册表形状：MUTANTS 题集 == sys_small 题集；每题 ≥1 变异体且 ≥1 wipe_*；\n"
+          "              format=files 题 ≥1 flat_*；名字受控前缀 {wipe_, flat_}；\n"
+          "              撤回语义：注册表删掉一题 ⇒ 本条必须红",
+      _az138_shape,
+      f"reg={sorted(_az138_reg)} ids={sorted(_az138_ids)}")
+
+# —— 套件结构（静态面）——
+_az138_struct = (
+    len(_az138_suite) == 6 and len(set(_az138_ids)) == 6
+    and all(t.oracle.strip() and t.partial.strip() and t.null == ""
+            for t in _az138_suite.tasks)
+    and all(dict(t.meta).get("format") in ("single", "files")
+            and dict(t.meta).get("kind") in ("stateful", "pure")
+            for t in _az138_suite.tasks)
+    and all(all("FILES" in x for x in t.tests)
+            if dict(t.meta).get("format") == "files"
+            else all("FILES" not in x for x in t.tests)
+            for t in _az138_suite.tasks)
+)
+
+check(RS, "AZ138e 套件结构：6 题 id 唯一、oracle/partial 非空、null==''；\n"
+          "              meta 词表封闭（format/kind）；files 题测试全含 FILES 物化、\n"
+          "              single 题测试不引用 FILES；\n"
+          "              撤回语义：一题的 null 改成非空 ⇒ 本条必须红",
+      _az138_struct,
+      f"n={len(_az138_suite)} 词表="
+      + "｜".join(f"{t.id}:{dict(t.meta).get('format')}/{dict(t.meta).get('kind')}"
+                  for t in _az138_suite.tasks))
+
+# —— verdict 输出形状封闭 + 纯性 ——
+_az138_vg = _AS.verdict(_az138_g)
+_az138_vg2 = _AS.verdict(_az138_g)
+_az138_vb = _AS.verdict(_az138_b1)
+_az138_shape_out = (
+    isinstance(_az138_vg.get("ok"), bool)
+    and isinstance(_az138_vg.get("failed"), list)
+    and all(set(f.keys()) == {"task", "check", "why"} for f in _az138_vg["failed"])
+    and all(set(f.keys()) == {"task", "check", "why"} for f in _az138_vb["failed"])
+)
+
+check(RS, "AZ138f verdict 输出形状封闭：ok 是 bool、failed 是列表且条目恰含\n"
+          "              {task, check, why} 三键；同输入双调用逐字相同（纯函数）；\n"
+          "              撤回语义：failed 条目多一个键 ⇒ 本条必须红",
+      _az138_shape_out and _az138_vg == _az138_vg2,
+      f"shape={_az138_shape_out} pure={_az138_vg == _az138_vg2}")
+
+# ═══════════ V177（§245）：行为级分数信息量 —— 同行为同分、异行为异分（AZ139） ═══════════
+# 锚判定的**形状**，效果由 `bench/evidence/l3_s265/` 的 P1~P7 量。
+# 单位是**行为类**（通过向量），不是实现 —— 与 AZ136（分数级，每实现一票）不同层。
+# 注册定理（PREREG_v177 §1.6，前提=两边都不弃权）：
+#   T1 行为 CONSTANT ⟺ 分数 CONSTANT ｜ T2 分数 INJECTIVE ⇒ 行为 INJECTIVE。
+
+_az139_const3 = _SI.behavioral([("a", (True, False, False), 0.5),
+                                ("b", (False, True, False), 0.5),
+                                ("c", (False, False, True), 0.5)])
+_az139_const2 = _SI.behavioral([("a", (True, False), 0.5),
+                                ("b", (False, True), 0.5)])
+_az139_const_full = _SI.behavioral([("a", (True, False), 1.0),
+                                    ("b", (False, True), 1.0),
+                                    ("c", (True, True), 1.0)])
+_az139_t1b_rows = [("a", (True, False), 0.5), ("b", (True, False), 0.5),
+                   ("c", (False, True), 0.5)]
+_az139_t1b_b = _SI.behavioral(_az139_t1b_rows)
+_az139_t1b_c = _SI.classify([(i, s) for i, _v, s in _az139_t1b_rows])
+_az139_t1a_rows = [("a", (True, False), 0.5), ("b", (False, True), 0.5),
+                   ("c", (True, True), 0.5)]
+_az139_t1a_b = _SI.behavioral(_az139_t1a_rows)
+_az139_t1a_c = _SI.classify([(i, s) for i, _v, s in _az139_t1a_rows])
+
+check(RS, "AZ139a T1 双向（前提=两边都不弃权）：行为 CONSTANT ⟺ 分数 CONSTANT\n"
+          "              （常数池两层都是 CONSTANT；⚠️ 弃权池不进 T1 —— 前提不满足）；\n"
+          "              撤回语义：行为级 CONSTANT 分支废掉 ⇒ 本条必须红",
+      _az139_t1a_b["kind"] == _SI.KIND_CONSTANT
+      and _az139_t1a_c["kind"] == _SI.KIND_CONSTANT
+      and _az139_t1b_b["kind"] == _SI.KIND_CONSTANT
+      and _az139_t1b_c["kind"] == _SI.KIND_CONSTANT
+      and _az139_const3["kind"] == _SI.KIND_CONSTANT,
+      f"t1a beh={_az139_t1a_b['kind']} score={_az139_t1a_c['kind']}｜"
+      f"t1b beh={_az139_t1b_b['kind']} score={_az139_t1b_c['kind']}")
+
+_az139_t2_rows = [("a", (True, False), 0.5), ("b", (False, True), 0.75),
+                  ("c", (True, True), 1.0)]
+_az139_t2_b = _SI.behavioral(_az139_t2_rows)
+_az139_t2_c = _SI.classify([(i, s) for i, _v, s in _az139_t2_rows])
+_az139_ct_rows = [("a", (True, True, False, False), 0.5),
+                  ("b", (True, True, False, False), 0.5),
+                  ("c", (True, True, True, False), 0.75),
+                  ("d", (True, True, True, True), 1.0)]
+_az139_ct_b = _SI.behavioral(_az139_ct_rows)
+_az139_ct_c = _SI.classify([(i, s) for i, _v, s in _az139_ct_rows])
+_az139_cc_rows = [("a", (True, False), 0.5), ("b", (True, False), 0.7)]
+_az139_cc_b = _SI.behavioral(_az139_cc_rows)
+_az139_cc_c = _SI.classify([(i, s) for i, _v, s in _az139_cc_rows])
+
+check(RS, "AZ139b T2 + 两层对照 + §0.3 反例：分数 INJECTIVE ⇒ 行为 INJECTIVE；\n"
+          "              同池两层可以不同层（行为 INJECTIVE ∧ 分数 COARSE）；\n"
+          "              同行为异分 ⇒ 行为级必须弃权（前提不满足），而分数级是 INJECTIVE ——\n"
+          "              T2 不带前提就是假的；\n"
+          "              撤回语义：行为级 INJECTIVE 分支废掉 ⇒ 本条必须红",
+      _az139_t2_c["kind"] == _SI.KIND_INJECTIVE
+      and _az139_t2_b["kind"] == _SI.KIND_INJECTIVE
+      and _az139_ct_b["kind"] == _SI.KIND_INJECTIVE
+      and _az139_ct_c["kind"] == _SI.KIND_COARSE
+      and _az139_cc_b["kind"] == _SI.KIND_UNKNOWN
+      and _az139_cc_b["reason"] == _SI.REASON_BEHAVIOR_SCORE_CONFLICT
+      and _az139_cc_c["kind"] == _SI.KIND_INJECTIVE,
+      f"t2 beh={_az139_t2_b['kind']} score={_az139_t2_c['kind']}｜"
+      f"对照 beh={_az139_ct_b['kind']} score={_az139_ct_c['kind']}｜"
+      f"反例 beh={_az139_cc_b['kind']}/{_az139_cc_b['reason']} "
+      f"score={_az139_cc_c['kind']}")
+
+_az139_coarse = _SI.behavioral([("a", (True, False, False, False), 0.25),
+                                ("b", (False, True, False, False), 0.25),
+                                ("c", (True, True, True, False), 0.75),
+                                ("d", (True, True, True, True), 1.0)])
+_az139_conf = _SI.behavioral([("a", (True, False), 0.5), ("b", (True, False), 0.7)])
+
+check(RS, "AZ139c claim 三合取缺一不给：CONSTANT ∧ n_behaviors≥3 ∧ 桶值<TARGET\n"
+          "              ⇒ 3 行为@0.5 给｜2 行为不给（反巧合）｜@1.0 不给（做完了≠做不到）｜\n"
+          "                COARSE 不给｜弃权不给；\n"
+          "              撤回语义：拆掉 MIN_BEHAVIORS 门槛 ⇒ 本条必须红",
+      _az139_const3["claim"] == _SI.CLAIM_BEHAVIOR_UNRESOLVED
+      and _az139_const2["claim"] is None
+      and _az139_const_full["claim"] is None
+      and _az139_coarse["claim"] is None
+      and _az139_conf["claim"] is None,
+      f"3行为={_az139_const3['claim']} 2行为={_az139_const2['claim']} "
+      f"1.0={_az139_const_full['claim']} coarse={_az139_coarse['claim']} "
+      f"弃权={_az139_conf['claim']}")
+
+_az139_clean = _SI.behavioral([("a", (True, False), 0.5), ("b", (True, False), 0.5),
+                               ("c", (False, True), 1.0)])
+_az139_conf_impl = _SI.behavioral([("a", (True, False), 0.5),
+                                   ("a", (False, True), 0.5)])
+
+check(RS, "AZ139d 冲突闸两个子检查都弹：同行为多分（违反同行为同分）与\n"
+          "              同实现多行为（确定性判分下口径混了）⇒ 弃权；\n"
+          "              干净池（同行为同分、异实现）不许弹（那是判据要的性质，不是缺陷）；\n"
+          "              ⚠️ 干净池只看「不弃权」—— 分到哪一类是 T2（AZ139b）的观测面，\n"
+          "              本条多看一眼就会把 INJECTIVE 分支的撤回连带进来（R16 实测）；\n"
+          "              撤回语义：同实现多行为子检查废掉 ⇒ 本条必须红",
+      _az139_conf["kind"] == _SI.KIND_UNKNOWN
+      and _az139_conf["reason"] == _SI.REASON_BEHAVIOR_SCORE_CONFLICT
+      and _az139_conf_impl["kind"] == _SI.KIND_UNKNOWN
+      and _az139_conf_impl["reason"] == _SI.REASON_BEHAVIOR_SCORE_CONFLICT
+      and _az139_clean["kind"] != _SI.KIND_UNKNOWN
+      and _az139_clean["reason"] is None,
+      f"同行为多分={_az139_conf['reason']} 同实现多行为={_az139_conf_impl['reason']} "
+      f"干净池={_az139_clean['kind']}")
+
+_az139_few = _SI.behavioral([("a", (True, False), 0.5)])
+_az139_rul = _SI.behavioral([("a", (True, False), 1.2), ("b", (False, True), 0.5)])
+_az139_all = [_az139_const3, _az139_const2, _az139_t2_b, _az139_coarse,
+              _az139_few, _az139_conf, _az139_conf_impl, _az139_rul]
+_az139_keys = {"kind", "reason", "n_impls", "n_behaviors", "n_scores",
+               "resolution", "bits", "bits_max", "buckets", "claim", "detail"}
+# ⚠️ 值域口径 = **词表封闭**（常量值 vs 字面集对撞）+ 输出不越界。
+#    ⛔ 不要求采样臂「凑齐」4 个 kind —— 那会让任何打掉某类 kind 的撤回
+#    （如 AZ139a 废掉 CONSTANT 分支）连带本条（假耦合：换断言口径伪造单红）。
+_az139_vocab = {_SI.KIND_CONSTANT, _SI.KIND_INJECTIVE, _SI.KIND_COARSE, _SI.KIND_UNKNOWN}
+_az139_rvocab = {_SI.REASON_TOO_FEW, _SI.REASON_RULER_BROKEN,
+                 _SI.REASON_BEHAVIOR_SCORE_CONFLICT}
+_az139_kinds = {r["kind"] for r in _az139_all}
+_az139_reasons = {r["reason"] for r in _az139_all if r["reason"] is not None}
+_az139_claims = {r["claim"] for r in _az139_all}
+_az139_shape_ok = all(set(r.keys()) == _az139_keys for r in _az139_all)
+_az139_range_ok = all(
+    (r["resolution"] is None or 0.0 < r["resolution"] <= 1.0)
+    and (r["bits"] is None or 0.0 <= r["bits"] <= r["bits_max"] + 1e-12)
+    and (r["kind"] != _SI.KIND_CONSTANT or r["bits"] == 0.0)
+    for r in _az139_all)
+
+check(RS, "AZ139e 值域封闭：kind 词表恰 {CONSTANT,INJECTIVE,COARSE,UNKNOWN}、\n"
+          "              reason 词表恰 {TOO_FEW,RULER_BROKEN,BEHAVIOR_SCORE_CONFLICT}、\n"
+          "              claim 恰 {None,BEHAVIOR_UNRESOLVED}；输出不越界；字段恰 11 键；\n"
+          "              resolution/bits 区间恒成立、CONSTANT bits 恒 0；\n"
+          "              撤回语义：冲突理由改名 ⇒ 本条必须红",
+      _az139_vocab == {"CONSTANT", "INJECTIVE", "COARSE", "UNKNOWN"}
+      and _az139_rvocab == {"TOO_FEW", "RULER_BROKEN", "BEHAVIOR_SCORE_CONFLICT"}
+      and _az139_kinds <= _az139_vocab
+      and _az139_reasons <= _az139_rvocab
+      and _az139_claims <= {None, _SI.CLAIM_BEHAVIOR_UNRESOLVED}
+      and _az139_shape_ok and _az139_range_ok,
+      # ⚠️ 详情里 sorted() 必须过 str —— 撤回态下 claim/reason 会变 None（AZ136f 教训）
+      f"vocab={sorted(str(x) for x in _az139_vocab)} "
+      f"rvocab={sorted(str(x) for x in _az139_rvocab)} "
+      f"kinds={sorted(str(x) for x in _az139_kinds)} "
+      f"reasons={sorted(str(x) for x in _az139_reasons)} "
+      f"claims={sorted(str(x) for x in _az139_claims)} shape={_az139_shape_ok} "
+      f"range={_az139_range_ok}")
+
+_az139_traps = {
+    "越界1.2": [("a", (True, False), 1.2), ("b", (False, True), 0.5)],
+    "bool分": [("a", (True, False), True), ("b", (False, True), 0.5)],
+    "NaN": [("a", (True, False), float("nan")), ("b", (False, True), 0.5)],
+    "负分": [("a", (True, False), -0.1), ("b", (False, True), 0.5)],
+    "非bool向量": [("a", (1, 0), 0.5), ("b", (False, True), 1.0)],
+    "空向量": [("a", (), 0.5)],
+    "长度不齐": [("a", (True, False), 0.5), ("b", (False, True), 0.5), ("c", (True,), 0.5)],
+    "非三元组": [("a", (True, False), 0.5), "xyz"],
+}
+_az139_trap_out = {n: _SI.behavioral(p) for n, p in _az139_traps.items()}
+_az139_traps_ok = all(
+    r["kind"] == _SI.KIND_UNKNOWN and r["reason"] == _SI.REASON_RULER_BROKEN
+    and r["bits"] is None and r["claim"] is None
+    for r in _az139_trap_out.values())
+
+check(RS, "AZ139f RULER_BROKEN 全陷阱逐个弹（不许崩、不许分类）：越界/bool/NaN/负分/\n"
+          "              非 bool 向量/空向量/长度不齐/非三元组；\n"
+          "              撤回语义：NaN 检查废掉 ⇒ 本条必须红",
+      _az139_traps_ok,
+      "｜".join(f"{n}={r['kind']}/{r['reason']}"
+                for n, r in sorted(_az139_trap_out.items())))
+
+check(RS, "AZ139g repair_axes 认识行为级 claim：BEHAVIOR_UNRESOLVED 与\n"
+          "              SCORE_UNMOVABLE 都叠加 RULER；无 claim 不叠加；\n"
+          "              CRITERION/MODEL 映射一字不动；\n"
+          "              撤回语义：RULER 叠加缩回只认 SCORE_UNMOVABLE ⇒ 本条必须红",
+      _G.repair_axes("STUCK_MEANS",
+                     {"claim": _SI.CLAIM_BEHAVIOR_UNRESOLVED}) == ("MODEL", "RULER")
+      and _G.repair_axes("CRITERION_UNREACHABLE",
+                         {"claim": _SI.CLAIM_BEHAVIOR_UNRESOLVED}) == ("CRITERION", "RULER")
+      and _G.repair_axes("STUCK_MEANS",
+                         {"claim": _SI.CLAIM_UNMOVABLE}) == ("MODEL", "RULER")
+      and _G.repair_axes("STUCK_MEANS", {"claim": None}) == ("MODEL",)
+      and _G.repair_axes("STUCK_MEANS", None) == ("MODEL",)
+      and _G.repair_axes("X", {"claim": _SI.CLAIM_BEHAVIOR_UNRESOLVED}) == ("RULER",),
+      f"beh={_G.repair_axes('STUCK_MEANS', {'claim': _SI.CLAIM_BEHAVIOR_UNRESOLVED})} "
+      f"score={_G.repair_axes('STUCK_MEANS', {'claim': _SI.CLAIM_UNMOVABLE})} "
+      f"none={_G.repair_axes('STUCK_MEANS', {'claim': None})}")
+
+_az139_r1 = _SI.behavioral(_az139_ct_rows)
+_az139_r2 = _SI.behavioral(_az139_ct_rows)
+_az139_r3 = _SI.behavioral(_az139_traps["NaN"])
+_az139_r4 = _SI.behavioral(_az139_traps["NaN"])
+
+check(RS, "AZ139h 纯函数：同输入双调用逐字相同（含弃权输出）—— ⛔ 不掺随机；\n"
+          "              撤回语义：输出掺 uuid ⇒ 本条必须红",
+      _az139_r1 == _az139_r2 and _az139_r3 == _az139_r4,
+      f"分类臂 pure={_az139_r1 == _az139_r2} 弃权臂 pure={_az139_r3 == _az139_r4}")
+
+# ═══════════ V178（§246）：行为向量落账 —— 写侧带上通过向量（AZ140） ═══════════
+#
+# 锚的是**判定的形状**，效果由 `bench/evidence/l3_s266/` 的 P1~P7 量。
+# 正菜是**落账**：账本行/观测行带上 (impl, vec, score) ⇒ L3 自省从账本自己
+# 就能喂出行为级读数（V177 的 behavioral() 不再依赖探针重跑）。
+# 定理 T1（发射自洽：score==round(mean(vec),4)）与 T3（自洽池 ⇒ 冲突闸
+# 结构上不可达；跨源池照弹）双双锚在 AZ140a/AZ140e。
+# ⚠️ 观测面按注册命题收窄（AZ139d 教训）：AZ140e 只看逐键计数值（⛔ 不比
+#    整字典），形状封闭留给 AZ140g —— 否则纯度的 nonce 变异会假耦合 e。
+import mw.bench as _B                                           # noqa: E402
+import mw.ledger as _L                                          # noqa: E402
+sys.path.insert(0, str(V1 / "bench" / "scorers"))
+import code_exec as _cex                                        # noqa: E402
+
+
+def _az140_run_main(payload: dict) -> dict:
+    buf_in = io.StringIO(json.dumps(payload))
+    buf_out = io.StringIO()
+    # ⚠️ contextlib 只有 redirect_stdout/stderr，**没有** redirect_stdin ——
+    #    换 stdin 必须手工（首跑自踩：AttributeError）。
+    old_in, old_out = sys.stdin, sys.stdout
+    sys.stdin, sys.stdout = buf_in, buf_out
+    try:
+        _cex.main()
+    finally:
+        sys.stdin, sys.stdout = old_in, old_out
+    lines = [ln for ln in buf_out.getvalue().splitlines() if ln.strip()]
+    return json.loads(lines[-1])
+
+
+_az140_t = {"id": "x", "prompt": "p", "tests": ["assert True", "assert False"]}
+_az140_ok = _az140_run_main({"task": _az140_t, "answer": "```python\npass\n```"})
+_az140_nc = _az140_run_main({"task": _az140_t, "answer": "  "})
+_az140_v = _az140_ok.get("vec")
+
+check(RS, "AZ140a 发射面 + T1：有代码发 vec（bool 列表、len==tests、\n"
+          "              score==round(mean(vec),4) 恒真）；extract_code 空 ⇒ 无 vec 键\n"
+          "              （「没量到」⛔ 不许全零冒充）；\n"
+          "              撤回语义：删发射键 ⇒ 本条必须红",
+      isinstance(_az140_v, list) and len(_az140_v) == 2
+      and all(isinstance(b, bool) for b in _az140_v)
+      and _az140_ok["score"] == round(sum(_az140_v) / 2, 4)
+      and "vec" not in _az140_nc and _az140_nc["score"] == 0.0,
+      f"vec={_az140_v} score={_az140_ok['score']} nc_keys={sorted(_az140_nc)}")
+
+
+def _az140_canned(payload: dict) -> _B.ExternalScorer:
+    return _B.ExternalScorer(
+        [sys.executable, "-c", f"import json; print(json.dumps({payload!r}))"],
+        name="canned")
+
+
+_az140_t2 = {"id": "x", "tests": ["a", "b"]}
+_az140_s_leg = _az140_canned({"score": 0.5, "why": "w", "vec": [True, False]}).score(_az140_t2, "ans")
+_az140_s_non = _az140_canned({"score": 1.0, "why": "w"}).score(_az140_t2, "ans")
+_az140_reject, _az140_rj_detail = True, []
+for _pay, _tag in [({"score": 0.5, "vec": "xy"}, "非列表"),
+                   ({"score": 0.5, "vec": [1, 0]}, "非bool"),
+                   ({"score": 0.5, "vec": [True]}, "长度错"),
+                   ({"score": 0.5, "vec": None}, "显式null")]:
+    try:
+        _az140_canned(_pay).score(_az140_t2, "ans")
+        _az140_reject = False
+        _az140_rj_detail.append(f"{_tag}=没报错")
+    except _B.ScoreError:
+        _az140_rj_detail.append(f"{_tag}=拒")
+# 旧协议回归：detail 三臂一字不变（合法收/坏拒/缺席空）
+_az140_d1 = _az140_canned({"score": 0.5, "detail": [{"id": "a1", "ok": False, "why": "x"}]}).score(_az140_t2, "ans")
+try:
+    _az140_canned({"score": 0.5, "detail": "bad"}).score(_az140_t2, "ans")
+    _az140_d_bad = False
+except _B.ScoreError:
+    _az140_d_bad = True
+_az140_d3 = _az140_canned({"score": 0.0}).score(_az140_t2, "ans")
+
+check(RS, "AZ140b 传输面（detail 同款口径）：合法 vec ⇒ tuple[bool] 还原；缺席 ⇒ None\n"
+          "              （老打分器合法）；非列表/非 bool/长度≠tests/显式 null ⇒ ScoreError\n"
+          "              （fail-closed 不许静默丢）；detail 合法收/坏拒/缺席空一字不变；\n"
+          "              撤回语义：拆 vec 格式校验 ⇒ 本条必须红",
+      _az140_s_leg.vec == (True, False) and _az140_s_non.vec is None
+      and _az140_reject
+      and _az140_d1.detail == ({"id": "a1", "ok": False, "why": "x"},)
+      and _az140_d_bad and _az140_d3.detail == (),
+      f"leg={_az140_s_leg.vec} non={_az140_s_non.vec} {' '.join(_az140_rj_detail)}")
+
+
+class _az140_StubScorer:
+    def __init__(self, vec):
+        self._v = vec
+
+    def sha(self) -> str:
+        return "stub"
+
+    def score(self, task, ans):
+        return _B.Scored(0.5, "w", (), self._v)
+
+
+_az140_suite = _B.Suite(name="s", tasks=(_B.Task(id="t1", prompt="p",
+                                                 tests=("assert True",)),))
+_, _az140_rep1 = _B.run_suite(lambda t: "ans", _az140_StubScorer((True, False)), _az140_suite)
+_, _az140_rep2 = _B.run_suite(lambda t: "ans", _az140_StubScorer(None), _az140_suite)
+_az140_r1p, _az140_r2p = _az140_rep1.per_task[0], _az140_rep2.per_task[0]
+
+check(RS, "AZ140c 跑题链：Scored.vec 在 ⇒ per_task 行带 vec 原值；None ⇒ **键不在**\n"
+          "              （⛔ 不写 None 值冒充「量了没通过」）；\n"
+          "              撤回语义：行构造删 vec ⇒ 本条必须红",
+      _az140_r1p.get("vec") == (True, False) and "vec" in _az140_r1p
+      and "vec" not in _az140_r2p,
+      f"有={_az140_r1p.get('vec')} 无键={sorted(_az140_r2p)}")
+
+# ── AZ140d 写侧落账：run.py 两写点 AST 现算 + 账本写闸不拒新键 ──────────
+_az140_tree = ast.parse((V1 / "run.py").read_text(encoding="utf-8"))
+_az140_assign = 0
+_az140_dictlit = 0
+for _n in ast.walk(_az140_tree):
+    if isinstance(_n, ast.Assign):
+        for _t in _n.targets:
+            if (isinstance(_t, ast.Subscript) and isinstance(_t.slice, ast.Constant)
+                    and _t.slice.value == "vec"):
+                _az140_assign += 1
+    if isinstance(_n, ast.Dict):
+        for _k in _n.keys:
+            if isinstance(_k, ast.Constant) and _k.value == "vec":
+                _az140_dictlit += 1
+
+with tempfile.TemporaryDirectory(prefix="v1_az140_") as _az140_td:
+    _cal = {"scorer_sha": "x", "suite_sha": "y", "repeat": 1,
+            "budget_tag": "1x", "temperature": 0.0}
+    _led = _L.ScoreLedger(Path(_az140_td) / "led.jsonl",
+                          caliber_sig=_L.signature_of(_cal))
+    _led.append([{"family": "f", "passed": True, "session": 1, "task_id": "t",
+                  "score": 0.5, "caliber": _cal,
+                  "caliber_sig": _L.signature_of(_cal),
+                  "vec": [True, False]}])
+    _back = _led.load()
+_az140_led_ok = (len(_back) == 1 and _back[0].get("vec") == [True, False])
+
+check(RS, "AZ140d 写侧落账：run.py 分数账本写点恰 1 处 `row[\"vec\"]` 赋值、\n"
+          "              goal_obs 写点恰 1 处含 \"vec\" 键的 dict 字面量（AST 现算）；\n"
+          "              ScoreLedger.append 不拒带 vec 的行（新键不触写闸）且读回原值；\n"
+          "              撤回语义：删账本写点的落账行 ⇒ 本条必须红",
+      _az140_assign == 1 and _az140_dictlit == 1 and _az140_led_ok,
+      f"assign={_az140_assign} dictlit={_az140_dictlit} ledger={_az140_led_ok}")
+
+# ── AZ140e 读闸：四桶计数精确 + fail-open + 容差边界（⛔ 只比逐键值）─────
+_az140_rows = [
+    {"task_id": "x", "impl_sha": "a", "score": 0.5, "vec": [True, False]},
+    {"task_id": "x", "impl_sha": "b", "score": 0.5},
+    {"task_id": "x", "impl_sha": "c", "score": 0.5, "vec": [True, True]},
+    {"task_id": "x", "impl_sha": "d", "score": 0.5, "vec": [1, 0]},
+    {"task_id": "x", "impl_sha": "e", "score": 0.5, "vec": []},
+    {"task_id": "x", "impl_sha": "f", "score": float("nan"), "vec": [True, False]},
+    {"task_id": "x", "impl_sha": "g", "score": True, "vec": [True, False]},
+    {"task_id": "x", "score": 0.5, "vec": [True, False]},
+    {"task_id": "y", "impl_sha": "h", "score": 1.0, "vec": [True]},
+    "bad",
+]
+_az140_pool, _az140_c = _SI.beh_pool_from_rows(_az140_rows, cell="x")
+_az140_c_ok = {k: _az140_c.get(k) for k in
+               ("n_bad_row", "n_no_impl", "n_no_vec", "n_bad_vec",
+                "n_inconsistent", "n_kept")}
+_az140_tol_in = _SI.beh_pool_from_rows(
+    [{"task_id": "z", "impl_sha": "h", "score": 0.25005,
+      "vec": [True, False, False, False]}])[1]
+_az140_tol_out = _SI.beh_pool_from_rows(
+    [{"task_id": "z", "impl_sha": "h", "score": 0.2504,
+      "vec": [True, False, False, False]}])[1]
+try:
+    _SI.beh_pool_from_rows(_az140_rows + [None, 42, {"task_id": "x"}], cell=None)
+    _az140_fo = True
+except Exception:  # noqa: BLE001
+    _az140_fo = False
+
+check(RS, "AZ140e 读闸四桶逐键精确：no_impl/no_vec/bad_vec/inconsistent 一行只进\n"
+          "              一桶（坏行只进全局）；分数 bool/NaN/非数值算对不上账（NaN 比较\n"
+          "              恒 False 必须先排）；容差 5e-5 收、4e-4 拒（发射量子半宽）；\n"
+          "              fail-open：任意坏行绝不抛；⛔ 本条只比逐键值（形状归 AZ140g）；\n"
+          "              撤回语义：拆自洽闸 ⇒ 本条必须红",
+      _az140_pool == [("a", (True, False), 0.5)]
+      and _az140_c_ok == {"n_bad_row": 0, "n_no_impl": 1, "n_no_vec": 1,
+                          "n_bad_vec": 2, "n_inconsistent": 3, "n_kept": 1}
+      and _az140_tol_in.get("n_kept") == 1 and _az140_tol_in.get("n_inconsistent") == 0
+      and _az140_tol_out.get("n_inconsistent") == 1 and _az140_tol_out.get("n_kept") == 0
+      and _az140_fo,
+      f"pool={_az140_pool} counts={_az140_c_ok} 容差收={_az140_tol_in.get('n_kept')} "
+      f"容差拒={_az140_tol_out.get('n_inconsistent')} fail-open={_az140_fo}")
+
+# ── AZ140f 向后兼容：vec 键不扰动 V175 旧读侧（逐位不变）────────────────
+_az140_plain = [{"task_id": "z", "impl_sha": "a", "score": 0.5},
+                {"task_id": "z", "impl_sha": "b", "score": 0.5},
+                {"task_id": "z", "impl_sha": "c", "score": 0.5}]
+_az140_withvec = [dict(r, vec=[True, False]) for r in _az140_plain]
+_m_plain = _SI.movability(_az140_plain, cell="z")
+_p_plain = _SI.pool_from_rows(_az140_plain, cell="z")
+# ⚠️ 撤回变异是「旧读侧见 vec 键即拒（raise）」—— 不包 try 的话异常会
+#    逃出模块级夹具、汇总行消失 ⇒ 转红变崩溃（AP11 同型）。红必须是值。
+try:
+    _p_vec = _SI.pool_from_rows(_az140_withvec, cell="z")
+    _m_vec = _SI.movability(_az140_withvec, cell="z")
+    _az140_f_raise = False
+except Exception:  # noqa: BLE001
+    _p_vec, _m_vec, _az140_f_raise = None, None, True
+
+check(RS, "AZ140f 向后兼容：带 vec 的新账行喂 V175 旧读侧（pool_from_rows/\n"
+          "              movability）逐位不变（未知键不扰动）；混读不抛；\n"
+          "              撤回语义：旧读侧见 vec 键即拒 ⇒ 本条必须红",
+      (not _az140_f_raise) and _m_plain == _m_vec and _p_plain == _p_vec,
+      f"raise={_az140_f_raise} movability 同={_m_plain == _m_vec} "
+      f"pool 同={_p_plain == _p_vec}")
+
+# ── AZ140g 纯函数 + 输出形状封闭（6 计数键，值全 int）───────────────────
+_az140_clean = [{"task_id": "q", "impl_sha": "a", "score": 0.5, "vec": [True, False]},
+                {"task_id": "q", "impl_sha": "b", "score": 1.0, "vec": [True, True]}]
+_az140_g1 = _SI.beh_pool_from_rows(_az140_clean, cell=None)
+_az140_g2 = _SI.beh_pool_from_rows(_az140_clean, cell=None)
+_az140_shape = (set(_az140_g1[1]) == {"n_bad_row", "n_no_impl", "n_no_vec",
+                                      "n_bad_vec", "n_inconsistent", "n_kept"}
+                and all(isinstance(v, int) for v in _az140_g1[1].values()))
+
+check(RS, "AZ140g 纯函数 + 形状封闭：同输入双调用逐字相同；counts 恰 6 键、值全 int\n"
+          "              （形状在此条锚 —— ⛔ 不与 AZ140e 共面，防 nonce 假耦合）；\n"
+          "              撤回语义：输出掺随机键 ⇒ 本条必须红",
+      _az140_g1 == _az140_g2 and _az140_shape,
+      f"pure={_az140_g1 == _az140_g2} shape={_az140_shape}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

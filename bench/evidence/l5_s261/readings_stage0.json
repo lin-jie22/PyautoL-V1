@@ -1,0 +1,309 @@
+{
+ "B": {
+  "combos": 364,
+  "n_raise": 348,
+  "n_sat": 3,
+  "n_raise_and_sat": 0,
+  "mean_eq_all": 0
+ },
+ "C": {
+  "n_obs": 36,
+  "n_ids": 40,
+  "calibers": {
+   "2a10b424e595": 12,
+   "aa735c20f45c": 6,
+   "487a78e86d03": 6,
+   "8974b37bc992": 6,
+   "b9e183fb2dd2": 6
+  },
+  "n_stuck": 0,
+  "n_sat": 0,
+  "rows": [
+   {
+    "cell": "t01_parse_duration",
+    "n": 1,
+    "mean": 1.0,
+    "scores": [
+     1.0
+    ],
+    "propose": [
+     "PROBE"
+    ],
+    "stuck": false
+   },
+   {
+    "cell": "t02_dedupe",
+    "n": 1,
+    "mean": 1.0,
+    "scores": [
+     1.0
+    ],
+    "propose": [
+     "PROBE"
+    ],
+    "stuck": false
+   },
+   {
+    "cell": "t03_commas",
+    "n": 1,
+    "mean": 1.0,
+    "scores": [
+     1.0
+    ],
+    "propose": [
+     "PROBE"
+    ],
+    "stuck": false
+   },
+   {
+    "cell": "t04_merge_ranges",
+    "n": 1,
+    "mean": 1.0,
+    "scores": [
+     1.0
+    ],
+    "propose": [
+     "PROBE"
+    ],
+    "stuck": false
+   },
+   {
+    "cell": "t05_top_k",
+    "n": 1,
+    "mean": 1.0,
+    "scores": [
+     1.0
+    ],
+    "propose": [
+     "PROBE"
+    ],
+    "stuck": false
+   },
+   {
+    "cell": "t06_rle",
+    "n": 1,
+    "mean": 1.0,
+    "scores": [
+     1.0
+    ],
+    "propose": [
+     "PROBE"
+    ],
+    "stuck": false
+   }
+  ]
+ },
+ "A": {
+  "loop_rows": [
+   {
+    "cell": "t06_rle",
+    "criterion": [
+     [
+      "n_obs",
+      ">=",
+      1.0
+     ]
+    ],
+    "gid": "24046b47b5d28e65",
+    "kind": "COVER",
+    "reading": {
+     "cell": "t06_rle",
+     "criterion": [
+      [
+       "n_obs",
+       ">=",
+       1.0
+      ]
+     ],
+     "mean_score": 0.0,
+     "n_obs": 1
+    },
+    "source": "stage0",
+    "verdict": "MET"
+   },
+   {
+    "cell": "t06_rle",
+    "criterion": [
+     [
+      "n_obs",
+      ">=",
+      3.0
+     ]
+    ],
+    "gid": "9cddc0eecaff38dd",
+    "kind": "PROBE",
+    "reading": {
+     "cell": "t06_rle",
+     "criterion": [
+      [
+       "n_obs",
+       ">=",
+       3.0
+      ]
+     ],
+     "mean_score": 0.0,
+     "n_obs": 2
+    },
+    "source": "stage0",
+    "verdict": "NOT_MET"
+   },
+   {
+    "cell": "t06_rle",
+    "criterion": [
+     [
+      "n_obs",
+      ">=",
+      3.0
+     ]
+    ],
+    "gid": "9cddc0eecaff38dd",
+    "kind": "PROBE",
+    "reading": {
+     "cell": "t06_rle",
+     "criterion": [
+      [
+       "n_obs",
+       ">=",
+       3.0
+      ]
+     ],
+     "mean_score": 0.0,
+     "n_obs": 3
+    },
+    "source": "stage0",
+    "verdict": "MET"
+   },
+   {
+    "cell": "t06_rle",
+    "criterion": [
+     [
+      "mean_score",
+      ">=",
+      1.0
+     ]
+    ],
+    "gid": "06c2b3211ddb1e2a",
+    "kind": "RAISE",
+    "reading": {
+     "cell": "t06_rle",
+     "criterion": [
+      [
+       "mean_score",
+       ">=",
+       1.0
+      ]
+     ],
+     "mean_score": 0.0,
+     "n_obs": 4
+    },
+    "source": "stage0",
+    "verdict": "NOT_MET"
+   },
+   {
+    "cell": "t06_rle",
+    "criterion": [
+     [
+      "mean_score",
+      ">=",
+      1.0
+     ]
+    ],
+    "gid": "06c2b3211ddb1e2a",
+    "kind": "RAISE",
+    "reading": {
+     "cell": "t06_rle",
+     "criterion": [
+      [
+       "mean_score",
+       ">=",
+       1.0
+      ]
+     ],
+     "mean_score": 0.0,
+     "n_obs": 5
+    },
+    "source": "stage0",
+    "verdict": "NOT_MET"
+   },
+   {
+    "cell": "t06_rle",
+    "criterion": [
+     [
+      "mean_score",
+      ">=",
+      1.0
+     ]
+    ],
+    "gid": "06c2b3211ddb1e2a",
+    "kind": "RAISE",
+    "reading": {
+     "cell": "t06_rle",
+     "criterion": [
+      [
+       "mean_score",
+       ">=",
+       1.0
+      ]
+     ],
+     "mean_score": 0.0,
+     "n_obs": 6
+    },
+    "source": "stage0",
+    "verdict": "NOT_MET"
+   },
+   {
+    "cell": "t06_rle",
+    "criterion": [
+     [
+      "mean_score",
+      ">=",
+      1.0
+     ]
+    ],
+    "gid": "06c2b3211ddb1e2a",
+    "kind": "RAISE",
+    "reading": {
+     "cell": "t06_rle",
+     "criterion": [
+      [
+       "mean_score",
+       ">=",
+       1.0
+      ]
+     ],
+     "mean_score": 0.0,
+     "n_obs": 7
+    },
+    "source": "stage0",
+    "verdict": "NOT_MET"
+   },
+   {
+    "cell": "t06_rle",
+    "criterion": [
+     [
+      "mean_score",
+      ">=",
+      1.0
+     ]
+    ],
+    "gid": "06c2b3211ddb1e2a",
+    "kind": "RAISE",
+    "reading": {
+     "cell": "t06_rle",
+     "criterion": [
+      [
+       "mean_score",
+       ">=",
+       1.0
+      ]
+     ],
+     "mean_score": 0.0,
+     "n_obs": 8
+    },
+    "source": "stage0",
+    "verdict": "NOT_MET"
+   }
+  ],
+  "n_loop": 8
+ }
+}

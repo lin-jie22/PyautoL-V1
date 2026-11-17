@@ -2505,12 +2505,21 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     if not getattr(args, "no_answers", False):
         from bench.answer_store import AnswerLog, make_run_id, records_path
         _ans_log = AnswerLog(records_path(s.paths.bench))
-        _solver_raw = solver
+    # ── 实现指纹（V175，PREREG_v175 §0.1）────────────────────────────
+    # 产品账本的 `candidate` 是自由文本、session 是 T=0 重复测量 —— 都当不了
+    # 实现身份。答案在记账时点可得 ⇒ 在 solver 外面算指纹，随分数行落账，
+    # 供 `mw/scoreinfo.movability()` 成池（缺身份的行会被计数排除，fail-open）。
+    # ⛔ 同「答案本体」的理由不在 run_suite 里写：不改 mw/*.py 的跑题路径。
+    from mw.scoreinfo import impl_sha_of as _impl_sha_of
+    _impl_sha: dict[str, str] = {}
+    _solver_raw = solver
 
-        def solver(t):                                             # type: ignore[misc]
-            a = _solver_raw(t)
+    def solver(t):                                             # type: ignore[misc]
+        a = _solver_raw(t)
+        _impl_sha[t.id] = _impl_sha_of(a)
+        if _ans_log is not None:
             _ans_log.add(t.id, a)
-            return a
+        return a
 
     m, rep = run_suite(solver, scorer, suite, repeat_n=repeat_n,
                        budget_tag=tag, candidate=label, provenance=prov,
@@ -2538,11 +2547,22 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
         #    分数是在什么预算下跑的 —— 而同一套 struct_convert 在 1024 与
         #    1536 tokens 下能差出近一倍（0.400 vs 0.7600）。证据必须自描述。
         _cal_fields = ledger_caliber_of(caliber.as_dict())
-        _rows = [{"session": _sess, "family": suite.name, "task_id": r["id"],
-                  "score": r["score"], "passed": is_passed(r["score"]),
-                  "caliber_sig": _cal_sig, "caliber": _cal_fields,
-                  "candidate": label}
-                 for r in rep.per_task]
+        _rows = []
+        for r in rep.per_task:
+            row = {"session": _sess, "family": suite.name, "task_id": r["id"],
+                   "score": r["score"], "passed": is_passed(r["score"]),
+                   "caliber_sig": _cal_sig, "caliber": _cal_fields,
+                   "candidate": label}
+            # V175 身份（PREREG_v175 §0.1）：答案指纹随行落账。没捕到就不写这个键
+            # —— 读侧（pool_from_rows）把缺身份的行**计数排除**，不许冒充实现。
+            if r["id"] in _impl_sha:
+                row["impl_sha"] = _impl_sha[r["id"]]
+            # ★ V178（PREREG_v178 §1.4）：通过向量随分数行落账（L3 自省的前置）。
+            #   同 impl_sha 模式：捕到才写键；老打分器无 vec ⇒ 键不在（「没量到」）。
+            #   ⛔ score/passed 一字不动 —— vec 是同一次测量的第二种渲染（T1）。
+            if "vec" in r:
+                row["vec"] = list(r["vec"])
+            _rows.append(row)
         _w = _ledger.append(_rows)
         # 重复数**单独念**：它意味着"这一轮的成绩账本里已经有了"
         # （典型成因：上次跑到一半被 kill，重启后算到同一个会话号）。
@@ -2911,7 +2931,13 @@ def _goals_main(args) -> int:
     done = G.done_gids(log_rows)
     # 「测量路径已用尽」的格 —— **每轮从账本重算**，⛔ 不是持久化状态位。
     # 这样换了模型、均分真上去了，这条判定会自动消失（fail-open）。
-    esc = G.escalations(log_rows, obs)
+    esc_all = G.escalations(log_rows, obs)
+    # ⚠️ V173 修：账本里有**套件之外**的题（`coding_small` 的 k0x、`sg0x` …）。
+    #    结构判据（「均分按定义到不了 1.0」）会把它们也判进来，而它们**不在提议范围**。
+    #    后果不是显示问题：`state()` 见到 esc 非空就报 IDLE ⇒ 套件内全达标也会被
+    #    报成「测量已用尽」（实测：套件 = 1 格全 1.0 + 账本外 k02 在 esc ⇒ IDLE）。
+    #    所以提议/状态只吃**套件内**的格；套件外的仍要打出来（许撤不许藏）。
+    esc, esc_out = G.split_escalations(esc_all, suite_ids)
 
     covered = sorted({o["task_id"] for o in obs} & set(suite_ids))
     goals = G.propose(obs, suite_ids, done=done, escalated=list(esc))
@@ -2935,8 +2961,12 @@ def _goals_main(args) -> int:
     print()
     # ⚠️ 这一节必须**永远**打印，哪怕 0 条：ESCALATE 的格提不出目标，
     #    如果连这一节都省掉，它们就从输出里彻底消失了 —— 「许撤不许藏」。
-    print(f"--- 已转运维 {len(esc)} 格（测量已用尽，不再重复提；⛔ 不是做到了）---")
+    print(f"--- 已转运维 {len(esc_all)} 格（套件内 {len(esc)}｜套件外 {len(esc_out)}；"
+          f"⛔ 不是做到了）---")
     print(G.render_escalations(esc))
+    if esc_out:
+        print(f"  套件外（不在提议范围，但账本里确实打着）：")
+        print(G.render_escalations(esc_out))
     print()
 
     acted: list[dict] = []
@@ -2966,7 +2996,14 @@ def _goals_main(args) -> int:
             if not cal_ok[p]:
                 print(f"  ⛔ 尺子在 {p.name} 上自证失败 ⇒ 不执行、不判定（fail-closed）")
                 continue
-            _m, rep = run_suite(lambda t: core.run(t.prompt, task_id=t.id, family=p.stem).answer,
+            _act_answer: dict[str, str] = {}
+
+            def _act_solver(t):                                # noqa: F811
+                a = core.run(t.prompt, task_id=t.id, family=p.stem).answer
+                _act_answer[t.id] = a
+                return a
+
+            _m, rep = run_suite(_act_solver,
                                 scorer, one, repeat_n=1, budget_tag="1x",
                                 candidate=f"goals-act:{g.kind}")
             row = next((r for r in rep.per_task if r.get("id") == g.cell), None)
@@ -2979,10 +3016,17 @@ def _goals_main(args) -> int:
                 acted.append({"gid": g.gid, "kind": g.kind, "cell": g.cell,
                               "verdict": v, "reading": rd, "act": "failed"})
                 continue
+            from mw.scoreinfo import impl_sha_of as _ish_of
+            _ish = _ish_of(_act_answer[g.cell]) if g.cell in _act_answer else None
+            # ★ V178（PREREG_v178 §1.4）：向量随观测行落账（与 impl_sha 同款
+            #   「捕到才写键」；per_task 行没有 vec ⇒ 键不在，不写 None）。
+            _vec_f = ({"vec": list(row["vec"])} if "vec" in row else {})
             obs.append({"task_id": g.cell, "score": float(row["score"]),
-                        "session": None, "source": "goal_obs"})
+                        "session": None, "source": "goal_obs",
+                        **({"impl_sha": _ish} if _ish else {}), **_vec_f})
             _row = {"task_id": g.cell, "score": float(row["score"]),
-                    "session": None, "source": "goals-act", "kind": g.kind}
+                    "session": None, "source": "goals-act", "kind": g.kind,
+                    **({"impl_sha": _ish} if _ish else {}), **_vec_f}
             obs_path.parent.mkdir(parents=True, exist_ok=True)
             with open(obs_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(_row, ensure_ascii=False, sort_keys=True) + "\n")
@@ -3028,8 +3072,12 @@ def _goals_main(args) -> int:
             "state": st, "state_detail": det,
             "state_after": st_final, "state_detail_after": det_final,
             "acted": acted,
-            "escalations": {c: e for c, e in esc.items()},
-            "escalated_cells": sorted(esc),
+            "escalations": {c: e for c, e in esc_all.items()},
+            # ⚠️ 这两个字段的口径**从 V171 起就是「账本全格」**，⛔ V173 不去改它
+            #    （改了就等于把已登记的读数重新定义一遍）。套件内的另给一个字段。
+            "escalated_cells": sorted(esc_all),
+            "escalated_cells_in_suite": sorted(esc),
+            "escalated_cells_outside": sorted(esc_out),
             "reproposed": [g.as_dict() for g in again],
         }, ensure_ascii=False, indent=1), encoding="utf-8")
         print(f"  读数     {outp}")

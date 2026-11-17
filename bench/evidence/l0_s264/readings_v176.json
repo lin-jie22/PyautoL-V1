@@ -1,0 +1,233 @@
+{
+  "verdicts": [
+    {
+      "tag": "P1a",
+      "claim": "Suite.load 6 题、id 唯一、三臂材料齐（oracle/partial 非空、null 空）",
+      "ok": true,
+      "detail": "n=6 ids=['s01_kv_expiry', 's02_limiter', 's03_tx_journal', 'm01_records', 'm02_vfs', 'm03_tiered'] 材料齐=True"
+    },
+    {
+      "tag": "P1b",
+      "claim": "meta 词表封闭：format∈{single,files}、kind∈{stateful,pure}",
+      "ok": true,
+      "detail": "s01_kv_expiry:single/stateful｜s02_limiter:single/stateful｜s03_tx_journal:single/stateful｜m01_records:files/pure｜m02_vfs:files/stateful｜m03_tiered:files/stateful"
+    },
+    {
+      "tag": "P1c",
+      "claim": "测试形态与 format 对齐：files 题测试含 FILES 物化、single 题不引用 FILES",
+      "ok": true,
+      "detail": "对齐=True"
+    },
+    {
+      "tag": "P2a",
+      "claim": "calibrate 过：6/6 两极可分 + 中段严格有序 + oracle 全满分",
+      "ok": true,
+      "detail": "margin=1.0000 middle_n=6 逐题=s01_kv_expiry 1.00/0.25/0.00｜s02_limiter 1.00/0.75/0.00｜s03_tx_journal 1.00/0.80/0.00｜m01_records 1.00/0.75/0.00｜m02_vfs 1.00/0.80/0.00｜m03_tiered 1.00/0.40/0.00"
+    },
+    {
+      "tag": "P3",
+      "claim": "admit() 全绿（A1 oracle 满分、A2 null=0、A3 中段严格、A4 变异体全被抓、A5 复打分逐位相同、A6 注册表覆盖）",
+      "ok": true,
+      "detail": "failed=[]"
+    },
+    {
+      "tag": "P4a",
+      "claim": "每个注册变异体得分 < oracle（反真空）",
+      "ok": true,
+      "detail": "s01_kv_expiry:wipe_state=0.00｜s01_kv_expiry:wipe_ttl=0.25｜s02_limiter:wipe_state=0.00｜s02_limiter:wipe_window=0.75｜s03_tx_journal:wipe_rollback=0.80｜s03_tx_journal:wipe_state=0.20｜m01_records:wipe_minvalue=0.75｜m02_vfs:wipe_autodir=0.20｜m02_vfs:wipe_state=0.20｜m03_tiered:wipe_promote=0.60｜m03_tiered:wipe_state=0.00｜m01_records:flat_all=0.00｜m02_vfs:flat_all=0.00｜m03_tiered:flat_all=0.00"
+    },
+    {
+      "tag": "P4b",
+      "claim": "wipe_* 对有状态题掉分 ≤0.9（状态/行为语义被测到）",
+      "ok": true,
+      "detail": "s01_kv_expiry:wipe_state=0.00｜s01_kv_expiry:wipe_ttl=0.25｜s02_limiter:wipe_state=0.00｜s02_limiter:wipe_window=0.75｜s03_tx_journal:wipe_rollback=0.80｜s03_tx_journal:wipe_state=0.20｜m02_vfs:wipe_autodir=0.20｜m02_vfs:wipe_state=0.20｜m03_tiered:wipe_promote=0.60｜m03_tiered:wipe_state=0.00"
+    },
+    {
+      "tag": "P4c",
+      "claim": "flat_* 对 files 题恰好 0.0 且逐题覆盖（格式强制：语义等价单文件答案拿 0）",
+      "ok": true,
+      "detail": "m01_records:flat_all=0.00｜m02_vfs:flat_all=0.00｜m03_tiered:flat_all=0.00"
+    },
+    {
+      "tag": "P5-oracle≠1.0",
+      "claim": "坏读数 oracle≠1.0 ⇒ verdict 必须拒",
+      "ok": true,
+      "detail": "oracle=0.990000 不是满分 1.0"
+    },
+    {
+      "tag": "P5-partial==null",
+      "claim": "坏读数 partial==null ⇒ verdict 必须拒",
+      "ok": true,
+      "detail": "中段无序 null=0.000000 partial=0.000000 oracle=1.000000"
+    },
+    {
+      "tag": "P5-变异体==oracle",
+      "claim": "坏读数 变异体==oracle ⇒ verdict 必须拒",
+      "ok": true,
+      "detail": "变异体 wipe_state 未被抓到：1.000000 >= oracle 1.000000"
+    },
+    {
+      "tag": "P5-注册表漏题",
+      "claim": "坏读数 注册表漏题 ⇒ verdict 必须拒",
+      "ok": true,
+      "detail": "注册表与题集不一致 missing=['m02_vfs'] extra=[]"
+    },
+    {
+      "tag": "P5",
+      "claim": "四种坏读数全部判拒（准入器不是只输出 ✅ 的装饰）",
+      "ok": true,
+      "detail": "a=True b=True c=True d=True"
+    },
+    {
+      "tag": "P6",
+      "claim": "部署态：退出码 0、oracle 逐题满分（mean=1.0000）、可信=✅、读数复核 VERIFIED",
+      "ok": true,
+      "detail": "rc=0 可信=True mean1=True verified=True"
+    },
+    {
+      "tag": "P7a",
+      "claim": "verdict 纯函数双调用逐字相同",
+      "ok": true,
+      "detail": "相同=True"
+    },
+    {
+      "tag": "P7b",
+      "claim": "admission 双跑 readings 逐字相同（分数确定性）",
+      "ok": true,
+      "detail": "readings 相同=True 二跑 ok=True"
+    }
+  ],
+  "readings": {
+    "s01_kv_expiry": {
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.25,
+      "mutants": {
+        "wipe_state": 0.0,
+        "wipe_ttl": 0.25
+      },
+      "oracle_replay": 1.0,
+      "partial_replay": 0.25,
+      "format": "single",
+      "kind": "stateful"
+    },
+    "s02_limiter": {
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.75,
+      "mutants": {
+        "wipe_state": 0.0,
+        "wipe_window": 0.75
+      },
+      "oracle_replay": 1.0,
+      "partial_replay": 0.75,
+      "format": "single",
+      "kind": "stateful"
+    },
+    "s03_tx_journal": {
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "mutants": {
+        "wipe_state": 0.2,
+        "wipe_rollback": 0.8
+      },
+      "oracle_replay": 1.0,
+      "partial_replay": 0.8,
+      "format": "single",
+      "kind": "stateful"
+    },
+    "m01_records": {
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.75,
+      "mutants": {
+        "wipe_minvalue": 0.75,
+        "flat_all": 0.0
+      },
+      "oracle_replay": 1.0,
+      "partial_replay": 0.75,
+      "format": "files",
+      "kind": "pure"
+    },
+    "m02_vfs": {
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "mutants": {
+        "wipe_state": 0.2,
+        "wipe_autodir": 0.2,
+        "flat_all": 0.0
+      },
+      "oracle_replay": 1.0,
+      "partial_replay": 0.8,
+      "format": "files",
+      "kind": "stateful"
+    },
+    "m03_tiered": {
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.4,
+      "mutants": {
+        "wipe_state": 0.0,
+        "wipe_promote": 0.6,
+        "flat_all": 0.0
+      },
+      "oracle_replay": 1.0,
+      "partial_replay": 0.4,
+      "format": "files",
+      "kind": "stateful"
+    }
+  },
+  "calibrate": {
+    "ok": true,
+    "margin": 1.0,
+    "middle_n": 6,
+    "per_task": [
+      {
+        "id": "s01_kv_expiry",
+        "oracle": 1.0,
+        "partial": 0.25,
+        "null": 0.0,
+        "ok": true
+      },
+      {
+        "id": "s02_limiter",
+        "oracle": 1.0,
+        "partial": 0.75,
+        "null": 0.0,
+        "ok": true
+      },
+      {
+        "id": "s03_tx_journal",
+        "oracle": 1.0,
+        "partial": 0.8,
+        "null": 0.0,
+        "ok": true
+      },
+      {
+        "id": "m01_records",
+        "oracle": 1.0,
+        "partial": 0.75,
+        "null": 0.0,
+        "ok": true
+      },
+      {
+        "id": "m02_vfs",
+        "oracle": 1.0,
+        "partial": 0.8,
+        "null": 0.0,
+        "ok": true
+      },
+      {
+        "id": "m03_tiered",
+        "oracle": 1.0,
+        "partial": 0.4,
+        "null": 0.0,
+        "ok": true
+      }
+    ]
+  },
+  "deploy_rc": 0,
+  "wall_s": 13.142
+}

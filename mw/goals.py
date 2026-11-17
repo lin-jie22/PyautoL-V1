@@ -40,6 +40,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
 
+# ⚠️ 依赖方向（PREREG_v175 §1.3）：goals → scoreinfo 是**消费侧**（拿二次读数做
+#    诊断 overlay 与修复轴映射）；⛔ 反向不许 —— scoreinfo 不认 goals（AZ136g 原样）。
+from . import scoreinfo as _SI
+
 #: 判「这一格测得够不够」的最小观测次数。⛔ 不许调：它是判据的一部分，
 #: 改了就等于换尺子（纪律 46：分母不同不许比大小）。
 MIN_OBS = 3
@@ -318,6 +322,54 @@ def done_gids(rows: Iterable[dict]) -> list[str]:
 # ===========================================================================
 # 「做不到」：把测量已经用尽这件事写进账本
 # ===========================================================================
+def unreachable(cell: str, obs: Sequence[dict], *,
+                target: float = TARGET, min_obs: int = MIN_OBS) -> dict | None:
+    """这一格的 `RAISE` 判据（均分 >= target）**按定义**达不到吗 —— 给证据或 `None`。
+
+    ## 定理（V173 STAGE0，穷举 364 组 + 解析式）
+
+    `stats()` 的均分是**全部历史**的均分，而观测**只追加、不替换**。
+    分数上限就是 `target`，所以：
+
+        均分 >= target  ⟺  每个分数都 >= target
+
+    而 `propose()` 只在均分 `< target` 时才提 `RAISE`。两句合起来：
+
+        **一条 `RAISE` 目标被提出时，它的判据已经不可能满足了。**
+
+    追加 `k` 个满分之后：`均分 = (Σ_old + k·target)/(n + k)`，
+    因 `Σ_old < n·target` ⇒ 恒 `< target`（`k → ∞` 时只**趋近**，永不等于）。
+    换句话说：**过去的失败留在分母里，永远洗不掉。**
+
+    ## ⛔ 这不是「模型不够强」
+
+    前者要靠更好的模型；这一条是**判据不可满足**，换模型也没用
+    （V173 STAGE0：`t06_rle` 离线连跑 8 轮，均分恒 0.0，5 条 `RAISE` 全是 `NOT_MET`）。
+    两者的区别是本轮的全部内容 —— 把它写成「做不到」，不许写成「还差一点」。
+
+    ## ⚠️ fail-open（宁可多提一条，也不许拿坏读数断言做不到）
+
+    - `n_obs < min_obs` ⇒ `None`（还没到提 `RAISE` 的门槛，`PROBE` 还在跑）
+    - 出现任何 `score > target` ⇒ `None`（尺子坏了/口径混了 ⇒ **弃权**）
+    - 全部 `>= target` ⇒ `None`（已达成，不是做不到）
+    """
+    st = stats(obs, cell)
+    if st["n_obs"] < min_obs:
+        return None
+    if any(s > target for s in st["scores"]):
+        return None
+    below = [s for s in st["scores"] if s < target]
+    if not below:
+        return None
+    return {"reason": "CRITERION_UNREACHABLE",
+            "cell": cell, "kind": "RAISE",
+            "n_fail": 0, "means": [], "gids": [],
+            "n_obs": st["n_obs"], "mean": st["mean_score"],
+            "n_below": len(below), "min": min(below),
+            "ceiling": (f"均分 = (Σ_old + Σ_new)/(n+k) < {target:g} 恒成立"
+                        f"（Σ_old < n·{target:g}，因有 {len(below)} 个分数 < {target:g}）")}
+
+
 def escalations(
     log_rows: Iterable[dict],
     obs: Sequence[dict] = (),
@@ -334,7 +386,13 @@ def escalations(
     `COVER`/`PROBE` 的判据是出现次数，测量自己就能满足；`RAISE` 的判据是均值，
     测量**不改变**它。
 
-    ## 触发条件（三条同时，缺一不转）
+    ## 触发条件（**两条路，任一条成立就转**）
+
+    **A. 结构不可达**（V173，`reason=CRITERION_UNREACHABLE`）：
+    有 `>= after` 次观测、且历史里存在 `< TARGET` 的分数 ⇒ 见 `unreachable()` 的定理。
+    一轮读数就够：这不需要「试」，需要的是**看懂判据**。
+
+    **B. 读数是测不动的**（V171，`reason=STUCK_MEANS`）：三条同时，缺一不转
 
     1. 同一 `gid` 被判 `NOT_MET` **≥ after** 次（试够了）
     2. 这 after 次的 `mean_score` **逐位相同**（读数没动）
@@ -360,6 +418,16 @@ def escalations(
         by_gid.setdefault(str(r["gid"]), []).append(r)
 
     out: dict[str, dict] = {}
+    # ⭐ V173：**结构**不可达 —— 一轮读数就够，而且给出为什么。
+    #    ⛔ 它不是「试够了」的替代品：V171 那条只在读数**逐位相同**时触发，
+    #    抓的是「模型确定性地重复」；这一条抓的是「判据本身闭不上」。
+    #    两条共存 ⇒ 前者留给「读数在动但没到 1.0」的格（0.2→0.4→0.6 不许转，AZ133a）。
+    for cell in sorted({str(o.get("task_id") or "") for o in obs}):
+        if not cell:
+            continue
+        u = unreachable(cell, obs, min_obs=after)
+        if u:
+            out[cell] = u
     for gid, rows in by_gid.items():
         # ⚠️ 「**连**判 k 次 NOT_MET」的「连」是字面意思：从**最后一行往前数**，
         #    遇到 MET 就停。首版写成「取最近 k 次 NOT_MET」，
@@ -396,17 +464,43 @@ def escalations(
         if cur is None:
             out[cell] = {"cell": cell, "kind": kind, "n_fail": len(tail),
                          "mean": means[-1], "means": list(means),
-                         "gids": [gid]}
+                         "gids": [gid], "reason": "STUCK_MEANS"}
         else:                                      # 同一格有两代 RAISE ⇒ 合并证据
             cur["n_fail"] += len(tail)
             cur["means"].extend(means)
             cur["gids"].append(gid)
+
+    # ── 可动性 overlay（V175，PREREG_v175 §1.3）：**诊断字段，⛔ 不进 gate** ──
+    # 覆盖定理（PREREG §0.2）：claim 能触发的格必已被上面的结构判据收进 esc
+    # ⇒ 它改变不了「哪些格转运维」，只回答「该修哪条轴」。
+    # 无池/缺身份/弃权 ⇒ None（fail-open：宁可不判，不许拿坏读数断言「尺子盲」）。
+    for c, e in out.items():
+        m = _SI.movability(obs, cell=c) if obs else None
+        e["movability"] = (m if m and m.get("label") != _SI.KIND_UNKNOWN else None)
     return out
 
 
 # ===========================================================================
 # 状态：「没有目标」有两种，⛔ 必须分开报
 # ===========================================================================
+def split_escalations(esc: dict[str, dict],
+                      suite_ids: Sequence[str]) -> tuple[dict[str, dict], dict[str, dict]]:
+    """把「已转运维」按**套件**切成 `(套件内, 套件外)`。
+
+    为什么必须切（V173 P6 FAIL 暴露的真 bug）：账本里有套件之外的题，
+    结构判据会把它们也判进来，而它们**不在提议范围**。`state()` 见到 `esc` 非空
+    就报 `IDLE` ⇒ 套件里每一格都达标也会被报成「测量已用尽」
+    （实测：套件 1 格全 1.0 + 账本外 1 格在 esc ⇒ `IDLE`，过滤后 ⇒ `DONE`）。
+
+    ⛔ 两半都要返回：套件外的那半**不许静默丢掉**（许撤不许藏），
+       调用方得把它单独打出来。
+    """
+    ids = set(suite_ids)
+    inside = {c: e for c, e in esc.items() if c in ids}
+    outside = {c: e for c, e in esc.items() if c not in ids}
+    return inside, outside
+
+
 def satisfied(obs: Sequence[dict], cell: str, *,
               min_obs: int = MIN_OBS, target: float = TARGET) -> bool:
     """这一格「该做的都做完了」吗 —— 按**读数**算，不按「提不出目标」算。
@@ -512,21 +606,74 @@ def render_state(name: str, det: dict) -> str:
     return f"UNKNOWN_STATE({name})"
 
 
+def repair_axes(reason: str, movability: dict | None = None) -> tuple[str, ...]:
+    """诊断 → 修复动作指向（PREREG_v175 §1.3）。纯函数，值域封闭 3 个名字。
+
+    | 输入 | 轴 | 修复动作指向 |
+    |---|---|---|
+    | reason=CRITERION_UNREACHABLE | CRITERION | 改**判据**（目标定义/聚合） |
+    | reason=STUCK_MEANS | MODEL | 改**模型/方法**（换实现路径） |
+    | claim=SCORE_UNMOVABLE（叠加） | RULER | 改**尺子**（打分轴/分辨力） |
+    | claim=BEHAVIOR_UNRESOLVED（叠加） | RULER | 同上（V177 行为面：加/换测试、改聚合） |
+
+    ⛔ 这是**指向**不是处方：它说「该动哪一层」，不说「怎么改」。
+    ⛔ 不叠加的情形：overlay 为 None / label 弃权 / 无 claim ⇒ 不给 RULER 轴
+    （宁可不指，不许拿「没测出分辨力」冒充「尺子坏了」—— 后者是 V174 的
+    RULER_BROKEN，形制不同）。
+    """
+    axes: list[str] = []
+    if reason == "CRITERION_UNREACHABLE":
+        axes.append("CRITERION")
+    elif reason == "STUCK_MEANS":
+        axes.append("MODEL")
+    if movability and movability.get("claim") in (_SI.CLAIM_UNMOVABLE,
+                                                  _SI.CLAIM_BEHAVIOR_UNRESOLVED):
+        axes.append("RULER")
+    return tuple(axes)
+
+
 def render_escalations(esc: dict[str, dict]) -> str:
     """把「已转运维」渲染成一段 —— ⛔ 不许静默丢弃（许撤不许藏）。
 
     ⚠️ 措辞只许写**读数**：「3 次均分逐位相同」是事实；「再测也不会变」是外推，
     而这条外推正是本判定要停止重复的**理由**，不是它的**证据**。两者不许混写
     （纪律 10：数值对得上 ≠ 解释对）。
+
+    V173 起有**两种理由**，⛔ 不许合成一句：
+    - `CRITERION_UNREACHABLE`：判据按定义闭不上（过去的失败留在分母里）
+    - `STUCK_MEANS`：连判若干次、均分逐位相同（读数是**测**不动，不是**证**不动）
+
+    V175 起每格附**修复轴**（`repair_axes()`）与可动性 overlay 读数 ——
+    ⛔ overlay 是诊断字段：⛔ 不改变哪些格出现在这里（覆盖定理，PREREG §0.2）。
     """
     if not esc:
         return "  （没有：没有任何一格的测量路径被用尽）"
     lines = []
     for cell in sorted(esc):
         e = esc[cell]
-        lines.append(f"  {cell:<24} RAISE 判 NOT_MET {e['n_fail']} 次，"
-                     f"这 {len(e['means'])} 次的均分逐位相同 {e['mean']:.6f}"
-                     f" ⇒ 测量没让它动；继续提同一条是重复")
+        if e.get("reason") == "CRITERION_UNREACHABLE":
+            line = (f"  {cell:<24} 判据按定义不可满足：历史 {e['n_obs']} 次里 "
+                    f"{e['n_below']} 次 <{TARGET:g}（最低 {e['min']:.6f}），"
+                    f"现均分 {e['mean']:.6f} ⇒ {e['ceiling']}")
+            if e.get("n_fail"):
+                line += f"；另：连判 {e['n_fail']} 次均分逐位相同"
+            lines.append(line)
+        else:
+            lines.append(f"  {cell:<24} RAISE 判 NOT_MET {e['n_fail']} 次，"
+                         f"这 {len(e['means'])} 次的均分逐位相同 {e['mean']:.6f}"
+                         f" ⇒ 测量没让它动；继续提同一条是重复")
+        m = e.get("movability")
+        axes = repair_axes(str(e.get("reason") or ""), m)
+        gloss = {"CRITERION": "CRITERION（改判据：目标定义/聚合）",
+                 "MODEL": "MODEL（改模型/方法：换实现路径）",
+                 "RULER": "RULER（改尺子：打分轴/分辨力）"}
+        axis_txt = "+".join(gloss[a] for a in axes) if axes else "（无）"
+        if m:
+            lines.append(f"{'':<26} 修复轴：{axis_txt}｜可动性：{m['label']}"
+                         f"（{m['n_impls']} 实现 {m['n_scores']} 档"
+                         f"｜bits={m['bits']:.4f}｜无身份行 {m['n_no_impl']}）")
+        else:
+            lines.append(f"{'':<26} 修复轴：{axis_txt}｜可动性：无（缺身份/弃权 ⇒ 不判）")
     return "\n".join(lines)
 
 

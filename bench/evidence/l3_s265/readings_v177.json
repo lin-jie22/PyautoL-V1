@@ -1,0 +1,466 @@
+{
+ "timeline": {
+  "prereg_mtime": 1794903315.9110734,
+  "probe_start": 1794903658.0867698,
+  "probe_start_iso": "2026-11-17 16:20:58",
+  "probe_end": 1794903664.079468
+ },
+ "p5": {
+  "const_mut_p2": false,
+  "const_mut_p3": false,
+  "inj_mut_p1": false,
+  "no_gate_conflict": {
+   "kind": "INJECTIVE",
+   "reason": null,
+   "n_impls": 2,
+   "n_behaviors": 2,
+   "n_scores": 2,
+   "resolution": 1.0,
+   "bits": 1.0,
+   "bits_max": 1.0,
+   "buckets": {
+    "0.5": [
+     "10"
+    ],
+    "1": [
+     "01"
+    ]
+   },
+   "claim": null,
+   "detail": null
+  }
+ },
+ "p6": {
+  "m01_records": {
+   "rows": [
+    {
+     "impl": "flat_all",
+     "vec": "0000",
+     "score": 0.0
+    },
+    {
+     "impl": "null",
+     "vec": "0000",
+     "score": 0.0
+    },
+    {
+     "impl": "oracle",
+     "vec": "1111",
+     "score": 1.0
+    },
+    {
+     "impl": "partial",
+     "vec": "0111",
+     "score": 0.75
+    },
+    {
+     "impl": "wipe_minvalue",
+     "vec": "0111",
+     "score": 0.75
+    }
+   ],
+   "behavioral": {
+    "kind": "INJECTIVE",
+    "reason": null,
+    "n_impls": 5,
+    "n_behaviors": 3,
+    "n_scores": 3,
+    "resolution": 1.0,
+    "bits": 1.584962500721156,
+    "bits_max": 1.584962500721156,
+    "buckets": {
+     "0": [
+      "0000"
+     ],
+     "0.75": [
+      "0111"
+     ],
+     "1": [
+      "1111"
+     ]
+    },
+    "claim": null,
+    "detail": null
+   },
+   "score_level": {
+    "kind": "COARSE",
+    "n_impls": 5,
+    "n_scores": 3
+   },
+   "determinism": true
+  },
+  "m02_vfs": {
+   "rows": [
+    {
+     "impl": "flat_all",
+     "vec": "00000",
+     "score": 0.0
+    },
+    {
+     "impl": "null",
+     "vec": "00000",
+     "score": 0.0
+    },
+    {
+     "impl": "oracle",
+     "vec": "11111",
+     "score": 1.0
+    },
+    {
+     "impl": "partial",
+     "vec": "11011",
+     "score": 0.8
+    },
+    {
+     "impl": "wipe_autodir",
+     "vec": "01000",
+     "score": 0.2
+    },
+    {
+     "impl": "wipe_state",
+     "vec": "00100",
+     "score": 0.2
+    }
+   ],
+   "behavioral": {
+    "kind": "COARSE",
+    "reason": null,
+    "n_impls": 6,
+    "n_behaviors": 5,
+    "n_scores": 4,
+    "resolution": 0.8,
+    "bits": 1.9219280948873623,
+    "bits_max": 2.0,
+    "buckets": {
+     "0": [
+      "00000"
+     ],
+     "0.2": [
+      "00100",
+      "01000"
+     ],
+     "0.8": [
+      "11011"
+     ],
+     "1": [
+      "11111"
+     ]
+    },
+    "claim": null,
+    "detail": null
+   },
+   "score_level": {
+    "kind": "COARSE",
+    "n_impls": 6,
+    "n_scores": 4
+   },
+   "determinism": true
+  },
+  "m03_tiered": {
+   "rows": [
+    {
+     "impl": "flat_all",
+     "vec": "00000",
+     "score": 0.0
+    },
+    {
+     "impl": "null",
+     "vec": "00000",
+     "score": 0.0
+    },
+    {
+     "impl": "oracle",
+     "vec": "11111",
+     "score": 1.0
+    },
+    {
+     "impl": "partial",
+     "vec": "01100",
+     "score": 0.4
+    },
+    {
+     "impl": "wipe_promote",
+     "vec": "00111",
+     "score": 0.6
+    },
+    {
+     "impl": "wipe_state",
+     "vec": "00000",
+     "score": 0.0
+    }
+   ],
+   "behavioral": {
+    "kind": "INJECTIVE",
+    "reason": null,
+    "n_impls": 6,
+    "n_behaviors": 4,
+    "n_scores": 4,
+    "resolution": 1.0,
+    "bits": 2.0,
+    "bits_max": 2.0,
+    "buckets": {
+     "0": [
+      "00000"
+     ],
+     "0.4": [
+      "01100"
+     ],
+     "0.6": [
+      "00111"
+     ],
+     "1": [
+      "11111"
+     ]
+    },
+    "claim": null,
+    "detail": null
+   },
+   "score_level": {
+    "kind": "COARSE",
+    "n_impls": 6,
+    "n_scores": 4
+   },
+   "determinism": true
+  },
+  "s01_kv_expiry": {
+   "rows": [
+    {
+     "impl": "null",
+     "vec": "0000",
+     "score": 0.0
+    },
+    {
+     "impl": "oracle",
+     "vec": "1111",
+     "score": 1.0
+    },
+    {
+     "impl": "partial",
+     "vec": "1000",
+     "score": 0.25
+    },
+    {
+     "impl": "wipe_state",
+     "vec": "0000",
+     "score": 0.0
+    },
+    {
+     "impl": "wipe_ttl",
+     "vec": "1000",
+     "score": 0.25
+    }
+   ],
+   "behavioral": {
+    "kind": "INJECTIVE",
+    "reason": null,
+    "n_impls": 5,
+    "n_behaviors": 3,
+    "n_scores": 3,
+    "resolution": 1.0,
+    "bits": 1.584962500721156,
+    "bits_max": 1.584962500721156,
+    "buckets": {
+     "0": [
+      "0000"
+     ],
+     "0.25": [
+      "1000"
+     ],
+     "1": [
+      "1111"
+     ]
+    },
+    "claim": null,
+    "detail": null
+   },
+   "score_level": {
+    "kind": "COARSE",
+    "n_impls": 5,
+    "n_scores": 3
+   },
+   "determinism": true
+  },
+  "s02_limiter": {
+   "rows": [
+    {
+     "impl": "null",
+     "vec": "0000",
+     "score": 0.0
+    },
+    {
+     "impl": "oracle",
+     "vec": "1111",
+     "score": 1.0
+    },
+    {
+     "impl": "partial",
+     "vec": "1011",
+     "score": 0.75
+    },
+    {
+     "impl": "wipe_state",
+     "vec": "0000",
+     "score": 0.0
+    },
+    {
+     "impl": "wipe_window",
+     "vec": "1011",
+     "score": 0.75
+    }
+   ],
+   "behavioral": {
+    "kind": "INJECTIVE",
+    "reason": null,
+    "n_impls": 5,
+    "n_behaviors": 3,
+    "n_scores": 3,
+    "resolution": 1.0,
+    "bits": 1.584962500721156,
+    "bits_max": 1.584962500721156,
+    "buckets": {
+     "0": [
+      "0000"
+     ],
+     "0.75": [
+      "1011"
+     ],
+     "1": [
+      "1111"
+     ]
+    },
+    "claim": null,
+    "detail": null
+   },
+   "score_level": {
+    "kind": "COARSE",
+    "n_impls": 5,
+    "n_scores": 3
+   },
+   "determinism": true
+  },
+  "s03_tx_journal": {
+   "rows": [
+    {
+     "impl": "null",
+     "vec": "00000",
+     "score": 0.0
+    },
+    {
+     "impl": "oracle",
+     "vec": "11111",
+     "score": 1.0
+    },
+    {
+     "impl": "partial",
+     "vec": "10111",
+     "score": 0.8
+    },
+    {
+     "impl": "wipe_rollback",
+     "vec": "10111",
+     "score": 0.8
+    },
+    {
+     "impl": "wipe_state",
+     "vec": "00010",
+     "score": 0.2
+    }
+   ],
+   "behavioral": {
+    "kind": "INJECTIVE",
+    "reason": null,
+    "n_impls": 5,
+    "n_behaviors": 4,
+    "n_scores": 4,
+    "resolution": 1.0,
+    "bits": 2.0,
+    "bits_max": 2.0,
+    "buckets": {
+     "0": [
+      "00000"
+     ],
+     "0.2": [
+      "00010"
+     ],
+     "0.8": [
+      "10111"
+     ],
+     "1": [
+      "11111"
+     ]
+    },
+    "claim": null,
+    "detail": null
+   },
+   "score_level": {
+    "kind": "COARSE",
+    "n_impls": 5,
+    "n_scores": 4
+   },
+   "determinism": true
+  }
+ },
+ "verdicts": [
+  {
+   "tag": "P1",
+   "claim": "3 行为同分 ⇒ CONSTANT + claim 触发；2 行为同分 ⇒ 无 claim（反巧合）；CONSTANT@1.0 ⇒ 无 claim（做完了≠做不到）",
+   "ok": true,
+   "detail": "3行为 claim=BEHAVIOR_UNRESOLVED｜2行为 claim=None（期望 None）｜1.0 池 claim=None（期望 None）"
+  },
+  {
+   "tag": "P2",
+   "claim": "A,B 同行为同分 + C,D 异行为异分 ⇒ 行为级 INJECTIVE，同池分数级 classify()=COARSE（两层不同层）",
+   "ok": true,
+   "detail": "行为级=INJECTIVE(beh=3/impl=4) 分数级=COARSE(k=3) —— 两层不同层"
+  },
+  {
+   "tag": "P3",
+   "claim": "4 行为 3 分（1000/0100 同权重撞 0.25）⇒ COARSE，逐行为点名，bits==1.5 对上手算",
+   "ok": true,
+   "detail": "kind=COARSE k/n=3/4 0.25桶=['0100', '1000'] bits=1.5（手算 1.5）"
+  },
+  {
+   "tag": "P4",
+   "claim": "TOO_FEW/RULER_BROKEN(越界·bool·NaN·负·非bool向量·空向量·长度不齐)/BEHAVIOR_SCORE_CONFLICT(同行为多分·同实现多行为) 全弃权不给半个读数；§0.3 反例：同行为异分池分数级=INJECTIVE",
+   "ok": true,
+   "detail": "few=UNKNOWN/TOO_FEW｜out=UNKNOWN/RULER_BROKEN｜bool=UNKNOWN/RULER_BROKEN｜nan=UNKNOWN/RULER_BROKEN｜neg=UNKNOWN/RULER_BROKEN｜vecelem=UNKNOWN/RULER_BROKEN｜emptyvec=UNKNOWN/RULER_BROKEN｜lenmix=UNKNOWN/RULER_BROKEN｜conf_beh=UNKNOWN/BEHAVIOR_SCORE_CONFLICT｜conf_impl=UNKNOWN/BEHAVIOR_SCORE_CONFLICT｜反例分数级=INJECTIVE"
+  },
+  {
+   "tag": "P5",
+   "claim": "恒 CONSTANT ⇒ P2/P3 转红；恒 INJECTIVE ⇒ P1 转红；\n              拆冲突闸（去重旁路）⇒ 同行为多分臂不再按冲突弃权",
+   "ok": true,
+   "detail": "恒CONSTANT下 P2=False P3=False（期望 False）｜恒INJECTIVE下 P1=False（期望 False）｜拆闸后冲突臂=INJECTIVE/None（期望≠冲突弃权）｜已还原=True"
+  },
+  {
+   "tag": "P6a",
+   "claim": "装置对拍：逐 (题,实现) sum(vec)/len == ExternalScorer 实得分（1e-9）",
+   "ok": true,
+   "detail": "32 行全对上"
+  },
+  {
+   "tag": "P6b",
+   "claim": "逐题 behavioral() + classify() 双层读数落盘，双跑逐字相同",
+   "ok": true,
+   "detail": "m01_records:INJECTIVE(beh=3,k=3,claim=None)/COARSE｜m02_vfs:COARSE(beh=5,k=4,claim=None)/COARSE｜m03_tiered:INJECTIVE(beh=4,k=4,claim=None)/COARSE｜s01_kv_expiry:INJECTIVE(beh=3,k=3,claim=None)/COARSE｜s02_limiter:INJECTIVE(beh=3,k=3,claim=None)/COARSE｜s03_tx_journal:INJECTIVE(beh=4,k=4,claim=None)/COARSE"
+  },
+  {
+   "tag": "P7",
+   "claim": "kind 恰 4 名、reason 恰 3 名、claim 恰 2 值、resolution/bits 区间恒成立；T1（CONSTANT⟺CONSTANT）与 T2（分数单射⇒行为单射）在构造池上成立",
+   "ok": true,
+   "detail": "值域封闭 + T1/T2 成立（3 池）"
+  }
+ ],
+ "repair_axes_smoke": {
+  "BEHAVIOR_UNRESOLVED": [
+   "MODEL",
+   "RULER"
+  ],
+  "SCORE_UNMOVABLE": [
+   "MODEL",
+   "RULER"
+  ],
+  "none": [
+   "MODEL"
+  ]
+ }
+}

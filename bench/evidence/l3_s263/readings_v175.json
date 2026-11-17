@@ -1,0 +1,491 @@
+{
+ "prereg": "bench/evidence/l3_s263/PREREG_v175.md",
+ "ts": "2026-11-17 14:38:06",
+ "p1_pool": [
+  [
+   "a",
+   0.5
+  ],
+  [
+   "b",
+   0.5
+  ]
+ ],
+ "n_no": 2,
+ "axes_domain": [
+  "CRITERION",
+  "MODEL",
+  "RULER"
+ ],
+ "claim_cells": [
+  "w1"
+ ],
+ "per_cell": {
+  "e1ni": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "e1wi": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "e2ni": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "e2wi": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "e3ni": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "e3wi": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "k01_diff_tree": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 3,
+   "claim": null
+  },
+  "k02_encode_cookie": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 3,
+   "claim": null
+  },
+  "k03_unflatten": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 3,
+   "claim": null
+  },
+  "k04_to_ini": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 3,
+   "claim": null
+  },
+  "sg01": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 2,
+   "claim": null
+  },
+  "sg02": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 2,
+   "claim": null
+  },
+  "sg03": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 2,
+   "claim": null
+  },
+  "sg04": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 2,
+   "claim": null
+  },
+  "sg05": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "sg06": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "sg08": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "sg09": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "t01_parse_duration": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "t02_dedupe": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "t03_commas": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "t04_merge_ranges": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "t05_top_k": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  },
+  "t06_rle": {
+   "label": "UNKNOWN",
+   "reason": "TOO_FEW",
+   "n_impls": null,
+   "n_no_impl": 1,
+   "claim": null
+  }
+ },
+ "n_rows": 36,
+ "n_no_impl_all": 36,
+ "selfcheck": {
+  "tab_all": {
+   "BASE": {
+    "used": 2710,
+    "saved": 0,
+    "ok": 21
+   },
+   "G1": {
+    "used": 609,
+    "saved": 2101,
+    "ok": 21
+   },
+   "G2": {
+    "used": 2506,
+    "saved": 204,
+    "ok": 21
+   },
+   "G4": {
+    "used": 904,
+    "saved": 1806,
+    "ok": 21
+   },
+   "G3(0.5)": {
+    "used": 786,
+    "saved": 1924,
+    "ok": 17
+   },
+   "G3(1.0)": {
+    "used": 1384,
+    "saved": 1326,
+    "ok": 21
+   },
+   "G3(1.66)": {
+    "used": 2135,
+    "saved": 575,
+    "ok": 21
+   },
+   "G3(2.0)": {
+    "used": 2331,
+    "saved": 379,
+    "ok": 21
+   }
+  },
+  "tab_real": {
+   "BASE": {
+    "used": 110,
+    "saved": 0,
+    "ok": 20
+   },
+   "G1": {
+    "used": 60,
+    "saved": 50,
+    "ok": 20
+   },
+   "G2": {
+    "used": 85,
+    "saved": 25,
+    "ok": 20
+   },
+   "G4": {
+    "used": 101,
+    "saved": 9,
+    "ok": 20
+   },
+   "G3(0.5)": {
+    "used": 44,
+    "saved": 66,
+    "ok": 15
+   },
+   "G3(1.0)": {
+    "used": 70,
+    "saved": 40,
+    "ok": 20
+   },
+   "G3(1.66)": {
+    "used": 99,
+    "saved": 11,
+    "ok": 20
+   },
+   "G3(2.0)": {
+    "used": 107,
+    "saved": 3,
+    "ok": 20
+   }
+  },
+  "cells": 526,
+  "tot": 2710,
+  "n_ok": 21,
+  "ok": true
+ },
+ "deploy_selfcheck": {
+  "tot": 588,
+  "hit": 21,
+  "waste": 520,
+  "noimp": 559,
+  "ok": true
+ },
+ "g6_tab": {
+  "G6(m=2)": {
+   "used": 1601,
+   "saved": 1109,
+   "ok": 21
+  },
+  "G6(m=2)@real": {
+   "used": 109,
+   "saved": 1,
+   "ok": 20
+  },
+  "G6(m=3)": {
+   "used": 2611,
+   "saved": 99,
+   "ok": 21
+  },
+  "G6(m=3)@real": {
+   "used": 110,
+   "saved": 0,
+   "ok": 20
+  }
+ },
+ "g6_loss": {
+  "G6(m=2)": {
+   "skipped": 1109,
+   "lost_first_hits": 0,
+   "lost_rehits": 172,
+   "lost_improvements": 0
+  },
+  "G6(m=3)": {
+   "skipped": 99,
+   "lost_first_hits": 0,
+   "lost_rehits": 0,
+   "lost_improvements": 0
+  }
+ },
+ "g6_deploy": {
+  "G6(m=2)@deploy": {
+   "used": 533,
+   "saved": 55,
+   "ok": 21,
+   "lost_first_hits": 0,
+   "lost_rehits": 0
+  },
+  "G6(m=3)@deploy": {
+   "used": 588,
+   "saved": 0,
+   "ok": 21,
+   "lost_first_hits": 0,
+   "lost_rehits": 0
+  }
+ },
+ "g5": {
+  "saves_mean": 1654.345,
+  "ok_mean": 19.795,
+  "drop_seeds": 157,
+  "n_seed": 200
+ },
+ "cond": {
+  "G6(m=2)": {
+   "skippable_n": 55,
+   "hit_rate_skippable": 0.0,
+   "improve_rate_skippable": 0.0,
+   "other_n": 533,
+   "hit_rate_other": 0.020637898686679174,
+   "improve_rate_other": 0.054409005628517824
+  },
+  "G6(m=3)": {
+   "skippable_n": 0,
+   "hit_rate_skippable": null,
+   "improve_rate_skippable": null,
+   "other_n": 588,
+   "hit_rate_other": 0.01870748299319728,
+   "improve_rate_other": 0.04931972789115646
+  }
+ },
+ "wall_s": 4.276568174362183,
+ "verdicts": [
+  {
+   "tag": "P1a",
+   "claim": "缺身份/缺分数行计数排除（逐格 n_no_impl 精确），有身份行进池",
+   "ok": true,
+   "detail": "pool=[('a', 0.5), ('b', 0.5)] n_no=2"
+  },
+  {
+   "tag": "P1b",
+   "claim": "全局口径（cell=None）池含跨格行、n_no 同口径",
+   "ok": true,
+   "detail": "pool=3 n_no=2"
+  },
+  {
+   "tag": "P1c",
+   "claim": "非 dict 坏行不崩：全局计入、逐格不计入（无从归属）",
+   "ok": true,
+   "detail": "全局 n_no=3 逐格 n_no=2"
+  },
+  {
+   "tag": "P1d",
+   "claim": "impl_sha_of 纯函数：同文同值、异文异值、恒 16 位",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tag": "P2a",
+   "claim": "无身份行 ⇒ overlay=None；结构路旧字段逐位不变",
+   "ok": true,
+   "detail": "reason=CRITERION_UNREACHABLE n_below=2 mean=0.5 overlay=None"
+  },
+  {
+   "tag": "P2b",
+   "claim": "尺子坏（1.2）⇒ 弃权且 claim=None（不许拿坏读数断言尺子盲）",
+   "ok": true,
+   "detail": "label=UNKNOWN reason=RULER_BROKEN"
+  },
+  {
+   "tag": "P2c",
+   "claim": "行为路无 obs ⇒ overlay=None（无池 fail-open）",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tag": "P2d",
+   "claim": "负对照：有池时 overlay 必须在场（fail-open 不是恒 None）",
+   "ok": true,
+   "detail": "movability={'label': 'CONSTANT', 'reason': None, 'n_impls': 3, 'n_scores': 1, 'bits': 0.0, 'n_rows': 3, 'n_no_impl': 0, 'claim': 'SCORE_UNMOVABLE'}"
+  },
+  {
+   "tag": "P3a",
+   "claim": "映射表逐条对（CRITERION/MODEL 主轴 + claim 叠加 RULER + 弃权不加）",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tag": "P3b",
+   "claim": "值域恰 3 名字（CRITERION/MODEL/RULER）",
+   "ok": true,
+   "detail": "实际值域=['CRITERION', 'MODEL', 'RULER']"
+  },
+  {
+   "tag": "P3c",
+   "claim": "纯函数：同入同出",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tag": "P4a",
+   "claim": "claim 触发的格 ⊆ 结构判据 esc（覆盖定理的包含关系）",
+   "ok": true,
+   "detail": "claim=['w1'] esc=['w1']"
+  },
+  {
+   "tag": "P4b",
+   "claim": "唯一窗口（2 实现 2 观测）：claim 不触发，propose 给 PROBE 不是 RAISE",
+   "ok": true,
+   "detail": "claim=None kinds=['PROBE']"
+  },
+  {
+   "tag": "P4c",
+   "claim": "反例组：有分差（COARSE）与已达标（3×1.0）都无 claim",
+   "ok": true,
+   "detail": "COARSE claim=None SAT claim=None"
+  },
+  {
+   "tag": "P4d",
+   "claim": "A/B propose 逐字相同：claim 格进出 escalated 不改变提议（gate 无差别）",
+   "ok": true,
+   "detail": "claim格=['w1'] goals=['PROBE']"
+  },
+  {
+   "tag": "P5",
+   "claim": "36 行真账本全缺身份 ⇒ 24 格全 UNKNOWN、claim 全 None、n_no_impl=36（现状读数：身份缺口，⛔ 不是缺陷声明）",
+   "ok": true,
+   "detail": "rows=36 cells=24 UNKNOWN=24 claim=0 n_no_impl(全局)=36"
+  },
+  {
+   "tag": "P6-0",
+   "claim": "装置自校验：全搜索 + 35 记忆格两口径逐位对上 V157 存档读数（对不上 ⇒ P6 全部作废）",
+   "ok": true,
+   "detail": "cells=526(记 526) tot=2710(记 2710) ok=21(记 21)"
+  },
+  {
+   "tag": "P6-0b",
+   "claim": "部署臂自校验：588/21/520/559 逐位对上 readings_remain 存档",
+   "ok": true,
+   "detail": "tot=588 hit=21 waste=520 noimp=559"
+  },
+  {
+   "tag": "P6a",
+   "claim": "条件率（注册方向：CONSTANT@<1.0 的后续命中率更低）——⚠️ 本条如实报：成立=正结果、不成立=负结果入档",
+   "ok": true,
+   "detail": "m=2: skippable 命中率 0.0 vs 其他 0.020637898686679174｜m=3: skippable 命中率 None vs 其他 0.01870748299319728"
+  },
+  {
+   "tag": "P6b",
+   "claim": "策略表（同跑内对照）：G6 的省分/到 1.0/丢首中/丢改进，与 BASE/G3/G4/G5 同口径（丢再中 = 已达标后的再命中，⛔ 不是损失）",
+   "ok": true,
+   "detail": "G6(m=2) 省1109/到21｜G6(m=2)@real 省1/到20｜G6(m=3) 省99/到21｜G6(m=3)@real 省0/到20｜G6(m=2)@deploy 省55/到21 丢首中0｜G6(m=3)@deploy 省0/到21 丢首中0｜G6(m=2) 跳1109 丢首中0 丢再中172 丢改进0｜G6(m=3) 跳99 丢首中0 丢再中0 丢改进0｜G5 随机: 省均值 1654.3 掉实现种子 157/200"
+  }
+ ]
+}

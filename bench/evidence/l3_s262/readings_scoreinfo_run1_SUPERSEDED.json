@@ -1,0 +1,222 @@
+{
+ "verdicts": [
+  {
+   "tag": "P1",
+   "claim": "全等池 ⇒ CONSTANT，bits == 0.0",
+   "ok": true,
+   "detail": "kind=CONSTANT bits=0.0 k=1"
+  },
+  {
+   "tag": "P2",
+   "claim": "3 实现 3 分数 ⇒ INJECTIVE，resolution == 1.0，bits == log2(3)",
+   "ok": true,
+   "detail": "kind=INJECTIVE resolution=1.0 bits=1.584963 (log2(3)=1.584963)"
+  },
+  {
+   "tag": "P3",
+   "claim": "7 实现 4 分数、0.0 挤 3 个 ⇒ COARSE，resolution == 4/7，逐桶点名",
+   "ok": false,
+   "detail": "kind=COARSE resolution=0.714286(4/7=0.571429) 0.0桶=['a', 'b', 'c'] k=5"
+  },
+  {
+   "tag": "P4",
+   "claim": "n=1 ⇒ TOO_FEW｜1.2 ⇒ RULER_BROKEN｜同 impl 两分 ⇒ IMPL_SCORE_CONFLICT；\n              NaN/bool 也拦（bool 是 int 子类，不挡会被记成 1.0）；弃权时不给半个读数",
+   "ok": true,
+   "detail": "few=TOO_FEW ruler=RULER_BROKEN conflict=IMPL_SCORE_CONFLICT nan=RULER_BROKEN bool=RULER_BROKEN｜弃权 bits 全 None=True"
+  },
+  {
+   "tag": "P5",
+   "claim": "恒 CONSTANT ⇒ P2/P3 转红；恒 INJECTIVE ⇒ P1 转红；\n              拆 RULER_BROKEN 闸（越界分钳到 1.0）⇒ 1.2 臂不再弃权",
+   "ok": true,
+   "detail": "恒CONSTANT下 P2=False(期望 False) P3=False(期望 False)｜恒INJECTIVE下 P1=False(期望 False)｜拆闸后 1.2 臂 kind=CONSTANT（期望≠UNKNOWN）｜已还原=True"
+  },
+  {
+   "tag": "P6",
+   "claim": "真池 4 格分类 == STAGE0 手数（4×COARSE，桶分布逐一对上）；\n              同池两次调用输出逐字相同（纯函数确定性）",
+   "ok": true,
+   "detail": "g7d2_dedupe_keep COARSE 5/3 dist=[0.2, 0.6, 1.0] 双跑相同=True｜g7d3_fmt_amount COARSE 8/5 dist=[0.0, 0.2, 0.4, 0.6, 1.0] 双跑相同=True｜g7e1_parse_flag COARSE 8/3 dist=[0.4, 0.6, 1.0] 双跑相同=True｜g7e2_truncate_tail COARSE 4/2 dist=[0.2, 1.0] 双跑相同=True"
+  },
+  {
+   "tag": "P7",
+   "claim": "kind 值域恰 4 名字；CONSTANT⇒bits=0｜INJECTIVE⇒bits=log2(n)｜\n              COARSE⇒0<bits≤bits_max；resolution∈(0,1]；bits≤bits_max 恒成立",
+   "ok": true,
+   "detail": "3 臂全自洽（值域/bits/resolution）"
+  }
+ ],
+ "readings": {
+  "p4": {
+   "few": {
+    "kind": "UNKNOWN",
+    "reason": "TOO_FEW",
+    "n_impls": null,
+    "n_scores": null,
+    "resolution": null,
+    "bits": null,
+    "bits_max": null,
+    "buckets": {},
+    "detail": "n=1 < MIN_POOL=2"
+   },
+   "ruler": {
+    "kind": "UNKNOWN",
+    "reason": "RULER_BROKEN",
+    "n_impls": null,
+    "n_scores": null,
+    "resolution": null,
+    "bits": null,
+    "bits_max": null,
+    "buckets": {},
+    "detail": "分数越界 i2=1.2（target=1.0）"
+   },
+   "conflict": {
+    "kind": "UNKNOWN",
+    "reason": "IMPL_SCORE_CONFLICT",
+    "n_impls": null,
+    "n_scores": null,
+    "resolution": null,
+    "bits": null,
+    "bits_max": null,
+    "buckets": {},
+    "detail": "i1 有 2 个分 [0.6, 1.0]"
+   },
+   "nan": {
+    "kind": "UNKNOWN",
+    "reason": "RULER_BROKEN",
+    "n_impls": null,
+    "n_scores": null,
+    "resolution": null,
+    "bits": null,
+    "bits_max": null,
+    "buckets": {},
+    "detail": "非有限分数 i1=nan"
+   },
+   "bool": {
+    "kind": "UNKNOWN",
+    "reason": "RULER_BROKEN",
+    "n_impls": null,
+    "n_scores": null,
+    "resolution": null,
+    "bits": null,
+    "bits_max": null,
+    "buckets": {},
+    "detail": "非数值分数 i1=True"
+   }
+  },
+  "p5": {
+   "const_mut_p2": false,
+   "const_mut_p3": false,
+   "inj_mut_p1": false,
+   "no_gate_ruler": {
+    "kind": "CONSTANT",
+    "reason": null,
+    "n_impls": 2,
+    "n_scores": 1,
+    "resolution": 0.5,
+    "bits": 0.0,
+    "bits_max": 0.0,
+    "buckets": {
+     "1": [
+      "i1",
+      "i2"
+     ]
+    }
+   }
+  },
+  "p6": {
+   "g7d2_dedupe_keep": {
+    "kind": "COARSE",
+    "reason": null,
+    "n_impls": 5,
+    "n_scores": 3,
+    "resolution": 0.6,
+    "bits": 1.3709505944546687,
+    "bits_max": 1.584962500721156,
+    "buckets": {
+     "0.2": [
+      "480ada8e"
+     ],
+     "0.6": [
+      "74aa48d8"
+     ],
+     "1": [
+      "1ac9e8da",
+      "6c9204fe",
+      "85e6d3bc"
+     ]
+    }
+   },
+   "g7d3_fmt_amount": {
+    "kind": "COARSE",
+    "reason": null,
+    "n_impls": 8,
+    "n_scores": 5,
+    "resolution": 0.625,
+    "bits": 2.25,
+    "bits_max": 2.321928094887362,
+    "buckets": {
+     "0": [
+      "0a6acc93",
+      "17747356"
+     ],
+     "0.2": [
+      "8c8ac7f0"
+     ],
+     "0.4": [
+      "075b4099",
+      "419ec792"
+     ],
+     "0.6": [
+      "5755e033"
+     ],
+     "1": [
+      "309f1027",
+      "8089eee6"
+     ]
+    }
+   },
+   "g7e1_parse_flag": {
+    "kind": "COARSE",
+    "reason": null,
+    "n_impls": 8,
+    "n_scores": 3,
+    "resolution": 0.375,
+    "bits": 1.4056390622295665,
+    "bits_max": 1.584962500721156,
+    "buckets": {
+     "0.4": [
+      "1aa5099d",
+      "37a4f17f",
+      "a579b07a",
+      "f2d1efa6"
+     ],
+     "0.6": [
+      "200ebf6e"
+     ],
+     "1": [
+      "644f0618",
+      "c1f49180",
+      "cd7e0eb9"
+     ]
+    }
+   },
+   "g7e2_truncate_tail": {
+    "kind": "COARSE",
+    "reason": null,
+    "n_impls": 4,
+    "n_scores": 2,
+    "resolution": 0.5,
+    "bits": 1.0,
+    "bits_max": 1.0,
+    "buckets": {
+     "0.2": [
+      "8184ec4d",
+      "bc8c4b09"
+     ],
+     "1": [
+      "697caecc",
+      "c21ee3b8"
+     ]
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,140 @@
+{
+ "prereg_mtime_ns": 1794907200886202668,
+ "timeline": {
+  "main_start": 1794907850.1446972,
+  "main_end": 1794907866.900757
+ },
+ "results": [
+  {
+   "id": "P1a",
+   "desc": "2-test+代码 ⇒ vec 恰 2 元素全 bool 且 score==round(mean(vec),4)（T1）",
+   "ok": true,
+   "detail": "vec=[True, False] score=0.5"
+  },
+  {
+   "id": "P1b",
+   "desc": "无可执行代码（extract_code 空）⇒ 无 vec 键（「没量到」不许全零冒充）",
+   "ok": true,
+   "detail": "keys=['score', 'why']"
+  },
+  {
+   "id": "P1c",
+   "desc": "逐测试独立：1/2 ⇒ vec==[true,false]、score==0.5",
+   "ok": true,
+   "detail": "vec=[True, False] score=0.5"
+  },
+  {
+   "id": "P2a",
+   "desc": "合法 vec ⇒ Scored.vec 逐元素还原（tuple[bool]）",
+   "ok": true,
+   "detail": "vec=(True, False)"
+  },
+  {
+   "id": "P2b",
+   "desc": "缺 vec ⇒ Scored.vec=None（老打分器合法）",
+   "ok": true,
+   "detail": "vec=None"
+  },
+  {
+   "id": "P2c",
+   "desc": "坏形态四臂全部 ScoreError（fail-closed，不许静默丢）",
+   "ok": true,
+   "detail": "非列表=拒 元素非 bool=拒 长度≠tests=拒 显式 null=拒"
+  },
+  {
+   "id": "P2d",
+   "desc": "旧协议回归：detail 合法收/坏拒/缺席空；score/why 行为不变",
+   "ok": true,
+   "detail": "detail=({'id': 'a1', 'ok': False, 'why': 'x'},) bad拒=True 空=()"
+  },
+  {
+   "id": "P3a",
+   "desc": "Scored.vec 在 ⇒ per_task 行带 vec 原值",
+   "ok": true,
+   "detail": "row vec=(True, False)"
+  },
+  {
+   "id": "P3b",
+   "desc": "Scored.vec=None ⇒ 行**无 vec 键**（⛔ 不写 None 值冒充）",
+   "ok": true,
+   "detail": "keys=['elapsed_s', 'id', 'rep', 'score', 'why']"
+  },
+  {
+   "id": "P5a",
+   "desc": "逐格四桶计数精确（坏行只进全局；一行只进一桶）",
+   "ok": true,
+   "detail": "pool=[('a', (True, False), 0.5)] counts={'n_bad_row': 0, 'n_no_impl': 1, 'n_no_vec': 1, 'n_bad_vec': 2, 'n_inconsistent': 3, 'n_kept': 1}"
+  },
+  {
+   "id": "P5b",
+   "desc": "全局口径：非 dict 坏行计入 n_bad_row；跨格行入池",
+   "ok": true,
+   "detail": "counts={'n_bad_row': 1, 'n_no_impl': 1, 'n_no_vec': 1, 'n_bad_vec': 2, 'n_inconsistent': 3, 'n_kept': 2}"
+  },
+  {
+   "id": "P5c",
+   "desc": "容差边界：差恰 5e-5 收（发射量子半宽）、4e-4 拒",
+   "ok": true,
+   "detail": "in={'n_bad_row': 0, 'n_no_impl': 0, 'n_no_vec': 0, 'n_bad_vec': 0, 'n_inconsistent': 0, 'n_kept': 1} out={'n_bad_row': 0, 'n_no_impl': 0, 'n_no_vec': 0, 'n_bad_vec': 0, 'n_inconsistent': 1, 'n_kept': 0}"
+  },
+  {
+   "id": "P5d",
+   "desc": "fail-open：任意坏行（None/int/空 dict）只计数排除、绝不抛",
+   "ok": true,
+   "detail": "counts={'n_bad_row': 3, 'n_no_impl': 2, 'n_no_vec': 1, 'n_bad_vec': 2, 'n_inconsistent': 3, 'n_kept': 2}"
+  },
+  {
+   "id": "P4a-0",
+   "desc": "四轮 CLI 全部完成且各轮账本行数 == 题数（会话号递增）",
+   "ok": true,
+   "detail": "run1(oracle): rc=0 rows=6 run2(partial): rc=0 rows=6 run3(junk): rc=0 rows=6 run4(oracle): rc=0 rows=6"
+  },
+  {
+   "id": "P4a",
+   "desc": "账本行全含 vec 且逐行自洽（beh_pool 全收、n_inconsistent==0）",
+   "ok": true,
+   "detail": "counts={'n_bad_row': 0, 'n_no_impl': 0, 'n_no_vec': 0, 'n_bad_vec': 0, 'n_inconsistent': 0, 'n_kept': 24}"
+  },
+  {
+   "id": "P4b",
+   "desc": "T1 落账不改值：账本 score 与罐头答案直接判分逐行对拍（1e-12）",
+   "ok": true,
+   "detail": "24 行全对上"
+  },
+  {
+   "id": "P4c",
+   "desc": "三档答案连跑 ⇒ 每格 ≥2 行为进池（oracle/partial/junk 三档向量）",
+   "ok": true,
+   "detail": "behaviors/格={'s01_kv_expiry': 3, 's02_limiter': 3, 's03_tx_journal': 3, 'm01_records': 3, 'm02_vfs': 3, 'm03_tiered': 3}"
+  },
+  {
+   "id": "P7a",
+   "desc": "同罐头答案双跑 ⇒ 账本行除 session 号外逐字相同",
+   "ok": true,
+   "detail": "run1=6行 run4=6行"
+  },
+  {
+   "id": "P6a",
+   "desc": "账本路 ≡ 直接收（kind/n/claim 逐字段）且自洽池冲突闸零触发（T3）",
+   "ok": true,
+   "detail": "6 题全一致"
+  },
+  {
+   "id": "P6b",
+   "desc": "T3 负对照：跨源池（同行为异分）⇒ BEHAVIOR_SCORE_CONFLICT 照弹",
+   "ok": true,
+   "detail": "reason=BEHAVIOR_SCORE_CONFLICT"
+  },
+  {
+   "id": "P7b",
+   "desc": "beh_pool_from_rows 双读逐字相同（纯函数）",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "summary": {
+  "n": 21,
+  "ok": 21,
+  "pass": true
+ }
+}

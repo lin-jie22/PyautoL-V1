@@ -1,0 +1,475 @@
+{
+ "verdicts": [
+  {
+   "tag": "P1",
+   "claim": "RAISE 被提出 ⟹ 判据已不可能满足（交集 0）；且均分 ≥1 ⟺ 每个分数 ≥1",
+   "ok": true,
+   "detail": "交集=0 反例=0（提出 348 组 / 达标 3 组 —— 两臂都不为 0，说明穷举不是空转）"
+  },
+  {
+   "tag": "P2",
+   "claim": "判「不可达」⟺ 历史里有 <1 的分数；追加满分后均分严格 <1 且单调上升",
+   "ok": true,
+   "detail": "判为不可达 1076/1080 不一致 0｜末值 0.727273"
+  },
+  {
+   "tag": "P4",
+   "claim": "已达标 / 未到门槛 / 尺子坏了（>1.0）三种都不许判不可达",
+   "ok": true,
+   "detail": "全1.0 n=3 ⇒ None｜<1.0 但 n=2 ⇒ None（提议 ['PROBE']）｜有 1.2 的分数 ⇒ None（提议 ['RAISE']，转运维 []）"
+  },
+  {
+   "tag": "P5",
+   "claim": "两种理由都印出读数；0 条时仍打印（⛔ 不许静默丢弃）",
+   "ok": true,
+   "detail": "格=['cbeh', 'cstr']｜结构行=True｜行为行=True｜0 条时=  （没有：没有任何一格…"
+  },
+  {
+   "tag": "P7",
+   "claim": "两个变异体都让对应的判据失效（恒 None ⇒ 结构判据哑火；恒非空 ⇒ 误伤）",
+   "ok": true,
+   "detail": "A 哑火=True B 误伤=True"
+  },
+  {
+   "tag": "P3",
+   "claim": "结构判据让「永远闭不上的 RAISE」不再被提出：RAISE 提议归零、执行轮数下降、转运维提前",
+   "ok": true,
+   "detail": "RAISE 3→0｜执行 6→3｜转运维 round 6→3"
+  },
+  {
+   "tag": "P6",
+   "claim": "部署态：提议 40 条逐条相同（gid 集合相等）、escalations 0 格",
+   "ok": false,
+   "detail": "条数 40/40｜gid 相同=True｜转运维 0/2 格=['k02_encode_cookie', 'k03_unflatten']（其中套件内 0 格）"
+  }
+ ],
+ "readings": {
+  "p1": {
+   "combos": 364,
+   "n_raise": 348,
+   "n_sat": 3,
+   "both": 0,
+   "mean_counterexample": 0
+  },
+  "p2": {
+   "total": 1080,
+   "flagged": 1076,
+   "mismatch": 0,
+   "means_after_k": [
+    0.25,
+    0.4,
+    0.5,
+    0.5714285714285714,
+    0.625,
+    0.6666666666666666,
+    0.7,
+    0.7272727272727273
+   ]
+  },
+  "p4": "全1.0 n=3 ⇒ None｜<1.0 但 n=2 ⇒ None（提议 ['PROBE']）｜有 1.2 的分数 ⇒ None（提议 ['RAISE']，转运维 []）",
+  "p3": {
+   "old": {
+    "tag": "old",
+    "rows": [
+     {
+      "round": 1,
+      "kinds_before": [
+       "COVER"
+      ],
+      "acted": "COVER",
+      "verdict": "MET",
+      "n_esc": 0
+     },
+     {
+      "round": 2,
+      "kinds_before": [
+       "PROBE"
+      ],
+      "acted": "PROBE",
+      "verdict": "NOT_MET",
+      "n_esc": 0
+     },
+     {
+      "round": 3,
+      "kinds_before": [
+       "PROBE"
+      ],
+      "acted": "PROBE",
+      "verdict": "MET",
+      "n_esc": 0
+     },
+     {
+      "round": 4,
+      "kinds_before": [
+       "RAISE"
+      ],
+      "acted": "RAISE",
+      "verdict": "NOT_MET",
+      "n_esc": 0
+     },
+     {
+      "round": 5,
+      "kinds_before": [
+       "RAISE"
+      ],
+      "acted": "RAISE",
+      "verdict": "NOT_MET",
+      "n_esc": 0
+     },
+     {
+      "round": 6,
+      "kinds_before": [
+       "RAISE"
+      ],
+      "acted": "RAISE",
+      "verdict": "NOT_MET",
+      "n_esc": 1
+     },
+     {
+      "round": 7,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     }
+    ],
+    "n_acted": 6,
+    "n_raise_proposed": 3,
+    "esc_round": 6,
+    "n_log_rows": 6,
+    "ledger_kinds": [
+     "COVER",
+     "PROBE",
+     "PROBE",
+     "RAISE",
+     "RAISE",
+     "RAISE"
+    ]
+   },
+   "new": {
+    "tag": "new",
+    "rows": [
+     {
+      "round": 1,
+      "kinds_before": [
+       "COVER"
+      ],
+      "acted": "COVER",
+      "verdict": "MET",
+      "n_esc": 0
+     },
+     {
+      "round": 2,
+      "kinds_before": [
+       "PROBE"
+      ],
+      "acted": "PROBE",
+      "verdict": "NOT_MET",
+      "n_esc": 0
+     },
+     {
+      "round": 3,
+      "kinds_before": [
+       "PROBE"
+      ],
+      "acted": "PROBE",
+      "verdict": "MET",
+      "n_esc": 1
+     },
+     {
+      "round": 4,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     }
+    ],
+    "n_acted": 3,
+    "n_raise_proposed": 0,
+    "esc_round": 3,
+    "n_log_rows": 3,
+    "ledger_kinds": [
+     "COVER",
+     "PROBE",
+     "PROBE"
+    ]
+   }
+  },
+  "p6": {
+   "old": {
+    "tag": "old",
+    "n_goals": 40,
+    "gids": [
+     "0c8141cf8bbb8e7f",
+     "0df997c9794ce590",
+     "22986b43debb321d",
+     "24490d215d5a9bf7",
+     "24f577f832669806",
+     "2550c3b1e764fa4a",
+     "2ed90381b05f4501",
+     "2f6f2636fb802373",
+     "37171724999b2930",
+     "3c6c6c2e02bc7cf7",
+     "4aae983b9bae7603",
+     "4d784f269a28a7a1",
+     "547be64249545bad",
+     "5abdb3eb26b926d9",
+     "5bc6b988d9aea71e",
+     "5d9d2cf02500a3d5",
+     "6a9a35aaa0a1ca5d",
+     "6d0ed26186719bbd",
+     "732ee5a3062f0b01",
+     "774f41c33971442c",
+     "78fb5a071f95726b",
+     "7aa83d544b7ebf9a",
+     "83f14dfbd4724e21",
+     "93291d573bfa0c23",
+     "9cddc0eecaff38dd",
+     "b5bcb4d501e4bb65",
+     "b8d60cb0c2ec12ee",
+     "c269c6bf32c25683",
+     "c902b0ebeb185a2d",
+     "c9b0d53b0b9fc19b",
+     "cdfa95b9821bed80",
+     "cf877e984fd873d7",
+     "df80f5934720ae85",
+     "e391f075dc022f84",
+     "e7801515e49882b8",
+     "ef4f96972e39d737",
+     "efc0c920fb8c0daa",
+     "f2e1670f8471410f",
+     "f495e55caeae5d13",
+     "f915f8e1fdf18233"
+    ],
+    "n_esc": 0,
+    "esc_cells": [],
+    "esc_in_suite": [],
+    "esc_outside": []
+   },
+   "new": {
+    "tag": "new",
+    "n_goals": 40,
+    "gids": [
+     "0c8141cf8bbb8e7f",
+     "0df997c9794ce590",
+     "22986b43debb321d",
+     "24490d215d5a9bf7",
+     "24f577f832669806",
+     "2550c3b1e764fa4a",
+     "2ed90381b05f4501",
+     "2f6f2636fb802373",
+     "37171724999b2930",
+     "3c6c6c2e02bc7cf7",
+     "4aae983b9bae7603",
+     "4d784f269a28a7a1",
+     "547be64249545bad",
+     "5abdb3eb26b926d9",
+     "5bc6b988d9aea71e",
+     "5d9d2cf02500a3d5",
+     "6a9a35aaa0a1ca5d",
+     "6d0ed26186719bbd",
+     "732ee5a3062f0b01",
+     "774f41c33971442c",
+     "78fb5a071f95726b",
+     "7aa83d544b7ebf9a",
+     "83f14dfbd4724e21",
+     "93291d573bfa0c23",
+     "9cddc0eecaff38dd",
+     "b5bcb4d501e4bb65",
+     "b8d60cb0c2ec12ee",
+     "c269c6bf32c25683",
+     "c902b0ebeb185a2d",
+     "c9b0d53b0b9fc19b",
+     "cdfa95b9821bed80",
+     "cf877e984fd873d7",
+     "df80f5934720ae85",
+     "e391f075dc022f84",
+     "e7801515e49882b8",
+     "ef4f96972e39d737",
+     "efc0c920fb8c0daa",
+     "f2e1670f8471410f",
+     "f495e55caeae5d13",
+     "f915f8e1fdf18233"
+    ],
+    "n_esc": 2,
+    "esc_cells": [
+     "k02_encode_cookie",
+     "k03_unflatten"
+    ],
+    "esc_in_suite": [],
+    "esc_outside": [
+     "k02_encode_cookie",
+     "k03_unflatten"
+    ]
+   },
+   "same_gids": true
+  },
+  "no_break": {
+   "old": {
+    "tag": "old_nb",
+    "rows": [
+     {
+      "round": 1,
+      "kinds_before": [
+       "COVER"
+      ],
+      "acted": "COVER",
+      "verdict": "MET",
+      "n_esc": 0
+     },
+     {
+      "round": 2,
+      "kinds_before": [
+       "PROBE"
+      ],
+      "acted": "PROBE",
+      "verdict": "NOT_MET",
+      "n_esc": 0
+     },
+     {
+      "round": 3,
+      "kinds_before": [
+       "PROBE"
+      ],
+      "acted": "PROBE",
+      "verdict": "MET",
+      "n_esc": 0
+     },
+     {
+      "round": 4,
+      "kinds_before": [
+       "RAISE"
+      ],
+      "acted": "RAISE",
+      "verdict": "NOT_MET",
+      "n_esc": 0
+     },
+     {
+      "round": 5,
+      "kinds_before": [
+       "RAISE"
+      ],
+      "acted": "RAISE",
+      "verdict": "NOT_MET",
+      "n_esc": 0
+     },
+     {
+      "round": 6,
+      "kinds_before": [
+       "RAISE"
+      ],
+      "acted": "RAISE",
+      "verdict": "NOT_MET",
+      "n_esc": 1
+     },
+     {
+      "round": 7,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     },
+     {
+      "round": 8,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     }
+    ],
+    "n_acted": 6,
+    "n_raise_proposed": 3,
+    "esc_round": 6,
+    "n_log_rows": 6,
+    "ledger_kinds": [
+     "COVER",
+     "PROBE",
+     "PROBE",
+     "RAISE",
+     "RAISE",
+     "RAISE"
+    ]
+   },
+   "new": {
+    "tag": "new_nb",
+    "rows": [
+     {
+      "round": 1,
+      "kinds_before": [
+       "COVER"
+      ],
+      "acted": "COVER",
+      "verdict": "MET",
+      "n_esc": 0
+     },
+     {
+      "round": 2,
+      "kinds_before": [
+       "PROBE"
+      ],
+      "acted": "PROBE",
+      "verdict": "NOT_MET",
+      "n_esc": 0
+     },
+     {
+      "round": 3,
+      "kinds_before": [
+       "PROBE"
+      ],
+      "acted": "PROBE",
+      "verdict": "MET",
+      "n_esc": 1
+     },
+     {
+      "round": 4,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     },
+     {
+      "round": 5,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     },
+     {
+      "round": 6,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     },
+     {
+      "round": 7,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     },
+     {
+      "round": 8,
+      "kinds_before": [],
+      "acted": null,
+      "verdict": null,
+      "n_esc": 1
+     }
+    ],
+    "n_acted": 3,
+    "n_raise_proposed": 0,
+    "esc_round": 3,
+    "n_log_rows": 3,
+    "ledger_kinds": [
+     "COVER",
+     "PROBE",
+     "PROBE"
+    ]
+   }
+  },
+  "p6b": {
+   "mixed": "IDLE",
+   "clean": "DONE"
+  }
+ }
+}

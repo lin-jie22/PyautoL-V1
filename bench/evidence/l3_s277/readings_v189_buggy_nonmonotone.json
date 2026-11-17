@@ -1,0 +1,2578 @@
+[
+ {
+  "arm": "A",
+  "id": "k01_diff_tree",
+  "n_args": 2,
+  "cand0": 3,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 3,
+    "ops": [
+     "BOUND",
+     "EMPTY_IFF_EQUAL",
+     "TAIL"
+    ],
+    "system_sha1": "097f893d6ff3",
+    "raw": "{\"kind\": \"EMPTY_IFF_EQUAL\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\", \"keep\": \"\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "EMPTY_IFF_EQUAL",
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "",
+    "src": "INPUTS = [({'b': 1, 'a': 2}, {'b': 1, 'a': 2}), ({'b': 1, 'a': 2}, {}), ({}, {})]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = diff_tree(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "EMPTY_IFF_EQUAL"
+   }
+  ]
+ },
+ {
+  "arm": "B",
+  "id": "k01_diff_tree",
+  "n_args": 2,
+  "cand0": 3,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 3,
+    "ops": [
+     "BOUND",
+     "EMPTY_IFF_EQUAL",
+     "TAIL"
+    ],
+    "system_sha1": "097f893d6ff3",
+    "raw": "{\"kind\": \"EMPTY_IFF_EQUAL\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\", \"keep\": \"\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "EMPTY_IFF_EQUAL",
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "",
+    "src": "INPUTS = [({'b': 1, 'a': 2}, {'b': 1, 'a': 2}), ({'b': 1, 'a': 2}, {}), ({}, {})]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = diff_tree(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "EMPTY_IFF_EQUAL",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "EMPTY_IFF_EQUAL"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 3,
+     "cand_after": 2
+    }
+   },
+   {
+    "round": 2,
+    "cand": 2,
+    "ops": [
+     "BOUND",
+     "TAIL"
+    ],
+    "system_sha1": "541ab9d1d2d9",
+    "raw": "{\"kind\": \"BOUND\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"0\", \"neg\": \"paren\"}",
+    "built": false,
+    "pass_oracle": false,
+    "bite_partial": false,
+    "bite_stub": false,
+    "disc": false,
+    "admit": false,
+    "kind": "BOUND",
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "0",
+     "neg": "paren"
+    },
+    "fail": "TYPES",
+    "err": "BOUND 的第二个类型必须是 \"int\"（长度），拿到的是 'dict'",
+    "oracle_const": null,
+    "signal": "STRUCT:TYPES",
+    "chosen": "BOUND",
+    "narrow": {
+     "signal": "STRUCT:TYPES",
+     "scope": "one",
+     "removed": [
+      "BOUND"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 3,
+     "cand_after": 2
+    }
+   },
+   {
+    "round": 3,
+    "cand": 2,
+    "ops": [
+     "EMPTY_IFF_EQUAL",
+     "TAIL"
+    ],
+    "system_sha1": "768e1462ab6b",
+    "raw": "{\"kind\": \"EMPTY_IFF_EQUAL\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\", \"keep\": \"\", \"sep\": \".\", \"dec\": \"0\", \"neg\": \"paren\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "EMPTY_IFF_EQUAL",
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "sep": ".",
+     "dec": "0",
+     "neg": "paren"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "",
+    "src": "INPUTS = [({'b': 1, 'a': 2}, {'b': 1, 'a': 2}), ({'b': 1, 'a': 2}, {}), ({}, {})]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = diff_tree(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "EMPTY_IFF_EQUAL",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "EMPTY_IFF_EQUAL"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 3,
+     "cand_after": 2
+    }
+   }
+  ]
+ },
+ {
+  "arm": "C",
+  "id": "k01_diff_tree",
+  "n_args": 2,
+  "cand0": 3,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 3,
+    "ops": [
+     "BOUND",
+     "EMPTY_IFF_EQUAL",
+     "TAIL"
+    ],
+    "system_sha1": "097f893d6ff3",
+    "raw": "{\"kind\": \"EMPTY_IFF_EQUAL\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\", \"keep\": \"\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "EMPTY_IFF_EQUAL",
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "",
+    "src": "INPUTS = [({'b': 1, 'a': 2}, {'b': 1, 'a': 2}), ({'b': 1, 'a': 2}, {}), ({}, {})]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = diff_tree(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "EMPTY_IFF_EQUAL",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "EMPTY_IFF_EQUAL"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 3,
+     "cand_after": 2
+    }
+   },
+   {
+    "round": 2,
+    "cand": 2,
+    "ops": [
+     "BOUND",
+     "TAIL"
+    ],
+    "system_sha1": "541ab9d1d2d9",
+    "raw": "{\"kind\": \"BOUND\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"0\", \"neg\": \"paren\"}",
+    "built": false,
+    "pass_oracle": false,
+    "bite_partial": false,
+    "bite_stub": false,
+    "disc": false,
+    "admit": false,
+    "kind": "BOUND",
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "0",
+     "neg": "paren"
+    },
+    "fail": "TYPES",
+    "err": "BOUND 的第二个类型必须是 \"int\"（长度），拿到的是 'dict'",
+    "oracle_const": null,
+    "signal": "STRUCT:TYPES",
+    "chosen": "BOUND",
+    "narrow": {
+     "signal": "STRUCT:TYPES",
+     "scope": "class",
+     "removed": [
+      "BOUND",
+      "TAIL"
+     ],
+     "reason": "SIGNATURE",
+     "probes": 3,
+     "cand_before": 3,
+     "cand_after": 1
+    }
+   },
+   {
+    "round": 3,
+    "cand": 1,
+    "ops": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "system_sha1": "c08448e84fdf",
+    "raw": "{\"kind\": \"EMPTY_IFF_EQUAL\", \"types\": [\"dict\", \"dict\"], \"decode\": \"json.loads\", \"keep\": \"ellipsis_tail_n\", \"sep\": \"us\", \"dec\": \"3\", \"neg\": \"paren\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "EMPTY_IFF_EQUAL",
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "ellipsis_tail_n",
+     "sep": "us",
+     "dec": "3",
+     "neg": "paren"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "",
+    "src": "INPUTS = [({'b': 1, 'a': 2}, {'b': 1, 'a': 2}), ({'b': 1, 'a': 2}, {}), ({}, {})]\n\n\ndef _rel():\n    for a, b in INPUTS:\n        got = diff_tree(a, b)\n        if (got == {}) != (a == b):\n            raise AssertionError(f\"EMPTY_IFF_EQUAL: {a!r} vs {b!r} ⇒ {got!r}\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "EMPTY_IFF_EQUAL",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "EMPTY_IFF_EQUAL"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 3,
+     "cand_after": 2
+    }
+   }
+  ]
+ },
+ {
+  "arm": "A",
+  "id": "k02_encode_cookie",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "parse_qsl"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2; b=1' 解回 {'a': '2; b=1'}",
+    "src": "from urllib.parse import parse_qsl\ndecode = lambda s: dict(parse_qsl(s))\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP"
+   }
+  ]
+ },
+ {
+  "arm": "B",
+  "id": "k02_encode_cookie",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "parse_qsl"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2; b=1' 解回 {'a': '2; b=1'}",
+    "src": "from urllib.parse import parse_qsl\ndecode = lambda s: dict(parse_qsl(s))\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "SUBSEQ"
+    ],
+    "system_sha1": "7eafbe4ab490",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"0\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "parse_qsl",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "0",
+     "neg": "minus"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = encode_cookie(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"2\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "parse_qsl",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "2",
+     "neg": "minus"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2; b=1' 解回 {'a': '2; b=1'}",
+    "src": "from urllib.parse import parse_qsl\ndecode = lambda s: dict(parse_qsl(s))\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "C",
+  "id": "k02_encode_cookie",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "parse_qsl"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2; b=1' 解回 {'a': '2; b=1'}",
+    "src": "from urllib.parse import parse_qsl\ndecode = lambda s: dict(parse_qsl(s))\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "SUBSEQ"
+    ],
+    "system_sha1": "7eafbe4ab490",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"0\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "parse_qsl",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "0",
+     "neg": "minus"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = encode_cookie(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"parse_qsl\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"2\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "parse_qsl",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "2",
+     "neg": "minus"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2; b=1' 解回 {'a': '2; b=1'}",
+    "src": "from urllib.parse import parse_qsl\ndecode = lambda s: dict(parse_qsl(s))\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = encode_cookie(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "A",
+  "id": "k03_unflatten",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"dict\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "dict",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = unflatten(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = unflatten(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT"
+   }
+  ]
+ },
+ {
+  "arm": "B",
+  "id": "k03_unflatten",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"dict\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "dict",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = unflatten(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = unflatten(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ {'b': 1, 'a': 2} 解不开：the JSON object must be str, bytes or bytearray, not dict",
+    "src": "import json\ndecode = json.loads\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = unflatten(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "SUBSEQ"
+    ],
+    "system_sha1": "7eafbe4ab490",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = unflatten(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = unflatten(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "C",
+  "id": "k03_unflatten",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"dict\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "dict",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = unflatten(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = unflatten(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ {'b': 1, 'a': 2} 解不开：the JSON object must be str, bytes or bytearray, not dict",
+    "src": "import json\ndecode = json.loads\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = unflatten(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "SUBSEQ"
+    ],
+    "system_sha1": "7eafbe4ab490",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({'b': 1, 'a': 2},), ({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = unflatten(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = unflatten(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "A",
+  "id": "k04_to_ini",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     2,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = to_ini(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = to_ini(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT"
+   }
+  ]
+ },
+ {
+  "arm": "B",
+  "id": "k04_to_ini",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     2,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = to_ini(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = to_ini(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     2,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {} ⇒ '' 解不开：Expecting value: line 1 column 1 (char 0)",
+    "src": "import json\ndecode = json.loads\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = to_ini(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "SUBSEQ"
+    ],
+    "system_sha1": "7eafbe4ab490",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"dict\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "dict",
+     "keep": "tail_n"
+    },
+    "domain": [
+     2,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = to_ini(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = to_ini(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "C",
+  "id": "k04_to_ini",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     2,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = to_ini(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = to_ini(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"dict\"], \"decode\": \"json.loads\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "json.loads",
+     "keep": "tail_n"
+    },
+    "domain": [
+     2,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: {} ⇒ '' 解不开：Expecting value: line 1 column 1 (char 0)",
+    "src": "import json\ndecode = json.loads\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = to_ini(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "SUBSEQ"
+    ],
+    "system_sha1": "7eafbe4ab490",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"dict\"], \"decode\": \"dict\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "dict"
+    ],
+    "slots": {
+     "decode": "dict",
+     "keep": "tail_n"
+    },
+    "domain": [
+     2,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [({},), ({'x': {'y': 1}},)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = to_ini(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = to_ini(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "A",
+  "id": "g7d2_dedupe_keep",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"CONSERVE\", \"types\": [\"list\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "CONSERVE",
+    "types": [
+     "list"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: CONSERVE: ['b', 'a', 'b'] ⇒ 叶子 {'b': 1, 'a': 1} ≠ {'b': 2, 'a': 1}",
+    "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "CONSERVE"
+   }
+  ]
+ },
+ {
+  "arm": "B",
+  "id": "g7d2_dedupe_keep",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"CONSERVE\", \"types\": [\"list\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "CONSERVE",
+    "types": [
+     "list"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: CONSERVE: ['b', 'a', 'b'] ⇒ 叶子 {'b': 1, 'a': 1} ≠ {'b': 2, 'a': 1}",
+    "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "CONSERVE",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "CONSERVE"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "a9b38d3cd1ef",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"list\"], \"decode\": \"str\", \"keep\": \"tail_1\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "list"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_1"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: INVARIANT: ['b', 'a', 'b'] ⇒ ['b', 'a'] 但 upper 后 ⇒ ['[', \"'\", 'B', ',', ' ', 'A', ']']",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = dedupe_keep(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"CONSERVE\", \"types\": [\"list\"], \"decode\": \"\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "CONSERVE",
+    "types": [
+     "list"
+    ],
+    "slots": {
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: CONSERVE: ['b', 'a', 'b'] ⇒ 叶子 {'b': 1, 'a': 1} ≠ {'b': 2, 'a': 1}",
+    "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "CONSERVE",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "CONSERVE"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "C",
+  "id": "g7d2_dedupe_keep",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"CONSERVE\", \"types\": [\"list\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "CONSERVE",
+    "types": [
+     "list"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: CONSERVE: ['b', 'a', 'b'] ⇒ 叶子 {'b': 1, 'a': 1} ≠ {'b': 2, 'a': 1}",
+    "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "CONSERVE",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "CONSERVE"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "a9b38d3cd1ef",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"list\"], \"decode\": \"str\", \"keep\": \"tail_1\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "list"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_1"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: INVARIANT: ['b', 'a', 'b'] ⇒ ['b', 'a'] 但 upper 后 ⇒ ['[', \"'\", 'B', ',', ' ', 'A', ']']",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = dedupe_keep(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"CONSERVE\", \"types\": [\"list\"], \"decode\": \"\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "CONSERVE",
+    "types": [
+     "list"
+    ],
+    "slots": {
+     "keep": "tail_n"
+    },
+    "domain": [
+     3,
+     3
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: CONSERVE: ['b', 'a', 'b'] ⇒ 叶子 {'b': 1, 'a': 1} ≠ {'b': 2, 'a': 1}",
+    "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [(['b', 'a', 'b'],), ([],), (['A', 'a'],)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = dedupe_keep(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "CONSERVE",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "CONSERVE"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "A",
+  "id": "g7d3_fmt_amount",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"NUMFMT\", \"types\": [\"num\"], \"decode\": \"us\", \"dec\": \"2\", \"neg\": \"paren\", \"sep\": \"comma\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": false,
+    "kind": "NUMFMT",
+    "types": [
+     "num"
+    ],
+    "slots": {
+     "decode": "us",
+     "sep": "comma",
+     "dec": "2",
+     "neg": "paren"
+    },
+    "domain": [
+     6,
+     6
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: NUMFMT: 1234.5 ⇒ '1 234.50' ≠ '1,234.50'",
+    "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        want = _numfmt(x, ',', 2, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "NUMFMT"
+   }
+  ]
+ },
+ {
+  "arm": "B",
+  "id": "g7d3_fmt_amount",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"NUMFMT\", \"types\": [\"num\"], \"decode\": \"us\", \"dec\": \"2\", \"neg\": \"paren\", \"sep\": \"comma\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": false,
+    "kind": "NUMFMT",
+    "types": [
+     "num"
+    ],
+    "slots": {
+     "decode": "us",
+     "sep": "comma",
+     "dec": "2",
+     "neg": "paren"
+    },
+    "domain": [
+     6,
+     6
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: NUMFMT: 1234.5 ⇒ '1 234.50' ≠ '1,234.50'",
+    "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        want = _numfmt(x, ',', 2, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "NUMFMT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "NUMFMT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "ed86fc11ad35",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"num\"], \"decode\": \"str\", \"keep\": \"ellipsis_tail_n\", \"sep\": \"comma\", \"dec\": \"2\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "num"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "ellipsis_tail_n",
+     "sep": "comma",
+     "dec": "2",
+     "neg": "minus"
+    },
+    "domain": [
+     6,
+     6
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ '0.00' 解回 '0.00'",
+    "src": "decode = str\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "SUBSEQ"
+    ],
+    "system_sha1": "7eafbe4ab490",
+    "raw": "{\"kind\": \"NUMFMT\", \"types\": [\"num\"], \"decode\": \"str\", \"sep\": \"comma\", \"dec\": \"2\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": false,
+    "kind": "NUMFMT",
+    "types": [
+     "num"
+    ],
+    "slots": {
+     "decode": "str",
+     "sep": "comma",
+     "dec": "2",
+     "neg": "minus"
+    },
+    "domain": [
+     6,
+     6
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: NUMFMT: 1234.5 ⇒ '1 234.50' ≠ '1,234.50'",
+    "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        want = _numfmt(x, ',', 2, 'minus')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "NUMFMT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "NUMFMT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "C",
+  "id": "g7d3_fmt_amount",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"NUMFMT\", \"types\": [\"num\"], \"decode\": \"us\", \"dec\": \"2\", \"neg\": \"paren\", \"sep\": \"comma\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": false,
+    "kind": "NUMFMT",
+    "types": [
+     "num"
+    ],
+    "slots": {
+     "decode": "us",
+     "sep": "comma",
+     "dec": "2",
+     "neg": "paren"
+    },
+    "domain": [
+     6,
+     6
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: NUMFMT: 1234.5 ⇒ '1 234.50' ≠ '1,234.50'",
+    "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        want = _numfmt(x, ',', 2, 'paren')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "NUMFMT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "NUMFMT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "ed86fc11ad35",
+    "raw": "{\"kind\": \"ROUNDTRIP\", \"types\": [\"num\"], \"decode\": \"str\", \"keep\": \"ellipsis_tail_n\", \"sep\": \"comma\", \"dec\": \"2\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "ROUNDTRIP",
+    "types": [
+     "num"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "ellipsis_tail_n",
+     "sep": "comma",
+     "dec": "2",
+     "neg": "minus"
+    },
+    "domain": [
+     6,
+     6
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ '0.00' 解回 '0.00'",
+    "src": "decode = str\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        try:\n            back = decode(got)\n        except Exception as e:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解不开：{e}\")\n        if back != x:\n            raise AssertionError(f\"ROUNDTRIP: {x!r} ⇒ {got!r} 解回 {back!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "ROUNDTRIP",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "ROUNDTRIP"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "SUBSEQ"
+    ],
+    "system_sha1": "7eafbe4ab490",
+    "raw": "{\"kind\": \"NUMFMT\", \"types\": [\"num\"], \"decode\": \"str\", \"sep\": \"comma\", \"dec\": \"2\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": false,
+    "kind": "NUMFMT",
+    "types": [
+     "num"
+    ],
+    "slots": {
+     "decode": "str",
+     "sep": "comma",
+     "dec": "2",
+     "neg": "minus"
+    },
+    "domain": [
+     6,
+     6
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: NUMFMT: 1234.5 ⇒ '1 234.50' ≠ '1,234.50'",
+    "src": "def _numfmt(x, sep, dec, neg):\n    s = \"%.*f\" % (dec, abs(float(x)))\n    ip, _, fp = s.partition(\".\")\n    g = []\n    while len(ip) > 3:\n        g.insert(0, ip[-3:])\n        ip = ip[:-3]\n    g.insert(0, ip)\n    body = sep.join(g) + (\".\" + fp if dec else \"\")\n    if float(x) < 0:\n        return (\"(\" + body + \")\") if neg == \"paren\" else (\"-\" + body)\n    return body\nINPUTS = [(0,), (7,), (1234.5,), (-1234.5,), (1234567.891,), (-0.5,)]\n\n\ndef _rel():\n    for x, in INPUTS:\n        got = fmt_amount(x)\n        want = _numfmt(x, ',', 2, 'minus')\n        if got != want:\n            raise AssertionError(f\"NUMFMT: {x!r} ⇒ {got!r} ≠ {want!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "NUMFMT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "NUMFMT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "A",
+  "id": "g7e1_parse_flag",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"flag\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "flag"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n"
+    },
+    "domain": [
+     8,
+     8
+    ],
+    "why_oracle": "",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = parse_flag(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = parse_flag(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT"
+   }
+  ]
+ },
+ {
+  "arm": "B",
+  "id": "g7e1_parse_flag",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"flag\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "flag"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n"
+    },
+    "domain": [
+     8,
+     8
+    ],
+    "why_oracle": "",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = parse_flag(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = parse_flag(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"CONSERVE\", \"types\": [\"flag\"], \"decode\": \"str\", \"keep\": \"ellipsis_tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "CONSERVE",
+    "types": [
+     "flag"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "ellipsis_tail_n"
+    },
+    "domain": [
+     8,
+     8
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: CONSERVE: 'y' ⇒ 叶子 {True: 1} ≠ {'y': 1}",
+    "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = parse_flag(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "CONSERVE",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "one",
+     "removed": [
+      "CONSERVE"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "a9b38d3cd1ef",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"str\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"-\", \"dec\": \"0\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "str"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n",
+     "sep": "-",
+     "dec": "0",
+     "neg": "minus"
+    },
+    "domain": [
+     4,
+     4
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: INVARIANT: 所有输入同一个输出 —— 判据不承载信息",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [('abcdef',), ('',), ('  a b  ',), ('A;B=1,2',)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = parse_flag(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = parse_flag(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": true,
+    "signal": "CONST",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "CONST",
+     "scope": "one",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "C",
+  "id": "g7e1_parse_flag",
+  "n_args": 1,
+  "cand0": 5,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 5,
+    "ops": [
+     "CONSERVE",
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "22604033e053",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"flag\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": false,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "flag"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n"
+    },
+    "domain": [
+     8,
+     8
+    ],
+    "why_oracle": "",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = parse_flag(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = parse_flag(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 2,
+    "cand": 4,
+    "ops": [
+     "CONSERVE",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "4ba3c19e782a",
+    "raw": "{\"kind\": \"CONSERVE\", \"types\": [\"flag\"], \"decode\": \"str\", \"keep\": \"ellipsis_tail_n\", \"sep\": \"\", \"dec\": \"\", \"neg\": \"\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "CONSERVE",
+    "types": [
+     "flag"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "ellipsis_tail_n"
+    },
+    "domain": [
+     8,
+     8
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: CONSERVE: 'y' ⇒ 叶子 {True: 1} ≠ {'y': 1}",
+    "src": "def _leaf_values(v):\n    if isinstance(v, dict):\n        for k in v:\n            yield from _leaf_values(v[k])\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from _leaf_values(x)\n    else:\n        yield v\nINPUTS = [('y',), (' YES ',), ('0',), ('on',), ('  ',), ('xyz',), ('1',), ('OFF',)]\n\n\ndef _rel():\n    from collections import Counter\n    for x, in INPUTS:\n        got = parse_flag(x)\n        try:\n            have = Counter(_leaf_values(got))\n        except Exception as e:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ {got!r} 取不出叶子：{e}\")\n        want = Counter(_leaf_values(x))\n        if have != want:\n            raise AssertionError(f\"CONSERVE: {x!r} ⇒ 叶子 {dict(have)!r} ≠ {dict(want)!r}\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": false,
+    "signal": "SEMANTIC",
+    "chosen": "CONSERVE",
+    "narrow": {
+     "signal": "SEMANTIC",
+     "scope": "class",
+     "removed": [
+      "CONSERVE"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   },
+   {
+    "round": 3,
+    "cand": 4,
+    "ops": [
+     "INVARIANT",
+     "NUMFMT",
+     "ROUNDTRIP",
+     "SUBSEQ"
+    ],
+    "system_sha1": "a9b38d3cd1ef",
+    "raw": "{\"kind\": \"INVARIANT\", \"types\": [\"str\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"-\", \"dec\": \"0\", \"neg\": \"minus\"}",
+    "built": true,
+    "pass_oracle": false,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": false,
+    "admit": true,
+    "kind": "INVARIANT",
+    "types": [
+     "str"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n",
+     "sep": "-",
+     "dec": "0",
+     "neg": "minus"
+    },
+    "domain": [
+     4,
+     4
+    ],
+    "why_oracle": "题面示例未通过：AssertionError: INVARIANT: 所有输入同一个输出 —— 判据不承载信息",
+    "src": "def _norm_v187(s, how):\n    s = str(s)\n    return {'upper': s.upper(), 'lower': s.lower(), 'strip': s.strip(), 'strip_upper': s.strip().upper(), 'strip_lower': s.strip().lower()}[how]\nINPUTS = [('abcdef',), ('',), ('  a b  ',), ('A;B=1,2',)]\n\n\ndef _rel():\n    seen = []\n    for x, in INPUTS:\n        got = parse_flag(x)\n        for how in ('upper', 'lower', 'strip', 'strip_upper', 'strip_lower'):\n            alt = parse_flag(_norm_v187(x, how))\n            if repr(got) != repr(alt):\n                raise AssertionError(f\"INVARIANT: {x!r} ⇒ {got!r} 但 {how} 后 ⇒ {alt!r}\")\n        seen.append(repr(got))\n    if len(set(seen)) < 2:\n        raise AssertionError(\"INVARIANT: 所有输入同一个输出 —— 判据不承载信息\")\n    return True\n",
+    "fail": "SEMANTIC",
+    "oracle_const": true,
+    "signal": "CONST",
+    "chosen": "INVARIANT",
+    "narrow": {
+     "signal": "CONST",
+     "scope": "class",
+     "removed": [
+      "INVARIANT"
+     ],
+     "reason": "SINGLE",
+     "probes": 0,
+     "cand_before": 5,
+     "cand_after": 4
+    }
+   }
+  ]
+ },
+ {
+  "arm": "A",
+  "id": "g7e2_truncate_tail",
+  "n_args": 2,
+  "cand0": 3,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 3,
+    "ops": [
+     "BOUND",
+     "EMPTY_IFF_EQUAL",
+     "TAIL"
+    ],
+    "system_sha1": "097f893d6ff3",
+    "raw": "{\"kind\": \"TAIL\", \"types\": [\"str\", \"int\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"0\", \"neg\": \"paren\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "kind": "TAIL",
+    "types": [
+     "str",
+     "int"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "0",
+     "neg": "paren"
+    },
+    "domain": [
+     4,
+     4
+    ],
+    "why_oracle": "",
+    "src": "INPUTS = [('abcdef', 1), ('abcdef', 9), ('  a b  ', 3), ('', 1)]\n\n\ndef _rel():\n    for s, n in INPUTS:\n        got = truncate_tail(s, n)\n        if len(s) > n and not got.endswith(s[-n:]):\n            raise AssertionError(f\"TAIL: {(s, n)!r} ⇒ {got!r}\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "OK",
+    "chosen": "TAIL"
+   }
+  ]
+ },
+ {
+  "arm": "B",
+  "id": "g7e2_truncate_tail",
+  "n_args": 2,
+  "cand0": 3,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 3,
+    "ops": [
+     "BOUND",
+     "EMPTY_IFF_EQUAL",
+     "TAIL"
+    ],
+    "system_sha1": "097f893d6ff3",
+    "raw": "{\"kind\": \"TAIL\", \"types\": [\"str\", \"int\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"0\", \"neg\": \"paren\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "kind": "TAIL",
+    "types": [
+     "str",
+     "int"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "0",
+     "neg": "paren"
+    },
+    "domain": [
+     4,
+     4
+    ],
+    "why_oracle": "",
+    "src": "INPUTS = [('abcdef', 1), ('abcdef', 9), ('  a b  ', 3), ('', 1)]\n\n\ndef _rel():\n    for s, n in INPUTS:\n        got = truncate_tail(s, n)\n        if len(s) > n and not got.endswith(s[-n:]):\n            raise AssertionError(f\"TAIL: {(s, n)!r} ⇒ {got!r}\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "OK",
+    "chosen": "TAIL"
+   }
+  ]
+ },
+ {
+  "arm": "C",
+  "id": "g7e2_truncate_tail",
+  "n_args": 2,
+  "cand0": 3,
+  "rounds": [
+   {
+    "round": 1,
+    "cand": 3,
+    "ops": [
+     "BOUND",
+     "EMPTY_IFF_EQUAL",
+     "TAIL"
+    ],
+    "system_sha1": "097f893d6ff3",
+    "raw": "{\"kind\": \"TAIL\", \"types\": [\"str\", \"int\"], \"decode\": \"str\", \"keep\": \"tail_n\", \"sep\": \"space\", \"dec\": \"0\", \"neg\": \"paren\"}",
+    "built": true,
+    "pass_oracle": true,
+    "bite_partial": true,
+    "bite_stub": true,
+    "disc": true,
+    "admit": true,
+    "kind": "TAIL",
+    "types": [
+     "str",
+     "int"
+    ],
+    "slots": {
+     "decode": "str",
+     "keep": "tail_n",
+     "sep": "space",
+     "dec": "0",
+     "neg": "paren"
+    },
+    "domain": [
+     4,
+     4
+    ],
+    "why_oracle": "",
+    "src": "INPUTS = [('abcdef', 1), ('abcdef', 9), ('  a b  ', 3), ('', 1)]\n\n\ndef _rel():\n    for s, n in INPUTS:\n        got = truncate_tail(s, n)\n        if len(s) > n and not got.endswith(s[-n:]):\n            raise AssertionError(f\"TAIL: {(s, n)!r} ⇒ {got!r}\")\n    return True\n",
+    "fail": "",
+    "oracle_const": false,
+    "signal": "OK",
+    "chosen": "TAIL"
+   }
+  ]
+ }
+]

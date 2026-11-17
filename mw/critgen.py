@@ -282,6 +282,147 @@ def retry_hint(d: dict) -> str:
             "⛔ 仍然不要写 inputs。请只输出一个 JSON。")
 
 
+#: 诊断信号（V189，§257）：结构两类 + 语义两类 + 通过。顺序即优先级。
+SIGNALS: tuple[str, ...] = ("OK", "STRUCT:TYPES", "STRUCT:OTHER", "CONST", "SEMANTIC")
+
+
+def read_signal(*, built: bool, fail: str = "", pass_oracle: bool = False,
+                bite_stub: bool = False, bite_partial: bool = False,
+                oracle_const: bool | None = None) -> str:
+    """把**一格读数**折成一个信号，供 `narrow()` 决定下一轮的候选集。
+
+    ## ⛔ 最要紧的边界：这里不许看「哪个算子更容易过」
+
+    装置手里有 oracle，用 `pass_oracle` 反推「该换成谁」就是拿尺子挑尺子 = 答案泄漏。
+    本函数只吃两样**不泄漏**的东西：
+
+    1. 结构事实（`built` / `fail`）—— 来自 `diagnose()`，只问「吃得下吗」；
+    2. **输出是否恒定**（`oracle_const`）—— 来自 `constant_on()`，只问「有没有产出差异」。
+
+    ⚠️ `pass_oracle`/`bite_stub`/`bite_partial` 只用来区分 `OK` 与 `SEMANTIC`（**是否还要动作**），
+       ⛔ 不参与「换成哪个」。两者的区别是本轮设计的全部依据。
+    """
+    if not built:
+        #: ⚠️ `OUT_OF_DOMAIN` 与 `TYPES` 是同一件事（该签名在目标实现上没有域），
+        #: 归到 `OTHER` 会让 `narrow()` 的签名分支对最常见的不可达视而不见（PREREG §2.4）。
+        return "STRUCT:TYPES" if (fail or "") in ("TYPES", "OUT_OF_DOMAIN") else "STRUCT:OTHER"
+    if oracle_const is True:
+        return "CONST"
+    if pass_oracle and bite_stub and bite_partial:
+        return "OK"
+    #: `(1,1,0)`（过正确、咬空实现、咬不住部分实现）落在这里，不是 `OK`：
+    #: `disc` 的定义就是 `pass_oracle ∧ bite_partial`，算成 OK 会让该题第 2 轮不动作（§2.4）。
+    return "SEMANTIC"
+
+
+def reachable_on(kind: str, types: list, oracle: str, fn: str) -> bool:
+    """这个 (算子, 签名) 在**目标实现**上有没有至少一组合法输入。⛔ 不问对错。
+
+    ⚠️ 名字带 `_on` 是必须的：本模块**已有** `reachable(kind, n_args)`（只按 arity 判结构
+       可达，`validate()` 在用、`AZ145` 钉着）。初版撞名把它覆盖了 ⇒ `validate()` 报
+       `missing 2 required positional arguments`。加函数前没查重名，记一笔（纪律 19 同型）。
+
+    ⚠️ 探测失败（子进程超时/没吐标记）⇒ 返回 `True`（不排除）。与 `ops_for(n_args<0)`
+       同一条口径：签名未知或探测失败时**不许假装有约束**（纪律 5：恒真动作 = 假绿）。
+    """
+    if kind not in OPS or not (oracle or "").strip() or not fn:
+        return False
+    try:
+        ins = _inputs_for(kind, list(types or []))
+    except Exception:
+        #: 签名里出现了 `TYPES` 之外的名字（模型瞎写）⇒ 生成不出输入 ⇒ 不知道，**不删**。
+        #: 与探测失败同一条口径：不确定就不许假装有约束（fail-open，纪律 5）。
+        return True
+    if not ins:
+        return False
+    legal = legal_indexes(oracle, fn, ins)
+    if legal is None:
+        return True
+    return bool(legal)
+
+
+def narrow(signal: str, n_args: int, chosen: str, types: list,
+           oracle: str, fn: str, *, scope: str = "one",
+           from_ops: dict | None = None) -> tuple[dict, dict]:
+    """**诊断信号 → 下一轮的候选集**。这是 V189 的全部改动本体（§257）。
+
+    ## 为什么是这个形状
+
+    V185 已量过「诊断 → 说给模型听 → 重选」：两臂读数**逐字相同**（模型把 `TAIL` 换成
+    另一个二元算子 `BOUND`）。⇒ 文本不是约束。V186 的结论是「**选不到**才算约束」。
+
+    所以「L2（对失败成因的判断）→ L5（下一轮的可选域）」通电的唯一形态是：
+    **诊断的输出直接进候选集**，而不是进 prompt 的措辞。
+
+    ## `scope` 就是 B/C 两臂的唯一差别
+
+    - `scope="one"`：只删 `chosen` —— **不看信号**。这是对照臂：它证明「多跑一轮」本身
+      不产生变化（`F4`）。
+    - `scope="class"`：按 `signal` 决定删除**范围**（见 §2.1 表）。
+
+    ⇒ 两臂共用同一个函数、同一份删后重建逻辑，差别只有一个参数（纪律 65）。
+
+    ⚠️ `scope="class"` 下 `STRUCT:TYPES` 可能把候选集删光（该签名根本不可达）⇒ 退回
+       「只删 `chosen`」并标 `ALL_UNREACHABLE_SIGNATURE`。⛔ 不许返回空集当「收敛」：
+       空集是「这题无解」，不是「已经选对」（纪律 67：分母不许混进结构不可达成员）。
+    """
+    if scope not in ("one", "class"):
+        raise ValueError(f"scope 只能是 one/class，拿到 {scope!r}")
+    #: ⚠️ **必须**能从上一轮的结果继续删。初版每次都从 `ops_for(n)` 重来 ⇒ 第二轮删掉的
+    #: 算子在第三轮又回到候选集（实测 `k02` 的序列 `INVARIANT → CONSERVE → INVARIANT`），
+    #: 「收窄」变成「抖动」。⛔ 收窄必须是**单调不增**的，否则它不叫收窄。
+    cand = dict(from_ops) if from_ops is not None else ops_for(n_args)
+    why = {"signal": signal, "scope": scope, "removed": [], "reason": "", "probes": 0,
+           "cand_before": len(cand)}
+    if not cand:
+        why["reason"] = "NO_CANDIDATE_AT_ARITY"
+        return {}, why
+
+    if scope == "one":
+        if chosen in cand:
+            why["removed"] = [chosen]
+            why["reason"] = "SINGLE"
+        else:
+            why["reason"] = "CHOSEN_NOT_IN_CANDIDATE"
+        out = {k: v for k, v in cand.items() if k not in why["removed"]}
+        why["cand_after"] = len(out)
+        return out, why
+
+    if signal == "OK":
+        why["reason"] = "NO_ACTION"
+        why["cand_after"] = len(cand)
+        return dict(cand), why
+
+    removed: list[str] = []
+    #: ⚠️ 签名本身不合法（长度不对 / 有 `TYPES` 外的名字）⇒ `STRUCT:TYPES` 的「按类删」
+    #: 无从下手（要按签名测可达，而签名是坏的）⇒ 退回只删 `chosen`，并标 `BAD_SIGNATURE`。
+    #: ⛔ 不许拿坏签名去 `_inputs_for()` 里碰运气 —— 那会把装置异常读成「不可达」。
+    _st = [str(x) for x in (types or [])]
+    _types_ok = bool(_st) and len(_st) == max(n_args, 0) and all(x in TYPES for x in _st)
+    if signal == "STRUCT:TYPES" and not _types_ok:
+        why["reason"] = "BAD_SIGNATURE"
+        removed = [chosen] if chosen in cand else []
+    elif signal == "STRUCT:TYPES":
+        for k in cand:
+            why["probes"] += 1
+            if not reachable_on(k, list(types or []), oracle, fn):
+                removed.append(k)
+        if len(removed) >= len(cand):
+            why["reason"] = "ALL_UNREACHABLE_SIGNATURE"
+            removed = [chosen] if chosen in cand else []
+        else:
+            why["reason"] = "SIGNATURE"
+    else:
+        #: `STRUCT:OTHER` / `CONST` / `SEMANTIC`：没有不泄漏的信息说该换成谁
+        #: ⇒ 只能删掉**已被否证的那一个**（`CONST` 的「同签名下恒定者」已降级，见 PREREG §2.1）。
+        why["reason"] = "SINGLE"
+        removed = [chosen] if chosen in cand else []
+    why["removed"] = removed
+    out = {k: v for k, v in cand.items() if k not in removed}
+    why["cand_after"] = len(out)
+    return out, why
+
+
 def _inputs_for(kind: str, types: list) -> list:
     """按类型生成输入（PREREG §2.2 的三条规则，逐字实现）。
 
@@ -600,7 +741,8 @@ def build(kind: str, types: list, slots: dict, fn: str, inputs: list | None = No
     return _render(pre, inputs, body)
 
 
-def skeleton(n_args: int = 1, kind: str | None = None) -> str:
+def skeleton(n_args: int = 1, kind: str | None = None,
+             allow: dict | None = None) -> str:
     """给模型看的 JSON 骨架。⛔ 不含任何题目信息。
 
     ⭐ V187：`types` 的占位**重复 `n_args` 次** —— V186 实测模型写
@@ -608,7 +750,9 @@ def skeleton(n_args: int = 1, kind: str | None = None) -> str:
     自己数参数。骨架的**长度**就是它看到的约束（V185 已证：话不是约束）。
     ⛔ 槽的可选值全部列出，但那只是陈列（与 `catalogue()` 同一批事实），不是推荐。
     """
-    kinds = [kind] if kind else sorted(OPS)
+    #: `allow` 非 None ⇒ 只列剩下的（V189 收窄臂）。⚠️ 用 `is not None` 而不是真值判断：
+    #: 空集也要能表达 —— 「一个都不剩」是有效状态（`EXHAUSTED`），⛔ 不是「没给约束」。
+    kinds = [kind] if kind else (sorted(allow) if allow is not None else sorted(OPS))
     n = n_args if isinstance(n_args, int) and n_args >= 1 else 1
     tslot = '"<' + "|".join(TYPES) + '>"'
     return ('{"kind": "<' + "|".join(kinds) + '>", '
@@ -633,13 +777,16 @@ def ops_for(n_args: int) -> dict:
     return {k: v for k, v in OPS.items() if v["arity"] == n_args}
 
 
-def catalogue(n_args: int | None = None) -> str:
+def catalogue(n_args: int | None = None, allow: dict | None = None) -> str:
     """算子目录（给 prompt 用）：每个算子一行，含 arity 与槽的可选值。
 
     `n_args` 给了 ⇒ 只列该 arity 的算子（V186 臂用）；`None` ⇒ 全量（`retry_hint` 用）。
+    `allow` 非 None ⇒ **只列这个集合**（V189 的收窄臂）—— 它压过 `n_args`。
+    ⚠️ 空 dict 是有效输入（一个都不剩），⛔ 不许 fallback 回全量。
     """
+    src = allow if allow is not None else (OPS if n_args is None else ops_for(n_args))
     out = []
-    for k, spec in (OPS if n_args is None else ops_for(n_args)).items():
+    for k, spec in src.items():
         extra = ""
         for key in spec["slots"]:
             table = SLOT_TABLES[key]

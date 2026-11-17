@@ -15884,6 +15884,129 @@ check(RS, "AZ151d `metacrit.admit(src, params=)` 只放行**规格参数**的比
       f"numfmt={_MC.admit(_az151_numf)[0]}/"
       f"{_MC.admit(_az151_numf, _CG.spec_params('NUMFMT'))[0]}")
 
+# ═══════════ V189（§257）：诊断 → 收窄 → 判断（AZ152） ═══════════
+#
+# 本轮**没有一条契约断言「分数变好」** —— 它钉的是「诊断的输出能不能改变下一轮的
+# 可选空间」。V185 已量过「说给模型听」不产生变化（两臂读数逐字相同），所以这里
+# 钉的全部是**结构**：信号怎么分类、收窄删了谁、空集怎么表达。
+
+# ── AZ152a：`read_signal()` 的五类映射 ────────────────────────────────
+_az152_tab = [
+    #: (built, fail, pass_oracle, bite_stub, bite_partial, oracle_const) → 期望
+    ((False, "TYPES", 0, 0, 0, None), "STRUCT:TYPES"),
+    ((False, "OUT_OF_DOMAIN", 0, 0, 0, None), "STRUCT:TYPES"),   # ⚠️ 与 TYPES 同类
+    ((False, "ARITY", 0, 0, 0, None), "STRUCT:OTHER"),
+    ((False, "SHAPE", 0, 0, 0, None), "STRUCT:OTHER"),
+    ((True, "", 0, 0, 0, True), "CONST"),                        # 恒定压过判分
+    ((True, "", 1, 1, 1, False), "OK"),
+    ((True, "", 0, 1, 1, False), "SEMANTIC"),                    # 误伤正确实现
+    ((True, "", 1, 1, 0, False), "SEMANTIC"),                    # `(1,1,0)` 不归 OK
+    ((True, "", 1, 1, 1, None), "OK"),                           # 探测失败不阻止判 OK
+]
+_az152_got = [(sig, _CG.read_signal(built=b, fail=f, pass_oracle=bool(p),
+                                    bite_stub=bool(s), bite_partial=bool(pb),
+                                    oracle_const=c))
+              for (b, f, p, s, pb, c), sig in _az152_tab]
+
+check(RS, "AZ152a `critgen.read_signal()` 把一格读数折成五类信号，且**只吃不泄漏的东西**：\n"
+          "              ① `STRUCT:TYPES` 同时收 `TYPES` 与 `OUT_OF_DOMAIN` —— 它们是同一件事\n"
+          "              「该签名在目标实现上没有域」，分成两类会让签名分支对最常见的不可达视而不见；\n"
+          "              ② `CONST`（输出恒定）**压过**判分：那格不构成关于判据的证据；\n"
+          "              ③ `(1,1,0)`（过正确、咬空实现、咬不住部分实现）归 `SEMANTIC` 不归 `OK` ——\n"
+          "              `disc` 的定义就是 `pass_oracle ∧ bite_partial`；\n"
+          "              撤回语义：把 `OUT_OF_DOMAIN` 从 TYPES 分支去掉 ⇒ 第 2 项变 `STRUCT:OTHER` ⇒ 必须红",
+      all(want == got for want, got in _az152_got),
+      f"表格逐项={[f'{w}!=({g})' for w, g in _az152_got if w != g] or 'OK'}"
+      f" n={len(_az152_got)}")
+
+# ── AZ152b：`reachable_on()` 只问可达，不问对错 ──────────────────────
+_az152_dictfn = "def _az152_f(d):\n    return sorted(d.items())\n"
+_az152_strfn = "def _az152_f(s):\n    return s.strip()\n"
+_az152_never = "def _az152_f(*a):\n    raise TypeError('no')\n"
+
+check(RS, "AZ152b `critgen.reachable_on()` 在**目标实现**上判「这组输入喂得进去吗」：\n"
+          "              吃 dict 的实现 × dict 签名 ⇒ True；同一实现 × str 签名 ⇒ False；\n"
+          "              什么都不吃的实现 ⇒ False。\n"
+          "              ⛔ 与 `legal_indexes()` 同一条边界：只问能不能吃，不问返回值对不对；\n"
+          "              ⚠️ 名字带 `_on` 是必须的 —— 本模块已有 `reachable(kind, n_args)`，\n"
+          "              初版撞名覆盖了它，`validate()` 直接报缺参数（记一笔）；\n"
+          "              撤回语义：函数体改成 `return True` ⇒ 第 2、3 项变 True ⇒ 必须红",
+      _CG.reachable_on("INVARIANT", ["dict"], _az152_dictfn, "_az152_f") is True
+      and _CG.reachable_on("INVARIANT", ["str"], _az152_dictfn, "_az152_f") is False
+      and _CG.reachable_on("INVARIANT", ["str"], _az152_never, "_az152_f") is False,
+      f"dict/dict={_CG.reachable_on('INVARIANT', ['dict'], _az152_dictfn, '_az152_f')} "
+      f"dict/str={_CG.reachable_on('INVARIANT', ['str'], _az152_dictfn, '_az152_f')} "
+      f"never/str={_CG.reachable_on('INVARIANT', ['str'], _az152_never, '_az152_f')}")
+
+# ── AZ152c：`scope="one"` 就是「删掉这一个」，别处与 class 同 ──────────
+_az152_c2 = _CG.ops_for(2)
+_az152_c1 = _CG.ops_for(1)
+_az152_one2, _az152_w12 = _CG.narrow("SEMANTIC", 2, "BOUND", ["str", "int"], "", "", scope="one")
+_az152_cls2, _az152_w22 = _CG.narrow("SEMANTIC", 2, "BOUND", ["str", "int"], "", "", scope="class")
+_az152_one1, _ = _CG.narrow("CONST", 1, "NUMFMT", ["num"], "", "", scope="one")
+
+check(RS, "AZ152c `narrow(scope=\"one\")` 的产物**恰好**是 `ops_for(n) - {chosen}`：\n"
+          "              二元题 3 个算子删 1 剩 2、一元题 5 个删 1 剩 4；\n"
+          "              且在 `SEMANTIC` 上 `scope=\"class\"` 与它**逐格相同**（都是 `SINGLE`）——\n"
+          "              这是设计保证，⛔ 不是发现：语义层没有不泄漏的信息说该换成谁。\n"
+          "              撤回语义：`scope=\"one\"` 分支改成不删（返回全量）⇒ 第 1、2 项崩 ⇒ 必须红",
+      set(_az152_one2) == set(_az152_c2) - {"BOUND"}
+      and set(_az152_one1) == set(_az152_c1) - {"NUMFMT"}
+      and set(_az152_cls2) == set(_az152_one2)
+      and _az152_w12["reason"] == "SINGLE" and _az152_w22["reason"] == "SINGLE",
+      f"one2={sorted(_az152_one2)} one1={len(_az152_one1)} "
+      f"cls2_eq_one2={set(_az152_cls2) == set(_az152_one2)} "
+      f"reasons={_az152_w12['reason']}/{_az152_w22['reason']}")
+
+# ── AZ152d：`scope="class"` 的两条降级都得留痕 ────────────────────────
+_az152_all, _az152_wall = _CG.narrow("STRUCT:TYPES", 1, "ROUNDTRIP", ["str"],
+                                     _az152_never, "_az152_f", scope="class")
+_az152_badty, _az152_wbad = _CG.narrow("STRUCT:TYPES", 1, "ROUNDTRIP", ["float"],
+                                       _az152_strfn, "_az152_f", scope="class")
+_az152_badlen, _az152_wlen = _CG.narrow("STRUCT:TYPES", 2, "BOUND", ["str"],
+                                        _az152_strfn, "_az152_f", scope="class")
+#: ⚠️ ③ 必须用**二元**题：一元题同一 `types` 下所有算子的输入池**完全一样**
+#:    （`_inputs_for()` 只看 kinds 的特例与 types），所以一元题的「按类删」只能是
+#:    「全删」或「全不删」。二元题里 `TAIL`/`BOUND` 吃 `(x, int)`、`EMPTY_IFF` 吃 `(a, b)`
+#:    ⇒ 才有「部分可达」这一档。
+_az152_plus = "def _az152_f(s, n):\n    return s + n\n"
+_az152_ok, _az152_wok = _CG.narrow("STRUCT:TYPES", 2, "TAIL", ["str", "str"],
+                                   _az152_plus, "_az152_f", scope="class")
+
+check(RS, "AZ152d `narrow(scope=\"class\")` 的 `STRUCT:TYPES` 分支只有三种结局，各留一个标记：\n"
+          "              ① 该签名下**全不可达** ⇒ 退回「只删 chosen」，`ALL_UNREACHABLE_SIGNATURE`\n"
+          "              （⛔ 不许返回空集当「收敛」：空集说的是「这题无解」，不是「已经选对」）；\n"
+          "              ② 签名本身坏了（`float` 不在类型表 / 长度不符）⇒ `BAD_SIGNATURE`，也只删一个；\n"
+          "              ③ 有可达也有不可达的 ⇒ `SIGNATURE`，按类删（二元题 `TAIL`/`BOUND` 吃 `(x,int)`、\n"
+          "              `EMPTY_IFF` 吃 `(a,b)` ⇒ 一个 `s + n` 的实现就能造出这一档）。\n"
+          "              撤回语义：删掉 `if len(removed) >= len(cand)` 那段 ⇒ ① 返回空集 ⇒ 必须红",
+      _az152_wall["reason"] == "ALL_UNREACHABLE_SIGNATURE"
+      and _az152_wall["removed"] == ["ROUNDTRIP"] and len(_az152_all) == len(_az152_c1) - 1
+      and _az152_wbad["reason"] == "BAD_SIGNATURE" and _az152_wlen["reason"] == "BAD_SIGNATURE"
+      and _az152_wbad["removed"] == ["ROUNDTRIP"] and _az152_wlen["removed"] == ["BOUND"]
+      and _az152_wok["reason"] == "SIGNATURE"
+      and set(_az152_wok["removed"]) == {"TAIL", "BOUND"} and len(_az152_ok) == 1,
+      f"all={_az152_wall['reason']}/{_az152_wall['removed']} "
+      f"badty={_az152_wbad['reason']} badlen={_az152_wlen['reason']} "
+      f"ok={_az152_wok['reason']}/{_az152_wok['removed']}")
+
+# ── AZ152e：空集合就是空集合，⛔ 不许回退成全量 ──────────────────────
+_az152_cat0 = _CG.catalogue(allow={})
+_az152_sk0 = json.loads(_CG.skeleton(2, allow={}))
+_az152_cat1 = _CG.catalogue(allow={"BOUND": _CG.OPS["BOUND"]})
+
+check(RS, "AZ152e `catalogue(allow=)` / `skeleton(allow=)` 用 `is not None` 判空，\n"
+          "              不是真值判断：\n"
+          "              ① `allow={}` ⇒ 目录是**空串**、骨架的 kind 列表是 `<>`（一个都不剩）；\n"
+          "              ② `allow={一个}` ⇒ 目录只有一行。\n"
+          "              ⚠️ 写成 `allow or ...` 就会把「空」读成「没给」，于是**一个都不剩**\n"
+          "              悄悄变回**全量** —— 那正是 V188 记的「空当没给」那一族；\n"
+          "              撤回语义：`allow if allow is not None else` 改成 `allow or` ⇒ ① 崩 ⇒ 必须红",
+      _az152_cat0 == "" and _az152_sk0.get("kind") == "<>"
+      and _az152_cat1.count("\n") == 0 and "BOUND" in _az152_cat1,
+      f"cat0={_az152_cat0!r} sk0={_az152_sk0.get('kind')!r} "
+      f"cat1_lines={_az152_cat1.count(chr(10)) + 1}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

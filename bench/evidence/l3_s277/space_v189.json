@@ -1,0 +1,7062 @@
+{
+ "rows": [
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "str"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "list"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "num"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "flag"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "BOUND",
+   "types": [
+    "str",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "BOUND",
+   "types": [
+    "int",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "BOUND",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "BOUND",
+   "types": [
+    "list",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "BOUND",
+   "types": [
+    "num",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "BOUND",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "TAIL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "TAIL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "TAIL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "TAIL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "TAIL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ 'a=2; b=1' 解不开：Expecting value: line",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: {'b': 1, 'a': 2} ⇒ 叶子 {'a=2; b=1': 1} ≠ {1: 1, 2: 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AttributeError: 'list' object has no attribute 'items'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "NUMFMT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "NUMFMT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: float() argument must be a string or a real number, not 'dict'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "NUMFMT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "kind": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ {'b': 1, 'a': 2} 解不开：the JSON object",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AttributeError: 'list' object has no attribute 'items'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "NUMFMT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "NUMFMT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: float() argument must be a string or a real number, not 'dict'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "NUMFMT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "kind": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: {} ⇒ '' 解不开：Expecting value: line 1 column 1 (char 0)",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: {} ⇒ 叶子 {'': 1} ≠ {}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AttributeError: 'list' object has no attribute 'items'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "NUMFMT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "NUMFMT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: float() argument must be a string or a real number, not 'dict'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "NUMFMT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AttributeError: 'str' object has no attribute 'items'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "kind": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: 'abcdef' ⇒ ['a', 'b', 'c', 'd', 'e', 'f'] 解不开：the JSON ",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ ['b', 'a'] 解不开：the JSON object must ",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: ['b', 'a', 'b'] ⇒ ['b', 'a'] 解不开：the JSON object must b",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: 'y' ⇒ ['y'] 解不开：the JSON object must be str, bytes or b",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: 'abcdef' ⇒ 叶子 {'a': 1, 'b': 1, 'c': 1, 'd': 1, 'e': 1, '",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: {'b': 1, 'a': 2} ⇒ 叶子 {'b': 1, 'a': 1} ≠ {1: 1, 2: 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: ['b', 'a', 'b'] ⇒ 叶子 {'b': 1, 'a': 1} ≠ {'b': 2, 'a': 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: ' YES ' ⇒ 叶子 {' ': 1, 'Y': 1, 'E': 1, 'S': 1} ≠ {' YES '",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "OK",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 5,
+    "removed": [],
+    "reason": "NO_ACTION"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "NUMFMT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：ValueError: could not convert string to float: 'abcdef'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "NUMFMT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: float() argument must be a string or a real number, not 'dict'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: float() argument must be a string or a real number, not 'list'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "NUMFMT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：ValueError: could not convert string to float: 'y'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: INVARIANT: 'abcdef' ⇒ ['a', 'b', 'c', 'd', 'e', 'f'] 但 upper 后 ⇒ [",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: INVARIANT: {'b': 1, 'a': 2} ⇒ ['b', 'a'] 但 upper 后 ⇒ ['{', \"'\", 'B",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: INVARIANT: ['b', 'a', 'b'] ⇒ ['b', 'a'] 但 upper 后 ⇒ ['[', \"'\", 'B'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "kind": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: INVARIANT: 'y' ⇒ ['y'] 但 upper 后 ⇒ ['Y']",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: 1234.5 ⇒ '1 234.50' 解不开：Extra data: line 1 column 3 (ch",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: '0' ⇒ '0.00' 解回 0.0",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: 0 ⇒ 叶子 {'0.00': 1} ≠ {0: 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: 0 ⇒ 叶子 {'0.00': 1} ≠ {0: 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: '0' ⇒ 叶子 {'0.00': 1} ≠ {'0': 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: 'int' object is not iterable",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: 'int' object is not iterable",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: float() argument must be a string or a real number, not 'list'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: NUMFMT: 0 ⇒ '0.00' ≠ '0'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: NUMFMT: 0 ⇒ '0.00' ≠ '0'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "NUMFMT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: NUMFMT: '0' ⇒ '0.00' ≠ '0'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "kind": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: 'abcdef' ⇒ None 解不开：the JSON object must be str, bytes ",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ False 解不开：the JSON object must be str, bytes or byt",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: {'b': 1, 'a': 2} ⇒ None 解不开：the JSON object must be str",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: ['b', 'a', 'b'] ⇒ None 解不开：the JSON object must be str,",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ False 解不开：the JSON object must be str, bytes or byt",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "decode": "json.loads"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: ROUNDTRIP: 'y' ⇒ True 解不开：the JSON object must be str, bytes or by",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "ROUNDTRIP"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: 'abcdef' ⇒ 叶子 {None: 1} ≠ {'abcdef': 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: 3 ⇒ 叶子 {None: 1} ≠ {3: 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: {'b': 1, 'a': 2} ⇒ 叶子 {None: 1} ≠ {1: 1, 2: 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: ['b', 'a', 'b'] ⇒ 叶子 {None: 1} ≠ {'b': 2, 'a': 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: 7 ⇒ 叶子 {None: 1} ≠ {7: 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: CONSERVE: 'y' ⇒ 叶子 {True: 1} ≠ {'y': 1}",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "CONSERVE"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: SUBSEQ: 'abcdef' ⇒ 非 list",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: 'int' object is not iterable",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: SUBSEQ: {'b': 1, 'a': 2} ⇒ 非 list",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: SUBSEQ: ['b', 'a', 'b'] ⇒ 非 list",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: 'int' object is not iterable",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: SUBSEQ: 'y' ⇒ 非 list",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "SUBSEQ"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：ValueError: could not convert string to float: 'abcdef'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: NUMFMT: 0 ⇒ False ≠ '0'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: float() argument must be a string or a real number, not 'dict'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：TypeError: float() argument must be a string or a real number, not 'list'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: NUMFMT: 0 ⇒ False ≠ '0'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：ValueError: could not convert string to float: 'y'",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "NUMFMT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: INVARIANT: 所有输入同一个输出 —— 判据不承载信息",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "int"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: INVARIANT: 所有输入同一个输出 —— 判据不承载信息",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "CONST",
+   "struct": "OK",
+   "reach": true,
+   "const": true,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: INVARIANT: 所有输入同一个输出 —— 判据不承载信息",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "num"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "flag"
+   ],
+   "n_args": 1,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 5,
+   "narrow_one": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 4,
+    "removed": [
+     "INVARIANT"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "str"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "dict",
+    "dict"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "list"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "num",
+    "num"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "flag",
+    "flag"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "EMPTY_IFF_EQUAL"
+    ],
+    "reason": "SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "BOUND",
+   "types": [
+    "str",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: BOUND: ('abcdef', 1) ⇒ '…f' 超界",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "BOUND",
+   "types": [
+    "int",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "BOUND",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "BOUND",
+   "types": [
+    "list",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "BOUND",
+   "types": [
+    "num",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "BOUND",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {},
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": false,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "题面示例未通过：AssertionError: BOUND: (' YES ', 1) ⇒ '… ' 超界",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "BOUND"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "str",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "OK",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 3,
+    "removed": [],
+    "reason": "NO_ACTION"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "int",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "dict",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": false,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "list",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "SEMANTIC",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": false,
+   "bite_partial": false,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "num",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "STRUCT:TYPES",
+   "struct": "OK",
+   "reach": false,
+   "const": null,
+   "pass_oracle": null,
+   "bite_stub": null,
+   "bite_partial": null,
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "ALL_UNREACHABLE_SIGNATURE"
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "kind": "TAIL",
+   "types": [
+    "flag",
+    "int"
+   ],
+   "n_args": 2,
+   "slots": {
+    "keep": "tail_n"
+   },
+   "sig": "OK",
+   "struct": "OK",
+   "reach": true,
+   "const": false,
+   "pass_oracle": true,
+   "bite_stub": true,
+   "bite_partial": true,
+   "why": "",
+   "cand_before": 3,
+   "narrow_one": {
+    "n": 2,
+    "removed": [
+     "TAIL"
+    ],
+    "reason": "SINGLE"
+   },
+   "narrow_class": {
+    "n": 3,
+    "removed": [],
+    "reason": "NO_ACTION"
+   }
+  }
+ ],
+ "note": "槽值=每个槽表的第一个非空值（抽样，非全枚举）"
+}

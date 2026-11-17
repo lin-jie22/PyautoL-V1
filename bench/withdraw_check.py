@@ -2264,6 +2264,38 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ151d", "mw/metacrit.py",
      '''                if isinstance(other, ast.Name) and other.id in allow and other.id in formals:''',
      '''                if isinstance(other, ast.Name) and other.id in allow:  # 撤回态'''),
+    # ── V189（§257）：诊断 → 收窄 → 判断（AZ152a~e）──────────────────────
+    # AZ152a：把 `OUT_OF_DOMAIN` 从「签名没有域」里踢出去 ⇒ 最常见的不可达被当成
+    #        「别的结构错」⇒ `narrow()` 的签名分支对它视而不见。
+    ("AZ152a", "mw/critgen.py",
+     '''        return "STRUCT:TYPES" if (fail or "") in ("TYPES", "OUT_OF_DOMAIN") else "STRUCT:OTHER"''',
+     '''        return "STRUCT:TYPES" if (fail or "") == "TYPES" else "STRUCT:OTHER"  # 撤回态'''),
+    # AZ152b：`reachable_on()` 恒真 ⇒ 「该签名吃不下」这件事消失，按类删永远删不到东西。
+    ("AZ152b", "mw/critgen.py",
+     '''    legal = legal_indexes(oracle, fn, ins)
+    if legal is None:
+        return True
+    return bool(legal)''',
+     '''    legal = legal_indexes(oracle, fn, ins)
+    return True  # 撤回态：恒可达'''),
+    # AZ152c：`scope="one"` 不删 ⇒ 对照臂变成「什么都不做」，两臂差别被抹掉。
+    ("AZ152c", "mw/critgen.py",
+     '''        if chosen in cand:
+            why["removed"] = [chosen]
+            why["reason"] = "SINGLE"''',
+     '''        if chosen in cand:
+            why["removed"] = []  # 撤回态
+            why["reason"] = "SINGLE"'''),
+    # AZ152d：全删光不再退回单删 ⇒ 返回空集冒充「已经收敛」。
+    ("AZ152d", "mw/critgen.py",
+     '''        if len(removed) >= len(cand):
+            why["reason"] = "ALL_UNREACHABLE_SIGNATURE"''',
+     '''        if False:  # 撤回态
+            why["reason"] = "ALL_UNREACHABLE_SIGNATURE"'''),
+    # AZ152e：把 `is not None` 改成真值判断 ⇒ 空集合被读成「没给」⇒ 悄悄退回全量。
+    ("AZ152e", "mw/critgen.py",
+     '''    src = allow if allow is not None else (OPS if n_args is None else ops_for(n_args))''',
+     '''    src = allow or (OPS if n_args is None else ops_for(n_args))  # 撤回态'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2619,6 +2651,11 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   `validate()` 仍拒 ⇒ `AZ148c` 的「两面逐例一致」立刻翻（同一处实现的两个门）。
     #:   ⚠️ 这条连带是**撤在 diagnose 上才有的**；撤 validate 只红 AZ148c、不红 AZ151a。
     "AZ151a": frozenset({"AZ148c"}),
+
+    #: ★V189（§257）：`AZ152b` 撤的是 `reachable_on()` 本体（恒真）⇒ `AZ152d` 的
+    #:   「该签名下全不可达 ⇒ 退回单删」那条**前提消失**（全可达就永远走不到 ALL_UNREACHABLE），
+    #:   同一处实现的两个面。⚠️ 实测：b 多红 d（767/2）；a/c/d/e 各自单红（768/1）。
+    "AZ152b": frozenset({"AZ152d"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

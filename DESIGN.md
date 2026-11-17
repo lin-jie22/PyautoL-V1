@@ -32716,6 +32716,10 @@ prompt 从 sys_small 派发 oracle/partial/垃圾三档答案。
 state/memory.db 与 critique.jsonl 指纹未变）。证据 `bench/evidence/l3_s266/`（PREREG_v178、readings_v178.json、
 withdraw_r17.log）；VERDICTS 随轮再生。
 
+提交补记：V173~V178 六轮缠在同一棵工作树上、中途未分轮提交（会话被限流打断），
+合成一个 commit `c4e7811`（⛔ 不伪造中间态：能拆出来的每一刀都没真跑过门禁）。
+提交后 py3.11 / py3.12 / py3.13 三档 CI 全 `success`（run **44062199180**）。
+
 ### 246.6 边界（⛔ 不放大）
 
 1. **`behavioral()` 一字未动**（V177 纯分类器）；movability/repair_axes 的

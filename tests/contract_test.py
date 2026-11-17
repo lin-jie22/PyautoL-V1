@@ -16120,6 +16120,138 @@ check(RS, "AZ153e `probe.structural()` 的变异必须**真的多出一维**，�
       and all(v not in _CG.POOL["num"] for v in _az153_num_new),
       f"int_new={_az153_int_new} num_new={_az153_num_new}")
 
+# ═══════════ V191（§259）：把「池退化」拆成病名（AZ154） ═══════════
+#
+# 本轮**没有一条断言「分数变好」**。它钉三件事：
+#   ① 签名枚举的**声明序**（⛔ 不许按「谁先过」排序）；
+#   ② 路由层**读不到正确性信号**（`pass_oracle`/`correct`/`expected` 一律缺席）；
+#   ③ 「无域」与「恒定」是两件事（V190 §2.2 的 `k01` 就是前者被空容器伪装成后者）。
+#
+# V191 实测：17 个盲区格 **全部** `RESIGN_FREE`（`NEEDS_VOCAB = 0`），
+# 重选后 17/17 转可判，但只落在 **6 个配置**上、且与这 6 个配置的**原有判定逐格相同**
+# ⇒ 新增可判配置 **0**。这条结论靠的是下面这些函数**只花免费信息**，所以它们也钉在这里。
+
+import inspect as _az154_inspect                              # noqa: E402
+
+# ── AZ154a：签名枚举的声明序 ──────────────────────────────────────────
+_az154_s1 = _PB.sig_space("ROUNDTRIP", 1)
+_az154_s2 = _PB.sig_space("TAIL", 2)
+_az154_s3 = _PB.sig_space("EMPTY_IFF_EQUAL", 2)
+_az154_s4 = _PB.sig_space("SUBSEQ", 2)
+
+check(RS, "AZ154a `probe.sig_space(kind, n)` 枚举**可行签名**，顺序 = `TYPES` 的**声明序**：\n"
+          "              ① 一元 ⇒ 6 个单类型签名，首个 `['str']`、末个 `['flag']`；\n"
+          "              ② `TAIL`/`BOUND` ⇒ 第二参数钉死 `'int'`（与 `critgen` 的输入生成同口径）；\n"
+          "              ③ `EMPTY_IFF_EQUAL` ⇒ 两参数**同类型**，只有 6 个（⛔ 不是 36）；\n"
+          "              ④ 其余二元 ⇒ 36 个笛卡尔积，首个 `['str','str']`、第二个 `['str','int']`。\n"
+          "              ⭐ 顺序是判据的一部分：`route()` 取「第一个非退化」，按探测结果排序\n"
+          "              就等于「谁先过用谁」= 拿尺子挑尺子。\n"
+          "              撤回语义：删掉 `if kind == \"EMPTY_IFF_EQUAL\"` 那条分支 ⇒ ③ 变 36 个 ⇒ 必须红",
+      _az154_s1 == [[t] for t in _CG.TYPES]
+      and _az154_s2 == [[t, "int"] for t in _CG.TYPES]
+      and _az154_s3 == [[t, t] for t in _CG.TYPES]
+      and len(_az154_s4) == 36 and _az154_s4[0] == ["str", "str"]
+      and _az154_s4[1] == ["str", "int"],
+      f"s1={_az154_s1} s3={_az154_s3} s4[:2]={_az154_s4[:2]} len(s4)={len(_az154_s4)}")
+
+# ── AZ154b：路由层读不到正确性信号，且「无域」≠「恒定」 ────────────────
+_az154_p = (set(_az154_inspect.signature(_PB.route).parameters)
+            | set(_az154_inspect.signature(_PB.varies).parameters)
+            | set(_az154_inspect.signature(_PB.domain_of).parameters))
+_az154_bad = sorted(_az154_p & {"pass_oracle", "correct", "expected", "want", "right", "truth"})
+
+_az154_const = "def f(s):\n    return 1\n"
+_az154_var = "def f(s):\n    return s == 'abcdef'\n"
+_az154_nodom = "def f(d):\n    return d.get('a')\n"
+
+check(RS, "AZ154b `probe.route()` / `varies()` / `domain_of()` **只吃免费信息**：\n"
+          "              ① 参数表里没有 `pass_oracle`/`correct`/`expected`/`want` 任何一项\n"
+          "              —— 一旦能读判分，「该换哪个签名」就变成拿尺子挑尺子（V189 `read_signal` 同一条边界）；\n"
+          "              ② 恒定实现 ⇒ `varies` 为 `False`；有差异实现 ⇒ `True`；\n"
+          "              ③ **无域** ⇒ `domain_of` 返回 `(\"NO_DOMAIN\", None)`，⛔ 不许折成 `(\"OK\", False)`\n"
+          "              （「问不出问题」与「问得出但实现不区分」修法相反）；\n"
+          "              ④ 探测失败另有 `FAULT`，⛔ 不许与 `NO_DOMAIN` 合并。\n"
+          "              撤回语义：`return \"OK\", (not c)` 改成 `return \"OK\", True` ⇒ ② 恒定实现变 True ⇒ 必须红",
+      not _az154_bad
+      and _PB.varies("ROUNDTRIP", ["str"], _az154_const, "f") is False
+      and _PB.varies("ROUNDTRIP", ["str"], _az154_var, "f") is True
+      and _PB.domain_of("ROUNDTRIP", ["int"], _az154_nodom, "f") == ("NO_DOMAIN", None)
+      and _PB.varies("ROUNDTRIP", ["int"], _az154_nodom, "f") is None,
+      f"bad={_az154_bad} const={_PB.varies('ROUNDTRIP', ['str'], _az154_const, 'f')} "
+      f"var={_PB.varies('ROUNDTRIP', ['str'], _az154_var, 'f')} "
+      f"nodom={_PB.domain_of('ROUNDTRIP', ['int'], _az154_nodom, 'f')}")
+
+# ── AZ154c：退化输入的剔法，以及「可达是不是被空容器骗出来的」 ──────────
+_az154_short = ("def g(a, b):\n"
+                "    for k in set(a) | set(b):\n"
+                "        a.get(k)\n"
+                "    return {}\n")
+_az154_dg = _PB.degenerate_free(_CG.POOL, list(_CG.TYPES))
+_az154_fr1 = _PB.false_reach("EMPTY_IFF_EQUAL", ["str", "str"], _az154_short, "g")
+_az154_fr2 = _PB.false_reach("EMPTY_IFF_EQUAL", ["dict", "dict"], _az154_short, "g")
+
+check(RS, "AZ154c `probe.false_reach()` 把「可达被退化输入骗了」单独标出来（V190 §2.2 那条升格成产品函数）：\n"
+          "              ① 短路的装置 `g(a,b)`：`set(a)|set(b)` 为空时循环体一次不进 ⇒ `a.get` 不炸；\n"
+          "              ⇒ `['str','str']` 只有 `('','')` 吃得下 ⇒ `false_reach` 必须为 `True`；\n"
+          "              ② 同一装置在 `['dict','dict']` 上有非空输入 ⇒ `false_reach` 为 `False`\n"
+          "              （它本来就有域，⛔ 不许一起标脏）；\n"
+          "              ③ 退化剔法：`str` 4→3、`int` 3→2、`dict` 3→2、`num` 6→5、`flag` 8→8\n"
+          "              （`\"0\"` 是**字符串**，不是数字零 ⇒ ⛔ 不许剔）。\n"
+          "              撤回语义：`degenerate_free()` 不再过滤 ⇒ ① 的池里含 `'abcdef'` ⇒ legal 非空 ⇒ 必须红",
+      _az154_fr1 is True and _az154_fr2 is False
+      and {t: len(v) for t, v in _az154_dg.items()}
+      == {"str": 3, "int": 2, "dict": 2, "list": 2, "num": 5, "flag": 8},
+      f"fr={_az154_fr1}/{_az154_fr2} sizes={ {t: len(v) for t, v in _az154_dg.items()} }")
+
+# ── AZ154d：先免费后扩池，且守卫值不许冒充病名 ────────────────────────
+_az154_dead = "def h(x):\n    return 1\n"
+_az154_r_healthy = _PB.route("ROUNDTRIP", ["str"], 1, _az154_var, "f")
+_az154_r_nodom = _PB.route("ROUNDTRIP", ["int"], 1, _az154_nodom, "f")
+_az154_r_dead = _PB.route("ROUNDTRIP", ["str"], 1, _az154_dead, "h")
+_az154_r_flag = _PB.route("ROUNDTRIP", ["str"], 1, _az153_src, "parse_flag")
+
+check(RS, "AZ154d `probe.route()` 的优先级与守卫值：\n"
+          "              ① **先免费、后扩池**：`parse_flag` 在 `['str']` 上恒定，而基池 `int=(0,3,5)`\n"
+          "              里 `0` 字符串化正好是词表里的假值 ⇒ 必须判 `RESIGN_FREE`、目标 `['int']`，\n"
+          "              ⛔ 不许判成 `NEEDS_VOCAB`（那正是 V190 的误诊：把「类型错」读成「词不够」）；\n"
+          "              ② 当前签名本来就有差异 ⇒ 守卫 `HEALTHY`，不动；\n"
+          "              ③ 当前签名无域 ⇒ 守卫 `NO_DOMAIN`；\n"
+          "              ④ 所有签名在所有池上都恒定 ⇒ `DEAD`（⛔ 不许把 ②③ 并进这里）。\n"
+          "              撤回语义：免费分支的 `if st == \"OK\" and v:` 改成 `if False:` ⇒ ① 掉进扩池\n"
+          "              分支判成 `NEEDS_VOCAB` ⇒ 必须红",
+      _az154_r_flag["disease"] == "RESIGN_FREE" and _az154_r_flag["target"] == ["int"]
+      and _az154_r_flag["cost"] == "free"
+      and _az154_r_healthy["disease"] == "HEALTHY"
+      and _az154_r_nodom["disease"] == "NO_DOMAIN"
+      and _az154_r_dead["disease"] == "DEAD",
+      f"flag={_az154_r_flag['disease']}/{_az154_r_flag['target']} "
+      f"healthy={_az154_r_healthy['disease']} nodom={_az154_r_nodom['disease']} "
+      f"dead={_az154_r_dead['disease']}")
+
+# ── AZ154e：退化的边界值只有那四类，多剔一个就误伤 ───────────────────
+#: ⚠️ 初版这张分类表里**一个正整数都没有**（只有 `0`/`0.0`/`-0.5`）⇒ 撤成 `v >= 0`
+#:    时它一个字都不动，反而去牵连 AZ154c。撤点没对准断言（V190 三条同型）。
+_az154_deg = {repr(v): _PB._is_degenerate(v) for v in
+              ("", "  ", "0", 0, 0.0, 3, -0.5, False, True, {}, [], [0], "x")}
+
+check(RS, "AZ154e `probe._is_degenerate()` 的分类边界（多剔一个就是误伤合法输入）：\n"
+          "              ① 退化：`\"\"`（空串）、`0`、`0.0`、`{}`、`[]`；\n"
+          "              ② **不**退化：`\"  \"`（纯空白，`strip()` 之后有意义）、`\"0\"`（字符串零，\n"
+          "              它正是 `parse_flag` 词表里的假值 —— 剔掉它会把 V191 唯一那条正路堵死）、\n"
+          "              `3`（正整数，基池 `int=(0,3,5)` 的两条正路就是它和 `5`）、\n"
+          "              `False`（`int` 的子类但语义是布尔）、`-0.5`、`[0]`（非空容器）；\n"
+          "              ③ `True` 也不退化。\n"
+          "              撤回语义：`and v == 0` 改成 `and v >= 0` ⇒ 正整数被当退化剔掉 ⇒\n"
+          "              ⇒ ② 的 `3` 翻成退化 ⇒ 必须红",
+      _az154_deg["''"] is True and _az154_deg["'  '"] is False
+      and _az154_deg["'0'"] is False and _az154_deg["0"] is True
+      and _az154_deg["0.0"] is True and _az154_deg["3"] is False
+      and _az154_deg["-0.5"] is False
+      and _az154_deg["False"] is False and _az154_deg["True"] is False
+      and _az154_deg["{}"] is True and _az154_deg["[]"] is True
+      and _az154_deg["[0]"] is False,
+      str(_az154_deg))
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

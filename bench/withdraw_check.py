@@ -2323,6 +2323,34 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ153e", "mw/probe.py",
      '''    return [v + 1, v - 1, -v, v * 2, v * 10, 0, 1]''',
      '''    return [v + 1, v + 2, v * 2, v * 10, 0, 1]  # 撤回态'''),
+    # ── V191（§259）：把「池退化」拆成病名（AZ154a~e）────────────────────
+    # AZ154a：删掉 `EMPTY_IFF_EQUAL` 的「两参数同类型」约束 ⇒ 签名空间从 6 变 36。
+    ("AZ154a", "mw/probe.py",
+     '''    if kind == "EMPTY_IFF_EQUAL":
+        return [[t, t] for t in T]''',
+     '''    # 撤回态：EMPTY_IFF_EQUAL 的同类型约束被删'''),
+    # AZ154b：`domain_of()` 一律说「有差异」⇒ 恒定实现被读成有差异。
+    ("AZ154b", "mw/probe.py",
+     '''    return "OK", (not c)''',
+     '''    return "OK", True  # 撤回态'''),
+    # AZ154c：`degenerate_free()` 不过滤 ⇒ 空容器不再被剔 ⇒ `false_reach` 恒假。
+    ("AZ154c", "mw/probe.py",
+     '''    return {t: tuple(v for v in (pool.get(t) or ()) if not _is_degenerate(v))
+            for t in types}''',
+     '''    return {t: tuple(pool.get(t) or ()) for t in types}  # 撤回态'''),
+    # AZ154d：免费分支失效 ⇒ `parse_flag` 掉进扩池分支，把「类型错」判成「缺词表」
+    #        （= V190 的误诊原样复活）。
+    ("AZ154d", "mw/probe.py",
+     '''        st, v = domain_of(kind, s, oracle, fn)
+        probes += 1
+        if st == "OK" and v:''',
+     '''        st, v = domain_of(kind, s, oracle, fn)
+        probes += 1
+        if False:  # 撤回态'''),
+    # AZ154e：把「等于零」放宽成「不小于零」⇒ 正整数被当退化剔掉 ⇒ `int` 池空。
+    ("AZ154e", "mw/probe.py",
+     '''    if isinstance(v, (int, float)) and v == 0:''',
+     '''    if isinstance(v, (int, float)) and v >= 0:  # 撤回态'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2683,6 +2711,15 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   「该签名下全不可达 ⇒ 退回单删」那条**前提消失**（全可达就永远走不到 ALL_UNREACHABLE），
     #:   同一处实现的两个面。⚠️ 实测：b 多红 d（767/2）；a/c/d/e 各自单红（768/1）。
     "AZ152b": frozenset({"AZ152d"}),
+
+    #: ★V191（§259）：这两条连带都是**同一行实现的两个面**，且是实测出来的（先按结构预判、再用读数核对）。
+    #:   · AZ154b 撤的是「输出是否恒定」这一侧（`(not c)` 恒 True）⇒ `route()` 的
+    #:     `DEAD` 分支永远走不到（`varies` 对任何有域的签名都说「有差异」）⇒ AZ154d 必红。
+    #:   · AZ154e 把「等于零」放宽成「不小于零」⇒ 正整数被当退化剔掉 ⇒ `degenerate_free()`
+    #:     的 `int` 池空 ⇒ AZ154c 的尺寸表崩。
+    #:   ⚠️ 反向**不**成立（撤 d 只红 d、撤 c 只红 c），已实测。
+    "AZ154b": frozenset({"AZ154d"}),
+    "AZ154e": frozenset({"AZ154c"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

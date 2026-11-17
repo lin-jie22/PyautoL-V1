@@ -1,0 +1,973 @@
+{
+ "frozen": {
+  "space": "l3_s277/space_v189.json",
+  "v190": "l3_s278/readings_v190.json"
+ },
+ "checks": {
+  "I1_bad": [],
+  "I2_bad": [],
+  "I3_det": true,
+  "I4_bad": []
+ },
+ "disease": {
+  "RESIGN_FREE": 17
+ },
+ "cells": 91,
+ "weak": 17,
+ "routes": [
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "dict",
+    "dict"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "dict",
+     "dict"
+    ]
+   ],
+   "no_domain": [
+    [
+     "int",
+     "int"
+    ]
+   ],
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "str"
+   ],
+   "slots": {},
+   "n_args": 2
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "dict",
+    "dict"
+   ],
+   "cost": "free",
+   "probes": 4,
+   "varied_sigs": [
+    [
+     "dict",
+     "dict"
+    ]
+   ],
+   "no_domain": [
+    [
+     "int",
+     "int"
+    ]
+   ],
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "list"
+   ],
+   "slots": {},
+   "n_args": 2
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 2,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "decode": "json.loads"
+   },
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 2,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 2,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 2,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "str"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "slots": {
+    "sep": "space",
+    "dec": "0",
+    "neg": "paren"
+   },
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 2,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "slots": {},
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "slots": {},
+   "n_args": 1
+  },
+  {
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "cost": "free",
+   "probes": 3,
+   "varied_sigs": [
+    [
+     "int"
+    ]
+   ],
+   "no_domain": [],
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "slots": {},
+   "n_args": 1
+  }
+ ],
+ "arms": [
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "str",
+    "str"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "dict",
+    "dict"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "PASS",
+   "RS_detail": {
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "75afa15f6664f3cd",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "bite_partial": false,
+    "verdict": "PASS",
+    "why": ""
+   },
+   "RSX": "PASS"
+  },
+  {
+   "id": "k01_diff_tree",
+   "kind": "EMPTY_IFF_EQUAL",
+   "types": [
+    "list",
+    "list"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "dict",
+    "dict"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "PASS",
+   "RS_detail": {
+    "types": [
+     "dict",
+     "dict"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "75afa15f6664f3cd",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "bite_partial": false,
+    "verdict": "PASS",
+    "why": ""
+   },
+   "RSX": "PASS"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "str"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "FAIL",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "1ee45aa68e2dd6b9",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ False 解不开：the JSON object must be str, bytes or bytearray, no"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "dict"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "1ee45aa68e2dd6b9",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ False 解不开：the JSON object must be str, bytes or bytearray, no"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "ROUNDTRIP",
+   "types": [
+    "list"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "1ee45aa68e2dd6b9",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: ROUNDTRIP: 0 ⇒ False 解不开：the JSON object must be str, bytes or bytearray, no"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "str"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "FAIL",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "9e002dac39f92e14",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: CONSERVE: 3 ⇒ 叶子 {None: 1} ≠ {3: 1}"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "dict"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "9e002dac39f92e14",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: CONSERVE: 3 ⇒ 叶子 {None: 1} ≠ {3: 1}"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "CONSERVE",
+   "types": [
+    "list"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "9e002dac39f92e14",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: CONSERVE: 3 ⇒ 叶子 {None: 1} ≠ {3: 1}"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "str"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "FAIL",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "c19e89752880fa0f",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：TypeError: 'int' object is not iterable"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "dict"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "c19e89752880fa0f",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：TypeError: 'int' object is not iterable"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "SUBSEQ",
+   "types": [
+    "list"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "c19e89752880fa0f",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：TypeError: 'int' object is not iterable"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "str"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "FAIL",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "829e69158a0d3f23",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: NUMFMT: 0 ⇒ False ≠ '0'"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "dict"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "829e69158a0d3f23",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: NUMFMT: 0 ⇒ False ≠ '0'"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "NUMFMT",
+   "types": [
+    "list"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "FAIL",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "829e69158a0d3f23",
+    "pass_oracle": false,
+    "bite_stub": true,
+    "bite_partial": true,
+    "verdict": "FAIL",
+    "why": "题面示例未通过：AssertionError: NUMFMT: 0 ⇒ False ≠ '0'"
+   },
+   "RSX": "FAIL"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "str"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "PASS",
+   "RS": "PASS",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "89500993fce2c58b",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "bite_partial": false,
+    "verdict": "PASS",
+    "why": ""
+   },
+   "RSX": "PASS"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "dict"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "PASS",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "89500993fce2c58b",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "bite_partial": false,
+    "verdict": "PASS",
+    "why": ""
+   },
+   "RSX": "PASS"
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "kind": "INVARIANT",
+   "types": [
+    "list"
+   ],
+   "disease": "RESIGN_FREE",
+   "target": [
+    "int"
+   ],
+   "A": "UNDECIDED",
+   "E1": "UNDECIDED",
+   "RS": "PASS",
+   "RS_detail": {
+    "types": [
+     "int"
+    ],
+    "n_legal": 3,
+    "const": false,
+    "src_sha": "89500993fce2c58b",
+    "pass_oracle": true,
+    "bite_stub": true,
+    "bite_partial": false,
+    "verdict": "PASS",
+    "why": ""
+   },
+   "RSX": "PASS"
+  }
+ ],
+ "collapse": [
+  {
+   "kind": "EMPTY_IFF_EQUAL",
+   "target": [
+    "dict",
+    "dict"
+   ],
+   "cells": 2,
+   "pre_sig": "SEMANTIC",
+   "pre_verdict": "PASS"
+  },
+  {
+   "kind": "ROUNDTRIP",
+   "target": [
+    "int"
+   ],
+   "cells": 3,
+   "pre_sig": "SEMANTIC",
+   "pre_verdict": "FAIL"
+  },
+  {
+   "kind": "CONSERVE",
+   "target": [
+    "int"
+   ],
+   "cells": 3,
+   "pre_sig": "SEMANTIC",
+   "pre_verdict": "FAIL"
+  },
+  {
+   "kind": "SUBSEQ",
+   "target": [
+    "int"
+   ],
+   "cells": 3,
+   "pre_sig": "SEMANTIC",
+   "pre_verdict": "FAIL"
+  },
+  {
+   "kind": "NUMFMT",
+   "target": [
+    "int"
+   ],
+   "cells": 3,
+   "pre_sig": "SEMANTIC",
+   "pre_verdict": "FAIL"
+  },
+  {
+   "kind": "INVARIANT",
+   "target": [
+    "int"
+   ],
+   "cells": 3,
+   "pre_sig": "SEMANTIC",
+   "pre_verdict": "PASS"
+  }
+ ],
+ "new_cfg": 0,
+ "p3_mismatch": [],
+ "false_reach": [
+  [
+   "k01_diff_tree",
+   "EMPTY_IFF_EQUAL",
+   [
+    "str",
+    "str"
+   ],
+   "CONST"
+  ],
+  [
+   "k01_diff_tree",
+   "EMPTY_IFF_EQUAL",
+   [
+    "list",
+    "list"
+   ],
+   "CONST"
+  ]
+ ]
+}

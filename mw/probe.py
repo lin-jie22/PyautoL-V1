@@ -250,3 +250,215 @@ def constants(rows: Iterable[dict], *, sig: str = "CONST") -> list[dict]:
     ⛔ 不在这里判「该用哪个源」：那要看结果才知道，属于选择后效（会变成重言式）。
     """
     return [r for r in rows if r.get("sig") == sig]
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# V191（§259）：把「池退化」拆成病名 —— 诊断会不会误诊
+#
+# V190 的结论是「5 格缺词表、12 格签名错」，并打算用「签名级重选」吃掉后 12 格。
+# 本节先检验那个二分本身：它可能**不是两个病**，而是同一个病的两种外观。
+#
+# ## 铁律（与 V190 那条并列，方向相反）
+#
+# `expand()` / `structural()` / `tokens()` 看不见实现（`oracle` 不在参数表里）。
+# `route()` / `varies()` **必须**看得见实现 —— 它要回答「这个签名有没有域、有没有产出差异」。
+# 所以边界换成另一条：**参数表里不许出现任何正确性信号**
+# （`pass_oracle` / `correct` / `expected` / `want`）。⛔ 一旦能读判分，
+# 「该换哪个签名」就变成拿尺子挑尺子 —— 那正是 V189 `read_signal()` 里那条注释的意思。
+#
+# ## 为什么这条路是「免费」的
+#
+# 纪律 66：可达性免费（问「吃得下吗」），有效性收费（问「答得对吗」）。
+# 本节全程只花免费那一半，所以它能**免费修签名**；也正因为免费，
+# 它不携带任何关于「判据好不好」的新信息 —— 见 `RESULTS_v191.md` §3 的 collapse 账。
+# ══════════════════════════════════════════════════════════════════════════
+
+#: 路由结论（顺序即判据优先级）。三个守卫值不是病名，见 `route()`。
+DISEASES: tuple[str, ...] = ("RESIGN_FREE", "RESIGN_VOCAB", "NEEDS_VOCAB", "DEAD")
+GUARDS: tuple[str, ...] = ("HEALTHY", "NO_DOMAIN", "FAULT")
+
+#: 二元算子里「第二参数必须是长度」的两个（与 `critgen._inputs_for()` 同一口径）。
+_LEN_SECOND = ("TAIL", "BOUND")
+
+
+def _types() -> tuple[str, ...]:
+    """`critgen.TYPES` 的延迟取用，本模块一贯的写法（`structural`/`expand` 也都是函数内 import）。
+
+    ⚠️ 如实记两件事，⛔ 不许把这段写成「踩过坑才改的」：
+       ① **本轮没有踩到**循环 import —— 已经查过，`mw/critgen.py` 没有 `import mw.probe`；
+       ② 写成延迟的真实理由只有一条：`probe` 这一层故意**不依赖** `critgen` 的模块级状态，
+          这样 `probe` 被单独 import 时不会把 `critgen` 的 import 期副作用一起带进来。
+    """
+    from mw.critgen import TYPES as _T
+    return _T
+
+
+def sig_space(kind: str, n: int) -> list[list[str]]:
+    """该 (算子, arity) 下的**可行签名**，按 `TYPES` 的**声明序**。
+
+    ⚠️ 声明序是判据的一部分：`route()` 取「第一个非退化」的，若改成按探测结果排序
+       （比如「谁先过用谁」），选目标就变成拿尺子挑尺子（F4）。
+    ⚠️ 规则与 `bench/evidence/l3_s277/space_v189.py:type_combos()` 逐条相同 ——
+       那边是**已冻结**的证据脚本，这边是产品。两处必须一致，`AZ154a` 钉着。
+    """
+    T = list(_types())
+    if n == 1:
+        return [[t] for t in T]
+    if kind in _LEN_SECOND:
+        return [[t, "int"] for t in T]
+    if kind == "EMPTY_IFF_EQUAL":
+        return [[t, t] for t in T]
+    return [[a, b] for a in T for b in T]
+
+
+def _is_degenerate(v) -> bool:
+    """空串 / 空容器 / `0` / `0.0` —— 这四类能让循环体一次不进（V190 §2.2）。
+
+    ⚠️ 纯空白的串（`"  "`）**不算**退化：它是合法的、会被 `strip()` 之后有意义的输入。
+    ⚠️ `False` 不算：它是 `int` 的子类但语义是布尔，剔掉它会误伤 `flag` 域。
+    """
+    if isinstance(v, bool):
+        return False
+    if isinstance(v, (int, float)) and v == 0:
+        return True
+    return isinstance(v, (str, list, tuple, dict, set)) and len(v) == 0
+
+
+def degenerate_free(pool: dict, types: Iterable[str]) -> dict[str, tuple]:
+    """剔掉退化输入后的池。只保留 `types` 里的键。"""
+    return {t: tuple(v for v in (pool.get(t) or ()) if not _is_degenerate(v))
+            for t in types}
+
+
+def domain_of(kind: str, types: list, oracle: str, fn: str, *,
+              pool: dict | None = None) -> tuple[str, bool | None]:
+    """`("OK", 输出是否不恒定)` / `("NO_DOMAIN", None)` / `("FAULT", None)`。
+
+    ⛔ 「无域」与「恒定」必须分开：前者是「这个签名问不出问题」，后者是
+       「这个签名问得出问题但实现不区分」—— 两者修法相反（V190 §2.2 的 `k01` 就是前者
+       被空容器伪装成后者）。
+    """
+    from mw.critgen import inputs_for, legal_indexes, constant_on
+
+    try:
+        ins = inputs_for(kind, list(types or []), pool)
+    except Exception:
+        return "FAULT", None
+    if not ins:
+        return "NO_DOMAIN", None
+    legal = legal_indexes(oracle, fn, ins)
+    if legal is None:
+        return "FAULT", None
+    if not legal:
+        return "NO_DOMAIN", None
+    c = constant_on(oracle, fn, [ins[i] for i in legal])
+    if c is None:
+        return "FAULT", None
+    return "OK", (not c)
+
+
+def varies(kind: str, types: list, oracle: str, fn: str, *,
+           pool: dict | None = None) -> bool | None:
+    """该签名在这组池上「输出是不是不恒定」。`None` = 无域 / 探测失败。
+
+    ⛔ 只回答「有没有产出差异」，⛔ 不问「答得对不对」（与 `constant_on()` 同一条边界）。
+    """
+    st, v = domain_of(kind, list(types or []), oracle, fn, pool=pool)
+    return v if st == "OK" else None
+
+
+def false_reach(kind: str, types: list, oracle: str, fn: str) -> bool:
+    """「可达」是不是被**退化输入**骗出来的（V190 §2.2 那条，升格成产品函数）。
+
+    `reachable_on()` 答的是「这组池上喂得进吗」。空容器让循环体一次不进 ⇒
+    `AttributeError` 也不发生 ⇒ 它报「可达」，而其实这个签名在**非退化**输入上一个都吃不下。
+    ⇒ ⛔ `reachable_on()` 答不了「这个签名有没有域」。本函数把那个缺口单独标出来。
+
+    ⚠️ 判据是「剔掉退化输入后 legal 为空」。⛔ 探测失败一律返回 `False`（不排除），
+       与 `reachable_on()` 的 fail-open 同口径。
+    """
+    from mw.critgen import POOL, inputs_for, legal_indexes, reachable_on
+
+    if not reachable_on(kind, list(types or []), oracle, fn):
+        return False
+    try:
+        ins = inputs_for(kind, list(types or []), degenerate_free(POOL, types))
+    except Exception:
+        return False
+    if not ins:
+        return False
+    legal = legal_indexes(oracle, fn, ins)
+    return legal is not None and not legal
+
+
+def route(kind: str, types: list, n: int, oracle: str, fn: str, *,
+          texts: Iterable[str] = (), noise_budget: int = 0) -> dict:
+    """**一格 `UNDECIDED` → 下一步动作**。这是 V191 的本体（§259）。
+
+    返回 `{"disease", "target", "cost", "probes", "varied_sigs", "no_domain"}`。
+
+    ## 为什么先换签名、后换词表
+
+    V190 把 17 个盲区分成「5 格缺词表 + 12 格签名错」。若 `parse_flag` 这类实现的第一句是
+    `str(s)`，那它**任何类型都收**、基池里的 `0` 在字符串化之后正好落在词表里 ⇒
+    「缺词表」只是「类型错」的外观。本轮就是量这件事：先问「有没有免费签名」，
+    有就不必造词（`RESIGN_FREE`）；没有才允许扩池（`RESIGN_VOCAB` / `NEEDS_VOCAB`）。
+
+    ## 三个守卫值
+
+    - `HEALTHY`：当前签名本来就不恒定 ⇒ 这格不该被路由（调用方给错了格）。
+    - `NO_DOMAIN` / `FAULT`：当前签名连域都没有，或探测失败。⛔ 都不算 `DEAD`（F1）。
+    """
+    cur = [str(x) for x in (types or [])]
+
+    st, v = domain_of(kind, cur, oracle, fn)
+    if st == "FAULT":
+        return {"disease": "FAULT", "target": None, "cost": None, "probes": 1,
+                "varied_sigs": [], "no_domain": []}
+    if st == "NO_DOMAIN":
+        return {"disease": "NO_DOMAIN", "target": None, "cost": None, "probes": 1,
+                "varied_sigs": [], "no_domain": cur}
+    if v:
+        return {"disease": "HEALTHY", "target": None, "cost": None, "probes": 1,
+                "varied_sigs": [], "no_domain": []}
+
+    probes = 1
+    varied: list[list[str]] = []
+    no_domain: list[list[str]] = []
+    for s in sig_space(kind, n):
+        if s == cur:
+            continue
+        st, v = domain_of(kind, s, oracle, fn)
+        probes += 1
+        if st == "OK" and v:
+            return {"disease": "RESIGN_FREE", "target": list(s), "cost": "free",
+                    "probes": probes, "varied_sigs": varied + [list(s)],
+                    "no_domain": no_domain}
+        if st == "NO_DOMAIN":
+            no_domain.append(list(s))
+
+    #: 免费签名一个都没有 ⇒ 才允许动池。扩池的源只用**可部署**的两个（⛔ 不含 literal）。
+    exp = expand(kind, cur, sources=("mutate", "text", "noise"),
+                 texts=tuple(texts or ()), noise_budget=noise_budget)["pools"]
+    st, v = domain_of(kind, cur, oracle, fn, pool=exp)
+    probes += 1
+    if st == "OK" and v:
+        return {"disease": "NEEDS_VOCAB", "target": None, "cost": "vocab",
+                "probes": probes, "varied_sigs": varied, "no_domain": no_domain}
+
+    for s in sig_space(kind, n):
+        if s == cur:
+            continue
+        #: ⚠️ 扩池必须按**目标签名自己的类型**重建：`_inputs_for()` 只读 `types` 里的键，
+        #:    拿 `cur` 造出来的池喂给别的签名会 `KeyError`（V190 那批格只有 str 池，掩盖了这点）。
+        exp_s = expand(kind, s, sources=("mutate", "text", "noise"),
+                       texts=tuple(texts or ()), noise_budget=noise_budget)["pools"]
+        st, v = domain_of(kind, s, oracle, fn, pool=exp_s)
+        probes += 1
+        if st == "OK" and v:
+            return {"disease": "RESIGN_VOCAB", "target": list(s), "cost": "vocab",
+                    "probes": probes, "varied_sigs": varied + [list(s)],
+                    "no_domain": no_domain}
+
+    return {"disease": "DEAD", "target": None, "cost": None, "probes": probes,
+            "varied_sigs": varied, "no_domain": no_domain}

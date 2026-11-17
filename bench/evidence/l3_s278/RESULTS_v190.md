@@ -130,7 +130,8 @@ I2 是本轮最重要的一条：六臂的池从 4 条到 36 条，判据源码�
 | `tests/bench_test.py` | **97/0** |
 | `bench/withdraw_check.py` | **332** 条在册；`AZ153a~e` 五条**各自**精确转红（`红=[AZ153x] 多红=无`），还原后基线回到 774/0 |
 | `bench/check_counts.py` | 11 处声明 **0 漂移** |
-| `run_tests.sh` | **EXIT=0** |
+| `run_tests.sh` | **全部通过**（八步全绿，生产记忆库与评审账本指纹未变） |
+| CI | **三档绿**（py3.11 / 3.12 / 3.13，run **185**，提交 `aa5403b`） |
 
 证据目录：`PREREG_v190.md` / `readings_v190.json` / `arms_v190.py` / `_critgen_v189.py`（装置快照）。
 

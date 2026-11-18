@@ -1,0 +1,27 @@
+coding_small/t01_parse_duration S score=0.5 (N=0.5) 34.5s
+coding_small/t04_merge_ranges S score=1.0 (N=0.3333) 28.0s
+g7_heldout/g7s2_parse_headers S score=0.4 (N=0.4) 32.7s
+g7e_heldout/g7d2_dedupe_keep S score=0.6 (N=0.6) 28.2s
+g7e_heldout/g7d3_fmt_amount S score=0.2 (N=0.2) 19.9s
+g7e_heldout/g7e1_parse_flag S score=0.2 (N=0.2) 17.7s
+g7e_heldout/g7e2_truncate_tail S score=0.2 (N=0.2) 12.7s
+g7e_hint_heldout/g7d2_dedupe_keep S score=0.6 (N=0.6) 25.8s
+g7e_hint_heldout/g7d3_fmt_amount S score=0.2 (N=0.2) 18.5s
+g7e_hint_heldout/g7e1_parse_flag S score=0.2 (N=0.2) 18.2s
+g7e_hint_heldout/g7e2_truncate_tail S score=0.2 (N=0.2) 16.4s
+g7j_n0_heldout/g7d2_dedupe_keep S score=0.6 (N=0.6) 28.0s
+g7j_n0_heldout/g7d3_fmt_amount S score=0.2 (N=0.2) 19.4s
+g7j_n0_heldout/g7e1_parse_flag S score=0.2 (N=0.2) 17.6s
+g7j_n0_heldout/g7e2_truncate_tail S score=0.2 (N=0.2) 14.5s
+g7j_n4_heldout/g7d2_dedupe_keep S score=0.2 (N=0.2) 41.8s
+g7j_n4_heldout/g7d3_fmt_amount S score=0.2 (N=0.2) 20.2s
+g7j_n4_heldout/g7e1_parse_flag S score=0.2 (N=0.2) 19.2s
+g7j_n4_heldout/g7e2_truncate_tail S score=0.2 (N=0.2) 26.1s
+g7m_g7d2_heldout/g7d2_dedupe_keep S score=0.2 (N=0.2) 39.8s
+g7m_g7d2_pad15_heldout/g7d2_dedupe_keep S score=0.6 (N=0.6) 23.3s
+struct_convert_heldout/k03_unflatten S score=0.8 (N=0.4) 50.1s
+struct_convert_heldout/k04_to_ini S score=None (N=0.6) 44.3s
+coding_small/t01_parse_duration R2 score=0.6667 echo=False 30.5s
+coding_small/t04_merge_ranges R2 score=1.0 echo=False 33.9s
+coding_small/t01_parse_duration C score=0.6667 (N=0.5) sha=4aa75d88 echo=False
+coding_small/t04_merge_ranges C score=0.6667 (N=0.3333) sha=422bea97 echo=False

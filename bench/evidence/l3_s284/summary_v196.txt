@@ -1,0 +1,51 @@
+格数 denom=23（预注册 23）
+无效格（有 None）: []
+mean(N)=0.3232  mean(R)=0.3594  mean(P)=0.3797   denom=23
+R-N=+0.0362   P-N=+0.0565   R-P=-0.0203
+P1 R/P 答案不同 22/23 = 0.957（押 ≥0.80）
+P2 mean(R)-mean(N) = +0.0362（押 ≥ +0.10）
+P3 |mean(P)-mean(N)| = 0.0565（押 ≤ 0.10）
+P4 mean(R) ≥ mean(P) ? False（0.3594 vs 0.3797）
+P5 拒答 0/46、空答案 0/46、model={'qwen2.5:7b'}
+翻转 R vs N: (2, 21, 0)  P vs N: (5, 18, 0)
+照抄率 draft_echo（事后登记，非押）：19/46 = 0.413
+R 照抄 19 格，其中分数与 N **完全相同** 19 格
+R 的非照抄 4 格：Δ=[0.1667, 0.6667, 0.0, 0.0] 合计 +0.8334；照抄格合计 +0.0000
+
+事后对照 S（配对 denom=22；R/P/N 在本块均按同一批格重算）
+  mean(N')=0.3106 mean(R')=0.3485 mean(P')=0.3515 mean(S)=0.3591
+  R−S=-0.0106   P−S=-0.0076   S−N=+0.0485
+  逐格 R−S 非零：[('coding_s/t01_parse_duration', 0.1667), ('struct_c/k03_unflatten', -0.4)]
+  S vs N 翻转：涨 2 / 平 20 / 跌 0
+
+装置自检 C coding_small/t01_parse_duration: N=0.5 C=0.6667 R=0.6667 sha(C)=4aa75d88 sha(R)=4f5d3a74 同答案=False
+
+装置自检 C coding_small/t04_merge_ranges: N=0.3333 C=0.6667 R=1.0 sha(C)=422bea97 sha(R)=52805e6b 同答案=False
+P6 噪声 2 格：Δ=[0.0, 0.0] max=0.0000
+
+逐格明细：
+  coding_small             t01_parse_duration     N=0.5000 R=0.6667 P=0.6667 echoR=False echoP=False
+  coding_small             t04_merge_ranges       N=0.3333 R=1.0 P=0.6667 echoR=False echoP=False
+  g7_heldout               g7s2_parse_headers     N=0.4000 R=0.4 P=0.4 echoR=True echoP=False
+  g7e_heldout              g7d2_dedupe_keep       N=0.6000 R=0.6 P=0.6 echoR=True echoP=False
+  g7e_heldout              g7d3_fmt_amount        N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7e_heldout              g7e1_parse_flag        N=0.2000 R=0.2 P=0.4 echoR=True echoP=False
+  g7e_heldout              g7e2_truncate_tail     N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7e_hint_heldout         g7d2_dedupe_keep       N=0.6000 R=0.6 P=0.6 echoR=True echoP=False
+  g7e_hint_heldout         g7d3_fmt_amount        N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7e_hint_heldout         g7e1_parse_flag        N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7e_hint_heldout         g7e2_truncate_tail     N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7j_n0_heldout           g7d2_dedupe_keep       N=0.6000 R=0.6 P=0.6 echoR=False echoP=False
+  g7j_n0_heldout           g7d3_fmt_amount        N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7j_n0_heldout           g7e1_parse_flag        N=0.2000 R=0.2 P=0.4 echoR=True echoP=False
+  g7j_n0_heldout           g7e2_truncate_tail     N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7j_n4_heldout           g7d2_dedupe_keep       N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7j_n4_heldout           g7d3_fmt_amount        N=0.2000 R=0.2 P=0.2 echoR=False echoP=False
+  g7j_n4_heldout           g7e1_parse_flag        N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7j_n4_heldout           g7e2_truncate_tail     N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7m_g7d2_heldout         g7d2_dedupe_keep       N=0.2000 R=0.2 P=0.2 echoR=True echoP=False
+  g7m_g7d2_pad15_heldout   g7d2_dedupe_keep       N=0.6000 R=0.6 P=0.6 echoR=True echoP=False
+  struct_convert_heldout   k03_unflatten          N=0.4000 R=0.4 P=0.4 echoR=True echoP=False
+  struct_convert_heldout   k04_to_ini             N=0.6000 R=0.6 P=1.0 echoR=True echoP=False
+
+分臂中位数: 0.2 0.2 0.2

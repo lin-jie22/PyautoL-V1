@@ -2359,6 +2359,14 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '''    from mw import critgen as cg
     from mw import probe as pb''',
      '''    # 撤回态：入口不再接判据模块'''),
+    # ── V194（§262）：AZ156a 是**跳线闸**，「撤回」= 把免费闸接进 bench ────────
+    #: 语义与其余条目相反，故意的：这条锚点钉的是一个**否定决定**（量出来不能接），
+    #: 所以「撤回」只能是把那个决定改掉 —— 即真的在 bench 的答案出口调一次入口。
+    #: 红 = 「你去读 DESIGN §262 那三条读数」，不是「不许接」。
+    ("AZ156a", "run.py",
+     '''    from mw.bench import (BaselineStore, Caliber, ExternalScorer, Suite,''',
+     '''    cmd_verify_impl(None)  # 撤回态：把免费闸接进 bench 的答案出口
+    from mw.bench import (BaselineStore, Caliber, ExternalScorer, Suite,'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

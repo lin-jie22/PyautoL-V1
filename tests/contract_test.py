@@ -16326,6 +16326,44 @@ check(RS, "AZ155a 部署面**接上了**判据模块（V192 钉反面，V193 起
       and _az155_calls >= 3 and len(_az155_dep) >= 20,
       f"闭包 {len(_az155_dep)} 个模块；命中 {_az155_hit}；属性访问 {_az155_calls} 次")
 
+# ── AZ156a：bench 的答案出口**没有**接那道免费闸（V194 §262，跳线闸）──────
+#: ⚠️ 这同样是**跳线闸**：红了**不**代表「不许接」，代表「你接了 ⇒ 先读 DESIGN §262，
+#:    那里量到它会把 12.1% 的答案误杀（含 2 条满分）、连参考解都筛掉 4/33，
+#:    并把 `g7_heldout` 从 0.70 打到 0.00。要接必须先在证据里翻掉那三条读数」。
+#: 判「接没接」只看**调用**，不看注释：AST 里 bench 两个函数体内不得出现
+#: `verify_impl` 相关的 Call（注释里写它不犯法，那正是要让人看见的地方）。
+import ast as _ast156
+
+_az156_src = (V1 / "run.py").read_text(encoding="utf-8")
+_az156_tree = _ast156.parse(_az156_src)
+_az156_bench_fns = [n for n in _ast156.walk(_az156_tree)
+                    if isinstance(n, _ast156.FunctionDef) and n.name in ("_bench_main", "cmd_bench")]
+_az156_calls: list[str] = []
+for _f in _az156_bench_fns:
+    for _n in _ast156.walk(_f):
+        if isinstance(_n, _ast156.Call):
+            _fn = _n.func
+            if isinstance(_fn, _ast156.Name):
+                _az156_calls.append(_fn.id)
+            elif isinstance(_fn, _ast156.Attribute):
+                _az156_calls.append(_fn.attr)
+_az156_hit = sorted({c for c in _az156_calls if "verify_impl" in c})
+#: 正例路径：入口本身必须还在（⛔ 删掉入口来「通过」这条闸是作弊 —— 那不是防止接线，是拆桥）。
+_az156_entry = "cmd_verify_impl" in [n.name for n in _ast156.walk(_az156_tree)
+                                     if isinstance(n, _ast156.FunctionDef)]
+
+check(RS, "AZ156a bench 路径**没有**把免费闸接进答案出口（V194 §262 跳线闸）：\n"
+          "              V194 在 33 个真实答案上量到：闸触发 4 次、4 次全误杀（2 条满分）；\n"
+          "              把参考解喂进去也被筛掉 4/33 ⇒ 接上会把 `g7_heldout` 从 0.70 打到 0.00、\n"
+          "              `numeric_logic_heldout` 从 1.000 打到 0.667。\n"
+          "              ⇒ 现在它只是**检视工具**（`--verify-impl`），不是筛选器。\n"
+          "              ⚠️ 判据只查 `_bench_main` / `cmd_bench` 函数体内的**调用**；\n"
+          "              注释里提到它不算违规 —— 那正是希望别人读到的地方。\n"
+          "              撤回语义：往 `_bench_main` 里加一行 `cmd_verify_impl(...)` ⇒ 必须红",
+      not _az156_hit and _az156_entry and len(_az156_bench_fns) == 2,
+      f"bench 函数体 {len(_az156_bench_fns)} 个；verify_impl 调用 {_az156_hit}；"
+      f"入口在 {_az156_entry}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

@@ -1,0 +1,409 @@
+{
+ "n": 33,
+ "n_drop": 4,
+ "n_abstain": 0,
+ "dropped": [
+  "t01_parse_duration",
+  "t04_merge_ranges",
+  "g7s2_parse_headers",
+  "h02_merge_ranges"
+ ],
+ "rows": [
+  {
+   "id": "t01_parse_duration",
+   "suite": "coding_small",
+   "fn": "parse_duration",
+   "fn_src": "from_tests",
+   "verdict": "DROP",
+   "tally": {
+    "CONST": 30
+   },
+   "rc": 0
+  },
+  {
+   "id": "t02_dedupe",
+   "suite": "coding_small",
+   "fn": "dedupe",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 20,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "t03_commas",
+   "suite": "coding_small",
+   "fn": "commas",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "t04_merge_ranges",
+   "suite": "coding_small",
+   "fn": "merge_ranges",
+   "fn_src": "from_tests",
+   "verdict": "DROP",
+   "tally": {
+    "CONST": 15,
+    "STRUCT:TYPES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "t05_top_k",
+   "suite": "coding_small",
+   "fn": "top_k",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 8,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "t06_rle",
+   "suite": "coding_small",
+   "fn": "rle",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 15,
+    "CONST": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7s2_parse_headers",
+   "suite": "g7_heldout",
+   "fn": "parse_headers",
+   "fn_src": "from_tests",
+   "verdict": "DROP",
+   "tally": {
+    "CONST": 20,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7s4_xml_escape_attrs",
+   "suite": "g7_heldout",
+   "fn": "xml_escape_attrs",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 25,
+    "VARIES": 5
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7e_heldout",
+   "fn": "dedupe_keep",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 20,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "suite": "g7e_heldout",
+   "fn": "fmt_amount",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7e_heldout",
+   "fn": "parse_flag",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "CONST": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7e_heldout",
+   "fn": "truncate_tail",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 8,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7e_hint_heldout",
+   "fn": "dedupe_keep",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 20,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "suite": "g7e_hint_heldout",
+   "fn": "fmt_amount",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7e_hint_heldout",
+   "fn": "parse_flag",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "CONST": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7e_hint_heldout",
+   "fn": "truncate_tail",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 8,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n0_heldout",
+   "fn": "dedupe_keep",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 20,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "suite": "g7j_n0_heldout",
+   "fn": "fmt_amount",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n0_heldout",
+   "fn": "parse_flag",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "CONST": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n0_heldout",
+   "fn": "truncate_tail",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 8,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n4_heldout",
+   "fn": "dedupe_keep",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 20,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "suite": "g7j_n4_heldout",
+   "fn": "fmt_amount",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n4_heldout",
+   "fn": "parse_flag",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "CONST": 15,
+    "VARIES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n4_heldout",
+   "fn": "truncate_tail",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 8,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7m_g7d2_heldout",
+   "fn": "dedupe_keep",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 20,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7m_g7d2_pad15_heldout",
+   "fn": "dedupe_keep",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "VARIES": 20,
+    "STRUCT:TYPES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "h01_int_to_roman",
+   "suite": "numeric_logic_heldout",
+   "fn": "int_to_roman",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 20,
+    "VARIES": 10
+   },
+   "rc": 0
+  },
+  {
+   "id": "h02_merge_ranges",
+   "suite": "numeric_logic_heldout",
+   "fn": "merge_ranges",
+   "fn_src": "from_tests",
+   "verdict": "DROP",
+   "tally": {
+    "CONST": 15,
+    "STRUCT:TYPES": 15
+   },
+   "rc": 0
+  },
+  {
+   "id": "h03_eval_rpn",
+   "suite": "numeric_logic_heldout",
+   "fn": "eval_rpn",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 25,
+    "VARIES": 5
+   },
+   "rc": 0
+  },
+  {
+   "id": "k01_diff_tree",
+   "suite": "struct_convert_heldout",
+   "fn": "diff_tree",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 15,
+    "CONST": 2,
+    "VARIES": 1
+   },
+   "rc": 0
+  },
+  {
+   "id": "k02_encode_cookie",
+   "suite": "struct_convert_heldout",
+   "fn": "encode_cookie",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 25,
+    "VARIES": 5
+   },
+   "rc": 0
+  },
+  {
+   "id": "k03_unflatten",
+   "suite": "struct_convert_heldout",
+   "fn": "unflatten",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 25,
+    "VARIES": 5
+   },
+   "rc": 0
+  },
+  {
+   "id": "k04_to_ini",
+   "suite": "struct_convert_heldout",
+   "fn": "to_ini",
+   "fn_src": "from_tests",
+   "verdict": "KEEP",
+   "tally": {
+    "STRUCT:TYPES": 25,
+    "VARIES": 5
+   },
+   "rc": 0
+  }
+ ]
+}

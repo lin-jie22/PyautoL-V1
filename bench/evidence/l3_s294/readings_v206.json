@@ -1,0 +1,145 @@
+{
+ "gain_8": {
+  "pool": "gain",
+  "min_chars": 8,
+  "n_eps": 19,
+  "stats": {
+   "considered": 19,
+   "kept": 3,
+   "dropped_code": 0,
+   "dropped_identifier": 0,
+   "dropped_empty": 16,
+   "dropped_invalid": 0,
+   "failed_llm": 0
+  },
+  "texts": [
+   "区间端点闭包不同定义",
+   "区间重叠判断条件"
+  ]
+ },
+ "gain_4": {
+  "pool": "gain",
+  "min_chars": 4,
+  "n_eps": 19,
+  "stats": {
+   "considered": 19,
+   "kept": 8,
+   "dropped_code": 0,
+   "dropped_identifier": 0,
+   "dropped_empty": 11,
+   "dropped_invalid": 0,
+   "failed_llm": 0
+  },
+  "texts": [
+   "元组不可修改",
+   "区间端点闭包不同定义",
+   "区间重叠定义",
+   "区间重叠判断条件"
+  ]
+ },
+ "cost_8": {
+  "pool": "cost",
+  "min_chars": 8,
+  "n_eps": 108,
+  "stats": {
+   "considered": 108,
+   "kept": 14,
+   "dropped_code": 1,
+   "dropped_identifier": 0,
+   "dropped_empty": 93,
+   "dropped_invalid": 0,
+   "failed_llm": 0
+  },
+  "texts": [
+   "Python 关键字和语法不同",
+   "定义函数使用 Python 语法",
+   "缺少参数定义：prefix 默认值后不应跟冒号",
+   "函数参数定义缺失",
+   "空 dict 返回空串而非 None",
+   "函数定义要符合题目要求的语言环境",
+   "括号内逗号不算分隔符",
+   "空串要返回 None 而不是空列表",
+   "空串要返回 None 而不是空字符串",
+   "空串返回 None",
+   "递归比较叶子节点"
+  ]
+ },
+ "cost_4": {
+  "pool": "cost",
+  "min_chars": 4,
+  "n_eps": 108,
+  "stats": {
+   "considered": 108,
+   "kept": 29,
+   "dropped_code": 1,
+   "dropped_identifier": 0,
+   "dropped_empty": 78,
+   "dropped_invalid": 0,
+   "failed_llm": 0
+  },
+  "texts": [
+   "Python 关键字和语法不同",
+   "定义函数使用 Python 语法",
+   "参数名不符",
+   "缺少参数定义：prefix 默认值后不应跟冒号",
+   "括号类型错误",
+   "缺少函数定义",
+   "函数参数定义",
+   "括号类型不匹配",
+   "函数参数定义缺失",
+   "空 dict 返回空串而非 None",
+   "函数定义要符合题目要求的语言环境",
+   "指定编码",
+   "括号内逗号不算分隔符",
+   "空串要返回 None 而不是空列表",
+   "空串要返回 None 而不是空字符串",
+   "空串返回 None",
+   "递归比较叶子节点",
+   "空格→%20"
+  ]
+ },
+ "summary": {
+  "gain_new": [
+   "元组不可修改",
+   "区间重叠定义"
+  ],
+  "cost_new": [
+   "函数参数定义",
+   "参数名不符",
+   "括号类型不匹配",
+   "括号类型错误",
+   "指定编码",
+   "空格→%20",
+   "缺少函数定义"
+  ],
+  "cost_new_hollow": [
+   "函数参数定义",
+   "参数名不符",
+   "缺少函数定义"
+  ],
+  "cost_new_hollow_rate": 0.4286,
+  "struct_words": [
+   "空",
+   "None",
+   "空串",
+   "重叠",
+   "端点",
+   "区间",
+   "顺序",
+   "首次",
+   "逗号",
+   "千分位",
+   "次数",
+   "升序",
+   "游程",
+   "编码",
+   "元组",
+   "tuple",
+   "不可变",
+   "括号",
+   "分隔符",
+   "递归",
+   "基线"
+  ]
+ }
+}

@@ -1,0 +1,69 @@
+{
+ "stat": {
+  "A": {
+   "n": 67,
+   "strong_text": 2,
+   "strong_cluster": 1,
+   "density": 0.0299,
+   "self": 37,
+   "self_rate": 0.5522,
+   "clusters": [
+    "去重要保序"
+   ]
+  },
+  "B": {
+   "n": 19,
+   "strong_text": 2,
+   "strong_cluster": 2,
+   "density": 0.1053,
+   "self": 1,
+   "self_rate": 0.0526,
+   "clusters": [
+    "分割要跳过括号内的分隔符",
+    "空容器返回什么"
+   ]
+  },
+  "C": {
+   "n": 31,
+   "strong_text": 2,
+   "strong_cluster": 1,
+   "density": 0.0645,
+   "self": 13,
+   "self_rate": 0.4194,
+   "clusters": [
+    "去重要保序"
+   ]
+  },
+  "D": {
+   "n": 11,
+   "strong_text": 2,
+   "strong_cluster": 2,
+   "density": 0.1818,
+   "self": 1,
+   "self_rate": 0.0909,
+   "clusters": [
+    "分割要跳过括号内的分隔符",
+    "空容器返回什么"
+   ]
+  }
+ },
+ "n_unjudged": 120,
+ "judge": {
+  "遇到重复字符串时，先确定保留原文的出现顺序。": [
+   true,
+   "去重要保序"
+  ],
+  "遇见到重复项处理规则不明确时，先明确保留哪次出现的原文。": [
+   true,
+   "去重要保序"
+  ],
+  "空 dict 返回空串而非 None": [
+   true,
+   "空容器返回什么"
+  ],
+  "括号内逗号不算分隔符": [
+   true,
+   "分割要跳过括号内的分隔符"
+  ]
+ }
+}

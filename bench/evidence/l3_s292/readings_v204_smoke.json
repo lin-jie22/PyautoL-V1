@@ -1,0 +1,287 @@
+{
+ "prereg_gated": 108,
+ "n_full": 500,
+ "n_gated": 108,
+ "A": {
+  "arm": "A_full_old",
+  "tag": "复用 V202（原指令 × 全部 500）",
+  "n_eps": 500,
+  "n_kept": 295,
+  "n_abs_rows": 67,
+  "texts": [
+   "遇见到交付前检查时，先确保所有功能实现。",
+   "等待代码生成时，预先检查时间设置是否合理。",
+   "交付代码前先确保所有部分都能正常编译。",
+   "任务之前确认能正常通信",
+   "获取不到代码输出时，先检查代码生成是否完成。",
+   "遇见到交付前检查时，先完成所有功能实现。",
+   "遇见到交付前检查时，先完成所有必需函数实现。",
+   "编写代码前确保所有函数定义完整",
+   "遇见到交付前检查未通过时，先审查未通过项。",
+   "编写代码前确保所有依赖函数定义完整",
+   "遇见到交付前检查未通过时，先审查遗漏项。",
+   "遇到信息不足时，先进行自检。",
+   "遇见到交付前检查时，先确保所有必要函数定义完成。",
+   "遇见到交付前检查时，先确保所有函数定义完整。",
+   "遇见到交付前检查未通过时，先确保所有必填函数已实现。",
+   "遇见到交付前检查时，先确保所有功能完善。",
+   "遇到信息不足时，先尝试补充缺失信息。",
+   "遇见到交付前检查时，先完成所有功能实现",
+   "遇到信息不足时，先尝试补充缺失信息再生成答案。",
+   "遇见到交付前检查时，先确保所有基础函数完整。",
+   "遇到信息不足时，先确认基本结构正确再给出答复。",
+   "遇见到交付前检查时，先确保所有功能实现完整。",
+   "遇见到交付前检查时，先完成所有功能自检。",
+   "遇见到交付前检查未通过时，先审查自检结果。",
+   "遇见到交付前检查时，先确保所有格式化函数定义完整。",
+   "遇见到交付前检查时，先完成所有功能自检",
+   "遇见到交付前检查时，先完成所有必要函数实现",
+   "遇见到交付前检查时，先完成所有属性编码。",
+   "遇见到交付前检查未通过时，先确保所有必需函数已实现。",
+   "遇见到交付前检查未通过时，先审查遗漏的自检项。",
+   "定义函数前先声明函数名",
+   "检查语言标签之前确认题目要求",
+   "编写代码前确认题目要求的语言。",
+   "定义函数前先检查语法正确性",
+   "遇见到任务停滞时，先检查资源和依赖。",
+   "处理空列表之前先检查它。",
+   "遇到模型调用失败时，先检查网络连接。",
+   "处理字符串时，先检查并分割字符串再转换为整数",
+   "遇见到外部 agent 交付失败时，先检查错误信息并修正错误再提交。",
+   "遇见到复杂键时，先解析索引和键部分。",
+   "遇见到字典可能为空时，先检查字典是否为空。",
+   "遇见到字典排序和编码规则复杂时，先详细列出所有步骤。",
+   "遇见到递归调用时，先检查基线条件。",
+   "遇到模型调用失败时，先检查当前网络连接。",
+   "排序之前检查是否为空列表",
+   "遇见到数据可能包含多种格式时，先统一数据格式。",
+   "遇到重复字符串时，先确定保留原文的出现顺序。",
+   "遇见到重复处理字符串时，先检查字符串替换是否必要。",
+   "遇见到字符串截断需求时，先确定最小截断长度为3。",
+   "遇见到空字符串时，先处理特殊情况",
+   "遇见到入参格式不一致时，先统一处理格式。",
+   "遇见到字符串截断长度小于4时，先处理省略号位置。",
+   "遇见到入参大小写不敏感时，先统一转换为标准格式。",
+   "遇见到重复项处理规则不明确时，先明确保留哪次出现的原文。",
+   "遇见到空字符串时，先处理明确值。",
+   "遇见到空值时，先处理为空字符串。",
+   "打开文件前指定 encoding",
+   "遇见到已有相同 key 时，先检查是否为累加引用。",
+   "写文件前指定 encoding 参数",
+   "分析问题前，先定位具体出错文件",
+   "遇到模型输出不可解析时，先检查输入数据是否正确。",
+   "解析字符串前确认处理嵌套括号的需求。",
+   "编写递归函数前先确定退出条件。",
+   "编写函数前先定义完整函数签名。",
+   "遇见到自检未通过时，先修正错误。",
+   "遇见到预演成功时，先检查实际执行结果。",
+   "遇见到自检未通过时，先修正代码错误。"
+  ],
+  "hits_sum": 295,
+  "rows": []
+ },
+ "B": {
+  "arm": "B_full_new",
+  "tag": "全部 × 新指令",
+  "system": "你是「题目结构提炼器」。给你一段 AI 智能体过去的执行记录（可能含题面、失败信息、预演差异）。\n任务：写出**这道题/这类题的结构性陷阱** —— 下次遇到同类题，具体该防什么。\n要求：\n1. 一句话，但必须点名**具体的结构**（例：『空串要返回 None 而不是空字符串』『端点相接 (1,3) 与 (3,6) 不算重叠』『千分位从右往左每三位插逗号』）。\n2. 绝对不要写代码、不要出现函数名、变量名、代码块。\n3. **不要写**『先检查』『注意细节』『确保完整』『统一格式』这类没有可执行内容的空话—— 那不算经验，算复述脚手架。\n4. 如果这段记录确实不含结构性信息，就只输出一个词：NONE\n",
+  "n_eps": 4,
+  "n_kept": 1,
+  "n_abs_rows": 1,
+  "reasons": {
+   "empty": 1,
+   "NONE": 2,
+   "kept": 1
+  },
+  "rate_per_ep": 0.25,
+  "texts": [
+   "空 dict 返回空串而非 None"
+  ],
+  "rows": [
+   {
+    "arm": "B_full_new",
+    "src_id": 3058,
+    "kind": "failure",
+    "raw_len": 37,
+    "raw": "收尾交付未过自检 — 1/5 项未过：缺少 def commas(...)",
+    "out": "参数名要求一致",
+    "kept": false,
+    "reason": "empty",
+    "cleaned": "参数名要求一致"
+   },
+   {
+    "arm": "B_full_new",
+    "src_id": 3050,
+    "kind": "failure",
+    "raw_len": 371,
+    "raw": "agent:code_agent({'task': '写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)]。注意：只有真正重叠的区间才合并。只输出代码，函数名必须是 merge_ranges。', 'deadline_s': 30.0}) — 实现 merge_ranges 函数 — agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没",
+    "out": "NONE",
+    "kept": false,
+    "reason": "NONE"
+   },
+   {
+    "arm": "B_full_new",
+    "src_id": 3040,
+    "kind": "failure",
+    "raw_len": 362,
+    "raw": "agent:code_agent({'task': \"写一个函数 to_ini(d)：把嵌套 dict 转成 INI 文本。顶层键是 section，值是一个 dict；每个 section 输出 '[section]' 一行，接着每行 'key=value'（按 dict 的**出现顺序**）；值为 None 输出空串，bool 输出小写的 'true'/'false'，其它用 str()；最后一行的末尾也要有换行符；空 dict 返回空串。只输出代码，函数名必须是 to_ini。\", 'deadline_s': 38.2}) — 实现 to_ini 函数 — agent:code_agen",
+    "out": "空 dict 返回空串而非 None",
+    "kept": true,
+    "reason": "kept",
+    "cleaned": "空 dict 返回空串而非 None"
+   },
+   {
+    "arm": "B_full_new",
+    "src_id": 3036,
+    "kind": "failure",
+    "raw_len": 350,
+    "raw": "agent:code_agent({'task': \"写一个函数 unflatten(flat)：把展平 dict 还原成嵌套结构。键里的 '.' 表示嵌套 dict，'k[i]' 表示 k 是一个 list、第 i 个元素；列表长度取该层出现过的最大下标 +1，未填的位置写 None。返回还原后的顶层 dict。只输出代码，函数名必须是 unflatten。\", 'deadline_s': 28.4}) — 实现 unflatten 函数 — agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码 ⇒ 直接: 模型调用失败 ",
+    "out": "NONE",
+    "kept": false,
+    "reason": "NONE"
+   }
+  ],
+  "elapsed_s": 7.7
+ },
+ "C": {
+  "arm": "C_gate_old",
+  "tag": "门控 × 原指令",
+  "system": "你是经验提炼器。给你一段 AI 智能体自己过去的执行记录，请把它提炼成**一条可以迁移到别的任务上的经验**。\n要求：\n1. 一句话，以动词开头，形式如『遇见到 X 时，先 Y』或『做 X 之前检查 Y』。\n2. **绝对不要写代码**、不要出现函数名、变量名、代码块。\n3. 不要复述任务的答案，只写**下次该怎么避免同一个坑**。\n4. 不要写『好的』这类客套话，直接给那一句经验。\n5. 如果这段记录里没有任何可迁移的教训，就只输出一个词：NONE",
+  "n_eps": 4,
+  "n_kept": 4,
+  "n_abs_rows": 4,
+  "reasons": {
+   "kept": 4
+  },
+  "rate_per_ep": 1.0,
+  "texts": [
+   "等待代码生成时，预先检查时间设置是否合理。",
+   "交付代码前先确保所有部分都能正常编译。",
+   "任务之前确认能正常通信",
+   "获取不到代码输出时，先检查代码生成是否完成。"
+  ],
+  "rows": [
+   {
+    "arm": "C_gate_old",
+    "src_id": 3050,
+    "kind": "failure",
+    "raw_len": 371,
+    "raw": "agent:code_agent({'task': '写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)]。注意：只有真正重叠的区间才合并。只输出代码，函数名必须是 merge_ranges。', 'deadline_s': 30.0}) — 实现 merge_ranges 函数 — agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没",
+    "out": "等待代码生成时，预先检查时间设置是否合理。",
+    "kept": true,
+    "reason": "kept",
+    "cleaned": "等待代码生成时，预先检查时间设置是否合理。"
+   },
+   {
+    "arm": "C_gate_old",
+    "src_id": 3040,
+    "kind": "failure",
+    "raw_len": 362,
+    "raw": "agent:code_agent({'task': \"写一个函数 to_ini(d)：把嵌套 dict 转成 INI 文本。顶层键是 section，值是一个 dict；每个 section 输出 '[section]' 一行，接着每行 'key=value'（按 dict 的**出现顺序**）；值为 None 输出空串，bool 输出小写的 'true'/'false'，其它用 str()；最后一行的末尾也要有换行符；空 dict 返回空串。只输出代码，函数名必须是 to_ini。\", 'deadline_s': 38.2}) — 实现 to_ini 函数 — agent:code_agen",
+    "out": "交付代码前先确保所有部分都能正常编译。",
+    "kept": true,
+    "reason": "kept",
+    "cleaned": "交付代码前先确保所有部分都能正常编译。"
+   },
+   {
+    "arm": "C_gate_old",
+    "src_id": 3036,
+    "kind": "failure",
+    "raw_len": 350,
+    "raw": "agent:code_agent({'task': \"写一个函数 unflatten(flat)：把展平 dict 还原成嵌套结构。键里的 '.' 表示嵌套 dict，'k[i]' 表示 k 是一个 list、第 i 个元素；列表长度取该层出现过的最大下标 +1，未填的位置写 None。返回还原后的顶层 dict。只输出代码，函数名必须是 unflatten。\", 'deadline_s': 28.4}) — 实现 unflatten 函数 — agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码 ⇒ 直接: 模型调用失败 ",
+    "out": "收到任务之前确认能正常通信",
+    "kept": true,
+    "reason": "kept",
+    "cleaned": "任务之前确认能正常通信"
+   },
+   {
+    "arm": "C_gate_old",
+    "src_id": 3029,
+    "kind": "failure",
+    "raw_len": 342,
+    "raw": "agent:code_agent({'task': \"写一个函数 diff_tree(a, b)：递归比较两个 dict 的**叶子**（标量）值，差异路径用 '.' 连接嵌套键，返回 {路径: [a 里的值, b 里的值]}；某一边缺这个键时那一边写 None；两边完全相同时返回空 dict。只输出代码，函数名必须是 diff_tree。\", 'deadline_s': 40.1}) — 直接实现 diff_tree 函数 — agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码 ⇒ 直接: 模型调用失败 http://1",
+    "out": "获取不到代码输出时，先检查代码生成是否完成。",
+    "kept": true,
+    "reason": "kept",
+    "cleaned": "获取不到代码输出时，先检查代码生成是否完成。"
+   }
+  ],
+  "elapsed_s": 7.6
+ },
+ "D": {
+  "arm": "D_gate_new",
+  "tag": "门控 × 新指令",
+  "system": "你是「题目结构提炼器」。给你一段 AI 智能体过去的执行记录（可能含题面、失败信息、预演差异）。\n任务：写出**这道题/这类题的结构性陷阱** —— 下次遇到同类题，具体该防什么。\n要求：\n1. 一句话，但必须点名**具体的结构**（例：『空串要返回 None 而不是空字符串』『端点相接 (1,3) 与 (3,6) 不算重叠』『千分位从右往左每三位插逗号』）。\n2. 绝对不要写代码、不要出现函数名、变量名、代码块。\n3. **不要写**『先检查』『注意细节』『确保完整』『统一格式』这类没有可执行内容的空话—— 那不算经验，算复述脚手架。\n4. 如果这段记录确实不含结构性信息，就只输出一个词：NONE\n",
+  "n_eps": 4,
+  "n_kept": 1,
+  "n_abs_rows": 1,
+  "reasons": {
+   "NONE": 3,
+   "kept": 1
+  },
+  "rate_per_ep": 0.25,
+  "texts": [
+   "空 dict 返回空串而非 None"
+  ],
+  "rows": [
+   {
+    "arm": "D_gate_new",
+    "src_id": 3050,
+    "kind": "failure",
+    "raw_len": 371,
+    "raw": "agent:code_agent({'task': '写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)]。注意：只有真正重叠的区间才合并。只输出代码，函数名必须是 merge_ranges。', 'deadline_s': 30.0}) — 实现 merge_ranges 函数 — agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没",
+    "out": "NONE",
+    "kept": false,
+    "reason": "NONE"
+   },
+   {
+    "arm": "D_gate_new",
+    "src_id": 3040,
+    "kind": "failure",
+    "raw_len": 362,
+    "raw": "agent:code_agent({'task': \"写一个函数 to_ini(d)：把嵌套 dict 转成 INI 文本。顶层键是 section，值是一个 dict；每个 section 输出 '[section]' 一行，接着每行 'key=value'（按 dict 的**出现顺序**）；值为 None 输出空串，bool 输出小写的 'true'/'false'，其它用 str()；最后一行的末尾也要有换行符；空 dict 返回空串。只输出代码，函数名必须是 to_ini。\", 'deadline_s': 38.2}) — 实现 to_ini 函数 — agent:code_agen",
+    "out": "空 dict 返回空串而非 None",
+    "kept": true,
+    "reason": "kept",
+    "cleaned": "空 dict 返回空串而非 None"
+   },
+   {
+    "arm": "D_gate_new",
+    "src_id": 3036,
+    "kind": "failure",
+    "raw_len": 350,
+    "raw": "agent:code_agent({'task': \"写一个函数 unflatten(flat)：把展平 dict 还原成嵌套结构。键里的 '.' 表示嵌套 dict，'k[i]' 表示 k 是一个 list、第 i 个元素；列表长度取该层出现过的最大下标 +1，未填的位置写 None。返回还原后的顶层 dict。只输出代码，函数名必须是 unflatten。\", 'deadline_s': 28.4}) — 实现 unflatten 函数 — agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码 ⇒ 直接: 模型调用失败 ",
+    "out": "NONE",
+    "kept": false,
+    "reason": "NONE"
+   },
+   {
+    "arm": "D_gate_new",
+    "src_id": 3029,
+    "kind": "failure",
+    "raw_len": 342,
+    "raw": "agent:code_agent({'task': \"写一个函数 diff_tree(a, b)：递归比较两个 dict 的**叶子**（标量）值，差异路径用 '.' 连接嵌套键，返回 {路径: [a 里的值, b 里的值]}；某一边缺这个键时那一边写 None；两边完全相同时返回空 dict。只输出代码，函数名必须是 diff_tree。\", 'deadline_s': 40.1}) — 直接实现 diff_tree 函数 — agent:code_agent 执行异常 RuntimeError: 外部 agent 未交付：生成阶段没有产出任何代码 ⇒ 直接: 模型调用失败 http://1",
+    "out": "NONE",
+    "kept": false,
+    "reason": "NONE"
+   }
+  ],
+  "elapsed_s": 4.7
+ },
+ "isolation": {
+  "clean": true,
+  "before": {
+   "x": {
+    "size": 5574656,
+    "mtime": 1795014282.246,
+    "sha256": "23177345da0e413e"
+   }
+  },
+  "after": {
+   "x": {
+    "size": 5574656,
+    "mtime": 1795014282.246,
+    "sha256": "23177345da0e413e"
+   }
+  }
+ }
+}

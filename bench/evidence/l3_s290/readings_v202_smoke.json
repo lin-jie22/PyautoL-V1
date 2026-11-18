@@ -1,0 +1,269 @@
+{
+ "a_material": {
+  "src_db": {
+   "size": 5574656,
+   "mtime": 1795014282.246,
+   "sha256": "23177345da0e413e"
+  },
+  "total": 3059,
+  "kinds_all": {
+   "failure": 777,
+   "finish": 737,
+   "goal": 738,
+   "mismatch": 639,
+   "outcome": 168
+  },
+  "visible_n": 500,
+  "visible_ratio": 0.1635,
+  "visible_kinds": {
+   "failure": 120,
+   "finish": 131,
+   "outcome": 75,
+   "goal": 131,
+   "mismatch": 43
+  },
+  "visible_id_lo": 2560,
+  "visible_id_hi": 3059,
+  "blank": 0,
+  "tiny": 0,
+  "input_side_code": 82,
+  "input_side_ident": 161,
+  "outcome_top": [
+   [
+    "(语义记忆中无相关条目)",
+    52
+   ],
+   [
+    "[selftest c=0.90 x29",
+    8
+   ],
+   [
+    "已存在(仅累加引用) key=d4e83",
+    6
+   ]
+  ],
+  "failure_n": 120,
+  "failure_infra": 4,
+  "failure_infra_ratio": 0.0333,
+  "first3": [
+   [
+    3058,
+    "failure",
+    "收尾交付未过自检 — 1/5 项未过：缺少 def commas(...)"
+   ],
+   [
+    3050,
+    "failure",
+    "agent:code_agent({'task': '写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合"
+   ],
+   [
+    3040,
+    "failure",
+    "agent:code_agent({'task': \"写一个函数 to_ini(d)：把嵌套 dict 转成 INI 文本。顶层键是 section，值是一个 "
+   ]
+  ]
+ },
+ "b_distill": {
+  "llm_usable": true,
+  "model": "qwen2.5:7b",
+  "base_url": "http://127.0.0.1:11434/v1",
+  "episodes_seen": 3,
+  "stats": {
+   "considered": 3,
+   "kept": 2,
+   "dropped_code": 0,
+   "dropped_identifier": 0,
+   "dropped_empty": 1,
+   "dropped_invalid": 0,
+   "failed_llm": 0
+  },
+  "elapsed_s": 4.4,
+  "n_calls": 3,
+  "n_distinct_outputs": 3,
+  "n_distinct_inputs": 3,
+  "facts_before": {
+   "selftest": 1,
+   "worldmodel": 3
+  },
+  "facts_after": {
+   "abstract": 2,
+   "selftest": 1,
+   "worldmodel": 3
+  },
+  "abstract_rows": 2,
+  "kept_minus_new_rows": 0,
+  "abstract_texts": [
+   "遇见到交付前检查时，先确保所有功能实现。",
+   "遇见到任务停滞时，先检查资源和依赖。"
+  ],
+  "abstract_lens": [
+   20,
+   18
+  ],
+  "mech_hits": 0,
+  "mech_ratio": 0.0,
+  "abstract_only_n": 2,
+  "examples_dropped": [],
+  "samples_out": [
+   "遇见到交付前检查时，先确保所有功能实现。",
+   "遇见到任务停滞时，先检查资源和依赖。",
+   "NONE"
+  ],
+  "samples_out_tail": [
+   "遇见到交付前检查时，先确保所有功能实现。",
+   "遇见到任务停滞时，先检查资源和依赖。",
+   "NONE"
+  ],
+  "mem_dir": "/tmp/v202_smoke"
+ },
+ "c_read": {
+  "recall_probe": [
+   {
+    "id": "t01_parse_duration",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   },
+   {
+    "id": "t02_dedupe",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   },
+   {
+    "id": "t03_commas",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   },
+   {
+    "id": "t04_merge_ranges",
+    "n": 1,
+    "sources": [
+     "selftest"
+    ],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": [
+     "python 写文件时应显式指定 encoding=utf-8，否则默认编码会在非 ASCII 上静默截断"
+    ]
+   },
+   {
+    "id": "t05_top_k",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   },
+   {
+    "id": "t06_rle",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   }
+  ],
+  "core": [
+   {
+    "id": "t01_parse_duration",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t02_dedupe",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t03_commas",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t04_merge_ranges",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 5,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t05_top_k",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t06_rle",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   }
+  ]
+ },
+ "isolation": {
+  "clean": true,
+  "before": {
+   "size": 5574656,
+   "mtime": 1795014282.246,
+   "sha256": "23177345da0e413e"
+  },
+  "after": {
+   "size": 5574656,
+   "mtime": 1795014282.246,
+   "sha256": "23177345da0e413e"
+  }
+ },
+ "max_eps": 3
+}

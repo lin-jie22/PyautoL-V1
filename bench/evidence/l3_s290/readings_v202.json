@@ -1,0 +1,405 @@
+{
+ "a_material": {
+  "src_db": {
+   "size": 5574656,
+   "mtime": 1795014282.246,
+   "sha256": "23177345da0e413e"
+  },
+  "total": 3059,
+  "kinds_all": {
+   "failure": 777,
+   "finish": 737,
+   "goal": 738,
+   "mismatch": 639,
+   "outcome": 168
+  },
+  "visible_n": 500,
+  "visible_ratio": 0.1635,
+  "visible_kinds": {
+   "failure": 120,
+   "finish": 131,
+   "outcome": 75,
+   "goal": 131,
+   "mismatch": 43
+  },
+  "visible_id_lo": 2560,
+  "visible_id_hi": 3059,
+  "blank": 0,
+  "tiny": 0,
+  "input_side_code": 82,
+  "input_side_ident": 161,
+  "outcome_top": [
+   [
+    "(语义记忆中无相关条目)",
+    52
+   ],
+   [
+    "[selftest c=0.90 x29",
+    8
+   ],
+   [
+    "已存在(仅累加引用) key=d4e83",
+    6
+   ]
+  ],
+  "failure_n": 120,
+  "failure_infra": 4,
+  "failure_infra_ratio": 0.0333,
+  "first3": [
+   [
+    3058,
+    "failure",
+    "收尾交付未过自检 — 1/5 项未过：缺少 def commas(...)"
+   ],
+   [
+    3050,
+    "failure",
+    "agent:code_agent({'task': '写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合"
+   ],
+   [
+    3040,
+    "failure",
+    "agent:code_agent({'task': \"写一个函数 to_ini(d)：把嵌套 dict 转成 INI 文本。顶层键是 section，值是一个 "
+   ]
+  ]
+ },
+ "b_distill": {
+  "llm_usable": true,
+  "model": "qwen2.5:7b",
+  "base_url": "http://127.0.0.1:11434/v1",
+  "episodes_seen": 3059,
+  "stats": {
+   "considered": 500,
+   "kept": 295,
+   "dropped_code": 0,
+   "dropped_identifier": 0,
+   "dropped_empty": 205,
+   "dropped_invalid": 0,
+   "failed_llm": 0
+  },
+  "elapsed_s": 513.5,
+  "n_calls": 500,
+  "n_distinct_outputs": 68,
+  "n_distinct_inputs": 175,
+  "facts_before": {
+   "selftest": 1,
+   "worldmodel": 3
+  },
+  "facts_after": {
+   "abstract": 67,
+   "selftest": 1,
+   "worldmodel": 3
+  },
+  "abstract_rows": 67,
+  "kept_minus_new_rows": 228,
+  "abstract_texts": [
+   "遇见到交付前检查时，先确保所有功能实现。",
+   "等待代码生成时，预先检查时间设置是否合理。",
+   "交付代码前先确保所有部分都能正常编译。",
+   "任务之前确认能正常通信",
+   "获取不到代码输出时，先检查代码生成是否完成。",
+   "遇见到交付前检查时，先完成所有功能实现。",
+   "遇见到交付前检查时，先完成所有必需函数实现。",
+   "编写代码前确保所有函数定义完整",
+   "遇见到交付前检查未通过时，先审查未通过项。",
+   "编写代码前确保所有依赖函数定义完整",
+   "遇见到交付前检查未通过时，先审查遗漏项。",
+   "遇到信息不足时，先进行自检。",
+   "遇见到交付前检查时，先确保所有必要函数定义完成。",
+   "遇见到交付前检查时，先确保所有函数定义完整。",
+   "遇见到交付前检查未通过时，先确保所有必填函数已实现。",
+   "遇见到交付前检查时，先确保所有功能完善。",
+   "遇到信息不足时，先尝试补充缺失信息。",
+   "遇见到交付前检查时，先完成所有功能实现",
+   "遇到信息不足时，先尝试补充缺失信息再生成答案。",
+   "遇见到交付前检查时，先确保所有基础函数完整。",
+   "遇到信息不足时，先确认基本结构正确再给出答复。",
+   "遇见到交付前检查时，先确保所有功能实现完整。",
+   "遇见到交付前检查时，先完成所有功能自检。",
+   "遇见到交付前检查未通过时，先审查自检结果。",
+   "遇见到交付前检查时，先确保所有格式化函数定义完整。",
+   "遇见到交付前检查时，先完成所有功能自检",
+   "遇见到交付前检查时，先完成所有必要函数实现",
+   "遇见到交付前检查时，先完成所有属性编码。",
+   "遇见到交付前检查未通过时，先确保所有必需函数已实现。",
+   "遇见到交付前检查未通过时，先审查遗漏的自检项。",
+   "定义函数前先声明函数名",
+   "检查语言标签之前确认题目要求",
+   "编写代码前确认题目要求的语言。",
+   "定义函数前先检查语法正确性",
+   "遇见到任务停滞时，先检查资源和依赖。",
+   "处理空列表之前先检查它。",
+   "遇到模型调用失败时，先检查网络连接。",
+   "处理字符串时，先检查并分割字符串再转换为整数",
+   "遇见到外部 agent 交付失败时，先检查错误信息并修正错误再提交。",
+   "遇见到复杂键时，先解析索引和键部分。",
+   "遇见到字典可能为空时，先检查字典是否为空。",
+   "遇见到字典排序和编码规则复杂时，先详细列出所有步骤。",
+   "遇见到递归调用时，先检查基线条件。",
+   "遇到模型调用失败时，先检查当前网络连接。",
+   "排序之前检查是否为空列表",
+   "遇见到数据可能包含多种格式时，先统一数据格式。",
+   "遇到重复字符串时，先确定保留原文的出现顺序。",
+   "遇见到重复处理字符串时，先检查字符串替换是否必要。",
+   "遇见到字符串截断需求时，先确定最小截断长度为3。",
+   "遇见到空字符串时，先处理特殊情况",
+   "遇见到入参格式不一致时，先统一处理格式。",
+   "遇见到字符串截断长度小于4时，先处理省略号位置。",
+   "遇见到入参大小写不敏感时，先统一转换为标准格式。",
+   "遇见到重复项处理规则不明确时，先明确保留哪次出现的原文。",
+   "遇见到空字符串时，先处理明确值。",
+   "遇见到空值时，先处理为空字符串。",
+   "打开文件前指定 encoding",
+   "遇见到已有相同 key 时，先检查是否为累加引用。",
+   "写文件前指定 encoding 参数",
+   "分析问题前，先定位具体出错文件",
+   "遇到模型输出不可解析时，先检查输入数据是否正确。",
+   "解析字符串前确认处理嵌套括号的需求。",
+   "编写递归函数前先确定退出条件。",
+   "编写函数前先定义完整函数签名。",
+   "遇见到自检未通过时，先修正错误。",
+   "遇见到预演成功时，先检查实际执行结果。",
+   "遇见到自检未通过时，先修正代码错误。"
+  ],
+  "abstract_lens": [
+   20,
+   21,
+   19,
+   11,
+   22,
+   20,
+   22,
+   15,
+   21,
+   17,
+   20,
+   14,
+   24,
+   22,
+   26,
+   20,
+   18,
+   19,
+   23,
+   22,
+   23,
+   22,
+   20,
+   21,
+   25,
+   19,
+   21,
+   20,
+   26,
+   23,
+   11,
+   14,
+   15,
+   13,
+   18,
+   12,
+   18,
+   22,
+   34,
+   18,
+   21,
+   26,
+   17,
+   20,
+   12,
+   23,
+   22,
+   25,
+   24,
+   16,
+   20,
+   24,
+   24,
+   28,
+   16,
+   16,
+   16,
+   25,
+   18,
+   15,
+   24,
+   18,
+   15,
+   15,
+   16,
+   19,
+   18
+  ],
+  "mech_hits": 15,
+  "mech_ratio": 0.2239,
+  "abstract_only_n": 67,
+  "examples_dropped": [],
+  "samples_out": [
+   "遇见到交付前检查时，先确保所有功能实现。",
+   "等待代码生成时，预先检查时间设置是否合理。",
+   "交付代码前先确保所有部分都能正常编译。",
+   "收到任务之前确认能正常通信",
+   "获取不到代码输出时，先检查代码生成是否完成。",
+   "遇见到交付前检查时，先完成所有功能实现。",
+   "遇见到交付前检查时，先完成所有必需函数实现。",
+   "编写代码前确保所有函数定义完整"
+  ],
+  "samples_out_tail": [
+   "遇见到自检未通过时，先修正代码错误。",
+   "NONE",
+   "NONE",
+   "NONE"
+  ],
+  "mem_dir": "/tmp/v202_full"
+ },
+ "c_read": {
+  "recall_probe": [
+   {
+    "id": "t01_parse_duration",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   },
+   {
+    "id": "t02_dedupe",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   },
+   {
+    "id": "t03_commas",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   },
+   {
+    "id": "t04_merge_ranges",
+    "n": 1,
+    "sources": [
+     "selftest"
+    ],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": [
+     "python 写文件时应显式指定 encoding=utf-8，否则默认编码会在非 ASCII 上静默截断"
+    ]
+   },
+   {
+    "id": "t05_top_k",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   },
+   {
+    "id": "t06_rle",
+    "n": 0,
+    "sources": [],
+    "abstract": 0,
+    "fallbacks": 0,
+    "char_fallbacks": 0,
+    "char_hits": 0,
+    "texts": []
+   }
+  ],
+  "core": [
+   {
+    "id": "t01_parse_duration",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t02_dedupe",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t03_commas",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t04_merge_ranges",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 5,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t05_top_k",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   },
+   {
+    "id": "t06_rle",
+    "n_exp_blocks": 0,
+    "exp_chars": [],
+    "first_exp": "",
+    "layer_view": {
+     "recalled": 0,
+     "abstract": 0
+    },
+    "steps": 5
+   }
+  ]
+ },
+ "isolation": {
+  "clean": true,
+  "before": {
+   "size": 5574656,
+   "mtime": 1795014282.246,
+   "sha256": "23177345da0e413e"
+  },
+  "after": {
+   "size": 5574656,
+   "mtime": 1795014282.246,
+   "sha256": "23177345da0e413e"
+  }
+ },
+ "max_eps": 0
+}

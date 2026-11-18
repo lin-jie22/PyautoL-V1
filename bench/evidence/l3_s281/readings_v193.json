@@ -1,0 +1,5805 @@
+{
+ "prereg": "PREREG_v193.md",
+ "tasks": [
+  {
+   "id": "k01_diff_tree",
+   "suite": "struct_convert_heldout",
+   "fn": "diff_tree",
+   "impls": {
+    "oracle": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 15,
+      "CONST": 2,
+      "VARIES": 1
+     },
+     "rows": [
+      {
+       "kind": "BOUND",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "str",
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "dict",
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "list",
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "num",
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "flag",
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      }
+     ],
+     "wall": 0.8,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "partial": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 15,
+      "CONST": 2,
+      "VARIES": 1
+     },
+     "rows": [
+      {
+       "kind": "BOUND",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "str",
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "dict",
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "list",
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "num",
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "flag",
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      }
+     ],
+     "wall": 0.79,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_none": {
+     "rc": 0,
+     "tally": {
+      "CONST": 18
+     },
+     "rows": [
+      {
+       "kind": "BOUND",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "str",
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "dict",
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "list",
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "num",
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "flag",
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      }
+     ],
+     "wall": 1.29,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_star": {
+     "rc": 2,
+     "tally": null,
+     "rows": null,
+     "wall": 0.14,
+     "tail": [
+      "⛔ 一格也没跑：diff_tree 读出的必填参数个数是 0，算子表里没有 arity=0 的算子。",
+      "   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）"
+     ],
+     "err": []
+    }
+   }
+  },
+  {
+   "id": "k02_encode_cookie",
+   "suite": "struct_convert_heldout",
+   "fn": "encode_cookie",
+   "impls": {
+    "oracle": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 25,
+      "VARIES": 5
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      }
+     ],
+     "wall": 1.25,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "partial": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 25,
+      "VARIES": 5
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      }
+     ],
+     "wall": 1.26,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_none": {
+     "rc": 0,
+     "tally": {
+      "CONST": 30
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      }
+     ],
+     "wall": 2.07,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_star": {
+     "rc": 2,
+     "tally": null,
+     "rows": null,
+     "wall": 0.14,
+     "tail": [
+      "⛔ 一格也没跑：encode_cookie 读出的必填参数个数是 0，算子表里没有 arity=0 的算子。",
+      "   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）"
+     ],
+     "err": []
+    }
+   }
+  },
+  {
+   "id": "k03_unflatten",
+   "suite": "struct_convert_heldout",
+   "fn": "unflatten",
+   "impls": {
+    "oracle": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 25,
+      "VARIES": 5
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      }
+     ],
+     "wall": 1.27,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "partial": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 25,
+      "VARIES": 5
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      }
+     ],
+     "wall": 1.26,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_none": {
+     "rc": 0,
+     "tally": {
+      "CONST": 30
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      }
+     ],
+     "wall": 2.14,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_star": {
+     "rc": 2,
+     "tally": null,
+     "rows": null,
+     "wall": 0.14,
+     "tail": [
+      "⛔ 一格也没跑：unflatten 读出的必填参数个数是 0，算子表里没有 arity=0 的算子。",
+      "   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）"
+     ],
+     "err": []
+    }
+   }
+  },
+  {
+   "id": "k04_to_ini",
+   "suite": "struct_convert_heldout",
+   "fn": "to_ini",
+   "impls": {
+    "oracle": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 25,
+      "VARIES": 5
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      }
+     ],
+     "wall": 1.28,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "partial": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 25,
+      "VARIES": 5
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      }
+     ],
+     "wall": 1.28,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_none": {
+     "rc": 0,
+     "tally": {
+      "CONST": 30
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      }
+     ],
+     "wall": 2.1,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_star": {
+     "rc": 2,
+     "tally": null,
+     "rows": null,
+     "wall": 0.14,
+     "tail": [
+      "⛔ 一格也没跑：to_ini 读出的必填参数个数是 0，算子表里没有 arity=0 的算子。",
+      "   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）"
+     ],
+     "err": []
+    }
+   }
+  },
+  {
+   "id": "g7d2_dedupe_keep",
+   "suite": "g7j_n4_heldout",
+   "fn": "dedupe_keep",
+   "impls": {
+    "oracle": {
+     "rc": 0,
+     "tally": {
+      "VARIES": 20,
+      "STRUCT:TYPES": 10
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      }
+     ],
+     "wall": 1.77,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "partial": {
+     "rc": 0,
+     "tally": {
+      "VARIES": 20,
+      "STRUCT:TYPES": 10
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      }
+     ],
+     "wall": 1.79,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_none": {
+     "rc": 0,
+     "tally": {
+      "CONST": 30
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      }
+     ],
+     "wall": 2.2,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_star": {
+     "rc": 2,
+     "tally": null,
+     "rows": null,
+     "wall": 0.14,
+     "tail": [
+      "⛔ 一格也没跑：dedupe_keep 读出的必填参数个数是 0，算子表里没有 arity=0 的算子。",
+      "   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）"
+     ],
+     "err": []
+    }
+   }
+  },
+  {
+   "id": "g7d3_fmt_amount",
+   "suite": "g7j_n4_heldout",
+   "fn": "fmt_amount",
+   "impls": {
+    "oracle": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 15,
+      "VARIES": 15
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      }
+     ],
+     "wall": 1.64,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "partial": {
+     "rc": 0,
+     "tally": {
+      "STRUCT:TYPES": 15,
+      "VARIES": 15
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      }
+     ],
+     "wall": 1.63,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_none": {
+     "rc": 0,
+     "tally": {
+      "CONST": 30
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      }
+     ],
+     "wall": 2.13,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_star": {
+     "rc": 2,
+     "tally": null,
+     "rows": null,
+     "wall": 0.14,
+     "tail": [
+      "⛔ 一格也没跑：fmt_amount 读出的必填参数个数是 0，算子表里没有 arity=0 的算子。",
+      "   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）"
+     ],
+     "err": []
+    }
+   }
+  },
+  {
+   "id": "g7e1_parse_flag",
+   "suite": "g7j_n4_heldout",
+   "fn": "parse_flag",
+   "impls": {
+    "oracle": {
+     "rc": 0,
+     "tally": {
+      "CONST": 15,
+      "VARIES": 15
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      }
+     ],
+     "wall": 2.16,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "partial": {
+     "rc": 0,
+     "tally": {
+      "CONST": 15,
+      "VARIES": 15
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      }
+     ],
+     "wall": 2.21,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_none": {
+     "rc": 0,
+     "tally": {
+      "CONST": 30
+     },
+     "rows": [
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "CONSERVE",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "INVARIANT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "NUMFMT",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "ROUNDTRIP",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "SUBSEQ",
+       "types": [
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      }
+     ],
+     "wall": 2.17,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_star": {
+     "rc": 2,
+     "tally": null,
+     "rows": null,
+     "wall": 0.14,
+     "tail": [
+      "⛔ 一格也没跑：parse_flag 读出的必填参数个数是 0，算子表里没有 arity=0 的算子。",
+      "   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）"
+     ],
+     "err": []
+    }
+   }
+  },
+  {
+   "id": "g7e2_truncate_tail",
+   "suite": "g7j_n4_heldout",
+   "fn": "truncate_tail",
+   "impls": {
+    "oracle": {
+     "rc": 0,
+     "tally": {
+      "VARIES": 8,
+      "STRUCT:TYPES": 10
+     },
+     "rows": [
+      {
+       "kind": "BOUND",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "str",
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "dict",
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "list",
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "num",
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "flag",
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      }
+     ],
+     "wall": 1.02,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "partial": {
+     "rc": 0,
+     "tally": {
+      "VARIES": 8,
+      "STRUCT:TYPES": 10
+     },
+     "rows": [
+      {
+       "kind": "BOUND",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "str",
+        "str"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "dict",
+        "dict"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "list",
+        "list"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "num",
+        "num"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "flag",
+        "flag"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "STRUCT:TYPES",
+       "why": "候选在这组输入上没有合法域"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "VARIES",
+       "why": ""
+      }
+     ],
+     "wall": 1.03,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_none": {
+     "rc": 0,
+     "tally": {
+      "CONST": 18
+     },
+     "rows": [
+      {
+       "kind": "BOUND",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "BOUND",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "str",
+        "str"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "dict",
+        "dict"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "list",
+        "list"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "num",
+        "num"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "EMPTY_IFF_EQUAL",
+       "types": [
+        "flag",
+        "flag"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "str",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "int",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "dict",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "list",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "num",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      },
+      {
+       "kind": "TAIL",
+       "types": [
+        "flag",
+        "int"
+       ],
+       "sig": "CONST",
+       "why": "输出全同 ⇒ 与桩不可分"
+      }
+     ],
+     "wall": 1.38,
+     "tail": [
+      " ]",
+      "}"
+     ],
+     "err": []
+    },
+    "stub_star": {
+     "rc": 2,
+     "tally": null,
+     "rows": null,
+     "wall": 0.14,
+     "tail": [
+      "⛔ 一格也没跑：truncate_tail 读出的必填参数个数是 0，算子表里没有 arity=0 的算子。",
+      "   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）"
+     ],
+     "err": []
+    }
+   }
+  }
+ ],
+ "P1_bad": [],
+ "P2_bad": [],
+ "P3_diff": [],
+ "P4_bad": [],
+ "wall_total": 39.0,
+ "P1_ok": true,
+ "P2_ok": true,
+ "P3_ok": true,
+ "P4_ok": true,
+ "P5_ok": true
+}

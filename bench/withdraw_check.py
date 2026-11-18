@@ -2351,14 +2351,14 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ154e", "mw/probe.py",
      '''    if isinstance(v, (int, float)) and v == 0:''',
      '''    if isinstance(v, (int, float)) and v >= 0:  # 撤回态'''),
-    # ── V192（§260）：AZ155a 是**跳线闸**，「撤回」= 把量具接进部署面 ──────
-    #: ⚠️ 语义与其余条目相反，故意的：这条锚点钉的是一个**否定事实**（部署端 0 引用），
-    #:    所以「撤回」只能是把那个事实改掉 —— 即真的往 `run.py` 加一行 import。
-    #:    红 = 「你去更新 README/DESIGN 的 0 调用点声明并重算 check_counts」，不是「不许接」。
+    # ── V193（§261）：AZ155a 已从「钉反面」改成「钉正面」────────────────
+    #: V192 时它钉「部署闭包不含三模块」（撤回 = 加一行 import）；
+    #: V193 造了 `--verify-impl` 之后改钉「接上了 critgen + probe 且真有属性访问」，
+    #: 撤回 = 删掉入口里的那两行 import（成员资格消失 ⇒ 精确转红）。
     ("AZ155a", "run.py",
-     '''from __future__ import annotations''',
-     '''from __future__ import annotations
-from mw import critgen as _cg  # 撤回态：把量具接进部署面'''),
+     '''    from mw import critgen as cg
+    from mw import probe as pb''',
+     '''    # 撤回态：入口不再接判据模块'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

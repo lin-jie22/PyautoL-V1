@@ -16252,10 +16252,12 @@ check(RS, "AZ154e `probe._is_degenerate()` 的分类边界（多剔一个就是�
       and _az154_deg["[0]"] is False,
       str(_az154_deg))
 
-# ── AZ155a：部署面不碰「判据三模块」（跳线闸，V192 §260）─────────────
-#: ⚠️ 这是**跳线闸**，不是禁令：红了**不**代表「不许接」，代表「你接了 ⇒ 去改
-#:    README/DESIGN 里「部署端 0 调用点」的声明，并重算 check_counts」。
-#:    V192 之前没人知道这三模块在部署端引用数为 0（V184~V191 八轮的产物）。
+# ── AZ155a：部署面**接上了**判据三模块里的两个（V193 §261）────────────
+#: ⚠️ 本锚点 V192 时钉的是**反面**（「部署闭包不含 critgen/metacrit/probe」，因为实测引用 0）。
+#:    V193 造了第一条真入口 `run.py --verify-impl`，于是它**按设计转红**，
+#:    现在改钉**正面**：「接上了哪几个、引用几次」。
+#:    ⛔ 这个来回不是「改判据迎合实现」：V192 的读数（0 引用）与 V193 的读数（非 0）
+#:    是两个不同装置状态下的实测，两次都写进了 DESIGN §260 / §261。
 import ast as _ast155
 
 
@@ -16304,18 +16306,25 @@ def _az155_closure(entry: str) -> set:
 _az155_dep = _az155_closure("run")
 _az155_hit = sorted(m for m in ("mw.critgen", "mw.metacrit", "mw.probe")
                     if m in _az155_dep)
+#: 部署面对这两个别名的属性访问次数（`cg.` / `pb.`）—— 只数引用，不问对错。
+_az155_calls = sum(1 for _n in _ast155.walk(
+    _ast155.parse((V1 / "run.py").read_text(encoding="utf-8")))
+    if isinstance(_n, _ast155.Attribute) and isinstance(_n.value, _ast155.Name)
+    and _n.value.id in ("cg", "pb"))
 
-check(RS, "AZ155a `run.py` 的导入闭包**不含**判据三模块（部署面 vs 装置面）：\n"
-          "              V192 实测：部署闭包 24 个 mw 模块，三目标一个都不在；\n"
-          "              从部署闭包对三目标的引用 0 次，从 `tests/contract_test.py` 162 次。\n"
-          "              ⇒ 这三模块是**量具**，不是部件；部署链路上没有「采判据」这一步\n"
-          "              （`mw/verify.py` 的 `derive(goal, static, exec_)` 只吃题面，\n"
-          "              确定性地产出一组断言，不选算子也不选签名）。\n"
-          "              ⚠️ 闭包必须 ≥ 20 个模块：低于此说明闭包算法自己坏了（检测器瞎），\n"
-          "              那时「三目标不在」是**空集恒真**，不能算证据。\n"
-          "              撤回语义：往 `run.py` 加一行 `from mw import critgen` ⇒ 命中非空 ⇒ 必须红",
-      (not _az155_hit) and len(_az155_dep) >= 20,
-      f"闭包 {len(_az155_dep)} 个模块；命中 {_az155_hit}")
+check(RS, "AZ155a 部署面**接上了**判据模块（V192 钉反面，V193 起钉正面）：\n"
+          "              V192 实测：部署闭包 24 个 mw 模块，三目标一个都不在、引用 0 次\n"
+          "              （装置闭包 162 次）⇒ 那时它们是**量具**，部署链路没有「挑判据」这一步。\n"
+          "              V193 造了第一条真入口 `run.py --verify-impl`（只用免费信息：\n"
+          "              结构可达 / 定义域 / 输出是否恒定，⛔ 不出 PASS/FAIL）⇒\n"
+          "              本锚点按设计转红，改钉「接上了 critgen + probe，且真有属性访问」。\n"
+          "              ⚠️ `metacrit` **仍然没接** —— 只钉已接的，不假装全家都通。\n"
+          "              ⚠️ 闭包必须 ≥ 20 个模块：低于此说明闭包算法坏了（检测器瞎），\n"
+          "              那时「接上了」也可能是空集恒假 ⇒ 不算证据。\n"
+          "              撤回语义：删掉 `cmd_verify_impl` 里两行 import ⇒ 成员资格消失 ⇒ 必须红",
+      set(_az155_hit) >= {"mw.critgen", "mw.probe"}
+      and _az155_calls >= 3 and len(_az155_dep) >= 20,
+      f"闭包 {len(_az155_dep)} 个模块；命中 {_az155_hit}；属性访问 {_az155_calls} 次")
 
 print()
 print("=" * 74)

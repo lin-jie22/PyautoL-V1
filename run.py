@@ -3090,6 +3090,106 @@ def _goals_main(args) -> int:
     return 0
 
 
+def cmd_verify_impl(args) -> int:
+    """验一个**候选实现**能被哪些 (算子, 签名) 区分出来。
+
+    ⛔ 这条入口**不判对错** —— 部署端没有 oracle。它能答的只有三样免费事实：
+
+    1. 这个算子在这个实现上**结构可达**吗（arity / 定义域）；
+    2. 这组输入落不落进候选的定义域（`critgen.legal_indexes()`）；
+    3. 候选在这组输入上**有没有产出差异**（`critgen.constant_on()`）。
+
+    ⛔ 输出里**没有** PASS / FAIL。一旦有，这个入口就变成「不发工资的尺子」——
+       对错仍是 `mw.verify` 那一半（收费）。它答的是「**这个候选能不能被区分出来**」，
+       答不了「它对不对」。
+
+    ⭐ 这是 V192 之后的第一条真链路：`AZ155a` 钉着「部署面不碰判据三模块」，
+       本入口接上之后那条锚点转红，改成钉「接上了几条」。
+    """
+    from mw import critgen as cg
+    from mw import probe as pb
+
+    path = Path(args.verify_impl)
+    if not path.is_file():
+        print(f"⛔ 找不到实现文件：{path}")
+        return 2
+    code = path.read_text(encoding="utf-8")
+    fn = args.fn or ""
+    if not fn:
+        import ast as _ast_vi
+        try:
+            _tree = _ast_vi.parse(code)
+        except SyntaxError as e:
+            print(f"⛔ 实现文件语法错：{e}")
+            return 2
+        _names = [n.name for n in _tree.body if isinstance(n, _ast_vi.FunctionDef)]
+        if not _names:
+            print("⛔ 实现文件里没有 def，没法验")
+            return 2
+        fn = _names[0]
+    n = cg.arity(code, fn)
+    if n < 0:
+        print(f"⛔ 读不出 {fn} 的必填参数个数（语法错）")
+        return 2
+
+    rows: list[dict] = []
+    for kind in sorted(cg.ops_for(n)):
+        for types in pb.sig_space(kind, n):
+            types = list(types)
+            ins = cg.inputs_for(kind, types)
+            idx = cg.legal_indexes(code, fn, ins)
+            if idx is None:
+                rows.append({"kind": kind, "types": types, "sig": "FAULT",
+                             "why": "圈域探测失败（超时 / 没吐标记）"})
+                continue
+            # ⚠️ `legal_indexes()` 返回的是**索引**，不是实参（初版直接把它喂给
+            #    `constant_on()` ⇒ `'int' object is not iterable`）。这里显式回填。
+            legal = [ins[i] for i in idx]
+            if not legal:
+                rows.append({"kind": kind, "types": types, "sig": "STRUCT:TYPES",
+                             "why": "候选在这组输入上没有合法域"})
+                continue
+            c = cg.constant_on(code, fn, legal)
+            if c is None:
+                rows.append({"kind": kind, "types": types, "sig": "FAULT",
+                             "why": "探测失败（超时 / 没吐标记）"})
+            else:
+                rows.append({"kind": kind, "types": types,
+                             "sig": "CONST" if c else "VARIES",
+                             "why": "输出全同 ⇒ 与桩不可分" if c else ""})
+
+    tally: dict[str, int] = {}
+    for r in rows:
+        tally[r["sig"]] = tally.get(r["sig"], 0) + 1
+
+    # ⛔ 0 格 ≠ 都不行。实测：桩写成 `def f(*a, **k)` 时 `arity()` 数出 0 个必填参数，
+    #    `ops_for(0)` 空 ⇒ 一格都没跑，而表会打成 0/0/0，读起来像「什么也没发现」。
+    if not rows:
+        print(f"⛔ 一格也没跑：{fn} 读出的必填参数个数是 {n}，算子表里没有 arity={n} 的算子。")
+        print("   （`*args` / `**kwargs` 不算必填参数 —— 这种签名没法用 arity 定位判据。）")
+        return 2
+
+    if args.json:
+        print(json.dumps({"impl": str(path), "fn": fn, "n_args": n,
+                          "tally": tally, "rows": rows}, ensure_ascii=False, indent=1))
+    else:
+        print("=" * 74)
+        print(f"验候选实现：{path}（函数 {fn}，{n} 个必填参数）")
+        print("⛔ 这里没有 PASS/FAIL：部署端没有 oracle，只报「能不能被区分」。")
+        print("=" * 74)
+        for r in rows:
+            mark = {"VARIES": "✅", "CONST": "⚠️", "FAULT": "❔"}.get(r["sig"], "·")
+            print(f"  {mark} {r['kind']:<16} {str(r['types']):<22} {r['sig']}"
+                  + (f"   {r['why']}" if r["why"] else ""))
+        print("-" * 74)
+        print("  合计：可区分 VARIES **{}** ／ 与桩不可分 CONST **{}**"
+              " ／ 结构无可达 STRUCT **{}** ／ 探测失败 FAULT **{}**".format(
+                  tally.get("VARIES", 0), tally.get("CONST", 0),
+                  sum(v for k, v in tally.items() if k.startswith("STRUCT")),
+                  tally.get("FAULT", 0)))
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="V1 —— 一个可测量的 agent 内核")
     p.add_argument("--goal", default="", help="任务目标")
@@ -3099,6 +3199,11 @@ def main() -> int:
     p.add_argument("--budget", type=float, default=1.0, help="预算倍数")
     p.add_argument("--offline", action="store_true", help="强制离线（用确定性桩）")
     p.add_argument("--allow-shell", action="store_true", help="开启 shell 工具（谨慎）")
+    p.add_argument("--verify-impl", default="",
+                   help="验一个**候选实现文件**：报它能被哪些 (算子, 签名) 区分出来。"
+                        "⛔ 不判对错（部署端没有 oracle），只报结构可达/域/输出是否恒定。")
+    p.add_argument("--fn", default="", help="`--verify-impl` 要验的函数名（默认取文件里第一个 def）")
+    p.add_argument("--json", action="store_true", help="`--verify-impl` 输出 JSON")
 
     # ── 外部锚层（V1 存在的第一理由：让"变好了"这句话有外部依据）──
     p.add_argument("--bench", action="store_true",
@@ -3200,6 +3305,8 @@ def main() -> int:
                         "默认 0 等于『任何微小差值都算改进』。")
     args = p.parse_args()
 
+    if args.verify_impl:
+        return cmd_verify_impl(args)
     if args.goals:
         return _goals_main(args)
     if args.bench:

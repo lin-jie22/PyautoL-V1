@@ -1,0 +1,1 @@
+{"agents": {"a": {"type": "shell", "description": "大写器（上游）", "command": ["python3", "/Users/linshaojie/V1/bench/evidence/l3_s283/relay_a.py"], "timeout_s": 20}, "b": {"type": "shell", "description": "包装器（下游）", "command": ["python3", "/Users/linshaojie/V1/bench/evidence/l3_s283/relay_b.py"], "timeout_s": 20}}}

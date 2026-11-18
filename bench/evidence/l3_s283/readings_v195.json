@@ -1,0 +1,295 @@
+{
+ "a1_static": {
+  "task_dict_sites": [
+   {
+    "file": "mw/bench.py",
+    "line": 315,
+    "kind": "other",
+    "seg": "{\"task\": task, \"answer\": answer}"
+   },
+   {
+    "file": "mw/core.py",
+    "line": 457,
+    "kind": "goal_value",
+    "seg": "{\"task\": str(goal)}"
+   },
+   {
+    "file": "mw/tools.py",
+    "line": 378,
+    "kind": "schema_or_doc",
+    "seg": "{\"task\": \"交给该 agent 的任务\"}"
+   },
+   {
+    "file": "mw/tools.py",
+    "line": 394,
+    "kind": "schema_or_doc",
+    "seg": "{\"task\": \"交给该 agent 的任务\"}"
+   },
+   {
+    "file": "mw/tools.py",
+    "line": 387,
+    "kind": "other",
+    "seg": "{\"task\": args.get(\"task\", \"\")}"
+   },
+   {
+    "file": "run.py",
+    "line": 286,
+    "kind": "other",
+    "seg": "{\"task\": task_id, \"it\": it, \"state\": st,\n                                \"n\": meta.get(\"n\"),\n                                \"guidance\": meta.get(\"guidance\"),\n                                # ★ §103：本步**逐候选**的预演读数\n                                #   （`ok` 三态 / `conf` / `trust` / `veto` / `src`）。\n                                #   ⛔ 不以\"有预演就非空\"为前提：快通道没有预演，\n                                #     这里的空列表就是\"这一步没预演\"，不是\"没落盘\"。\n                                \"preds\": meta.get(\"preds\") or []}"
+   }
+  ],
+  "n_value": 1,
+  "n_schema": 2,
+  "n_other": 3,
+  "arg_assigns": [
+   {
+    "file": "mw/core.py",
+    "line": 1469,
+    "callee": "answer_task",
+    "args": [
+     "goal",
+     "_dl2"
+    ],
+    "seg": "cand.args = answer_task(goal, _dl2)"
+   },
+   {
+    "file": "mw/planner.py",
+    "line": 677,
+    "callee": "dict",
+    "args": [
+     "st.args"
+    ],
+    "seg": "st.args = dict(st.args)"
+   },
+   {
+    "file": "mw/planner.py",
+    "line": 708,
+    "callee": "dict",
+    "args": [
+     "st.args"
+    ],
+    "seg": "st.args = dict(st.args)"
+   }
+  ],
+  "arg_assigns_guarded": [
+   {
+    "line": 1469,
+    "guard": "spec is not None and spec.produces_answer"
+   }
+  ],
+  "answer_task_calls": [
+   {
+    "file": "mw/core.py",
+    "line": 1469,
+    "args": [
+     "goal",
+     "_dl2"
+    ],
+    "seg": "answer_task(goal, _dl2)"
+   },
+   {
+    "file": "mw/core.py",
+    "line": 1380,
+    "args": [
+     "goal",
+     "_dl"
+    ],
+    "seg": "answer_task(goal, _dl)"
+   }
+  ],
+  "subprocess_input": [
+   {
+    "file": "mw/bench.py",
+    "line": 317,
+    "input": "payload"
+   },
+   {
+    "file": "mw/tools.py",
+    "line": 340,
+    "input": "str(args.get(\"task\", \"\"))"
+   }
+  ],
+  "files_scanned": [
+   "mw/__init__.py",
+   "mw/__main__.py",
+   "mw/abstractor.py",
+   "mw/bench.py",
+   "mw/budget.py",
+   "mw/config.py",
+   "mw/core.py",
+   "mw/critgen.py",
+   "mw/critique.py",
+   "mw/features.py",
+   "mw/flow.py",
+   "mw/goals.py",
+   "mw/guard.py",
+   "mw/ledger.py",
+   "mw/llm.py",
+   "mw/loop.py",
+   "mw/measure.py",
+   "mw/memory.py",
+   "mw/metacog.py",
+   "mw/metacrit.py",
+   "mw/mutate.py",
+   "mw/planner.py",
+   "mw/probe.py",
+   "mw/scoreinfo.py",
+   "mw/tools.py",
+   "mw/values.py",
+   "mw/verify.py",
+   "mw/worldmodel.py",
+   "run.py"
+  ]
+ },
+ "a2_pipe": {
+  "registered": [
+   "agent:a",
+   "agent:b"
+  ],
+  "upstream_out": "A[把这句变成一个能通过检查的短语：V195 RELAY PROBE]",
+  "pos_B_out": "B[A[把这句变成一个能通过检查的短语：V195 RELAY PROBE]]",
+  "pos_relay": [
+   0
+  ],
+  "neg_B_out": "B[把这句变成一个能通过检查的短语：V195 relay probe]",
+  "neg_relay": [],
+  "mid_B_out": "B[把这句变成一个能通过检查的短语：V195 relay probe\n\n【上游】\nA[把这句变成一个能通过检查的短语：V195 RELAY PROBE]]",
+  "mid_relay": [
+   0
+  ],
+  "detector_ok": true
+ },
+ "a3_contract": {
+  "module_file": "/Users/linshaojie/V1/external/code_agent.py",
+  "module_sha16": "2978ffabe0f37b5e",
+  "loaded_file_matches": true,
+  "rows": [
+   {
+    "payload": "V1_goal",
+    "rc": 0,
+    "verdict": "PROCEED",
+    "error": "",
+    "n_chat_calls": 3,
+    "prompt_has_upstream": false,
+    "prompt_chars": [
+     215,
+     87,
+     130
+    ]
+   },
+   {
+    "payload": "V2_goal_then_upstream",
+    "rc": 0,
+    "verdict": "PROCEED",
+    "error": "",
+    "n_chat_calls": 3,
+    "prompt_has_upstream": true,
+    "prompt_chars": [
+     281,
+     153,
+     196
+    ]
+   },
+   {
+    "payload": "V3_upstream_then_goal",
+    "rc": 0,
+    "verdict": "PROCEED",
+    "error": "",
+    "n_chat_calls": 3,
+    "prompt_has_upstream": true,
+    "prompt_chars": [
+     281,
+     153,
+     196
+    ]
+   },
+   {
+    "payload": "V4_upstream_only",
+    "rc": 0,
+    "verdict": "REFUSE",
+    "error": "题面里没有『函数名必须是 X』⇒ 本 agent 不适用（不猜）",
+    "n_chat_calls": 0,
+    "prompt_has_upstream": false,
+    "prompt_chars": []
+   },
+   {
+    "payload": "V5_empty",
+    "rc": 0,
+    "verdict": "REFUSE",
+    "error": "stdin 为空：外部 agent 需要任务题面原文",
+    "n_chat_calls": 0,
+    "prompt_has_upstream": false,
+    "prompt_chars": []
+   }
+  ],
+  "recorder_fired_on_V1": true
+ },
+ "a4_history": {
+  "n_runs_total": 171,
+  "n_runs_with_external_block": 166,
+  "n_runs_used_agent": 17,
+  "sum": {
+   "calls": 55,
+   "used_as_answer": 48,
+   "err": 7,
+   "ok": 48,
+   "tasks": 628,
+   "samples": 72,
+   "fallback": 33,
+   "skipped_no_budget": 5,
+   "skipped_not_applicable": 0
+  },
+  "residual_calls_minus_answer_minus_err": 0,
+  "max_calls_one_run": 10,
+  "top_runs": [
+   {
+    "run_id": null,
+    "calls": 10,
+    "used_as_answer": 9,
+    "err": 1
+   },
+   {
+    "run_id": null,
+    "calls": 10,
+    "used_as_answer": 10,
+    "err": 0
+   },
+   {
+    "run_id": "61187@1795004033",
+    "calls": 6,
+    "used_as_answer": 5,
+    "err": 1
+   },
+   {
+    "run_id": "56134@1795001939",
+    "calls": 4,
+    "used_as_answer": 4,
+    "err": 0
+   },
+   {
+    "run_id": "57572@1795002480",
+    "calls": 4,
+    "used_as_answer": 4,
+    "err": 0
+   },
+   {
+    "run_id": "60175@1795003553",
+    "calls": 4,
+    "used_as_answer": 1,
+    "err": 3
+   },
+   {
+    "run_id": "56844@1795002203",
+    "calls": 3,
+    "used_as_answer": 3,
+    "err": 0
+   },
+   {
+    "run_id": "58359@1795002774",
+    "calls": 3,
+    "used_as_answer": 3,
+    "err": 0
+   }
+  ]
+ }
+}

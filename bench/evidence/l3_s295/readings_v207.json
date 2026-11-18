@@ -1,0 +1,233 @@
+{
+ "rewards": 58,
+ "fails": 11,
+ "error_classes": {
+  "AssertionError": 8,
+  "TypeError": 1,
+  "其他": 2
+ },
+ "task_spread": {
+  "t01_parse_duration": 2,
+  "t05_top_k": 1,
+  "z02_to_csv": 2,
+  "z03_parse_query": 2,
+  "g7s1_flatten_nested": 2,
+  "g7s2_parse_headers": 2
+ },
+ "arms": {
+  "A_single": {
+   "tag": "A_single",
+   "units": 11,
+   "calls": 11,
+   "kept": 8,
+   "cross": 8,
+   "task": 0,
+   "filler": 2,
+   "out": [
+    {
+     "unit": "id=49",
+     "raw": "时间单位顺序要固定",
+     "line": "时间单位顺序要固定",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "id=53",
+     "raw": "空列表处理不当",
+     "line": "空列表处理不当",
+     "gate": "short",
+     "cls": "-"
+    },
+    {
+     "unit": "id=55",
+     "raw": "时间单位顺序固定",
+     "line": "时间单位顺序固定",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "id=29",
+     "raw": "NONE",
+     "line": "NONE",
+     "gate": "none",
+     "cls": "-"
+    },
+    {
+     "unit": "id=30",
+     "raw": "URL解码要正确处理编码字符。",
+     "line": "URL解码要正确处理编码字符。",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "id=34",
+     "raw": "NONE",
+     "line": "NONE",
+     "gate": "none",
+     "cls": "-"
+    },
+    {
+     "unit": "id=35",
+     "raw": "URL解码要正确处理编码字符。",
+     "line": "URL解码要正确处理编码字符。",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "id=121",
+     "raw": "键名不能直接使用索引表示",
+     "line": "键名不能直接使用索引表示",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "id=122",
+     "raw": "键值对中值可能包含分号分隔的多个值",
+     "line": "键值对中值可能包含分号分隔的多个值",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "id=125",
+     "raw": "键名不能直接使用索引表示",
+     "line": "键名不能直接使用索引表示",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "id=126",
+     "raw": "冒号后键值对未正确处理",
+     "line": "冒号后键值对未正确处理",
+     "gate": "pass",
+     "cls": "跨题"
+    }
+   ]
+  },
+  "B_cluster_err": {
+   "tag": "B_cluster_err",
+   "units": 3,
+   "calls": 3,
+   "kept": 2,
+   "cross": 2,
+   "task": 0,
+   "filler": 1,
+   "out": [
+    {
+     "unit": "簇=AssertionError（8 条，涉及 5 道题）",
+     "raw": "键值对处理时注意引号和分号",
+     "line": "键值对处理时注意引号和分号",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "簇=TypeError（1 条，涉及 1 道题）",
+     "raw": "空列表传入时参数类型错误，需检查参数类型。",
+     "line": "空列表传入时参数类型错误，需检查参数类型。",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "簇=其他（2 条，涉及 2 道题）",
+     "raw": "NONE",
+     "line": "NONE",
+     "gate": "none",
+     "cls": "-"
+    }
+   ]
+  },
+  "C_cluster_task": {
+   "tag": "C_cluster_task",
+   "units": 6,
+   "calls": 6,
+   "kept": 3,
+   "cross": 3,
+   "task": 0,
+   "filler": 2,
+   "out": [
+    {
+     "unit": "题=g7s1_flatten_nested（2 条）",
+     "raw": "索引表示要特别处理",
+     "line": "索引表示要特别处理",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "题=g7s2_parse_headers（2 条）",
+     "raw": "键值对分隔符为冒号而非空格",
+     "line": "键值对分隔符为冒号而非空格",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "题=t01_parse_duration（2 条）",
+     "raw": "时间单位要正确转换为秒。",
+     "line": "时间单位要正确转换为秒。",
+     "gate": "pass",
+     "cls": "跨题"
+    },
+    {
+     "unit": "题=t05_top_k（1 条）",
+     "raw": "NONE",
+     "line": "NONE",
+     "gate": "none",
+     "cls": "-"
+    },
+    {
+     "unit": "题=z02_to_csv（2 条）",
+     "raw": "NONE",
+     "line": "NONE",
+     "gate": "none",
+     "cls": "-"
+    },
+    {
+     "unit": "题=z03_parse_query（2 条）",
+     "raw": "URL解码",
+     "line": "URL解码",
+     "gate": "short",
+     "cls": "-"
+    }
+   ]
+  }
+ },
+ "names": [
+  "base_convert",
+  "commas",
+  "csv_row",
+  "dedupe",
+  "dedupe_keep",
+  "dedupe_last",
+  "deep_get",
+  "encode_attrs",
+  "flatten",
+  "flatten_nested",
+  "fmt_amount",
+  "gcd_lcm",
+  "group_by",
+  "is_valid_brackets",
+  "mask_email",
+  "median",
+  "merge_ranges",
+  "min_meeting_rooms",
+  "next_permutation",
+  "normalize_ws",
+  "parse_date_flex",
+  "parse_duration",
+  "parse_flag",
+  "parse_headers",
+  "parse_pairs",
+  "parse_query",
+  "quote_join",
+  "rle",
+  "roman_to_int",
+  "slugify",
+  "spiral_order",
+  "split_amount",
+  "split_top_level",
+  "to_csv",
+  "top_k",
+  "truncate",
+  "truncate_tail",
+  "word_freq",
+  "xml_escape_attrs"
+ ]
+}

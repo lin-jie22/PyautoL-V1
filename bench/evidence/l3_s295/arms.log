@@ -1,0 +1,36 @@
+题面函数名 39 个：['base_convert', 'commas', 'csv_row', 'dedupe', 'dedupe_keep', 'dedupe_last', 'deep_get', 'encode_attrs', 'flatten', 'flatten_nested', 'fmt_amount', 'gcd_lcm', 'group_by', 'is_valid_brackets', 'mask_email', 'median', 'merge_ranges', 'min_meeting_rooms', 'next_permutation', 'normalize_ws', 'parse_date_flex', 'parse_duration', 'parse_flag', 'parse_headers', 'parse_pairs', 'parse_query', 'quote_join', 'rle', 'roman_to_int', 'slugify', 'spiral_order', 'split_amount', 'split_top_level', 'to_csv', 'top_k', 'truncate', 'truncate_tail', 'word_freq', 'xml_escape_attrs']
+  库 bench/evidence/l3_s295/probe_mem/memory.db  reward=12
+  库 bench/evidence/l3_s295/mem/memory.db  reward=46
+reward 总=58  其中失败且带原文=11
+错误类别分布： {'AssertionError': 8, 'TypeError': 1, '其他': 2}
+
+== 臂 A_single  单元=11
+   [pass/跨题] 时间单位顺序要固定
+   [short/-] 空列表处理不当
+   [pass/跨题] 时间单位顺序固定
+   [none/-] NONE
+   [pass/跨题] URL解码要正确处理编码字符。
+   [none/-] NONE
+   [pass/跨题] URL解码要正确处理编码字符。
+   [pass/跨题] 键名不能直接使用索引表示
+   [pass/跨题] 键值对中值可能包含分号分隔的多个值
+   [pass/跨题] 键名不能直接使用索引表示
+   [pass/跨题] 冒号后键值对未正确处理
+
+== 臂 B_cluster_err  单元=3
+   [pass/跨题] 键值对处理时注意引号和分号
+   [pass/跨题] 空列表传入时参数类型错误，需检查参数类型。
+   [none/-] NONE
+
+== 臂 C_cluster_task  单元=6
+   [pass/跨题] 索引表示要特别处理
+   [pass/跨题] 键值对分隔符为冒号而非空格
+   [pass/跨题] 时间单位要正确转换为秒。
+   [none/-] NONE
+   [none/-] NONE
+   [short/-] URL解码
+
+落盘 bench/evidence/l3_s295/readings_v207.json
+  A_single         单元= 11 kept=  8 跨题=8 题级=0 空话=2
+  B_cluster_err    单元=  3 kept=  2 跨题=2 题级=0 空话=1
+  C_cluster_task   单元=  6 kept=  3 跨题=3 题级=0 空话=2

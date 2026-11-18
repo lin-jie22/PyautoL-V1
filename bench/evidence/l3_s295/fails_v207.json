@@ -1,0 +1,79 @@
+[
+ {
+  "id": 49,
+  "task": "t01_parse_duration",
+  "cls": "AssertionError",
+  "score": 0.8333,
+  "len": 66
+ },
+ {
+  "id": 53,
+  "task": "t05_top_k",
+  "cls": "AssertionError",
+  "score": 0.25,
+  "len": 160
+ },
+ {
+  "id": 55,
+  "task": "t01_parse_duration",
+  "cls": "AssertionError",
+  "score": 0.5,
+  "len": 160
+ },
+ {
+  "id": 29,
+  "task": "z02_to_csv",
+  "cls": "TypeError",
+  "score": 0.2,
+  "len": 160
+ },
+ {
+  "id": 30,
+  "task": "z03_parse_query",
+  "cls": "AssertionError",
+  "score": 0.8,
+  "len": 75
+ },
+ {
+  "id": 34,
+  "task": "z02_to_csv",
+  "cls": "SyntaxError",
+  "score": 0.0,
+  "len": 160
+ },
+ {
+  "id": 35,
+  "task": "z03_parse_query",
+  "cls": "AssertionError",
+  "score": 0.8,
+  "len": 75
+ },
+ {
+  "id": 121,
+  "task": "g7s1_flatten_nested",
+  "cls": "AssertionError",
+  "score": 0.8,
+  "len": 82
+ },
+ {
+  "id": 122,
+  "task": "g7s2_parse_headers",
+  "cls": "AssertionError",
+  "score": 0.4,
+  "len": 160
+ },
+ {
+  "id": 125,
+  "task": "g7s1_flatten_nested",
+  "cls": "AssertionError",
+  "score": 0.8,
+  "len": 82
+ },
+ {
+  "id": 126,
+  "task": "g7s2_parse_headers",
+  "cls": "ValueError",
+  "score": 0.4,
+  "len": 160
+ }
+]

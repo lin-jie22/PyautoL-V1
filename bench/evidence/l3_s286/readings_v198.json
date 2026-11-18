@@ -1,0 +1,2003 @@
+{
+ "static": 2,
+ "exec": 0,
+ "cells": [
+  {
+   "arm": "G1",
+   "suite": "coding_small",
+   "id": "t01_parse_duration",
+   "score": 0.5,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_duration",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 399
+  },
+  {
+   "arm": "G1",
+   "suite": "coding_small",
+   "id": "t02_dedupe",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 133
+  },
+  {
+   "arm": "G1",
+   "suite": "coding_small",
+   "id": "t03_commas",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 commas",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 48
+  },
+  {
+   "arm": "G1",
+   "suite": "coding_small",
+   "id": "t04_merge_ranges",
+   "score": 0.3333,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 merge_ranges",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 396
+  },
+  {
+   "arm": "G1",
+   "suite": "coding_small",
+   "id": "t05_top_k",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 top_k",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 136
+  },
+  {
+   "arm": "G1",
+   "suite": "coding_small",
+   "id": "t06_rle",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 rle",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 312
+  },
+  {
+   "arm": "G1",
+   "suite": "g7_heldout",
+   "id": "g7s2_parse_headers",
+   "score": 0.4,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_headers",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 348
+  },
+  {
+   "arm": "G1",
+   "suite": "g7_heldout",
+   "id": "g7s4_xml_escape_attrs",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 xml_escape_attrs",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 300
+  },
+  {
+   "arm": "G1",
+   "suite": "g7e_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 250
+  },
+  {
+   "arm": "G1",
+   "suite": "g7e_heldout",
+   "id": "g7d3_fmt_amount",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 fmt_amount",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 55
+  },
+  {
+   "arm": "G1",
+   "suite": "g7e_heldout",
+   "id": "g7e1_parse_flag",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_flag",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 219
+  },
+  {
+   "arm": "G1",
+   "suite": "g7e_heldout",
+   "id": "g7e2_truncate_tail",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 truncate_tail",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 114
+  },
+  {
+   "arm": "G1",
+   "suite": "g7e_hint_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 250
+  },
+  {
+   "arm": "G1",
+   "suite": "g7e_hint_heldout",
+   "id": "g7d3_fmt_amount",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 fmt_amount",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 55
+  },
+  {
+   "arm": "G1",
+   "suite": "g7e_hint_heldout",
+   "id": "g7e1_parse_flag",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_flag",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 183
+  },
+  {
+   "arm": "G1",
+   "suite": "g7e_hint_heldout",
+   "id": "g7e2_truncate_tail",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 truncate_tail",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 100
+  },
+  {
+   "arm": "G1",
+   "suite": "g7j_n0_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 250
+  },
+  {
+   "arm": "G1",
+   "suite": "g7j_n0_heldout",
+   "id": "g7d3_fmt_amount",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 fmt_amount",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 63
+  },
+  {
+   "arm": "G1",
+   "suite": "g7j_n0_heldout",
+   "id": "g7e1_parse_flag",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_flag",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 219
+  },
+  {
+   "arm": "G1",
+   "suite": "g7j_n0_heldout",
+   "id": "g7e2_truncate_tail",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 truncate_tail",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 129
+  },
+  {
+   "arm": "G1",
+   "suite": "g7j_n4_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 326
+  },
+  {
+   "arm": "G1",
+   "suite": "g7j_n4_heldout",
+   "id": "g7d3_fmt_amount",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 fmt_amount",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 63
+  },
+  {
+   "arm": "G1",
+   "suite": "g7j_n4_heldout",
+   "id": "g7e1_parse_flag",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_flag",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 242
+  },
+  {
+   "arm": "G1",
+   "suite": "g7j_n4_heldout",
+   "id": "g7e2_truncate_tail",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 truncate_tail",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 137
+  },
+  {
+   "arm": "G1",
+   "suite": "g7m_g7d2_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 326
+  },
+  {
+   "arm": "G1",
+   "suite": "g7m_g7d2_pad15_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 250
+  },
+  {
+   "arm": "G1",
+   "suite": "numeric_logic_heldout",
+   "id": "h01_int_to_roman",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 int_to_roman",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 432
+  },
+  {
+   "arm": "G1",
+   "suite": "numeric_logic_heldout",
+   "id": "h02_merge_ranges",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 merge_ranges",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 468
+  },
+  {
+   "arm": "G1",
+   "suite": "numeric_logic_heldout",
+   "id": "h03_eval_rpn",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 eval_rpn",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 546
+  },
+  {
+   "arm": "G1",
+   "suite": "struct_convert_heldout",
+   "id": "k01_diff_tree",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 diff_tree",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 535
+  },
+  {
+   "arm": "G1",
+   "suite": "struct_convert_heldout",
+   "id": "k02_encode_cookie",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 encode_cookie",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 241
+  },
+  {
+   "arm": "G1",
+   "suite": "struct_convert_heldout",
+   "id": "k03_unflatten",
+   "score": 0.4,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 unflatten",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 731
+  },
+  {
+   "arm": "G1",
+   "suite": "struct_convert_heldout",
+   "id": "k04_to_ini",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 to_ini",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "has_fn": true,
+   "answer_chars": 559
+  },
+  {
+   "arm": "G2",
+   "suite": "coding_small",
+   "id": "t02_dedupe",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 135
+  },
+  {
+   "arm": "G2",
+   "suite": "coding_small",
+   "id": "t03_commas",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 commas",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 50
+  },
+  {
+   "arm": "G2",
+   "suite": "coding_small",
+   "id": "t05_top_k",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 top_k",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 138
+  },
+  {
+   "arm": "G2",
+   "suite": "coding_small",
+   "id": "t06_rle",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 rle",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 314
+  },
+  {
+   "arm": "G2",
+   "suite": "g7_heldout",
+   "id": "g7s4_xml_escape_attrs",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 xml_escape_attrs",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 302
+  },
+  {
+   "arm": "G2",
+   "suite": "numeric_logic_heldout",
+   "id": "h01_int_to_roman",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 int_to_roman",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 434
+  },
+  {
+   "arm": "G2",
+   "suite": "numeric_logic_heldout",
+   "id": "h02_merge_ranges",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 merge_ranges",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 470
+  },
+  {
+   "arm": "G2",
+   "suite": "numeric_logic_heldout",
+   "id": "h03_eval_rpn",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 eval_rpn",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 548
+  },
+  {
+   "arm": "G2",
+   "suite": "struct_convert_heldout",
+   "id": "k01_diff_tree",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 diff_tree",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 537
+  },
+  {
+   "arm": "G2",
+   "suite": "struct_convert_heldout",
+   "id": "k02_encode_cookie",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 encode_cookie",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": false,
+   "failed": [
+    "可编译"
+   ],
+   "report": "1/5 项未过：编译失败 line 2: unmatched ')' ⇒ )",
+   "really_broken": true,
+   "answer_chars": 243
+  },
+  {
+   "arm": "G3",
+   "suite": "coding_small",
+   "id": "t01_parse_duration",
+   "score": 0.5,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_duration",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "parse_duration",
+   "answer_chars": 58
+  },
+  {
+   "arm": "G3",
+   "suite": "coding_small",
+   "id": "t02_dedupe",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "dedupe",
+   "answer_chars": 50
+  },
+  {
+   "arm": "G3",
+   "suite": "coding_small",
+   "id": "t03_commas",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 commas",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "commas",
+   "answer_chars": 50
+  },
+  {
+   "arm": "G3",
+   "suite": "coding_small",
+   "id": "t04_merge_ranges",
+   "score": 0.3333,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 merge_ranges",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "merge_ranges",
+   "answer_chars": 56
+  },
+  {
+   "arm": "G3",
+   "suite": "coding_small",
+   "id": "t05_top_k",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 top_k",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "top_k",
+   "answer_chars": 49
+  },
+  {
+   "arm": "G3",
+   "suite": "coding_small",
+   "id": "t06_rle",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 rle",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "rle",
+   "answer_chars": 47
+  },
+  {
+   "arm": "G3",
+   "suite": "g7_heldout",
+   "id": "g7s2_parse_headers",
+   "score": 0.4,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_headers",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "parse_headers",
+   "answer_chars": 57
+  },
+  {
+   "arm": "G3",
+   "suite": "g7_heldout",
+   "id": "g7s4_xml_escape_attrs",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 xml_escape_attrs",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "xml_escape_attrs",
+   "answer_chars": 60
+  },
+  {
+   "arm": "G3",
+   "suite": "g7e_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "dedupe_keep",
+   "answer_chars": 55
+  },
+  {
+   "arm": "G3",
+   "suite": "g7e_heldout",
+   "id": "g7d3_fmt_amount",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 fmt_amount",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "fmt_amount",
+   "answer_chars": 54
+  },
+  {
+   "arm": "G3",
+   "suite": "g7e_heldout",
+   "id": "g7e1_parse_flag",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_flag",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "parse_flag",
+   "answer_chars": 54
+  },
+  {
+   "arm": "G3",
+   "suite": "g7e_heldout",
+   "id": "g7e2_truncate_tail",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 truncate_tail",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "truncate_tail",
+   "answer_chars": 57
+  },
+  {
+   "arm": "G3",
+   "suite": "g7e_hint_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "dedupe_keep",
+   "answer_chars": 55
+  },
+  {
+   "arm": "G3",
+   "suite": "g7e_hint_heldout",
+   "id": "g7d3_fmt_amount",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 fmt_amount",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "fmt_amount",
+   "answer_chars": 54
+  },
+  {
+   "arm": "G3",
+   "suite": "g7e_hint_heldout",
+   "id": "g7e1_parse_flag",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_flag",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "parse_flag",
+   "answer_chars": 54
+  },
+  {
+   "arm": "G3",
+   "suite": "g7e_hint_heldout",
+   "id": "g7e2_truncate_tail",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 truncate_tail",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "truncate_tail",
+   "answer_chars": 57
+  },
+  {
+   "arm": "G3",
+   "suite": "g7j_n0_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "dedupe_keep",
+   "answer_chars": 55
+  },
+  {
+   "arm": "G3",
+   "suite": "g7j_n0_heldout",
+   "id": "g7d3_fmt_amount",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 fmt_amount",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "fmt_amount",
+   "answer_chars": 54
+  },
+  {
+   "arm": "G3",
+   "suite": "g7j_n0_heldout",
+   "id": "g7e1_parse_flag",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_flag",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "parse_flag",
+   "answer_chars": 54
+  },
+  {
+   "arm": "G3",
+   "suite": "g7j_n0_heldout",
+   "id": "g7e2_truncate_tail",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 truncate_tail",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "truncate_tail",
+   "answer_chars": 57
+  },
+  {
+   "arm": "G3",
+   "suite": "g7j_n4_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "dedupe_keep",
+   "answer_chars": 55
+  },
+  {
+   "arm": "G3",
+   "suite": "g7j_n4_heldout",
+   "id": "g7d3_fmt_amount",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 fmt_amount",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "fmt_amount",
+   "answer_chars": 54
+  },
+  {
+   "arm": "G3",
+   "suite": "g7j_n4_heldout",
+   "id": "g7e1_parse_flag",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 parse_flag",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "parse_flag",
+   "answer_chars": 54
+  },
+  {
+   "arm": "G3",
+   "suite": "g7j_n4_heldout",
+   "id": "g7e2_truncate_tail",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 truncate_tail",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "truncate_tail",
+   "answer_chars": 57
+  },
+  {
+   "arm": "G3",
+   "suite": "g7m_g7d2_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.2,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "dedupe_keep",
+   "answer_chars": 55
+  },
+  {
+   "arm": "G3",
+   "suite": "g7m_g7d2_pad15_heldout",
+   "id": "g7d2_dedupe_keep",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 dedupe_keep",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "dedupe_keep",
+   "answer_chars": 55
+  },
+  {
+   "arm": "G3",
+   "suite": "numeric_logic_heldout",
+   "id": "h01_int_to_roman",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 int_to_roman",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "int_to_roman",
+   "answer_chars": 56
+  },
+  {
+   "arm": "G3",
+   "suite": "numeric_logic_heldout",
+   "id": "h02_merge_ranges",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 merge_ranges",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "merge_ranges",
+   "answer_chars": 56
+  },
+  {
+   "arm": "G3",
+   "suite": "numeric_logic_heldout",
+   "id": "h03_eval_rpn",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 eval_rpn",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "eval_rpn",
+   "answer_chars": 52
+  },
+  {
+   "arm": "G3",
+   "suite": "struct_convert_heldout",
+   "id": "k01_diff_tree",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 diff_tree",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "diff_tree",
+   "answer_chars": 53
+  },
+  {
+   "arm": "G3",
+   "suite": "struct_convert_heldout",
+   "id": "k02_encode_cookie",
+   "score": 1.0,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 encode_cookie",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "encode_cookie",
+   "answer_chars": 57
+  },
+  {
+   "arm": "G3",
+   "suite": "struct_convert_heldout",
+   "id": "k03_unflatten",
+   "score": 0.4,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 unflatten",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "unflatten",
+   "answer_chars": 53
+  },
+  {
+   "arm": "G3",
+   "suite": "struct_convert_heldout",
+   "id": "k04_to_ini",
+   "score": 0.6,
+   "n_checks": 5,
+   "check_names": [
+    "非空",
+    "函数名 to_ini",
+    "语言标签",
+    "可编译",
+    "结构检查"
+   ],
+   "check_kinds": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "undefined"
+   ],
+   "gate_ok": true,
+   "failed": [],
+   "report": "",
+   "fn": "to_ini",
+   "answer_chars": 50
+  }
+ ],
+ "no_fn_g3": 0
+}

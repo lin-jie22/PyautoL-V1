@@ -2351,6 +2351,14 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ154e", "mw/probe.py",
      '''    if isinstance(v, (int, float)) and v == 0:''',
      '''    if isinstance(v, (int, float)) and v >= 0:  # 撤回态'''),
+    # ── V192（§260）：AZ155a 是**跳线闸**，「撤回」= 把量具接进部署面 ──────
+    #: ⚠️ 语义与其余条目相反，故意的：这条锚点钉的是一个**否定事实**（部署端 0 引用），
+    #:    所以「撤回」只能是把那个事实改掉 —— 即真的往 `run.py` 加一行 import。
+    #:    红 = 「你去更新 README/DESIGN 的 0 调用点声明并重算 check_counts」，不是「不许接」。
+    ("AZ155a", "run.py",
+     '''from __future__ import annotations''',
+     '''from __future__ import annotations
+from mw import critgen as _cg  # 撤回态：把量具接进部署面'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

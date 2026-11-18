@@ -16252,6 +16252,71 @@ check(RS, "AZ154e `probe._is_degenerate()` 的分类边界（多剔一个就是�
       and _az154_deg["[0]"] is False,
       str(_az154_deg))
 
+# ── AZ155a：部署面不碰「判据三模块」（跳线闸，V192 §260）─────────────
+#: ⚠️ 这是**跳线闸**，不是禁令：红了**不**代表「不许接」，代表「你接了 ⇒ 去改
+#:    README/DESIGN 里「部署端 0 调用点」的声明，并重算 check_counts」。
+#:    V192 之前没人知道这三模块在部署端引用数为 0（V184~V191 八轮的产物）。
+import ast as _ast155
+
+
+def _az155_path(mod: str):
+    _p = V1 / (mod.replace(".", "/") + ".py")
+    return _p if _p.is_file() else None
+
+
+def _az155_imports(mod: str) -> list:
+    _p = _az155_path(mod)
+    if _p is None:
+        return []
+    _out: list = []
+    _tree = _ast155.parse(_p.read_text(encoding="utf-8"))
+    _pkg = mod.rsplit(".", 1)[0] if "." in mod else ""
+    for _n in _ast155.walk(_tree):
+        if isinstance(_n, _ast155.Import):
+            _out += [a.name for a in _n.names]
+        elif isinstance(_n, _ast155.ImportFrom):
+            _base = _n.module or ""
+            if _n.level:
+                _up = _pkg.split(".") if _pkg else []
+                if _n.level > 1 and _n.level - 1 <= len(_up):
+                    _up = _up[: len(_up) - (_n.level - 1)]
+                _base = ".".join([x for x in _up if x] + ([_base] if _base else []))
+            for _a in _n.names:
+                _full = f"{_base}.{_a.name}" if _base else _a.name
+                _out.append(_full if _az155_path(_full) else _base)
+    return _out
+
+
+def _az155_closure(entry: str) -> set:
+    _seen: set = set()
+    _todo = [entry]
+    while _todo:
+        _m = _todo.pop()
+        if _m in _seen or _az155_path(_m) is None:
+            continue
+        _seen.add(_m)
+        for _t in _az155_imports(_m):
+            if _t not in _seen and _az155_path(_t):
+                _todo.append(_t)
+    return _seen
+
+
+_az155_dep = _az155_closure("run")
+_az155_hit = sorted(m for m in ("mw.critgen", "mw.metacrit", "mw.probe")
+                    if m in _az155_dep)
+
+check(RS, "AZ155a `run.py` 的导入闭包**不含**判据三模块（部署面 vs 装置面）：\n"
+          "              V192 实测：部署闭包 24 个 mw 模块，三目标一个都不在；\n"
+          "              从部署闭包对三目标的引用 0 次，从 `tests/contract_test.py` 162 次。\n"
+          "              ⇒ 这三模块是**量具**，不是部件；部署链路上没有「采判据」这一步\n"
+          "              （`mw/verify.py` 的 `derive(goal, static, exec_)` 只吃题面，\n"
+          "              确定性地产出一组断言，不选算子也不选签名）。\n"
+          "              ⚠️ 闭包必须 ≥ 20 个模块：低于此说明闭包算法自己坏了（检测器瞎），\n"
+          "              那时「三目标不在」是**空集恒真**，不能算证据。\n"
+          "              撤回语义：往 `run.py` 加一行 `from mw import critgen` ⇒ 命中非空 ⇒ 必须红",
+      (not _az155_hit) and len(_az155_dep) >= 20,
+      f"闭包 {len(_az155_dep)} 个模块；命中 {_az155_hit}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

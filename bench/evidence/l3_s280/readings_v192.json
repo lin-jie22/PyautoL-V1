@@ -1,0 +1,247 @@
+{
+ "prereg": "PREREG_v192.md",
+ "deploy_modules": [
+  "bench.answer_store",
+  "mw.abstractor",
+  "mw.bench",
+  "mw.budget",
+  "mw.config",
+  "mw.core",
+  "mw.critique",
+  "mw.features",
+  "mw.flow",
+  "mw.goals",
+  "mw.guard",
+  "mw.ledger",
+  "mw.llm",
+  "mw.loop",
+  "mw.measure",
+  "mw.memory",
+  "mw.metacog",
+  "mw.planner",
+  "mw.scoreinfo",
+  "mw.tools",
+  "mw.values",
+  "mw.verify",
+  "mw.worldmodel",
+  "run"
+ ],
+ "deploy_n": 24,
+ "device_modules_n": 45,
+ "targets_in_deploy": [],
+ "targets_in_device": [
+  "mw.critgen",
+  "mw.metacrit",
+  "mw.probe"
+ ],
+ "P1_targets_in_deploy": 0,
+ "P3_refs_from_deploy": 0,
+ "P3_per_mod": {
+  "mw.critgen": 0,
+  "mw.metacrit": 0,
+  "mw.probe": 0
+ },
+ "P4_refs_from_device": 162,
+ "P4_per_mod": {
+  "mw.critgen": 107,
+  "mw.metacrit": 21,
+  "mw.probe": 34
+ },
+ "P4_per_fn": {
+  "mw.critgen.CODES": 1,
+  "mw.critgen.DECS": 1,
+  "mw.critgen.NEGS": 1,
+  "mw.critgen.OPS": 8,
+  "mw.critgen.POOL": 10,
+  "mw.critgen.SEPS": 1,
+  "mw.critgen.TYPES": 9,
+  "mw.critgen._inputs_for": 1,
+  "mw.critgen.arity": 1,
+  "mw.critgen.build": 3,
+  "mw.critgen.catalogue": 5,
+  "mw.critgen.constant_on": 7,
+  "mw.critgen.diagnose": 9,
+  "mw.critgen.diagnose_text": 1,
+  "mw.critgen.inputs_for": 10,
+  "mw.critgen.legal_indexes": 3,
+  "mw.critgen.narrow": 7,
+  "mw.critgen.ops_for": 5,
+  "mw.critgen.reachable_on": 7,
+  "mw.critgen.read_signal": 1,
+  "mw.critgen.skeleton": 3,
+  "mw.critgen.spec_params": 2,
+  "mw.critgen.validate": 6,
+  "mw.critgen.verdict": 5,
+  "mw.metacrit.admit": 18,
+  "mw.metacrit.run": 3,
+  "mw.probe.MAX_TOKEN": 1,
+  "mw.probe._is_degenerate": 1,
+  "mw.probe.degenerate_free": 1,
+  "mw.probe.domain_of": 3,
+  "mw.probe.expand": 5,
+  "mw.probe.false_reach": 2,
+  "mw.probe.literals": 1,
+  "mw.probe.route": 5,
+  "mw.probe.sig_space": 4,
+  "mw.probe.structural": 2,
+  "mw.probe.tokens": 3,
+  "mw.probe.varies": 6
+ },
+ "P2_dynamic_modules": [
+  "mw.abstractor",
+  "mw.bench",
+  "mw.budget",
+  "mw.config",
+  "mw.core",
+  "mw.critique",
+  "mw.flow",
+  "mw.guard",
+  "mw.ledger",
+  "mw.llm",
+  "mw.loop",
+  "mw.measure",
+  "mw.memory",
+  "mw.metacog",
+  "mw.planner",
+  "mw.tools",
+  "mw.values",
+  "mw.verify",
+  "mw.worldmodel"
+ ],
+ "P2_targets_loaded": [],
+ "P2_rc": 0,
+ "mw_public_total": 157,
+ "mw_zero_ref_from_deploy": 56,
+ "mw_zero_ref_list": [
+  "mw.abstractor.strip_code",
+  "mw.abstractor.distill",
+  "mw.bench.calibrate_or_raise",
+  "mw.bench.ledger_strata",
+  "mw.bench.ledger_audit_strata",
+  "mw.critgen.arity",
+  "mw.critgen.reachable",
+  "mw.critgen.validate",
+  "mw.critgen.diagnose",
+  "mw.critgen.diagnose_text",
+  "mw.critgen.retry_hint",
+  "mw.critgen.read_signal",
+  "mw.critgen.reachable_on",
+  "mw.critgen.narrow",
+  "mw.critgen.legal_indexes",
+  "mw.critgen.inputs_for",
+  "mw.critgen.constant_on",
+  "mw.critgen.spec_params",
+  "mw.critgen.verdict",
+  "mw.critgen.build",
+  "mw.critgen.skeleton",
+  "mw.critgen.ops_for",
+  "mw.critgen.catalogue",
+  "mw.features.feature_version_hash",
+  "mw.features.cluster",
+  "mw.goals.verify_provenance",
+  "mw.measure.abstraction_collapse",
+  "mw.measure.check",
+  "mw.measure.has_real_gain",
+  "mw.measure.ci95",
+  "mw.metacrit.literal_expectations",
+  "mw.metacrit.admit",
+  "mw.metacrit.run",
+  "mw.metacrit.audit",
+  "mw.mutate.knob_of",
+  "mw.mutate.frozen_of",
+  "mw.mutate.coverage_gaps",
+  "mw.mutate.violations",
+  "mw.mutate.introduced_violations",
+  "mw.mutate.apply_mutation",
+  "mw.mutate.space",
+  "mw.mutate.record",
+  "mw.mutate.append_record",
+  "mw.probe.tokens",
+  "mw.probe.literals",
+  "mw.probe.structural",
+  "mw.probe.expand",
+  "mw.probe.constants",
+  "mw.probe.sig_space",
+  "mw.probe.degenerate_free",
+  "mw.probe.domain_of",
+  "mw.probe.varies",
+  "mw.probe.false_reach",
+  "mw.probe.route",
+  "mw.scoreinfo.classify_pool_rows",
+  "mw.tools.shlex_split"
+ ],
+ "P5_ok": true,
+ "verify_surface": [
+  {
+   "fn": "example_asserts",
+   "args": [
+    "goal"
+   ]
+  },
+  {
+   "fn": "run_example",
+   "args": [
+    "code",
+    "asserts"
+   ]
+  },
+  {
+   "fn": "extract_code",
+   "args": [
+    "answer"
+   ]
+  },
+  {
+   "fn": "undefined_names",
+   "args": [
+    "code"
+   ]
+  },
+  {
+   "fn": "derive",
+   "args": [
+    "goal",
+    "static",
+    "exec_"
+   ]
+  },
+  {
+   "fn": "run",
+   "args": [
+    "answer",
+    "checks"
+   ]
+  },
+  {
+   "fn": "expected_artifacts",
+   "args": [
+    "goal"
+   ]
+  },
+  {
+   "fn": "check_delivery",
+   "args": [
+    "goal",
+    "workspace",
+    "answer"
+   ]
+  }
+ ],
+ "P6_host_hits": [],
+ "P1_ok": true,
+ "P2_ok": true,
+ "P3_ok": true,
+ "P4_ok": true,
+ "P6_ok": true,
+ "R2": {
+  "closure_has": [
+   "mw.critgen"
+  ],
+  "closure_n": 25,
+  "dyn_rc": 0,
+  "dyn_has": [
+   "mw.critgen"
+  ],
+  "ok": true
+ }
+}

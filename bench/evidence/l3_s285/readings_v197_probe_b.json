@@ -1,0 +1,2932 @@
+{
+  "deps": {
+    "verify": "mw.verify",
+    "root": "/Users/linshaojie/V1"
+  },
+  "rows": [
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_duration 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_duration 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 84,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_duration(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_duration(*a, **k)",
+      "obs_chars": 70,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_duration(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_duration(*a, **k)",
+      "obs_chars": 70,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "fn": "parse_duration",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_duration(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_duration(*a, **k)",
+      "obs_chars": 70,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 merge_ranges 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 merge_ranges 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 82,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def merge_ranges(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def merge_ranges(*a, **k)",
+      "obs_chars": 68,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def merge_ranges(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def merge_ranges(*a, **k)",
+      "obs_chars": 68,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "fn": "merge_ranges",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def merge_ranges(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def merge_ranges(*a, **k)",
+      "obs_chars": 68,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_headers 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_headers 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 83,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_headers(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_headers(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_headers(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_headers(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "fn": "parse_headers",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_headers(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_headers(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 81,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 fmt_amount 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 fmt_amount 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 80,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_flag 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_flag 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 80,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 truncate_tail 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 truncate_tail 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 83,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 81,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 fmt_amount 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 fmt_amount 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 80,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_flag 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_flag 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 80,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 truncate_tail 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 truncate_tail 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 83,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 81,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 fmt_amount 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 fmt_amount 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 80,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_flag 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_flag 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 80,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 truncate_tail 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 truncate_tail 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 83,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 81,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 fmt_amount 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 fmt_amount 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 80,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "fn": "fmt_amount",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def fmt_amount(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_flag 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 parse_flag 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 80,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "fn": "parse_flag",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def parse_flag(*a, **k)",
+      "obs_chars": 66,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 truncate_tail 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 truncate_tail 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 83,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "fn": "truncate_tail",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def truncate_tail(*a, **k)",
+      "obs_chars": 69,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 81,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 dedupe_keep 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 81,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "fn": "dedupe_keep",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def dedupe_keep(*a, **k)",
+      "obs_chars": 67,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 unflatten 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 unflatten 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 79,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def unflatten(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def unflatten(*a, **k)",
+      "obs_chars": 65,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def unflatten(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def unflatten(*a, **k)",
+      "obs_chars": 65,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "fn": "unflatten",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def unflatten(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def unflatten(*a, **k)",
+      "obs_chars": 65,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "空返回",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "空返回",
+      "static": 1,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "空返回",
+      "static": 2,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "未定义名",
+      "static": 0,
+      "ok": true,
+      "failed": [],
+      "report": "",
+      "obs": "[工具失败] ",
+      "obs_chars": 7,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "未定义名",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "未定义名"
+      ],
+      "report": "1/5 项未过：未定义的名字 '_v197_not_defined'（在 to_ini 内被引用，模块里既没有 import 也没有赋值）",
+      "obs": "[工具失败] 1/5 项未过：未定义的名字 '_v197_not_defined'（在 to_ini 内被引用，模块里既没有 import 也没有赋值）",
+      "obs_chars": 76,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "未定义名",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "结构检查"
+      ],
+      "report": "1/5 项未过：自检未通过（不提供细节）",
+      "obs": "[工具失败] 1/5 项未过：自检未通过（不提供细节）",
+      "obs_chars": 27,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "语法错",
+      "static": 0,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/4 项未过：编译失败 line 1: expected ':' ⇒ def to_ini(*a, **k)",
+      "obs": "[工具失败] 1/4 项未过：编译失败 line 1: expected ':' ⇒ def to_ini(*a, **k)",
+      "obs_chars": 62,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "语法错",
+      "static": 1,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def to_ini(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def to_ini(*a, **k)",
+      "obs_chars": 62,
+      "hidden_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "fn": "to_ini",
+      "stub": "语法错",
+      "static": 2,
+      "ok": false,
+      "failed": [
+        "可编译"
+      ],
+      "report": "1/5 项未过：编译失败 line 1: expected ':' ⇒ def to_ini(*a, **k)",
+      "obs": "[工具失败] 1/5 项未过：编译失败 line 1: expected ':' ⇒ def to_ini(*a, **k)",
+      "obs_chars": 62,
+      "hidden_hits": 0
+    }
+  ],
+  "n": 207,
+  "pool_n": 23,
+  "functions_found": 23
+}

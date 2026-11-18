@@ -1,0 +1,1320 @@
+{
+  "deps": {
+    "verify": "mw.verify",
+    "import_path": "/Users/linshaojie/V1"
+  },
+  "pool_n": 23,
+  "pool": [
+    [
+      "coding_small",
+      "t01_parse_duration"
+    ],
+    [
+      "coding_small",
+      "t04_merge_ranges"
+    ],
+    [
+      "g7_heldout",
+      "g7s2_parse_headers"
+    ],
+    [
+      "g7e_heldout",
+      "g7d2_dedupe_keep"
+    ],
+    [
+      "g7e_heldout",
+      "g7d3_fmt_amount"
+    ],
+    [
+      "g7e_heldout",
+      "g7e1_parse_flag"
+    ],
+    [
+      "g7e_heldout",
+      "g7e2_truncate_tail"
+    ],
+    [
+      "g7e_hint_heldout",
+      "g7d2_dedupe_keep"
+    ],
+    [
+      "g7e_hint_heldout",
+      "g7d3_fmt_amount"
+    ],
+    [
+      "g7e_hint_heldout",
+      "g7e1_parse_flag"
+    ],
+    [
+      "g7e_hint_heldout",
+      "g7e2_truncate_tail"
+    ],
+    [
+      "g7j_n0_heldout",
+      "g7d2_dedupe_keep"
+    ],
+    [
+      "g7j_n0_heldout",
+      "g7d3_fmt_amount"
+    ],
+    [
+      "g7j_n0_heldout",
+      "g7e1_parse_flag"
+    ],
+    [
+      "g7j_n0_heldout",
+      "g7e2_truncate_tail"
+    ],
+    [
+      "g7j_n4_heldout",
+      "g7d2_dedupe_keep"
+    ],
+    [
+      "g7j_n4_heldout",
+      "g7d3_fmt_amount"
+    ],
+    [
+      "g7j_n4_heldout",
+      "g7e1_parse_flag"
+    ],
+    [
+      "g7j_n4_heldout",
+      "g7e2_truncate_tail"
+    ],
+    [
+      "g7m_g7d2_heldout",
+      "g7d2_dedupe_keep"
+    ],
+    [
+      "g7m_g7d2_pad15_heldout",
+      "g7d2_dedupe_keep"
+    ],
+    [
+      "struct_convert_heldout",
+      "k03_unflatten"
+    ],
+    [
+      "struct_convert_heldout",
+      "k04_to_ini"
+    ]
+  ],
+  "B1a_kinds_default": {
+    "nonempty": 23,
+    "defines": 23,
+    "fence_lang": 23,
+    "compiles": 23,
+    "undefined": 23
+  },
+  "B1a_kinds_exec": {
+    "nonempty": 23,
+    "defines": 23,
+    "fence_lang": 23,
+    "compiles": 23,
+    "undefined": 23,
+    "example": 1
+  },
+  "B1a_per_task": [
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 6,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined",
+        "example"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "n_default": 5,
+      "kinds_default": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "n_exec": 5,
+      "kinds_exec": [
+        "nonempty",
+        "defines",
+        "fence_lang",
+        "compiles",
+        "undefined"
+      ],
+      "ex_default": 0
+    }
+  ],
+  "B1a_tasks_with_example_default": 0,
+  "B1a_tasks_with_example_exec": 1,
+  "B1b": [
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 parse_duration"
+      ],
+      "report": "1/5 项未过：缺少 def parse_duration(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_duration(...)",
+      "obs_chars": 41,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t01_parse_duration",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 parse_duration"
+      ],
+      "report": "1/5 项未过：缺少 def parse_duration(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_duration(...)",
+      "obs_chars": 41,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 merge_ranges"
+      ],
+      "report": "1/5 项未过：缺少 def merge_ranges(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def merge_ranges(...)",
+      "obs_chars": 39,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "coding_small",
+      "id": "t04_merge_ranges",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 merge_ranges",
+        "示例可跑×1"
+      ],
+      "report": "2/6 项未过：缺少 def merge_ranges(...)；题面示例未通过：NameError: name 'merge_ranges' is not defined",
+      "obs": "[工具失败] 2/6 项未过：缺少 def merge_ranges(...)；题面示例未通过：NameError: name 'merge_ranges' is not defined",
+      "obs_chars": 93,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 parse_headers"
+      ],
+      "report": "1/5 项未过：缺少 def parse_headers(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_headers(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7_heldout",
+      "id": "g7s2_parse_headers",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 parse_headers"
+      ],
+      "report": "1/5 项未过：缺少 def parse_headers(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_headers(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 fmt_amount"
+      ],
+      "report": "1/5 项未过：缺少 def fmt_amount(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def fmt_amount(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7d3_fmt_amount",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 fmt_amount"
+      ],
+      "report": "1/5 项未过：缺少 def fmt_amount(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def fmt_amount(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 parse_flag"
+      ],
+      "report": "1/5 项未过：缺少 def parse_flag(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_flag(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e1_parse_flag",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 parse_flag"
+      ],
+      "report": "1/5 项未过：缺少 def parse_flag(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_flag(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 truncate_tail"
+      ],
+      "report": "1/5 项未过：缺少 def truncate_tail(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def truncate_tail(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_heldout",
+      "id": "g7e2_truncate_tail",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 truncate_tail"
+      ],
+      "report": "1/5 项未过：缺少 def truncate_tail(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def truncate_tail(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 fmt_amount"
+      ],
+      "report": "1/5 项未过：缺少 def fmt_amount(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def fmt_amount(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7d3_fmt_amount",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 fmt_amount"
+      ],
+      "report": "1/5 项未过：缺少 def fmt_amount(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def fmt_amount(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 parse_flag"
+      ],
+      "report": "1/5 项未过：缺少 def parse_flag(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_flag(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e1_parse_flag",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 parse_flag"
+      ],
+      "report": "1/5 项未过：缺少 def parse_flag(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_flag(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 truncate_tail"
+      ],
+      "report": "1/5 项未过：缺少 def truncate_tail(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def truncate_tail(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7e_hint_heldout",
+      "id": "g7e2_truncate_tail",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 truncate_tail"
+      ],
+      "report": "1/5 项未过：缺少 def truncate_tail(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def truncate_tail(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 fmt_amount"
+      ],
+      "report": "1/5 项未过：缺少 def fmt_amount(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def fmt_amount(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7d3_fmt_amount",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 fmt_amount"
+      ],
+      "report": "1/5 项未过：缺少 def fmt_amount(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def fmt_amount(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 parse_flag"
+      ],
+      "report": "1/5 项未过：缺少 def parse_flag(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_flag(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e1_parse_flag",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 parse_flag"
+      ],
+      "report": "1/5 项未过：缺少 def parse_flag(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_flag(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 truncate_tail"
+      ],
+      "report": "1/5 项未过：缺少 def truncate_tail(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def truncate_tail(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n0_heldout",
+      "id": "g7e2_truncate_tail",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 truncate_tail"
+      ],
+      "report": "1/5 项未过：缺少 def truncate_tail(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def truncate_tail(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 fmt_amount"
+      ],
+      "report": "1/5 项未过：缺少 def fmt_amount(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def fmt_amount(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7d3_fmt_amount",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 fmt_amount"
+      ],
+      "report": "1/5 项未过：缺少 def fmt_amount(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def fmt_amount(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 parse_flag"
+      ],
+      "report": "1/5 项未过：缺少 def parse_flag(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_flag(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e1_parse_flag",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 parse_flag"
+      ],
+      "report": "1/5 项未过：缺少 def parse_flag(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def parse_flag(...)",
+      "obs_chars": 37,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 truncate_tail"
+      ],
+      "report": "1/5 项未过：缺少 def truncate_tail(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def truncate_tail(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7j_n4_heldout",
+      "id": "g7e2_truncate_tail",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 truncate_tail"
+      ],
+      "report": "1/5 项未过：缺少 def truncate_tail(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def truncate_tail(...)",
+      "obs_chars": 40,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "g7m_g7d2_pad15_heldout",
+      "id": "g7d2_dedupe_keep",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 dedupe_keep"
+      ],
+      "report": "1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def dedupe_keep(...)",
+      "obs_chars": 38,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 unflatten"
+      ],
+      "report": "1/5 项未过：缺少 def unflatten(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def unflatten(...)",
+      "obs_chars": 36,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k03_unflatten",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 unflatten"
+      ],
+      "report": "1/5 项未过：缺少 def unflatten(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def unflatten(...)",
+      "obs_chars": 36,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "arm": "default",
+      "ok": false,
+      "failed": [
+        "函数名 to_ini"
+      ],
+      "report": "1/5 项未过：缺少 def to_ini(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def to_ini(...)",
+      "obs_chars": 33,
+      "hidden_hits": 0,
+      "why_hits": 0
+    },
+    {
+      "suite": "struct_convert_heldout",
+      "id": "k04_to_ini",
+      "arm": "exec_on",
+      "ok": false,
+      "failed": [
+        "函数名 to_ini"
+      ],
+      "report": "1/5 项未过：缺少 def to_ini(...)",
+      "obs": "[工具失败] 1/5 项未过：缺少 def to_ini(...)",
+      "obs_chars": 33,
+      "hidden_hits": 0,
+      "why_hits": 0
+    }
+  ],
+  "B1b_obs_chars": [
+    33,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    93
+  ],
+  "B1b_hidden_hits_total": 0,
+  "B1b_default_obs_sample": "[工具失败] 1/5 项未过：缺少 def parse_duration(...)",
+  "B2_detector": {
+    "n_why_with_assert": 22,
+    "positive_control_hits": 2,
+    "negative_control_hits": 0
+  },
+  "B2_ok": true,
+  "B2b_class_map": [
+    {
+      "why_head": "通过 4/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Assertio",
+      "class": "AssertionError",
+      "check": "用题目给出的示例输入，把当前实现手算一遍",
+      "check_has_assert": false
+    },
+    {
+      "why_head": "通过 2/5；失败: assert parse_headers('a: \"x;y\"') == {'a': 'x;y'} ",
+      "class": "其他",
+      "check": "用题目给出的示例输入，把当前实现手算一遍",
+      "check_has_assert": false
+    },
+    {
+      "why_head": "通过 3/5；失败: assert dedupe_keep(['b', ' a ', 'A']) == ['b', ' ",
+      "class": "AssertionError",
+      "check": "用题目给出的示例输入，把当前实现手算一遍",
+      "check_has_assert": false
+    },
+    {
+      "why_head": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ Asserti",
+      "class": "AssertionError",
+      "check": "用题目给出的示例输入，把当前实现手算一遍",
+      "check_has_assert": false
+    },
+    {
+      "why_head": "通过 1/5；失败: assert parse_flag('y') is True ⇒ AssertionError |",
+      "class": "AssertionError",
+      "check": "用题目给出的示例输入，把当前实现手算一遍",
+      "check_has_assert": false
+    },
+    {
+      "why_head": "通过 1/5；失败: assert truncate_tail('abcdef', 3) == '…def' ⇒ Ass",
+      "class": "AssertionError",
+      "check": "用题目给出的示例输入，把当前实现手算一遍",
+      "check_has_assert": false
+    },
+    {
+      "why_head": "通过 3/5；失败: assert dedupe_keep(['b', ' a ', 'A']) == ['b', ' ",
+      "class": "AssertionError",
+      "check": "用题目给出的示例输入，把当前实现手算一遍",
+      "check_has_assert": false
+    },
+    {
+      "why_head": "通过 1/5；失败: assert fmt_amount(1234.5) == '1 234.50' ⇒ Asserti",
+      "class": "AssertionError",
+      "check": "用题目给出的示例输入，把当前实现手算一遍",
+      "check_has_assert": false
+    }
+  ],
+  "B2b_class_never_leaks": true
+}

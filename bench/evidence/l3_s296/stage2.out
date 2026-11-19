@@ -1,0 +1,7 @@
+=== n1 scope=off 18:42:30
+  exit=0 18:45:00
+=== n2 scope=prev-self 18:45:01
+  exit=0 18:48:32
+=== n3 scope=prev 18:48:32
+  exit=0 18:51:32
+ALL DONE 18:51:32

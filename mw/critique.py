@@ -31,6 +31,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -40,6 +41,51 @@ REJECT_KINDS: tuple[str, ...] = ("self", "cross_scorer", "cross_suite")
 
 _MAX_WHY = 400
 _MAX_ANSWER = 200
+
+# ===========================================================================
+# 投喂口径：`why` 里哪一半算「教训」
+#
+# V209（§277）实测：同一条 `[外部评审]` 通道，两种用法方向相反 ——
+#   · t04：`TypeError: 'tuple' object does not support item assignment`
+#          ⇒ 异常名点的就是根因（元组不可变），照做 2/20 → 7/20（+25pp）；
+#   · t01：`ValueError: not enough values to unpack (expected 2, got 1)`
+#          ⇒ 模型把「expected 2」当成**设计线索**，把输入按 `h` 切成两段，
+#            单单位 14/15/14 → 2/6/4（p≤0.01）。
+# ⇒ 异常**名**与失败断言（输入/期望）可迁移；异常文里的**元数**是有害的具体化。
+#
+# ⛔ 这个函数**只管投喂**，不碰落盘：真账本永远存原文（证据不能被自己的过滤器改）。
+# ⛔ 只认这三类形态 —— 多认一条就是多一条没有读数支撑的改写规则。
+# ===========================================================================
+RAW_WHY: str = "raw"
+TRANSFERABLE_WHY: str = "transferable"
+WHY_MODES: tuple[str, ...] = (RAW_WHY, TRANSFERABLE_WHY)
+
+#: `(expected 2, got 1)` / `(expected at least 1, got 0)` —— 元数陈述。
+_METASHAPE = (
+    re.compile(r"\s*\(\s*expected\s+(?:at\s+least\s+|at\s+most\s+)?\d+\s*,\s*got\s+\d+\s*\)",
+               re.I),
+    #: 同一句话的中文/英文措辞形态：解包失败是**症状**，不是"输入有两段"的证据。
+    re.compile(r"\s*\b(?:not\s+enough|too\s+many)\s+values\s+to\s+unpack\b", re.I),
+)
+
+
+def transferable_why(why: str) -> str:
+    """把一段打分器理由裁成「可迁移的那一半」。
+
+    只做三件事（顺序固定）：
+        ① 删括号元数 `(expected N, got M)`；
+        ② 删解包短语 `not enough/too many values to unpack`；
+        ③ 删删完剩下的悬空冒号（`⇒ ValueError:` → `⇒ ValueError`）。
+
+    ⚠️ 第 ③ 步是**装饰**不是判据：不删也不改变语义，只是让块读起来不像被截断。
+    ⚠️ 输入原样返回是**正常结果**（例如 t04 的 `TypeError` 里一个模式都不匹配）。
+       ⇒ 调用方不许把「没改写」读成「过滤器哑了」，那是它该有的行为。
+    """
+    out = why or ""
+    for pat in _METASHAPE:
+        out = pat.sub("", out)
+    out = re.sub(r"[：:]\s*(?=\||$)", "", out)
+    return re.sub(r"\s+", " ", out).strip()
 
 
 @dataclass(frozen=True)
@@ -70,7 +116,8 @@ class CritiqueLedger:
     同一内容存 39 次就是后者的下场：写入时没人管，清理时两套逻辑对不上。
     """
 
-    def __init__(self, path: Path | None = None, *, allow_self: bool = False) -> None:
+    def __init__(self, path: Path | None = None, *, allow_self: bool = False,
+                 why_mode: str = RAW_WHY) -> None:
         self.path = Path(path) if path else None
         #: ⭐ 第一百二十三轮（§96）：同题评审是否放行。**默认 False = 旧行为一字不改。**
         #:
@@ -81,6 +128,17 @@ class CritiqueLedger:
         #: V32 探针实测 6/6 题的同题评审不可达（`p0_selfreach.txt`）。
         #: 所以：**轮内照旧挡（默认），跨轮由调用方显式打开**。
         self.allow_self = bool(allow_self)
+        #: ⭐ V210（§278）：`why` 的投喂口径。**默认 raw = 旧行为一字不改。**
+        #: 过滤只发生在 `add()` ⇒ 它改的是**这一份账本里的文本**。
+        #: 真账本（落盘那条）必须保持 `raw`；只有内核拿到的快照副本才该是
+        #: `transferable` —— 证据完整、投喂裁剪，两件事不能在同一份对象上做。
+        if why_mode not in WHY_MODES:
+            raise ValueError(f"why_mode={why_mode!r} 不在 {WHY_MODES} 里")
+        self.why_mode = why_mode
+        #: 被改写/被清空的条数。⛔ 不报这两个数，「过滤器没生效」和「过滤器哑火」
+        #: 在读数上一模一样（V158 假绿 253 / 真值 4 的同型）。
+        self.why_rewritten = 0
+        self.why_emptied = 0
         self.by_key: dict[tuple[str, str, str], Critique] = {}
         self.added = 0
         #: 同一键被覆盖的次数 —— 这个数不为 0 说明有题被重跑过，是有用信息
@@ -96,10 +154,22 @@ class CritiqueLedger:
         key = (c.scorer_sha, c.suite_sha, c.task_id)
         if key in self.by_key:
             self.superseded += 1
+        why = c.why[:_MAX_WHY]
+        if self.why_mode == TRANSFERABLE_WHY:
+            _w = transferable_why(why)
+            if _w != why:
+                self.why_rewritten += 1
+                why = _w
+            if not why:
+                #: 过滤把理由整个吃掉了 ⇒ **退回原文并计数**。
+                #: ⛔ 不许静默换成空串：一条"只有分数没有理由"的评审
+                #: 正是这个模块存在的缺口，比不投喂更糟。
+                self.why_emptied += 1
+                why = c.why[:_MAX_WHY]
         self.by_key[key] = Critique(
             scorer_sha=c.scorer_sha, suite_sha=c.suite_sha, task_id=c.task_id,
-            family=c.family, score=c.score,
-            why=c.why[:_MAX_WHY], answer=c.answer[:_MAX_ANSWER])
+            family=c.family, score=c.score, why=why,
+            answer=c.answer[:_MAX_ANSWER])
         self.added += 1
 
     def admissible(self, *, scorer_sha: str, suite_sha: str,
@@ -137,6 +207,11 @@ class CritiqueLedger:
             #: ⚠️ 口径必须自报：`allow_self=True` 的账本和 `False` 的账本
             #: 读出来的 `served` 不可比（前者最多 6 条，后者最多 5 条）。
             "allow_self": self.allow_self,
+            #: ⭐ V210：`why` 投喂口径 + 它实际改了几条。
+            #: 只报 `why_mode` 不报 `why_rewritten` ⇒ 分不清「没改写」与「没生效」。
+            "why_mode": self.why_mode,
+            "why_rewritten": self.why_rewritten,
+            "why_emptied": self.why_emptied,
             # 分母同时给出：`rejected` 是**累计**的，离开 `calls` 无法解释
             "rejected": dict(self.rejected),
         }

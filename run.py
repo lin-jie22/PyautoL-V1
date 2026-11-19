@@ -1532,7 +1532,8 @@ def _domain_row(name: str, rc: int, rec: dict | None) -> dict:
 
 
 def _critique_snapshot(crit: "CritiqueLedger", scope: str,
-                       dropped: set[str] | None = None) -> "CritiqueLedger | None":
+                       dropped: set[str] | None = None,
+                       why_mode: str = "raw") -> "CritiqueLedger | None":
     """构造「内核拿到的那份评审账本」（**纯函数**，无 I/O、不落盘）。
 
     为什么不把它留在 `cmd_bench` 里：证据探针要能**调用同一份实现**。
@@ -1542,18 +1543,21 @@ def _critique_snapshot(crit: "CritiqueLedger", scope: str,
     - `off`        → `None`（内核不投喂，V19~V28 全部如此）
     - `prev`       → 只读快照副本，`allow_self=False`（同题被挡，旧口径）
     - `prev-self`  → 同上但 `allow_self=True`（跨轮自省，§96）
-    - `all`        → **不在本函数处理**（调用方直接用真账本；轮内投喂 = 接线验证）
+    - `all`        → 不在本函数处理（调用方直接用真账本；轮内投喂 = 接线验证）
+                      ⚠️ 例外：`why_mode != raw` 时必须走副本 —— 否则过滤器会
+                      改写**真账本**，把落盘证据一起裁掉（V210 的红线）。
     - `dropped`    → 只在**副本**里跳过这些题（§98 的等长安慰剂：
                       丢一条 31 字的满分条目，`crit[-3:]` 的窗口就换成三条
                       140 字的真实失败行，块长与 `prev-self` 逐字节相同）
+    - `why_mode`   → 副本里 `why` 的投喂口径（V210 §278）。`raw` = 一字不改。
     """
-    if scope == "all":
+    if scope == "all" and why_mode == "raw":
         return crit
-    if scope not in ("prev", "prev-self"):
+    if scope not in ("prev", "prev-self", "all"):
         return None
     #: ⚠️ 必须是一个**新**账本且不落盘：`path=None` ⇒ `save()` 返回 0，
     #:  绝不会把快照写回磁盘（`prev` 的隔离性就靠这一句）。
-    snap = CritiqueLedger(None, allow_self=(scope == "prev-self"))
+    snap = CritiqueLedger(None, allow_self=(scope != "prev"), why_mode=why_mode)
     for c in crit.by_key.values():
         if dropped and c.task_id in dropped:
             continue
@@ -1625,6 +1629,15 @@ def _option_conflict(args) -> str:
             return (f"--critique-drop={_cd} 与 投喂=off 冲突：off 档内核拿 None，"
                     "根本不构造快照，丢弃什么都不会发生 —— 跑出来的是一份"
                     "「看着像消融臂、其实是关着」的读数。")
+    #: `--critique-why` 同型（V210 §278）：它描述的是**快照里那段文本的口径**，
+    #: off 档没有快照 ⇒ 再报一份「用了裁剪口径」的读数就是标签撒谎。
+    _cw = getattr(args, "critique_why", "") or "raw"
+    if _cw != "raw":
+        _sc = _cs or ("all" if getattr(args, "use_critique", False) else "off")
+        if _sc == "off":
+            return (f"--critique-why={_cw} 与 投喂=off 冲突：off 档内核拿 None，"
+                    "没有 `why` 被投喂 —— 这个开关什么也没改，但读数会带着"
+                    "「已裁剪」的标签。")
     return ""
 
 
@@ -2237,16 +2250,24 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     #: `--critique-drop` 的解析放在**快照构造之前**：它描述的正是「快照里没有谁」。
     _crit_dropped = {t.strip() for t in (getattr(args, "critique_drop", "") or "").split(",")
                      if t.strip()}
-    if _crit_scope == "all":
+    #: ⭐ V210（§278）：`why` 的投喂口径。**默认 raw = 旧行为一字不改。**
+    #: ⛔ 只喂给快照，真账本 `_crit` 永远 raw ⇒ 落盘证据不被过滤器改写。
+    _crit_why = getattr(args, "critique_why", "") or "raw"
+    if _crit_scope == "all" and _crit_why == "raw":
         _crit_for_kernel = _crit
     else:
-        _crit_for_kernel = _critique_snapshot(_crit, _crit_scope, _crit_dropped)
+        _crit_for_kernel = _critique_snapshot(_crit, _crit_scope, _crit_dropped,
+                                             why_mode=_crit_why)
     if _crit_loaded or _crit_scope != "off":
         print(f"  评审账本  {_crit_path.name}  载入 {_crit_loaded} 条"
               f"  投喂={_crit_scope}"
               f"（off=关 / prev=只给**加载时**已有的且排除同题 / "
               f"prev-self=同上但**放行同题**（跨轮自省）/ all=轮内也给）"
               f"  本轮赠送 {len(_crit_for_kernel.by_key) if _crit_for_kernel else 0} 条"
+              + (f"  why={_crit_why}"
+                 f"（改写 {_crit_for_kernel.why_rewritten} 条"
+                 f" / 清空退回 {_crit_for_kernel.why_emptied} 条）"
+                 if _crit_for_kernel is not None and _crit_why != "raw" else "")
               + (f"  快照丢弃={sorted(_crit_dropped)}（消融：真账本不受影响）"
                  if _crit_dropped else ""))
 
@@ -3240,6 +3261,17 @@ def main() -> int:
                         "31 字的满分条目就能让窗口换成「全是真的、全是别人的失败」，"
                         "从而构造**块长逐字节相同**的等长安慰剂臂（V33）。"
                         "与 off 档同给视为冲突（它什么也不会做）。")
+    p.add_argument("--critique-why", default="raw", choices=("raw", "transferable"),
+                   help="**投喂口径**（DESIGN §278，V210）：`why` 里哪一半进上下文。"
+                        "raw=原文（默认，旧行为一字不改）；"
+                        "transferable=删掉异常文里的**元数/形状**描述"
+                        "（`(expected 2, got 1)`、`not enough values to unpack`），"
+                        "保留异常**名**与失败断言。"
+                        "为什么：V209 实测同一通道两种用法方向相反 —— 异常名点根因时"
+                        "照做能修好（t04 +25pp），异常文点元数时照做会弄坏"
+                        "（t01 单单位 14/15/14 → 2/6/4，p≤0.01）。"
+                        "⚠️ 只改**快照副本**，真账本永远存原文。"
+                        "与 off 档同给视为冲突（没有 why 被投喂）。")
     p.add_argument("--use-reward", action="store_true",
                    help="把外部打分器的分数作为**只读**奖励写进记忆（DESIGN §17-5）")
     p.add_argument("--memory-mode", default="raw", choices=("raw", "abstract"),

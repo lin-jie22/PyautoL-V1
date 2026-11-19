@@ -16364,6 +16364,87 @@ check(RS, "AZ156a bench 路径**没有**把免费闸接进答案出口（V194 §
       f"bench 函数体 {len(_az156_bench_fns)} 个；verify_impl 调用 {_az156_hit}；"
       f"入口在 {_az156_entry}")
 
+# ── AZ157a~f：自评进 prompt 时「只留可迁移那一半」（V210 §278）──────────────
+#: V209 量到同一通道两种用法**方向相反**：异常名点根因（`TypeError: 'tuple' …`）
+#: 照做能修好（t04 idx0 2/20→7/20）；异常文的元数（`expected 2, got 1`）被当成
+#: 设计线索，单单位全掉（t01 14/15/14→2/6/4，p≤0.01）。⇒ 投喂时删元数、留异常名。
+from mw.critique import transferable_why as _az157_f   # noqa: E402
+
+_az157_t01 = ("通过 1/6；失败: assert parse_duration('45s') == 45 ⇒ "
+              "ValueError: not enough values to unpack (expected 2, got 1)")
+_az157_o = _az157_f(_az157_t01)
+check(RS, "AZ157a ★投喂口径 `transferable`：元数（`(expected 2, got 1)`）与解包短语\n"
+          "              必须被删，**异常名与失败断言必须留下** ——\n"
+          "              删的那半是「症状」，留的那半才是能迁移的「根因 + 输入」。\n"
+          "              撤回语义：删掉 `mw/critique.py` 的 `_METASHAPE` 两条 ⇒ 必须红",
+      "expected" not in _az157_o and "unpack" not in _az157_o
+      and "ValueError" in _az157_o and "parse_duration('45s') == 45" in _az157_o,
+      f"改写后={_az157_o!r}")
+
+#: ⛔ 正例对照（纪律 5）：一个模式都不匹配的原文**必须逐字节不变**。
+#:    否则「过滤器生效」与「过滤器把什么都吃了」在读数上分不开。
+_az157_t04 = ("通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)]"
+              " ⇒ TypeError: 'tuple' object does not support item assignment")
+check(RS, "AZ157b ★正例对照：根因那类理由（t04 的 `TypeError: 'tuple' object …`）\n"
+          "              **一个模式都不匹配 ⇒ 原文逐字节不变**。\n"
+          "              没有这一条，「只删元数」就可能悄悄变成「删掉所有异常文」",
+      _az157_f(_az157_t04) == _az157_t04,
+      f"长度 {len(_az157_t04)} → {len(_az157_f(_az157_t04))}")
+
+_az157_raw = CritiqueLedger()
+_az157_raw.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why=_az157_t01))
+_az157_tr = CritiqueLedger(None, why_mode="transferable")
+_az157_tr.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why=_az157_t01))
+_az157_k = ("S", "U", "t1")
+check(RS, "AZ157c ★默认 `raw` = 旧行为一字不改；`transferable` 必须**自报**改了几条\n"
+          "              （只报口径不报计数 ⇒ 分不清「没改写」与「没生效」，V158 假绿同型）",
+      _az157_raw.by_key[_az157_k].why == _az157_t01
+      and _az157_raw.stats()["why_mode"] == "raw"
+      and _az157_raw.stats()["why_rewritten"] == 0
+      and "expected" not in _az157_tr.by_key[_az157_k].why
+      and _az157_tr.stats()["why_rewritten"] == 1,
+      f"raw={_az157_raw.stats()['why_mode']}/{_az157_raw.stats()['why_rewritten']} "
+      f"tr={_az157_tr.stats()['why_mode']}/{_az157_tr.stats()['why_rewritten']}")
+
+#: ⛔⛔ **红线**：真账本（落盘那条）永远 raw。`all` 档拿的是真账本本体 ⇒
+#:    带 `transferable` 时必须改走**副本**，否则过滤器会把落盘证据一起裁掉。
+_az157_src = CritiqueLedger()
+_az157_src.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why=_az157_t01))
+from run import _critique_snapshot           # noqa: E402
+_az157_snap = _critique_snapshot(_az157_src, "all", why_mode="transferable")
+check(RS, "AZ157d ⛔⛔ 红线：`all` + `transferable` 必须返回**副本**，真账本原文不动\n"
+          "              —— 证据被自己的过滤器改写，等于把测量对象改成了测量结果",
+      _az157_snap is not None and _az157_snap is not _az157_src
+      and _az157_src.by_key[_az157_k].why == _az157_t01
+      and "expected" not in _az157_snap.by_key[_az157_k].why
+      and _critique_snapshot(_az157_src, "all") is _az157_src,
+      f"同一对象={_az157_snap is _az157_src} "
+      f"真账本含元数={'expected' in _az157_src.by_key[_az157_k].why}")
+
+check(RS, "AZ157e 未知口径必须**抛错**，不许静默退回 raw\n"
+          "              （静默退回 = 读数带着「已裁剪」的标签、实际没裁）",
+      _raises(lambda: CritiqueLedger(None, why_mode="trim"), ValueError))
+
+
+class _AZ157Args:
+    """`_option_conflict` 的冲突闸小桩：只列参与判定的字段。"""
+
+    def __init__(self, **kw):
+        for k, v in (("suite_dir", ""), ("memory_dir", ""), ("fresh", False),
+                     ("save_baseline", False), ("suite", ""), ("loop", 0),
+                     ("critique_scope", ""), ("critique_why", "raw"),
+                     ("critique_drop", ""), ("use_critique", False)):
+            setattr(self, k, kw.get(k, v))
+
+
+check(RS, "AZ157f `--critique-why=transferable` + 投喂 off ⇒ **冲突**（off 档没有 why 被投喂，\n"
+          "              再报「已裁剪」就是标签撒谎）；`raw` + off ⇒ 无冲突",
+      bool(_option_conflict(_AZ157Args(critique_why="transferable")))
+      and not _option_conflict(_AZ157Args(critique_why="raw"))
+      and not _option_conflict(_AZ157Args(critique_why="transferable",
+                                          critique_scope="prev-self")),
+      "冲突闸三格符合预期")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

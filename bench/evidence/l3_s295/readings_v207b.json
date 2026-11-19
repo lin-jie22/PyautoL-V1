@@ -1,0 +1,100 @@
+{
+ "rewards": 58,
+ "fails": 11,
+ "families": {
+  "解析": {
+   "n": 6,
+   "tasks": [
+    "g7s2_parse_headers",
+    "t01_parse_duration",
+    "z03_parse_query"
+   ]
+  },
+  "序列": {
+   "n": 1,
+   "tasks": [
+    "t05_top_k"
+   ]
+  },
+  "结构转换": {
+   "n": 4,
+   "tasks": [
+    "g7s1_flatten_nested",
+    "z02_to_csv"
+   ]
+  }
+ },
+ "arm": {
+  "tag": "D_family",
+  "units": 3,
+  "calls": 3,
+  "kept": 2,
+  "cross": 2,
+  "task": 0,
+  "filler": 1,
+  "out": [
+   {
+    "unit": "族=序列（1 条 / 1 道题）",
+    "raw": "空列表返回[]而不是[()]",
+    "line": "空列表返回[]而不是[()]",
+    "gate": "pass",
+    "cls": "跨题"
+   },
+   {
+    "unit": "族=结构转换（4 条 / 2 道题）",
+    "raw": "NONE",
+    "line": "NONE",
+    "gate": "none",
+    "cls": "-"
+   },
+   {
+    "unit": "族=解析（6 条 / 3 道题）",
+    "raw": "空格分隔的键值对需正确解析键值",
+    "line": "空格分隔的键值对需正确解析键值",
+    "gate": "pass",
+    "cls": "跨题"
+   }
+  ]
+ },
+ "names": [
+  "base_convert",
+  "commas",
+  "csv_row",
+  "dedupe",
+  "dedupe_keep",
+  "dedupe_last",
+  "deep_get",
+  "encode_attrs",
+  "flatten",
+  "flatten_nested",
+  "fmt_amount",
+  "gcd_lcm",
+  "group_by",
+  "is_valid_brackets",
+  "mask_email",
+  "median",
+  "merge_ranges",
+  "min_meeting_rooms",
+  "next_permutation",
+  "normalize_ws",
+  "parse_date_flex",
+  "parse_duration",
+  "parse_flag",
+  "parse_headers",
+  "parse_pairs",
+  "parse_query",
+  "quote_join",
+  "rle",
+  "roman_to_int",
+  "slugify",
+  "spiral_order",
+  "split_amount",
+  "split_top_level",
+  "to_csv",
+  "top_k",
+  "truncate",
+  "truncate_tail",
+  "word_freq",
+  "xml_escape_attrs"
+ ]
+}

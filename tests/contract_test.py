@@ -16445,6 +16445,59 @@ check(RS, "AZ157f `--critique-why=transferable` + 投喂 off ⇒ **冲突**（of
                                           critique_scope="prev-self")),
       "冲突闸三格符合预期")
 
+# ── AZ158a~e：交错调度 —— 把「臂」与「时刻」解耦（V212 §280）──────────────
+#: V211 实测同一配置的 `off` 臂跨两小时差 **0.2833**（Fisher p=0.0031），
+#: 而 V209/V210 的三个臂是「跑完一个再跑下一个」⇒ 臂与时刻完全混杂。
+#: 修法是**块内相邻**：同一块的臂在时间上贴着跑，块与块之间怎么漂都一起漂。
+#: ⛔ 但「块内相邻」本身不够 —— 块内顺序若恒为原序，「位置」就是第三个混淆量。
+from bench.interleave import schedule as _az158_s, flat as _az158_f  # noqa: E402
+from bench.interleave import check as _az158_c                      # noqa: E402
+
+_az158 = _az158_s(["off", "prev"], 20)
+check(RS, "AZ158a ★形状：每块必须是 `arms` 的**一个排列**（同长、同集合、无重复）——\n"
+          "              块内少一个臂 ⇒ 那一块只有单臂读数，配对分析会被悄悄丢一格；\n"
+          "              块内重复一个臂 ⇒ 同一个臂在同块内跑两次，权重被偷改",
+      len(_az158) == 20
+      and all(len(b) == 2 and set(b) == {"off", "prev"} for b in _az158),
+      f"块数={len(_az158)} 首块={_az158[0] if _az158 else None}")
+
+check(RS, "AZ158b 计数：每个臂恰好出现 `blocks` 次（否则两臂的 n 不等，配对检验无从谈起）",
+      all(sum(b.count(a) for b in _az158) == 20 for a in ("off", "prev")),
+      f"off={sum(b.count('off') for b in _az158)} prev={sum(b.count('prev') for b in _az158)}")
+
+#: ⭐ 轮转的**全部**内容就是这条等式。⛔ 不要用「相邻两块不同」代替它：
+#:    对 n≥3 那只是必要条件（`[a,b,c]->[b,c,a]->[a,b,c]` 也满足），位置没平掉。
+_az158_pos = [(k, b.index(a), a) for k, b in enumerate(_az158) for a in b]
+check(RS, "AZ158c ⭐位置轮转：`pos(块 k, 臂 i) == (i - k) % n`，即每连续 n 块里\n"
+          "              每个臂在每个位置**各出现一次** ⇒ 位置效应在块集合上被平掉。\n"
+          "              恒序（块内永远原序）时这条必红 —— 那是「交错」最常见的假实现",
+      all(p == (i - k) % 2 for k, p, a in _az158_pos
+          for i in (("off", "prev").index(a),))
+      and _az158[0] != _az158[1],
+      f"首两块={_az158[0]}/{_az158[1]}")
+
+_az158_3 = _az158_s(["a", "b", "c"], 6)
+check(RS, "AZ158d n=3 也轮转（不只对两臂成立）：每 3 块里每个臂在每个位置各一次；\n"
+          "              且 `blocks=1` 时只有一块 —— 边界不许外推成多块",
+      all(_az158_3[k].index(a) == (i - k) % 3
+          for k, b in enumerate(_az158_3) for a in b
+          for i in (("a", "b", "c").index(a),))
+      and len(_az158_s(["x"], 1)) == 1,
+      f"块1={_az158_3[1]} 块2={_az158_3[2]}")
+
+#: ⛔⛔ 这一条防的是「装置看起来一切正常」：表算对了、块也对，但跑的时候
+#:     少跑一行 / 顺序被打乱（比如 shell 循环把 TSV 读串行）⇒ 配对根本不是配对的。
+#:     所以核对的必须是**即将执行的那张表**，不是重新调用一次 `schedule()`。
+_az158_rows = _az158_f(["off", "prev"], 3)
+check(RS, "AZ158e ⛔⛔ `check()` 必须能抓出「表 ≠ 应执行顺序」：行数少一行、\n"
+          "              两行对调都判红；正确表判绿（正例对照 —— 否则「总是红」\n"
+          "              与「能抓错」在读数上分不开）",
+      not _az158_c(["off", "prev"], 3, _az158_rows)
+      and len(_az158_c(["off", "prev"], 3, _az158_rows[:-1])) == 1
+      and len(_az158_c(["off", "prev"], 3,
+                       [_az158_rows[1], _az158_rows[0]] + _az158_rows[2:])) == 2,
+      f"正确表问题={_az158_c(['off', 'prev'], 3, _az158_rows)}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

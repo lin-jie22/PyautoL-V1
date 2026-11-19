@@ -1,0 +1,978 @@
+{
+ "A_off": {
+  "t01_parse_duration#1": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#1": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#2": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#2": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t01_parse_duration#3": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#3": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t01_parse_duration#4": [
+   true,
+   false,
+   true,
+   false,
+   true,
+   false
+  ],
+  "t04_merge_ranges#4": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#5": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#5": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#6": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#6": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#7": [
+   true,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#7": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#8": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#8": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#9": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#9": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#10": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#10": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#11": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#11": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t01_parse_duration#12": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#12": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#13": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#13": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#14": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#14": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#15": [
+   true,
+   false,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#15": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#16": [
+   false,
+   true,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#16": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#17": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#17": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#18": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#18": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#19": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#19": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t01_parse_duration#20": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#20": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ]
+ },
+ "B_prev_self": {
+  "t01_parse_duration#1": [
+   true,
+   false,
+   false,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#1": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#2": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#2": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#3": [
+   true,
+   false,
+   false,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#3": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#4": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#4": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#5": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#5": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#6": [
+   true,
+   false,
+   true,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#6": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#7": [
+   false,
+   false,
+   true,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#7": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#8": [
+   true,
+   true,
+   true,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#8": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#9": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#9": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#10": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#10": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#11": [
+   true,
+   false,
+   true,
+   false,
+   true,
+   false
+  ],
+  "t04_merge_ranges#11": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#12": [
+   true,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#12": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#13": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#13": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#14": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#14": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#15": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#15": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#16": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#16": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#17": [
+   true,
+   false,
+   false,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#17": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#18": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#18": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#19": [
+   true,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#19": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#20": [
+   true,
+   false,
+   true,
+   false,
+   true,
+   false
+  ],
+  "t04_merge_ranges#20": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ]
+ },
+ "C_prev": {
+  "t01_parse_duration#1": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#1": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#2": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#2": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#3": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#3": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#4": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#4": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#5": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#5": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t01_parse_duration#6": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#6": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#7": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#7": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t01_parse_duration#8": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#8": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#9": [
+   false,
+   false,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#9": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#10": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#10": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#11": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "t04_merge_ranges#11": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#12": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#12": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#13": [
+   false,
+   true,
+   false,
+   true,
+   true,
+   false
+  ],
+  "t04_merge_ranges#13": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#14": [
+   true,
+   true,
+   true,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#14": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#15": [
+   true,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#15": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#16": [
+   true,
+   false,
+   true,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#16": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#17": [
+   false,
+   false,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#17": [
+   false,
+   true,
+   false,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#18": [
+   true,
+   false,
+   true,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#18": [
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ],
+  "t01_parse_duration#19": [
+   true,
+   true,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#19": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ],
+  "t01_parse_duration#20": [
+   true,
+   true,
+   false,
+   false,
+   true,
+   true
+  ],
+  "t04_merge_ranges#20": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "target_rate": {
+  "A": 0.4375,
+  "B": 0.3,
+  "C": 0.425
+ },
+ "ceiling_rate": {
+  "A": 0.775,
+  "B": 0.8375,
+  "C": 0.7625
+ }
+}

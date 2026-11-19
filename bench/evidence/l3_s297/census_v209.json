@@ -1,0 +1,128 @@
+{
+ "summary": {
+  "no_external": {
+   "segments": 54,
+   "outsourced": 0
+  },
+  "default": {
+   "segments": 77,
+   "outsourced": 65
+  }
+ },
+ "files": [
+  {
+   "file": "probe_run.log",
+   "segments": 12,
+   "outsourced": 10,
+   "class": "default"
+  },
+  {
+   "file": "n1.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "n1b.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "n1c.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "n2.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "n2b.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "n2c.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "n3.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "n3b.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "n3c.log",
+   "segments": 6,
+   "outsourced": 0,
+   "class": "no_external"
+  },
+  {
+   "file": "s1.log",
+   "segments": 6,
+   "outsourced": 6,
+   "class": "default"
+  },
+  {
+   "file": "s2.log",
+   "segments": 6,
+   "outsourced": 6,
+   "class": "default"
+  },
+  {
+   "file": "s3.log",
+   "segments": 6,
+   "outsourced": 6,
+   "class": "default"
+  },
+  {
+   "file": "a.log",
+   "segments": 1,
+   "outsourced": 0,
+   "class": "default"
+  },
+  {
+   "file": "g7_numeric.log",
+   "segments": 8,
+   "outsourced": 5,
+   "class": "default"
+  },
+  {
+   "file": "g7_struct.log",
+   "segments": 8,
+   "outsourced": 6,
+   "class": "default"
+  },
+  {
+   "file": "numeric_logic.log",
+   "segments": 10,
+   "outsourced": 8,
+   "class": "default"
+  },
+  {
+   "file": "struct_convert.log",
+   "segments": 10,
+   "outsourced": 8,
+   "class": "default"
+  },
+  {
+   "file": "text_ops.log",
+   "segments": 10,
+   "outsourced": 10,
+   "class": "default"
+  }
+ ]
+}

@@ -16498,6 +16498,91 @@ check(RS, "AZ158e ⛔⛔ `check()` 必须能抓出「表 ≠ 应执行顺序」�
                        [_az158_rows[1], _az158_rows[0]] + _az158_rows[2:])) == 2,
       f"正确表问题={_az158_c(['off', 'prev'], 3, _az158_rows)}")
 
+# ════��══════════════════════════════════════════════════════════════════════
+# AZ159a~f（§282）：累积块要不要交给「真正解题的那一端」
+#
+# V214 的免费普查（`bench/evidence/l3_s302/probe_stdin.jsonl`）：默认配置下
+# 3/3 次外包调用的 stdin **逐字等于题面**（172/112/172 字），而同一时刻 state 里
+# 躺着 227 字的 `[外部评审]` 块 ⇒「学到的东西进不进求解路径」在默认配置下是**假**的。
+# 修法：`answer_task(..., extra=)` 只负责追加；`handoff_text()` 只负责挑块。
+# ⛔ 默认 `off` ⇒ 载荷逐字节不变，所以下面的正例对照与断言同等重要。
+from mw.core import HANDOFF_BLOCKS as _az159_heads      # noqa: E402
+from mw.core import answer_task as _az159_ans            # noqa: E402
+from mw.core import handoff_text as _az159_ho            # noqa: E402
+
+_az159_parts = [
+    "[目标] 写一个函数 foo",
+    "[工作记忆] 上一步跑了 run_shell（这是**本题**的草稿纸，不是学到的）",
+    "[外部评审] [suite/t04] 0.33 — 失败: TypeError: 'tuple' object …",
+    "[语义记忆] 聚合用 dict 而不是 list",
+    "[轨迹] finish×2",
+    "[第 1/12 步]",
+]
+_az159_txt = _az159_ho(_az159_parts)
+check(RS, "AZ159a ★`handoff_text()` 只取**跨轮沉淀**的那两块（评审 + 语义记忆/经验），\n"
+          "              `[工作记忆]`（本题草稿纸）、`[轨迹]`、`[目标]`、`[第 N 步]` 一律不许带。\n"
+          "              ⛔ 带错了不会报错，只会让外部能力重读一遍本题过程、挤掉真正学到的。",
+      _az159_ho(_az159_parts[:1] + [p for p in _az159_parts[1:] if p.startswith(_az159_heads)])
+      == "[外部评审] [suite/t04] 0.33 — 失败: TypeError: 'tuple' object …\n"
+         "[语义记忆] 聚合用 dict 而不是 list"
+      and "工作记忆" not in _az159_txt and "轨迹" not in _az159_txt
+      and "目标" not in _az159_txt and "第 1/12 步" not in _az159_txt,
+      f"handoff={_az159_txt!r}")
+
+check(RS, "AZ159b 没有累积块时必须返回**空串**（而不是空行/标题）——\n"
+          "              否则 `off` 档与 `blocks` 档在无块时也会分叉（多一个 `\\n\\n`）",
+      _az159_ho(["[目标] x", "[第 1/12 步]"]) == ""
+      and _az159_ho([]) == "",
+      f"空块={_az159_ho(['[目标] x'])!r}")
+
+_AZ159_GOAL = "写一个函数 merge_ranges(pairs)，函数名必须是 merge_ranges。"
+_az159_old = _az159_ans(_AZ159_GOAL, 42.0)
+check(RS, "AZ159c ★正例对照：`answer_task()` 默认（extra 不传 / 空串）**逐字节等于旧行为**\n"
+          "              —— 题面原文 + deadline，多一个键少一个字都不许有。\n"
+          "              没有这条，「加了附言」与「把题面改了」在读数上分不开",
+      _az159_old == {"task": _AZ159_GOAL, "deadline_s": 42.0}
+      and _az159_ans(_AZ159_GOAL, 42.0, extra="") == _az159_old,
+      f"旧载荷={_az159_old!r}")
+
+_az159_new = _az159_ans(_AZ159_GOAL, 42.0, extra=_az159_txt)
+check(RS, "AZ159d 附言只许**追加在题面之后**：`task` 的前 `len(goal)` 个字符必须与原文\n"
+          "              **逐字节相同**（外部能力靠题面认任务，改它就是换了一道题），\n"
+          "              且 `deadline_s` 仍在 —— 附言不是用预算换来的",
+      _az159_new["task"][:len(_AZ159_GOAL)] == _AZ159_GOAL
+      and _az159_new["task"].endswith(_az159_txt)
+      and _az159_new["deadline_s"] == 42.0
+      and len(_az159_new["task"]) == len(_AZ159_GOAL) + 2 + len(_az159_txt),
+      f"task 长度 {len(_az159_new['task'])} = {len(_AZ159_GOAL)}+2+{len(_az159_txt)}")
+
+
+class _AZ159Args:
+    """`_option_conflict` 的冲突闸小桩（只列参与判定的字段）。"""
+
+    def __init__(self, **kw):
+        for k, v in (("suite_dir", ""), ("memory_dir", ""), ("fresh", False),
+                     ("save_baseline", False), ("suite", ""), ("loop", 0),
+                     ("critique_scope", ""), ("critique_why", "raw"),
+                     ("critique_drop", ""), ("use_critique", False),
+                     ("external_handoff", "off"), ("no_external", False)):
+            setattr(self, k, kw.get(k, v))
+
+
+check(RS, "AZ159e `--external-handoff=blocks` + `--no-external` ⇒ **冲突**：\n"
+          "              一个外部能力都没注册，附言没有接收方，读数却会带着「已交付」的标签",
+      bool(_option_conflict(_AZ159Args(external_handoff="blocks", no_external=True)))
+      and not _option_conflict(_AZ159Args(external_handoff="blocks"))
+      and not _option_conflict(_AZ159Args(external_handoff="off", no_external=True)),
+      "冲突闸三格不符合预期")
+
+_az159_c = Core(cfg.Settings(), llm=StubLLM(), wire_external=False,
+                external_handoff="blocks")
+check(RS, "AZ159f 未知档位必须**抛错**；刚构造时 `_handoff_arg()` 必须是空串\n"
+          "              （还没算过 state ⇒ 不许凭空给一段附言）",
+      _raises(lambda: Core(cfg.Settings(), llm=StubLLM(), wire_external=False,
+                           external_handoff="always"), ValueError)
+      and _az159_c._handoff_arg() == "",
+      f"初始附言={_az159_c._handoff_arg()!r}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

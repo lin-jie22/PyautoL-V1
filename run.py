@@ -163,6 +163,8 @@ def _build(goal: str, args, *, allow_shell: bool = False,
            caliber_sig: str = "") -> Core:
     s = cfg.settings()
     mem_mode = str(getattr(args, "memory_mode", "raw") or "raw")
+    #: ★§282：外部能力的附言档位。默认 off ⇒ 载荷与旧版逐字节相同。
+    _ho = str(getattr(args, "external_handoff", "off") or "off")
     # ── ★ 第一百三十三轮（§109）：guard 必须在**两条分支之前**统一构造 ──────
     # 修之前它只写在离线分支里（`if args.offline or not s.llm.usable():`），
     # 于是**真模型路径上 `--allow-shell` 完全无效** —— 命令行带着
@@ -187,11 +189,13 @@ def _build(goal: str, args, *, allow_shell: bool = False,
                     critique_ledger=critique_ledger,
                     score_ledger=score_ledger, caliber_sig=caliber_sig,
                     memory_mode=mem_mode,
+                    external_handoff=_ho,
                     wire_external=not getattr(args, "no_external", False))
     else:
         core = Core(s, guard=_guard, critique_ledger=critique_ledger,
                     score_ledger=score_ledger, caliber_sig=caliber_sig,
                     memory_mode=mem_mode,
+                    external_handoff=_ho,
                     wire_external=not getattr(args, "no_external", False))
     return core
 
@@ -1638,6 +1642,14 @@ def _option_conflict(args) -> str:
             return (f"--critique-why={_cw} 与 投喂=off 冲突：off 档内核拿 None，"
                     "没有 `why` 被投喂 —— 这个开关什么也没改，但读数会带着"
                     "「已裁剪」的标签。")
+    #: `--external-handoff` 同型（V214 §282）：它描述的是**交给外部能力的那段附言**。
+    #: `--no-external` 时一个外部能力都没注册 ⇒ 附言没有任何消费者，
+    #: 跑出来是一份「看着像给了、其实没人收」的读数。
+    if str(getattr(args, "external_handoff", "off") or "off") != "off" \
+            and getattr(args, "no_external", False):
+        return ("--external-handoff 与 --no-external 冲突：后者不注册任何外部能力，"
+                "附言没有接收方 —— 这个开关什么也没改，但读数会带着"
+                "「已交付累积块」的标签。")
     return ""
 
 
@@ -2270,6 +2282,12 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
                  if _crit_for_kernel is not None and _crit_why != "raw" else "")
               + (f"  快照丢弃={sorted(_crit_dropped)}（消融：真账本不受影响）"
                  if _crit_dropped else ""))
+
+    # ★§282：**交出去什么**必须印出来 —— 它是本轮的自变量，不是配置细节。
+    # ⛔ 不许只在 on 的时候印：那样"off"与"这一行忘了加"在读数上同形（缺席冒充零）。
+    print(f"  外部交付  handoff={getattr(args, 'external_handoff', 'off')}"
+          f"（off=只交题面原文 / blocks=题面后追加累积块，"
+          f"评审+语义记忆）  外部能力={'关' if getattr(args, 'no_external', False) else '注册'}")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
     # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
@@ -3303,6 +3321,12 @@ def main() -> int:
                    help="**不注册任何外部能力**（`agents.json` 视同不存在）。"
                         "对照实验的 OFF 臂用它：外部能力的存在本身就是一个变量，"
                         "不拔掉它，'开外部能力'与'多了一个工具'就分不开。")
+    p.add_argument("--external-handoff", default="off", choices=("off", "blocks"),
+                   help="★§282 交给答案型外部能力时，要不要**附上累积块**"
+                        "（`[外部评审]` + `[语义记忆]`）。"
+                        "off=旧行为（只交题面原文，V214 实测 3/3 次逐字等于题面）；"
+                        "blocks=题面后追加同一份 state 里的累积块。"
+                        "⛔ 只改'交给谁'，不改任何判据与落盘格式。")
     p.add_argument("--fresh", action="store_true",
                    help="每题新建内核（记忆不跨题）；同时进入口径签名")
     p.add_argument("--memory-dir", default="",

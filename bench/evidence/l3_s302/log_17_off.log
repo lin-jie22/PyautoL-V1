@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/Users/linshaojie/V1/run.py", line 3380, in <module>
+  File "/Users/linshaojie/V1/run.py", line 3369, in main
+  File "/Users/linshaojie/V1/run.py", line 1975, in cmd_bench
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 884, in _brokered_path_mkdir
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 604, in _broker_request_host_operation
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 500, in _broker_send_request
+sitecustomize._BrokerProtocolError: execution attempt 不存在或已关闭

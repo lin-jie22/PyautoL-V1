@@ -1,0 +1,23 @@
+order.txt 40 行，其中 rc=0 **23**；runs.jsonl 新增 **23**
+两臂齐全的块 **11/20**：['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+
+── 逐格（分母=两臂齐全的块数）
+   t01_parse_duration[0]  off  0/11   blocks 11/11
+   t01_parse_duration[1]  off  0/11   blocks  0/11
+   t01_parse_duration[2]  off 10/11   blocks  0/11
+   t01_parse_duration[3]  off  0/11   blocks 11/11
+   t01_parse_duration[4]  off 11/11   blocks 11/11
+   t01_parse_duration[5]  off 11/11   blocks 11/11
+   t04_merge_ranges[0]  off 11/11   blocks  9/11
+   t04_merge_ranges[1]  off 11/11   blocks 11/11
+   t04_merge_ranges[2]  off 11/11   blocks 11/11
+   t04_merge_ranges[3]  off 11/11   blocks  9/11
+   t04_merge_ranges[4]  off 11/11   blocks  9/11
+   t04_merge_ranges[5]  off 11/11   blocks  9/11
+
+描述：t04[0] 配对 b=0 c=2 两臂一致 9/11  McNemar p=0.5000
+描述：t01[1..3] off 10/33 blocks 11/33 Δ=+0.0303
+描述：外包次数 off=21  blocks=20
+描述：两臂都外包的块 11/11
+
+⛔ 以上全部只作描述：该次尝试 17 次非零退出 ⇒ P1a 不成立 ⇒ 整轮 INVALID。

@@ -445,7 +445,27 @@ _ANSWER_CAP_S = 85.0
 _ANSWER_MIN_S = 20.0
 
 
-def answer_task(goal: str, deadline_s: float | None = None) -> dict:
+#: 「交给真正解题的那一端」时，哪些块算**累积**（§282）。
+#:
+#: ⛔ 只放**跨轮沉淀**的两块。`[工作记忆]` 是本题草稿纸、`[轨迹]` 是本题流水 ——
+#:    把它们也递过去，等于让外部能力重读一遍本题的过程，而不是拿到"以前学到的"。
+HANDOFF_BLOCKS: tuple[str, ...] = ("[外部评审]", "[语义记忆]", "[经验]")
+
+
+def handoff_text(parts: Sequence[str]) -> str:
+    """从 `_state()` 的块列表里取出**累积块**，拼成交给外部能力的附言。
+
+    ⚠️ 纯函数：不读 self、不判"该不该给"（那是 `external_handoff` 档位的事）。
+       这样契约可以对它单独钉两件事：**取哪些块**、**别的一字不动**。
+    ⛔ 不截断：块本身已经受过 `state_chars` 闸；在这里再裁一刀，就分不清
+       "没给"与"给了但被你剪了"（§281 的自踩同宗）。
+    """
+    keep = [p for p in parts[1:] if p.startswith(HANDOFF_BLOCKS)]
+    return "\n".join(keep)
+
+
+def answer_task(goal: str, deadline_s: float | None = None,
+                extra: str = "") -> dict:
     """答案型外部能力的**唯一**入参构造器。
 
     ⚠️ `deadline_s` 为 `None` 时**不写这个键**，而不是写 0：
@@ -453,8 +473,12 @@ def answer_task(goal: str, deadline_s: float | None = None) -> dict:
        而 `0.0` 是**假值但不是 None** —— 它会设出 `AGENT_DEADLINE_S=0.0`
        并让 `_to = max(5.0, min(_to, 15.0))`，即"给外部能力 5 秒"。
        那是最坏的一种"准时失败"。
+
+    `extra`（§282）：内核要**附**给外部能力的累积块（评审 + 语义记忆）。
+    ⛔ 默认空串 ⇒ 载荷逐字节等于旧行为；有内容时也只在题面**之后**追加一段，
+       题面本身一个字不改（外部能力靠题面认任务，改它就是换了一道题）。
     """
-    out: dict = {"task": str(goal)}
+    out: dict = {"task": str(goal) + (("\n\n" + extra) if extra else "")}
     if deadline_s is not None:
         out["deadline_s"] = round(float(deadline_s), 1)
     return out
@@ -656,7 +680,26 @@ class Core:
         score_ledger: ScoreLedger | None = None,
         caliber_sig: str = "",
         memory_mode: str = "raw",
+        external_handoff: str = "off",
     ) -> None:
+        #: ★§282：要不要把**累积块**（评审 + 语义记忆）一并交给答案型外部能力。
+        #:
+        #:   "off"    （默认）旧行为一字不改：外部能力只收到题面原文。
+        #:   "blocks" 题面之后追加 `handoff_text()` 的产物。
+        #:
+        #: 为什么这需要一根旋钮，而不是"一直给"：V214 的免费普查实测
+        #:   默认配置下 3/3 次外包调用的 stdin **逐字等于题面**（172/112/172 字），
+        #:   而同一时刻 state 里躺着 227 字的 `[外部评审]` 块 ——
+        #:   于是"学到的东西进不进求解路径"这件事，在部署默认配置下是**假**的。
+        #:   但把块直接塞给一个会执行代码的外部能力，是**改行为**，必须先能量出来。
+        self.external_handoff: str = str(external_handoff)
+        if self.external_handoff not in ("off", "blocks"):
+            raise ValueError(
+                f"external_handoff 只接受 off/blocks，收到 {external_handoff!r}")
+        #: 最近一次 `_state()` 算出的累积块（`handoff_text` 的产物）。
+        #: ⛔ 与 state **同源**：state 被预算闸丢掉哪块，这里就没有哪块 ——
+        #:    否则会出现"交出去的东西比看到的多"，读数无法归因。
+        self._handoff_txt: str = ""
         #: 本次运行**允许读到记忆的哪一层**：
         #:
         #:   "raw"      （默认）episodic 原文与全部语义记忆都进决策链 ——
@@ -1377,7 +1420,8 @@ class Core:
                         #    "准时地失败"并且白吃 5s。宁可让内核自己解（至少会交个答案）。
                         if _dl is not None:
                             cands = [Step("整题交给外部能力", _ext,
-                                          answer_task(goal, _dl))] + list(cands)
+                                          answer_task(goal, _dl,
+                                                      extra=self._handoff_arg()))] + list(cands)
                         else:
                             self.external_stats["skipped_no_budget"] = (
                                 self.external_stats.get("skipped_no_budget", 0) + 1)
@@ -1466,7 +1510,8 @@ class Core:
                             self.log(f"      ⛔ {cand.tool} 剩余额度 < "
                                      f"{_ANSWER_MIN_S:g}s ⇒ 不注入（不是失败，是没试）")
                             continue
-                        cand.args = answer_task(goal, _dl2)
+                        cand.args = answer_task(goal, _dl2,
+                                                extra=self._handoff_arg())
                     sig = action_signature(cand.tool, cand.args)
 
                     # ── 停滞闸：这个动作已经尝试过了 ────────────────────────
@@ -2188,6 +2233,15 @@ class Core:
                  f"{len(text)}/{handle.chars} 字")
 
     # ------------------------------------------------------------------
+    def _handoff_arg(self) -> str:
+        """交给外部能力的附言：`off` ⇒ 空串（旧载荷逐字节不变）。
+
+        ⚠️ 判定**只此一处**：两处调用点（门 B 注入、执行处归一化）必须拿到
+           同一份附言，否则同一道题会因为"谁去交"而收到不同的东西
+           —— 那正是 AZ60 当年钉住的病。
+        """
+        return self._handoff_txt if self.external_handoff == "blocks" else ""
+
     def _state(self, goal: str, history: Sequence[str], it: int, *,
                task_id: str | None = None, scorer_sha: str = "",
                suite_sha: str = "") -> str:
@@ -2280,6 +2334,9 @@ class Core:
                 self.state_trimmed += 1
         parts = [parts[0]] + keep + [step_line]
         state = "\n".join(parts)
+        # ★§282：把**同一份**块列表里的累积部分留一份给外部能力。
+        # ⚠️ 必须在 `keep` 裁剪**之后**取：被预算闸丢掉的块，不能在这里复活。
+        self._handoff_txt = handoff_text(parts)
         # ★ 第三十六轮（§17-7h 装置修正⑭②）：把**真正拼给模型的那段文本**留下。
         # 为什么必须有它：R1 之前只有两条二手的证据 —— `recall()` 返回了什么、
         # 以及"`want[:120] in state`"（整段 state）。后者会把经工作记忆漏进来的

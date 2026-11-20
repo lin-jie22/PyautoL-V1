@@ -845,14 +845,17 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #    能力的还是那句改写 ⇒ 与门 B 不同源 ⇒ 只有 AZ60 红
     #    （`answer_task(` 的计数没变，AZ61 不受影响 —— 已实测单红）。
     ("AZ60", "mw/core.py",
-     "                        cand.args = answer_task(goal, _dl2)",
+     "                        cand.args = answer_task(goal, _dl2,\n"
+     "                                                extra=self._handoff_arg())",
      "                        cand.args = answer_task("
-     "cand.args.get('task') or goal, _dl2)"),
+     "cand.args.get('task') or goal, _dl2,\n"
+     "                                                extra=self._handoff_arg())"),
     # ⑫ 把归一化**内联成一个新的字典字面量** ⇒ `"task"` 的构造从 1 处变 2 处
     #    ⇒ 只有 AZ61 红（task 仍是原文、deadline 仍在，AZ60 的判据全部成立）。
     #    ⚠️ 这条撤的正是"一扇门"本身：两个构造点 = 两个未来。
     ("AZ61", "mw/core.py",
-     "                        cand.args = answer_task(goal, _dl2)",
+     "                        cand.args = answer_task(goal, _dl2,\n"
+     "                                                extra=self._handoff_arg())",
      "                        cand.args = {\"task\": str(goal), "
      "\"deadline_s\": round(float(_dl2), 1)}"),
     # ── AZ62–AZ65（第六十八轮）：让「别重复」真的起作用 ──────────────────

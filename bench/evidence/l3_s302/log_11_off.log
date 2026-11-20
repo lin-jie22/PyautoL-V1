@@ -1,0 +1,48 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  suite_sub2  n=2  suite_sha=e322e014a9472f41d486163404ae11ef
+  打分器  code_exec  scorer_sha=6062bd622cc52edb0d5a1eb496ea7b35
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=2/2
+  t01_parse_duration: oracle=1.0000 partial=0.8333 null=0.0000 ✅
+  t04_merge_ranges: oracle=1.0000 partial=0.8333 null=0.0000 ✅
+  理由: 全部 2 条两极可分，其中 2 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=19eda0f2ee315ab3
+  [观察]
+    - t01_parse_duration: oracle=1.0000 partial=0.8333 null=0.0000
+    - t04_merge_ranges: oracle=1.0000 partial=0.8333 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 2 条任务上两极可分
+    - 中段有序检查 2 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=6062bd622cc5、suite_sha=e322e014a947；换任一者本校准即失效，必须重做
+  评审账本  11_off.jsonl  载入 6 条  投喂=prev-self（off=关 / prev=只给**加载时**已有的且排除同题 / prev-self=同上但**放行同题**（跨轮自省）/ all=轮内也给）  本轮赠送 6 条
+  外部交付  handoff=off（off=只交题面原文 / blocks=题面后追加累积块，评审+语义记忆）  外部能力=注册
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）  预算档=1x  repeat=1 ---
+19:32:24 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+19:32:24   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=http | 外部能力 1 个
+19:32:33   [1] 通道=深 候选=3 种类=3
+19:48:47       ↳ agent:code_agent ok=True 尝试直接实现解析逻辑
+19:48:47   💥 内核异常 _BrokerProtocolError: execution attempt 不存在或已关闭
+19:48:47 ▶ 任务开始: 写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6
+  判据读回  CRASH  — 运行抛了 _BrokerProtocolError：日志读不出来（_BrokerProtocolError: execution attempt 不存在或已关闭）
+  运行日志  /Users/linshaojie/V1/bench_out/last_run.log
+Traceback (most recent call last):
+  File "/Users/linshaojie/V1/run.py", line 3380, in <module>
+  File "/Users/linshaojie/V1/run.py", line 3369, in main
+  File "/Users/linshaojie/V1/run.py", line 1984, in cmd_bench
+  File "/Users/linshaojie/V1/run.py", line 2566, in _bench_main
+  File "/Users/linshaojie/V1/mw/critique.py", line 224, in save
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 884, in _brokered_path_mkdir
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 604, in _broker_request_host_operation
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 500, in _broker_send_request
+sitecustomize._BrokerProtocolError: execution attempt 不存在或已关闭

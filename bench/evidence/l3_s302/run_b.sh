@@ -51,7 +51,7 @@ while IFS=$'\t' read -r blk pos arm; do
   pkill -9 -f "external/code_agent.py" 2>/dev/null
   dur=$((SECONDS - s0))
   echo "$blk	$pos	$arm	rc=$rc	${dur}s	$t0	$(/bin/date +%H:%M:%S)" >> "$D/order_b.txt"
-  echo "blk=$blk arm=$arm rc=$rc ${dur}s $t0→$(/bin/date +%H:%M:%S)"
+  echo "blk=$blk arm=$arm rc=$rc ${dur}s ${t0}->$(/bin/date +%H:%M:%S)"
 done < "$D/schedule_b.tsv"
 
 echo "CHUNK DONE $LO-$HI $(/bin/date +%H:%M:%S)"

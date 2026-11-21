@@ -1,0 +1,36 @@
+runs.jsonl 301 → 341（新增 40）   order_b.txt 40 行
+P1a 调度表 vs 实跑：40 行，非零退出 0 次 ✅
+P1b 两臂 state 含评审块：  off 44/44  blocks 48/49  ✅
+P1c 外包覆盖：两臂都外包的块 **20/20**；至少一臂外包 20/20 ✅
+     分母双报：40 次运行 / 20 块 / 其中两臂都外包 20 块（未外包的块不删，下面逐格仍按 20 块计）
+
+── 逐格（全部 20 块，含未外包的块）
+   t01_parse_duration[0]  off  0/20   blocks 19/20
+   t01_parse_duration[1]  off  0/20   blocks  1/20
+   t01_parse_duration[2]  off 20/20   blocks  1/20
+   t01_parse_duration[3]  off  0/20   blocks 20/20
+   t01_parse_duration[4]  off 20/20   blocks 20/20
+   t01_parse_duration[5]  off 20/20   blocks 20/20
+   t04_merge_ranges[0]  off 18/20   blocks 19/20
+   t04_merge_ranges[1]  off 20/20   blocks 20/20
+   t04_merge_ranges[2]  off 20/20   blocks 20/20
+   t04_merge_ranges[3]  off 18/20   blocks 19/20
+   t04_merge_ranges[4]  off 18/20   blocks 19/20
+   t04_merge_ranges[5]  off 18/20   blocks 19/20
+
+── 判据
+P2  t04[0] 配对：b(blocks 过/off 不过)=2  c(off 过/blocks 不过)=1  两臂一致 17/20  McNemar p=1.0000  ❌
+     子集（两臂都外包 n=20）：b=2 c=1 p=1.0000
+P3  t01[1..3]：off 20/60  blocks 22/60  Δ=+0.0333  ✅
+
+── 参考（非判据）
+   off    总分均值 0.7167  外包次数合计 38
+   blocks 总分均值 0.8208  外包次数合计 37
+   t01 全 6 格：off 60/120 blocks 81/120
+   t04 全 6 格：off 112/120 blocks 116/120
+   Fisher(t01_parse_duration) p=0.0086
+   Fisher(t04_merge_ranges) p=0.3753
+
+── 逐臂耗时（装置体检，非判据）
+   off    n=20 中位 106s 最大 128s
+   blocks n=20 中位 107s 最大 140s

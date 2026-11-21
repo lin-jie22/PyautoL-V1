@@ -26,23 +26,57 @@ evidence_id=19eda0f2ee315ab3
     - 尺子身份 scorer_sha=6062bd622cc5、suite_sha=e322e014a947；换任一者本校准即失效，必须重做
   评审账本  0_off.jsonl  载入 6 条  投喂=prev-self（off=关 / prev=只给**加载时**已有的且排除同题 / prev-self=同上但**放行同题**（跨轮自省）/ all=轮内也给）  本轮赠送 6 条
   外部交付  handoff=off（off=只交题面原文 / blocks=题面后追加累积块，评审+语义记忆）  外部能力=注册
+  分数账本  score_ledger.jsonl  载入 2 行  同口径采纳 0 行  （自我模型据此起跑）
 
 --- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）  预算档=1x  repeat=1 ---
-00:47:53 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
-00:47:53   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=http | 外部能力 1 个
-00:52:34   [1] 通道=深 候选=3 种类=3
-00:52:34       ⛔ agent:code_agent 剩余额度 < 20s ⇒ 不注入（不是失败，是没试）
-00:59:57       ↳ recall ok=False 原因=recall 缺参数 ['query'] 检查是否已有正确的 parse_duration 实现
-00:59:57       🔁 失配[outcome] recall({}) — 检查是否已有正确的 parse_duration 实现 预演=成功 实际=失败 ⇒ 已沉淀为启发式
-00:59:57       📎 回看 b#1 因由=mismatch 窗=whole 38/38 字
-00:59:57   ↻ 带错误原文重规划（连续失败 1 次）：recall 缺参数 ['query']
-00:59:57   ⏳ 预算耗尽 [wall_s]：已用 74.3575 / 上限 120
-00:59:57   ⏱ 墙钟被重试链挡住，但还剩 46s ⇒ 转向收尾
-00:59:57   ⊞ 此前已下发 1 次（成功 0、失败 1）｜交付=0 步骤=1
-00:59:57   ⏱ 触发收尾余量 ⇒ 转向交付（探索到此为止）
-01:00:23   🧪 收尾交付过闸
-01:00:23   📦 收尾交付 464 字符（来源=收尾调用）
-01:00:23 ■ closed 验收=ANSWER(无约定产物) | steps=1 执行=1下发/0成/1败（交付=0/步骤=1/未轮到=1） 尾=2 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.605 memory>reason=1.143 reason>act=0.333] 回流=1.0 | 语义记忆=2 | 上限被裁短=4 | 墙钟放弃首发=1/重试=0 | 宽限生效=1次(超出0s) | 回看=1次/38字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 parse_duration/语言标签/可编译/结构检查) | 收尾=1次(步0/时0/wall_retry1 来源收尾调用:1 464字) 收尾闸=1跑/1过/0未过
-01:00:23 ▶ 任务开始: 写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6
-01:00:23   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=http | 外部能力 1 个
-01:00:23   🧹 题边界：清掉上一题残留的工作记忆 1 条
+18:38:52 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+18:38:52   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=http | 外部能力 1 个
+18:39:08   [1] 通道=深 候选=1 种类=1
+18:39:40       ↳ agent:code_agent ok=True 解析时间单位并计算总秒数
+18:39:40       🔁 失配[outcome] agent:code_agent({'task': "写一个函数 parse_duration(s)，把 '1h30m' 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+18:39:40       📎 回看 b#1 因由=mismatch 窗=whole 420/420 字
+18:39:40   ✅ 收尾: ```python
+def parse_duration(s):
+    if not s:
+        return None
+    try:
+        parts = s.lower().split('h')
+       
+18:39:40 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=0） 尾=0 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.771 memory>reason=0.75 reason>act=1.0] 回流=n/a | 语义记忆=4 | 上限被裁短=2 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=2) | 回看=1次/420字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 parse_duration/语言标签/可编译/结构检查) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 399字 (规划器自选，未配置) 份=2→2 用例=5
+18:39:40 ▶ 任务开始: 写一个函数 merge_ranges(pairs)，输入是由 (start, end) 组成的列表，返回合并所有重叠区间后的、按起点升序排列的列表。例如 merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6
+18:39:40   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=http | 外部能力 1 个
+18:39:40   🧹 题边界：清掉上一题残留的工作记忆 1 条
+18:40:11   [1] 通道=深 候选=2 种类=2
+18:40:41       ↳ agent:code_agent ok=True 使用 code_agent 生成代码，可能会包含多种实现方法，从中选择一个正确且最优的实现。
+18:40:41       🔁 失配[outcome] agent:code_agent({'task': '写一个函数 merge_ranges(pairs)，输入是由 (s 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+18:40:41       📎 回看 b#2 因由=mismatch 窗=whole 524/524 字
+18:40:41   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：finish×1
+18:40:41   ✅ 收尾: ```python
+def merge_ranges(pairs):
+    if not pairs:
+        return []
+    
+    # 按区间起始位置排序
+    pairs.sort(key=lambda x:
+18:40:41 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=1） 尾=1 | guard_blocked=0 | 预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.618 memory>reason=0.75 reason>act=0.5] 回流=n/a | 语义记忆=4 | 上限被裁短=3 | 题边界清空工作记忆=1条 | 账本采纳=0 拒(缺字段=0/无签名=0/异口径=2) | 回看=1次/524字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 merge_ranges/语言标签/可编译/结构检查) | 外部[agent:code_agent] 调=1 成=1 败=0 采用=1 503字 (规划器自选，未配置) 份=2→2 用例=5
+  分数账本  会话#1 追加 2 行（拒绝 0 行） ⇒ 下一次起跑时自我模型可读
+  内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.7500 std=0.0000 [0.7500,0.7500] 极差=0.0000
+  attempted=2 recorded=2 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=6 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=1 个
+  世界模型  预演=2 检验=2 命中=0 命中率=0.0 失配=2(成败2/文本0) 混淆={'ok_ok': 0, 'ok_fail': 0, 'fail_ok': 2, 'fail_fail': 0}
+  规划器    调用=2 失败=0（json=0 截断响应=0 无工具=0 空计划=0） 率=0.0 重问=0 补救=1/0 修复=0/0（补完=0）
+  候选宽度  收=3 条 截断=0 条 进执行器=3 条（截断率=0.0 轮数=2 不适配=0）
+  候选让位  开关=0 用=0 救回=答案0/步骤0（finish=0 外部=0） 答案率=n/a ｜代价：额外失败=0 无弹药=0
+  传输层    抖动重试=0 重试后仍失败=0 上限被裁短=5 墙钟放弃首发=0/重试=0 （共 2 题）
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=10cc306294f82778 scorer=6062bd622cc5 suite=e322e014a947 repeat=1 budget=1x temperature=1.0 fresh=False memory_scope=explicit_dir memory_seed=(4, 19) limits=be63f49eaa llm_cond=b2afc72253 max_tokens=2048 tool_catalog_sha=29091404966c
+  读数已落盘 /Users/linshaojie/V1/bench_out/runs.jsonl
+  答案已落盘 /Users/linshaojie/V1/bench_out/answers.jsonl  2 条  共 902 字符  最长 503 字符  截断 0 条答案
+  判据      分母=1 道闸（读数可否用于判定）  可信=True
+::VERDICT:: GREEN  PASS=1  FAIL=0
+  读数复核  VERIFIED  — 重算 0.75 == 写下的值（2 条明细 / 1 轮 / 分母 2）
+──────────────────────────────────────────────────────────────────────────
+  判据读回  GREEN  — 全部 1 条断言通过，退出码 0；账本已钉 GREEN
+  运行日志  /Users/linshaojie/V1/bench_out/last_run.log  （判据行唯一；同目录 `runs.jsonl` 是账本）

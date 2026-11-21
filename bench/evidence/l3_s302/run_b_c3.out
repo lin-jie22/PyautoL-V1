@@ -1,0 +1,23 @@
+调度表核对  OK  40 行 = 20 块 × 2 臂
+调度表 OK  d3646cf30714b08734bb1671827db6015b733ba5afad0bcbd8fee04c70e4232d
+run_b.sh: line 55: 59634 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=10 arm=off rc=0 95s 19:14:59->19:16:34
+run_b.sh: line 55: 59909 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=10 arm=blocks rc=0 117s 19:16:34->19:18:31
+run_b.sh: line 55: 60251 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=11 arm=blocks rc=0 121s 19:18:31->19:20:32
+run_b.sh: line 55: 60644 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=11 arm=off rc=0 128s 19:20:32->19:22:40
+run_b.sh: line 55: 61024 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=12 arm=off rc=0 103s 19:22:40->19:24:23
+run_b.sh: line 55: 61338 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=12 arm=blocks rc=0 119s 19:24:23->19:26:22
+run_b.sh: line 55: 61668 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=13 arm=blocks rc=0 102s 19:26:22->19:28:04
+run_b.sh: line 55: 61969 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=13 arm=off rc=0 89s 19:28:04->19:29:33
+run_b.sh: line 55: 62248 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=14 arm=off rc=0 121s 19:29:33->19:31:34
+run_b.sh: line 55: 62603 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=14 arm=blocks rc=0 98s 19:31:34->19:33:12
+CHUNK DONE 10-14 19:33:12

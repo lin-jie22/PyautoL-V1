@@ -1,0 +1,15 @@
+H1 免费检查：现有两种 why 口径能不能把测试源码去掉
+种子 = prior_v214.jsonl（6 条冻结评审）
+
+raw          : 2/6 条含 `assert `
+transferable : 2/6 条含 `assert `
+
+--- t01_parse_duration
+  raw          : [coding_small/t01_parse_duration] 0.17 — 通过 1/6；失败: assert parse_duration('1h30m') == 5400 ⇒ ValueError: not enough values to unpack (expected 2, got 1) | assert
+  transferable : [coding_small/t01_parse_duration] 0.17 — 通过 1/6；失败: assert parse_duration('1h30m') == 5400 ⇒ ValueError| assert
+--- t04_merge_ranges
+  raw          : [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)] ⇒ TypeError: 'tuple' object does not support item
+  transferable : [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)] ⇒ TypeError: 'tuple' object does not support item
+
+结论：transferable 只删 (expected N, got M)/unpack 短语，assert 原文与异常名一字未动 ⇒
+      换措辞口径不是这一刀的解法；要另写「只说失败形状」的文本生成器。

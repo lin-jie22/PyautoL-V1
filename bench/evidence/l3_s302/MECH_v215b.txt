@@ -1,0 +1,36 @@
+
+=== off：44 条 state 记录，累计块 44 段
+   长度 中位 228 字（min 228 / max 228）
+   含 `assert ` 44/44   含异常名 44/44   含别题条目 44/44
+   去重后不同文本 2 种
+   含目标题名 t01 21/44
+
+=== blocks：49 条 state 记录，累计块 48 段
+   长度 中位 228 字（min 228 / max 228）
+   含 `assert ` 48/48   含异常名 48/48   含别题条目 48/48
+   去重后不同文本 2 种
+   含目标题名 t01 22/48
+
+=== 逐块配对（t01 第 0/2/3 格）
+ 块 | off 0 2 3 | blocks 0 2 3
+  0 |  False True False      |   True False True
+  1 |  False True False      |   True False True
+  2 |  False True False      |   True False True
+  3 |  False True False      |   False True True
+  4 |  False True False      |   True False True
+  5 |  False True False      |   True False True
+  6 |  False True False      |   True False True
+  7 |  False True False      |   True False True
+  8 |  False True False      |   True False True
+  9 |  False True False      |   True False True
+ 10 |  False True False      |   True False True
+ 11 |  False True False      |   True False True
+ 12 |  False True False      |   True False True
+ 13 |  False True False      |   True False True
+ 14 |  False True False      |   True False True
+ 15 |  False True False      |   True False True
+ 16 |  False True False      |   True False True
+ 17 |  False True False      |   True False True
+ 18 |  False True False      |   True False True
+ 19 |  False True False      |   True False True
+ 三格中任一格不同的块：20/20

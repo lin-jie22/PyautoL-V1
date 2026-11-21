@@ -1,0 +1,8 @@
+EXT_TOOL=agent:code_agent
+run_f.sh: line 49: 59813 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+run=1 rc=0 123s 22:07:55->22:09:58
+run_f.sh: line 49: 65936 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+run=2 rc=0 138s 22:09:58->22:12:16
+run_f.sh: line 49: 73242 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+run=3 rc=0 153s 22:12:16->22:14:49
+CHUNK DONE n=3 22:14:49

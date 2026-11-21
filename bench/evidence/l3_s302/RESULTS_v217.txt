@@ -1,0 +1,53 @@
+runs 新行 6  调度 6  基线 354
+
+== P1a 装置 ==
+rc=0 6/6  单次 85~138s  超 300s 0/6
+P1a PASS
+
+== P1d 入参原文：同题条目是否真被挡住 ==
+  臂 off: 3 次调用
+    t01_parse_duration     入参 112 追加   0  含本题=False  含本题集别题=[]  泄露=无  OK
+    t04_merge_ranges       入参 172 追加   0  含本题=False  含本题集别题=[]  泄露=无  OK
+    t01_parse_duration     入参 112 追加   0  含本题=False  含本题集别题=[]  泄露=无  OK
+  臂 blocks: 6 次调用
+    t01_parse_duration     入参 276 追加 164  含本题=False  含本题集别题=['t04_merge_ranges']  泄露=无  OK
+      追加段：[外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    t04_merge_ranges       入参 300 追加 128  含本题=False  含本题集别题=[]  泄露=无  OK
+      追加段：[外部评审] [coding_small/t03_commas] 1.00 — 通过 5/5 ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    t01_parse_duration     入参 276 追加 164  含本题=False  含本题集别题=['t04_merge_ranges']  泄露=无  OK
+      追加段：[外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    t04_merge_ranges       入参 300 追加 128  含本题=False  含本题集别题=[]  泄露=无  OK
+      追加段：[外部评审] [coding_small/t03_commas] 1.00 — 通过 5/5 ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    t01_parse_duration     入参 276 追加 164  含本题=False  含本题集别题=['t04_merge_ranges']  泄露=无  OK
+      追加段：[外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    t04_merge_ranges       入参 300 追加 128  含本题=False  含本题集别题=[]  泄露=无  OK
+      追加段：[外部评审] [coding_small/t03_commas] 1.00 — 通过 5/5 ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+P1d PASS（off 6/6 无追加；blocks 6/6 有追加、无本题、无测试源码；t01 的追加段含 t04）
+
+== P1b/P1c 转发与外包 ==
+  off    state 带评审块 6/6 行  外包 calls(逐次运行)=[2, 1, 0]  ≥1 的 2/3  合计 3/6 个题位
+  blocks state 带评审块 6/6 行  外包 calls(逐次运行)=[2, 2, 2]  ≥1 的 3/3  合计 6/6 个题位
+P1b PASS（各臂 ≥3 行）
+P1c FAIL（预注册门槛 5/6；本轮每臂只有 3 次运行 ⇒ 门槛写成 5/6 结构上不可能达到，属**判据作者错误**，见 RESULTS_v217.md §自踩）
+
+== P2 主判据 t01（拿得到有信息的跨题行）/ P3 对照 t04（块里零信息）==
+  块 0 t01_parse_duration     off 3/6 [False, False, True, False, True, True]
+                               blk 4/6 [True, False, True, False, True, True]   Δ=+1
+  块 0 t04_merge_ranges       off 6/6 [True, True, True, True, True, True]
+                               blk 6/6 [True, True, True, True, True, True]   Δ=+0
+  块 1 t01_parse_duration     off 3/6 [False, False, True, False, True, True]
+                               blk 4/6 [True, False, True, False, True, True]   Δ=+1
+  块 1 t04_merge_ranges       off 2/6 [False, True, True, False, False, False]
+                               blk 6/6 [True, True, True, True, True, True]   Δ=+4
+  块 2 t01_parse_duration     off 5/6 [False, True, True, True, True, True]
+                               blk 4/6 [True, False, True, False, True, True]   Δ=-1
+  块 2 t04_merge_ranges       off 2/6 [False, True, True, False, False, False]
+                               blk 6/6 [True, True, True, True, True, True]   Δ=+4
+  P2 Δ=[1, 1, -1] ⇒ 成立（≥2/3 块 Δ≥+1）
+  P3 对照 Δ=[0, 4, 4]（押 0；若 ≥+2 ⇒「加文本改抽样」胜出，P2 归因作废）
+
+== n_eff：不同 vec 状态数 ==
+  off    4 种 (题×vec) 状态 / 6 格
+  blocks 2 种 (题×vec) 状态 / 6 格
+
+⛔ 纪律 122：块不是样本 ⇒ 本文件不给 p 值。

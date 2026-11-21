@@ -1,0 +1,29 @@
+题目 ['t01_parse_duration', 't04_merge_ranges']
+
+== scope=prev-self why=raw    账本 6 条  allow_self=True  改写 0  丢弃 0
+   t01_parse_duration     块 3 条（含失败信息 1）  含本题=True  长度 220
+       [coding_small/t01_parse_duration] 0.17 — 通过 1/6；失败: assert parse_duration('1h30m') == 5400 ⇒ ValueError: not enough values to unpack (expect ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       块 3 条（含失败信息 1）  含本题=True  长度 220
+       [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)] ⇒ TypeError: 'tuple' object do ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== scope=prev-self why=shape  账本 6 条  allow_self=True  改写 2  丢弃 0
+   t01_parse_duration     块 3 条（含失败信息 1）  含本题=True  长度 142
+       [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: ValueError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       块 3 条（含失败信息 1）  含本题=True  长度 155
+       [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== scope=prev      why=raw    账本 6 条  allow_self=False  改写 0  丢弃 0
+   t01_parse_duration     块 3 条（含失败信息 1）  含本题=False  长度 220
+       [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)] ⇒ TypeError: 'tuple' object do ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       块 3 条（含失败信息 0）  含本题=False  长度 119
+       [coding_small/t03_commas] 1.00 — 通过 5/5 ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== scope=prev      why=shape  账本 6 条  allow_self=False  改写 2  丢弃 0
+   t01_parse_duration     块 3 条（含失败信息 1）  含本题=False  长度 155
+       [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       块 3 条（含失败信息 0）  含本题=False  长度 119
+       [coding_small/t03_commas] 1.00 — 通过 5/5 ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== 结论口径 ==
+· 「含本题」必须为 False，否则与 V216 同病（不可识别）。
+· 「含失败信息条数」= 块里 score<1.0 的条数；为 0 ⇒ 块只剩「全过」的空话。

@@ -1,0 +1,18 @@
+median=16.40 tok/s gate=15 VERDICT=PASS
+调度表核对  OK  6 行 = 3 块 × 2 臂
+schedule OK 3810583c1300744fb20d112288eba3e7866751ca3e6ff586dfb89b525029cdc8
+patched sha: e62fb84b0ad87d8e0855a8e8e971c135d874741927da6cd255b6e74b907e8aeb
+run_e.sh: line 78: 92221 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=0 arm=off rc=0 115s 21:44:47->21:46:43
+run_e.sh: line 78: 93012 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=0 arm=blocks rc=0 101s 21:46:43->21:48:24
+run_e.sh: line 78: 94081 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=1 arm=blocks rc=0 109s 21:48:24->21:50:13
+run_e.sh: line 78: 96038 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=1 arm=off rc=0 85s 21:50:13->21:51:38
+run_e.sh: line 78: 96305 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=2 arm=off rc=0 90s 21:51:38->21:53:08
+run_e.sh: line 78:  1848 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=2 arm=blocks rc=0 138s 21:53:08->21:55:26
+restored sha: 674b8941ae1dd7906dd0bf3749338a27544d0a069dff7754814e64b6311205b0
+CHUNK DONE 21:55:26

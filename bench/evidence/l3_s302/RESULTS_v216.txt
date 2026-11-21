@@ -1,0 +1,55 @@
+runs 新行 6  调度 6  基线 342
+
+== P1a 装置 ==
+rc=0 6/6  单次 78~134s  超 300s 0/6
+P1a PASS
+
+== P1d 无泄露：壳子存下的**真实入参**（3 块 × 2 题 = 6 次/臂）==
+  臂 off: 6 次调用
+    入参 112 = 题面 112 + 追加   0  追加段泄露标记 无  OK
+    入参 172 = 题面 172 + 追加   0  追加段泄露标记 无  OK
+    入参 112 = 题面 112 + 追加   0  追加段泄露标记 无  OK
+    入参 172 = 题面 172 + 追加   0  追加段泄露标记 无  OK
+    入参 112 = 题面 112 + 追加   0  追加段泄露标记 无  OK
+    入参 172 = 题面 172 + 追加   0  追加段泄露标记 无  OK
+  臂 blocks: 6 次调用
+    入参 263 = 题面 112 + 追加 151  追加段泄露标记 无  OK
+      追加段原文：[外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: ValueError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    入参 336 = 题面 172 + 追加 164  追加段泄露标记 无  OK
+      追加段原文：[外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    入参 263 = 题面 112 + 追加 151  追加段泄露标记 无  OK
+      追加段原文：[外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: ValueError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    入参 336 = 题面 172 + 追加 164  追加段泄露标记 无  OK
+      追加段原文：[外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    入参 263 = 题面 112 + 追加 151  追加段泄露标记 无  OK
+      追加段原文：[外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: ValueError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+    入参 336 = 题面 172 + 追加 164  追加段泄露标记 无  OK
+      追加段原文：[外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+P1d PASS（off 6/6 无追加；blocks 6/6 有追加且追加段无泄露）
+
+== P1b/P1c 转发与外包 ==
+  off    state 带评审块 6/6 行  外包 calls=[1, 2, 2]  ≥1 的 3/3
+  blocks state 带评审块 6/6 行  外包 calls=[2, 2, 2]  ≥1 的 3/3
+P1b PASS（各臂 ≥3 行）
+P1c PASS（各臂 3/3 次外包）
+
+== P2 主判据：块级总分（分母 12）==
+  块 0: off 11/12  blocks 11/12  Δ=+0
+          t01 off [False, True, True, True, True, True]  blocks [True, True, True, False, True, True]
+          t04 off [True, True, True, True, True, True]  blocks [True, True, True, True, True, True]
+  块 1: off 9/12  blocks 11/12  Δ=+2
+          t01 off [False, False, True, False, True, True]  blocks [True, True, True, False, True, True]
+          t04 off [True, True, True, True, True, True]  blocks [True, True, True, True, True, True]
+  块 2: off 9/12  blocks 11/12  Δ=+2
+          t01 off [False, False, True, False, True, True]  blocks [True, True, True, False, True, True]
+          t04 off [True, True, True, True, True, True]  blocks [True, True, True, True, True, True]
+  Δ 序列 [0, 2, 2]  ⇒ P2 成立（3/3 块 Δ≥0 且 ≥1 块 Δ≥+1）
+
+== n_eff：不同 vec 状态数（纪律 122）==
+  off    2 种状态 / 3 块
+     n=1  t01 5/6 (False, True, True, True, True, True)  t04 6/6 (True, True, True, True, True, True)
+     n=2  t01 3/6 (False, False, True, False, True, True)  t04 6/6 (True, True, True, True, True, True)
+  blocks 1 种状态 / 3 块
+     n=3  t01 5/6 (True, True, True, False, True, True)  t04 6/6 (True, True, True, True, True, True)
+
+⛔ 纪律 122：块不是样本 ⇒ 本文件不给 p 值。

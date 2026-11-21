@@ -1,0 +1,15 @@
+调度表核对  OK  6 行 = 3 块 × 2 臂
+schedule OK 3810583c1300744fb20d112288eba3e7866751ca3e6ff586dfb89b525029cdc8
+run_c.sh: line 49: 80022 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=0 arm=off rc=0 78s 21:01:24->21:02:42
+run_c.sh: line 49: 80273 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=0 arm=blocks rc=0 96s 21:02:42->21:04:18
+run_c.sh: line 49: 80554 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=1 arm=blocks rc=0 103s 21:04:18->21:06:01
+run_c.sh: line 49: 80892 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=1 arm=off rc=0 102s 21:06:01->21:07:43
+run_c.sh: line 49: 81275 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=2 arm=off rc=0 101s 21:07:43->21:09:24
+run_c.sh: line 49: 81586 Killed: 9               ( sleep 420; kill -9 "$pid" 2> /dev/null )
+blk=2 arm=blocks rc=0 134s 21:09:24->21:11:38
+CHUNK DONE 0-2 21:11:38

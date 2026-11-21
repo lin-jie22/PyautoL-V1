@@ -1,0 +1,6 @@
+probe arm=off rc=0 21:12:18->21:14:00
+probe arm=blocks rc=0 21:14:00->21:15:53
+probe blk=1 arm=off rc=0 21:21:16->21:23:07
+probe blk=1 arm=blocks rc=0 21:23:07->21:24:59
+probe blk=2 arm=off rc=0 21:24:59->21:27:04
+probe blk=2 arm=blocks rc=0 21:27:04->21:29:07

@@ -1,0 +1,14 @@
+V215c 免费探针：`--critique-why shape` 档下，内核真正交给外部能力的附言原文
+装置：1 次真跑（qwen2.5:7b, T=1.0, budget 1, scope prev-self, handoff blocks），
+      state 落盘 state_shape_probe.jsonl；附言由 mw/core.py:handoff_text() 对同一份 state 现算。
+
+任务 t01_parse_duration…  it=1  状态 278 字  附言 150 字
+  附言： [外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: ValueError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+  含 'assert' False ｜ 含具体输入 '1h30m' False ｜ 含期望值 '5400' False
+
+任务 t04_merge_ranges…  it=1  状态 351 字  附言 163 字
+  附言： [外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5
+  含 'assert' False ｜ 含具体输入 '1h30m' False ｜ 含期望值 '5400' False
+
+对照 §284（raw 档）：228 字，48/48 段含 assert + 输入 + 期望值。
+⇒ 档位接上了，且在没有测试源码的情况下仍保留「过了几条 + 抛什么异常」。

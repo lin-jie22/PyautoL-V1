@@ -58,7 +58,12 @@ _MAX_ANSWER = 200
 # ===========================================================================
 RAW_WHY: str = "raw"
 TRANSFERABLE_WHY: str = "transferable"
-WHY_MODES: tuple[str, ...] = (RAW_WHY, TRANSFERABLE_WHY)
+#: ⭐ V215b（§285）：只留**失败形状**（通过计数 + 异常类名），把断言原文/输入/期望整个删掉。
+#: 起因：§284 免费普查量到交出去的 228 字附言 **48/48 段**都含
+#: `assert parse_duration('1h30m') == 5400` ⇒ 求解端被直接告知要过哪条断言，
+#: 「知识转移」与「照着测试改」在这条通道上**不可识别**（纪律 120）。
+SHAPE_WHY: str = "shape"
+WHY_MODES: tuple[str, ...] = (RAW_WHY, TRANSFERABLE_WHY, SHAPE_WHY)
 
 #: `(expected 2, got 1)` / `(expected at least 1, got 0)` —— 元数陈述。
 _METASHAPE = (
@@ -67,6 +72,37 @@ _METASHAPE = (
     #: 同一句话的中文/英文措辞形态：解包失败是**症状**，不是"输入有两段"的证据。
     re.compile(r"\s*\b(?:not\s+enough|too\s+many)\s+values\s+to\s+unpack\b", re.I),
 )
+
+#: `通过 1/6` —— 唯一一个「与具体输入无关」的量化形状。
+_PASSCOUNT = re.compile(r"通过\s*(\d+)\s*/\s*(\d+)")
+#: 异常**类名**：`ValueError` / `TypeError` / `AssertionError` …
+_EXCNAME = re.compile(r"\b([A-Z][A-Za-z]*(?:Error|Exception))\b")
+
+
+def shape_why(why: str) -> str:
+    """把一段打分器理由压成「只有形状」：`通过 X/Y；异常: ValueError, TypeError`。
+
+    ⛔ 三条**故意**不做的事（每一条都是「不再泄露测试」的代价，不许偷偷补回来）：
+        ① 不保留断言原文（`assert f('1h30m') == 5400`）—— 那就是把测试交给求解端；
+        ② 不保留输入/期望的具体值（`'1h30m'`、`5400`）—— 同上，只是换了个位置；
+        ③ 不保留异常消息正文（`not enough values to unpack`）—— V209 已证它会被当设计线索。
+    ✅ 保留的两件东西都**与本题输入无关**：过了几条（X/Y）、抛了哪一类异常。
+
+    返回空串是**正常结果**（该理由里既没有通过计数、也没有异常类名）——
+    调用方必须把它当「这条没有形状可说」处理，⛔ 不许退回原文（退回原文 = 泄露照旧）。
+    """
+    src = why or ""
+    out: list[str] = []
+    m = _PASSCOUNT.search(src)
+    if m:
+        out.append(f"通过 {m.group(1)}/{m.group(2)}")
+    excs: list[str] = []
+    for e in _EXCNAME.findall(src):
+        if e not in excs:
+            excs.append(e)
+    if excs:
+        out.append("异常: " + ", ".join(excs))
+    return "；".join(out)
 
 
 def transferable_why(why: str) -> str:
@@ -139,6 +175,9 @@ class CritiqueLedger:
         #: 在读数上一模一样（V158 假绿 253 / 真值 4 的同型）。
         self.why_rewritten = 0
         self.why_emptied = 0
+        #: ⭐ V215b（§285）：`shape` 档里**既没有通过计数也没有异常类名**的条数。
+        #: 这些条**不进账本**（退回原文就是泄露），所以必须有这个分母。
+        self.why_dropped = 0
         self.by_key: dict[tuple[str, str, str], Critique] = {}
         self.added = 0
         #: 同一键被覆盖的次数 —— 这个数不为 0 说明有题被重跑过，是有用信息
@@ -166,6 +205,16 @@ class CritiqueLedger:
                 #: 正是这个模块存在的缺口，比不投喂更糟。
                 self.why_emptied += 1
                 why = c.why[:_MAX_WHY]
+        elif self.why_mode == SHAPE_WHY:
+            #: ⭐ V215b：`shape` 档**不许**退回原文 —— 退回就等于泄露照旧。
+            #: 没有形状可说 ⇒ 这条不进账本，单独计数（分母要能解释）。
+            _w = shape_why(why)
+            if _w != why:
+                self.why_rewritten += 1
+            if not _w:
+                self.why_dropped += 1
+                return
+            why = _w
         self.by_key[key] = Critique(
             scorer_sha=c.scorer_sha, suite_sha=c.suite_sha, task_id=c.task_id,
             family=c.family, score=c.score, why=why,
@@ -212,6 +261,7 @@ class CritiqueLedger:
             "why_mode": self.why_mode,
             "why_rewritten": self.why_rewritten,
             "why_emptied": self.why_emptied,
+            "why_dropped": self.why_dropped,
             # 分母同时给出：`rejected` 是**累计**的，离开 `calls` 无法解释
             "rejected": dict(self.rejected),
         }

@@ -3279,15 +3279,14 @@ def main() -> int:
                         "31 字的满分条目就能让窗口换成「全是真的、全是别人的失败」，"
                         "从而构造**块长逐字节相同**的等长安慰剂臂（V33）。"
                         "与 off 档同给视为冲突（它什么也不会做）。")
-    p.add_argument("--critique-why", default="raw", choices=("raw", "transferable"),
-                   help="**投喂口径**（DESIGN §278，V210）：`why` 里哪一半进上下文。"
+    p.add_argument("--critique-why", default="raw", choices=("raw", "transferable", "shape"),
+                   help="**投喂口径**（DESIGN §278/§285，V210/V215b）：`why` 里哪一半进上下文。"
                         "raw=原文（默认，旧行为一字不改）；"
                         "transferable=删掉异常文里的**元数/形状**描述"
                         "（`(expected 2, got 1)`、`not enough values to unpack`），"
-                        "保留异常**名**与失败断言。"
-                        "为什么：V209 实测同一通道两种用法方向相反 —— 异常名点根因时"
-                        "照做能修好（t04 +25pp），异常文点元数时照做会弄坏"
-                        "（t01 单单位 14/15/14 → 2/6/4，p≤0.01）。"
+                        "保留异常**名**与失败断言；"
+                        "shape=**只留形状**（`通过 X/Y` + 异常类名），删掉断言原文、输入/期望值、"
+                        "异常消息正文（V215b 量到原文 48/48 段都带 `assert …` ⇒ 等于把测试交给求解端）。"
                         "⚠️ 只改**快照副本**，真账本永远存原文。"
                         "与 off 档同给视为冲突（没有 why 被投喂）。")
     p.add_argument("--use-reward", action="store_true",

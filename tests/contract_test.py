@@ -16583,6 +16583,79 @@ check(RS, "AZ159f 未知档位必须**抛错**；刚构造时 `_handoff_arg()` �
       and _az159_c._handoff_arg() == "",
       f"初始附言={_az159_c._handoff_arg()!r}")
 
+
+# ── AZ160a~e：附言里不许带测试源码（V215b §285）────────────────────────────
+#: §284 免费普查量到：交出去的 228 字附言 **48/48 段**都含
+#: `assert parse_duration('1h30m') == 5400` ⇒ 求解端被直接告知要过哪条断言，
+#: 「知识转移」与「照着测试改」在**默认路径**上不可识别（纪律 120）。
+#: `shape` 档：只留 `通过 X/Y` + 异常类名 —— 两件都与本题输入无关。
+from mw.critique import WHY_MODES as _az160_modes       # noqa: E402
+from mw.critique import shape_why as _az160_f           # noqa: E402
+
+_az160_t01 = ("通过 1/6；失败: assert parse_duration('1h30m') == 5400 ⇒ "
+              "ValueError: not enough values to unpack (expected 2, got 1)")
+_az160_o = _az160_f(_az160_t01)
+check(RS, "AZ160a ★`shape` 口径必须把**测试源码**整段删掉：断言原文、输入值、期望值、\n"
+          "              异常消息正文一个都不许留下；只留 `通过 X/Y` 与异常**类名**。\n"
+          "              撤回语义：把 `shape_why()` 改回返回原文 ⇒ 必须红（纪律 5 的否定断言要有正例）",
+      "assert" not in _az160_o and "1h30m" not in _az160_o and "5400" not in _az160_o
+      and "unpack" not in _az160_o and "expected" not in _az160_o
+      and _az160_o == "通过 1/6；异常: ValueError",
+      f"shape={_az160_o!r}")
+
+check(RS, "AZ160b 正例对照：**满分**理由没有异常可留 ⇒ 只出通过计数（不得编造异常名）；\n"
+          "              既无计数也无异常 ⇒ **空串**（调用方按「丢弃」处理，⛔ 不许退回原文）",
+      _az160_f("通过 5/5") == "通过 5/5"
+      and _az160_f("") == "" and _az160_f("看不懂的一句话") == ""
+      and _az160_f("失败: assert x == 1 ⇒ KeyError: 3") == "异常: KeyError",
+      f"空={_az160_f('看不懂的一句话')!r} 满分={_az160_f('通过 5/5')!r}")
+
+_az160_k = ("S", "U", "t1")
+_az160_led = CritiqueLedger(None, why_mode="shape")
+_az160_led.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why=_az160_t01))
+_az160_line = _az160_led.by_key[_az160_k].as_line()
+check(RS, "AZ160c ⛔⛔ 端到端：`shape` 档下**账本副本 + `as_line()`**（= 进 state 那段文本）\n"
+          "              必须不含 `assert `/输入/期望 —— 只改 `shape_why()` 而不接线，\n"
+          "              `add()` 仍会存原文，读数一模一样（V158 假绿同型）",
+      "assert" not in _az160_line and "1h30m" not in _az160_line
+      and "ValueError" in _az160_line and "通过 1/6" in _az160_line,
+      f"line={_az160_line!r}")
+
+_az160_raw = CritiqueLedger()
+_az160_raw.add(Critique(scorer_sha="S", suite_sha="U", task_id="t1", why=_az160_t01))
+_az160_drop = CritiqueLedger(None, why_mode="shape")
+_az160_drop.add(Critique(scorer_sha="S", suite_sha="U", task_id="t9", why="看不懂的一句话"))
+check(RS, "AZ160d ★默认仍是 `raw`（旧行为逐字节不变）；`shape` 档把「没有形状可说」的条目\n"
+          "              **丢弃并计数**（`why_dropped`），⛔ 不许退回原文（退回 = 泄露照旧）",
+      _az160_raw.by_key[_az160_k].why == _az160_t01
+      and _az160_raw.stats()["why_mode"] == "raw"
+      and _az160_raw.stats()["why_dropped"] == 0
+      and _az160_drop.stats()["stored"] == 0
+      and _az160_drop.stats()["why_dropped"] == 1,
+      f"raw={_az160_raw.stats()['why_mode']} drop={_az160_drop.stats()}")
+
+#: ⛔ CLI 与库里是两套枚举（`choices=(...)` 手写）⇒ 加档位最易漂的地方：
+#:    库里加了、CLI 仍拒收，跑起来只会报「invalid choice」，读数却是「没效应」。
+import ast as _az160_ast                # noqa: E402
+import pathlib as _az160_pl             # noqa: E402
+
+_az160_choices = None
+for _az160_n in _az160_ast.walk(_az160_ast.parse(
+        (_az160_pl.Path(__file__).resolve().parents[1] / "run.py").read_text(encoding="utf-8"))):
+    if isinstance(_az160_n, _az160_ast.Call) and getattr(_az160_n.func, "attr", "") == "add_argument":
+        if _az160_n.args and isinstance(_az160_n.args[0], _az160_ast.Constant) \
+                and _az160_n.args[0].value == "--critique-why":
+            for _kw in _az160_n.keywords:
+                if _kw.arg == "choices" and isinstance(_kw.value, _az160_ast.Tuple):
+                    _az160_choices = tuple(e.value for e in _kw.value.elts)
+check(RS, "AZ160e 口径表必须**含三档**、未知档位抛错，且 `--critique-why` 的 `choices`（从 run.py\n"
+          "              的 AST 里读）必须与库里的 `WHY_MODES` 同集合 —— 两套枚举漂了，\n"
+          "              CLI 会拒收新档位，而读数看起来只是「没效应」",
+      set(_az160_modes) == {"raw", "transferable", "shape"}
+      and _az160_choices is not None and set(_az160_choices) == set(_az160_modes)
+      and _raises(lambda: CritiqueLedger(None, why_mode="shape2"), ValueError),
+      f"modes={_az160_modes} cli={_az160_choices}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

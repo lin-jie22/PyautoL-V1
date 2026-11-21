@@ -1,0 +1,120 @@
+runs 新行 12  调度 12  基线 363
+
+== P1a 装置 ==
+rc=0 12/12  单次 108~176s  超 420s 0
+P1a PASS
+
+== P1b 通道固定（calls==2 / tasks==2，逐次运行）==
+  块0 off  (A) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块0 prev (B) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块0 self (C) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块0 raw  (D) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块1 prev (B) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块1 self (C) calls=2 tasks=2 na=0 nob=0 ok=1 used=1 OK
+  块1 raw  (D) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块1 off  (A) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块2 self (C) calls=2 tasks=2 na=0 nob=0 ok=1 used=1 OK
+  块2 raw  (D) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块2 off  (A) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块2 prev (B) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+P1b PASS
+
+== P1d steps==1 且 state 含 [外部评审] ==
+  块0 off  (A) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块0 prev (B) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块0 self (C) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块0 raw  (D) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块1 prev (B) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块1 self (C) done 行 steps=1 计 2  steps=0 计 0  state 行 3 带评审块 3  OK
+  块1 raw  (D) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块1 off  (A) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块2 self (C) done 行 steps=1 计 2  steps=0 计 0  state 行 3 带评审块 3  OK
+  块2 raw  (D) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块2 off  (A) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+  块2 prev (B) done 行 steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2  OK
+P1d PASS
+
+== P1c 探针：追加段是否逐字节等于冻结账本的块 ==
+  块0 off(A) t01_parse_duration     入参 112  块   0 字（连接符 0）  逐字节=相同
+  块0 off(A) t04_merge_ranges       入参 172  块   0 字（连接符 0）  逐字节=相同
+  块0 prev(B) t01_parse_duration     入参 276  块 162 字（连接符 2）  逐字节=相同
+  块0 prev(B) t04_merge_ranges       入参 300  块 126 字（连接符 2）  逐字节=相同
+  块0 self(C) t01_parse_duration     入参 263  块 149 字（连接符 2）  逐字节=相同
+  块0 self(C) t04_merge_ranges       入参 336  块 162 字（连接符 2）  逐字节=相同
+  块0 raw(D) t01_parse_duration     入参 341  块 227 字（连接符 2）  逐字节=相同
+  块0 raw(D) t04_merge_ranges       入参 401  块 227 字（连接符 2）  逐字节=相同
+  块1 prev(B) t01_parse_duration     入参 276  块 162 字（连接符 2）  逐字节=相同
+  块1 prev(B) t04_merge_ranges       入参 300  块 126 字（连接符 2）  逐字节=相同
+  块1 self(C) t01_parse_duration     入参 263  块 149 字（连接符 2）  逐字节=相同
+  块1 self(C) t04_merge_ranges       入参 336  块 162 字（连接符 2）  逐字节=相同
+  块1 raw(D) t01_parse_duration     入参 341  块 227 字（连接符 2）  逐字节=相同
+  块1 raw(D) t04_merge_ranges       入参 401  块 227 字（连接符 2）  逐字节=相同
+  块1 off(A) t01_parse_duration     入参 112  块   0 字（连接符 0）  逐字节=相同
+  块1 off(A) t04_merge_ranges       入参 172  块   0 字（连接符 0）  逐字节=相同
+  块2 self(C) t01_parse_duration     入参 263  块 149 字（连接符 2）  逐字节=相同
+  块2 self(C) t04_merge_ranges       入参 336  块 162 字（连接符 2）  逐字节=相同
+  块2 raw(D) t01_parse_duration     入参 341  块 227 字（连接符 2）  逐字节=相同
+  块2 raw(D) t04_merge_ranges       入参 401  块 227 字（连接符 2）  逐字节=相同
+  块2 off(A) t01_parse_duration     入参 112  块   0 字（连接符 0）  逐字节=相同
+  块2 off(A) t04_merge_ranges       入参 172  块   0 字（连接符 0）  逐字节=相同
+  块2 prev(B) t01_parse_duration     入参 276  块 162 字（连接符 2）  逐字节=相同
+  块2 prev(B) t04_merge_ranges       入参 300  块 126 字（连接符 2）  逐字节=相同
+P1c PASS
+
+== 泄露标记：只许 D 出现 ==
+  臂 A: 无
+  臂 B: 无
+  臂 C: 无
+  臂 D: ['5400', 'merge_ranges([(1,3),(2,6),(8,10)])']
+
+== P2/P3/P4 主读数：t01（唯一有变化空间的格）==
+  块 0  A 3/6 [False, False, True, False, True, True]
+        B 4/6 [True, False, True, False, True, True]   Δ=+1
+        C 5/6 [True, True, True, False, True, True]   Δ=+2
+        D 4/6 [True, False, False, True, True, True]   Δ=+1
+  块 1  A 3/6 [False, False, True, False, True, True]
+        B 4/6 [True, False, True, False, True, True]   Δ=+1
+        C 5/6 [False, True, True, True, True, True]   Δ=+2
+        D 3/6 [False, False, True, False, True, True]   Δ=+0
+  块 2  A 3/6 [False, False, True, False, True, True]
+        B 4/6 [True, False, True, False, True, True]   Δ=+1
+        C 5/6 [True, True, True, False, True, True]   Δ=+2
+        D 4/6 [True, False, False, True, True, True]   Δ=+1
+
+  跨题（B−A）: Δ=[1, 1, 1]  ≥+2 的块 0/3  ⇒ 门槛（≥+2 且 ≥2/3 块）不达标
+  同题形状（C−A）: Δ=[2, 2, 2]  ≥+2 的块 3/3  ⇒ 门槛（≥+2 且 ≥2/3 块）达标
+  泄露（D−A）: Δ=[1, 0, 1]  ≥+2 的块 0/3  ⇒ 门槛（≥+2 且 ≥2/3 块）不达标
+
+== P5 天花板对照 t04 ==
+  A: [6, 6, 6]  全 6/6
+  B: [6, 6, 6]  全 6/6
+  C: [6, 6, 2]  ⛔ 有掉
+  D: [6, 6, 6]  全 6/6
+  ⛔ 6/6 是天花板 ⇒ 只查「有没有掉」，不作「有效」的判据（纪律 119）
+
+== 逐检查：翻转的是哪一格（t01 六项）==
+  块0 A 过 3/6  失败格 [0, 1, 3]  why0=通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Assertio
+  块0 B 过 4/6  失败格 [1, 3]  why0=通过 4/6；失败: assert parse_duration('45s') == 45 ⇒ AssertionErr
+  块0 C 过 5/6  失败格 [3]  why0=通过 5/6；失败: assert parse_duration('10m') == 600 ⇒ AssertionEr
+  块0 D 过 4/6  失败格 [1, 2]  why0=通过 4/6；失败: assert parse_duration('45s') == 45 ⇒ AssertionErr
+  块1 A 过 3/6  失败格 [0, 1, 3]  why0=通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Assertio
+  块1 B 过 4/6  失败格 [1, 3]  why0=通过 4/6；失败: assert parse_duration('45s') == 45 ⇒ AssertionErr
+  块1 C 过 5/6  失败格 [0]  why0=通过 5/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Assertio
+  块1 D 过 3/6  失败格 [0, 1, 3]  why0=通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Assertio
+  块2 A 过 3/6  失败格 [0, 1, 3]  why0=通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ Assertio
+  块2 B 过 4/6  失败格 [1, 3]  why0=通过 4/6；失败: assert parse_duration('45s') == 45 ⇒ AssertionErr
+  块2 C 过 5/6  失败格 [3]  why0=通过 5/6；失败: assert parse_duration('10m') == 600 ⇒ AssertionEr
+  块2 D 过 4/6  失败格 [1, 2]  why0=通过 4/6；失败: assert parse_duration('45s') == 45 ⇒ AssertionErr
+
+== 长度 vs 效应（跨臂，非判据，只用来否掉「纯长度」解释）==
+  臂 B: 块长 t01=162 t04=126  t01 Δ=[1, 1, 1]  平均 Δ=+1.00
+  臂 C: 块长 t01=149 t04=162  t01 Δ=[2, 2, 2]  平均 Δ=+2.00
+  臂 D: 块长 t01=227 t04=227  t01 Δ=[1, 0, 1]  平均 Δ=+0.67
+
+== n_eff：每臂的 (题×vec) 状态数 ==
+  A: 状态 2 种 / 6 格   t01 逐块 [3, 3, 3]
+  B: 状态 2 种 / 6 格   t01 逐块 [4, 4, 4]
+  C: 状态 4 种 / 6 格   t01 逐块 [5, 5, 5]
+  D: 状态 3 种 / 6 格   t01 逐块 [4, 3, 4]
+
+⛔ 纪律 122：块不是独立样本 ⇒ 本文件不给 p 值。

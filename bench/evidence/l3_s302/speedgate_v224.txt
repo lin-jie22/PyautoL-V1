@@ -1,0 +1,1 @@
+17.06 tok/s (api/generate eval_count/eval_duration) >= 12

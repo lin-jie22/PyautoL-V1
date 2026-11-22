@@ -1,0 +1,45 @@
+== 三个账本的 t01 那条（只差类名一个词）==
+  C  score=0.1667   why='通过 1/6；异常: ValueError'  类名 10 字符
+  I  score=0.1667   why='通过 1/6；异常: IndexError'  类名 10 字符
+  K  score=0.1667   why='通过 1/6；异常: KeyError'  类名 8 字符
+
+== 臂 C scope=prev-self 账本 t01 = '通过 1/6；异常: ValueError'
+   t01_parse_duration     附言 149 字  条数 3  含本题=True  含失败=1  泄露=无
+       [外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: ValueError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       附言 162 字  条数 3  含本题=True  含失败=1  泄露=无
+       [外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== 臂 I scope=prev-self 账本 t01 = '通过 1/6；异常: IndexError'
+   t01_parse_duration     附言 149 字  条数 3  含本题=True  含失败=1  泄露=无
+       [外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: IndexError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       附言 162 字  条数 3  含本题=True  含失败=1  泄露=无
+       [外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== 臂 K scope=prev-self 账本 t01 = '通过 1/6；异常: KeyError'
+   t01_parse_duration     附言 147 字  条数 3  含本题=True  含失败=1  泄露=无
+       [外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: KeyError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       附言 162 字  条数 3  含本题=True  含失败=1  泄露=无
+       [外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== 本轮最关键的两条对照 ==
+  C vs I（词变、长度不变）：149 字 vs 149 字 ⇒ **块长相同**（只差一个词，同 10 字符）
+  C vs K（词变、短 2 字）  ：149 → 147 字（-2）
+
+== 结论口径 ==
+· 三臂的 t04 块应全部逐字节相同（本轮只改 t01 那条）⇒ t04 作未变块/零噪声旁证。
+· 任一臂出现 5400 / merge_ranges 字面 ⇒ 装置有问题，停跑。
+· ⛔ C→I 必须块长相等，否则这轮就退化成 V219b 的老情况（长度与内容同时变）。
+
+期望载荷已落盘 bench/evidence/l3_s302/expected_blocks_v219d.json

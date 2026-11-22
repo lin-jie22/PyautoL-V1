@@ -1,0 +1,84 @@
+runs 新行 9  调度 9  基线 399
+
+== P1a 装置 ==
+rc=0 9/9  单次 111~146s  超 300s 0
+P1a PASS
+
+== P1b 通道固定（calls==2 / tasks==2 / steps==1）==
+  块0 val  (C) calls=2 tasks=2 ok=2 used=2 steps1=2 steps0=0 OK
+  块0 idx  (I) calls=2 tasks=2 ok=2 used=2 steps1=2 steps0=0 OK
+  块0 key  (K) calls=2 tasks=2 ok=2 used=2 steps1=2 steps0=0 OK
+  块1 idx  (I) calls=2 tasks=2 ok=2 used=2 steps1=2 steps0=0 OK
+  块1 key  (K) calls=2 tasks=2 ok=2 used=2 steps1=2 steps0=0 OK
+  块1 val  (C) calls=2 tasks=2 ok=2 used=2 steps1=2 steps0=0 OK
+  块2 key  (K) calls=1 tasks=2 ok=1 used=1 steps1=2 steps0=0 ⛔
+  块2 val  (C) calls=2 tasks=2 ok=2 used=2 steps1=2 steps0=0 OK
+  块2 idx  (I) calls=2 tasks=2 ok=2 used=2 steps1=2 steps0=0 OK
+P1b FAIL
+
+== P1c 探针：追加段逐字节 ==
+  块0 val  (C) 2 次  块长 t01=149 t04=162
+  块0 idx  (I) 2 次  块长 t01=149 t04=162
+  块0 key  (K) 2 次  块长 t01=147 t04=162
+  块1 idx  (I) 2 次  块长 t01=149 t04=162
+  块1 key  (K) 2 次  块长 t01=147 t04=162
+  块1 val  (C) 2 次  块长 t01=149 t04=162
+  ⛔ 块2 key(K) 探针只有 1 次调用
+  块2 val  (C) 2 次  块长 t01=149 t04=162
+  块2 idx  (I) 2 次  块长 t01=149 t04=162
+P1c FAIL
+
+== P1e 泄露标记（三臂 18 次必须 0 次）==
+  臂 C: 无
+  臂 I: 无
+  臂 K: 无
+泄露闸 PASS
+
+== 主读数：t01 逐块（六项里唯一有变化空间的格）==
+  块 0:  C(ValueError) 5/6  I(IndexError) 5/6  K(KeyError) 3/6
+  块 1:  C(ValueError) 5/6  I(IndexError) 5/6  K(KeyError) 3/6
+  块 2:  C(ValueError) 5/6  I(IndexError) 5/6  K(KeyError) 3/6
+
+  n_C = 15  （t01 三块合计，满 18）   逐块 [5, 5, 5]
+  n_I = 15  （t01 三块合计，满 18）   逐块 [5, 5, 5]
+  n_K =  9  （t01 三块合计，满 18）   逐块 [3, 3, 3]
+
+== 两条轴 ==
+  C->I（ValueError -> IndexError）：149 -> 149 字 ⭐同长，只换词   15 -> 15
+  C->K（ValueError -> KeyError）  ：149 -> 147 字（-2，顺带量长度）15 -> 9
+
+  ── P2 正例闸 / 同轮时间对照（PREREG §5）──
+  C 应复现 5/6 ×3：n_C=15 逐块 [5, 5, 5] ⇒ 通过
+
+  ── P3 主判据（PREREG §6）──
+  n_I=15 逐块 [5, 5, 5]   n_K=9 逐块 [3, 3, 3]
+  ⇒ **不成立：任何类名都够 ⇒ 牙 = 元信息「上次是崩不是错」**
+  我押 n_I=12 且 n_K=12（成立）⇒ 押错
+
+== P4 未变块 t04：块逐字节相同，读数动不动 ==
+  C: [6, 6, 6]
+  I: [6, 6, 6]
+  K: [6, 6, 4]
+  全体取值 [4, 6] ⇒ ⚠️ 有块在动
+
+== 逐格：翻转的是哪一格（t01 六项）==
+  块0 C 过 5/6  失败格 [3]
+  块0 I 过 5/6  失败格 [3]
+  块0 K 过 3/6  失败格 [0, 1, 3]
+  块1 C 过 5/6  失败格 [3]
+  块1 I 过 5/6  失败格 [3]
+  块1 K 过 3/6  失败格 [0, 1, 3]
+  块2 C 过 5/6  失败格 [3]
+  块2 I 过 5/6  失败格 [3]
+  块2 K 过 3/6  失败格 [0, 1, 3]
+
+== n_eff：每臂的 (题×vec) 状态数 ==
+  C: 状态 2 种 / 6 格    t01 逐块 [5, 5, 5]
+  I: 状态 2 种 / 6 格    t01 逐块 [5, 5, 5]
+  K: 状态 3 种 / 6 格    t01 逐块 [3, 3, 3]
+
+⛔ 纪律 122：块不是独立样本 ⇒ 本文件不给 p 值。
+
+== 前提汇总 ==
+  P1a=✅  P1b=❌  P1c=❌  P1e=✅  P2=✅
+  判决：UNKNOWN（前提缺失：P1b/P1c）

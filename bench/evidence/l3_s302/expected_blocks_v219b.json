@@ -1,0 +1,24 @@
+{
+ "_meta": {
+  "goals": {
+   "t01_parse_duration": 112,
+   "t04_merge_ranges": 172
+  },
+  "ledger_C": "prior_v214.jsonl",
+  "ledger_G": "prior_v219b_g.jsonl"
+ },
+ "arms": {
+  "A": {
+   "t01_parse_duration": "",
+   "t04_merge_ranges": ""
+  },
+  "C": {
+   "t01_parse_duration": "[外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: ValueError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5",
+   "t04_merge_ranges": "[外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5"
+  },
+  "G": {
+   "t01_parse_duration": "[外部评审] [coding_small/t01_parse_duration] 1.00 — 通过 6/6 ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5",
+   "t04_merge_ranges": "[外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError ｜ [coding_small/t05_top_k] 1.00 — 通过 4/4 ｜ [coding_small/t06_rle] 1.00 — 通过 5/5"
+  }
+ }
+}

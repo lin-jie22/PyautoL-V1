@@ -1,0 +1,9 @@
+0	0	off
+0	1	self
+0	2	gone
+1	0	self
+1	1	gone
+1	2	off
+2	0	gone
+2	1	off
+2	2	self

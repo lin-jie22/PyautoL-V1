@@ -1,0 +1,108 @@
+runs 新行 9  调度 9  基线 375
+
+== P1a 装置 ==
+rc=0 9/9  单次 92~121s  超 420s 0
+P1a PASS
+
+== P1b 通道固定（calls==2 / tasks==2）==
+  块0 off  (A) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块0 self (C) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块0 gone (G) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块1 self (C) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块1 gone (G) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块1 off  (A) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块2 gone (G) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块2 off  (A) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+  块2 self (C) calls=2 tasks=2 na=0 nob=0 ok=2 used=2 OK
+P1b PASS
+
+== P1b2 steps==1 且 state 含 [外部评审] ==
+  块0 off  (A) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+  块0 self (C) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+  块0 gone (G) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+  块1 self (C) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+  块1 gone (G) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+  块1 off  (A) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+  块2 gone (G) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+  块2 off  (A) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+  块2 self (C) steps=1 计 2  steps=0 计 0  state 行 2 带评审块 2（scope 非 off ⇒ 应 ≥2）  OK
+state 注入闸 PASS
+  ⭐ A 臂的 off 只关**外发**：state 有评审块、但外发追加段 0 字（P1c 已证）
+     ⇒ 对 `code_agent` 而言 A 仍是「只看题面」（它的入参 = prompt + 附言）
+
+== P1c 探针：追加段是否逐字节等于冻结账本的块 ==
+  块0 off(A) 2 次调用，追加段全为 0 字 ⇒ 入参逐字 = 题面
+  块0 self(C) t01_parse_duration     入参 263  块 149 字  逐字节=相同
+  块0 self(C) t04_merge_ranges       入参 336  块 162 字  逐字节=相同
+  块0 gone(G) t01_parse_duration     入参 248  块 134 字  逐字节=相同
+  块0 gone(G) t04_merge_ranges       入参 336  块 162 字  逐字节=相同
+  块1 self(C) t01_parse_duration     入参 263  块 149 字  逐字节=相同
+  块1 self(C) t04_merge_ranges       入参 336  块 162 字  逐字节=相同
+  块1 gone(G) t01_parse_duration     入参 248  块 134 字  逐字节=相同
+  块1 gone(G) t04_merge_ranges       入参 336  块 162 字  逐字节=相同
+  块1 off(A) 2 次调用，追加段全为 0 字 ⇒ 入参逐字 = 题面
+  块2 gone(G) t01_parse_duration     入参 248  块 134 字  逐字节=相同
+  块2 gone(G) t04_merge_ranges       入参 336  块 162 字  逐字节=相同
+  块2 off(A) 2 次调用，追加段全为 0 字 ⇒ 入参逐字 = 题面
+  块2 self(C) t01_parse_duration     入参 263  块 149 字  逐字节=相同
+  块2 self(C) t04_merge_ranges       入参 336  块 162 字  逐字节=相同
+P1c PASS
+
+== P1d2 泄露标记：三臂 18 次必须 0 次 ==
+  臂 A: 无
+  臂 C: 无
+  臂 G: 无
+泄露闸 PASS
+
+== P2 主读数：t01 逐块（唯一有变化空间的格）==
+  块 0  A 3/6 [False, False, True, False, True, True]
+        C 5/6 [True, True, True, False, True, True]   Δ(vs A)=+2
+        G 4/6 [True, False, True, False, True, True]   Δ(vs A)=+1
+  块 1  A 3/6 [False, False, True, False, True, True]
+        C 5/6 [True, True, True, False, True, True]   Δ(vs A)=+2
+        G 4/6 [True, False, True, False, True, True]   Δ(vs A)=+1
+  块 2  A 3/6 [False, False, True, False, True, True]
+        C 5/6 [True, True, True, False, True, True]   Δ(vs A)=+2
+        G 4/6 [True, False, True, False, True, True]   Δ(vs A)=+1
+
+  n_A=9  n_C=15  n_G=12   （满 18；每块 0~6）
+  C−A = +2.00/块 等效  |  G−A = +1.00/块 等效  |  C−G = +1.00/块 等效
+
+  ── 判据（PREREG_v219b §4）──
+  正例闸 n_C≥14 : 15 ⇒ 通过
+  n_G=12 ⇒ **成立（弱）：失败信息净贡献 +1 ~ +1.33/块**
+  我押的是 n_G=12 ⇒ 押中
+
+== P3 未变块 t04：块逐字节相同，读数动不动 ==
+  A: [6, 6, 6]
+  C: [6, 6, 6]
+  G: [6, 6, 6]
+  C 与 G 的 t04 逐块差 = [0, 0, 0]
+  ⇒ 块相同却读出差值 ⇒ 那是噪声下限；差值全 0 ⇒ 本轮该块可作稳定参照
+
+== 逐格：翻转的是哪一格（t01 六项）==
+  块0 A 过 3/6  失败格 [0, 1, 3]  why0=通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError | a
+  块0 C 过 5/6  失败格 [3]  why0=通过 5/6；失败: assert parse_duration('10m') == 600 ⇒ AssertionError
+  块0 G 过 4/6  失败格 [1, 3]  why0=通过 4/6；失败: assert parse_duration('45s') == 45 ⇒ AssertionError | asser
+  块1 A 过 3/6  失败格 [0, 1, 3]  why0=通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError | a
+  块1 C 过 5/6  失败格 [3]  why0=通过 5/6；失败: assert parse_duration('10m') == 600 ⇒ AssertionError
+  块1 G 过 4/6  失败格 [1, 3]  why0=通过 4/6；失败: assert parse_duration('45s') == 45 ⇒ AssertionError | asser
+  块2 A 过 3/6  失败格 [0, 1, 3]  why0=通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError | a
+  块2 C 过 5/6  失败格 [3]  why0=通过 5/6；失败: assert parse_duration('10m') == 600 ⇒ AssertionError
+  块2 G 过 4/6  失败格 [1, 3]  why0=通过 4/6；失败: assert parse_duration('45s') == 45 ⇒ AssertionError | asser
+
+== 块长 vs 效应（跨臂，非判据）==
+  臂 A: 块长 t01=0 t04=0
+  臂 C: 块长 t01=149 t04=162
+  臂 G: 块长 t01=134 t04=162
+
+== n_eff：每臂的 (题×vec) 状态数 ==
+  A: 状态 2 种 / 6 格   t01 逐块 [3, 3, 3]
+  C: 状态 2 种 / 6 格   t01 逐块 [5, 5, 5]
+  G: 状态 2 种 / 6 格   t01 逐块 [4, 4, 4]
+
+⛔ 纪律 122：块不是独立样本 ⇒ 本文件不给 p 值。
+
+== 四前提汇总 ==
+  P1a=✅  P1b=✅  P1c=✅  P1d=✅  泄露=✅  正例闸=✅
+  判决：成立（弱）：失败信息净贡献 +1 ~ +1.33/块

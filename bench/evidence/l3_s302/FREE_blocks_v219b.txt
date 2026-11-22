@@ -1,0 +1,44 @@
+== 账本差异（G 只动一条）==
+  改 t01_parse_duration     0.1667 -> 1.0  "通过 1/6；失败: assert parse_duration('" -> '通过 6/6'
+  同 t02_dedupe             1.0 -> 1.0  '通过 5/5' -> '通过 5/5'
+  同 t03_commas             1.0 -> 1.0  '通过 5/5' -> '通过 5/5'
+  同 t04_merge_ranges       0.3333 -> 0.3333  '通过 2/6；失败: assert merge_ranges([(1' -> '通过 2/6；失败: assert merge_ranges([(1'
+  同 t05_top_k              1.0 -> 1.0  '通过 4/4' -> '通过 4/4'
+  同 t06_rle                1.0 -> 1.0  '通过 5/5' -> '通过 5/5'
+  G 账本已落盘 bench/evidence/l3_s302/prior_v219b_g.jsonl（6 条）
+
+== 臂 A handoff=off ⇒ 附言 = 空串（入参逐字 = 题面）
+   题面 [112, 172] 字
+
+== 臂 C handoff=blocks scope=prev-self why=shape  账本 6 条 allow_self=True 丢弃 0
+   t01_parse_duration     附言 149 字  条数 3  含失败信息 1  含本题=True  泄露标记=无
+       [外部评审] [coding_small/t01_parse_duration] 0.17 — 通过 1/6；异常: ValueError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       附言 162 字  条数 3  含失败信息 1  含本题=True  泄露标记=无
+       [外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== 臂 G handoff=blocks scope=prev-self why=shape  账本 6 条 allow_self=True 丢弃 0
+   t01_parse_duration     附言 134 字  条数 3  含失败信息 0  含本题=True  泄露标记=无
+       [外部评审] [coding_small/t01_parse_duration] 1.00 — 通过 6/6
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+   t04_merge_ranges       附言 162 字  条数 3  含失败信息 1  含本题=True  泄露标记=无
+       [外部评审] [coding_small/t04_merge_ranges] 0.33 — 通过 2/6；异常: TypeError, AssertionError
+       [coding_small/t05_top_k] 1.00 — 通过 4/4
+       [coding_small/t06_rle] 1.00 — 通过 5/5
+
+== C 与 G 的差异（逐题）==
+  t01_parse_duration     不同（C 149 字 / G 134 字）
+  t04_merge_ranges       逐字节相同
+  ⭐ 同一装置下 G 与 C 只差 t01 那一行 ⇒ t04 的块是**未变块**，
+     它若也动，说明本轮噪声 ≥ 该块的可动幅度（不许把它算成效应）。
+
+== 结论口径 ==
+· G 的 t01 行必须是 `1.00 — 通过 6/6`，且**位置不动**（第 1 条）。
+· 三档任一档出现 5400 / merge_ranges 字面 ⇒ 装置有问题，停跑。
+· 块长：C 的 t01 块最长，G 更短 ⇒ ⛔ 不许用长度解释 G 的读数（V219 已证长度不解释）。
+
+期望载荷已落盘 bench/evidence/l3_s302/expected_blocks_v219b.json

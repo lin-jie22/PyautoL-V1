@@ -1,0 +1,36 @@
+========================================================================
+V220 免费复算：第①遍真实写出的账本 ⇒ 第②遍会拿到的块
+========================================================================
+
+账本 2 行
+  t01_parse_duration       score=0.5000  why[:70]="通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError | a"
+  t04_merge_ranges         score=1.0000  why[:70]='通过 6/6'
+
+口径  scorer_sha=6062bd622cc52edb0d5a1eb496ea7b3532a1bbd886b8cf6fef26c1bfbe368035  suite_sha=e322e014a9472f41d486163404ae11ef
+  每行同口径：✅
+
+账本 load() 回读 2 条（by_key=2）
+
+快照 allow_self=True  why_mode=shape  条数=2
+
+  --- t01_parse_duration ---  2 条  117 字
+    [外部评审] [suite_sub2/t01_parse_duration] 0.50 — 通过 3/6；异常: AssertionError ｜ [suite_sub2/t04_merge_ranges] 1.00 — 通过 6/6
+    含本题那条：1  首条=本题：True
+    含 assert：False   why 被 shape 改写：1 / 清空 0
+    P6 分解：
+      (a) 非空: ✅
+      (b) 以 [外部评审] 开头: ✅
+      (c) 含 通过 与 /6: ✅
+      (d) 首条是本题: ✅
+      (e) 首条通过数 < 6: ✅
+      (f) 不含 assert: ✅
+
+  --- t04_merge_ranges ---  2 条  117 字
+    [外部评审] [suite_sub2/t04_merge_ranges] 1.00 — 通过 6/6 ｜ [suite_sub2/t01_parse_duration] 0.50 — 通过 3/6；异常: AssertionError
+    含本题那条：1  首条=本题：True
+    含 assert：False   why 被 shape 改写：1 / 清空 0
+
+========================================================================
+P6（免费复算）= PASS
+  说明：这证明「链路能通」，不证明「模型会用它」（后者引 V219c/d）。
+========================================================================

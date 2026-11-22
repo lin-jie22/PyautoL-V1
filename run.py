@@ -165,6 +165,8 @@ def _build(goal: str, args, *, allow_shell: bool = False,
     mem_mode = str(getattr(args, "memory_mode", "raw") or "raw")
     #: ★§282：外部能力的附言档位。默认 off ⇒ 载荷与旧版逐字节相同。
     _ho = str(getattr(args, "external_handoff", "off") or "off")
+    #: ★ V222（§294）：评审块里除了本题那条还要不要掺别的题。默认 with-others = 旧行为。
+    _mx = str(getattr(args, "critique_mix", "with-others") or "with-others")
     # ── ★ 第一百三十三轮（§109）：guard 必须在**两条分支之前**统一构造 ──────
     # 修之前它只写在离线分支里（`if args.offline or not s.llm.usable():`），
     # 于是**真模型路径上 `--allow-shell` 完全无效** —— 命令行带着
@@ -190,12 +192,14 @@ def _build(goal: str, args, *, allow_shell: bool = False,
                     score_ledger=score_ledger, caliber_sig=caliber_sig,
                     memory_mode=mem_mode,
                     external_handoff=_ho,
+                    critique_mix=_mx,
                     wire_external=not getattr(args, "no_external", False))
     else:
         core = Core(s, guard=_guard, critique_ledger=critique_ledger,
                     score_ledger=score_ledger, caliber_sig=caliber_sig,
                     memory_mode=mem_mode,
                     external_handoff=_ho,
+                    critique_mix=_mx,
                     wire_external=not getattr(args, "no_external", False))
     return core
 
@@ -2288,6 +2292,10 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     print(f"  外部交付  handoff={getattr(args, 'external_handoff', 'off')}"
           f"（off=只交题面原文 / blocks=题面后追加累积块，"
           f"评审+语义记忆）  外部能力={'关' if getattr(args, 'no_external', False) else '注册'}")
+    # ★ V222（§294）：块里掺不掺别的题必须印出来 —— 它是自变量，不是配置细节。
+    #   ⛔ 不许只在 self-only 时印：那样"默认"与"这一行忘了加"在读数上同形。
+    print(f"  评审混编  mix={getattr(args, 'critique_mix', 'with-others')}"
+          f"（with-others=本题1条+别题尾2条 / self-only=只放本题）")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
     # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
@@ -3291,6 +3299,14 @@ def main() -> int:
                         "与 off 档同给视为冲突（没有 why 被投喂）。")
     p.add_argument("--use-reward", action="store_true",
                    help="把外部打分器的分数作为**只读**奖励写进记忆（DESIGN §17-5）")
+    p.add_argument("--critique-mix", default="with-others",
+                   choices=("with-others", "self-only"),
+                   help="**评审块里掺不掺别的题**（DESIGN §294，V221/V222）："
+                        "with-others=本题 1 条 + 别的题尾 2 条（**默认，旧行为一字不改**）；"
+                        "self-only=本题有记录时**只放它自己**（本题没记录时仍按旧规则）。"
+                        "为什么要有这根旋钮：V221 实测满分题 `t04` 只因附言掺了 `t01` 的"
+                        "失败断言就掉 2 格（6/6→4/6），而它自己那条是 `1.00 — 通过 6/6`。"
+                        "⚠️ 不改默认：一个题一次读数不够。")
     p.add_argument("--memory-mode", default="raw", choices=("raw", "abstract"),
                    help="本次允许读到记忆的哪一层（DESIGN §15.2e）："
                         "raw=原样读（含 episodic 原文）；"

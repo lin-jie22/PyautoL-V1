@@ -681,6 +681,7 @@ class Core:
         caliber_sig: str = "",
         memory_mode: str = "raw",
         external_handoff: str = "off",
+        critique_mix: str = "with-others",
     ) -> None:
         #: ★§282：要不要把**累积块**（评审 + 语义记忆）一并交给答案型外部能力。
         #:
@@ -700,6 +701,19 @@ class Core:
         #: ⛔ 与 state **同源**：state 被预算闸丢掉哪块，这里就没有哪块 ——
         #:    否则会出现"交出去的东西比看到的多"，读数无法归因。
         self._handoff_txt: str = ""
+        #: ★ V222（§294）：`[外部评审]` 块里**除了本题那条，还要不要掺别的题**。
+        #:
+        #:   "with-others"（默认）`[本题 1 条] + [别的题尾 2 条]` —— 旧行为一字不改。
+        #:   "self-only"  本题有记录时**只放它自己**；没有记录时仍按 `crit[-3:]`。
+        #:
+        #: 为什么需要这根旋钮：V221 实测 `t04` 本来 6/6，只因附言里掺了一条
+        #:   `t01` 的失败断言就掉到 4/6（同一段 195 字同时喂给两题）。
+        #:   ⛔ 但「掺了会掉分」只在一个题上一次读数里看到，不许据此改默认
+        #:   （AZ99 钉住的是 with-others 的语义，默认必须保持它）。
+        self.critique_mix: str = str(critique_mix)
+        if self.critique_mix not in ("with-others", "self-only"):
+            raise ValueError(
+                f"critique_mix 只接受 with-others/self-only，收到 {critique_mix!r}")
         #: 本次运行**允许读到记忆的哪一层**：
         #:
         #:   "raw"      （默认）episodic 原文与全部语义记忆都进决策链 ——
@@ -2316,7 +2330,15 @@ class Core:
             #    逐元素相同，旧口径一字不变（AZ99 双向钉住）。
             self_c = [c for c in crit if task_id and c.task_id == task_id]
             others = [c for c in crit if not (task_id and c.task_id == task_id)]
-            pick = ([self_c[-1]] + others[-(3 - 1):]) if self_c else crit[-3:]
+            # ★ V222（§294）：`self-only` ⇒ 有本题记录时**只放它自己**。
+            #   为什么：V221 实测 `t04`（满分题）只因附言掺了 `t01` 的失败断言
+            #   就掉 2 格 —— 而它自己那条是 `1.00 — 通过 6/6`，没有任何失败可自省。
+            #   ⚠️ 本题**没有**记录时仍走 `crit[-3:]`：那时「给别人的教训」
+            #   是唯一可用的信息，且这条路径与旧口径逐元素相同。
+            if self_c and self.critique_mix == "self-only":
+                pick = [self_c[-1]]
+            else:
+                pick = ([self_c[-1]] + others[-(3 - 1):]) if self_c else crit[-3:]
             parts.append("[外部评审] " + " ｜ ".join(c.as_line()[:140] for c in pick))
             mem_items += len(pick)
             mem_chars += sum(len(c.as_line()[:140]) for c in pick)

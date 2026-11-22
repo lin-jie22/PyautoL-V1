@@ -1,0 +1,1 @@
+median=13.40 tok/s gate=12 (单次规模) VERDICT=PASS

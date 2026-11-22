@@ -2250,7 +2250,8 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     #      已按 `V1_STATE_DIR` 解析）。纪律「设了 env ≠ 全部隔离」由此落地。
     _crit_path = (Path(args.critique_file).expanduser() if args.critique_file
                   else (s.paths.state / "critique.jsonl"))
-    _crit = CritiqueLedger(_crit_path)
+    _crit = CritiqueLedger(_crit_path,
+                           freeze_pass=bool(getattr(args, "critique_freeze_pass", False)))
     _crit_loaded = _crit.load()
     # ── 投喂口径三档（V29）──────────────────────────────────────────────
     # 为什么必须有第三档：旧装置是 全开/全关 两档，而「全开」把跨轮累积和
@@ -2296,6 +2297,11 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     #   ⛔ 不许只在 self-only 时印：那样"默认"与"这一行忘了加"在读数上同形。
     print(f"  评审混编  mix={getattr(args, 'critique_mix', 'with-others')}"
           f"（with-others=本题1条+别题尾2条 / self-only=只放本题）")
+    # ★ V225（§296）：写端冻不冻结必须印出来 —— 它决定「下一轮的输入是不是这一轮的输入」。
+    #   ⛔ 不许只在 on 的时候印：那样"off"与"这一行忘了加"在读数上同形。
+    print(f"  评审写端  freeze-pass="
+          f"{'on' if getattr(args, 'critique_freeze_pass', False) else 'off'}"
+          f"（on=满分不覆盖、保留产生满分的输入 / off=按键覆盖）")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
     # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
@@ -2660,7 +2666,9 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
         _cs = _crit.stats()
         # 分母同时给：`rejected` 是累计的，离开 `calls` 无法解释。
         print(f"  评审     落盘={_crit_saved} 条  投喂={_cs['served']}"
-              f"（{_cs['calls']} 次筛选）  拒绝={_cs['rejected']}")
+              f"（{_cs['calls']} 次筛选）  拒绝={_cs['rejected']}"
+              + (f"  满分冻结={_cs['frozen']} 次（同键再次写入 {_cs['superseded']} 次）"
+                 if _cs["freeze_pass"] else ""))
     if prov is not None:
         print(f"  血缘      llm_of_record={rep.llm_of_record()}"
               f" 外部能力={len(rep.provenance.get('external_agents') or [])} 个")
@@ -3307,6 +3315,14 @@ def main() -> int:
                         "为什么要有这根旋钮：V221 实测满分题 `t04` 只因附言掺了 `t01` 的"
                         "失败断言就掉 2 格（6/6→4/6），而它自己那条是 `1.00 — 通过 6/6`。"
                         "⚠️ 不改默认：一个题一次读数不够。")
+    p.add_argument("--critique-freeze-pass", action="store_true",
+                   help="**满分不覆盖账本**（DESIGN §296，V225）："
+                        "同一题再次落账且新分数 = 1.0 时，保留旧条、不改写（计数 `frozen`）。"
+                        "为什么：`add()` 是键覆盖，满分那轮跑完旧条会被换成「通过 X/X」，"
+                        "而那条旧条正是**产生满分的那条输入** —— 确定装置上（§294）"
+                        "换输入就等于换下一轮行为（V224 现场：TypeError 行→6/6→写成通过→2/6）。"
+                        "非满分照旧覆盖（回归必须被记下）。"
+                        "**默认 off = 旧行为一字不改**。")
     p.add_argument("--memory-mode", default="raw", choices=("raw", "abstract"),
                    help="本次允许读到记忆的哪一层（DESIGN §15.2e）："
                         "raw=原样读（含 episodic 原文）；"

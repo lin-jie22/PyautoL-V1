@@ -153,8 +153,18 @@ class CritiqueLedger:
     """
 
     def __init__(self, path: Path | None = None, *, allow_self: bool = False,
-                 why_mode: str = RAW_WHY) -> None:
+                 why_mode: str = RAW_WHY, freeze_pass: bool = False) -> None:
         self.path = Path(path) if path else None
+        #: ⭐ V225（§296）：**满分不覆盖**。**默认 False = 旧行为一字不改。**
+        #:
+        #: 为什么：`add()` 的去重是键覆盖。满分那一轮跑完后，旧条会被换成
+        #: 「通过 X/X」——而那条旧条正是**产生满分的那条输入**。在确定装置上
+        #: （§294：同输入 ⇒ 同代码 ⇒ 同分数），换掉输入就等于换掉下一轮的行为：
+        #: V224 现场 `TypeError 行 → 6/6 → 写成"通过 6/6" → 2/6`。
+        #: 非满分照旧覆盖 —— 回归必须被记下，那是真信息。
+        self.freeze_pass = bool(freeze_pass)
+        #: 被冻结拦下的条数。⛔ 不报这个数，「账本没变」就分不清是**冻结**还是**没写**。
+        self.frozen = 0
         #: ⭐ 第一百二十三轮（§96）：同题评审是否放行。**默认 False = 旧行为一字不改。**
         #:
         #: 为什么需要一个开关而不是直接改闸：第 2 条纪律（「不许用当前题」）挡的是
@@ -180,7 +190,8 @@ class CritiqueLedger:
         self.why_dropped = 0
         self.by_key: dict[tuple[str, str, str], Critique] = {}
         self.added = 0
-        #: 同一键被覆盖的次数 —— 这个数不为 0 说明有题被重跑过，是有用信息
+        #: 同一键**再次写入**的次数（含被 `freeze_pass` 拦下、未真正覆盖的那部分 ——
+        #: 所以它与 `frozen` 一起才解释得清账本为什么没变）。不为 0 说明有题被重跑过。
         self.superseded = 0
         self.rejected: dict[str, int] = {k: 0 for k in REJECT_KINDS}
         self.calls = 0
@@ -193,6 +204,11 @@ class CritiqueLedger:
         key = (c.scorer_sha, c.suite_sha, c.task_id)
         if key in self.by_key:
             self.superseded += 1
+            #: ⭐ V225：满分不覆盖（默认 off）。`1.0 - 1e-9` 而不是 `== 1.0`：
+            #: 分数是 `round(x, 4)` 落盘的，别让浮点比较决定「冻不冻」。
+            if self.freeze_pass and float(c.score) >= 1.0 - 1e-9:
+                self.frozen += 1
+                return
         why = c.why[:_MAX_WHY]
         if self.why_mode == TRANSFERABLE_WHY:
             _w = transferable_why(why)
@@ -251,6 +267,10 @@ class CritiqueLedger:
             "stored": len(self.by_key),
             "added": self.added,
             "superseded": self.superseded,
+            #: ⭐ V225：满分冻结口径 + 它实际拦下几条。
+            #: ⛔ 只报 `freeze_pass` 不报 `frozen` ⇒ 分不清「没满分的题」与「开关没接线」。
+            "freeze_pass": self.freeze_pass,
+            "frozen": self.frozen,
             "calls": self.calls,
             "served": self.served,
             #: ⚠️ 口径必须自报：`allow_self=True` 的账本和 `False` 的账本

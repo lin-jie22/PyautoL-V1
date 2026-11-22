@@ -1,0 +1,4 @@
+wall=10.6s gen=134 decode=18.13 tok/s
+wall=5.1s gen=91 decode=18.18 tok/s
+wall=7.2s gen=129 decode=17.97 tok/s
+median=18.13 tok/s gate=15 VERDICT=PASS

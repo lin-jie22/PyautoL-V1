@@ -1,0 +1,27 @@
+# 新增 runs 3 行；新增 answers 9 行
+# probe 记录数 [2, 2, 2]
+
+## P0 外部能力收到的 stdin（t01）
+  run1: chars= 261 sha=3b40d589bf3a review=True
+  run2: chars= 261 sha=3b40d589bf3a review=True
+  run3: chars= 261 sha=3b40d589bf3a review=True
+  ⇒ P0 ✅ 全同  ['3b40d589bf3a', '3b40d589bf3a', '3b40d589bf3a']
+
+## P0b 同一段原文（run1 收到的 t01 附言尾部 300 字）
+  写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+  
+  [外部评审] [suite_sub2/t01_parse_duration] 0.50 — 通过 3/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError | assert parse_duration('2h') == 7
+
+## P1/P2/P3 逐轮代码与分数
+  run 71705@1795360686  t01 sha=f1bf6b0dc592 chars= 418 vec=101011  t04 sha=a82c21d49d16 chars= 489 vec=011000
+  run 80782@1795360802  t01 sha=f1bf6b0dc592 chars= 418 vec=101011  t04 sha=a82c21d49d16 chars= 489 vec=011000
+  run 81124@1795360923  t01 sha=f1bf6b0dc592 chars= 418 vec=101011  t04 sha=a82c21d49d16 chars= 489 vec=011000
+
+  P1 t01 代码: ✅ 3/3 同  ['f1bf6b0dc592', 'f1bf6b0dc592', 'f1bf6b0dc592']
+  P2 t04 代码: ✅ 3/3 同  ['a82c21d49d16', 'a82c21d49d16', 'a82c21d49d16']
+  P3 t01 vec: ✅ 全同  1 种
+
+## 判决
+  P0 ✅ 且 3/3 ⇒ **确定**：1 格差异是真效应，L3 净 0 是真净 0。
+
+  押注存档：本轮押「确定」（3/3），把握自报 0.5。

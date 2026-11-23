@@ -1,0 +1,33 @@
+```python
+def parse_duration(s):
+    if not s or not isinstance(s, str):
+        return None
+    
+    s = s.lower()
+    parts = s.split('h')
+    if len(parts) > 1:
+        hours = int(parts[0])
+        remaining = parts[1]
+    else:
+        hours = 0
+        remaining = s
+    
+    total_seconds = hours * 3600
+    
+    parts = remaining.split('m')
+    if len(parts) > 1:
+        minutes = int(parts[0])
+        total_seconds += minutes * 60
+        remaining = parts[1]
+    elif remaining:
+        return None
+    
+    parts = remaining.split('s')
+    if len(parts) > 1:
+        seconds = int(parts[0])
+        total_seconds += seconds
+    elif len(parts) == 1 and parts[0].isdigit():
+        total_seconds += int(parts[0])
+    
+    return total_seconds
+```

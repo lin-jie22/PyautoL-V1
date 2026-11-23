@@ -1,0 +1,20 @@
+V237 速度闸（纪律 116：跑批量前量速度写死门槛，<15 tok/s 不启动全量）
+时间：2026-11-24 01:0x  主机：本地 ollama  环境：unset PYTHONPATH
+口径：`gen tok/s = completion_tokens / wall_s`，**已热身**（先跑一次 32 token 把权重装进去）
+
+=== 第一次：未热身（作废，留作现场记录）===
+qwen2.5:7b  : completion_tokens=11 wall=4.3s  gen≈2.55 tok/s  -> FAIL(<15)
+qwen2.5:14b : completion_tokens=7  wall=7.4s  gen≈0.95 tok/s  -> FAIL(<15)
+⛔ 这两个数不是生成速度，是**模型加载时间**。若照它判闸，会得出「两个模型都不能用」的假否证。
+
+=== 第二次：热身后（本轮判闸依据）===
+qwen2.5:7b  : tok=22 wall=1.3s  tps=16.56
+qwen2.5:7b  : tok=22 wall=1.3s  tps=16.55
+              => 取最好 16.56 tok/s  闸 PASS  => 全量 9 次
+qwen2.5:14b : tok=18 wall=1.9s  tps=9.26
+qwen2.5:14b : tok=18 wall=2.0s  tps=9.16
+              => 取最好 9.26 tok/s   闸 FAIL  => 只做小样 2 次，如实标注破闸
+
+=== 推论（写死，跑的时候不改）===
+900 token 预算：7b ≈ 54 s/次、14b ≈ 97 s/次。
+7b 9 次 ≈ 8 min；14b 2 次 ≈ 3.3 min；合计 + 判分 ≈ 13 min，低于 §7 的 25 min 停轮线。

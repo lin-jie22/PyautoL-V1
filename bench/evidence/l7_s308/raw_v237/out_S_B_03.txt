@@ -1,0 +1,40 @@
+```python
+def parse_duration(s):
+    if not s or not isinstance(s, str):
+        return None
+    
+    try:
+        s = s.lower()
+        total_seconds = 0
+        
+        # Check for hours
+        if 'h' in s:
+            h_start = s.find('h')
+            hours_str = s[:h_start]
+            if hours_str:
+                hours = int(hours_str)
+                total_seconds += hours * 3600
+            s = s[h_start + 1:]
+        
+        # Check for minutes
+        if 'm' in s:
+            m_start = s.find('m')
+            mins_str = s[:m_start]
+            if mins_str:
+                minutes = int(mins_str)
+                total_seconds += minutes * 60
+            s = s[m_start + 1:]
+        
+        # Check for seconds
+        if 's' in s:
+            sec_start = s.find('s')
+            secs_str = s[:sec_start]
+            if secs_str:
+                seconds = int(secs_str)
+                total_seconds += seconds
+        
+        return total_seconds
+
+    except (ValueError, IndexError):
+        return None
+```

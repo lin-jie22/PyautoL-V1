@@ -16891,6 +16891,55 @@ check(RS, "AZ162f 边界清单**穷尽**：`CORE ∪ NON_CORE` == `mw/*.py`（�
       f"未登记={sorted(_az162_files - set(_az162_all))} "
       f"交集={sorted(set(_az162_core) & set(_az162_non))}")
 
+# ── AZ163a：第二体槽位**默认关** ⇒ 提示产出逐字节同 V233 ────────────────
+# ⚠️ 为什么钉 sha 而不是钉「参数默认值是空串」：默认值随时可以改着玩，
+#    sha 钉住的是**产出**。V236 的 AZ162d 是同一形态（`models=()` ⇒ 行为不变）。
+from mw.reflect import (alt_block as _az163_blk,          # noqa: E402
+                        build_proposal_prompt as _az163_bpp,
+                        sha_of as _az163_sha)
+_az163_base = _az163_bpp("G", "def f(): pass", "W", ("a1", "a2"))
+check(RS, "AZ163a `build_proposal_prompt(..., alt_code='')` 默认关：产出 sha 冻结在\n"
+          "              `2818c5673cc0884d`（V233 的模板）；默认路径一变，V233/V234 的\n"
+          "              对照臂就不可重放（同 AZ162d：默认空 ⇒ 行为逐字节不变）",
+      _az163_sha(_az163_base) == "2818c5673cc0884d",
+      f"sha={_az163_sha(_az163_base)}")
+
+# ── AZ163b：第二体段**只有一处**构造文本，且不点名任何断言/输入 ──────────
+# ⛔ 纪律 151：在洞旁边写说明书，会把「找到洞」变成「照着念」。模板里一旦出现
+#    `assert` / 具体输入 / 「正确」这类词，测到的就不是「它能不能比较两份实现」。
+_az163_tpl = _az163_blk("BODY")
+_az163_leak = [w for w in ("assert", "'10m'", "'abc'", "parse_duration",
+                           "正确", "通过了", "哪条") if w in _az163_tpl]
+_az163_src = (V1 / "mw" / "reflect.py").read_text(encoding="utf-8")
+check(RS, "AZ163b 第二体段：`mw/reflect.py` 里**只有一处**构造该段的文本，\n"
+          "              且模板不点名任何断言/输入/谁对（泄漏词表逐个查）——\n"
+          "              ⛔ 两处各写一遍措辞迟早漂移成两个实验；点名答案则是给说明书",
+      _az163_src.count("【另一份实现】") == 1 and not _az163_leak,
+      f"出现={_az163_src.count('【另一份实现】')} 泄漏={_az163_leak}")
+
+# ── AZ163c：删掉第二体段 ⇒ **逐字节**回到首选体（单变量）────────────────
+# 这是「两臂只差第二体」的可执行定义。⛔ 差一个换行也算差：那时两臂差的
+# 就不止一个变量，`D_AB - S_A` 的差归因不了（纪律 111/124 的同型）。
+_az163_alt = "ALT_BODY_HERE"
+_az163_full = _az163_bpp("G", "def f(): pass", "W", ("a1", "a2"), alt_code=_az163_alt)
+_az163_strip = _az163_full.replace(_az163_blk(_az163_alt), "")
+check(RS, "AZ163c 单变量：`bad(alt).replace(alt_block(alt), '')` 与 `bad()` **逐字节相等**，\n"
+          "              且第二体段在全文里**只出现一次**（不许多塞一份）",
+      _az163_strip == _az163_base and _az163_full.count(_az163_blk(_az163_alt)) == 1,
+      f"strip_eq={_az163_strip == _az163_base} "
+      f"n_block={_az163_full.count(_az163_blk(_az163_alt))}")
+
+# ── AZ163d：第二体段插在**诊断段之后、指令段之前** ─────────────────────
+# 位置是语义：「下面这个函数」（首句）必须紧挨【当前代码】。插在前面 ⇒
+# 首句指错对象；插在末尾 ⇒ 指令已经说完了才给素材。两种都让读数不可归因。
+_i_code = _az163_full.index("【当前代码】")
+_i_alt = _az163_full.index("【另一份实现】")
+_i_ask = _az163_full.index("要求：")
+check(RS, "AZ163d 位置：`【当前代码】 < 【另一份实现】 < 要求：`（严格递增）——\n"
+          "              ⛔ 插进代码槽 = 一份劣质拼接；插到末尾 = 指令已说完才给素材",
+      _i_code < _i_alt < _i_ask,
+      f"{_i_code} < {_i_alt} < {_i_ask}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

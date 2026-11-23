@@ -2445,6 +2445,29 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ162g", "mw/goals.py",
      '''    word = "均分" if tm == "mean_score" else "最好成绩"''',
      '''    word = "均分"'''),
+    #: ══ V237（§308）══════════════════════════════════════════════════
+    #: a：第二体槽位**不再默认关**（空串也照样加一段）⇒ 默认产出 sha 变 ⇒
+    #:    V233/V234 的对照臂不可重放。这是「默认关」的撤回形态：不是改默认值，
+    #:    是让默认值**失效**。
+    ("AZ163a", "mw/reflect.py",
+     '''    if alt_code:
+        parts.append(alt_block(alt_code))''',
+     '''    if True:
+        parts.append(alt_block(alt_code))'''),
+    #: b：把答案写进模板（"它通过了 '10m'"）⇒ 泄漏词表非空 ⇒ AZ163b 红。
+    #:    这一撤测的是「说明书检查」看不看得见说明书（纪律 151）。
+    ("AZ163b", "mw/reflect.py",
+     '''            "（两份都可能是错的，可以取任意部分，也可以都不用）：\\n"''',
+     '''            "（两份都可能是错的，比如它通过了 '10m'，可以取任意部分）：\\n"'''),
+    #: c：第二体段多带一个换行 ⇒ 删掉它之后回不到首选体 ⇒ 单变量断掉。
+    #:    ⚠️ 差一个换行也是差：那时 `D_AB - S_A` 的差里混进了格式变化。
+    ("AZ163c", "mw/reflect.py",
+     '''        parts.append(alt_block(alt_code))''',
+     '''        parts.append(alt_block(alt_code) + "\\n")'''),
+    #: d：第二体段插到最前面（`parts` 的第 1 位）⇒ 首句「下面这个函数」指错对象。
+    ("AZ163d", "mw/reflect.py",
+     '''        parts.append(alt_block(alt_code))''',
+     '''        parts.insert(1, alt_block(alt_code))'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2492,6 +2515,10 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   这个字段「设了才发、没设一个字节都不多发」的两面（同一行实现被三条锚定）。
     #:   实测 `红=['AZ162e','TH2','TH3']` —— 结构性连带，解不开。
     "AZ162e": frozenset({"TH2", "TH3"}),
+    #: ⚠️ AZ163a 撤的是「`if alt_code:` 这道闸」本身 ⇒ 默认调用也追加一个**空体段**，
+    #:   而 AZ163c 的对照臂 `_az163_base` 正是拿默认调用建的 ⇒ 两边一起变。
+    #:   实测 `红=['AZ163a','AZ163c']` —— 同一处实现的两个面，解不开。
+    "AZ163a": frozenset({"AZ163c"}),
     "AZ161e": frozenset({"AZ133a"}),
     "AZ161f": frozenset({"AZ134f"}),
     #: ★第 143 轮：AZ129c 撤的是「没有身份证也能过」这条规则；AZ129f 断言的正是

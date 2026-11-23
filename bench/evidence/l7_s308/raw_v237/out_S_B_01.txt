@@ -1,0 +1,63 @@
+```python
+def parse_duration(s):
+    if not s or not isinstance(s, str):
+        return None
+    
+    try:
+        s = s.lower()
+        total_seconds = 0
+        
+        # Check for hours
+        if 'h' in s:
+            # Find hour part before 'h'
+            h_start = 0
+            while h_start < len(s) and not (s[h_start] == 'h'):
+                h_start += 1
+            
+            hours_str = s[:h_start]
+            if hours_str:
+                hours = int(hours_str)
+                total_seconds += hours * 3600
+            # Remove processed part for further checks
+            remaining = s[h_start + 1:]
+        else:
+            remaining = s
+        
+        # Check for minutes in the remaining string
+        if 'm' in remaining:
+            m_start = 0
+            while m_start < len(remaining) and not (remaining[m_start] == 'm'):
+                m_start += 1
+            
+            mins_str = remaining[:m_start]
+            if mins_str:
+                minutes = int(mins_str)
+                total_seconds += minutes * 60
+            # Remove processed part for further checks
+            remaining = remaining[m_start + 1:]
+        else:
+            remaining = s
+        
+        # Check for seconds in the remaining string
+        if 's' in remaining:
+            # Find second part before 's'
+            sec_start = 0
+            while sec_start < len(remaining) and not (remaining[sec_start] == 's'):
+                sec_start += 1
+            
+            secs_str = remaining[:sec_start]
+            if secs_str:
+                seconds = int(secs_str)
+                total_seconds += seconds
+        else:
+            # If no explicit time units found but string is a number, treat as seconds? 
+            if remaining.isdigit():
+                total_seconds = int(remaining)
+            else:
+                return None
+        
+        return total_seconds
+
+    except (ValueError, IndexError):
+        return None
+```

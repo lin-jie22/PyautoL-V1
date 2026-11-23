@@ -44,6 +44,7 @@ from .llm import HTTPLLM, LLM, LLMError, Message, StubLLM, build_llm
 from .memory import BlobIntegrityError, MemoryStore
 from .metacog import SelfModel, load_evidence
 from .planner import Plan, Planner, Step, action_signature, looks_complex
+from .reflect import pick as pick_lesson
 from .tools import (ToolRegistry, ToolResult, external_agent_names,
                     external_last_meta, register_core_tools,
                     register_external_agents, spec_applies)
@@ -454,7 +455,12 @@ _ANSWER_MIN_S = 20.0
 #:    外部入参 261 字里**没有** ⇒ `state` 涨了 685 字、答案**逐字节不变**
 #:    （纪律 114 第二次复发，同一次运行内可逐字节比）。
 #:    ⚠️ `--critique-carry-code` 为 off 时这一段**根本不存在** ⇒ 旧行为零影响。
-HANDOFF_BLOCKS: tuple[str, ...] = ("[外部评审]", "[语义记忆]", "[经验]", "[上版代码]")
+#: ★ V231（§302）：加 `[自我修订]`。它是 **Reflector 的产物** ——
+#:    `[上版代码]` 是「上一版是什么」，`[自我修订]` 是「上一版哪里错、该改成什么」。
+#:    Reflexion 的消融说：只给前者不提升，写后者才提升（§302.1）。
+#:    ⚠️ 与 `[上版代码]` 一样，`--critique-reflect` 为 off 时这一段**根本不存在**。
+HANDOFF_BLOCKS: tuple[str, ...] = ("[外部评审]", "[语义记忆]", "[经验]",
+                                   "[上版代码]", "[自我修订]")
 
 
 def handoff_text(parts: Sequence[str]) -> str:
@@ -688,6 +694,8 @@ class Core:
         external_handoff: str = "off",
         critique_mix: str = "with-others",
         critique_carry_code: bool = False,
+        critique_reflect: bool = False,
+        lessons: dict[str, Any] | None = None,
     ) -> None:
         #: ★§282：要不要把**累积块**（评审 + 语义记忆）一并交给答案型外部能力。
         #:
@@ -736,6 +744,32 @@ class Core:
         #: ⛔ 不报这两个数，「块没进去」与「进去了但模型没理」在读数上一模一样。
         self.carry_code_hits: int = 0
         self.carry_code_chars: int = 0
+        #: ★ V231（§302）：`[上版代码]` 之后要不要再附一段 `[自我修订]`。
+        #:
+        #:   False（默认）旧行为一字不改：块里只有代码，没有「哪里错、该改什么」。
+        #:   True        追加 **Reflector** 针对那份代码写的一段说明（`lessons` 里取）。
+        #:
+        #: 为什么需要它：V230 现场 `why` 逐字点名了两条失败断言，模型**一格没修**——
+        #:   它只修了「体里一眼看得出」的错。Reflexion 的消融指出缺的是**写反思**
+        #:   那一步：`why` 是症状（`⇒ AssertionError`），反思是根因 + 动作。
+        #:   ⛔ 默认 off：这是**改产品行为**（多一段有信息量的指令），
+        #:   必须先把「加了它分数动没动」量出来。
+        self.critique_reflect: bool = bool(critique_reflect)
+        #: 已落盘的说明，键 = `scorer_sha|suite_sha|task_id`（见 `mw.reflect.Lesson`）。
+        #: ⛔ 只有 `based_on_sha` 与账本里那份代码**逐字节一致**时才注入（`stale` 不注入）：
+        #:    `freeze_pass` 会把旧输入冻在账本里，而说明是针对**新产出**写的。
+        self.lessons: dict[str, Any] = dict(lessons or {})
+        #: 真注入 / 未注入的次数。⛔ 必须分开计：`absent`（这题没失败）与
+        #: `stale`（说明对不上这份代码）是两种完全不同的处置，
+        #: 合并成一个数就分不清「没东西可给」与「给了但被校验挡了」。
+        self.reflect_hits: int = 0
+        self.reflect_absent: int = 0
+        self.reflect_stale: int = 0
+        #: 开关开了但 `[上版代码]` 没开 ⇒ 说明没有可依附的代码，不注入。
+        #: 单列一个计数器，否则「开关没接线」会伪装成 `absent`。
+        self.reflect_unpaired: int = 0
+        #: 实际注入的字符数（判断这段是不是把别的块挤出了预算）。
+        self.reflect_chars: int = 0
         #: 本次运行**允许读到记忆的哪一层**：
         #:
         #:   "raw"      （默认）episodic 原文与全部语义记忆都进决策链 ——
@@ -2372,6 +2406,27 @@ class Core:
                 parts.append(code_seg)
                 self.carry_code_hits += 1
                 self.carry_code_chars += len(code_seg)
+                # ★ V231（§302）：紧跟代码之后给「这份代码哪里错、该改成什么」。
+                #   位置是判据的一部分：说明必须**挨着**它评述的那段代码，
+                #   否则读的人（和模型）分不清它在说哪一份。
+                if self.critique_reflect:
+                    _les, _why = pick_lesson(
+                        self.lessons, scorer_sha=scorer_sha, suite_sha=suite_sha,
+                        task_id=task_id or "", answer=self_c[-1].answer)
+                    if _les:
+                        ref_seg = "[自我修订] " + _les
+                        parts.append(ref_seg)
+                        self.reflect_hits += 1
+                        self.reflect_chars += len(ref_seg)
+                    elif _why == "stale":
+                        self.reflect_stale += 1
+                    else:
+                        self.reflect_absent += 1
+            elif self.critique_reflect:
+                # 开关开着、代码没开 ⇒ 说明没有可依附的代码。
+                # ⛔ 不在这里"照样把说明塞进去"：一段脱离代码的修改建议
+                #    会变成第二个自变量（模型不知道它在说哪一份）。
+                self.reflect_unpaired += 1
         if history:
             parts.append("[轨迹] " + " ｜ ".join(history[-6:]))
         step_line = f"[第 {it}/{self.ledger.budget.steps if self.ledger else '?'} 步]"

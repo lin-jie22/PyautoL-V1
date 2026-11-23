@@ -183,6 +183,10 @@ class CritiqueLedger:
         #: 被「保最优」拦下的条数。⛔ 与 `frozen` 分开计：两者拦下的理由不同，
         #: 混一个数就分不清「保满分生效」和「保最优生效」。
         self.best_kept = 0
+        #: ★ V233（§304）：被 `promote()` 无条件写入的条数（已过判分证明更好）。
+        #: ⛔ 单列：它与 `added` 不是一回事 —— `added` 是跑完落账，
+        #: `promoted` 是「候选过了同一把尺子」。合并就分不清改进从哪来。
+        self.promoted = 0
         #: 被冻结拦下的条数。⛔ 不报这个数，「账本没变」就分不清是**冻结**还是**没写**。
         self.frozen = 0
         #: ⭐ 第一百二十三轮（§96）：同题评审是否放行。**默认 False = 旧行为一字不改。**
@@ -263,6 +267,31 @@ class CritiqueLedger:
             answer=c.answer[:_MAX_ANSWER])
         self.added += 1
 
+    def promote(self, c: Critique) -> bool:
+        """**已用判分证明更好**的候选 ⇒ 无条件覆盖这一行。返回是否写入。
+
+        ⛔ 与 `add()` 的分工（§304，V233）：
+
+            `add()`      「一轮跑完的落账」—— 必须服从冻结规则：
+                         `freeze_pass` 保住产生满分的那条输入、`freeze_best` 保住更高的旧分。
+            `promote()`  「已经过判分证明更好的候选」—— **必须**覆盖。
+                         否则 `freeze_pass` 会在「旧的是满分」时把改进挡在门外，
+                         而"更好"这件事已经被**同一个判分器**证实过了（不是模型自己说的）。
+
+        为什么这条不能塞进 `add()`：两者判据不同源。
+        `add()` 信的是「这一轮跑了多少分」，`promote()` 信的是「同一把尺子量过、确实更高」。
+        混在一个分支里，`frozen` / `best_kept` / `promoted` 三个计数就再也解释不清。
+        """
+        if not c.scorer_sha or not c.suite_sha or not c.task_id:
+            raise ValueError("critique 缺口径签名（scorer_sha/suite_sha/task_id 都必填）")
+        key = (c.scorer_sha, c.suite_sha, c.task_id)
+        self.by_key[key] = Critique(
+            scorer_sha=c.scorer_sha, suite_sha=c.suite_sha, task_id=c.task_id,
+            family=c.family, score=c.score, why=c.why[:_MAX_WHY],
+            answer=c.answer[:_MAX_ANSWER])
+        self.promoted += 1
+        return True
+
     def admissible(self, *, scorer_sha: str, suite_sha: str,
                    exclude_task_id: str | None) -> list[Critique]:
         """挑出**可以进当前上下文**的评审。三道闸，每道都计被拒原因。
@@ -301,6 +330,9 @@ class CritiqueLedger:
             #: ⛔ 与 `frozen` 分开报：合并成一个数就分不清是哪个闸在起作用。
             "freeze_best": self.freeze_best,
             "best_kept": self.best_kept,
+            #: ⭐ V233：已被判分证明更好、无条件写入的条数。
+            #: ⛔ 不报它，「账本变了」就分不清是跑完落账还是采纳了候选。
+            "promoted": self.promoted,
             "calls": self.calls,
             "served": self.served,
             #: ⚠️ 口径必须自报：`allow_self=True` 的账本和 `False` 的账本

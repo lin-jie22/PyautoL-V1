@@ -1,0 +1,1 @@
+{"scorer_sha": "6062bd622cc52edb0d5a1eb496ea7b3532a1bbd886b8cf6fef26c1bfbe368035", "suite_sha": "e322e014a9472f41d486163404ae11ef", "task_id": "t01_parse_duration", "based_on_sha": "24c322d5d9b6638e", "lesson": "失败的根本原因在于处理空字符串和无法解析字符串时，没有正确抛出异常。下一版应该在遇到无法解析的字符串时，返回 None 而不是抛出 SyntaxError。", "at_score": 0.6667, "at_vec": "011011"}

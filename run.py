@@ -169,6 +169,17 @@ def _build(goal: str, args, *, allow_shell: bool = False,
     _mx = str(getattr(args, "critique_mix", "with-others") or "with-others")
     #: ★ V226（§297）：块后要不要附 `[上版代码]`。默认 False = 旧行为一字不改。
     _cc = bool(getattr(args, "critique_carry_code", False))
+    #: ★ V231（§302）：代码后要不要再附 `[自我修订]`（Reflector 的产物）。
+    #: 默认 False = 旧行为一字不改。⚠️ 与 `_cc` 分开读：
+    #:   两者是**两个自变量**（「给不给代码」与「给不给对代码的判决」），
+    #:   一起从同一个 flag 派生，就再也分不清是谁起了作用。
+    _rf = bool(getattr(args, "critique_reflect", False))
+    _lessons: dict = {}
+    if _rf:
+        from mw.reflect import index_lessons, load_lessons
+        _lp = getattr(args, "critique_lessons", None)
+        if _lp:
+            _lessons = index_lessons(load_lessons(_lp))
     # ── ★ 第一百三十三轮（§109）：guard 必须在**两条分支之前**统一构造 ──────
     # 修之前它只写在离线分支里（`if args.offline or not s.llm.usable():`），
     # 于是**真模型路径上 `--allow-shell` 完全无效** —— 命令行带着
@@ -196,6 +207,8 @@ def _build(goal: str, args, *, allow_shell: bool = False,
                     external_handoff=_ho,
                     critique_mix=_mx,
                     critique_carry_code=_cc,
+                    critique_reflect=_rf,
+                    lessons=_lessons,
                     wire_external=not getattr(args, "no_external", False))
     else:
         core = Core(s, guard=_guard, critique_ledger=critique_ledger,
@@ -204,6 +217,8 @@ def _build(goal: str, args, *, allow_shell: bool = False,
                     external_handoff=_ho,
                     critique_mix=_mx,
                     critique_carry_code=_cc,
+                    critique_reflect=_rf,
+                    lessons=_lessons,
                     wire_external=not getattr(args, "no_external", False))
     return core
 
@@ -2258,6 +2273,11 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
                            freeze_pass=bool(getattr(args, "critique_freeze_pass", False)),
                            freeze_best=bool(getattr(args, "critique_freeze_best", False)))
     _crit_loaded = _crit.load()
+    # ★ V231（§302）：`[自我修订]` 的落盘文件默认与评审账本同目录。
+    #   ⛔ 与账本**分开存**：账本行是证据（打分器原话 + 那一版答案），
+    #   反思是**派生物**。混在一行里，读的人分不清哪半是他者说的、哪半是自己说的。
+    if not getattr(args, "critique_lessons", None):
+        args.critique_lessons = str(_crit_path.parent / "crit_lessons.jsonl")
     # ── 投喂口径三档（V29）──────────────────────────────────────────────
     # 为什么必须有第三档：旧装置是 全开/全关 两档，而「全开」把跨轮累积和
     # 轮内投喂绑死 —— 想测「上一轮学到的东西对本轮有没有用」，就不得不接受
@@ -2319,6 +2339,14 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     print(f"  评审写端  freeze-best="
           f"{'on' if getattr(args, 'critique_freeze_best', False) else 'off'}"
           f"（on=新分不高于旧分就不覆盖、账本单调不降 / off=按键覆盖）")
+    # ★ V231（§302）：给不给「对上一版代码的判决」必须印出来 —— 它是自变量。
+    #   ⛔ 不许只在 on 时印（缺席冒充零）。
+    print(f"  评审自省  reflect={'on' if getattr(args, 'critique_reflect', False) else 'off'}"
+          f"（on=`[上版代码]` 后附 `[自我修订]`：Reflector 写的根因+动作 / off=只有代码与 why）")
+    # ★ V233（§304）：提议-验证-采纳必须印出来 —— 它改的是**账本本身**，
+    #   比"多一段文字"影响大一个量级。⛔ 不许只在 on 时印（缺席冒充零）。
+    print(f"  提议采纳  promote={'on' if getattr(args, 'critique_promote', False) else 'off'}"
+          f"（on=候选实现离线判分、严格更好才写进账本 / off=不提议）")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
     # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
@@ -2594,7 +2622,153 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     m, rep = run_suite(solver, scorer, suite, repeat_n=repeat_n,
                        budget_tag=tag, candidate=label, provenance=prov,
                        critique_ledger=_crit)
+    # ── ★ V233（§304）：提议-验证-采纳 —— 不信诊断，只信判分 ───────────────
+    #
+    # 为什么换机制：V231/V232 把「自然语言说明」这条路量到底了 ——
+    #   V231 诊断错（说「误认为含 h」）⇒ 模型忠实执行错诊断（只做等价重构）；
+    #   V232 给了实测值，诊断**更错**（跑偏到代码里并不存在的 SyntaxError）⇒ 模型回到照抄。
+    # 两轮的分数一格没动（4/6 → 4/6）。⇒ 瓶颈不是"话递不过去"，是"那句话不对"。
+    #
+    # 所以不再问「它说得对不对」，改问「它给的东西能不能过判分」：
+    #   ① 让它给一份完整候选实现（这一步允许写代码）；
+    #   ② 用**该题自己声明的断言**离线判分（零模型、零网络）；
+    #   ③ **只有严格更好才 promote 进账本**，否则丢弃并分项计数。
+    # ⛔ 关键：`promote()` 走的是**无条件覆盖**，因为"更好"已由同一个判分器证实，
+    #    不是模型自己说的（`add()` 的冻结规则在这里会挡住改进）。
+    _pm_stats = {"n": 0, "ok": 0, "same": 0, "worse": 0, "fail": 0, "nofmt": 0}
+    if (bool(getattr(args, "critique_promote", False))
+            and args.solver not in ("oracle", "null", "partial")):
+        from mw.critique import Critique as _Crit2
+        from mw.llm import Message as _M2
+        from mw.llm import build_llm as _mk2
+        from mw.reflect import (build_proposal_prompt as _pproposal,
+                                failed_actuals as _ract2,
+                                parse_proposal as _pparse, verify as _pverify)
+        _pllm = _mk2(s.llm) if s.llm.usable() else None
+        if _pllm is None:
+            _pm_stats["fail"] += 1
+            print("  ⚠️ 采纳跳过：没有可用的真模型（候选只能由真模型提出）")
+        for _r in (rep.per_task if _pllm is not None else ()):
+            _key = (scorer.sha(), suite.sha(), _r["id"])
+            _c = _crit.by_key.get(_key)
+            if _c is None or not _c.answer:
+                continue
+            _tests = next((t.tests for t in suite.tasks if t.id == _r["id"]), ())
+            _goal = next((t.prompt for t in suite.tasks if t.id == _r["id"]), "")
+            _base = _pverify(_c.answer, _tests)
+            if _base >= len(_tests):
+                continue          # 已经满分 ⇒ 没有可改进的，不去打扰它
+            try:
+                _txt2 = _pllm.complete(
+                    [_M2(role="user", content=_pproposal(
+                        _goal, _c.answer, _c.why, _ract2(_c.answer, _tests)))],
+                    max_tokens=900)
+            except Exception as _e2:                     # noqa: BLE001
+                _pm_stats["fail"] += 1
+                print(f"  ⚠️ 提议失败 {_r['id']}: {_e2}")
+                continue
+            _cand, _fenced = _pparse(_txt2)
+            if not _fenced:
+                # ⛔ 不守格式要单独计：它与「给不出东西」是两种事实。
+                _pm_stats["nofmt"] += 1
+            if not _cand.strip():
+                continue
+            _got = _pverify(_cand, _tests)
+            _pm_stats["n"] += 1
+            if _got > _base:
+                _crit.promote(_Crit2(
+                    scorer_sha=_key[0], suite_sha=_key[1], task_id=_key[2],
+                    family=_c.family, score=round(_got / len(_tests), 4),
+                    why=f"通过 {_got}/{len(_tests)}；由候选实现（离线判分验证后采纳）",
+                    answer=_cand))
+                _pm_stats["ok"] += 1
+                print(f"  ✅ 采纳 {_r['id']}: {_base}/{len(_tests)} → {_got}/{len(_tests)}")
+            elif _got == _base:
+                _pm_stats["same"] += 1
+            else:
+                _pm_stats["worse"] += 1
+        if _pm_stats["ok"]:
+            _crit.save()          # 采纳过 ⇒ 立刻落盘，「下一轮复用什么」当场生效
+        print(f"  提议采纳  采纳={_pm_stats['ok']} 持平={_pm_stats['same']}"
+              f" 更差={_pm_stats['worse']} 越界格式={_pm_stats['nofmt']}"
+              f" 失败={_pm_stats['fail']}（共提议 {_pm_stats['n']} 次）")
+
     _crit_saved = _crit.save()
+
+    # ── ★ V231（§302）：Reflector —— 从**账本里这一轮的失败**写一段修订说明 ────
+    #
+    # 为什么在这里（跑完之后、账本落盘之后）：
+    #   · 它读的是**这一轮的产出与失败**，写的是**下一轮**要用的说明
+    #     ⇒ 与本轮求解无关，不许进内核预算（预算一变，读数就不可比）。
+    #   · 读 `_crit.by_key` 而不是 `rep` / 答案日志：账本里那一行**就是**
+    #     下一轮会被注入的那份代码与那条 `why`。从别处取，说明就可能绑到
+    #     另一份代码上（`freeze_pass` 会把旧输入冻在账本里 —— §301.6）。
+    #
+    # ⛔ 只在「本轮分数与账本分数都不是满分」时写：
+    #     满分没有失败可反思；硬写一条就成了「给没病的开药」。
+    _rf_stats = {"n": 0, "violated": 0, "fail": 0, "skip_full": 0, "chars": 0}
+    if (bool(getattr(args, "critique_reflect", False))
+            and args.solver not in ("oracle", "null", "partial")):
+        from mw.llm import Message as _Msg
+        from mw.llm import build_llm as _mk_llm
+        from mw.reflect import (Lesson as _Lesson, build_prompt as _rprompt,
+                                failed_actuals as _ractuals,
+                                parse_lesson as _parse, save_lessons as _save_lsn,
+                                sha_of as _rsha)
+        # ⚠️ `s.llm` 是 **LLMConfig**（配置对象），不是 LLM 实例 ——
+        #    本轮首跑就是栽在这（`'LLMConfig' object has no attribute 'complete'`），
+        #    而它表现为「自省产出 0 条」，与「这题没有失败可反思」**同形**。
+        #    所以下面两步都计数：拿不到真模型 ≠ 没东西可写。
+        _rllm = _mk_llm(s.llm) if s.llm.usable() else None
+        if _rllm is None:
+            _rf_stats["fail"] += 1
+            print("  ⚠️ 自省跳过：没有可用的真模型（Reflector 需要真模型；"
+                  "退化桩不会写说明，硬跑等于把空串当反思）")
+        _new_lessons: list = []
+        for _r in (rep.per_task if _rllm is not None else ()):
+            _key = (scorer.sha(), suite.sha(), _r["id"])
+            _c = _crit.by_key.get(_key)
+            if _c is None or not _c.answer:
+                continue
+            if float(_r["score"]) >= 1.0 - 1e-9 or float(_c.score) >= 1.0 - 1e-9:
+                _rf_stats["skip_full"] += 1
+                continue
+            _goal = next((t.prompt for t in suite.tasks if t.id == _r["id"]), "")
+            _tests = next((t.tests for t in suite.tasks if t.id == _r["id"]), ())
+            # ★ V232（§303）：把「断言失败」升级成「断言失败，实得 X」再交给 Reflector。
+            #   依据：V231 现场——`why` 只有 `⇒ AssertionError`、没有实际值时，7b 把
+            #   「`int('')` 抛 ValueError 被吞成 None」误诊成「误认为含 h 分隔符」，
+            #   而模型**忠实执行了那个错误诊断**（只做等价重构、分数不动）。
+            #   本段只读**已落盘的答案**与**该题声明的断言**，不产生分数。
+            _act = _ractuals(_c.answer, _tests)
+            try:
+                _txt = _rllm.complete(
+                    [_Msg(role="user", content=_rprompt(_goal, _c.answer, _c.why, _act))],
+                    max_tokens=400)
+            except Exception as _e:                      # noqa: BLE001
+                # ⛔ 不静默跳过：Reflector 挂了与「这题没有失败可反思」
+                #    在读数上一模一样，必须分开计数（否则这一格就是缺席冒充零）。
+                _rf_stats["fail"] += 1
+                print(f"  ⚠️ 自省失败 {_r['id']}: {_e}")
+                continue
+            _les, _vio = _parse(_txt)
+            if _vio:
+                # 它写代码了 ⇒ 那一段**不许**当"说明"用（边界 1）。
+                _rf_stats["violated"] += 1
+            if not _les:
+                continue
+            _new_lessons.append(_Lesson(
+                scorer_sha=_key[0], suite_sha=_key[1], task_id=_key[2],
+                based_on_sha=_rsha(_c.answer), lesson=_les,
+                at_score=float(_c.score),
+                at_vec="".join("1" if x else "0" for x in _r["vec"])))
+            _rf_stats["n"] += 1
+            _rf_stats["chars"] += len(_les)
+        if _new_lessons:
+            _save_lsn(args.critique_lessons, _new_lessons)
+        print(f"  自省产出  写入 {_rf_stats['n']} 条（均 {_rf_stats['chars'] // max(1, _rf_stats['n'])} 字）"
+              f"  越界={_rf_stats['violated']}  失败={_rf_stats['fail']}"
+              f"  满分跳过={_rf_stats['skip_full']}")
 
     # ── 跨会话账本：**只在跑完之后**追加（外部侧写入）─────────────────
     #
@@ -3345,6 +3519,27 @@ def main() -> int:
                         "落进另一个只错一处的家族，净分 0；块里点名了失败断言却一次也没"
                         "「只改那处」——因为它拿到的是对代码的判决，不是代码。"
                         "⚠️ 不改默认：\"改得动\"与\"改得对\"是两个命题，一个读数不够。")
+    p.add_argument("--critique-reflect", action="store_true",
+                   help="**代码后附自我修订说明**（DESIGN §302，V231）："
+                        "在 `[上版代码]` 之后追加 `[自我修订] <Reflector 写的说明>`。"
+                        "**默认 off = 旧行为一字不改。** "
+                        "为什么：V230 现场 `why` 逐字点名了两条失败断言，模型一格没修、"
+                        "只修了「体里一眼看得出」的错；Reflexion 的消融指出缺的是"
+                        "**写反思**那一步——`why` 是症状，反思是根因+动作。"
+                        "⚠️ 需要同时开 `--critique-carry-code`，否则无代码可依附（计 unpaired）。")
+    p.add_argument("--critique-promote", action="store_true",
+                   help="**提议-验证-采纳**（DESIGN §304，V233）：跑完后让模型给一份"
+                        "完整候选实现，用该题自己声明的断言**离线判分**，"
+                        "只有**严格更好**才 `promote()` 进账本（覆盖本题那一行）。"
+                        "**默认 off = 旧行为一字不改。** "
+                        "为什么：V231/V232 量到「自然语言诊断」不可靠（7b 把"
+                        "「int('') 抛 ValueError」误诊成「误认为含 h」，补上实测值后更错）"
+                        "⇒ 不再问「它说得对不对」，改问「它给的东西能不能过判分」。"
+                        "⚠️ 与 `--critique-reflect` 是**两条不同的路**，不要同时开。")
+    p.add_argument("--critique-lessons", default=None,
+                   help="`[自我修订]` 说明的落盘文件（默认与 `--critique-file` 同目录的 "
+                        "`crit_lessons.jsonl`）。说明按 `(scorer_sha,suite_sha,task_id)` 存，"
+                        "并记 `based_on_sha`——只有与账本里那份代码逐字节一致才注入。")
     p.add_argument("--critique-freeze-pass", action="store_true",
                    help="**满分不覆盖账本**（DESIGN §296，V225）："
                         "同一题再次落账且新分数 = 1.0 时，保留旧条、不改写（计数 `frozen`）。"

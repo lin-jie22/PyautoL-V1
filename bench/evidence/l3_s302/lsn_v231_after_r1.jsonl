@@ -1,0 +1,1 @@
+{"scorer_sha": "6062bd622cc52edb0d5a1eb496ea7b3532a1bbd886b8cf6fef26c1bfbe368035", "suite_sha": "e322e014a9472f41d486163404ae11ef", "task_id": "t01_parse_duration", "based_on_sha": "24c322d5d9b6638e", "lesson": "失败的根本原因在于处理 '10m' 这种仅包含 'm' 的情况时，程序误认为它含有 'h' 分割符，导致解析出错。下一版应该在处理完 'h' 分割符后直接检查是否只剩 'm' 或 's'，再进行相应的秒数计算。", "at_score": 0.6667, "at_vec": "011011"}

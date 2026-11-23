@@ -2255,7 +2255,8 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     _crit_path = (Path(args.critique_file).expanduser() if args.critique_file
                   else (s.paths.state / "critique.jsonl"))
     _crit = CritiqueLedger(_crit_path,
-                           freeze_pass=bool(getattr(args, "critique_freeze_pass", False)))
+                           freeze_pass=bool(getattr(args, "critique_freeze_pass", False)),
+                           freeze_best=bool(getattr(args, "critique_freeze_best", False)))
     _crit_loaded = _crit.load()
     # ── 投喂口径三档（V29）──────────────────────────────────────────────
     # 为什么必须有第三档：旧装置是 全开/全关 两档，而「全开」把跨轮累积和
@@ -2313,6 +2314,11 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     print(f"  评审写端  freeze-pass="
           f"{'on' if getattr(args, 'critique_freeze_pass', False) else 'off'}"
           f"（on=满分不覆盖、保留产生满分的输入 / off=按键覆盖）")
+    # ★ V228（§299）：保最优必须印出来 —— 它决定「账本会不会被一次坏运气写坏」。
+    #   ⛔ 不许只在 on 的时候印（缺席冒充零）。
+    print(f"  评审写端  freeze-best="
+          f"{'on' if getattr(args, 'critique_freeze_best', False) else 'off'}"
+          f"（on=新分不高于旧分就不覆盖、账本单调不降 / off=按键覆盖）")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
     # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
@@ -2679,7 +2685,12 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
         print(f"  评审     落盘={_crit_saved} 条  投喂={_cs['served']}"
               f"（{_cs['calls']} 次筛选）  拒绝={_cs['rejected']}"
               + (f"  满分冻结={_cs['frozen']} 次（同键再次写入 {_cs['superseded']} 次）"
-                 if _cs["freeze_pass"] else ""))
+                 if _cs["freeze_pass"] else "")
+              #: ★ V228（§299）：保最优**必须自报拦下几条** ——
+              #:   只报口径不报计数，「账本没变」就分不清是**拦下了**还是**没写**
+              #:   （V225 纪律 140 的同一条，在打印层的复发：V228 首跑漏了这一句，
+              #:   整轮只能靠"superseded=2 且 frozen=0"排除法推，判据降级）。
+              + (f"  保最优={_cs['best_kept']} 次" if _cs["freeze_best"] else ""))
     if prov is not None:
         print(f"  血缘      llm_of_record={rep.llm_of_record()}"
               f" 外部能力={len(rep.provenance.get('external_agents') or [])} 个")
@@ -3341,6 +3352,16 @@ def main() -> int:
                         "而那条旧条正是**产生满分的那条输入** —— 确定装置上（§294）"
                         "换输入就等于换下一轮行为（V224 现场：TypeError 行→6/6→写成通过→2/6）。"
                         "非满分照旧覆盖（回归必须被记下）。"
+                        "**默认 off = 旧行为一字不改**。")
+    p.add_argument("--critique-freeze-best", action="store_true",
+                   help="**账本保最优**（DESIGN §299，V228）："
+                        "同一题再次落账且新分数**不高于**旧分时，保留旧条（计数 `best_kept`）。"
+                        "为什么要它：`--critique-freeze-pass` 只保护「这一轮跑出满分」，"
+                        "不保护「这一行曾经很高」——V227 现场 `t04` 起点 0.6667（其实是 6/6 的码）"
+                        "被一轮外部噪声写成 0.3333，一个 6/6 的格子永久变成 2/6，"
+                        "而下一轮喂进块里的正是这条被写坏的输入 ⇒ 一次坏运气被固化。"
+                        "分工：`runs.jsonl` 记「发生过什么」（回归照样有据），"
+                        "这份账本只记「下一轮该复用什么」⇒ 它应当单调不降。"
                         "**默认 off = 旧行为一字不改**。")
     p.add_argument("--memory-mode", default="raw", choices=("raw", "abstract"),
                    help="本次允许读到记忆的哪一层（DESIGN §15.2e）："

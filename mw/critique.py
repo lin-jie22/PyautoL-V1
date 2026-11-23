@@ -160,7 +160,8 @@ class CritiqueLedger:
     """
 
     def __init__(self, path: Path | None = None, *, allow_self: bool = False,
-                 why_mode: str = RAW_WHY, freeze_pass: bool = False) -> None:
+                 why_mode: str = RAW_WHY, freeze_pass: bool = False,
+                 freeze_best: bool = False) -> None:
         self.path = Path(path) if path else None
         #: ⭐ V225（§296）：**满分不覆盖**。**默认 False = 旧行为一字不改。**
         #:
@@ -170,6 +171,18 @@ class CritiqueLedger:
         #: V224 现场 `TypeError 行 → 6/6 → 写成"通过 6/6" → 2/6`。
         #: 非满分照旧覆盖 —— 回归必须被记下，那是真信息。
         self.freeze_pass = bool(freeze_pass)
+        #: ⭐ V228（§299）：**保最优**。同键且新分**不高于**旧分 ⇒ 不覆盖。**默认 False = 旧行为一字不改。**
+        #:
+        #: 为什么：`freeze_pass` 只保护「**这一轮跑出满分**」，不保护「这一行曾经很高」。
+        #: V227 现场：`t04` 起点 `0.6667`（其实是 6/6 的码），被一轮外部噪声写成 `0.3333`
+        #: ⇒ 一个 6/6 的格子**永久**变成 2/6，除非它自己再跑回满分。而块里下一轮喂的
+        #: 正是那条被写坏的输入 ⇒ 一次坏运气会被**固化**（§298.4）。
+        #: 分工：`bench_out/runs.jsonl` 记「发生过什么」（回归照样有据），
+        #: 这份账本只记「下一轮该复用什么」⇒ 它应当**单调不降**。
+        self.freeze_best = bool(freeze_best)
+        #: 被「保最优」拦下的条数。⛔ 与 `frozen` 分开计：两者拦下的理由不同，
+        #: 混一个数就分不清「保满分生效」和「保最优生效」。
+        self.best_kept = 0
         #: 被冻结拦下的条数。⛔ 不报这个数，「账本没变」就分不清是**冻结**还是**没写**。
         self.frozen = 0
         #: ⭐ 第一百二十三轮（§96）：同题评审是否放行。**默认 False = 旧行为一字不改。**
@@ -215,6 +228,12 @@ class CritiqueLedger:
             #: 分数是 `round(x, 4)` 落盘的，别让浮点比较决定「冻不冻」。
             if self.freeze_pass and float(c.score) >= 1.0 - 1e-9:
                 self.frozen += 1
+                return
+            #: ⭐ V228：**保最优**。`<=` 而不是 `<`：同分覆盖只会把 `why` 换成另一段
+            #: 同分理由，而块里的字节**照旧影响下一轮**（§294：确定装置上输入就是原因）
+            #: ⇒ 同分覆盖是净风险、零收益。用 `1e-12` 容差是因为分数是 `round(x, 4)` 落盘的。
+            if self.freeze_best and float(c.score) <= float(self.by_key[key].score) + 1e-12:
+                self.best_kept += 1
                 return
         why = c.why[:_MAX_WHY]
         if self.why_mode == TRANSFERABLE_WHY:
@@ -278,6 +297,10 @@ class CritiqueLedger:
             #: ⛔ 只报 `freeze_pass` 不报 `frozen` ⇒ 分不清「没满分的题」与「开关没接线」。
             "freeze_pass": self.freeze_pass,
             "frozen": self.frozen,
+            #: ⭐ V228：保最优口径 + 它实际拦下几条。
+            #: ⛔ 与 `frozen` 分开报：合并成一个数就分不清是哪个闸在起作用。
+            "freeze_best": self.freeze_best,
+            "best_kept": self.best_kept,
             "calls": self.calls,
             "served": self.served,
             #: ⚠️ 口径必须自报：`allow_self=True` 的账本和 `False` 的账本

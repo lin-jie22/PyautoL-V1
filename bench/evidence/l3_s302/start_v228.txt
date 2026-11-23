@@ -1,0 +1,5 @@
+start ledger sha: 9adec3419f4730b7bbd4ea06e92ad4a94bf8290cd998a6d22518130fbddc1c86
+patched sha: e62fb84b0ad87d8e0855a8e8e971c135d874741927da6cd255b6e74b907e8aeb
+baseline runs=     422  answers=    1516
+after ledger sha: 9adec3419f4730b7bbd4ea06e92ad4a94bf8290cd998a6d22518130fbddc1c86
+restored sha: 674b8941ae1dd7906dd0bf3749338a27544d0a069dff7754814e64b6311205b0

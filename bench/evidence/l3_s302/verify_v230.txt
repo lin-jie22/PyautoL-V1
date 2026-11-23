@@ -1,0 +1,40 @@
+run_id 70463@1795436390
+
+===== t01_parse_duration  (state=944, block@262)
+  P1 前缀==V226b      : True (9841561fa95b)
+  P1 块==投喂(挖洞后)  : True (seg 1d72685caca9 / fed 3240f148fced)
+  投喂 == 挖洞前?     : False  (挖洞前 24c322d5d9b6 / 投喂 3240f148fced)
+  输出               : 24c322d5d9b6 (677 字节)
+  抄洞 COPY-HOLE      : False
+  补洞 RESTORE        : True  (输出 == 挖洞前那份码)
+  与投喂最长公共子串   : 626 字节
+  diff(fed→out) 行数   : 2
+      --- fed
+      +++ out
+      @@ -20,3 +20,3 @@
+                   hours = int(parts[0])
+      -            return hours * 60
+      +            return hours * 3600
+           except ValueError:
+  离线判分  投喂 3/6 010011 | 输出 4/6 011011 | 挖洞前 4/6 011011
+  ⇒ 输出分数 == 挖洞前? True ；输出分数 > 投喂? True
+
+===== t04_merge_ranges  (state=794, block@322)
+  P1 前缀==V226b      : True (4b27f72bfcdf)
+  P1 块==投喂(挖洞后)  : True (seg 99b081b25a2a / fed 9f63d2c1c1be)
+  投喂 == 挖洞前?     : False  (挖洞前 a22691b58203 / 投喂 9f63d2c1c1be)
+  输出               : a22691b58203 (500 字节)
+  抄洞 COPY-HOLE      : False
+  补洞 RESTORE        : True  (输出 == 挖洞前那份码)
+  与投喂最长公共子串   : 376 字节
+  diff(fed→out) 行数   : 1
+      --- fed
+      +++ out
+      @@ -6,2 +6,3 @@
+           # 按区间起点排序
+      +    pairs.sort(key=lambda x: x[0])
+           
+  离线判分  投喂 5/6 111101 | 输出 6/6 111111 | 挖洞前 6/6 111111
+  ⇒ 输出分数 == 挖洞前? True ；输出分数 > 投喂? True
+
+P1 失败格数: 0

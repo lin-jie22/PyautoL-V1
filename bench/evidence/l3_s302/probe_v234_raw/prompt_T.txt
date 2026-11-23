@@ -1,0 +1,54 @@
+下面这个 Python 函数没有通过全部测试。请给出**修正后的完整函数**。
+【题目】
+写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+【当前代码】
+```python
+def parse_duration(s):
+    if not s:
+        return None
+    try:
+        s = s.lower()
+        parts = s.split('h')
+        if len(parts) == 1:
+            parts = s.split('m')
+            if len(parts) == 1:
+                parts = s.split('s')
+                if len(parts) == 1:
+                    return None
+                else:
+                    return int(parts[0])
+            else:
+                hours = int(parts[0])
+                minutes = int(parts[1].split('m')[0])
+                return hours * 3600 + minutes * 60
+        else:
+            hours = int(parts[0])
+            return hours * 3600
+    except ValueError:
+        return None
+```
+【测试结果】
+通过 4/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError | assert parse_duration('10m') == 600 ⇒ AssertionError
+【实测返回值】
+- parse_duration('1h30m') 实得 3600（期望 5400）
+- parse_duration('10m') 实得 None（期望 600）
+【执行轨迹】下面是在失败输入上逐行跑一遍记下的过程（每行右边方括号里是当时的局部变量，`⇒抛出` 是被这一行的异常，`⇒返回` 是函数交出去的值）：
+【assert parse_duration('1h30m') == 5400】
+  第 5 行 | s = s.lower()   [s='1h30m']
+  第 6 行 | parts = s.split('h')   [s='1h30m']
+  第 7 行 | if len(parts) == 1:   [s='1h30m' parts=['1', '30m']]
+  第 20 行 | hours = int(parts[0])   [s='1h30m' parts=['1', '30m']]
+  第 21 行 | return hours * 3600   [s='1h30m' parts=['1', '30m'] hours=1]
+  第 21 行 | return hours * 3600   [⇒返回=3600]
+【assert parse_duration('10m') == 600】
+  第 16 行 | hours = int(parts[0])   [s='10m' parts=['10', '']]
+  第 17 行 | minutes = int(parts[1].split('m')[0])   [s='10m' parts=['10', ''] hours=10]
+  第 17 行 | minutes = int(parts[1].split('m')[0])   [⇒抛出=ValueError: invalid literal for int() with base 10: '']
+  第 22 行 | except ValueError:   [s='10m' parts=['10', ''] hours=10]
+  第 23 行 | return None   [s='10m' parts=['10', ''] hours=10]
+  第 23 行 | return None   [⇒返回=None]
+请顺着轨迹找到**第一处**让结果偏离题意的逻辑，只改那一处（以及必须连带改的地方），不要整篇重写。
+要求：
+1) 只输出一个 ```python 代码块，里面是**完整的**函数定义（不要省略任何行）；
+2) 保持函数名与签名不变；
+3) 不要解释，不要输出任何其他文字。

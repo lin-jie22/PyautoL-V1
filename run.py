@@ -2347,6 +2347,11 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     #   比"多一段文字"影响大一个量级。⛔ 不许只在 on 时印（缺席冒充零）。
     print(f"  提议采纳  promote={'on' if getattr(args, 'critique_promote', False) else 'off'}"
           f"（on=候选实现离线判分、严格更好才写进账本 / off=不提议）")
+    print(f"  提议采样  k={getattr(args, 'critique_propose_k', 1)}"
+          f"（promote=on 时每题提议几次，取同一判分器下的最优；1=V233 行为）")
+    # ★ V234（§305）：执行轨迹也是一个自变量，同样必须印。
+    print(f"  执行轨迹  trace={'on' if getattr(args, 'critique_trace', False) else 'off'}"
+          f"（on=提议的入参多一段「走过哪几行+当时变量」/ off=只有 why 与实测值）")
 
     # 记忆基线必须在**跑之前**读（跑完再读拿到的是结果，不是条件）。
     # 三种作用域都要能被签名区分：隔离 / 共享默认库 / **显式持有的目录**。
@@ -2644,6 +2649,16 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
         from mw.reflect import (build_proposal_prompt as _pproposal,
                                 failed_actuals as _ract2,
                                 parse_proposal as _pparse, verify as _pverify)
+        # ── ★ V234（§305）：**执行轨迹** —— 把「实得什么」升级成「走过哪几行、当时是什么」 ──
+        #
+        # 为什么还要再加一段：V232 的实测值没让提议变好，V233 的两个模型也提不出更好候选。
+        # 但 V232 那条结论**是装置编的**（`failed_actuals` 没剥 ```python 围栏 ⇒ 六条全是
+        # `SyntaxError`，代码里根本没有），见 `mw/reflect.py:as_code`。
+        # ⇒ 先把假诊断修掉，再单独量「轨迹」这一段有没有用。
+        _trace_on = bool(getattr(args, "critique_trace", False))
+        _rtrace = None
+        if _trace_on:
+            from mw.reflect import trace_failure as _rtrace
         _pllm = _mk2(s.llm) if s.llm.usable() else None
         if _pllm is None:
             _pm_stats["fail"] += 1
@@ -2658,32 +2673,49 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
             _base = _pverify(_c.answer, _tests)
             if _base >= len(_tests):
                 continue          # 已经满分 ⇒ 没有可改进的，不去打扰它
-            try:
-                _txt2 = _pllm.complete(
-                    [_M2(role="user", content=_pproposal(
-                        _goal, _c.answer, _c.why, _ract2(_c.answer, _tests)))],
-                    max_tokens=900)
-            except Exception as _e2:                     # noqa: BLE001
-                _pm_stats["fail"] += 1
-                print(f"  ⚠️ 提议失败 {_r['id']}: {_e2}")
+            # ── ★ V234（§305）：**候选是采样出来的**，采纳仍是判分器说了算 ─────────
+            #
+            # V234 的离线小样（每臂 12 次）：同一条 prompt 既能给 3/6 也能给 5/6，
+            # 而 `promote` 只认「严格更好」⇒ 单次提议的命中率就是**这条路的通过率**。
+            # 点估计 p̂≈3/25 ⇒ k=1 时闭环基本不闭。所以把 k 做成显式参数（默认 1 = 旧行为
+            # 逐字节不变），由**同一把尺子**在 k 个候选里取最优。
+            # ⛔ 这不是「调大参数」：判据仍是「相对起点严格更好」，k 只决定**采样次数**。
+            _k_n = max(1, int(getattr(args, "critique_propose_k", 1) or 1))
+            _best_got, _best_cand = -1, ""
+            for _k in range(_k_n):
+                try:
+                    _txt2 = _pllm.complete(
+                        [_M2(role="user", content=_pproposal(
+                            _goal, _c.answer, _c.why, _ract2(_c.answer, _tests),
+                            trace=(_rtrace(_c.answer, _tests) if _trace_on else ())))],
+                        max_tokens=900)
+                except Exception as _e2:                     # noqa: BLE001
+                    _pm_stats["fail"] += 1
+                    print(f"  ⚠️ 提议失败 {_r['id']}#{_k}: {_e2}")
+                    continue
+                _cand, _fenced = _pparse(_txt2)
+                if not _fenced:
+                    # ⛔ 不守格式要单独计：它与「给不出东西」是两种事实。
+                    _pm_stats["nofmt"] += 1
+                if not _cand.strip():
+                    continue
+                _got = _pverify(_cand, _tests)
+                _pm_stats["n"] += 1
+                if _got > _best_got:
+                    _best_got, _best_cand = _got, _cand
+            if _best_got < 0:
                 continue
-            _cand, _fenced = _pparse(_txt2)
-            if not _fenced:
-                # ⛔ 不守格式要单独计：它与「给不出东西」是两种事实。
-                _pm_stats["nofmt"] += 1
-            if not _cand.strip():
-                continue
-            _got = _pverify(_cand, _tests)
-            _pm_stats["n"] += 1
-            if _got > _base:
+            if _best_got > _base:
                 _crit.promote(_Crit2(
                     scorer_sha=_key[0], suite_sha=_key[1], task_id=_key[2],
-                    family=_c.family, score=round(_got / len(_tests), 4),
-                    why=f"通过 {_got}/{len(_tests)}；由候选实现（离线判分验证后采纳）",
-                    answer=_cand))
+                    family=_c.family, score=round(_best_got / len(_tests), 4),
+                    why=f"通过 {_best_got}/{len(_tests)}；由候选实现"
+                        f"（{_pm_stats['n']} 次提议中同一判分器选出的最优，验证后采纳）",
+                    answer=_best_cand))
                 _pm_stats["ok"] += 1
-                print(f"  ✅ 采纳 {_r['id']}: {_base}/{len(_tests)} → {_got}/{len(_tests)}")
-            elif _got == _base:
+                print(f"  ✅ 采纳 {_r['id']}: {_base}/{len(_tests)} → {_best_got}/{len(_tests)}"
+                      f"（采样 {_k_n} 次）")
+            elif _best_got == _base:
                 _pm_stats["same"] += 1
             else:
                 _pm_stats["worse"] += 1
@@ -3536,6 +3568,23 @@ def main() -> int:
                         "「int('') 抛 ValueError」误诊成「误认为含 h」，补上实测值后更错）"
                         "⇒ 不再问「它说得对不对」，改问「它给的东西能不能过判分」。"
                         "⚠️ 与 `--critique-reflect` 是**两条不同的路**，不要同时开。")
+    p.add_argument("--critique-trace", action="store_true",
+                   help="**提议时附执行轨迹**（DESIGN §305，V234）："
+                        "`--critique-promote` 的那一次提议，入参多一段"
+                        "「失败输入上逐行走过的行 + 每行的局部变量 + 那一次异常」。"
+                        "**默认 off = V233 的入参逐字节不变。** "
+                        "为什么：V232 试过「补实测值」，但那批实测值是**装置编的**——"
+                        "`failed_actuals` 没剥 ```python 围栏 ⇒ 六条全是"
+                        "`SyntaxError`（代码里根本没有），模型忠实地修了个不存在的问题。"
+                        "修掉之后仍缺**中间量**：`parts` 当时是什么、哪一行抛的、抛完去了哪。"
+                        "轨迹把这段推理从模型手里拿走（调试器给人的东西）。")
+    p.add_argument("--critique-propose-k", type=int, default=1,
+                   help="**提议采样次数**（DESIGN §305，V234）：`--critique-promote` 时"
+                        "对同一题提议 k 次，用**同一把尺子**（该题自己的断言）选最优，"
+                        "仍然只有**严格更好**才 `promote()`。**默认 1 = V233 行为逐字节不变。**"
+                        "为什么：V234 离线小样里同一条 prompt 既能给 3/6 也能给 5/6，"
+                        "而采纳只认「严格更好」⇒ 单次提议的命中率就是这条路的通过率"
+                        "（p̂≈3/25）。⛔ k 不是判据，判据仍是「相对起点严格更好」。")
     p.add_argument("--critique-lessons", default=None,
                    help="`[自我修订]` 说明的落盘文件（默认与 `--critique-file` 同目录的 "
                         "`crit_lessons.jsonl`）。说明按 `(scorer_sha,suite_sha,task_id)` 存，"

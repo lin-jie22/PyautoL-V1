@@ -81,6 +81,25 @@ def sha_of(text: str) -> str:
     return hashlib.sha256((text or "").encode("utf-8")).hexdigest()[:16]
 
 
+def as_code(text: str) -> str:
+    """按**打分器同一个口径**把答案变成可执行源码（剥掉 ```python 围栏）。
+
+    ## 为什么必须有这一步（§305 的自踩，代价很大）
+
+    账本里存的是模型**原始输出**，而模型习惯给 ```python 围栏。打分器
+    （`mw/verify.py:extract_code`）会剥，**而 `failed_actuals` / `verify` 原来不剥**
+    ⇒ 那段围栏被当成源码 `exec` ⇒ `SyntaxError: invalid syntax (<answer>, line 1)`。
+
+    后果不是"少一条诊断"，是**给出一条假诊断**：V232 的说明里写着
+    「导致了 `SyntaxError`」「应该返回 None 而不是抛出 SyntaxError」——
+    那个 SyntaxError 是**装置编的**，代码里根本没有。模型忠实地修了一个
+    不存在的问题，而我们把读数记成了「补实测值 ⇒ 诊断更错」。
+    ⇒ 纪律 111 / 124：判协变量之前先查**它收到的**是不是我们算的。
+    """
+    from .verify import extract_code          # 局部导入：不与 mw 内其他模块抢导入顺序
+    return extract_code(text or "")
+
+
 # ---------------------------------------------------------------------------
 # 实测返回值 —— 把「断言失败」升级成「断言失败，实得 X」
 #
@@ -115,6 +134,7 @@ def failed_actuals(code: str, tests: Sequence[str], *, limit: int = 6) -> list[s
     ⚠️ 断言不是 `==` 形状时**退回异常名**（`⇒ ValueError`），⛔ 不许凭空编一个值：
        一个编造的实际值比没有更糟，它会把 Reflector 引向不存在的分支。
     """
+    code = as_code(code)                # ⛔ 先剥围栏：见 `as_code` 的小节（V232 的假 SyntaxError）
     out: list[str] = []
     for t in tests:
         ns: dict = {}
@@ -151,6 +171,138 @@ def failed_actuals(code: str, tests: Sequence[str], *, limit: int = 6) -> list[s
         if len(out) >= limit:
             break
     return out
+
+
+# ===========================================================================
+# 执行轨迹（§305）
+#
+# V232 给的是「**实得什么**」（`parse_duration('10m') 实得 None`），V233 证明 7b/14b
+# **都不能把「实得 None」反推成「`int('')` 抛了 ValueError 被 except 吞掉」**。
+# 那句话里缺的不是措辞，是**中间量**：`parts` 当时是 `['10','']`、哪一行抛的、抛完去了哪。
+#
+# 轨迹把这一步推理从模型手里拿走：设备跑一遍**它自己那份答案**，记下走过的行、
+# 每行当时的局部变量、以及那一次异常 —— 与调试器给人的东西同量级。
+#
+# ⛔ 边界与 `failed_actuals` 一致：只执行**已落盘的那份答案**与**该题自己声明的断言**，
+#    不碰运行期外部输入，不产生分数。差别只是「记过程」而不是「记结果」。
+# ===========================================================================
+def _src_lines(code: str) -> list[str]:
+    return (code or "").splitlines()
+
+
+def _clip(text: str, limit: int = 72) -> str:
+    t = " ".join((text or "").split())
+    return t if len(t) <= limit else t[: limit - 1] + "…"
+
+
+def _fmt_val(v: object, limit: int = 48) -> str:
+    try:
+        r = repr(v)
+    except Exception:                                   # noqa: BLE001
+        return "<repr失败>"
+    return r if len(r) <= limit else r[: limit - 1] + "…"
+
+
+def trace_failure(code: str, tests: Sequence[str], *, max_tests: int = 2,
+                  max_rows: int = 6) -> list[str]:
+    """对**失败**的断言给出执行轨迹。返回可直接拼进 prompt 的若干段。
+
+    每段形如：
+
+        assert parse_duration('10m') == 600
+          第 12 行 | minutes = int(parts[1].split('m')[0])   parts=['10', ''] hours=10
+          ⇒ ValueError: invalid literal for int() with base 10: ''
+          第 14 行 | return None
+
+    ⚠️ 只记**用户代码**（`co_filename == "<answer>"`）的帧：`int()`/`re` 的内部帧会把
+       6 行预算吃光，而它们与「哪一行逻辑错了」无关。
+    ⚠️ 通过的断言不出现（与 `failed_actuals` 同一条纪律）。
+    """
+    code = as_code(code)                # ⛔ 先剥围栏：账本里存的是原始输出
+    out: list[str] = []
+    for t in tests:
+        if len(out) >= max_tests:
+            break
+        if verify(code, [t]) == 1:                      # 通过 ⇒ 没有诊断价值
+            continue
+        seg = _trace_one(code, t, max_rows=max_rows)
+        if seg:
+            out.append(seg)
+    return out
+
+
+def _trace_one(code: str, test: str, *, max_rows: int = 6) -> str:
+    import sys
+
+    lines = _src_lines(code)
+    rows: list[tuple[int, str, dict]] = []
+    exc_note = ""
+
+    def _snapshot(frame) -> dict:
+        d = {}
+        for k, v in list(frame.f_locals.items()):
+            if k.startswith("__") or callable(v) or isinstance(v, type):
+                continue
+            d[k] = v
+            if len(d) >= 3:                             # 3 个变量足够指认分支
+                break
+        return d
+
+    def _local(frame, event, arg):
+        nonlocal exc_note
+        if event == "line":
+            ln = frame.f_lineno
+            txt = lines[ln - 1] if 0 < ln <= len(lines) else ""
+            rows.append((ln, txt, _snapshot(frame)))
+            del rows[:-max_rows]                        # 只留最后 max_rows 行
+        elif event == "exception":
+            # ⚠️ 这一条是**关键**：`int('')` 抛的 ValueError 被函数自己的
+            #    `except ValueError` 吞掉了 —— 只有这一行能看见它，
+            #    而 V232 的「实得 None」正是被吞掉之后的结果。
+            etype, eval_, _tb = arg
+            ln = frame.f_lineno
+            txt = lines[ln - 1] if 0 < ln <= len(lines) else ""
+            rows.append((ln, txt, {"⇒抛出": f"{etype.__name__}: {eval_}"}))
+            del rows[:-max_rows]
+            exc_note = f"{etype.__name__}: {eval_}"
+        elif event == "return":
+            # 只记**函数返回**这一种（中间帧的 return 是 `int()` 之类，与逻辑无关）
+            ln = frame.f_lineno
+            txt = lines[ln - 1] if 0 < ln <= len(lines) else ""
+            rows.append((ln, txt, {"⇒返回": arg}))
+            del rows[:-max_rows]
+        return _local
+
+    def _global(frame, event, arg):
+        return _local if frame.f_code.co_filename == "<answer>" else None
+
+    ns: dict = {}
+    old = sys.gettrace()
+    sys.settrace(_global)
+    try:
+        exec(compile(code, "<answer>", "exec"), ns)     # noqa: S102
+        exec(compile(test, "<probe_test>", "exec"), ns)  # noqa: S102
+    except AssertionError:
+        # 断言失败是**预期分支**（这个函数的存在理由就是描述失败）⇒ 轨迹已记够。
+        exc_note = ""
+    except Exception as e:                              # noqa: BLE001
+        exc_note = f"{type(e).__name__}: {e}"
+    finally:
+        sys.settrace(old)
+
+    if not rows and not exc_note:
+        return ""
+    body = []
+    for ln, txt, loc in rows:
+        vs = " ".join(
+            # `⇒抛出` / `⇒返回` 是**事件**不是变量：直接给原文，
+            # 套 repr 会变成 `"ValueError: ..."`（带引号）——那是形式噪音。
+            (f"{k}={_clip(str(v), 110)}" if k in ("⇒抛出", "⇒返回") else f"{k}={_fmt_val(v)}")
+            for k, v in loc.items())
+        body.append(f"  第 {ln} 行 | {_clip(txt, 64)}" + (f"   [{vs}]" if vs else ""))
+    head = f"【{_clip(test.strip(), 90)}】"
+    tail = f"  ⇒ {_clip(exc_note, 120)}" if exc_note else ""
+    return "\n".join([head] + body) + tail
 
 
 def build_prompt(goal: str, code: str, why: str, actuals: Sequence[str] = ()) -> str:
@@ -270,11 +422,18 @@ def index_lessons(items: list[Lesson]) -> dict[str, Lesson]:
 #    它的产出必须**过同一个判分器**才能进账本。提议不成立时与没提议完全等价。
 # ===========================================================================
 def build_proposal_prompt(goal: str, code: str, why: str,
-                          actuals: Sequence[str] = ()) -> str:
+                          actuals: Sequence[str] = (),
+                          trace: Sequence[str] = ()) -> str:
     """让模型给一份**完整可运行**的候选实现。
 
     ⚠️ 与 `build_prompt` 的差别是刻意的：那一版**禁止**写代码（要的是诊断），
        这一版**要求**写代码（要的是产物）。两者不能混用 —— 混了就没有对照。
+
+    `trace` 是**执行轨迹**（见 `trace_failure`）。为什么要它（§305）：
+    V231/V232/V233 六次提议都没能修对，而它们看到的只有「断言失败 + 实得 None」。
+    轨迹补的是中间量（走过哪几行、当时 `parts` 是什么、哪一行抛了 ValueError）——
+    这是**调试器给的东西**，不是又一种措辞。
+    `trace` 为空时，本函数的输出与 V233 **逐字节相同**（对照臂要的就是这个）。
     """
     parts = [
         "下面这个 Python 函数没有通过全部测试。请给出**修正后的完整函数**。\n",
@@ -284,6 +443,15 @@ def build_proposal_prompt(goal: str, code: str, why: str,
     ]
     if actuals:
         parts.append("【实测返回值】\n" + "\n".join(f"- {a}" for a in actuals) + "\n")
+    if trace:
+        parts.append(
+            "【执行轨迹】下面是在失败输入上逐行跑一遍记下的过程"
+            "（每行右边方括号里是当时的局部变量，`⇒抛出` 是被这一行的异常，"
+            "`⇒返回` 是函数交出去的值）：\n"
+            + "\n".join(trace) + "\n")
+        parts.append(
+            "请顺着轨迹找到**第一处**让结果偏离题意的逻辑，"
+            "只改那一处（以及必须连带改的地方），不要整篇重写。\n")
     parts.append(
         "要求：\n"
         "1) 只输出一个 ```python 代码块，里面是**完整的**函数定义（不要省略任何行）；\n"
@@ -318,6 +486,7 @@ def verify(code: str, tests: Sequence[str]) -> int:
     ⛔ 与打分器同口径：每条断言在**全新命名空间**里跑（否则前一题的变量会漏进来）。
     ⛔ 不返回分数比例：这里只需要「更好/不更好」，用整数比较避免浮点误差参与判据。
     """
+    code = as_code(code)                # 与打分器同口径：围栏要先剥（`as_code`）
     if not code.strip():
         return 0
     n = 0

@@ -1,0 +1,38 @@
+下面这个 Python 函数没有通过全部测试。请给出**修正后的完整函数**。
+【题目】
+写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+【当前代码】
+```python
+def parse_duration(s):
+    if not s:
+        return None
+    try:
+        s = s.lower()
+        parts = s.split('h')
+        if len(parts) == 1:
+            parts = s.split('m')
+            if len(parts) == 1:
+                parts = s.split('s')
+                if len(parts) == 1:
+                    return None
+                else:
+                    return int(parts[0])
+            else:
+                hours = int(parts[0])
+                minutes = int(parts[1].split('m')[0])
+                return hours * 3600 + minutes * 60
+        else:
+            hours = int(parts[0])
+            return hours * 3600
+    except ValueError:
+        return None
+```
+【测试结果】
+通过 4/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError | assert parse_duration('10m') == 600 ⇒ AssertionError
+【实测返回值】
+- parse_duration('1h30m') 实得 3600（期望 5400）
+- parse_duration('10m') 实得 None（期望 600）
+要求：
+1) 只输出一个 ```python 代码块，里面是**完整的**函数定义（不要省略任何行）；
+2) 保持函数名与签名不变；
+3) 不要解释，不要输出任何其他文字。

@@ -2370,6 +2370,41 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '''    from mw.bench import (BaselineStore, Caliber, ExternalScorer, Suite,''',
      '''    cmd_verify_impl(None)  # 撤回态：把免费闸接进 bench 的答案出口
     from mw.bench import (BaselineStore, Caliber, ExternalScorer, Suite,'''),
+    # ── V235（§306）：AZ161a~g —— 「提分」的判据换成可满足的那条 ──────────
+    #: a：`n_unverifiable` 恒 0 ⇒ 「最高分不可核验」被抹平（这条只是读数，
+    #:    但恒 0 就等于把混口径这件事藏起来）。
+    ("AZ161a", "mw/goals.py",
+     '''            "n_unverifiable": n_unv, "scores": xs}''',
+     '''            "n_unverifiable": 0, "scores": xs}'''),
+    #: b：判据换回 `mean_score >= target`（V173 那条不可满足的）⇒
+    #:    `best_score > base` 的形状与「MET」同时消失。
+    ("AZ161b", "mw/goals.py",
+     '''                criterion=(("best_score", ">", float(base)),),''',
+     '''                criterion=(("mean_score", ">=", float(target)),),'''),
+    #: c：`_gid` 忽略 criterion ⇒ `base` 不进 gid ⇒ 刷新后仍是「同一条目标」
+    #:    （连带 AZ132c —— 它锚的就是「内容寻址」，同一条实现的两个面）。
+    #:    ⚠️ 首版撤的是 `done` 过滤，**目标没转红**：`propose` 生成的是新 gid，
+    #:    本来就不在 `done` 里 ⇒ 撤了也绿。那不是撤回态，那是空撤（纪律 88 同型）。
+    ("AZ161c", "mw/goals.py",
+     '''    blob = json.dumps({"kind": kind, "cell": cell,
+                       "criterion": [[m, o, float(v)] for m, o, v in criterion]},''',
+     '''    blob = json.dumps({"kind": kind, "cell": cell},  # 撤回态：base 不进 gid'''),
+    #: d：口径分支去掉 ⇒ 结构判据对 best 口径也执行 ⇒ 每一格第一轮就被判死。
+    ("AZ161d", "mw/goals.py",
+     '''    if target_metric == "mean_score":''',
+     '''    if True:  # 撤回态：口径不分'''),
+    #: e：`stuck_best` 恒真 ⇒ 正在收敛的格（0.60→0.70→0.80）也被判「做不到」。
+    ("AZ161e", "mw/goals.py",
+     '''        stuck_best = (len(bests) == after
+                      and len({repr(b) for b in bests}) == 1)''',
+     '''        stuck_best = True  # 撤回态'''),
+    #: f：多一个模块级常量 ⇒ 「多一个可调阈值就多一把要验证的尺子」被破。
+    ("AZ161f", "mw/goals.py", "",
+     "\nEXTRA_TARGET = 2.0  # 撤回态：多一个阈值常量\n"),
+    #: g：`best_score` 取「最后一行」而不是「最大」⇒ 单调性消失（混池里最高分被丢掉）。
+    ("AZ161g", "mw/goals.py",
+     '''            "best_score": (max(xs) if xs else 0.0),''',
+     '''            "best_score": (xs[-1] if xs else 0.0),'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2394,6 +2429,20 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   判据的另一个面（同一函数、同一行）。撤了那个分支，两个面一起翻。
     #:   ⚠️ 实测就多红这一个，且 汇总行 648/2 与「两条断言」对得上（分母自证）。
     "AZ128a": frozenset({"AZ128c"}),
+    #: ★V235（§306）：AZ161a~f 的连带都是**结构性的**（同一处实现被两代锚共用）。
+    #:   逐条实测（2026-11-23）：每条的目标都转红，多红恰好等于下面这几条。
+    #:   a：`n_unverifiable` 与 `best_score` 是同一个 `stats()` 返回值的两个字段；
+    #:   b：判据形状与「新一代目标」是同一个 `criterion` 的两面（c 读它）；
+    #:   c：`_gid` 的 criterion 入参与「内容寻址」是同一条实现（AZ132c 读它）；
+    #:   d：口径分支与 `STUCK_BEST` 的触发条件共用一段（e 读它）；
+    #:   e：`stuck_best` 与 V171 的 `stuck_means` 在同一个触发循环里（AZ133a 读它）；
+    #:   f：模块级常量集合被 AZ134f 钉着，加一个常量两面同时红。
+    "AZ161a": frozenset({"AZ161g"}),
+    "AZ161b": frozenset({"AZ161c"}),
+    "AZ161c": frozenset({"AZ132c"}),
+    "AZ161d": frozenset({"AZ161e"}),
+    "AZ161e": frozenset({"AZ133a"}),
+    "AZ161f": frozenset({"AZ134f"}),
     #: ★第 143 轮：AZ129c 撤的是「没有身份证也能过」这条规则；AZ129f 断言的正是
     #:   **四种拒法各说各的原因**，少掉这一种它就少一条。同一条规则的两个面
     #:   （一个测真值表，一个测可诊断性）⇒ 合理连带，不当作锚定跑偏。

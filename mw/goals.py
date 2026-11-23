@@ -168,9 +168,41 @@ def _mean(xs: Sequence[float]) -> float:
     return t / len(xs)
 
 
+def _verifiable(o: dict) -> bool:
+    """这一行能不能指认「**是哪个实现**拿的分」（`impl_sha` 或通过向量）。
+
+    ## ⚠️ 只用于**报数**，⛔ 不用来过滤 `best_score`（这是 V235 的一处自踩）
+
+    首版拿它过滤 `best_score`（「只在可核验行上取最好成绩」），部署态当场破了
+    「best 单调不减」：某格起点 3 行 `0.6667`（手工历史行，无身份）+ 新跑 1 行
+    `0.3333`（有身份）⇒ 可核验行非空 ⇒ best 从 0.6667 **掉到** 0.3333。
+    而 `best > base` 的整个链（V228b / V234 / 本轮）都靠「best 不降」立着。
+
+    ⇒ 正确形态：`best_score` 仍取**全部行**的 max（单调、可比）；
+    「有身份的行数」只作为读数报出（`n_unverifiable`），把混口径这件事**显形**，
+    而不是偷偷换一套口径去算。跨口径混池是既存缺陷（V182 已登记 10 格），
+    要改它得动 `caliber_sig` 的分组语义，不夹在本轮。
+    """
+    return bool(o.get("impl_sha")) or bool(o.get("vec"))
+
+
 def stats(obs: Sequence[dict], cell: str) -> dict:
+    """一格的读数。**两个统计量并存**（V235）：
+
+        mean_score  历史全部观测的均值 —— 只增不减的分母（V173 定理的来源）
+        best_score  历史**最好的一次** —— 单调不减，且**换路能改它**
+
+    ⛔ 两者不是「一个更严格一个更宽松」：它们对**同一份观测**回答不同的问题。
+    「这格平均做得怎样」与「这格最好做到过什么」—— 后者才是「提分」可用的口径。
+
+    ⚠️ `n_unverifiable` 是**读数**不是闸：它数出「没有身份的行」，
+    提醒读者这一格的 best 可能来自另一把尺子（见 `_verifiable`，含一次自踩）。
+    """
     xs = [o["score"] for o in obs if o["task_id"] == cell]
-    return {"n_obs": len(xs), "mean_score": (_mean(xs) if xs else 0.0), "scores": xs}
+    n_unv = sum(1 for o in obs if o["task_id"] == cell and not _verifiable(o))
+    return {"n_obs": len(xs), "mean_score": (_mean(xs) if xs else 0.0),
+            "best_score": (max(xs) if xs else 0.0),
+            "n_unverifiable": n_unv, "scores": xs}
 
 
 # ===========================================================================
@@ -218,16 +250,22 @@ def propose(
                 criterion=(("n_obs", ">=", float(min_obs)),),
                 provenance=(("rows", c, str(st["n_obs"])),),
             ))
-        elif st["mean_score"] < target:
+        elif st["best_score"] < target:
             if c in esc_set:
-                # 这一格的 RAISE 判据（均分 >= 1.0）是**测量作用下的不动点**：
-                # 同分布的再测只让均分更稳，不会让它上去。再提就是无限重复。
+                # 这一格已经「换过路、最好成绩也没动」⇒ 不再提（V235 的 STUCK_BEST）。
+                # ⚠️ 与 V171 的 esc 不是一回事：那条是「再测不会变」（均值不动），
+                #    这条是「换了实现也没超过基线」（最好成绩不动）。
                 continue
+            base = st["best_score"]
             goals.append(Goal(
                 kind="RAISE", cell=c,
-                statement=f"把 {c} 的均分从 {st['mean_score']:.4f} 提到 {target:g}",
-                criterion=(("mean_score", ">=", float(target)),),
-                provenance=(("mean", c, f"{st['mean_score']:.6f}"),),
+                # ⛔ 判据不是「均分到 1.0」（V173 已证不可满足），而是
+                #    「超过**提出时**的最好成绩」——把它记在 criterion 里 ⇒ 进 gid
+                #    ⇒ 刷新一次就是新一代目标，链可以逐轮往上走。
+                statement=(f"把 {c} 的最好成绩从 {base:.4f} 提高（{st['n_obs']} 次均值 "
+                           f"{st['mean_score']:.4f}，满分 {target:g}）"),
+                criterion=(("best_score", ">", float(base)),),
+                provenance=(("best", c, f"{base:.6f}"),),
             ))
 
     goals = [g for g in goals if g.gid not in done_set]
@@ -238,12 +276,14 @@ def propose(
 
 
 def _gap(g: Goal, per_cell: dict) -> float:
-    st = per_cell.get(g.cell) or {"n_obs": 0, "mean_score": 0.0}
+    st = per_cell.get(g.cell) or {"n_obs": 0, "mean_score": 0.0, "best_score": 0.0}
     if g.kind == "COVER":
         return 0.0
     if g.kind == "PROBE":
         return float(st["n_obs"])
-    return float(st["mean_score"])
+    # RAISE：离满分还差多少（用**最好成绩**算 —— 均分永远到不了 1.0，
+    # 拿它当缺口会让每一格的缺口恒等于 1，排序退化成 id 字典序，V170 P4 就是这么 FAIL 的）
+    return float(TARGET - st.get("best_score", 0.0))
 
 
 # ===========================================================================
@@ -257,7 +297,8 @@ def evaluate(goal: Goal, obs: Sequence[dict]) -> tuple[str, dict]:
     """
     st = stats(obs, goal.cell)
     reading = {"cell": goal.cell, "n_obs": st["n_obs"],
-               "mean_score": st["mean_score"], "criterion": [[m, o, v] for m, o, v in goal.criterion]}
+               "mean_score": st["mean_score"], "best_score": st["best_score"],
+               "criterion": [[m, o, v] for m, o, v in goal.criterion]}
     ok = True
     for metric, op, want in goal.criterion:
         got = st.get(metric)
@@ -267,6 +308,10 @@ def evaluate(goal: Goal, obs: Sequence[dict]) -> tuple[str, dict]:
             ok = ok and (got >= want)
         elif op == "<=":
             ok = ok and (got <= want)
+        elif op == ">":
+            ok = ok and (got > want)
+        elif op == "<":
+            ok = ok and (got < want)
         else:
             raise ValueError(f"未知比较符: {op!r}")
     return ("MET" if ok else "NOT_MET"), reading
@@ -285,6 +330,8 @@ def verify_provenance(goal: Goal, obs: Sequence[dict]) -> list[str]:
             got = str(st["n_obs"])
         elif check == "mean":
             got = f"{st['mean_score']:.6f}"
+        elif check == "best":
+            got = f"{st['best_score']:.6f}"
         else:
             bad.append(f"{check}:{key} 未知来源")
             continue
@@ -394,8 +441,26 @@ def escalations(
     obs: Sequence[dict] = (),
     *,
     after: int = MIN_OBS,
+    target_metric: str = "mean_score",
 ) -> dict[str, dict]:
-    """判出「这一格的测量路径已经用尽」的格 —— 返回 `{cell: 证据}`。
+    """判出「这一格的**当前那条** RAISE 判据已经用尽」的格 —— 返回 `{cell: 证据}`。
+
+    ## ⭐ V235：`target_metric` 是**口径**，不是开关
+
+    结构判据（V173 的定理）判的是「`mean_score >= 1.0` 这条判据能否满足」。
+    它**只对 `mean_score` 这条判据成立**：
+
+    | 判据 | 测量能改变吗 | 换路能改变吗 | 结构判据 |
+    |---|---|---|---|
+    | `mean_score >= 1.0` | 否 | 否（均值含历史） | **成立**（V173 定理） |
+    | `best_score > base` | 否 | **能** | **不成立**（一定可满足） |
+
+    ⛔ 所以把结构判据套到 `best_score` 口径上，会是**假阳性**：它会把每一格
+    第一轮就判成「判据不可满足」，而新判据其实可满足 —— 于是 `propose()`
+    被 `escalated` 挡住，新语言**一次也用不上**（这才是最容易踩的坑）。
+
+    `"mean_score"` 是默认值，也是 V171~V180 全部历史读数的口径（那些读数必须可重放）；
+    产品路径（`propose()` 用 `best_score > base`）传 `"best_score"`。
 
     ## 为什么需要它
 
@@ -405,11 +470,12 @@ def escalations(
     `COVER`/`PROBE` 的判据是出现次数，测量自己就能满足；`RAISE` 的判据是均值，
     测量**不改变**它。
 
-    ## 触发条件（**两条路，任一条成立就转**）
+    ## 触发条件（**三条路，任一条成立就转**）
 
     **A. 结构不可达**（V173，`reason=CRITERION_UNREACHABLE`）：
     有 `>= after` 次观测、且历史里存在 `< TARGET` 的分数 ⇒ 见 `unreachable()` 的定理。
     一轮读数就够：这不需要「试」，需要的是**看懂判据**。
+    ⚠️ 只在 `target_metric="mean_score"` 时成立（见上表）。
 
     **B. 读数是测不动的**（V171，`reason=STUCK_MEANS`）：三条同时，缺一不转
 
@@ -417,6 +483,13 @@ def escalations(
     2. 这 after 次的 `mean_score` **逐位相同**（读数没动）
        ⛔ 少了这条，`0.2 → 0.4 → 0.6` 这种明明在收敛的会被误判成做不到
     3. **当前仍未达标**（`fail-open`：分真的上去了，这条判定自动消失）
+
+    **C. 最好成绩没动**（V235，`reason=STUCK_BEST`）：
+    连判 `after` 次 `NOT_MET` 且这几次的 `best_score` 逐位相同 ⇒ 换过的路都没超过基线。
+    ⚠️ 与 B 不是同一条：换路之后均值**会**动（0.5 / 0.333 / 0 混着来），
+    而「一次都没超过基线」只有 `best_score` 说得清。
+    ⚠️ 历史行没有 `best_score` ⇒ 这条路对它们**不成立**（fail-open：
+    不许拿缺席当零，纪律 8）；那些行照旧由 B 判。
 
     ## ⛔ 它不是 `Goal`
 
@@ -441,12 +514,15 @@ def escalations(
     #    ⛔ 它不是「试够了」的替代品：V171 那条只在读数**逐位相同**时触发，
     #    抓的是「模型确定性地重复」；这一条抓的是「判据本身闭不上」。
     #    两条共存 ⇒ 前者留给「读数在动但没到 1.0」的格（0.2→0.4→0.6 不许转，AZ133a）。
-    for cell in sorted({str(o.get("task_id") or "") for o in obs}):
-        if not cell:
-            continue
-        u = unreachable(cell, obs, min_obs=after)
-        if u:
-            out[cell] = u
+    #    ⚠️ V235：只对 `mean_score` 口径成立（`best_score > base` 一定可满足，
+    #    套上去会把每一格第一轮就误判成「闭不上」）。
+    if target_metric == "mean_score":
+        for cell in sorted({str(o.get("task_id") or "") for o in obs}):
+            if not cell:
+                continue
+            u = unreachable(cell, obs, min_obs=after)
+            if u:
+                out[cell] = u
     for gid, rows in by_gid.items():
         # ⚠️ 「**连**判 k 次 NOT_MET」的「连」是字面意思：从**最后一行往前数**，
         #    遇到 MET 就停。首版写成「取最近 k 次 NOT_MET」，
@@ -461,29 +537,53 @@ def escalations(
         if len(tail) < after:
             continue
         tail = tail[-after:]
-        means: list[float] = []
-        for r in tail:
-            m = (r.get("reading") or {}).get("mean_score")
-            if m is None:
-                break
-            means.append(float(m))
-        if len(means) != after:
-            continue
-        if len({repr(m) for m in means}) != 1:     # 读数在动 ⇒ 不转（这条是判据的牙）
-            continue
         cell = str(tail[-1].get("cell") or "")
         kind = str(tail[-1].get("kind") or "")
         if not cell or kind != "RAISE":
             continue
         if obs:                                    # fail-open：已经达标就不该挂在这
             st = stats(obs, cell)
-            if st["n_obs"] and st["mean_score"] >= TARGET:
+            # ⚠️ 达标的口径必须与 `target_metric` 一致（V235 自踩）：
+            #    首版写的是「mean 达标 **或** best 达标」，于是 mean 口径下
+            #    一格 `[0.5, 1.0, 0.5]`（best=1.0 曾满分、均值未达标）不再进 esc ——
+            #    这是把 V171/V173 的旧读数悄悄改掉了。口径决定一切，不混。
+            _sat = (st["mean_score"] if target_metric == "mean_score"
+                    else st["best_score"])
+            if st["n_obs"] and _sat >= TARGET:
                 continue
+        # ── 路 A（V171）：这 k 次判定的**均值**逐位相同 ──
+        means: list[float] = []
+        for r in tail:
+            m = (r.get("reading") or {}).get("mean_score")
+            if m is None:
+                break
+            means.append(float(m))
+        stuck_means = (len(means) == after
+                       and len({repr(m) for m in means}) == 1)
+        # ── 路 B（V235）：这 k 次判定的**最好成绩**逐位相同 ──
+        #    ⚠️ 与 A 不是同一条：换路之后均值会动（0.5/0.33/0 混着来），
+        #       但「一次都没超过基线」这件事只有 best 说得清。
+        #    历史行没有 `best_score`（V235 之前写的）⇒ 这条路对它们**不成立**
+        #    （fail-open：不许拿缺席当零，纪律 8）。
+        bests: list[float] = []
+        for r in tail:
+            b = (r.get("reading") or {}).get("best_score")
+            if b is None:
+                break
+            bests.append(float(b))
+        stuck_best = (len(bests) == after
+                      and len({repr(b) for b in bests}) == 1)
+        if not (stuck_means or stuck_best):
+            continue
         cur = out.get(cell)
         if cur is None:
             out[cell] = {"cell": cell, "kind": kind, "n_fail": len(tail),
-                         "mean": means[-1], "means": list(means),
-                         "gids": [gid], "reason": "STUCK_MEANS"}
+                         "mean": means[-1] if means else None,
+                         "means": list(means),
+                         "best": bests[-1] if bests else None,
+                         "bests": list(bests),
+                         "gids": [gid],
+                         "reason": "STUCK_MEANS" if stuck_means else "STUCK_BEST"}
         else:                                      # 同一格有两代 RAISE ⇒ 合并证据
             cur["n_fail"] += len(tail)
             cur["means"].extend(means)
@@ -671,7 +771,9 @@ def repair_axes(reason: str, movability: dict | None = None) -> tuple[str, ...]:
     axes: list[str] = []
     if reason == "CRITERION_UNREACHABLE":
         axes.append("CRITERION")
-    elif reason == "STUCK_MEANS":
+    elif reason in ("STUCK_MEANS", "STUCK_BEST"):
+        # V235：`STUCK_BEST` 也是 MODEL —— 判据（best > base）已经可满足，
+        # 不成立的是「换过的那些路都不够好」⇒ 该动的是实现路径，不是判据。
         axes.append("MODEL")
     if movability and movability.get("claim") in (_SI.CLAIM_UNMOVABLE,
                                                   _SI.CLAIM_BEHAVIOR_UNRESOLVED):
@@ -710,6 +812,12 @@ def render_escalations(esc: dict[str, dict]) -> str:
             if e.get("n_fail"):
                 line += f"；另：连判 {e['n_fail']} 次均分逐位相同"
             lines.append(line)
+        elif e.get("reason") == "STUCK_BEST":
+            # ⚠️ 措辞只许写读数：说的是「这几次的最好成绩都没超过基线」，
+            #    ⛔ 不是「再换也没用」（那是外推）。
+            lines.append(f"  {cell:<24} RAISE（判据=超过基线）连判 {e['n_fail']} 次 "
+                         f"NOT_MET，这 {len(e['bests'])} 次的最好成绩逐位相同 "
+                         f"{e['best']:.6f} ⇒ 换过的路都没超过基线")
         else:
             lines.append(f"  {cell:<24} RAISE 判 NOT_MET {e['n_fail']} 次，"
                          f"这 {len(e['means'])} 次的均分逐位相同 {e['mean']:.6f}"

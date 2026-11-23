@@ -1,0 +1,20 @@
+[PASS] P0 起点读数（账本实读）：3 次 4/6 ⇒ n=3, mean=best=0.6667；提 1 条 RAISE
+        n=3 mean=0.666667 best=0.666667 goals=['RAISE']
+[PASS] P1 新判据真判出 MET：按真实到达顺序喂 3 个候选（3/6, 4/6, 5/6），第 3 个把 best 从 4/6 抬到 5/6 ⇒ MET
+        轨迹=[(0, '3/6', 'NOT_MET', '0.6667'), (1, '4/6', 'NOT_MET', '0.6667'), (2, '5/6', 'MET', '0.8333')]
+[PASS] P2 旧判据在同一份 obs 上判 NOT_MET（mean=0.6667 < 1.0，best 已到 0.8333）⇒ 「改的是判据本身」，不是把数据换了
+        旧判据=NOT_MET mean=0.666667 best=0.833333
+[PASS] P3 MET 之后提**新一代**目标：gid 换新、base 更新到 5/6 ⇒ 逐轮逼近，不是同一条 gid 无限重复
+        gid f18373e6 → 8567650e；criterion=(('best_score', '>', 0.8333333333333334),)
+[PASS] P4 换路用尽 ⇒ esc(STUCK_BEST)：后 3 个候选（3/6, 4/6, 3/6）都没超过 5/6 ⇒ 连判 3 次 NOT_MET、best 逐位相同
+        后 3 次=[(3, '3/6', 'NOT_MET', '0.6429', '0.8333'), (4, '4/6', 'NOT_MET', '0.6458', '0.8333'), (5, '3/6', 'NOT_MET', '0.6296', '0.8333')]；esc=STUCK_BEST
+[PASS] P4b 两个口径**不是同一条路**：mean 口径下这一格被 **CRITERION_UNREACHABLE** 判死（结构判据、第一轮就够，不需要任何尝试），best 口径下要真试 3 次才 STUCK_BEST ⇒ 新终止条件不是装饰，旧口径会在这格上永不换路
+        esc(mean)=CRITERION_UNREACHABLE；esc(best)=STUCK_BEST；三次均值=['0.642857', '0.645833', '0.629630']（逐位不同 ⇒ 不是 STUCK_MEANS）
+[PASS] P5 天花板要报分母：25 次采样 / 6 个去重实现里，最好 = 5/6，6/6 命中 0 次 ⛔ 不许写成「6/6 不可能」
+        n_sample=25 n_impl=6 max=5 hit6=0 dist={3: 11, 4: 10, 5: 4}
+[PASS] P6 常量集合仍是 KINDS/MIN_OBS/TARGET；KINDS 仍是三元组（⛔ 不加第四类）
+        consts=['KINDS', 'MIN_OBS', 'TARGET'] KINDS=('COVER', 'PROBE', 'RAISE')
+[PASS] P7 变异体有牙：base→0 ⇒ 已有 0.5 也判 MET（应为 NOT_MET）；`>`→`>=` ⇒ 同分也判 MET（应为 NOT_MET）⇒ 两条都会让「进步」变成恒真
+        base=0:MET vs base=0.5:NOT_MET；>=:MET vs >:NOT_MET
+[PASS] P8 历史账本的 mean/n_obs 读数逐位不变（新增 best_score 只是加字段）
+        e1ni:n=1,mean=1.000000｜e1wi:n=1,mean=1.000000｜e2ni:n=1,mean=1.000000 …

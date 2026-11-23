@@ -1,0 +1,44 @@
+==========================================================================
+L5 自主目标 —— 目标来自**自己的账本**，不是 `--goal`
+==========================================================================
+  账本    empty_ledger.jsonl 0 行（坏行 0）
+  观测    obs_b.jsonl 14 行（坏行 0）
+  套件    bench/evidence/l5_s266/suite_one：1 个共 1 题；账本覆盖 1 题；**零覆盖 0 题**
+  口径      （无观测）
+  已 MET  1 条（不再重复提）
+  换路    --goals-swap=4（判 NOT_MET 的 RAISE 再换 4 条路，真打分器判分）
+  提议    1 条：COVER 0｜PROBE 0｜RAISE 1
+  状态    WORK（有 1 条可执行的目标）
+
+  #  类     格子                       判据                 现状                 目标
+  1  RAISE t01_parse_duration       best_score>0.8333  n=14 mean=0.4643   把 t01_parse_duration 的最好成绩从 0.8333 提高（14 次均值 0.4643，满分 1）  [NOT_MET]
+
+--- 已转运维 0 格（套件内 0｜套件外 0；⛔ 不是做到了）---
+  （没有：没有任何一格的测量路径被用尽）
+
+--- 执行前 1 条 ---
+22:28:24 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+22:28:24   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=http | 外部能力 0 个
+22:28:38   ⚠️ 模型输出不是合法 JSON（⇒ 改提示词/解析器）；原文片段: '{"candidates": [{"intent": "直接实现parse_duration函数", "tool": "finish", "args": {}, "rationale": "根据目标描述，可以直接写出所需函数，无需调用其他工具。"}], "candidates": [{"intent": "验证函数正确性", "tool": "note", "args": {"text": "需要'
+22:28:38   [1] 通道=深 候选=1 种类=1
+22:28:40       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+22:28:40       🔁 失配[outcome] recall({'query': "写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+22:28:40       📎 回看 b#1 因由=mismatch 窗=whole 23/23 字
+22:28:56   [2] 通道=深 候选=2 种类=2
+22:29:00       ↳ finish ok=True 直接编写函数逻辑
+22:29:00   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：recall×1
+22:29:00   ✅ 收尾: ```python
+def parse_duration(s):
+    if not s:
+        return None
+    units = {'h': 3600, 'm': 60, 's': 1}
+    total = 
+22:29:00 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=1 | guard_blocked=0 | 预演=2 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.959 memory>reason=0.071 reason>act=0.667] 回流=1.0 | 语义记忆=7 | 上限被裁短=5 | 回看=1次/23字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 parse_duration/语言标签/可编译/结构检查)
+  换路   t01_parse_duration   4 次换路：best 0.8333 → 0.8333 ⇒ **NOT_MET**
+  RAISE t01_parse_duration       测到 0.8333 ⇒ **NOT_MET**（现 n=19 mean=0.5614）
+
+--- 执行后重新提议（已 MET 的 gid 不该再出现）---
+  ⚑ 本轮新转运维：['t01_parse_duration']
+  （执行过的格子已无剩余目标）
+
+  判据行  提议=1 执行=1 MET=0 NOT_MET=1 转运维=1 状态=IDLE

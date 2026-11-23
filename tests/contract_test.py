@@ -16656,6 +16656,109 @@ check(RS, "AZ160e 口径表必须**含三档**、未知档位抛错，且 `--cri
       and _raises(lambda: CritiqueLedger(None, why_mode="shape2"), ValueError),
       f"modes={_az160_modes} cli={_az160_choices}")
 
+# ===========================================================================
+# AZ161 —— 「提分」的判据换成**可满足**的那条（V235）
+#
+# 锚的是判据的**形状**与两条口径的**分道**，效果由 `bench/evidence/l5_s266/` 量。
+# 一句话：`mean_score >= 1.0` 提出时即不可满足（V173 定理，仍然成立），
+# 但由此推出「这格不再提目标」是错的 —— 换成 `best_score > base` 就可满足，
+# 且刷新一次就是**新一代目标**（base 进 gid）。
+# ⛔ 本组锚不许在「均值 vs 最好成绩」上混口径：混了就是 §306 自踩 1 的复形。
+# ===========================================================================
+_AZ161_CELL = "p1"
+_az161_obs = [{"task_id": _AZ161_CELL, "score": 0.6667} for _ in range(3)]
+_az161_st = _G.stats(_az161_obs, _AZ161_CELL)
+_az161_gs = _G.propose(_az161_obs, [_AZ161_CELL])
+_az161_g = _az161_gs[0] if _az161_gs else None
+
+check(RS, "AZ161a 两个统计量**并存**且都要对：一格的 `mean_score`（全部观测的均值）与\n"
+          "              `best_score`（最好的一次）回答不同的问题；`n_unverifiable` 只是读数\n"
+          "              （⛔ 不用它过滤 best —— 那是 §306 自踩 1：会让 best 从 0.6667 掉到 0.3333）",
+      _az161_st["n_obs"] == 3
+      and abs(_az161_st["mean_score"] - 0.6667) < 1e-9
+      and abs(_az161_st["best_score"] - 0.6667) < 1e-9
+      and _az161_st["n_unverifiable"] == 3,
+      f"stats={ {k: v for k, v in _az161_st.items() if k != 'scores'} }")
+
+_az161_after = _az161_obs + [{"task_id": _AZ161_CELL, "score": 0.8333}]
+_az161_v = _G.evaluate(_az161_g, _az161_after)[0] if _az161_g else "NA"
+_az161_old = _G.Goal(kind="RAISE", cell=_AZ161_CELL, statement="旧口径",
+                     criterion=(("mean_score", ">=", 1.0),), provenance=())
+_az161_vold = _G.evaluate(_az161_old, _az161_after)[0]
+
+check(RS, "AZ161b 判据是 `best_score > base` —— **可满足**：同一份 obs 上\n"
+          "              新判据 MET（best 0.8333 > base 0.6667）而旧判据 NOT_MET（mean 0.7083 < 1）\n"
+          "              ⇒ 改的是**判据本身**，不是把数据换了",
+      _az161_g is not None and _az161_g.criterion == (("best_score", ">", 0.6667),)
+      and _az161_v == "MET" and _az161_vold == "NOT_MET",
+      f"criterion={_az161_g.criterion if _az161_g else None} 新={_az161_v} 旧={_az161_vold}")
+
+_az161_next = _G.propose(_az161_after, [_AZ161_CELL], done=[_az161_g.gid])
+check(RS, "AZ161c `base` 进 gid ⇒ **刷新一次就是新一代目标**（链可以逐轮往上走）；\n"
+          "              ⛔ 反例：base 不进 gid ⇒ 同一条 gid 永远重复，「做成了」与「又提出同一条」同形",
+      len(_az161_next) == 1 and _az161_next[0].gid != _az161_g.gid
+      and _az161_next[0].criterion[0][2] == 0.8333,
+      f"next={(_az161_next[0].criterion if _az161_next else None)} "
+      f"gid_changed={bool(_az161_next) and _az161_next[0].gid != _az161_g.gid}")
+
+
+def _az161_row(v: str, mean: float, best: float) -> dict:
+    """判据/读数形状与 `G.record()` 逐字段相同（⛔ 少 `best_score` 会让 B 路静默不参与）。"""
+    return {"gid": "z161", "kind": "RAISE", "cell": _AZ161_CELL, "verdict": v,
+            "reading": {"cell": _AZ161_CELL, "n_obs": 5,
+                        "mean_score": mean, "best_score": best},
+            "criterion": [["best_score", ">", 0.6667]], "source": "contract"}
+
+
+#: 均值在动（0.60/0.65/0.70）、最好成绩不动（恒 0.6667）—— 这就是「换过路但都没超过」的实形。
+_az161_log = [_az161_row("NOT_MET", 0.60, 0.6667),
+              _az161_row("NOT_MET", 0.65, 0.6667),
+              _az161_row("NOT_MET", 0.70, 0.6667)]
+_az161_esc_best = _G.escalations(_az161_log, _az161_obs, target_metric="best_score")
+_az161_esc_mean = _G.escalations(_az161_log, _az161_obs, target_metric="mean_score")
+
+check(RS, "AZ161d 两条**口径**必须分道：同一份读数与账本 ——\n"
+          "              `best_score` 口径 ⇒ `STUCK_BEST`（要真试 3 次才判）；\n"
+          "              `mean_score` 口径 ⇒ `CRITERION_UNREACHABLE`（结构判据、首轮即判死，不需要试）\n"
+          "              ⛔ 把结构判据套到 best 口径上，会把每一格第一轮就误判成「闭不上」",
+      (_az161_esc_best.get(_AZ161_CELL) or {}).get("reason") == "STUCK_BEST"
+      and (_az161_esc_mean.get(_AZ161_CELL) or {}).get("reason") == "CRITERION_UNREACHABLE",
+      f"best={(_az161_esc_best.get(_AZ161_CELL) or {}).get('reason')} "
+      f"mean={(_az161_esc_mean.get(_AZ161_CELL) or {}).get('reason')}")
+
+_az161_flat = [_az161_row("NOT_MET", 0.6667, 0.6667) for _ in range(3)]
+_az161_esc_flat = _G.escalations(_az161_flat, _az161_obs, target_metric="best_score")
+_az161_trend = [_az161_row("NOT_MET", 0.60, 0.60), _az161_row("NOT_MET", 0.70, 0.70),
+                _az161_row("NOT_MET", 0.80, 0.80)]
+
+check(RS, "AZ161e `STUCK_BEST` 与 `STUCK_MEANS` 并存**且互不冒充**：均值也逐位相同时\n"
+          "              报 `STUCK_MEANS`（V171 的旧词不丢）；而在**收敛中**（best 0.60→0.70→0.80）\n"
+          "              ⛔ 一条都不许触发 —— 0.2→0.4→0.6 那类正在变好的格不许被判「做不到」",
+      (_az161_esc_flat.get(_AZ161_CELL) or {}).get("reason") == "STUCK_MEANS"
+      and _G.escalations(_az161_trend, _az161_obs,
+                         target_metric="best_score") == {},
+      f"flat={(_az161_esc_flat.get(_AZ161_CELL) or {}).get('reason')} "
+      f"trend={sorted(_G.escalations(_az161_trend, _az161_obs, target_metric='best_score'))}")
+
+_az161_consts = sorted(n for n in vars(_G)
+                       if n.isupper() and not n.startswith("_")
+                       and isinstance(getattr(_G, n), (tuple, int, float, str)))
+check(RS, "AZ161f ⛔ 不新增模块级常量、不改 `KINDS`：`base` 是**目标内容**（进 criterion/gid），\n"
+          "              不是阈值常量 —— 多一个可调阈值就多一把要单独验证的尺子",
+      _az161_consts == ["KINDS", "MIN_OBS", "TARGET"] and _G.KINDS == ("COVER", "PROBE", "RAISE"),
+      f"consts={_az161_consts} KINDS={_G.KINDS}")
+
+_az161_mixed = [{"task_id": "p2", "score": 1.0},
+                {"task_id": "p2", "score": 0.3333, "impl_sha": "aa"},
+                {"task_id": "p2", "score": 0.8333, "impl_sha": "bb"}]
+_az161_mst = _G.stats(_az161_mixed, "p2")
+check(RS, "AZ161g ★**单调性**：混池（一条无身份的 1.0 + 两条有身份的低分）⇒ `best_score` 仍是 1.0，\n"
+          "              且 `n_unverifiable=1` 把「最高分不可核验」**显形**；\n"
+          "              ⛔ 撤回语义：拿可核验性去过滤 best ⇒ best 掉到 0.8333，本条必须红",
+      abs(_az161_mst["best_score"] - 1.0) < 1e-12 and _az161_mst["n_unverifiable"] == 1
+      and abs(_az161_mst["mean_score"] - (1.0 + 0.3333 + 0.8333) / 3) < 1e-9,
+      f"best={_az161_mst['best_score']} n_unv={_az161_mst['n_unverifiable']}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")

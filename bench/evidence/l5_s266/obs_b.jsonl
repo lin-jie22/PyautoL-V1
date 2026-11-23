@@ -1,0 +1,19 @@
+{"score": 0.6667, "session": null, "source": "seed_from_v234_round4", "task_id": "t01_parse_duration"}
+{"score": 0.6667, "session": null, "source": "seed_from_v234_round4", "task_id": "t01_parse_duration"}
+{"score": 0.6667, "session": null, "source": "seed_from_v234_round4", "task_id": "t01_parse_duration"}
+{"impl_sha": "d774b33c1cf83a7a", "kind": "RAISE", "score": 0.8333, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}
+{"impl_sha": "cc33d5d2d1539609", "kind": "RAISE", "score": 0.1667, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, false, false, false, true, false]}
+{"impl_sha": "19d09ac2493db70a", "score": 0.3333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "549625ca0854e2b9", "score": 0.3333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "184963888c8dc994", "score": 0.0, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "9e90aa5126ae7c9a", "score": 0.3333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "8b94814f5f643bbb", "kind": "RAISE", "score": 0.8333, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}
+{"impl_sha": "1521861710ab1c1c", "score": 0.5, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "018adf250fd4a724", "score": 0.3333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "018adf250fd4a724", "score": 0.3333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "1521861710ab1c1c", "score": 0.5, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "81e8729023940d90", "kind": "RAISE", "score": 0.8333, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}
+{"impl_sha": "5cf54b043412128d", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "5cf54b043412128d", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "5cf54b043412128d", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}
+{"impl_sha": "9eb9b7f4affb9296", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration"}

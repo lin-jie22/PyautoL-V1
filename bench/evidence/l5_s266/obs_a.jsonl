@@ -1,0 +1,7 @@
+{"score": 0.6667, "session": null, "source": "seed_from_v234_round4", "task_id": "t01_parse_duration"}
+{"score": 0.6667, "session": null, "source": "seed_from_v234_round4", "task_id": "t01_parse_duration"}
+{"score": 0.6667, "session": null, "source": "seed_from_v234_round4", "task_id": "t01_parse_duration"}
+{"impl_sha": "6ac08d1a7754c1cd", "kind": "RAISE", "score": 0.8333, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}
+{"impl_sha": "d43f66600e3dde6e", "kind": "RAISE", "score": 0.8333, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}
+{"impl_sha": "decc5f49d93db655", "kind": "RAISE", "score": 0.6667, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, false]}
+{"impl_sha": "7bf57e79611573c2", "kind": "RAISE", "score": 0.8333, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}

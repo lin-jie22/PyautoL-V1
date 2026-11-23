@@ -3178,6 +3178,61 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     return 0 if rep.trustworthy() else 1
 
 
+def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
+                     k: int, *, max_tokens: int = 900) -> tuple[str, float, list[dict]]:
+    """★ V235：对一条 `RAISE` 目标做 k 次**换路**，返回 `(最好代码, 最好分, 逐步读数)`。
+
+    ## 为什么必须有它
+
+    `RAISE` 的判据在本轮改成了 `best_score > base`（可满足）。但**重跑同一实现
+    不会让 best 变** —— `--goals-act` 原来的执行就是 `core.run(同一题面)`，
+    确定性 solver 下产出同一份代码（V171 活性对照：8 轮均分逐位相同）。
+    判据改对了而执行端不变，只会让系统**更快**判死（3 轮 STUCK_BEST）。
+    ⇒ 「换路」是闭环的另一半。
+
+    ## ⛔ 判分用**真打分器**，不用 `reflect.verify`
+
+    `mw.reflect.verify` 是本地简化判分，与外部打分器**不同源**（V234 抓到
+    `t04` 的账本 score=0.6667 而 answer 实为 6/6）。候选必须过 `scorer.score()`
+    —— 与账本同一把尺子，否则「更好」是另一个尺子说的更好。
+
+    ## ⛔ 只有严格更好才替换 `best_code`
+
+    与 `--critique-promote`（V234）同一条不变量：不更好就不写，避免「改进」
+    变成「换了个写法」。
+    """
+    from mw.llm import Message as _Msg, build_llm as _bllm
+    from mw.reflect import (build_proposal_prompt, failed_actuals,
+                            parse_proposal, sha_of)
+
+    llm = _bllm(core.s.llm)
+    best_code, best_score = str(start_code), float(start_score)
+    rows: list[dict] = []
+    for i in range(max(0, int(k))):
+        why = (f"当前最好的一次是 {best_score:.4f}（共 {len(task.tests)} 条断言）。"
+               f"请给出**把剩下的失败断言一起修好**的完整实现。")
+        try:
+            txt = llm.complete(
+                [_Msg(role="user", content=build_proposal_prompt(
+                    task.prompt, best_code, why,
+                    failed_actuals(best_code, task.tests)))],
+                max_tokens=max_tokens)
+        except Exception as e:                       # noqa: BLE001
+            rows.append({"i": i, "err": str(e)[:120]})
+            continue
+        cand, fenced = parse_proposal(txt)
+        if not cand.strip():
+            rows.append({"i": i, "err": "empty", "fenced": bool(fenced)})
+            continue
+        got = float(getattr(scorer.score(task.as_dict(), cand), "score", 0.0))
+        better = got > best_score
+        if better:
+            best_code, best_score = cand, got
+        rows.append({"i": i, "score": got, "sha": sha_of(cand),
+                     "better": better, "fenced": bool(fenced)})
+    return best_code, best_score, rows
+
+
 def _goals_main(args) -> int:
     """自主目标模式（L5 的可判定入口）。
 
@@ -3217,7 +3272,11 @@ def _goals_main(args) -> int:
     done = G.done_gids(log_rows)
     # 「测量路径已用尽」的格 —— **每轮从账本重算**，⛔ 不是持久化状态位。
     # 这样换了模型、均分真上去了，这条判定会自动消失（fail-open）。
-    esc_all = G.escalations(log_rows, obs)
+    # ★ V235：产品路径的 RAISE 判据是 `best_score > base`（不是 `mean_score >= 1.0`），
+    #   所以口径必须传 `best_score`：结构判据（「均分按定义到不了 1.0」）只对
+    #   均值口径成立，套到 best 口径上会把每一格第一轮就误判成「闭不上」⇒
+    #   `propose()` 被挡住 ⇒ 新判据一次也用不上。
+    esc_all = G.escalations(log_rows, obs, target_metric="best_score")
     # ⚠️ V173 修：账本里有**套件之外**的题（`coding_small` 的 k0x、`sg0x` …）。
     #    结构判据（「均分按定义到不了 1.0」）会把它们也判进来，而它们**不在提议范围**。
     #    后果不是显示问题：`state()` 见到 esc 非空就报 IDLE ⇒ 套件内全达标也会被
@@ -3236,9 +3295,15 @@ def _goals_main(args) -> int:
     print(f"  套件    {suite_dir}：{len(suites)} 个共 {len(suite_ids)} 题；"
           f"账本覆盖 {len(covered)} 题；**零覆盖 {len(suite_ids) - len(covered)} 题**")
     # V182（§250）：一格的观测可能来自**几把尺子**（`caliber_sig` 不同）。
-    # ⛔ 这里只报数：`propose()` 的均分判据一个字没改（下面会逐字比）。
+    # ⛔ 这里只报数：口径混了不许被静默平均（`sig_report` 只点名，不改判据）。
+    # ⚠️ V235：`RAISE` 的判据已从 `mean_score >= 1.0` 换成 `best_score > base`
+    #    （§306）—— 所以这里不再宣称「均分判据一个字没改」。
     print(G.render_sig_report(G.sig_report(raw_led)))
     print(f"  已 MET  {len(set(done))} 条（不再重复提）")
+    _sw = int(getattr(args, "goals_swap", 0) or 0)
+    print(f"  换路    --goals-swap={_sw}"
+          + ("（旧行为：只重跑同一实现 ⇒ best 不会变）" if _sw <= 0 else
+             f"（判 NOT_MET 的 RAISE 再换 {_sw} 条路，真打分器判分）"))
     kinds = {k: sum(1 for g in goals if g.kind == k) for k in G.KINDS}
     print(f"  提议    {len(goals)} 条：" + "｜".join(f"{k} {v}" for k, v in kinds.items()))
     # ⚠️ 「提议 0 条」有三种成因，⛔ 不许合成一句（V172）：
@@ -3320,6 +3385,32 @@ def _goals_main(args) -> int:
             with open(obs_path, "a", encoding="utf-8") as f:
                 f.write(json.dumps(_row, ensure_ascii=False, sort_keys=True) + "\n")
             v, rd = G.evaluate(g, obs)
+            # ★ V235（§306）：**换路**。判据是「最好成绩超过基线」，
+            #   而重跑同一实现不可能超过它（确定性 solver ⇒ 同一份代码）。
+            #   ⛔ 换路失败也照记（失败的分是观测，不是缺失）——「许撤不许藏」。
+            if int(getattr(args, "goals_swap", 0) or 0) > 0 and g.kind == "RAISE" \
+                    and v == "NOT_MET":
+                _bc, _bs, _srows = _swap_candidates(
+                    core, scorer, one.tasks[0], _act_answer.get(g.cell, ""),
+                    float(row["score"]), int(args.goals_swap))
+                for _sr in _srows:
+                    if "score" not in _sr:
+                        print(f"  ⚠️ 换路 #{_sr['i']} 失败：{_sr.get('err')}")
+                        continue
+                    obs.append({"task_id": g.cell, "score": _sr["score"],
+                                "session": None, "source": "goal_swap",
+                                "impl_sha": _sr["sha"]})
+                    with open(obs_path, "a", encoding="utf-8") as f:
+                        f.write(json.dumps(
+                            {"task_id": g.cell, "score": _sr["score"],
+                             "session": None, "source": "goal_swap",
+                             "impl_sha": _sr["sha"]},
+                            ensure_ascii=False, sort_keys=True) + "\n")
+                _v2, _rd2 = G.evaluate(g, obs)
+                print(f"  换路   {g.cell:<20} {len(_srows)} 次换路：best "
+                      f"{rd['best_score']:.4f} → {_rd2['best_score']:.4f}"
+                      f" ⇒ **{_v2}**")
+                v, rd = _v2, _rd2
             G.record(log_path, g, v, rd, source="goals-act")
             acted.append({"gid": g.gid, "kind": g.kind, "cell": g.cell,
                           "verdict": v, "reading": rd, "score": float(row["score"])})
@@ -3329,7 +3420,7 @@ def _goals_main(args) -> int:
         print()
         print("--- 执行后重新提议（已 MET 的 gid 不该再出现）---")
         # ⚠️ 重新算一次：本轮新记的 NOT_MET 可能刚好把某格凑够 k 次 ⇒ 当场转运维。
-        esc2 = G.escalations(G.load(log_path), obs)
+        esc2 = G.escalations(G.load(log_path), obs, target_metric="best_score")
         again = G.propose(obs, suite_ids, done=done + G.done_gids(
             [a for a in acted if a["verdict"] == "MET"]), escalated=list(esc2))
         if set(esc2) - set(esc):
@@ -3657,6 +3748,9 @@ def main() -> int:
                    help="自主目标模式：从分数账本提议该做什么（零模型零网络）")
     p.add_argument("--goals-act", type=int, default=0, metavar="N",
                    help="对前 N 条目标**真执行一次**测量并判定（0=只提议）")
+    p.add_argument("--goals-swap", type=int, default=0, metavar="K",
+                   help="对判 NOT_MET 的 RAISE 目标再做 K 次换路（0=旧行为：只重跑"
+                        "同一实现 ⇒ best 永远不会变，判据永远不满足）")
     p.add_argument("--goals-suite-dir", default="",
                    help="可用题集目录（默认 bench/tasks）—— 这是**环境边界**，不是人的指令")
     p.add_argument("--goals-log", default="",

@@ -1,0 +1,35 @@
+```python
+def parse_duration(s):
+    if not s:
+        return None
+    try:
+        s = s.lower()
+        hours = 0
+        minutes = 0
+        seconds = 0
+        if 'h' in s:
+            parts = s.split('h')
+            hours = int(parts[0])
+            if len(parts[1]) > 0:
+                if 'm' in parts[1]:
+                    parts_minutes = parts[1].split('m')
+                    minutes = int(parts_minutes[0])
+                    if len(parts_minutes[1]) > 0:
+                        seconds = int(parts_minutes[1].replace('s', ''))
+                elif 's' in parts[1]:
+                    seconds = int(parts[1].replace('s', ''))
+                else:
+                    minutes = int(parts[1])
+        elif 'm' in s:
+            parts = s.split('m')
+            minutes = int(parts[0])
+            if len(parts[1]) > 0:
+                seconds = int(parts[1].replace('s', ''))
+        elif 's' in s:
+            seconds = int(s.replace('s', ''))
+        else:
+            return None
+        return hours * 3600 + minutes * 60 + seconds
+    except ValueError:
+        return None
+```

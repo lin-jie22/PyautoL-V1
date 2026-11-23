@@ -625,6 +625,38 @@ check(RS, "H1b bench 被显式登记为「非内核模块」（边界声明而�
       "bench" in NON_CORE_MODULES and "bench" not in CORE_MODULES,
       f"core={CORE_MODULES} non_core={NON_CORE_MODULES}")
 
+# ── H1c ★★ V236（§307）：H1 有**第二种漏网形态**，必须单独钉 ──────────────
+# `from . import bench` 是 `ImportFrom(module=None, level=1, names=[bench])`
+# ⇒ H1 的 `and n.module` 把它整个跳过。实测：`mw/loop.py:43` 就是这一形态，
+# 而它既不在 CORE_MODULES、也没在 NON_CORE_MODULES 登记 ⇒ **两处都查不到**。
+# ⛔ 这不是「H1 太严/太松」，是判据的**两种形态只覆盖了一种**。
+_rel_bench = []
+for _name in CORE_MODULES:
+    _p = MW / f"{_name}.py"
+    if not _p.exists():
+        continue
+    for n in ast.walk(ast.parse(_p.read_text(encoding="utf-8"))):
+        if isinstance(n, ast.ImportFrom) and not n.module:
+            if any(getattr(a, "name", "").split(".")[0] == "bench" for a in n.names):
+                _rel_bench.append(f"{_p.name}:{n.lineno}")
+check(RS, "H1c `from . import bench` 形态也被抓（`ImportFrom.module is None`）——\n"
+          "              内核模块用相对导入拿到尺子同样算越界，"
+          "⛔ 否则 H1 对它们照常打印 PASS",
+      not _rel_bench, str(_rel_bench))
+
+# ── H1d ★★ V236（§307）：清单的**穷尽性** ────────────────────────────────
+# H1 只遍历 CORE_MODULES ⇒ 漏登记的模块**根本不会被检查**。
+# ⇒ 「验证了」的范围必须自己先被验证：每个 mw/*.py 都要恰好落在两个清单之一。
+_mw_files = {p.stem for p in MW.glob("*.py") if p.stem != "__init__"}
+_declared = set(CORE_MODULES) | set(NON_CORE_MODULES)
+check(RS, "H1d 边界清单**穷尽**：`CORE ∪ NON_CORE` 恰好等于 `mw/*.py`（去掉 `__init__`）——\n"
+          "              否则 H1「内核不依赖 bench」只在一个**偷偷变小的范围**里成立",
+      _mw_files == _declared,
+      f"未登记={sorted(_mw_files - _declared)} 多登记={sorted(_declared - _mw_files)}")
+check(RS, "H1e 两个清单**不相交**（一个模块不能同时是内核与非内核）",
+      not (set(CORE_MODULES) & set(NON_CORE_MODULES)),
+      f"交集={sorted(set(CORE_MODULES) & set(NON_CORE_MODULES))}")
+
 _frozen_ok = False
 try:
     SUITE.tasks[0].id = "x"  # type: ignore[misc]

@@ -2405,6 +2405,46 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ161g", "mw/goals.py",
      '''            "best_score": (max(xs) if xs else 0.0),''',
      '''            "best_score": (xs[-1] if xs else 0.0),'''),
+    #: ══ V236（§307）══════════════════════════════════════════════════
+    #: 撤回态 tag **必须等于预期转红的锚名**（判据是 `hit = tag in red`）。
+    #: a：`satisfied()` **无视** `target_metric`（退回 mean 口径）⇒
+    #:    best=1.0 的格不再算达标 ⇒ AZ162a 红，AZ162b 的 DONE 一起消失（连带）。
+    ("AZ162a", "mw/goals.py",
+     '''    return st["n_obs"] >= min_obs and st[target_metric] >= target''',
+     '''    return st["n_obs"] >= min_obs and st["mean_score"] >= target'''),
+    #: b：`state()` 不把口径传下去（默认 mean）⇒ best 口径永远报 STALE。
+    #:    只是 `state` 的**传递**面，`satisfied` 本身没动 ⇒ 单红。
+    ("AZ162b", "mw/goals.py",
+     '''                                                 target_metric=target_metric)),''',
+     '''                                                 )),'''),
+    #: c：换路写点**不写 vec**（V235 的实形：只取 score）⇒ 行为池收不到候选。
+    #:    ⚠️ 首版撤的是 `obs.append` 的过滤，而判据锚的是 `_srec` 的**构造** ——
+    #:    撤了仍然绿（同一件事的两处代码，撤错了一处）。现在撤的正是判据看的那行。
+    ("AZ162c", "run.py",
+     '''                             **({"vec": list(_sr["vec"])} if _sr.get("vec") else {}),
+''',
+     ''''''),
+    #: d：`_swap_candidates` 不轮换模型（永远用第 0 个）⇒ AZ162d 红。
+    ("AZ162d", "run.py",
+     '''        _mi = i % len(llms)''',
+     '''        _mi = 0'''),
+    #: e：不给 `thinking` 字段赋值（模型换不动思考开关）⇒ AZ162e 红。
+    ("AZ162e", "mw/llm.py",
+     '''            body_obj["thinking"] = {"type": self.cfg.thinking}''',
+     '''            pass'''),
+    #: f：清单**漏登记**一个模块（把 `probe` 从内核拿掉且不登记）⇒
+    #:    AZ162f 的穷尽性立刻红。⚠️ 这正是 V236 抓到的元缺陷本身：
+    #:    「声明只覆盖 25/27」与「覆盖 27/27」在 H1 看起来**一模一样**。
+    ("AZ162f", "mw/__init__.py",
+     '''    "mutate",
+    "probe",
+)''',
+     '''    "mutate",
+)'''),
+    #: g：`render_state` 的措辞写死「均分」⇒ 口径换成 best 后**标签撒谎**。
+    ("AZ162g", "mw/goals.py",
+     '''    word = "均分" if tm == "mean_score" else "最好成绩"''',
+     '''    word = "均分"'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2441,6 +2481,17 @@ COUPLED: dict[str, frozenset[str]] = {
     "AZ161b": frozenset({"AZ161c"}),
     "AZ161c": frozenset({"AZ132c"}),
     "AZ161d": frozenset({"AZ161e"}),
+    #: ★V236（§307）：AZ162a 撤的是 `satisfied()` 的**口径选择**，而 `state()`
+    #:   的 DONE 正是由它算出来的 ⇒ 同一处实现的两个面，AZ162b 一起红
+    #:   （实测 `红=['AZ162a','AZ162b']`，不是锚定跑偏）。
+    "AZ162a": frozenset({"AZ162b"}),
+    #: ⚠️ AZ162c 撤的是换路写点里 `vec` 那一行 ⇒ `AZ140d` 数「含 vec 的 dict 字面量
+    #:   恰 3 处」当场变 2。同一处实现的**数量面**与**内容面**，合理连带（实测）。
+    "AZ162c": frozenset({"AZ140d"}),
+    #: ⚠️ AZ162e 撤的是 `llm.py` 里 `thinking` 字段的赋值 ⇒ TH2/TH3 锚的就是
+    #:   这个字段「设了才发、没设一个字节都不多发」的两面（同一行实现被三条锚定）。
+    #:   实测 `红=['AZ162e','TH2','TH3']` —— 结构性连带，解不开。
+    "AZ162e": frozenset({"TH2", "TH3"}),
     "AZ161e": frozenset({"AZ133a"}),
     "AZ161f": frozenset({"AZ134f"}),
     #: ★第 143 轮：AZ129c 撤的是「没有身份证也能过」这条规则；AZ129f 断言的正是

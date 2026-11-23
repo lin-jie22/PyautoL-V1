@@ -635,15 +635,31 @@ def split_escalations(esc: dict[str, dict],
 
 
 def satisfied(obs: Sequence[dict], cell: str, *,
-              min_obs: int = MIN_OBS, target: float = TARGET) -> bool:
+              min_obs: int = MIN_OBS, target: float = TARGET,
+              target_metric: str = "mean_score") -> bool:
     """这一格「该做的都做完了」吗 —— 按**读数**算，不按「提不出目标」算。
 
     ⛔ 两者的区别是本轮的全部内容：`propose()` 返回 0 条**不代表**做完了，
     它也可能是「全转运维」或「套件里根本没有题」。拿前者当后者，
     就是把「无事可做」报成「做完了」。
+
+    ## ★ V236（§307）：口径必须跟 `propose()` 走
+
+    V235 把 `propose()` 的 RAISE 判据换成 `best_score > base`，却把这里留成
+    `mean_score >= target` ⇒ **判据分叉**。实测后果（V236 部署态 R2）：
+
+        best=1.0000（换路命中 6/6、MET）而 mean=0.9166（8 次里 4 次满分）
+        ⇒ 提议 0 条、转运维 0 格、`n_sat=0/1` ⇒ 状态 `STALE`
+
+    也就是说：**明明已经做到了，系统却报「账本说做完了、读数说没有」**。
+    这正是纪律 164（口径一路传到底）漏掉的第三处（前两处是结构判据与 fail-open）。
+
+    ⛔ 默认值仍是 `mean_score`：V171~V180 的全部历史读数按原口径可重放。
     """
     st = stats(obs, cell)
-    return st["n_obs"] >= min_obs and st["mean_score"] >= target
+    if target_metric not in ("mean_score", "best_score"):
+        raise ValueError(f"未知口径: {target_metric!r}")
+    return st["n_obs"] >= min_obs and st[target_metric] >= target
 
 
 def state(
@@ -654,6 +670,7 @@ def state(
     *,
     min_obs: int = MIN_OBS,
     target: float = TARGET,
+    target_metric: str = "mean_score",
 ) -> tuple[str, dict]:
     """判「系统现在处于哪一种停/不停」—— 返回 `(名字, 证据)`。
 
@@ -692,8 +709,11 @@ def state(
         "n_goals": len(goals),
         "n_esc": len(esc),
         "n_cells": len(ids),
-        "n_sat": sum(1 for c in ids if satisfied(obs, c, min_obs=min_obs, target=target)),
+        "n_sat": sum(1 for c in ids if satisfied(obs, c, min_obs=min_obs,
+                                                 target=target,
+                                                 target_metric=target_metric)),
         "n_obs": len(obs),
+        "target_metric": target_metric,
         "escalated": sorted(esc),
         "blocked": [],
     }
@@ -718,16 +738,23 @@ def state(
 
 
 def render_state(name: str, det: dict) -> str:
-    """把状态渲染成一行 —— **读数在前，解释在后**（纪律 10）。"""
+    """把状态渲染成一行 —— **读数在前，解释在后**（纪律 10）。
+
+    ⚠️ 措辞必须跟着 `det["target_metric"]` 走（V236 自踩）：
+    口径换成 `best_score` 之后，首版仍印「均分 ≥1」⇒ **标签在撒谎**
+    （实测部署态：状态 `DONE`，同一行却写「均分 ≥1」，而那格 mean=0.9166）。
+    """
+    tm = det.get("target_metric") or "mean_score"
+    word = "均分" if tm == "mean_score" else "最好成绩"
     if name == "WORK":
         return f"WORK（有 {det['n_goals']} 条可执行的目标）"
     if name == "IDLE":
         return (f"IDLE（提议 0 条，{det['n_esc']} 格已转运维：这 {det['n_esc']} 格"
-                f"最后 {MIN_OBS} 次被判 NOT_MET 且均分逐位相同 ⇒ 测量没让它动）"
+                f"最后 {MIN_OBS} 次被判 NOT_MET 且{word}逐位相同 ⇒ 测量没让它动）"
                 f"　⛔ 不是做完了")
     if name == "DONE":
         return (f"DONE（套件 {det['n_cells']} 格全部达标：观测 ≥{MIN_OBS} 次"
-                f"且均分 ≥{TARGET:g}）")
+                f"且{word} ≥{TARGET:g}）")
     if name == "EMPTY":
         return (f"EMPTY（套件里 0 题；账本 {det['n_obs']} 行对不上任何题）"
                 f"　⛔ 不是做完了")

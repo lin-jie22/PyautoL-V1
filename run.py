@@ -3179,7 +3179,8 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
 
 
 def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
-                     k: int, *, max_tokens: int = 900) -> tuple[str, float, list[dict]]:
+                     k: int, *, max_tokens: int = 900,
+                     models: Sequence[str] = ()) -> tuple[str, float, list[dict]]:
     """★ V235：对一条 `RAISE` 目标做 k 次**换路**，返回 `(最好代码, 最好分, 逐步读数)`。
 
     ## 为什么必须有它
@@ -3201,34 +3202,55 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
     与 `--critique-promote`（V234）同一条不变量：不更好就不写，避免「改进」
     变成「换了个写法」。
     """
+    from dataclasses import replace as _dc_replace
+
     from mw.llm import Message as _Msg, build_llm as _bllm
     from mw.reflect import (build_proposal_prompt, failed_actuals,
                             parse_proposal, sha_of)
 
-    llm = _bllm(core.s.llm)
+    # ★ V236（§307）：**MODEL 轴**。`models` 为空 ⇒ 用 `core.s.llm` 的模型，
+    #   与 V235 逐字节同行为（默认不动）。非空 ⇒ 第 i 次换路用 `models[i % len]`。
+    #   ⛔ 换模型**不改任何提示文字**：入参逐字节相同（自测 T2 钉住），
+    #   否则「模型」与「提示」两个自变量缠在一起，读数不能归因。
+    _models = [str(m) for m in (models or ()) if str(m).strip()]
+    llms: list = []
+    for _m in (_models or [None]):
+        cfg = core.s.llm if _m is None else _dc_replace(core.s.llm, model=_m)
+        llms.append(_bllm(cfg))
     best_code, best_score = str(start_code), float(start_score)
     rows: list[dict] = []
     for i in range(max(0, int(k))):
+        _mi = i % len(llms)
         why = (f"当前最好的一次是 {best_score:.4f}（共 {len(task.tests)} 条断言）。"
                f"请给出**把剩下的失败断言一起修好**的完整实现。")
         try:
-            txt = llm.complete(
+            txt = llms[_mi].complete(
                 [_Msg(role="user", content=build_proposal_prompt(
                     task.prompt, best_code, why,
                     failed_actuals(best_code, task.tests)))],
                 max_tokens=max_tokens)
         except Exception as e:                       # noqa: BLE001
-            rows.append({"i": i, "err": str(e)[:120]})
+            rows.append({"i": i, "model": _models[_mi] if _models else None,
+                         "err": str(e)[:120]})
             continue
         cand, fenced = parse_proposal(txt)
         if not cand.strip():
-            rows.append({"i": i, "err": "empty", "fenced": bool(fenced)})
+            rows.append({"i": i, "model": _models[_mi] if _models else None,
+                         "err": "empty", "fenced": bool(fenced)})
             continue
-        got = float(getattr(scorer.score(task.as_dict(), cand), "score", 0.0))
+        sc = scorer.score(task.as_dict(), cand)
+        got = float(getattr(sc, "score", 0.0))
+        # ⛔⛔ V235 的缺陷就修在这里：原来 `getattr(..., "score", 0.0)` 把
+        #   `Scored` 整个丢掉 ⇒ `vec` 丢失 ⇒ 这 12 个候选**一行都没进行为池**
+        #   （实测 `n_no_vec=12`）。行为级读数因此永远看不到换路产出。
+        #   ⛔ 不编 vec：打分器没给就留 None，让读侧看见「没量到」。
+        _vec = getattr(sc, "vec", None)
         better = got > best_score
         if better:
             best_code, best_score = cand, got
-        rows.append({"i": i, "score": got, "sha": sha_of(cand),
+        rows.append({"i": i, "model": _models[_mi] if _models else None,
+                     "score": got, "sha": sha_of(cand),
+                     **({"vec": list(_vec)} if _vec else {}),
                      "better": better, "fenced": bool(fenced)})
     return best_code, best_score, rows
 
@@ -3301,14 +3323,20 @@ def _goals_main(args) -> int:
     print(G.render_sig_report(G.sig_report(raw_led)))
     print(f"  已 MET  {len(set(done))} 条（不再重复提）")
     _sw = int(getattr(args, "goals_swap", 0) or 0)
+    _swm = [m.strip() for m in str(getattr(args, "goals_swap_models", "") or "").split(",")
+            if m.strip()]
     print(f"  换路    --goals-swap={_sw}"
           + ("（旧行为：只重跑同一实现 ⇒ best 不会变）" if _sw <= 0 else
-             f"（判 NOT_MET 的 RAISE 再换 {_sw} 条路，真打分器判分）"))
+             f"（判 NOT_MET 的 RAISE 再换 {_sw} 条路，真打分器判分）")
+          + (f"｜模型轮换 {_swm}" if _swm else "｜模型=当前（V235 行为）"))
     kinds = {k: sum(1 for g in goals if g.kind == k) for k in G.KINDS}
     print(f"  提议    {len(goals)} 条：" + "｜".join(f"{k} {v}" for k, v in kinds.items()))
     # ⚠️ 「提议 0 条」有三种成因，⛔ 不许合成一句（V172）：
     #    空套件（无从提议）/ 全转运维（测量已用尽）/ 真做完。状态行把它们分开。
-    st, det = G.state(goals, esc, suite_ids, obs)
+    # ★ V236（§307）：口径必须跟 `propose()` 一致（V235 用的是 `best_score`）。
+    #   ⛔ 不传 ⇒ 默认 mean ⇒ 与判据分叉 ⇒ 「已经做到了却报 STALE」
+    #   （实测 V236 部署态 R2：best=1.0、mean=0.9166 ⇒ `n_sat=0/1`）。
+    st, det = G.state(goals, esc, suite_ids, obs, target_metric="best_score")
     print(f"  状态    {G.render_state(st, det)}")
     print()
     print(G.render(goals, obs))
@@ -3392,20 +3420,26 @@ def _goals_main(args) -> int:
                     and v == "NOT_MET":
                 _bc, _bs, _srows = _swap_candidates(
                     core, scorer, one.tasks[0], _act_answer.get(g.cell, ""),
-                    float(row["score"]), int(args.goals_swap))
+                    float(row["score"]), int(args.goals_swap),
+                    models=tuple(_m.strip() for _m in
+                                 str(getattr(args, "goals_swap_models", "") or "").split(",")
+                                 if _m.strip()))
                 for _sr in _srows:
                     if "score" not in _sr:
                         print(f"  ⚠️ 换路 #{_sr['i']} 失败：{_sr.get('err')}")
                         continue
-                    obs.append({"task_id": g.cell, "score": _sr["score"],
-                                "session": None, "source": "goal_swap",
-                                "impl_sha": _sr["sha"]})
-                    with open(obs_path, "a", encoding="utf-8") as f:
-                        f.write(json.dumps(
-                            {"task_id": g.cell, "score": _sr["score"],
+                    # ★ V236（§307）：`vec` 与 `impl_sha` 一起落账 ——
+                    #   没有它，行为级读数（`behaviors`）看不见这些候选，
+                    #   于是「换模型有没有扩候选空间」**结构上测不出来**。
+                    _srec = {"task_id": g.cell, "score": _sr["score"],
                              "session": None, "source": "goal_swap",
-                             "impl_sha": _sr["sha"]},
-                            ensure_ascii=False, sort_keys=True) + "\n")
+                             "impl_sha": _sr["sha"],
+                             **({"vec": list(_sr["vec"])} if _sr.get("vec") else {}),
+                             **({"model": _sr["model"]} if _sr.get("model") else {})}
+                    obs.append({k2: v2 for k2, v2 in _srec.items() if k2 != "model"})
+                    with open(obs_path, "a", encoding="utf-8") as f:
+                        f.write(json.dumps(_srec, ensure_ascii=False,
+                                           sort_keys=True) + "\n")
                 _v2, _rd2 = G.evaluate(g, obs)
                 print(f"  换路   {g.cell:<20} {len(_srows)} 次换路：best "
                       f"{rd['best_score']:.4f} → {_rd2['best_score']:.4f}"
@@ -3436,7 +3470,9 @@ def _goals_main(args) -> int:
     print()
     # 执行后重算一次状态：本轮新记的 MET / 新凑够 k 次的 NOT_MET 都会改它。
     # ⛔ 没有执行时**不重算**（`again` 是空列表，拿它算状态会得出 WORK=0 的假读数）。
-    st_final, det_final = (G.state(again, esc, suite_ids, obs) if acted else (st, det))
+    st_final, det_final = (G.state(again, esc, suite_ids, obs,
+                                   target_metric="best_score")
+                           if acted else (st, det))
     print(f"  判据行  提议={len(goals)} 执行={len(acted)} "
           f"MET={sum(1 for a in acted if a['verdict'] == 'MET')} "
           f"NOT_MET={sum(1 for a in acted if a['verdict'] == 'NOT_MET')} "
@@ -3751,6 +3787,9 @@ def main() -> int:
     p.add_argument("--goals-swap", type=int, default=0, metavar="K",
                    help="对判 NOT_MET 的 RAISE 目标再做 K 次换路（0=旧行为：只重跑"
                         "同一实现 ⇒ best 永远不会变，判据永远不满足）")
+    p.add_argument("--goals-swap-models", default="",
+                   help="换路时轮换的模型列表（逗号分隔）。空=用当前模型（V235 逐字节同行为）。"
+                        "⛔ 只换模型、不改提示：入参逐字节相同，否则两个自变量缠在一起")
     p.add_argument("--goals-suite-dir", default="",
                    help="可用题集目录（默认 bench/tasks）—— 这是**环境边界**，不是人的指令")
     p.add_argument("--goals-log", default="",

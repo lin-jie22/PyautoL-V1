@@ -15049,10 +15049,16 @@ with tempfile.TemporaryDirectory(prefix="v1_az140_") as _az140_td:
 _az140_led_ok = (len(_back) == 1 and _back[0].get("vec") == [True, False])
 
 check(RS, "AZ140d 写侧落账：run.py 分数账本写点恰 1 处 `row[\"vec\"]` 赋值、\n"
-          "              goal_obs 写点恰 1 处含 \"vec\" 键的 dict 字面量（AST 现算）；\n"
+          "              goal_obs 写点含 \"vec\" 键的 dict 字面量恰 3 处（AST 现算）；\n"
           "              ScoreLedger.append 不拒带 vec 的行（新键不触写闸）且读回原值；\n"
-          "              撤回语义：删账本写点的落账行 ⇒ 本条必须红",
-      _az140_assign == 1 and _az140_dictlit == 1 and _az140_led_ok,
+          "              撤回语义：删账本写点的落账行 ⇒ 本条必须红\n"
+          "              ⚠️ V236（§307）从 1 改成 3，逐处点名：\n"
+          "                 L3405 `_vec_f`（goals-act 写点的 vec 片段）\n"
+          "                 L3253 `_swap_candidates` 的 rows 中转（换路候选自己带 vec）\n"
+          "                 L3437 `_srec`（goal_swap 写点）—— **换路是独立观测来源**，\n"
+          "                 它有义务自己写 vec；不写 ⇒ 行为池 `n_no_vec` 全涨、\n"
+          "                 「换模型有没有扩候选空间」结构上测不出来（V235 实测 12/12 丢失）",
+      _az140_assign == 1 and _az140_dictlit == 3 and _az140_led_ok,
       f"assign={_az140_assign} dictlit={_az140_dictlit} ledger={_az140_led_ok}")
 
 # ── AZ140e 读闸：四桶计数精确 + fail-open + 容差边界（⛔ 只比逐键值）─────
@@ -16758,6 +16764,132 @@ check(RS, "AZ161g ★**单调性**：混池（一条无身份的 1.0 + 两条有
       abs(_az161_mst["best_score"] - 1.0) < 1e-12 and _az161_mst["n_unverifiable"] == 1
       and abs(_az161_mst["mean_score"] - (1.0 + 0.3333 + 0.8333) / 3) < 1e-9,
       f"best={_az161_mst['best_score']} n_unv={_az161_mst['n_unverifiable']}")
+
+# ===========================================================================
+print()
+print("=" * 74)
+print("AZ162 组  V236（§307）：MODEL 轴 —— 口径传到底 + 换路写 vec + 思考开关")
+print("=" * 74)
+
+# ── AZ162a：`satisfied()`（判 DONE）必须能按 best 口径算 ─────────────────
+# 缺陷形态（V236 部署态 R2 实测）：`propose()` 用 `best > base`，而
+# `satisfied()` 留成 `mean >= TARGET` ⇒ best=1.0 已经满分，状态却报 `STALE`
+# （原文：「账本说做完了，读数说没有」）。
+_az162_obs = ([{"task_id": "c", "score": 0.8333, "impl_sha": f"a{i}"} for i in range(4)]
+              + [{"task_id": "c", "score": 1.0, "impl_sha": f"b{i}"} for i in range(4)])
+_az162_st = _G.stats(_az162_obs, "c")
+_az162_sat_mean = _G.satisfied(_az162_obs, "c")
+_az162_sat_best = _G.satisfied(_az162_obs, "c", target_metric="best_score")
+# 语义关系（不是「同源」）：best 达标 ⇒ 任何 base<1 的 RAISE 必已 MET。
+_az162_all_met = all(
+    _G.evaluate(_G.Goal(kind="RAISE", cell="c", statement="",
+                        criterion=(("best_score", ">", b),), provenance=()),
+                _az162_obs)[0] == "MET"
+    for b in (0.0, 0.5, 0.8333, 0.9999))
+check(RS, "AZ162a `satisfied()` 支持 `target_metric`；同一份真读数（mean=0.9166、best=1.0）\n"
+          "              上 mean 口径判**否**、best 口径判**是** ⇒ DONE 能被正确报出；\n"
+          "              且 best 达标 ⇒ 任何 base<1 的 RAISE 必已 MET（不会自相矛盾）",
+      (not _az162_sat_mean) and _az162_sat_best and _az162_all_met,
+      f"mean={_az162_sat_mean} best={_az162_sat_best} all_met={_az162_all_met} "
+      f"stats_mean={_az162_st['mean_score']:.4f}")
+
+# ── AZ162b：`state()` 把口径传下去，且 `render_state` 的措辞跟着走 ────────
+_az162_s_mean = _G.state([], {}, ["c"], _az162_obs)
+_az162_s_best = _G.state([], {}, ["c"], _az162_obs, target_metric="best_score")
+# ⚠️ 措辞只在 `DONE` 那行同时出现「均分 / 最好成绩」—— 拿 `STALE` 测会假红
+#    （STALE 的文案本来就没有这两个词，首版就这么红的）。
+_az162_det_mean = {"n_goals": 0, "n_esc": 0, "n_cells": 1, "n_sat": 1,
+                   "n_obs": 8, "target_metric": "mean_score", "escalated": [],
+                   "blocked": []}
+_az162_det_best = dict(_az162_det_mean, target_metric="best_score")
+check(RS, "AZ162b `state()` 接受 `target_metric` 并传进 `satisfied()`：\n"
+          "              同一份真读数上 mean 口径 ⇒ STALE、best 口径 ⇒ DONE\n"
+          "              （⛔ 不传 ⇒ 部署态明明满分却报「账本说做完了，读数说没有」）",
+      _az162_s_mean[0] == "STALE" and _az162_s_best[0] == "DONE",
+      f"mean={_az162_s_mean[0]} best={_az162_s_best[0]} "
+      f"n_sat_mean={_az162_s_mean[1].get('n_sat')} n_sat_best={_az162_s_best[1].get('n_sat')}")
+
+# ── AZ162g：措辞必须跟着口径走（否则**标签撒谎**，比读数错更难发现）─────
+_az162_txt_mean = _G.render_state("DONE", _az162_det_mean)
+_az162_txt_best = _G.render_state("DONE", _az162_det_best)
+check(RS, "AZ162g `render_state` 的措辞跟着 `target_metric` 走：\n"
+          "              mean 说「均分」、best 说「最好成绩」，**两者互不出现**；\n"
+          "              首版口径换了文案没换 ⇒ DONE 那行仍印「均分 ≥1」，而那格 mean=0.9166",
+      ("均分" in _az162_txt_mean and "最好成绩" not in _az162_txt_mean
+       and "最好成绩" in _az162_txt_best and "均分" not in _az162_txt_best),
+      f"mean={_az162_txt_mean[:46]!r} best={_az162_txt_best[:46]!r}")
+
+# ── AZ162c：换路候选必须**自己写 vec**，否则行为级判据结构上测不出来 ─────
+# V235 的实形：`getattr(scorer.score(...), "score", 0.0)` 把 `Scored` 整个丢掉
+# ⇒ 12 次换路 `n_no_vec=12`，行为池一行都没收到，「换模型有没有扩空间」测不了。
+from mw.bench import Scored as _Scored                              # noqa: E402
+from mw.scoreinfo import beh_pool_from_rows as _beh_pool             # noqa: E402
+_az162_writer_rows = [
+    {"task_id": "c", "score": 0.5, "source": "goals-act",
+     "impl_sha": "x", "vec": [True, False]},
+    {"task_id": "c", "score": 1.0, "source": "goal_swap",
+     "impl_sha": "y", "vec": [True, True]},
+]
+_az162_pool, _az162_cnt = _beh_pool(_az162_writer_rows, cell="c")
+_az162_src = (V1 / "run.py").read_text(encoding="utf-8")
+# ⚠️ 首版只查离线造的池 ⇒ **撤回态判它恒真**（撤 run.py 写点仍然绿，实测 `红=无`）。
+#    「自造数据自证」是断言恒真的经典形态（纪律 5）：它证明的是「beh_pool 能读带 vec
+#    的行」，没证明「run.py 真的写了 vec」。两半都要，缺一半就退化成同义反复。
+check(RS, "AZ162c 两个写点（`goals-act` / `goal_swap`）的词都带 `vec` ⇒\n"
+          "              `beh_pool_from_rows` 全部收进池（`n_kept=2, n_no_vec=0`）；\n"
+          "              **且** `run.py` 的换路写点真的把 `vec` 写进去（源码级，防「自造数据自证」）；\n"
+          "              ⛔ 撤回语义：删掉换路行写点的 vec ⇒ 本条必须红",
+      len(_az162_pool) == 2 and _az162_cnt["n_no_vec"] == 0
+      and '**({"vec": list(_sr["vec"])} if _sr.get("vec") else {})' in _az162_src,
+      f"pool={len(_az162_pool)} cnt={_az162_cnt} src_vec={'vec\": list(_sr' in _az162_src}")
+
+# ── AZ162d：`_swap_candidates` 的 models 参数默认空 ⇒ 部署行为逐字节不变 ──
+import inspect as _inspect                                         # noqa: E402
+_az162_sig = _inspect.signature(_run._swap_candidates)
+_az162_has_models = ("models" in _az162_sig.parameters
+                     and _az162_sig.parameters["models"].default == ())
+check(RS, "AZ162d `_swap_candidates(..., models=())`：默认空 ⇒ 用当前模型（V235 行为不变）；\n"
+          "              非空 ⇒ 按 `i % len` 轮换，且 rows 里记下**实际用的模型名**\n"
+          "              ⛔ 只换模型不改提示（入参逐字节相同）—— 否则两个自变量缠在一起\n"
+          "              ⚠️ 首版只查两个子串存在 ⇒ 撤掉轮换（`_mi = 0`）仍然绿（实测 `红=无`）；\n"
+          "              现在把「轮换表达式」本身也钉住",
+      _az162_has_models and 'models=tuple(_m.strip() for _m in' in _az162_src
+      and "_mi = i % len(llms)" in _az162_src
+      and '"model": _models[_mi] if _models else None' in _az162_src,
+      f"sig_default={_az162_sig.parameters.get('models')} "
+      f"rotate={'_mi = i % len(llms)' in _az162_src}")
+
+# ── AZ162e：思考开关的**协议形态**必须与端点匹配（否则静默无效）──────────
+# 实测（V236）：`thinking={"type":"disabled"}` 发给 ollama 的 v1 兼容层
+# ⇒ **完全被忽略**（300 token 仍全用在思考、content 仍 0 字符、不报错）。
+# 这是「拨不动的开关给最顺眼的读数」（纪律 77）的又一实形。
+# ⛔ 本轮**不改**（跨 provider 协议适配要单独设计），但必须把事实钉在锚上：
+#    以免下次有人说「关掉思考就好了」而实际拨不动。
+_az162_llm_src = (V1 / "mw" / "llm.py").read_text(encoding="utf-8")
+check(RS, "AZ162e 思考开关的发送形态是 `{\"thinking\": {\"type\": ...}}`（Anthropic 风格）——\n"
+          "              ⛔ ollama 认的是 `think: bool`（且只在**原生** `/api/chat` 生效，\n"
+          "              v1 兼容层连 `think:false` 也忽略）⇒ 对 ollama，这个开关是**静默无效**的。\n"
+          "              本条钉住「它长什么样」，不让「关掉思考」被当成免费选项",
+      'body_obj["thinking"] = {"type": self.cfg.thinking}' in _az162_llm_src,
+      "llm.py 的 thinking 发送形态变了 ⇒ 请同步复核各 provider 的实际生效性")
+
+# ── AZ162f：边界清单**穷尽**（与锚层 H1d 同判据）──────────────────────
+# ⚠️ 为什么同一判据要写两处：`bench/withdraw_check.py` 的驱动器**只跑契约**
+#    （`_run_suite()` 就是 `tests/contract_test.py`）⇒ 只写在锚层的那条
+#    **没有撤回态覆盖**。这不是「多一份声明」，是「让它能被撤一次」。
+#    ⛔ 改一处必须改两处；两处的谓词必须一字不差。
+from mw import (ALL_MW_MODULES as _az162_all,  # noqa: E402
+                CORE_MODULES as _az162_core,
+                NON_CORE_MODULES as _az162_non)
+_az162_files = {p.stem for p in (V1 / "mw").glob("*.py") if p.stem != "__init__"}
+check(RS, "AZ162f 边界清单**穷尽**：`CORE ∪ NON_CORE` == `mw/*.py`（去 `__init__`）且两者不相交 ——\n"
+          "              缺陷形态：清单只有 18 项而文件有 27 个，漏的 9 个**两处都不在**\n"
+          "              ⇒ H1「内核不依赖 bench」在**偷偷变小的范围**里成立，而它照常打印 PASS\n"
+          "              （实测：漏掉的 `loop` 真的 `from . import bench`）",
+      _az162_files == set(_az162_all) and not (set(_az162_core) & set(_az162_non)),
+      f"文件={len(_az162_files)} 清单={len(_az162_all)} "
+      f"未登记={sorted(_az162_files - set(_az162_all))} "
+      f"交集={sorted(set(_az162_core) & set(_az162_non))}")
 
 print()
 print("=" * 74)

@@ -1,0 +1,31 @@
+```python
+def parse_duration(s):
+    if not s:
+        return None
+    s = s.lower()
+    total_seconds = 0
+    index = 0
+    while index < len(s):
+        if s[index] == 'h':
+            hours_part = s[:index]
+            total_seconds += (int(hours_part) if hours_part else 0) * 3600
+            s = s[index+1:]
+            index = 0
+        elif s[index] == 'm':
+            minutes_part = s[:index]
+            total_seconds += (int(minutes_part) if minutes_part else 0) * 60
+            s = s[index+1:]
+            index = 0
+        elif s[index] == 's':
+            seconds_part = s[:index]
+            total_seconds += (int(seconds_part) if seconds_part else 0)
+            return total_seconds
+        index += 1
+    if 's' in s:
+        total_seconds += int(s)
+    elif 'm' in s:
+        total_seconds += int(s) * 60
+    elif 'h' in s:
+        total_seconds += int(s) * 3600
+    return total_seconds if total_seconds > 0 else None
+```

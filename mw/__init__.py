@@ -58,7 +58,47 @@ CORE_MODULES = (
     #:  "验证了"三个字是假的）。
     #: ⚠️ 它本身**不调模型**：只构造 prompt、解析输出、存取。调用方在 `run.py`。
     "reflect",
+    #: ★★ V236（§307）：**补登记 7 个漏掉的内核模块**。
+    #:
+    #: 缺陷形态（审计 `audit_v236.py` 抓的）：清单只有 18 项而 `mw/` 有 27 个模块，
+    #: 漏的 9 个既不在这里、也不在 `NON_CORE_MODULES` 里 —— 于是 H1「内核不依赖
+    #: bench」**根本没检查它们**。而漏掉的里面正好有一个真的依赖 bench（`loop`）。
+    #:
+    #: ⇒ 「声明只覆盖 18/27 时，『验证了』三个字是假的」（V231 注释里 AI14 抓过的
+    #:   同一形态，这次是它的第二个实例）。
+    #:
+    #: 下面 7 个的**事实**（`audit_v236.py` 的可达性分析，不是声明）：
+    #: 从它们出发沿直接 import 走，**到不了 `bench`** ⇒ 它们属于内核。
+    #: 判据：`verify`（本地判分，core 用它）、`scoreinfo`（分数信息量，goals 用它）、
+    #: `goals`（L5 目标提议）、`critgen`（评审生成）、`metacrit`（元评审）、
+    #: `mutate`（变异算子）、`probe`（探针）。
+    "verify",
+    "scoreinfo",
+    "goals",
+    "critgen",
+    "metacrit",
+    "mutate",
+    "probe",
 )
 
 #: 有意留在 mw/ 目录下、但**不属于内核**的模块。新增一个都要在这里说明理由。
-NON_CORE_MODULES = ("bench",)
+#:
+#: ★★ V236（§307）：**穷尽性**是这条声明的一部分。三处都要说清：
+#:   - 为什么不在内核
+#:   - 它依赖什么（尤其是 `bench`）
+#:   - 删掉它 / 把它挪进内核会发生什么
+NON_CORE_MODULES = (
+    #: 外部锚层（尺子）。理由见上。
+    "bench",
+    #: ⛔ **真的依赖 `bench`**（`mw/loop.py:43` `from . import bench`）。
+    #: 它的职责就是**编排测评循环**（跑 suite、记 Caliber、算 harness_sha），
+    #: 所以它必须在尺子之外、又必须调用尺子。把它算内核会让 H1 直接红 ——
+    #: 而它此前既不在内核清单、也没在这里登记 ⇒ H1 查不到它（V236 抓到）。
+    "loop",
+    #: CLI 入口（`python -m mw`）。不是库模块，没有任何模块 import 它。
+    "__main__",
+)
+
+#: 穷尽性（V236）：`mw/*.py` 的每个模块都必须恰好落在两个清单之一。
+#: ⛔ 缺一个 ⇒ 边界声明有盲区，而 H1 会**照常打印 PASS**（只查清单里的）。
+ALL_MW_MODULES = tuple(sorted(CORE_MODULES + NON_CORE_MODULES))

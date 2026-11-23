@@ -1,0 +1,611 @@
+{
+  "root": "/Users/linshaojie/V1",
+  "docs": {
+    "per_doc": {
+      "README.md": {
+        "contract": [
+          "810/0"
+        ],
+        "withdraw": [
+          "346"
+        ]
+      },
+      "ASSESSMENT.md": {
+        "contract": [
+          "672/0",
+          "764/0",
+          "769/0",
+          "774/0",
+          "779/0",
+          "780/0",
+          "781/0",
+          "803/0"
+        ],
+        "anchor": [
+          "97/0"
+        ],
+        "withdraw": [
+          "130",
+          "21",
+          "212",
+          "217",
+          "231",
+          "245",
+          "253",
+          "327",
+          "332",
+          "337",
+          "338",
+          "339"
+        ]
+      },
+      "site/index.html": {
+        "contract": [
+          "810/0"
+        ],
+        "withdraw": [
+          "11"
+        ]
+      }
+    },
+    "drift": {
+      "contract": [
+        "672/0",
+        "764/0",
+        "769/0",
+        "774/0",
+        "779/0",
+        "780/0",
+        "781/0",
+        "803/0",
+        "810/0"
+      ],
+      "withdraw": [
+        "11",
+        "130",
+        "21",
+        "212",
+        "217",
+        "231",
+        "245",
+        "253",
+        "327",
+        "332",
+        "337",
+        "338",
+        "339",
+        "346"
+      ]
+    }
+  },
+  "switches": {
+    "n_off_switches": 46,
+    "rows": [
+      {
+        "flag": "--goal",
+        "in_logs": 22,
+        "bare_in_logs": 108,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--selftest",
+        "in_logs": 0,
+        "bare_in_logs": 17,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--repeat",
+        "in_logs": 0,
+        "bare_in_logs": 1278,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--sweep",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--offline",
+        "in_logs": 0,
+        "bare_in_logs": 52,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--allow-shell",
+        "in_logs": 51,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--verify-impl",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--fn",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--json",
+        "in_logs": 0,
+        "bare_in_logs": 2356,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--bench",
+        "in_logs": 3,
+        "bare_in_logs": 2062,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--suite",
+        "in_logs": 17,
+        "bare_in_logs": 2777,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--suite-dir",
+        "in_logs": 13,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--scorer",
+        "in_logs": 2,
+        "bare_in_logs": 3065,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--ledger",
+        "in_logs": 0,
+        "bare_in_logs": 115,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--no-ledger",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--no-answers",
+        "in_logs": 1,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-file",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-scope",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-drop",
+        "in_logs": 1,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--use-reward",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-carry-code",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-reflect",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-promote",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-trace",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-freeze-pass",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--critique-freeze-best",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--use-critique",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--temperature",
+        "in_logs": 0,
+        "bare_in_logs": 661,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--baseline",
+        "in_logs": 0,
+        "bare_in_logs": 10,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--save-baseline",
+        "in_logs": 7,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--compare",
+        "in_logs": 1,
+        "bare_in_logs": 35,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--allow-supersede",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--no-external",
+        "in_logs": 6,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--fresh",
+        "in_logs": 14,
+        "bare_in_logs": 753,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--memory-dir",
+        "in_logs": 14,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--state-dump",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--goals",
+        "in_logs": 11,
+        "bare_in_logs": 11,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--goals-act",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--goals-swap",
+        "in_logs": 11,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--goals-swap-models",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--goals-suite-dir",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--goals-log",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--goals-obs",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--goals-json",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--loop",
+        "in_logs": 2,
+        "bare_in_logs": 12,
+        "logs_scanned": 964
+      },
+      {
+        "flag": "--loop-out",
+        "in_logs": 0,
+        "bare_in_logs": 0,
+        "logs_scanned": 964
+      }
+    ]
+  },
+  "orphans": {
+    "modules": [
+      {
+        "module": "__main__",
+        "refs": 99
+      },
+      {
+        "module": "abstractor",
+        "refs": 21
+      },
+      {
+        "module": "bench",
+        "refs": 873
+      },
+      {
+        "module": "budget",
+        "refs": 97
+      },
+      {
+        "module": "config",
+        "refs": 52
+      },
+      {
+        "module": "core",
+        "refs": 432
+      },
+      {
+        "module": "critgen",
+        "refs": 61
+      },
+      {
+        "module": "critique",
+        "refs": 84
+      },
+      {
+        "module": "features",
+        "refs": 56
+      },
+      {
+        "module": "flow",
+        "refs": 31
+      },
+      {
+        "module": "goals",
+        "refs": 101
+      },
+      {
+        "module": "guard",
+        "refs": 94
+      },
+      {
+        "module": "ledger",
+        "refs": 129
+      },
+      {
+        "module": "llm",
+        "refs": 319
+      },
+      {
+        "module": "loop",
+        "refs": 105
+      },
+      {
+        "module": "measure",
+        "refs": 28
+      },
+      {
+        "module": "memory",
+        "refs": 325
+      },
+      {
+        "module": "metacog",
+        "refs": 21
+      },
+      {
+        "module": "metacrit",
+        "refs": 10
+      },
+      {
+        "module": "mutate",
+        "refs": 36
+      },
+      {
+        "module": "planner",
+        "refs": 126
+      },
+      {
+        "module": "probe",
+        "refs": 71
+      },
+      {
+        "module": "reflect",
+        "refs": 17
+      },
+      {
+        "module": "scoreinfo",
+        "refs": 43
+      },
+      {
+        "module": "tools",
+        "refs": 137
+      },
+      {
+        "module": "values",
+        "refs": 193
+      },
+      {
+        "module": "verify",
+        "refs": 121
+      },
+      {
+        "module": "worldmodel",
+        "refs": 72
+      }
+    ],
+    "n_modules": 28,
+    "in_init_list": [
+      "abstractor",
+      "bench",
+      "budget",
+      "config",
+      "core",
+      "critique",
+      "features",
+      "flow",
+      "guard",
+      "ledger",
+      "llm",
+      "measure",
+      "memory",
+      "metacog",
+      "planner",
+      "reflect",
+      "tools",
+      "values",
+      "worldmodel"
+    ]
+  },
+  "ledgers": {
+    "runs_jsonl_rows": 436,
+    "score_ledger_rows": 66,
+    "ledger_rows_with_answer_but_no_vec": 0,
+    "examples": []
+  },
+  "open_issues": {
+    "n_hits": 44,
+    "hits": [
+      {
+        "line": 17452,
+        "text": "`# >>> END TODO` 挪到最后、每行加注释、一行拆两行、`stripped` 赋值拆两次。"
+      },
+      {
+        "line": 17577,
+        "text": "`V1_LLM_TIMEOUT_S=120` **未改**（改了 `limits` 就变，不是同一口径）。"
+      },
+      {
+        "line": 17796,
+        "text": "⛔ 本轮不改内核：这一条本身就是「机制存在 ≠ 机制通电」的镜像案例，改它要单独一轮 + 反证。"
+      },
+      {
+        "line": 18234,
+        "text": "`骨架要整份原样输出（含 _split 等辅助函数），只在 BEGIN/END TODO 之间填代码，其余逐字保留；顶部补上本题用到的 import。`"
+      },
+      {
+        "line": 19347,
+        "text": "> 原始样本：`p0_raw/`（16 份模型原始输出，逐字节未改动）"
+      },
+      {
+        "line": 21986,
+        "text": "与 V50~V58 同一笔欠账）。本轮不改代码 ⇒ 定向演练无从谈起，也不该假装跑过。"
+      },
+      {
+        "line": 22467,
+        "text": "| `bench/withdraw_check.py` | **未改**（无一条 CASE 依赖这两个键名 ⇒ 209 条不变） |"
+      },
+      {
+        "line": 22931,
+        "text": "⚠️ **T3 本轮不改名**：它是 `bench/` 侧的字段，名字已经与「答案」绑定在"
+      },
+      {
+        "line": 25188,
+        "text": "3. 读数是在滚动中看的（K1/K2 先出）。判据开跑前已落盘、一字未改，不构成 HARKing，但登记。"
+      },
+      {
+        "line": 28217,
+        "text": "⛔ 搜索器一字未改。"
+      },
+      {
+        "line": 28636,
+        "text": "6 路独立副本并行（`/tmp/v1_sw*`），生产库未改动。"
+      },
+      {
+        "line": 31444,
+        "text": "| 是「搜索变强」吗 | **不是**，搜索一行未改；变的是**动作空间** |"
+      },
+      {
+        "line": 32316,
+        "text": "模块报 k=5 是对的 —— 错的是池。⛔ 判据原文一字未改，池改回注册形态；"
+      },
+      {
+        "line": 32420,
+        "text": "⛔ 判据一字未改；首跑读数 `readings_v175_run1_SUPERSEDED.json` 留档。"
+      },
+      {
+        "line": 33133,
+        "text": "1. **「本轮不改判据」的理由是 A3=0**（没有一格「两把尺子各 ≥3 行」），"
+      },
+      {
+        "line": 34351,
+        "text": "⛔ **全程未调模型**、未改内核、未跑 bench。**7 条预注册全 ✅**（含\"哪些本来就必绿\"的自查）。"
+      },
+      {
+        "line": 34662,
+        "text": "⛔ 未改内核、未改 `verify_*` 默认值、未调模型。**5 ✅ / 0 ❌ / 1 UNKNOWN。**"
+      },
+      {
+        "line": 34782,
+        "text": "⛔ 未改内核。**5 ✅ / 1 ❌。**"
+      },
+      {
+        "line": 35126,
+        "text": "装置 `arms_v203.py`（~12s，零 LLM 生成，73 次 embedding）。⛔ 未改产品代码。"
+      },
+      {
+        "line": 35383,
+        "text": "本轮未改代码 ⇒ 门禁维持 V204 的绿（781/97/339/0 漂移/EXIT=0）。"
+      },
+      {
+        "line": 35390,
+        "text": "接 §273 断点③。两档 `MIN_ABSTRACT_CHARS ∈ {8,4}`，monkeypatch，⛔ 未改源码。254 次调用 / 3m59s。"
+      },
+      {
+        "line": 36214,
+        "text": "尝试 2/3 连分母都没有。判据一个字未改，产品行为未动（`--external-handoff` 默认 `off`）。"
+      },
+      {
+        "line": 38056,
+        "text": "### 305.7 顺手抓到的既存缺陷（立案，本轮不改）"
+      },
+      {
+        "line": 38061,
+        "text": "与 §305.2 的假 SyntaxError 同类。改它要动 `add()` 的写入语义（产品行为），只立案。"
+      },
+      {
+        "line": 38190,
+        "text": "的分组语义，不夹在本轮。"
+      }
+    ]
+  }
+}

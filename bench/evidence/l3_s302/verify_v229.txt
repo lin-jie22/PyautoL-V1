@@ -1,0 +1,31 @@
+run_id 顺序: ['62830@1795435501', '63220@1795435655']
+
+===== 臂 B（run 62830@1795435501）
+  t01_parse_duration state=771 block@262 seg=509
+     P1 前缀==V226b : True (9841561fa95b)
+     P1 块==投喂     : True (seg b7580dbb28f5 / fed 701d6f220eb0)
+     输出 22d72be8f21e(370)  投喂 701d6f220eb0(502)
+     EXACT   : False
+     NAME-FIX: False（== 该题原本的码 24c322d5d9b6）
+  t04_merge_ranges   state=1004 block@322 seg=682
+     P1 前缀==V226b : True (4b27f72bfcdf)
+     P1 块==投喂     : True (seg e6c7bce33847 / fed 1730fc4e201b)
+     输出 60dc1bbdb95e(396)  投喂 1730fc4e201b(675)
+     EXACT   : False
+     NAME-FIX: False（== 该题原本的码 a22691b58203）
+
+===== 臂 C（run 63220@1795435655）
+  t01_parse_duration state=944 block@262 seg=682
+     P1 前缀==V226b : True (9841561fa95b)
+     P1 块==投喂     : True (seg e6c7bce33847 / fed 1730fc4e201b)
+     输出 24c322d5d9b6(677)  投喂 1730fc4e201b(675)
+     EXACT   : False
+     NAME-FIX: True（== 该题原本的码 24c322d5d9b6）
+  t04_merge_ranges   state=831 block@322 seg=509
+     P1 前缀==V226b : True (4b27f72bfcdf)
+     P1 块==投喂     : True (seg b7580dbb28f5 / fed 701d6f220eb0)
+     输出 a22691b58203(500)  投喂 701d6f220eb0(502)
+     EXACT   : False
+     NAME-FIX: True（== 该题原本的码 a22691b58203）
+
+P1 失败格数: 0

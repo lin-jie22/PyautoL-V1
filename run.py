@@ -167,6 +167,8 @@ def _build(goal: str, args, *, allow_shell: bool = False,
     _ho = str(getattr(args, "external_handoff", "off") or "off")
     #: ★ V222（§294）：评审块里除了本题那条还要不要掺别的题。默认 with-others = 旧行为。
     _mx = str(getattr(args, "critique_mix", "with-others") or "with-others")
+    #: ★ V226（§297）：块后要不要附 `[上版代码]`。默认 False = 旧行为一字不改。
+    _cc = bool(getattr(args, "critique_carry_code", False))
     # ── ★ 第一百三十三轮（§109）：guard 必须在**两条分支之前**统一构造 ──────
     # 修之前它只写在离线分支里（`if args.offline or not s.llm.usable():`），
     # 于是**真模型路径上 `--allow-shell` 完全无效** —— 命令行带着
@@ -193,6 +195,7 @@ def _build(goal: str, args, *, allow_shell: bool = False,
                     memory_mode=mem_mode,
                     external_handoff=_ho,
                     critique_mix=_mx,
+                    critique_carry_code=_cc,
                     wire_external=not getattr(args, "no_external", False))
     else:
         core = Core(s, guard=_guard, critique_ledger=critique_ledger,
@@ -200,6 +203,7 @@ def _build(goal: str, args, *, allow_shell: bool = False,
                     memory_mode=mem_mode,
                     external_handoff=_ho,
                     critique_mix=_mx,
+                    critique_carry_code=_cc,
                     wire_external=not getattr(args, "no_external", False))
     return core
 
@@ -2297,6 +2301,13 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     #   ⛔ 不许只在 self-only 时印：那样"默认"与"这一行忘了加"在读数上同形。
     print(f"  评审混编  mix={getattr(args, 'critique_mix', 'with-others')}"
           f"（with-others=本题1条+别题尾2条 / self-only=只放本题）")
+    # ★ V226（§297）：投不投喂上一版代码必须印出来 —— 它是自变量。
+    #   ⛔ 不许只在 on 时印：那样"off"与"这一行忘了加"在读数上同形。
+    #   ⚠️ 直接读 `args`，不读 `_cc`：后者是 `_build_core()` 的局部变量，
+    #      在 `_bench_main()` 里取它 = NameError（本轮首跑就栽在这，整条门禁 EXIT=1）。
+    _cc_on = bool(getattr(args, "critique_carry_code", False))
+    print(f"  评审投喂  carry-code={'on' if _cc_on else 'off'}"
+          f"（on=评审行后附 `[上版代码]` 原文 / off=只给 score+why）")
     # ★ V225（§296）：写端冻不冻结必须印出来 —— 它决定「下一轮的输入是不是这一轮的输入」。
     #   ⛔ 不许只在 on 的时候印：那样"off"与"这一行忘了加"在读数上同形。
     print(f"  评审写端  freeze-pass="
@@ -3315,6 +3326,14 @@ def main() -> int:
                         "为什么要有这根旋钮：V221 实测满分题 `t04` 只因附言掺了 `t01` 的"
                         "失败断言就掉 2 格（6/6→4/6），而它自己那条是 `1.00 — 通过 6/6`。"
                         "⚠️ 不改默认：一个题一次读数不够。")
+    p.add_argument("--critique-carry-code", action="store_true",
+                   help="**评审块后附上一版代码**（DESIGN §297，V226）："
+                        "把账本里本题那一条的 `answer` 原文追加为 `[上版代码]`。"
+                        "**默认 off = 旧行为一字不改。** "
+                        "为什么：V219~V225 只喂「判定」（分数+失败断言），六轮全是整段重写、"
+                        "落进另一个只错一处的家族，净分 0；块里点名了失败断言却一次也没"
+                        "「只改那处」——因为它拿到的是对代码的判决，不是代码。"
+                        "⚠️ 不改默认：\"改得动\"与\"改得对\"是两个命题，一个读数不够。")
     p.add_argument("--critique-freeze-pass", action="store_true",
                    help="**满分不覆盖账本**（DESIGN §296，V225）："
                         "同一题再次落账且新分数 = 1.0 时，保留旧条、不改写（计数 `frozen`）。"

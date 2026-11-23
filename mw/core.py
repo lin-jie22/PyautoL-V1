@@ -447,9 +447,14 @@ _ANSWER_MIN_S = 20.0
 
 #: 「交给真正解题的那一端」时，哪些块算**累积**（§282）。
 #:
-#: ⛔ 只放**跨轮沉淀**的两块。`[工作记忆]` 是本题草稿纸、`[轨迹]` 是本题流水 ——
+#: ⛔ 只放**跨轮沉淀**的块。`[工作记忆]` 是本题草稿纸、`[轨迹]` 是本题流水 ——
 #:    把它们也递过去，等于让外部能力重读一遍本题的过程，而不是拿到"以前学到的"。
-HANDOFF_BLOCKS: tuple[str, ...] = ("[外部评审]", "[语义记忆]", "[经验]")
+#: ★ V226b（§297）：加 `[上版代码]`。它同样是**跨轮沉淀**（上一轮产出的产物），
+#:    不是本题草稿纸。⛔ 之前漏了它 —— V226 首跑现场：`state` 961 字里**有**，
+#:    外部入参 261 字里**没有** ⇒ `state` 涨了 685 字、答案**逐字节不变**
+#:    （纪律 114 第二次复发，同一次运行内可逐字节比）。
+#:    ⚠️ `--critique-carry-code` 为 off 时这一段**根本不存在** ⇒ 旧行为零影响。
+HANDOFF_BLOCKS: tuple[str, ...] = ("[外部评审]", "[语义记忆]", "[经验]", "[上版代码]")
 
 
 def handoff_text(parts: Sequence[str]) -> str:
@@ -682,6 +687,7 @@ class Core:
         memory_mode: str = "raw",
         external_handoff: str = "off",
         critique_mix: str = "with-others",
+        critique_carry_code: bool = False,
     ) -> None:
         #: ★§282：要不要把**累积块**（评审 + 语义记忆）一并交给答案型外部能力。
         #:
@@ -714,6 +720,22 @@ class Core:
         if self.critique_mix not in ("with-others", "self-only"):
             raise ValueError(
                 f"critique_mix 只接受 with-others/self-only，收到 {critique_mix!r}")
+        #: ★ V226（§297）：`[外部评审]` 之后要不要再附一段 `[上版代码]`。
+        #:
+        #:   False（默认）旧行为一字不改：块里只有 `score` + `why`。
+        #:   True        追加 **本题那一条**的 `answer` 原文（账本里存着，之前从未被读）。
+        #:
+        #: 为什么需要这根旋钮：V219~V225 六轮只喂「判定」（分数 + 失败断言），
+        #:   结果是**每轮整段重写**、落进另一个只错一处的家族，净分始终 0（§293/§295）。
+        #:   块里逐字点名了失败断言，模型却一次也没"只改那处"——
+        #:   因为它拿到的是**对代码的判决**，不是**代码**。
+        #:   ⛔ 但"喂产物会变好"没有证据，所以默认 off，且判据分开押
+        #:   （"改得动"与"改得对"是两件事，`PREREG_v226.md` P2/P3）。
+        self.critique_carry_code: bool = bool(critique_carry_code)
+        #: 实际附上`[上版代码]`的次数与字符数。
+        #: ⛔ 不报这两个数，「块没进去」与「进去了但模型没理」在读数上一模一样。
+        self.carry_code_hits: int = 0
+        self.carry_code_chars: int = 0
         #: 本次运行**允许读到记忆的哪一层**：
         #:
         #:   "raw"      （默认）episodic 原文与全部语义记忆都进决策链 ——
@@ -2342,6 +2364,14 @@ class Core:
             parts.append("[外部评审] " + " ｜ ".join(c.as_line()[:140] for c in pick))
             mem_items += len(pick)
             mem_chars += sum(len(c.as_line()[:140]) for c in pick)
+            # ★ V226（§297）：把**产物**也放进去。只放本题那一条 ——
+            #   别题的代码与本轮无关，而"上一次写的那段"才是可以改的那一段。
+            #   ⛔ 不加任何解释性前缀("这是你上次写的…")：那会变成第二个自变量。
+            if self.critique_carry_code and self_c and self_c[-1].answer:
+                code_seg = "[上版代码] " + self_c[-1].answer
+                parts.append(code_seg)
+                self.carry_code_hits += 1
+                self.carry_code_chars += len(code_seg)
         if history:
             parts.append("[轨迹] " + " ｜ ".join(history[-6:]))
         step_line = f"[第 {it}/{self.ledger.budget.steps if self.ledger else '?'} 步]"

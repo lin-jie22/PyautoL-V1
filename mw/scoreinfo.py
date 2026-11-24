@@ -184,6 +184,32 @@ def impl_sha_of(text) -> str:
     return hashlib.sha256(str(text).encode("utf-8")).hexdigest()[:16]
 
 
+def exec_sha_of(text) -> str:
+    """**判分器实际执行的那份代码**的指纹 —— 账本 `impl_sha` 列的**唯一**口径。
+
+    ## 为什么需要它（§310 F2，实测出来的缺陷）
+
+    `impl_sha_of` 记的是**传进来的文本本身**。而产品里两条路喂进来的东西不同物：
+    act 路径存模型**原始答案**（通常带 ```python 围栏），换路路径存
+    `parse_proposal` **剥过围栏的代码**。于是同一列 `impl_sha` 有两个对象：
+
+    | 来源 | 例子 | sha |
+    |---|---|---|
+    | act 行（原文） | `P6_7b_think0.txt` | `2bcccf94` |
+    | swap 行（剥后） | 同一份产出的代码体 | `90579ece` |
+
+    ⇒ `impl_sha` 一旦混口径，它就不再是「实现身份」，而「同实现同 sha」
+    这类判据全部失效（纪律 137：归因不可分常常就是**没记录对**）。
+
+    ⛔ 口径选「剥后」，因为那才是**被判分的东西**：账本要回答的问题是
+       「这份代码得了多少分」，不是「模型那句话说了什么」。
+    ⛔ 对本来就是裸代码的文本，`extract_code` 原样返回（已实测：`start_answer.py`
+       修前修后同为 `90579ece`）⇒ 历史读数不受这次改口径影响。
+    """
+    from .verify import extract_code          # 局部导入：不与 mw 内其他模块抢导入顺序
+    return impl_sha_of(extract_code(str(text)))
+
+
 def pool_from_rows(rows: Iterable[dict], *, cell: str | None = None,
                    impl_key: str = "impl_sha", score_key: str = "score",
                    cell_key: str = "task_id") -> tuple[list[tuple[str, float]], int]:

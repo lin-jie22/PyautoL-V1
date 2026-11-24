@@ -1,0 +1,8 @@
+{"impl_sha": "90579ecebe633352", "score": 0.8333, "session": null, "source": "seed_v235_final_best", "task_id": "t01_parse_duration"}
+{"impl_sha": "90579ecebe633352", "score": 0.8333, "session": null, "source": "seed_v235_final_best", "task_id": "t01_parse_duration"}
+{"impl_sha": "90579ecebe633352", "score": 0.8333, "session": null, "source": "seed_v235_final_best", "task_id": "t01_parse_duration"}
+{"impl_sha": "09d0e23ddc7dd5ac", "kind": "RAISE", "score": 0.8333, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}
+{"impl_sha": "9454d0d2e8796619", "model": "qwen2.5:7b", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}
+{"impl_sha": "6f47167d825afd44", "model": "Qwen3.5-4B@ollama:disabled", "score": 0.6667, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, false]}
+{"impl_sha": "5c07ad8e55de908d", "model": "qwen2.5:7b", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [false, true, true, true, true, true]}
+{"impl_sha": "3b692d5865a7248c", "model": "Qwen3.5-4B@ollama:disabled", "score": 1.0, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [true, true, true, true, true, true]}

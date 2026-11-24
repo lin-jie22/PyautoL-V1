@@ -3178,9 +3178,141 @@ def _bench_main(args, gate: "_BenchGate | None" = None) -> int:
     return 0 if rep.trustworthy() else 1
 
 
+# ---------------------------------------------------------------------------
+# 候选实现缓存 + 换路起点解析（§310，F1/F3）
+# ---------------------------------------------------------------------------
+
+#: 缓存目录名（相对 `--goals-swap-cache`，默认 `state/candidates`）。
+#: 文件名 = 该实现**被判分的那份代码**的 sha（`exec_sha_of`）。
+CAND_DIRNAME = "candidates"
+
+
+def _cand_path(cache_dir: Path, sha: str) -> Path:
+    return Path(cache_dir) / f"{sha}.py"
+
+
+def _cand_put(cache_dir: Path, code: str) -> str:
+    """把候选实现落盘，返回其 sha（口径 `exec_sha_of`）。空代码不落 ⇒ 返回空串。
+
+    ## 为什么必须有这一步（F3）
+
+    账本只记 `impl_sha` **不记代码** ⇒ 「历史最好的一份实现」过一轮就没了。
+    实测（PREREG_v239 §0.2）：起点 obs 三条 `seed_v235_final_best` 连 `impl_sha`
+    都没有。于是「把换路起点换成账本里的真 best」**结构上做不到** —— 不是文案问题。
+    这是纪律 139 的直接应用：账本要记「产生结果的输入」，不只记结果。
+
+    ## ⛔ 落盘的是**剥围栏后**的代码，不是模型原文
+
+    实测踩到（V239b 之前）：act 的 `_act_answer` 是模型原文（**带 ```python**），
+    而 `_cand_put` 首版直接写原文、用 `exec_sha_of` 当文件名 ⇒ **文件名与内容不同口径**。
+    后果不是"多几个字符"：取回来当 `best_code` 时会往 prompt 里塞一对围栏，
+    而「同 prompt ⇒ 同代码」那条定律立刻失真（纪律 89：比两串前先写口径）。
+    ⇒ 落盘前 `as_code()`，保证「文件名 == 内容的口径」。
+    """
+    if not (code or "").strip():
+        return ""
+    from mw.scoreinfo import exec_sha_of
+    from mw.reflect import as_code
+    body = as_code(code)
+    if not body.strip():
+        return ""
+    sha = exec_sha_of(body)
+    p = _cand_path(cache_dir, sha)
+    if not p.exists():
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(body, encoding="utf-8")
+    return sha
+
+
+def _cand_get(cache_dir: Path, sha: str) -> str | None:
+    """按 sha 取回实现；不在缓存里 ⇒ `None`（⛔ 不许返回空串冒充「取到了」）。"""
+    if not sha:
+        return None
+    p = _cand_path(cache_dir, sha)
+    try:
+        return p.read_text(encoding="utf-8")
+    except OSError:
+        return None
+
+
+def _resolve_start(obs, cell: str, fallback_code: str, fallback_score: float,
+                   cache_dir: Path, *, policy: str = "auto") -> tuple[str, float, str, str]:
+    """换路起点 = 账本该题**最高分**的那条观测，且必须能取回**它的实现**。
+
+    返回 `(code, score, src, note)`，`src ∈ {"act", "cache", "degraded"}`。
+
+    ## `policy` 两值（§310 实测出来的一个设计边界）
+
+    | policy | 何时升级到账本实现 |
+    |---|---|
+    | `auto`（默认） | 账本分**严格高于**本轮产出分 |
+    | `ledger` | 账本分**不低于**本轮产出分 |
+
+    ⚠️ 为什么需要 `ledger`：`auto` 在同分时用本轮产出，而「同分不同体」在这道题上是
+    **常态**（V239 R1 实测：起点 `90579ece` 的 `vec=111011`，本轮 act 产出
+    `09d0e23d` 的 `vec=011111` —— 同为 0.8333）。于是 **auto 结构上测不到**
+    「起点固定为某个已知实现」这件事。`ledger` 是把这个选择**显式化**，不是偷偷改判据。
+    ⛔ `ledger` **不许**用比本轮更差的账本实现（那会让「改进」变容易）：
+       只有 `账本分 >= 本轮分` 才换，否则退回 `auto` 的判断。
+
+    ## ⛔ 三条不许（每一条都是已经踩过的坑）
+
+    1. **不许只改 `why` 的数字而不换代码**：那会让「说的分」与「给的码」不同源
+       （纪律 152：`score` 与 `answer` 不同源时，冻结路径会把**坏输入**冻住）。
+       所以本函数返回的是**成对的** `(code, score)`，调用点没有机会只拿一半。
+    2. **不许在取不到实现时静默顶替**：§309 立案的那条缺陷正是
+       「数字错、还让模型去修更差的实现」。改成「静默用差的」只是把缺陷藏深一层
+       （纪律 77：没接通的开关会给出最顺眼的读数）⇒ 返回 `note`，调用点必须打印。
+    3. **不许把「账本里有更高分」当成「起点更好」的证据**：取到码才算数。
+       取不到就如实说，并把这件事记进读数（P3 的正例控制就是靠它）。
+    """
+    if policy not in ("auto", "ledger"):
+        raise ValueError(f"start_from={policy!r} 不认识，只认 ('auto', 'ledger')")
+    best = None
+    for o in obs or ():
+        if not isinstance(o, dict) or o.get("task_id") != cell:
+            continue
+        try:
+            sc = float(o["score"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        # 同分时保留**先出现**的那条：账本是 append-only，先出现的更"老"、
+        # 更可能已经进过缓存（`_cand_put` 是幂等的，选谁都不改结果）。
+        if best is None or sc > best[0]:
+            best = (sc, o)
+    if best is None:
+        # 空账本 ⇒ 没有历史，不把「没历史」读成「历史更好」
+        return fallback_code, float(fallback_score), "act", ""
+
+    _bsc, _brow = best
+    from mw.scoreinfo import exec_sha_of
+    _bsha = str(_brow.get("impl_sha") or "")
+    if _bsha and _bsha == exec_sha_of(fallback_code):
+        # 账本 best 就是本轮这份（只是分记早了一点）⇒ 仍用本轮产出，不读缓存
+        return fallback_code, float(fallback_score), "act", ""
+    if policy == "auto" and _bsc <= float(fallback_score):
+        # 本轮产出就是账本里最好的 ⇒ 与 V235~V238 的起点逐字节相同（历史可重放）
+        return fallback_code, float(fallback_score), "act", ""
+    if _bsc < float(fallback_score):
+        # ledger 策略也不许用**更差**的账本实现（会让「改进」变容易）
+        return fallback_code, float(fallback_score), "act", ""
+
+    _code = _cand_get(cache_dir, _bsha) if _bsha else None
+    if _code is None:
+        _why = ("没有 impl_sha" if not _bsha
+                else f"impl_sha={_bsha} 不在缓存 {cache_dir}")
+        note = (f"⚠️ 起点降级：账本 best={_bsc:.4f} 的实现取不回来（{_why}）"
+                f" ⇒ 用本轮产出 {float(fallback_score):.4f}"
+                f"（why 会如实写成两句，⛔ 不再冒充「最好的一次」）")
+        return fallback_code, float(fallback_score), "degraded", note
+    return _code, _bsc, "cache", ""
+
+
 def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
                      k: int, *, max_tokens: int = 900,
-                     models: Sequence[str] = ()) -> tuple[str, float, list[dict]]:
+                     models: Sequence[str] = (),
+                     start_src: str = "act",
+                     start_hist: float | None = None) -> tuple[str, float, list[dict]]:
     """★ V235：对一条 `RAISE` 目标做 k 次**换路**，返回 `(最好代码, 最好分, 逐步读数)`。
 
     ## 为什么必须有它
@@ -3239,8 +3371,20 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
     rows: list[dict] = []
     for i in range(max(0, int(k))):
         _mi = i % len(llms)
-        why = (f"当前最好的一次是 {best_score:.4f}（共 {len(task.tests)} 条断言）。"
-               f"请给出**把剩下的失败断言一起修好**的完整实现。")
+        # ★ V239（§310 F1）：这句话必须**名副其实**。
+        #   - `start_src == "cache"`：代码真的是账本最好那份 ⇒ 原句本来就没撒谎，
+        #     **一个字不改**（这也保住了与 V235~V238 的逐字节可比性）。
+        #   - `start_src == "degraded"`：取不到那份实现 ⇒ 必须写成两句，
+        #     把「历史最X」与「给你的这份是多少分」分开说。
+        #     ⛔ 不许沿用原句：那正是 §309 立案的「数字错、还让它去修更差的实现」。
+        if start_src == "degraded":
+            why = (f"账本里这题的历史最好成绩是 {float(start_hist or 0.0):.4f}，"
+                   f"但那份实现取不回来。下面给你的是本轮产出"
+                   f"（{best_score:.4f}，共 {len(task.tests)} 条断言）。"
+                   f"请给出**把剩下的失败断言一起修好**的完整实现。")
+        else:
+            why = (f"当前最好的一次是 {best_score:.4f}（共 {len(task.tests)} 条断言）。"
+                   f"请给出**把剩下的失败断言一起修好**的完整实现。")
         try:
             txt = llms[_mi].complete(
                 [_Msg(role="user", content=build_proposal_prompt(
@@ -3268,6 +3412,10 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
             best_code, best_score = cand, got
         rows.append({"i": i, "model": _models[_mi] if _models else None,
                      "score": got, "sha": sha_of(cand),
+                     # ★ V239（§310 F3）：把候选**体**带回去，由调用点落盘。
+                     #   ⛔ 不在这里落盘：`_swap_candidates` 是纯计算 + 一次外部打分，
+                     #   写文件会把它变成有副作用的函数（自检要能反复调它）。
+                     "code": cand,
                      **({"vec": list(_vec)} if _vec else {}),
                      "better": better, "fenced": bool(fenced)})
     return best_code, best_score, rows
@@ -3347,6 +3495,13 @@ def _goals_main(args) -> int:
           + ("（旧行为：只重跑同一实现 ⇒ best 不会变）" if _sw <= 0 else
              f"（判 NOT_MET 的 RAISE 再换 {_sw} 条路，真打分器判分）")
           + (f"｜模型轮换 {_swm}" if _swm else "｜模型=当前（V235 行为）"))
+    if _sw > 0:
+        # ★ V239（§310）：起点从哪来，必须在**开跑前**就可见。
+        #   ⛔ 只在出问题时打印 = 正常路径看不见「起点其实是本轮产出」。
+        _cd = (Path(args.goals_swap_cache).expanduser()
+               if getattr(args, "goals_swap_cache", "") else paths.state / CAND_DIRNAME)
+        print(f"  起点    账本 best 的实现｜缓存 {_cd}"
+              "（取不回 ⇒ 打印降级行，why 改口，⛔ 不静默顶替）")
     kinds = {k: sum(1 for g in goals if g.kind == k) for k in G.KINDS}
     print(f"  提议    {len(goals)} 条：" + "｜".join(f"{k} {v}" for k, v in kinds.items()))
     # ⚠️ 「提议 0 条」有三种成因，⛔ 不许合成一句（V172）：
@@ -3378,6 +3533,11 @@ def _goals_main(args) -> int:
                        else _data_path(DEF_SCORER))
         scorer = ExternalScorer([sys.executable, str(scorer_path)], source=scorer_path)
         core = _build("", args, allow_shell=args.allow_shell)
+        #: 候选实现缓存（§310 F3）。默认 `state/candidates/`；`--goals-swap-cache`
+        #: 可指到证据目录，让实验的起点来源可复现、可对拍。
+        _cache_dir = (Path(args.goals_swap_cache).expanduser()
+                      if getattr(args, "goals_swap_cache", "")
+                      else paths.state / CAND_DIRNAME)
         path_of: dict[str, Path] = {}
         for stem, ids in suites.items():
             for tid in ids:
@@ -3416,8 +3576,16 @@ def _goals_main(args) -> int:
                 acted.append({"gid": g.gid, "kind": g.kind, "cell": g.cell,
                               "verdict": v, "reading": rd, "act": "failed"})
                 continue
-            from mw.scoreinfo import impl_sha_of as _ish_of
-            _ish = _ish_of(_act_answer[g.cell]) if g.cell in _act_answer else None
+            # ★ V239（§310 F2）：`impl_sha` 只认**判分器执行的那份代码**。
+            #   修前这里是 `impl_sha_of(原始答案)`，而换路行记的是
+            #   `parse_proposal` 剥过围栏的代码 ⇒ 同一列两个对象（实测：
+            #   同一份产出 原文 `2bcccf94` / 剥后 `90579ece`）。
+            from mw.scoreinfo import exec_sha_of as _ish_of
+            _act_code = _act_answer.get(g.cell, "")
+            _ish = _ish_of(_act_code) if _act_code else None
+            # ★ V239（§310 F3）：act 的产出也要落盘 —— 否则下一轮「账本 best
+            #   的实现」取不回来，F1 的升级路径永远走 cache 分支的 0 次。
+            _cand_put(_cache_dir, _act_code)
             # ★ V178（PREREG_v178 §1.4）：向量随观测行落账（与 impl_sha 同款
             #   「捕到才写键」；per_task 行没有 vec ⇒ 键不在，不写 None）。
             _vec_f = ({"vec": list(row["vec"])} if "vec" in row else {})
@@ -3436,12 +3604,39 @@ def _goals_main(args) -> int:
             #   ⛔ 换路失败也照记（失败的分是观测，不是缺失）——「许撤不许藏」。
             if int(getattr(args, "goals_swap", 0) or 0) > 0 and g.kind == "RAISE" \
                     and v == "NOT_MET":
+                # ★ V239（§310 F1）：起点从「本轮产出」升级为「账本里该题最高分的
+                #   那条观测**及其实现**」。取不到实现时**可见降级**（打印 + why 改口），
+                #   ⛔ 不静默用差的顶替。
+                _hist = max((float(o["score"]) for o in obs
+                             if isinstance(o, dict) and o.get("task_id") == g.cell
+                             and isinstance(o.get("score"), (int, float))),
+                            default=None)
+                _pol0 = str(getattr(args, "goals_swap_start_from", "auto") or "auto")
+                _sc0, _ss0, _src0, _note0 = _resolve_start(
+                    obs, g.cell, _act_answer.get(g.cell, ""), float(row["score"]),
+                    _cache_dir, policy=_pol0)
+                # ★ V239：起点必须**每一行都可见** —— P5 要判「换路看到的那份代码
+                #   是不是账本 best 的实现」，而这一点只能靠这一行对上 sha。
+                #   ⛔ 只在出问题时打印 ⇒ 正常路径看不见「起点其实是本轮产出」。
+                from mw.scoreinfo import exec_sha_of as _esh0
+                print(f"  ▶ 起点 start_from={_pol0} src={_src0} "
+                      f"sha={_esh0(_sc0)[:8] if _sc0 else '-'} "
+                      f"score={_ss0:.4f} chars={len(_sc0)}")
+                if _note0:
+                    print("  " + _note0)
                 _bc, _bs, _srows = _swap_candidates(
-                    core, scorer, one.tasks[0], _act_answer.get(g.cell, ""),
-                    float(row["score"]), int(args.goals_swap),
+                    core, scorer, one.tasks[0], _sc0, _ss0,
+                    int(args.goals_swap),
                     models=tuple(_m.strip() for _m in
                                  str(getattr(args, "goals_swap_models", "") or "").split(",")
-                                 if _m.strip()))
+                                 if _m.strip()),
+                    start_src=_src0, start_hist=_hist)
+                # 换路的产出也落盘：它是「下一代起点」的唯一来源（F3）。
+                # ⛔ 逐条落、不只落最好的那份 —— 「没有变好的候选」也是实现，
+                #    而且它正是「同分不同体」读数的证据（§307 的 000011 三条）。
+                for _sr in _srows:
+                    if _sr.get("score") is not None and _sr.get("code"):
+                        _cand_put(_cache_dir, _sr["code"])
                 for _sr in _srows:
                     if "score" not in _sr:
                         print(f"  ⚠️ 换路 #{_sr['i']} 失败：{_sr.get('err')}")
@@ -3810,6 +4005,14 @@ def main() -> int:
                         "`model[@provider[:thinking]]`，如 `Qwen3.5-4B@ollama:disabled`。"
                         "空=用当前模型（V235 逐字节同行为）。"
                         "⛔ 只换模型/通道、不改提示：入参逐字节相同，否则两个自变量缠在一起")
+    p.add_argument("--goals-swap-cache", default="",
+                   help="候选实现缓存目录（默认 $V1_STATE_DIR/candidates）。"
+                        "换路起点=账本 best 的**实现**要靠它取回；取不回会可见降级（§310）")
+    p.add_argument("--goals-swap-start-from", default="auto",
+                   choices=("auto", "ledger"),
+                   help="换路起点策略：`auto`=账本分**严格更高**才换（默认，同 V238 可重放）；"
+                        "`ledger`=账本分**不低于**本轮就换（把「起点固定为某个已知实现」显式化，"
+                        "供实验用）。⛔ 两者都不用比本轮**更差**的账本实现")
     p.add_argument("--goals-suite-dir", default="",
                    help="可用题集目录（默认 bench/tasks）—— 这是**环境边界**，不是人的指令")
     p.add_argument("--goals-log", default="",

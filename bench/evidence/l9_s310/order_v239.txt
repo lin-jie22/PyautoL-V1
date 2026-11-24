@@ -1,0 +1,2 @@
+d	swap=4	models=qwen2.5:7b,Qwen3.5-4B@ollama:disabled	start=ledger_best	rc=0	160915
+d	swap=4	models=qwen2.5:7b,Qwen3.5-4B@ollama:disabled	start=ledger_best	rc=0	161028

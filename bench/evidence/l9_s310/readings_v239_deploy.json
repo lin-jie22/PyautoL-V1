@@ -1,0 +1,52 @@
+{
+  "n_obs": 8,
+  "n_swap": 4,
+  "best": 1.0,
+  "verdicts": [
+    "MET"
+  ],
+  "criterion": [
+    [
+      [
+        "best_score",
+        ">",
+        0.8333
+      ]
+    ]
+  ],
+  "swap_rows": [
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "011111",
+      "impl_sha": "9454d0d2e8796619"
+    },
+    {
+      "model": "Qwen3.5-4B@ollama:disabled",
+      "score": 0.6667,
+      "vec": "011110",
+      "impl_sha": "6f47167d825afd44"
+    },
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "011111",
+      "impl_sha": "5c07ad8e55de908d"
+    },
+    {
+      "model": "Qwen3.5-4B@ollama:disabled",
+      "score": 1.0,
+      "vec": "111111",
+      "impl_sha": "3b692d5865a7248c"
+    }
+  ],
+  "act_rows": [],
+  "cand_dir": [
+    "09d0e23ddc7dd5ac.py",
+    "3b692d5865a7248c.py",
+    "5c07ad8e55de908d.py",
+    "6f47167d825afd44.py",
+    "90579ecebe633352.py",
+    "9454d0d2e8796619.py"
+  ]
+}

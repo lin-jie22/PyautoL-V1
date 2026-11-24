@@ -1,0 +1,45 @@
+==========================================================================
+L5 自主目标 —— 目标来自**自己的账本**，不是 `--goal`
+==========================================================================
+  账本    empty_ledger2.jsonl 0 行（坏行 0）
+  观测    obs_d2.jsonl 3 行（坏行 0）
+  套件    bench/evidence/l5_s266/suite_one：1 个共 1 题；账本覆盖 1 题；**零覆盖 0 题**
+  口径      （无观测）
+  已 MET  0 条（不再重复提）
+  换路    --goals-swap=4（判 NOT_MET 的 RAISE 再换 4 条路，真打分器判分）｜模型轮换 ['qwen2.5:7b', 'Qwen3.5-4B@ollama:disabled']
+  起点    账本 best 的实现｜缓存 /Users/linshaojie/V1/bench/evidence/l9_s310/cand（取不回 ⇒ 打印降级行，why 改口，⛔ 不静默顶替）
+  提议    1 条：COVER 0｜PROBE 0｜RAISE 1
+  状态    WORK（有 1 条可执行的目标）
+
+  #  类     格子                       判据                 现状                 目标
+  1  RAISE t01_parse_duration       best_score>0.8333  n=3 mean=0.8333    把 t01_parse_duration 的最好成绩从 0.8333 提高（3 次均值 0.8333，满分 1）  [NOT_MET]
+
+--- 已转运维 0 格（套件内 0｜套件外 0；⛔ 不是做到了）---
+  （没有：没有任何一格的测量路径被用尽）
+
+--- 执行前 1 条 ---
+16:11:34 ▶ 任务开始: 写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。
+16:11:34   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/120s | llm_kind=http | 外部能力 0 个
+16:11:52   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 'ol": "http_get", "args": {"url": "https://www.example.com/sample_duration_strings.txt"}, "rationale": "获取示例数据验证函数正确性"}]}'
+16:11:52   [1] 通道=深 候选=1 种类=1
+16:11:55       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+16:12:12   [2] 通道=深 候选=1 种类=1
+16:12:23       ↳ finish ok=True 直接根据字符串格式解析秒数
+16:12:23   ✅ 收尾: ```python
+def parse_duration(s):
+    if not s:
+        return None
+    
+    s = s.strip()
+    if 'h' in s:
+        hours
+16:12:23 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=0） 尾=0 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=0.591 memory>reason=0.067 reason>act=1.0] 回流=1.0 | 语义记忆=7 | 上限被裁短=4 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 parse_duration/语言标签/可编译/结构检查)
+  ▶ 起点 start_from=ledger src=cache sha=90579ece score=0.8333 chars=770
+  ⚠️ 换路 #1 失败：响应被截断（done_reason=length）：thinking=0字符 content=3779字符 eval=900 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）
+  换路   t01_parse_duration   4 次换路：best 0.8333 → 0.8333 ⇒ **NOT_MET**
+  RAISE t01_parse_duration       测到 0.8333 ⇒ **NOT_MET**（现 n=7 mean=0.7619）
+
+--- 执行后重新提议（已 MET 的 gid 不该再出现）---
+  RAISE t01_parse_duration       把 t01_parse_duration 的最好成绩从 0.8333 提高（7 次均值 0.7619，满分 1）
+
+  判据行  提议=1 执行=1 MET=0 NOT_MET=1 转运维=0 状态=WORK

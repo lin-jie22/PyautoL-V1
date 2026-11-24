@@ -17077,10 +17077,163 @@ check(RS, "AZ164g `run.py` 的换路构造真的 `replace(provider=/thinking=)`�
       and "parse_model_spec(str(m))" in _az162_src,
       "run.py 覆盖点缺失")
 
+# ═══════════════════════════════════════════════════════════════════════════
+# AZ165　换路起点：必须是账本 best 的**实现**（V239，§310）
+#
+# 为什么需要这一组（三处实测缺陷，见 PREREG_v239 §0）：
+#   1. `why` 的数字来自**本轮 act 产出分**，而账本里可能有更高分 ⇒ 那句话是假的；
+#   2. 账本只记 `impl_sha` 不记代码，且起点 obs 连 sha 都没有 ⇒
+#      「起点=历史 best 的实现」**结构上做不到**（不是文案问题）；
+#   3. `impl_sha` 一列混两个口径：act 行记**原文**、换路行记**剥围栏后**
+#      （同一份产出 `2bcccf94` vs `90579ece`）⇒ 它不再能当实现身份。
+# ═══════════════════════════════════════════════════════════════════════════
+import run as _az165_run                                          # noqa: E402
+from mw.scoreinfo import exec_sha_of as _az165_esha, impl_sha_of as _az165_isha  # noqa: E402
+
+_az165_src = (V1 / "run.py").read_text(encoding="utf-8")
+#: 两个**真实**样本：一份带围栏的模型输出、一份裸代码。
+_az165_raw = (V1 / "bench" / "evidence" / "l8_s309" / "raw_v238" / "P6_7b_think0.txt")
+_az165_bare = V1 / "bench" / "evidence" / "l6_s307" / "start_answer.py"
+_az165_have = _az165_raw.exists() and _az165_bare.exists()
+
+# ── AZ165a：`exec_sha_of` 是「剥围栏后」的唯一口径，且裸代码不受影响 ──────
+# ⛔ 判据要能「变」：必须挑一个 raw ≠ as_code(raw) 的样本，否则这条恒真。
+_az165_raw_t = _az165_raw.read_text(encoding="utf-8") if _az165_have else ""
+_az165_bare_t = _az165_bare.read_text(encoding="utf-8") if _az165_have else ""
+check(RS, "AZ165a `exec_sha_of` = **判分器执行的那份代码**的指纹：同一个围栏产出\n"
+          "              `impl_sha_of`≠`exec_sha_of`（`2bcccf94` vs `90579ece`），\n"
+          "              而裸代码两种算法同值（`90579ece`）⇒ 换口径不动历史读数",
+      _az165_have
+      and _az165_isha(_az165_raw_t) != _az165_esha(_az165_raw_t)
+      and _az165_esha(_az165_raw_t) == _az165_esha(_az165_bare_t)
+      == _az165_isha(_az165_bare_t),
+      f"raw={_az165_isha(_az165_raw_t)[:8]} exec={_az165_esha(_az165_raw_t)[:8]}")
+
+# ── AZ165b：act 行**真的**改用了新口径（不是只加了个函数没人调）─────────
+# 这是「加了 API 但没接上」的经典形态：函数存在、契约绿、账本照旧两个口径。
+check(RS, "AZ165b `run.py` 的 act 落账用 `exec_sha_of`：⛔ 只加函数不改调用点\n"
+          "              ⇒ 同一列 `impl_sha` 仍混两个对象，行为级读数照旧不可归因",
+      "from mw.scoreinfo import exec_sha_of as _ish_of" in _az165_src
+      and "from mw.scoreinfo import impl_sha_of as _ish_of" not in _az165_src,
+      "act 落账口径未换")
+
+# ── AZ165c：`_resolve_start` 三值，且**成对**返回 (code, score) ──────────
+# ⛔ 只回分数不回代码 ⇒ 调用点仍可能「说的分」与「给的码」不同源（纪律 152）。
+import tempfile as _az165_td                                        # noqa: E402
+
+with _az165_td.TemporaryDirectory() as _az165_d:
+    import pathlib as _az165_pl
+    _az165_cd = _az165_pl.Path(_az165_d) / "cand"
+    _az165_sha = _az165_run._cand_put(_az165_cd, _az165_bare_t)
+    _az165_obs_cache = [{"task_id": "t", "score": 0.8333, "impl_sha": _az165_sha}]
+    _az165_obs_bare = [{"task_id": "t", "score": 0.8333}]
+    _c1, _s1, _src1, _n1 = _az165_run._resolve_start(
+        _az165_obs_cache, "t", "def f():\n    pass\n", 0.3333, _az165_cd)
+    _c2, _s2, _src2, _n2 = _az165_run._resolve_start(
+        _az165_obs_bare, "t", "def f():\n    pass\n", 0.3333, _az165_cd)
+    _c3, _s3, _src3, _n3 = _az165_run._resolve_start(
+        [{"task_id": "t", "score": 0.1}], "t", "def f():\n    pass\n", 0.3333, _az165_cd)
+    _c4, _s4, _src4, _n4 = _az165_run._resolve_start(
+        [], "t", "def f():\n    pass\n", 0.3333, _az165_cd)
+    #: ⑤**同分不升级**（`auto`）—— 这正是 V239 R1 的真实情形：
+    #:   账本 best 0.8333（`90579ece`）与本轮 act 产出 0.8333（`09d0e23d`）
+    #:   同分不同体 ⇒ auto 必须用**本轮产出**（否则「累积」会退化成永远抄旧）。
+    #:   ⛔ 没有这一格，撤掉「空 provider 式」的那行判据不会转红（`_bsc < fallback`
+    #:      那行会把它兜住）⇒ 实测「红=无」。
+    _c5, _s5, _src5, _n5 = _az165_run._resolve_start(
+        [{"task_id": "t", "score": 0.3333, "impl_sha": _az165_sha}],
+        "t", "def f():\n    pass\n", 0.3333, _az165_cd)
+    #: 缓存往返的形状：空代码不许落盘、陌生 sha 不许冒充「取到了」。
+    _az165_empty = _az165_run._cand_put(_az165_cd, "   ")
+    _az165_miss = _az165_run._cand_get(_az165_cd, "0" * 16)
+
+check(RS, "AZ165c `_resolve_start` 三值齐全且**成对**：①账本 best 带 sha 且缓存有 ⇒\n"
+          "              返回**那份代码**与**那份分**（src=cache）；②带分不带 sha ⇒\n"
+          "              src=degraded 且 note 非空；③账本 best 不高于本轮 ⇒ src=act；\n"
+          "              ④空账本 ⇒ src=act；⑤**同分不升级**（auto 用本轮产出，\n"
+          "              ⛔ 否则「累积」退化成永远抄旧）",
+      _src1 == "cache" and _c1 == _az165_bare_t and abs(_s1 - 0.8333) < 1e-9 and _n1 == ""
+      and _src2 == "degraded" and _c2.startswith("def f():") and _n2 != ""
+      and _src3 == "act" and _n3 == "" and abs(_s3 - 0.3333) < 1e-9
+      and _src4 == "act" and _n4 == ""
+      and _src5 == "act" and _c5.startswith("def f():")
+      and _az165_empty == "" and _az165_miss is None,
+      f"srcs={[_src1, _src2, _src3, _src4, _src5]}")
+
+# ── AZ165d：降级时 `why` 必须**改口**（⛔ 不许沿用「当前最好的一次是」）──
+# 这是 §309 立案那条缺陷的核心：数字错 + 让模型去修**更差**的实现。
+# 只打日志不让 why 改口 ⇒ 模型仍然被那句错话指挥（纪律 77）。
+check(RS, "AZ165d 降级分支的 `why` 改口成两句：含「历史最好成绩是」，\n"
+          "              **不含**「当前最好的一次是」—— 且 `act`/`cache` 分支仍用原句\n"
+          "              （原句在代码真的是最好那份时**本来就没撒谎**，⛔ 不改措辞）",
+      'if start_src == "degraded":' in _az165_src
+      and "但那份实现取不回来" in _az165_src
+      and _az165_src.count("当前最好的一次是") == 1,
+      f"出现次数={_az165_src.count('当前最好的一次是')}")
+
+# ── AZ165e：跨轮逐字节 —— 默认档 prompt 仍是 V236/V238 的那一份 ─────────
+# ⛔ 这条是「历史可重放」的证据。没有它，「默认关」只是我嘴上说的一句。
+#    构造：t01 题面 + `start_answer.py` + act 分支 + 0.8333。
+# ⛔ 必须真的**跑产品代码**产出 prompt。首版是自己拼一份再比 sha ——
+#    那样撤 `run.py` 里的格式串它一动不动（实测「红=无」），锚等于锚在空气上。
+try:
+    import mw.llm as _az165_llm
+    from mw.bench import Suite as _az165_Suite
+    from mw.reflect import sha_of as _az165_sh
+
+    _az165_sink: list[str] = []
+
+    class _az165_LLM:
+        def __init__(self, out):
+            self.out = out
+
+        def complete(self, msgs, max_tokens=900):                   # noqa: ARG002
+            _az165_sink.append(msgs[-1].content)
+            return "```python\n" + self.out + "\n```"
+
+    class _az165_Sc:
+        def score(self, td, cand):                                  # noqa: ARG002
+            class _R:                                                # noqa: D401
+                score = 0.8333
+                vec = [True] * 6
+            return _R()
+
+    class _az165_Core:
+        class s:                                                     # noqa: N801
+            from mw.config import LLMConfig as _C
+            llm = _C(model="m", offline=True, api_key="k")
+
+    _az165_t = _az165_Suite.load(
+        V1 / "bench" / "evidence" / "l5_s266" / "suite_one" / "t01.jsonl").tasks[0]
+    _az165_oldb = _az165_llm.build_llm
+    _az165_llm.build_llm = lambda _c: _az165_LLM(_az165_bare_t)      # noqa: ARG005
+    try:
+        _az165_run._swap_candidates(_az165_Core(), _az165_Sc(), _az165_t,
+                                    _az165_bare_t, 0.8333, 1)
+    finally:
+        _az165_llm.build_llm = _az165_oldb
+    _az165_psha = _az165_sh(_az165_sink[0]) if _az165_sink else "SINK_EMPTY"
+except Exception as _az165_e:                                       # noqa: BLE001
+    _az165_psha = f"ERR {type(_az165_e).__name__}: {_az165_e}"
+
+check(RS, "AZ165e 默认档 prompt sha 仍是 `3b33bcb8b2276580`（V236/V238 同一份）\n"
+          "              ⇒ 起点升级是**可选路径**，不是把历史读数换掉",
+      _az165_psha == "3b33bcb8b2276580", f"sha={_az165_psha[:24]}")
+
+# ── AZ165f：落盘目录一等化 + 缺省走 `state/` ─────────────────────────────
+# ⚠️ 本条只判**它自己**的主张（目录一等化 + 落盘口径），不查 `exec_sha_of` 的实现 ——
+#    那是 AZ165a 的地盘。首版查了那行 ⇒ AZ165a 撤回时连带本条转红（假连带）。
+check(RS, "AZ165f `--goals-swap-cache` 一等化 + 落盘口径：缺省 `$V1_STATE_DIR/candidates`\n"
+          "              **两处**都用同一个常量，且 `_cand_put` 落盘前 `as_code`（文件名 == 内容口径）",
+      '"--goals-swap-cache"' in _az165_src
+      and _az165_src.count("paths.state / CAND_DIRNAME") == 2
+      and "sha = exec_sha_of(body)" in _az165_src
+      and "body = as_code(code)" in _az165_src,
+      f"count={_az165_src.count('paths.state / CAND_DIRNAME')}")
+
 print()
 print("=" * 74)
-print(f"V1 契约测试汇总  {RS.summary_line()}")
-# ⛔ `finish()` 必须在**打印判据行之前**调：它声明的就是「我已经跑到这里了」。
+print(f"V1 契约测试汇总  {RS.summary_line()}")# ⛔ `finish()` 必须在**打印判据行之前**调：它声明的就是「我已经跑到这里了」。
 # 少这一句 ⇒ verdict() 永远是 CRASH ⇒ 门禁的 verdict 检查会判失败。
 # 那个失败是**对的**：漏调 finish 的运行，确实不该被当成通过。
 RS.finish()

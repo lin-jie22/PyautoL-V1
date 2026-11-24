@@ -2508,6 +2508,50 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
             _ov["provider"] = _spec[1]''',
      '''        if _spec[1] is not None:
             _ov["provider"] = core.s.llm.provider'''),
+    # ── V239（§310）：换路起点 = 账本 best 的**实现** ──────────────────
+    #: a：口径退回「原文」⇒ 同一份围栏产出两个 sha，`impl_sha` 又混口径。
+    ("AZ165a", "mw/scoreinfo.py",
+     '''    from .verify import extract_code          # 局部导入：不与 mw 内其他模块抢导入顺序
+    return impl_sha_of(extract_code(str(text)))''',
+     '''    return impl_sha_of(str(text))'''),
+    #: b：act 落账退回旧口径 ⇒ 函数在、契约绿、账本照旧两个口径。
+    ("AZ165b", "run.py",
+     '''            from mw.scoreinfo import exec_sha_of as _ish_of''',
+     '''            from mw.scoreinfo import impl_sha_of as _ish_of'''),
+    #: c：起点永不升级（`<= fallback` 恒真）⇒ 「起点=历史 best」变成一句空话，
+    #:    而日志一切正常（这是最难发现的一种失效：没有报错、没有降级行）。
+    ("AZ165c", "run.py",
+     '''    if policy == "auto" and _bsc <= float(fallback_score):''',
+     '''    if policy == "auto" and False:'''),
+    #: d：降级分支被删掉 ⇒ why 沿用「当前最好的一次是 X」（X 是本轮产出分），
+    #:    正是 §309 立案那条缺陷：数字看着没问题，但它**冒充**了历史最好。
+    #:    ⚠️ 首版想写 `if False:`，但那样分支里的字符串还在、锚是源码级 ⇒ 「红=无」。
+    #:    必须让判据看的字串真的消失。
+    ("AZ165d", "run.py",
+     '''        if start_src == "degraded":
+            why = (f"账本里这题的历史最好成绩是 {float(start_hist or 0.0):.4f}，"
+                   f"但那份实现取不回来。下面给你的是本轮产出"
+                   f"（{best_score:.4f}，共 {len(task.tests)} 条断言）。"
+                   f"请给出**把剩下的失败断言一起修好**的完整实现。")
+        else:
+            why = (f"当前最好的一次是 {best_score:.4f}（共 {len(task.tests)} 条断言）。"
+                   f"请给出**把剩下的失败断言一起修好**的完整实现。")''',
+     '''        why = (f"当前最好的一次是 {best_score:.4f}（共 {len(task.tests)} 条断言）。"
+               f"请给出**把剩下的失败断言一起修好**的完整实现。")'''),
+    #: e：默认分支的精度改一位 ⇒ prompt 字节变 ⇒ `3b33bcb8` 的跨轮锚转红。
+    #:    这条撤的不是「功能」而是**没改**这件事 —— 它证明 sha 锚真的在测 prompt，
+    #:    而不是在测某个永远不变的常量。
+    ("AZ165e", "run.py",
+     '''            why = (f"当前最好的一次是 {best_score:.4f}（共 {len(task.tests)} 条断言）。"''',
+     '''            why = (f"当前最好的一次是 {best_score:.2f}（共 {len(task.tests)} 条断言）。"'''),
+    #: f：缺省目录不再走 `state/` ⇒ 换路写出的候选落在别处，下一轮取不回来
+    #:    （而一切仍然"跑得通"：只是每次都静默降级成「本轮产出」）。
+    #: f：两处里只改一处 ⇒ 「两处同一个常量」这条断言转红。
+    #:    ⚠️ 首版判据只查「有没有这串」⇒ 撤一处另一处还在 ⇒ 实测「红=无」。
+    #:    这是 V238 `AZ162c` 的同型：同一件事写在两处，撤要撤对地方。
+    ("AZ165f", "run.py",
+     '''               if getattr(args, "goals_swap_cache", "") else paths.state / CAND_DIRNAME)''',
+     '''               if getattr(args, "goals_swap_cache", "") else paths.state / "candidates")'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。

@@ -1,0 +1,72 @@
+{
+  "n_obs": 11,
+  "n_swap": 6,
+  "best": 1.0,
+  "verdicts": [
+    "NOT_MET",
+    "MET"
+  ],
+  "swap_rows": [
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "111011",
+      "impl_sha": "90579ecebe633352"
+    },
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "111011",
+      "impl_sha": "90579ecebe633352"
+    },
+    {
+      "model": "Qwen3.5-4B@ollama:disabled",
+      "score": 0.3333,
+      "vec": "000011",
+      "impl_sha": "fda36030e884e1cb"
+    },
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "111011",
+      "impl_sha": "90579ecebe633352"
+    },
+    {
+      "model": "Qwen3.5-4B@ollama:disabled",
+      "score": 1.0,
+      "vec": "111111",
+      "impl_sha": "303b3bb6f43c4633"
+    },
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "011111",
+      "impl_sha": "6925d6b93292ba7b"
+    }
+  ],
+  "act_rows": [
+    {
+      "score": 0.8333,
+      "impl_sha": "18a457feff34dbb5",
+      "vec": "011111"
+    },
+    {
+      "score": 0.6667,
+      "impl_sha": "1eb1b0ab346e9757",
+      "vec": "110011"
+    }
+  ],
+  "cand_dir": [
+    "09d0e23ddc7dd5ac.py",
+    "18a457feff34dbb5.py",
+    "1eb1b0ab346e9757.py",
+    "303b3bb6f43c4633.py",
+    "3b692d5865a7248c.py",
+    "5c07ad8e55de908d.py",
+    "6925d6b93292ba7b.py",
+    "6f47167d825afd44.py",
+    "90579ecebe633352.py",
+    "9454d0d2e8796619.py",
+    "fda36030e884e1cb.py"
+  ]
+}

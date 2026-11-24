@@ -1,0 +1,91 @@
+== R1 swap=4 start_from=ledger ==
+  换路    --goals-swap=4（判 NOT_MET 的 RAISE 再换 4 条路，真打分器判分）｜模型轮换 ['qwen2.5:7b', 'Qwen3.5-4B@ollama:disabled']
+--- 已转运维 0 格（套件内 0｜套件外 0；⛔ 不是做到了）---
+  ▶ 起点 start_from=ledger src=cache sha=90579ece score=0.8333 chars=770
+  ⚠️ 换路 #1 失败：响应被截断（done_reason=length）：thinking=0字符 content=3779字符 eval=900 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）
+  换路   t01_parse_duration   4 次换路：best 0.8333 → 0.8333 ⇒ **NOT_MET**
+  RAISE t01_parse_duration       测到 0.8333 ⇒ **NOT_MET**（现 n=7 mean=0.7619）
+  RAISE t01_parse_duration       把 t01_parse_duration 的最好成绩从 0.8333 提高（7 次均值 0.7619，满分 1）
+  判据行  提议=1 执行=1 MET=0 NOT_MET=1 转运维=0 状态=WORK
+== R2 swap=4 start_from=ledger ==
+  换路    --goals-swap=4（判 NOT_MET 的 RAISE 再换 4 条路，真打分器判分）｜模型轮换 ['qwen2.5:7b', 'Qwen3.5-4B@ollama:disabled']
+--- 已转运维 0 格（套件内 0｜套件外 0；⛔ 不是做到了）---
+  ▶ 起点 start_from=ledger src=cache sha=90579ece score=0.8333 chars=770
+  ⚠️ 换路 #3 失败：响应被截断（done_reason=length）：thinking=0字符 content=3679字符 eval=900 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）
+  换路   t01_parse_duration   4 次换路：best 0.8333 → 1.0000 ⇒ **MET**
+  RAISE t01_parse_duration       测到 0.6667 ⇒ **MET**（现 n=11 mean=0.7879）
+  判据行  提议=1 执行=1 MET=1 NOT_MET=0 转运维=0 状态=DONE
+== 汇总 ==
+{
+  "n_obs": 11,
+  "n_swap": 6,
+  "best": 1.0,
+  "verdicts": [
+    "NOT_MET",
+    "MET"
+  ],
+  "swap_rows": [
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "111011",
+      "impl_sha": "90579ecebe633352"
+    },
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "111011",
+      "impl_sha": "90579ecebe633352"
+    },
+    {
+      "model": "Qwen3.5-4B@ollama:disabled",
+      "score": 0.3333,
+      "vec": "000011",
+      "impl_sha": "fda36030e884e1cb"
+    },
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "111011",
+      "impl_sha": "90579ecebe633352"
+    },
+    {
+      "model": "Qwen3.5-4B@ollama:disabled",
+      "score": 1.0,
+      "vec": "111111",
+      "impl_sha": "303b3bb6f43c4633"
+    },
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.8333,
+      "vec": "011111",
+      "impl_sha": "6925d6b93292ba7b"
+    }
+  ],
+  "act_rows": [
+    {
+      "score": 0.8333,
+      "impl_sha": "18a457feff34dbb5",
+      "vec": "011111"
+    },
+    {
+      "score": 0.6667,
+      "impl_sha": "1eb1b0ab346e9757",
+      "vec": "110011"
+    }
+  ],
+  "cand_dir": [
+    "09d0e23ddc7dd5ac.py",
+    "18a457feff34dbb5.py",
+    "1eb1b0ab346e9757.py",
+    "303b3bb6f43c4633.py",
+    "3b692d5865a7248c.py",
+    "5c07ad8e55de908d.py",
+    "6925d6b93292ba7b.py",
+    "6f47167d825afd44.py",
+    "90579ecebe633352.py",
+    "9454d0d2e8796619.py",
+    "fda36030e884e1cb.py"
+  ]
+}
+V239b DONE 16:16:31

@@ -1,0 +1,67 @@
+[
+  {
+    "tag": "T6 缓存：落盘→按 sha 取回→逐字节同；空代码不落盘、返回空串",
+    "ok": true,
+    "detail": "sha=90579ecebe633352 got=same empty=''"
+  },
+  {
+    "tag": "T1 起点替换：账本 best 带 sha 且缓存里有 ⇒ 起点=**那份代码**与**那份分**",
+    "ok": true,
+    "detail": "src=cache code_sha=90579ecebe633352 score=0.8333 note=''"
+  },
+  {
+    "tag": "T3 同源：why 里的数字 == 对**起点代码**真判分的值（0.8333）",
+    "ok": true,
+    "detail": "下面这个 Python 函数没有通过全部测试。请给出**修正后的完整函数**。"
+  },
+  {
+    "tag": "T5 默认档：不传新参数 与 `start_src=\"act\"` 的 prompt **逐字节相同**⇒ 新参数默认关，历史可重放",
+    "ok": true,
+    "detail": "len=649"
+  },
+  {
+    "tag": "T7 跨轮逐字节：act 分支 + start_answer.py + 0.8333 ⇒ prompt sha == V236/V238 的 `3b33bcb8b2276580`",
+    "ok": true,
+    "detail": "sha=3b33bcb8b2276580"
+  },
+  {
+    "tag": "T5b 默认档文案字面：仍以「当前最好的一次是 0.3333」开头",
+    "ok": true,
+    "detail": "下面这个 Python 函数没有通过全部测试。请给出**修正后的完整函数**。"
+  },
+  {
+    "tag": "T2 降级：账本 best 无 sha ⇒ 返回本轮产出 + note 点名「取不回来」，且 why **改口成两句**（⛔ 不再出现「当前最好的一次是 0.8333」）",
+    "ok": true,
+    "detail": "src=degraded note=⚠️ 起点降级：账本 best=0.8333 的实现取不回来（没有 impl_s…"
+  },
+  {
+    "tag": "T11 缓存口径：带围栏的输入落盘后是**裸代码**，且盘上内容的 sha == 文件名",
+    "ok": true,
+    "detail": "sha=90579ecebe633352 fenced_in_file=False"
+  },
+  {
+    "tag": "T8 `ledger` vs `auto` 同分分歧：ledger ⇒ src=cache 且拿到**那份代码**；auto ⇒ src=act（用本轮产出）",
+    "ok": true,
+    "detail": "ledger=cache auto=act"
+  },
+  {
+    "tag": "T9 边界：账本 best=0.5 < 本轮 0.8333 ⇒ ledger 也**不换**（退回 act）—— ⛔ 用更差的起点会让「更好」变容易",
+    "ok": true,
+    "detail": "src=act score=0.8333"
+  },
+  {
+    "tag": "T10 非法 `start_from` **直接抛**：拼错不许静默退回 auto",
+    "ok": true,
+    "detail": "raised=True"
+  },
+  {
+    "tag": "T2b 边界：账本 best == 本轮产出分 ⇒ 走普通路径（src=act，不报降级）",
+    "ok": true,
+    "detail": "src=act note=''"
+  },
+  {
+    "tag": "T4 口径：同一份围栏产出 原文≠剥后（`2bcccf94` vs `90579ece`），裸代码两种算法同值 ⇒ 修后只记**剥后**那个",
+    "ok": true,
+    "detail": "raw=2bcccf94 exec=90579ece bare=90579ece"
+  }
+]

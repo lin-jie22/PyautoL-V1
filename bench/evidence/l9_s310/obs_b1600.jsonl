@@ -1,0 +1,12 @@
+{"impl_sha": "90579ecebe633352", "score": 0.8333, "session": null, "source": "seed_v235_final_best", "task_id": "t01_parse_duration"}
+{"impl_sha": "90579ecebe633352", "score": 0.8333, "session": null, "source": "seed_v235_final_best", "task_id": "t01_parse_duration"}
+{"impl_sha": "90579ecebe633352", "score": 0.8333, "session": null, "source": "seed_v235_final_best", "task_id": "t01_parse_duration"}
+{"impl_sha": "ed8616dfb0e0736b", "kind": "RAISE", "score": 0.6667, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [true, false, true, false, true, true]}
+{"impl_sha": "90579ecebe633352", "model": "qwen2.5:7b", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [true, true, true, false, true, true]}
+{"impl_sha": "90579ecebe633352", "model": "qwen2.5:7b", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [true, true, true, false, true, true]}
+{"impl_sha": "e9113e960963fa50", "model": "Qwen3.5-4B@ollama:disabled", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [true, true, true, true, true, false]}
+{"impl_sha": "eb6f32e8af544fa3", "kind": "RAISE", "score": 0.8333, "session": null, "source": "goals-act", "task_id": "t01_parse_duration", "vec": [true, true, true, true, true, false]}
+{"impl_sha": "90579ecebe633352", "model": "qwen2.5:7b", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [true, true, true, false, true, true]}
+{"impl_sha": "1cdd787cac01befd", "model": "Qwen3.5-4B@ollama:disabled", "score": 0.3333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [false, true, false, false, true, false]}
+{"impl_sha": "90579ecebe633352", "model": "qwen2.5:7b", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [true, true, true, false, true, true]}
+{"impl_sha": "f53342d33c4802a6", "model": "Qwen3.5-4B@ollama:disabled", "score": 0.8333, "session": null, "source": "goal_swap", "task_id": "t01_parse_duration", "vec": [true, true, true, true, true, false]}

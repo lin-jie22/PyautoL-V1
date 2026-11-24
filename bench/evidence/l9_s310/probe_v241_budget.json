@@ -1,0 +1,32 @@
+{
+  "prompt_chars": 1128,
+  "rows": [
+    {
+      "wall_s": 75.9,
+      "eval_count": 1283,
+      "eval_duration_s": 74.44,
+      "tok_s": 17.24,
+      "done_reason": "stop",
+      "content_chars": 4653,
+      "thinking_chars": 0
+    },
+    {
+      "wall_s": 49.2,
+      "eval_count": 733,
+      "eval_duration_s": 49.03,
+      "tok_s": 14.95,
+      "done_reason": "stop",
+      "content_chars": 2976,
+      "thinking_chars": 0
+    },
+    {
+      "wall_s": 36.0,
+      "eval_count": 538,
+      "eval_duration_s": 35.87,
+      "tok_s": 15.0,
+      "done_reason": "stop",
+      "content_chars": 2297,
+      "thinking_chars": 0
+    }
+  ]
+}

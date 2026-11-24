@@ -1,0 +1,57 @@
+{
+  "prompt_chars": 1128,
+  "rows": [
+    {
+      "wall_s": 17.9,
+      "eval_count": 195,
+      "eval_duration_s": 11.75,
+      "tok_s": 16.59,
+      "done_reason": "stop",
+      "content_chars": 798,
+      "thinking_chars": 0,
+      "model": "qwen2.5:7b",
+      "provider": "",
+      "thinking": "",
+      "num_predict": 900
+    },
+    {
+      "wall_s": 20.5,
+      "eval_count": 349,
+      "eval_duration_s": 16.9,
+      "tok_s": 20.65,
+      "done_reason": "stop",
+      "content_chars": 1424,
+      "thinking_chars": 0,
+      "model": "Qwen3.5-4B",
+      "provider": "ollama",
+      "thinking": "disabled",
+      "num_predict": 900
+    },
+    {
+      "wall_s": 19.6,
+      "eval_count": 393,
+      "eval_duration_s": 19.55,
+      "tok_s": 20.1,
+      "done_reason": "stop",
+      "content_chars": 1594,
+      "thinking_chars": 0,
+      "model": "Qwen3.5-4B",
+      "provider": "ollama",
+      "thinking": "disabled",
+      "num_predict": 1600
+    },
+    {
+      "wall_s": 35.0,
+      "eval_count": 699,
+      "eval_duration_s": 34.96,
+      "tok_s": 20.0,
+      "done_reason": "stop",
+      "content_chars": 3061,
+      "thinking_chars": 0,
+      "model": "Qwen3.5-4B",
+      "provider": "ollama",
+      "thinking": "disabled",
+      "num_predict": 2400
+    }
+  ]
+}

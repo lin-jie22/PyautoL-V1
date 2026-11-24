@@ -1,0 +1,204 @@
+{
+  "arms": [
+    {
+      "tag": "b900",
+      "n_swap_rows": 7,
+      "trunc_idx": [
+        1
+      ],
+      "other_fail": [],
+      "per_model": {
+        "qwen2.5:7b": {
+          "n_att": 4,
+          "n_land": 4,
+          "n_trunc": 0,
+          "n_other_fail": 0,
+          "rate_trunc": 0.0,
+          "rate_land": 1.0,
+          "n_6of6": 0,
+          "n_exact_start": 4,
+          "vecs": [
+            "111011",
+            "111011",
+            "111011",
+            "111011"
+          ],
+          "scores": [
+            0.8333,
+            0.8333,
+            0.8333,
+            0.8333
+          ],
+          "chars": [
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Qwen3.5-4B@ollama:disabled": {
+          "n_att": 4,
+          "n_land": 3,
+          "n_trunc": 1,
+          "n_other_fail": 0,
+          "rate_trunc": 0.25,
+          "rate_land": 0.75,
+          "n_6of6": 0,
+          "n_exact_start": 0,
+          "vecs": [
+            "111010",
+            "101110",
+            "010111"
+          ],
+          "scores": [
+            0.6667,
+            0.6667,
+            0.6667
+          ],
+          "chars": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "tag": "b1600",
+      "n_swap_rows": 7,
+      "trunc_idx": [
+        1
+      ],
+      "other_fail": [],
+      "per_model": {
+        "qwen2.5:7b": {
+          "n_att": 4,
+          "n_land": 4,
+          "n_trunc": 0,
+          "n_other_fail": 0,
+          "rate_trunc": 0.0,
+          "rate_land": 1.0,
+          "n_6of6": 0,
+          "n_exact_start": 4,
+          "vecs": [
+            "111011",
+            "111011",
+            "111011",
+            "111011"
+          ],
+          "scores": [
+            0.8333,
+            0.8333,
+            0.8333,
+            0.8333
+          ],
+          "chars": [
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Qwen3.5-4B@ollama:disabled": {
+          "n_att": 4,
+          "n_land": 3,
+          "n_trunc": 1,
+          "n_other_fail": 0,
+          "rate_trunc": 0.25,
+          "rate_land": 0.75,
+          "n_6of6": 0,
+          "n_exact_start": 0,
+          "vecs": [
+            "111110",
+            "010010",
+            "111110"
+          ],
+          "scores": [
+            0.8333,
+            0.3333,
+            0.8333
+          ],
+          "chars": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "tag": "b2400",
+      "n_swap_rows": 6,
+      "trunc_idx": [],
+      "other_fail": [
+        [
+          3,
+          "请求失败: TimeoutError: timed out"
+        ],
+        [
+          3,
+          "请求失败: TimeoutError: timed out"
+        ]
+      ],
+      "per_model": {
+        "qwen2.5:7b": {
+          "n_att": 4,
+          "n_land": 4,
+          "n_trunc": 0,
+          "n_other_fail": 0,
+          "rate_trunc": 0.0,
+          "rate_land": 1.0,
+          "n_6of6": 1,
+          "n_exact_start": 3,
+          "vecs": [
+            "111011",
+            "111011",
+            "111011",
+            "111111"
+          ],
+          "scores": [
+            0.8333,
+            0.8333,
+            0.8333,
+            1.0
+          ],
+          "chars": [
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Qwen3.5-4B@ollama:disabled": {
+          "n_att": 4,
+          "n_land": 2,
+          "n_trunc": 0,
+          "n_other_fail": 2,
+          "rate_trunc": 0.0,
+          "rate_land": 0.5,
+          "n_6of6": 1,
+          "n_exact_start": 0,
+          "vecs": [
+            "000010",
+            "111111"
+          ],
+          "scores": [
+            0.1667,
+            1.0
+          ],
+          "chars": [
+            null,
+            null
+          ]
+        }
+      }
+    }
+  ],
+  "verdicts": {
+    "P1": "PASS",
+    "P2": "FAIL",
+    "P3": "PASS",
+    "P4": "PASS"
+  },
+  "unknown": []
+}

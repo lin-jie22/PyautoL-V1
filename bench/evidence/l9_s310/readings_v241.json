@@ -1,0 +1,217 @@
+{
+  "b900": {
+    "n_obs": 12,
+    "n_swap": 7,
+    "n_trunc_lines": 1,
+    "trunc": [
+      {
+        "file": "round_b900_024142.log",
+        "line": "⚠️ 换路 #1 失败：响应被截断（done_reason=length）：thinking=0字符 content=3832字符 eval=900 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）"
+      }
+    ],
+    "swap_rows": [
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "Qwen3.5-4B@ollama:disabled",
+        "score": 0.6667,
+        "vec": "111010",
+        "sha": "25cb380dbbb15bcb",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "Qwen3.5-4B@ollama:disabled",
+        "score": 0.6667,
+        "vec": "101110",
+        "sha": "2167cfd15451fd8c",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "Qwen3.5-4B@ollama:disabled",
+        "score": 0.6667,
+        "vec": "010111",
+        "sha": "b453255a468c5e19",
+        "chars": null
+      }
+    ],
+    "act_rows": [
+      {
+        "score": 0.8333,
+        "vec": "011111",
+        "sha": "8a3f567740b82f84"
+      },
+      {
+        "score": 0.8333,
+        "vec": "011111",
+        "sha": "2fabc6053e253b9c"
+      }
+    ]
+  },
+  "b1600": {
+    "n_obs": 12,
+    "n_swap": 7,
+    "n_trunc_lines": 1,
+    "trunc": [
+      {
+        "file": "round_b1600_024504.log",
+        "line": "⚠️ 换路 #1 失败：响应被截断（done_reason=length）：thinking=0字符 content=6341字符 eval=1600 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）"
+      }
+    ],
+    "swap_rows": [
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "Qwen3.5-4B@ollama:disabled",
+        "score": 0.8333,
+        "vec": "111110",
+        "sha": "e9113e960963fa50",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "Qwen3.5-4B@ollama:disabled",
+        "score": 0.3333,
+        "vec": "010010",
+        "sha": "1cdd787cac01befd",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "Qwen3.5-4B@ollama:disabled",
+        "score": 0.8333,
+        "vec": "111110",
+        "sha": "f53342d33c4802a6",
+        "chars": null
+      }
+    ],
+    "act_rows": [
+      {
+        "score": 0.6667,
+        "vec": "101011",
+        "sha": "ed8616dfb0e0736b"
+      },
+      {
+        "score": 0.8333,
+        "vec": "111110",
+        "sha": "eb6f32e8af544fa3"
+      }
+    ]
+  },
+  "b2400": {
+    "n_obs": 11,
+    "n_swap": 6,
+    "n_trunc_lines": 1,
+    "trunc": [
+      {
+        "file": "round_b2400_025714.log",
+        "line": "02:58:06   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: \"onds = int(match.group('seconds')) if match.group('seconds') else 0\\n    return hours * 3600 + minutes"
+      }
+    ],
+    "swap_rows": [
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "Qwen3.5-4B@ollama:disabled",
+        "score": 0.1667,
+        "vec": "000010",
+        "sha": "f4293c33e4cec6a5",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 0.8333,
+        "vec": "111011",
+        "sha": "90579ecebe633352",
+        "chars": null
+      },
+      {
+        "model": "Qwen3.5-4B@ollama:disabled",
+        "score": 1.0,
+        "vec": "111111",
+        "sha": "30789931a5bd3520",
+        "chars": null
+      },
+      {
+        "model": "qwen2.5:7b",
+        "score": 1.0,
+        "vec": "111111",
+        "sha": "31b02125263c2a1e",
+        "chars": null
+      }
+    ],
+    "act_rows": [
+      {
+        "score": 0.3333,
+        "vec": "000011",
+        "sha": "fce04f7955452210"
+      },
+      {
+        "score": 0.5,
+        "vec": "100011",
+        "sha": "5b477fdc164b4ba6"
+      }
+    ]
+  }
+}

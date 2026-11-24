@@ -3308,8 +3308,18 @@ def _resolve_start(obs, cell: str, fallback_code: str, fallback_score: float,
     return _code, _bsc, "cache", ""
 
 
+#: ★ V240（§312）：换路单次调用的 token 预算**默认值**。
+#:
+#: ⚠️ 改它 = **改分母口径**：V239 实测 4B 有 50%（3/6）被 900 砍断
+#:    （3779 / 3679 字符的正文），换预算后「落分的 3 次」这个分母本身会变
+#:    ⇒ 与 V238/V239 的读数**不可直接比**，必须同预算重跑才有对照。
+#: ⛔ 所以它只做「可传」，不做「可自动跟随 `--max-tokens`」：
+#:    跟随会让默认行为随另一个开关漂移，历史读数就再也重放不出来。
+SWAP_MAX_TOKENS_DEFAULT = 900
+
+
 def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
-                     k: int, *, max_tokens: int = 900,
+                     k: int, *, max_tokens: int = SWAP_MAX_TOKENS_DEFAULT,
                      models: Sequence[str] = (),
                      start_src: str = "act",
                      start_hist: float | None = None) -> tuple[str, float, list[dict]]:
@@ -3335,6 +3345,15 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
     变成「换了个写法」。
     """
     from dataclasses import replace as _dc_replace
+
+    # ★ V240（§312）：预算非法 ⇒ **构造即抛**。⛔ 不许静默回落到 900 ——
+    #   「以为调大了，其实还是 900」与 V236 的 900/2400 全灭是同型（纪律 127）。
+    #   ⚠️ `bool` 是 `int` 的子类：`max_tokens=True` 会一路过 `isinstance` 检查
+    #      ⇒ 预算变成 1，正文必被砍断，而读数看起来「合法」。
+    if (isinstance(max_tokens, bool) or not isinstance(max_tokens, int)
+            or max_tokens <= 0):
+        raise ValueError(f"max_tokens 必须是正整数，得到 {max_tokens!r}"
+                         f"（⛔ 不回落默认 {SWAP_MAX_TOKENS_DEFAULT}）")
 
     from mw.config import parse_model_spec
     from mw.llm import Message as _Msg, build_llm as _bllm
@@ -3491,10 +3510,20 @@ def _goals_main(args) -> int:
     _sw = int(getattr(args, "goals_swap", 0) or 0)
     _swm = [m.strip() for m in str(getattr(args, "goals_swap_models", "") or "").split(",")
             if m.strip()]
+    # ★ V240（§312）：预算只在**显式传**时生效。⚠️ 用 `is None` 判，⛔ 不用真值判 ——
+    #   `0` 是 falsy，用真值判会把「传了 0」静默当成「没传」（V236 同型）。
+    _mt_raw = getattr(args, "goals_swap_max_tokens", None)
+    if _mt_raw is not None and int(_mt_raw) <= 0:
+        raise SystemExit(f"--goals-swap-max-tokens 必须是正整数，得到 {_mt_raw}"
+                         f"（⛔ 不回落默认 {SWAP_MAX_TOKENS_DEFAULT}）")
+    _mt0 = SWAP_MAX_TOKENS_DEFAULT if _mt_raw is None else int(_mt_raw)
+    #: 默认档**不加字段**：日志逐字节不变（否则 V238/V239 的日志对不上）。
+    _mt_s = "" if _mt0 == SWAP_MAX_TOKENS_DEFAULT else f"｜预算 {_mt0}"
     print(f"  换路    --goals-swap={_sw}"
           + ("（旧行为：只重跑同一实现 ⇒ best 不会变）" if _sw <= 0 else
              f"（判 NOT_MET 的 RAISE 再换 {_sw} 条路，真打分器判分）")
-          + (f"｜模型轮换 {_swm}" if _swm else "｜模型=当前（V235 行为）"))
+          + (f"｜模型轮换 {_swm}" if _swm else "｜模型=当前（V235 行为）")
+          + _mt_s)
     if _sw > 0:
         # ★ V239（§310）：起点从哪来，必须在**开跑前**就可见。
         #   ⛔ 只在出问题时打印 = 正常路径看不见「起点其实是本轮产出」。
@@ -3627,6 +3656,7 @@ def _goals_main(args) -> int:
                 _bc, _bs, _srows = _swap_candidates(
                     core, scorer, one.tasks[0], _sc0, _ss0,
                     int(args.goals_swap),
+                    max_tokens=_mt0,
                     models=tuple(_m.strip() for _m in
                                  str(getattr(args, "goals_swap_models", "") or "").split(",")
                                  if _m.strip()),
@@ -4008,6 +4038,11 @@ def main() -> int:
     p.add_argument("--goals-swap-cache", default="",
                    help="候选实现缓存目录（默认 $V1_STATE_DIR/candidates）。"
                         "换路起点=账本 best 的**实现**要靠它取回；取不回会可见降级（§310）")
+    p.add_argument("--goals-swap-max-tokens", type=int, default=None, metavar="N",
+                   help="换路单次调用的 token 预算（默认 900 = V235~V239 同一口径）。"
+                        "⚠️ 改它 = 改分母口径（截断率随预算变）⇒ 与历史读数不可直接比，"
+                        "必须同预算重跑才有对照。⛔ 不跟随 --max-tokens：那会让默认行为"
+                        "随另一个开关漂移，历史读数再也重放不出来")
     p.add_argument("--goals-swap-start-from", default="auto",
                    choices=("auto", "ledger"),
                    help="换路起点策略：`auto`=账本分**严格更高**才换（默认，同 V238 可重放）；"

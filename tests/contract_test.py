@@ -17231,6 +17231,94 @@ check(RS, "AZ165f `--goals-swap-cache` 一等化 + 落盘口径：缺省 `$V1_ST
       and "body = as_code(code)" in _az165_src,
       f"count={_az165_src.count('paths.state / CAND_DIRNAME')}")
 
+# ═══════════════════════════════════════════════════════════════════════════
+# AZ166　换路预算参数化（V240，§312）
+#
+# 为什么需要这一组：
+#   V239 实测 4B 有 50%（3/6）被 **900 token** 砍断（3779/3679 字符正文），
+#   而预算在 `_swap_candidates` 里写死 ⇒ 「换个预算看」这件事**做不到**。
+#   ⚠️ 改预算 = 改分母口径 ⇒ 必须默认不变、只有显式才变、非法值不许回落。
+# ⛔ 这一组不判「哪个预算好」：那是下一轮的事，且分母会变。
+# ═══════════════════════════════════════════════════════════════════════════
+import inspect as _az166_inspect                                  # noqa: E402
+import re as _az166_re_mod                                        # noqa: E402
+import subprocess as _az166_sp                                    # noqa: E402
+
+#: 「完整参数名」：# 后面不能再跟 `-` 或字母（挡住 `-old` 这种改名）。
+_az166_re = _az166_re_mod.compile(r"--goals-swap-max-tokens(?![-\w])")
+_az166_sig = _az166_inspect.signature(_az165_run._swap_candidates)
+_az166_def = _az166_sig.parameters["max_tokens"].default
+
+#: 记录 `complete()` 实收的 max_tokens —— 判「预算真的送达」只认这个。
+_az166_sink: list[int] = []
+
+
+class _az166_LLM:
+    def __init__(self, out):
+        self.out = out
+
+    def complete(self, msgs, max_tokens=900):                     # noqa: ARG002
+        _az166_sink.append(int(max_tokens))
+        return "```python\n" + self.out + "\n```"
+
+
+def _az166_run(**kw) -> list[int]:
+    import mw.llm as _L
+    _az166_sink.clear()
+    _old = _L.build_llm
+    _L.build_llm = lambda _c: _az166_LLM(_az165_bare_t)            # noqa: ARG005
+    try:
+        _az165_run._swap_candidates(_az165_Core(), _az165_Sc(), _az165_t,
+                                    _az165_bare_t, 0.8333, 1, **kw)
+    finally:
+        _L.build_llm = _old
+    return list(_az166_sink)
+
+
+# ── AZ166a：默认值仍是 900 ────────────────────────────────────────────────
+# ⚠️ 撤回态与本条 COUPLED：默认值一改，AZ166c（不传 ⇒ 送达 900）必然一起红。
+check(RS, "AZ166a 换路预算默认仍是 900（V235~V239 同一口径，⛔ 不跟随 --max-tokens）\n"
+          "              ⇒ 历史读数在新代码上仍可重放",
+      _az166_def == 900 and getattr(_az165_run, "SWAP_MAX_TOKENS_DEFAULT", None) == 900,
+      f"default={_az166_def!r}")
+
+# ── AZ166b：显式值**真的**送到模型调用（不是只加了个参数没人用）───────────
+_az166_got = _az166_run(max_tokens=1600)
+check(RS, "AZ166b 显式 max_tokens=1600 真的送达 complete()（⛔ 加参数不进调用 = 假开关）",
+      bool(_az166_got) and _az166_got[0] == 1600, f"收到={_az166_got[:1]}")
+
+# ── AZ166c：不传 ⇒ 900 ────────────────────────────────────────────────────
+_az166_got0 = _az166_run()
+check(RS, "AZ166c 不传 ⇒ complete() 收到 900（默认档行为逐字节不变）",
+      bool(_az166_got0) and _az166_got0[0] == 900, f"收到={_az166_got0[:1]}")
+
+# ── AZ166d：非法值**构造即抛**，⛔ 不许静默回落到 900 ────────────────────
+#     「以为调大了，其实还是 900」与 V236 的 900/2400 全灭是同型（纪律 127）。
+_az166_raises = []
+for _bad in (0, -1, "1600", 1.5, True):
+    try:
+        _az165_run._swap_candidates(_az165_Core(), _az165_Sc(), _az165_t,
+                                    _az165_bare_t, 0.8333, 1, max_tokens=_bad)
+        _az166_raises.append(False)
+    except ValueError:
+        _az166_raises.append(True)
+check(RS, "AZ166d 0/-1/'1600'/1.5/True ⇒ ValueError（⛔ 不静默回落 900）",
+      all(_az166_raises), str(_az166_raises))
+
+# ── AZ166e：CLI 一等化，且非法字符串在 argparse 层就失败 ──────────────────
+_az166_h = _az166_sp.run([sys.executable, str(V1 / "run.py"), "--goals",
+                          "--goals-swap-max-tokens", "1600", "--help"],
+                         capture_output=True, text=True, cwd=V1)
+_az166_bad = _az166_sp.run([sys.executable, str(V1 / "run.py"), "--goals",
+                            "--goals-swap-max-tokens", "abc"],
+                           capture_output=True, text=True, cwd=V1)
+# ⛔ 必须判「完整参数名」而不是子串：撤回动作把参数名改成
+#    `--goals-swap-max-tokens-old` 时，裸 `in` 仍然命中（首版实测「红=无」）。
+_az166_named = bool(_az166_re.search(_az166_h.stdout or ""))
+check(RS, "AZ166e `--goals-swap-max-tokens` 已注册；非整数字符串 ⇒ 非 0 退出",
+      _az166_named and _az166_bad.returncode != 0,
+      f"named={_az166_named} rc={_az166_bad.returncode}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")# ⛔ `finish()` 必须在**打印判据行之前**调：它声明的就是「我已经跑到这里了」。

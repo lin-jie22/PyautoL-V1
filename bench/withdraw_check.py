@@ -2552,6 +2552,32 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ165f", "run.py",
      '''               if getattr(args, "goals_swap_cache", "") else paths.state / CAND_DIRNAME)''',
      '''               if getattr(args, "goals_swap_cache", "") else paths.state / "candidates")'''),
+    # ── AZ166（V240，§312）：换路预算参数化 ───────────────────────────────
+    #: a：默认值从 900 挪到 901 —— 于是「默认仍是 900」红，
+    #:    且「不传 ⇒ 送达 900」也红（默认值就是送达值，同一个变量）。
+    #:    ⚠️ 这是**合理连带**，不是锚定跑偏：两条断言测的是同一个默认值的两面。
+    ("AZ166a", "run.py",
+     '''max_tokens: int = SWAP_MAX_TOKENS_DEFAULT,''',
+     '''max_tokens: int = 901,'''),
+    #: c：默认改成 1（与 a 反向连带，见 COUPLED 双向声明）。
+    ("AZ166c", "run.py",
+     '''max_tokens: int = SWAP_MAX_TOKENS_DEFAULT,''',
+     '''max_tokens: int = 1,'''),
+    #: b：调用点把预算写回 900 ⇒ 「显式值真的送达」红。
+    #:    ⛔ 撤的不是功能，是「参数有没有进调用」——这正是「假开关」的形态。
+    ("AZ166b", "run.py",
+     '''                max_tokens=max_tokens)''',
+     '''                max_tokens=900)'''),
+    #: d：非法值从「构造即抛」改成「静默回落默认」⇒ 断言红。
+    #:    这是 V236 的 900/2400 全灭同型：以为调大了，其实没生效。
+    ("AZ166d", "run.py",
+     '''        raise ValueError(f"max_tokens 必须是正整数，得到 {max_tokens!r}"
+                         f"（⛔ 不回落默认 {SWAP_MAX_TOKENS_DEFAULT}）")''',
+     '''        max_tokens = SWAP_MAX_TOKENS_DEFAULT'''),
+    #: e：CLI 参数改名 ⇒ help 里不再有 `--goals-swap-max-tokens`。
+    ("AZ166e", "run.py",
+     '''p.add_argument("--goals-swap-max-tokens", type=int, default=None, metavar="N",''',
+     '''p.add_argument("--goals-swap-max-tokens-old", type=int, default=None, metavar="N",'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2954,6 +2980,12 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   ⚠️ 反向**不**成立（撤 d 只红 d、撤 c 只红 c），已实测。
     "AZ154b": frozenset({"AZ154d"}),
     "AZ154e": frozenset({"AZ154c"}),
+
+    #: ★V240（§312）：AZ166a 与 AZ166c 锚的是**同一个默认值的两面** ——
+    #:   a 测「签名默认 == 900」，c 测「不传时真的送达 900」。默认值一动两边一起翻。
+    #:   ⚠️ 双向声明：撤 a（→901）多红 c，撤 c（→1）多红 a。已实测。
+    "AZ166a": frozenset({"AZ166c"}),
+    "AZ166c": frozenset({"AZ166a"}),
 }
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，

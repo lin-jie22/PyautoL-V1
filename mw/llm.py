@@ -88,29 +88,40 @@ class HTTPLLM:
         # ⚠️ 同理，`timeout_s=None` ⇒ 取配置值。**不许**在这里写死一个数：
         #    写死就等于绕过调用方对剩余预算的裁剪（第二十四轮 361s 的一半原因）。
         _to = self.cfg.timeout_s if timeout_s is None else float(timeout_s)
-        body_obj: dict[str, Any] = {
-            "model": self.cfg.model,
-            "messages": [m.as_dict() for m in messages],
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-        #: 「思考开关」只在这个字段**被显式设过**时才发（见 `config.LLMConfig.thinking`）。
-        #: ⛔ 空串时**一个字节都不许多**：默认档必须与历史请求逐字节相同，
-        #:    否则一台不认识该字段的端点会直接 400（而口径签名也已经被它带偏）。
-        #: ⛔ 也不许在这里做"值不合法就不发"的宽容：合法性在 `LLMConfig.__post_init__`
-        #:    已经 fail-closed 了；这里再宽容一次，就是给拼错留第二条活路。
-        if self.cfg.thinking:
-            body_obj["thinking"] = {"type": self.cfg.thinking}
-        body = json.dumps(body_obj).encode("utf-8")
-        req = urllib.request.Request(
-            self.cfg.base_url.rstrip("/") + "/chat/completions",
-            data=body,
-            headers={
+        #: ★ V238（§309）：**按 provider 选通道**，不是只换一个字段名。
+        #:
+        #: 为什么必须换整条通道（V238 实测，同一提示 / `max_tokens=200` / `T=0`）：
+        #:   · ollama 的 `/v1/chat/completions` 对 `thinking:{"type":"disabled"}`
+        #:     **和** `think:false` **都静默忽略** ⇒ `content` 0 字符、思考吃满；
+        #:   · 原生 `/api/chat` 的 `think:false` ⇒ `content` 14 字符、`done=stop`。
+        #: 也就是说：在兼容层上，思考开关**根本不是一个可用杠杆**（V236 三档全灭的根因）。
+        #:
+        #: ⛔ `provider=""` 分支必须与历史**逐字节相同**：请求体的键序、缩进、
+        #:    `thinking` 的位置都不许动 —— 否则所有历史读数的口径签名集体失效。
+        if self.cfg.provider == "ollama":
+            url, body, headers = self._ollama_request(
+                messages, max_tokens=max_tokens, temperature=temperature, t=_to)
+        else:
+            body_obj: dict[str, Any] = {
+                "model": self.cfg.model,
+                "messages": [m.as_dict() for m in messages],
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+            }
+            #: 「思考开关」只在这个字段**被显式设过**时才发（见 `config.LLMConfig.thinking`）。
+            #: ⛔ 空串时**一个字节都不许多**：默认档必须与历史请求逐字节相同，
+            #:    否则一台不认识该字段的端点会直接 400（而口径签名也已经被它带偏）。
+            #: ⛔ 也不许在这里做"值不合法就不发"的宽容：合法性在 `LLMConfig.__post_init__`
+            #:    已经 fail-closed 了；这里再宽容一次，就是给拼错留第二条活路。
+            if self.cfg.thinking:
+                body_obj["thinking"] = {"type": self.cfg.thinking}
+            url = self.cfg.base_url.rstrip("/") + "/chat/completions"
+            body = json.dumps(body_obj).encode("utf-8")
+            headers = {
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self.cfg.api_key}",
-            },
-            method="POST",
-        )
+            }
+        req = urllib.request.Request(url, data=body, headers=headers, method="POST")
         try:
             with urllib.request.urlopen(req, timeout=_to) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
@@ -123,11 +134,89 @@ class HTTPLLM:
             # 超时 / 连接断 / DNS —— 全是传输层抖动
             raise LLMError(f"请求失败: {type(e).__name__}: {e}",
                            transient=True) from e
+        if self.cfg.provider == "ollama":
+            return self._ollama_content(payload)
         try:
             return payload["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as e:
             # 响应结构不符 = 通道/版本问题，重试无用
             raise LLMError(f"响应结构异常: {json.dumps(payload)[:300]}") from e
+
+    # ------------------------------------------------------------------
+    # ollama 原生通道（`provider="ollama"`）—— 与 OpenAI 兼容路径完全分开
+    # ------------------------------------------------------------------
+    def _ollama_url(self) -> str:
+        """把 `base_url` 归一到原生根：`.../v1` ⇒ `...`，再拼 `/api/chat`。
+
+        ⚠️ 为什么要在**这里**剥 `/v1` 而不是要求操作者改 `V1_LLM_BASE_URL`：
+           同一台 ollama 的兼容端点与原生端点必须共用同一个 `base_url`，
+           否则「换 provider」会顺带改掉端点主机 ⇒ 口径签名里出现两处变化
+           （纪律 65：比两版装置要知道自己导入了谁）。剥 `<base>/v1` 是幂等的：
+           `...:11434` 与 `...:11434/v1` 都归一到同一个原生地址。
+        """
+        b = self.cfg.base_url.rstrip("/")
+        if b.endswith("/v1"):
+            b = b[: -len("/v1")]
+        return b + "/api/chat"
+
+    def _ollama_request(self, messages: Sequence[Message], *, max_tokens: int,
+                        temperature: float, t: float) -> tuple[str, bytes, dict]:
+        """构造原生请求 `(url, body, headers)`。
+
+        `t` 只用在错误信息里（超时由 `urlopen` 自己管），保留参数是为了
+        让两个构造点签名一致、调用处不用分叉。
+        """
+        body_obj: dict[str, Any] = {
+            "model": self.cfg.model,
+            "messages": [m.as_dict() for m in messages],
+            # ⛔ 流式会让「一次 complete = 一次响应」这条不变量失效（账本按调用计数）。
+            "stream": False,
+            # 原生的生成预算叫 `num_predict`，**不是** `max_tokens`；温度也在 `options` 里。
+            # 名字不同不是风格问题：把 `max_tokens` 直接塞进原生体会被静默忽略
+            # ⇒ 预算没设上 ⇒ 截断 ⇒ 又变成「模型不会」（V238 预注册 §3.2）。
+            "options": {"num_predict": int(max_tokens), "temperature": float(temperature)},
+        }
+        #: ⛔ 与兼容路径同一条规矩：`thinking` 为空 ⇒ **不发该键**。
+        #:    这里更不能发默认值 —— ollama 的默认是「按模型默认」，
+        #:    显式发 `false` 会改变 `qwen2.5` 这类不支持思考的模型的请求（虽然无害，
+        #:    但会让「默认档逐字节相同」这句话不再成立）。
+        if self.cfg.thinking:
+            #: 原生字段是**布尔** `think`，不是 `{"type": "..."}`。
+            #: 只有 `"enabled"` 才是 True —— 合法值已在 `LLMConfig` 里穷举过，
+            #: 但这里仍按显式相等判断（不写 `!= "disabled"`）：将来多一个合法值时，
+            #: 那种写法会把它悄悄当成 True。
+            body_obj["think"] = (self.cfg.thinking == "enabled")
+        body = json.dumps(body_obj).encode("utf-8")
+        headers = {"Content-Type": "application/json"}
+        # ⚠️ ollama 不校验 Authorization，但也**不需要**它；不带是刻意的：
+        #    少一个头就少一个「以为在鉴权」的错觉。
+        return self._ollama_url(), body, headers
+
+    def _ollama_content(self, payload: dict) -> str:
+        """从原生响应里取正文 —— 并在**截断**时抛错，不许静默返回空串。
+
+        ⛔ 这一条是本轮的关键判据，不是防御性编程：
+           V236 的失败形态就是 `done_reason=length` + `content` 0 字符
+           （思考吃满 13890 字符、正文一个字都没出）。若这里返回空串，
+           下游只会看到「模型给的代码是空的」⇒ 归因成「模型不会」⇒
+           而真相是**预算口径**。纪律 169 说的就是这件事。
+        """
+        msg = payload.get("message") or {}
+        content = msg.get("content") or ""
+        done = payload.get("done_reason")
+        if done is None and payload.get("done") is True:
+            # 旧版 ollama（<0.9）只给 `done: true`，没有 `done_reason` ⇒ 视为正常结束。
+            done = "stop"
+        if done == "length":
+            raise LLMError(
+                "响应被截断（done_reason=length）："
+                f"thinking={len(msg.get('thinking') or '')}字符 "
+                f"content={len(content)}字符 eval={payload.get('eval_count')} "
+                "—— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）")
+        if done is None and not content:
+            # 结构不符（既没结束原因也没正文）= 通道/版本问题，与兼容路径同判据
+            raise LLMError(f"响应结构异常: {json.dumps(payload)[:300]}")
+        return content
 
 
 # ---------------------------------------------------------------------------

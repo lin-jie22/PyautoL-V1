@@ -27,6 +27,69 @@ def _env_path(key: str, default: Path) -> Path:
 #:    （= 反了）。多一个别名就多一条"拼错却看起来生效"的路。
 _THINKING_MODES: tuple[str, ...] = ("", "disabled", "enabled")
 
+#: `V1_LLM_PROVIDER` 的合法取值。**空串是合法值**，语义是"OpenAI 兼容端点"
+#: （= `{base_url}/chat/completions` + `thinking:{"type":...}`），即历史行为。
+#:
+#: 为什么需要这一维（V238 / §309 实测，不是猜测）：
+#:   ollama 的 `/v1/chat/completions` 兼容层对 `thinking:{"type":"disabled"}`
+#:   和 `think:false` **两种写法都静默忽略**（900/2400/4000 三档全
+#:   `finish=length`、`content` 0 字符、思考吃满）；只有**原生** `/api/chat`
+#:   的 `think: bool` 有效（同一提示：content 14 字符、`done=stop`）。
+#:   ⇒ 「思考开关」不是一个字段名的问题，是**通道选择**的问题。
+#:
+#: ⛔ 不接受 `openai` / `oai` 这类别名：空串已经是「兼容端点」的写法，
+#:    多一个别名就多一条「拼错却看起来生效」的路（与 `_THINKING_MODES` 同一条规矩）。
+_PROVIDERS: tuple[str, ...] = ("", "ollama")
+
+
+def parse_model_spec(spec: str) -> tuple[str, str | None, str | None]:
+    """解析换路条目 `model[@provider[:thinking]]` ⇒ `(model, provider, thinking)`。
+
+    `None` 的语义是**「不覆盖」**（继承 `LLMConfig` 现状），空串的语义是
+    **「显式设成空」**（= 不发该字段）。这两个必须分开：`qwen2.5:14b` 要
+    逐字节复用旧行为，而 `X@ollama:` 是「明确要求不发 think」。
+
+    ⚠️ **解析顺序：先 `@` 再 `:`** —— 模型名本身含冒号（`qwen2.5:7b`）。
+       先切冒号会把 `qwen2.5` / `7b@ollama` 当成两段，静默产出一个
+       不存在的模型名，然后 404 —— 而症状看起来像「端点不支持该模型」。
+
+    ⛔ 非法取值构造即抛（与 `LLMConfig.__post_init__` 同一条判据）：
+       拼错的 provider 会悄悄退回兼容端点，而那条路对思考字段静默忽略 ⇒
+       「以为关了思考，实际拿到被截断的空正文」（V236 的 900/2400 全灭形态）。
+    """
+    raw = str(spec or "").strip()
+    if not raw:
+        raise ValueError("换路条目为空")
+    model, provider, thinking = raw, None, None
+    if "@" in raw:
+        #: `rsplit` 而不是 `split`：模型名里不会出现 `@`，但仍然从右边切 ——
+        #: 这样将来若真出现带 `@` 的名字，坏的那一半是 provider（更容易看出错），
+        #: 而不是被悄悄截断的模型名。
+        model, rest = raw.rsplit("@", 1)
+        model = model.strip()
+        rest = rest.strip()
+        if ":" in rest:
+            provider, thinking = rest.split(":", 1)
+            provider, thinking = provider.strip(), thinking.strip()
+        else:
+            provider = rest
+        if not model:
+            raise ValueError(f"换路条目 {raw!r} 缺少模型名")
+        if provider not in _PROVIDERS:
+            raise ValueError(
+                f"换路条目 {raw!r} 的 provider={provider!r} 不认识，只认 {_PROVIDERS}")
+        if provider == "" and thinking is not None:
+            #: `X@:disabled` 这种写法几乎肯定是把 `X@ollama:disabled` 打漏了。
+            #: 静默接受会得到一个「provider 没换、只关思考」的条目 ——
+            #: 而兼容层的 `thinking` 是静默忽略的 ⇒ 白跑一轮且读数看着正常。
+            raise ValueError(
+                f"换路条目 {raw!r} 写了 thinking 但 provider 为空；"
+                "兼容端点的 thinking 字段会被静默忽略，请显式写 provider")
+        if thinking is not None and thinking not in _THINKING_MODES:
+            raise ValueError(
+                f"换路条目 {raw!r} 的 thinking={thinking!r} 不认识，只认 {_THINKING_MODES}")
+    return model, provider, thinking
+
 
 def _env_int(key: str, default: int, *, allow_zero: bool = False) -> int:
     """读整数 env。
@@ -179,6 +242,17 @@ class LLMConfig:
     #:       否则所有历史读数会因为"多了一个没生效的键"集体变成不可比。
     thinking: str = field(
         default_factory=lambda: os.environ.get("V1_LLM_THINKING", "").strip())
+    #: 通道类型 —— 决定**请求长什么样**，不只是决定发哪个字段。
+    #:
+    #: 空串 = OpenAI 兼容（历史行为，`/chat/completions` + `thinking:{"type":...}`）。
+    #: `ollama` = ollama 原生（`/api/chat` + `think: bool` + `options.num_predict`）。
+    #:
+    #: ⛔ 它必须是配置字段而不是 `complete()` 参数，理由与 `temperature` / `thinking`
+    #:    逐字相同：内核有四个调用点，靠自觉传早晚会漏，而漏了之后标签上一切照旧。
+    #:
+    #: ⛔ 空串时 `cond()` 里**不加键** ⇒ 历史口径签名逐位不变（见 `cond()`）。
+    provider: str = field(
+        default_factory=lambda: os.environ.get("V1_LLM_PROVIDER", "").strip())
 
     def __post_init__(self) -> None:
         # ⛔ 拼错必须**构造即抛**，不许静默忽略：
@@ -189,6 +263,13 @@ class LLMConfig:
             raise ValueError(
                 f"V1_LLM_THINKING={self.thinking!r} 不认识，只认 {_THINKING_MODES}"
                 "（空串 = 不发该字段；'off'/'false'/'0' 都不是合法值）")
+        #: 同一条判据用在 `provider` 上。它比 `thinking` 更需要 fail-closed：
+        #: 拼错的 provider 会**悄悄退回兼容端点**，而那条路对思考字段是静默忽略的
+        #: ⇒ 操作者以为关掉了思考，实际拿到的是被截断的空正文（V236 的 900/2400 全灭）。
+        if self.provider not in _PROVIDERS:
+            raise ValueError(
+                f"V1_LLM_PROVIDER={self.provider!r} 不认识，只认 {_PROVIDERS}"
+                "（空串 = OpenAI 兼容端点）")
 
     def usable(self) -> bool:
         return bool(self.api_key) and not self.offline
@@ -213,6 +294,11 @@ class LLMConfig:
                 "timeout_s": self.timeout_s, "offline": self.offline}
         if self.thinking:
             snap["thinking"] = self.thinking
+        #: `provider` 同一判据：空串 ⇒ 请求与历史逐字节相同 ⇒ 签名也不许多一个键。
+        #: 非空 ⇒ 通道真的换了（端点 + 请求体形状都换）⇒ 必须进快照，否则
+        #: 「同一把尺子」这句话在两个**不同的端点**上被说成同一件事。
+        if self.provider:
+            snap["provider"] = self.provider
         return snap
 
 
@@ -599,6 +685,10 @@ ENV_KEYS = (
     "V1_LLM_TIMEOUT_S",
     "V1_LLM_TEMPERATURE",
     "V1_LLM_THINKING",
+    #: ★ V238（§309）：通道类型（`""` = OpenAI 兼容 / `ollama` = 原生 `/api/chat`）。
+    #: ⚠️ 它必须在这里登记：A1 锚的判据就是「代码里出现的 `V1_*` 全部在 `ENV_KEYS`」，
+    #:    漏登记 ⇒ 那个 env 变成「能设但没被承认」的暗开关（第一种假绿的形态）。
+    "V1_LLM_PROVIDER",
     "V1_LLM_OFFLINE",
     "V1_MAX_STEPS",
     "V1_MAX_LLM_CALLS",

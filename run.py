@@ -3204,6 +3204,7 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
     """
     from dataclasses import replace as _dc_replace
 
+    from mw.config import parse_model_spec
     from mw.llm import Message as _Msg, build_llm as _bllm
     from mw.reflect import (build_proposal_prompt, failed_actuals,
                             parse_proposal, sha_of)
@@ -3212,11 +3213,28 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
     #   与 V235 逐字节同行为（默认不动）。非空 ⇒ 第 i 次换路用 `models[i % len]`。
     #   ⛔ 换模型**不改任何提示文字**：入参逐字节相同（自测 T2 钉住），
     #   否则「模型」与「提示」两个自变量缠在一起，读数不能归因。
-    _models = [str(m) for m in (models or ()) if str(m).strip()]
+    #
+    # ★ V238（§309）：条目升级成三元组 `model[@provider[:thinking]]`。
+    #   为什么要它：4B 的思考必须在**原生** `/api/chat` 上关（`think:false`），
+    #   兼容层的 `thinking:{"type":...}` 被静默忽略（V236 三档全灭的根因）。
+    #   不带 `@` 的写法 ⇒ provider/thinking 都不覆盖 ⇒ 与 V235/V236 逐字节同行为。
+    _specs = [parse_model_spec(str(m)) for m in (models or ()) if str(m).strip()]
+    #: 原始条目文本（含 `@provider:thinking`）——**落账就记这个**。
+    #: ⛔ 只记裸模型名会让「4B」和「4B@ollama:disabled」在账本里同形，
+    #:    而它们是两台不同的装置（一条通道静默截断、一条正常）。
+    #:    这是纪律 137 的反面：归因不可分常常就是**没记录**。
+    _models = [str(m).strip() for m in (models or ()) if str(m).strip()]
     llms: list = []
-    for _m in (_models or [None]):
-        cfg = core.s.llm if _m is None else _dc_replace(core.s.llm, model=_m)
-        llms.append(_bllm(cfg))
+    for _spec in (_specs or [None]):
+        if _spec is None:
+            llms.append(_bllm(core.s.llm))
+            continue
+        _ov = {"model": _spec[0]}
+        if _spec[1] is not None:
+            _ov["provider"] = _spec[1]
+        if _spec[2] is not None:
+            _ov["thinking"] = _spec[2]
+        llms.append(_bllm(_dc_replace(core.s.llm, **_ov)))
     best_code, best_score = str(start_code), float(start_score)
     rows: list[dict] = []
     for i in range(max(0, int(k))):
@@ -3788,8 +3806,10 @@ def main() -> int:
                    help="对判 NOT_MET 的 RAISE 目标再做 K 次换路（0=旧行为：只重跑"
                         "同一实现 ⇒ best 永远不会变，判据永远不满足）")
     p.add_argument("--goals-swap-models", default="",
-                   help="换路时轮换的模型列表（逗号分隔）。空=用当前模型（V235 逐字节同行为）。"
-                        "⛔ 只换模型、不改提示：入参逐字节相同，否则两个自变量缠在一起")
+                   help="换路时轮换的模型列表（逗号分隔），条目可带通道："
+                        "`model[@provider[:thinking]]`，如 `Qwen3.5-4B@ollama:disabled`。"
+                        "空=用当前模型（V235 逐字节同行为）。"
+                        "⛔ 只换模型/通道、不改提示：入参逐字节相同，否则两个自变量缠在一起")
     p.add_argument("--goals-suite-dir", default="",
                    help="可用题集目录（默认 bench/tasks）—— 这是**环境边界**，不是人的指令")
     p.add_argument("--goals-log", default="",

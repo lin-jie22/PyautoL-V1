@@ -1,0 +1,2 @@
+d	swap=4	models=qwen2.5:7b,Qwen3.5-4B@ollama:disabled	rc=0	140013
+d	swap=4	models=qwen2.5:7b,Qwen3.5-4B@ollama:disabled	rc=0	140150

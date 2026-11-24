@@ -1,0 +1,52 @@
+== R1 swap=4 models=qwen2.5:7b,Qwen3.5-4B@ollama:disabled ==
+  换路    --goals-swap=4（判 NOT_MET 的 RAISE 再换 4 条路，真打分器判分）｜模型轮换 ['qwen2.5:7b', 'Qwen3.5-4B@ollama:disabled']
+  状态    WORK（有 1 条可执行的目标）
+--- 已转运维 0 格（套件内 0｜套件外 0；⛔ 不是做到了）---
+  ⚠️ 换路 #3 失败：响应被截断（done_reason=length）：thinking=0字符 content=3775字符 eval=900 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）
+  换路   t01_parse_duration   4 次换路：best 0.8333 → 1.0000 ⇒ **MET**
+  RAISE t01_parse_duration       测到 0.3333 ⇒ **MET**（现 n=7 mean=0.6428）
+  判据行  提议=1 执行=1 MET=1 NOT_MET=0 转运维=0 状态=DONE
+== R2 swap=4 models=qwen2.5:7b,Qwen3.5-4B@ollama:disabled ==
+  换路    --goals-swap=4（判 NOT_MET 的 RAISE 再换 4 条路，真打分器判分）｜模型轮换 ['qwen2.5:7b', 'Qwen3.5-4B@ollama:disabled']
+  状态    DONE（套件 1 格全部达标：观测 ≥3 次且最好成绩 ≥1）
+--- 已转运维 0 格（套件内 0｜套件外 0；⛔ 不是做到了）---
+  判据行  提议=0 执行=0 MET=0 NOT_MET=0 转运维=0 状态=DONE
+== 汇总 ==
+{
+  "n_obs": 7,
+  "n_swap": 3,
+  "best": 1.0,
+  "verdicts": [
+    "MET"
+  ],
+  "criterion": [
+    [
+      [
+        "best_score",
+        ">",
+        0.8333
+      ]
+    ]
+  ],
+  "swap_rows": [
+    {
+      "model": "qwen2.5:7b",
+      "score": 0.3333,
+      "vec": "000011",
+      "impl_sha": "fc364a39"
+    },
+    {
+      "model": "Qwen3.5-4B@ollama:disabled",
+      "score": 0.3333,
+      "vec": "000011",
+      "impl_sha": "5b4e008c"
+    },
+    {
+      "model": "qwen2.5:7b",
+      "score": 1.0,
+      "vec": "111111",
+      "impl_sha": "f8cb286d"
+    }
+  ]
+}
+V238 DONE 14:01:50

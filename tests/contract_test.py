@@ -16863,15 +16863,18 @@ check(RS, "AZ162d `_swap_candidates(..., models=())`：默认空 ⇒ 用当前�
 # 实测（V236）：`thinking={"type":"disabled"}` 发给 ollama 的 v1 兼容层
 # ⇒ **完全被忽略**（300 token 仍全用在思考、content 仍 0 字符、不报错）。
 # 这是「拨不动的开关给最顺眼的读数」（纪律 77）的又一实形。
-# ⛔ 本轮**不改**（跨 provider 协议适配要单独设计），但必须把事实钉在锚上：
-#    以免下次有人说「关掉思考就好了」而实际拨不动。
+# ⚠️ 事实更新（V238 / §309）：**兼容路径**这一行必须原样保留 —— `provider=""`
+#    是默认档，它的请求体要与历史**逐字节相同**。原生分支用 `think: bool`，
+#    但那是另一条路（`_ollama_request`），不是把这一行改掉。
+# ⛔ 所以本条继续钉这里：它守的是「默认档长什么样」，不是「所有档都这样」。
 _az162_llm_src = (V1 / "mw" / "llm.py").read_text(encoding="utf-8")
-check(RS, "AZ162e 思考开关的发送形态是 `{\"thinking\": {\"type\": ...}}`（Anthropic 风格）——\n"
-          "              ⛔ ollama 认的是 `think: bool`（且只在**原生** `/api/chat` 生效，\n"
-          "              v1 兼容层连 `think:false` 也忽略）⇒ 对 ollama，这个开关是**静默无效**的。\n"
-          "              本条钉住「它长什么样」，不让「关掉思考」被当成免费选项",
+check(RS, "AZ162e **兼容路径**的思考开关形态是 `{\"thinking\": {\"type\": ...}}`：\n"
+          "              ⛔ ollama 认的是 `think: bool`，且只在**原生** `/api/chat` 生效\n"
+          "              （v1 兼容层连 `think:false` 也忽略，V238 实测）；\n"
+          "              V238 起由 `provider=\"ollama\"` 走原生分支绕开这条限制，\n"
+          "              但默认档这一行仍在 ⇒ 钉住它，防止「以为关掉思考」",
       'body_obj["thinking"] = {"type": self.cfg.thinking}' in _az162_llm_src,
-      "llm.py 的 thinking 发送形态变了 ⇒ 请同步复核各 provider 的实际生效性")
+      "llm.py 的兼容路径形态变了 ⇒ 请同步复核各 provider 的实际生效性")
 
 # ── AZ162f：边界清单**穷尽**（与锚层 H1d 同判据）──────────────────────
 # ⚠️ 为什么同一判据要写两处：`bench/withdraw_check.py` 的驱动器**只跑契约**
@@ -16939,6 +16942,140 @@ check(RS, "AZ163d 位置：`【当前代码】 < 【另一份实现】 < 要求�
           "              ⛔ 插进代码槽 = 一份劣质拼接；插到末尾 = 指令已说完才给素材",
       _i_code < _i_alt < _i_ask,
       f"{_i_code} < {_i_alt} < {_i_ask}")
+
+# ── AZ164a：`provider` 是一等配置字段，且拼错 **构造即抛** ────────────────
+# V238（§309）：为什么需要这一维 —— ollama 的 v1 兼容层对 `thinking:{"type":...}`
+# 和 `think:false` **两种写法都静默忽略**（900/2400/4000 三档全 `finish=length`、
+# `content` 0 字符）；只有**原生** `/api/chat` 的 `think: bool` 有效。
+# ⇒ 「思考开关」不是字段名问题，是**通道选择**问题。
+from mw.config import (LLMConfig as _az164_C,  # noqa: E402
+                       _PROVIDERS as _az164_PROV,
+                       _THINKING_MODES as _az164_TH,
+                       parse_model_spec as _az164_parse)
+
+
+def _az164_mk(**kw):
+    base = dict(base_url="http://localhost:11434/v1", api_key="k",
+                model="m", temperature=0.0, thinking="", offline=False)
+    base.update(kw)
+    return _az164_C(**base)
+
+
+try:
+    _az164_mk(provider="nope")
+    _az164_bad_raised = False
+except ValueError:
+    _az164_bad_raised = True
+check(RS, "AZ164a `provider` 是 `LLMConfig` 字段（`(\"\", \"ollama\")`），拼错**构造即抛** ——\n"
+          "              ⛔ 静默退回兼容端点 = 以为关了思考、实际拿到被截断的空正文\n"
+          "              （这正是 V236 的 900/2400/4000 三档全灭）",
+      _az164_PROV == ("", "ollama") and _az164_bad_raised
+      and _az164_mk(provider="ollama").provider == "ollama",
+      f"PROV={_az164_PROV} raised={_az164_bad_raised}")
+
+# ── AZ164b：口径签名只在**非空**时带 provider ───────────────────────────
+# 与 `thinking` 同一条规矩（A18）：空串 ⇒ 请求与历史逐字节相同 ⇒ 签名多一键
+# 就是**反向撒谎**（标签说「口径不同」，实际同一台通道、同一个请求）。
+check(RS, "AZ164b `cond()`：`provider=\"\"` 时**没有**该键（历史签名逐位不变），\n"
+          "              非空时才带上 —— 与 `thinking` 同判据",
+      "provider" not in _az164_mk().cond()
+      and _az164_mk(provider="ollama").cond().get("provider") == "ollama",
+      f"empty={sorted(_az164_mk().cond())}")
+
+# ── AZ164c：换路条目三元组 —— **先 `@` 再 `:`** ─────────────────────────
+# ⚠️ 模型名本身含冒号（`qwen2.5:7b`）。先切冒号会静默产出 `qwen2.5` +
+#    `7b@ollama` 两段 ⇒ 404，而症状看起来像「端点不支持该模型」。
+_az164_ok = [("qwen2.5:14b", ("qwen2.5:14b", None, None)),
+             ("Qwen3.5-4B@ollama", ("Qwen3.5-4B", "ollama", None)),
+             ("Qwen3.5-4B@ollama:disabled", ("Qwen3.5-4B", "ollama", "disabled")),
+             ("Qwen3.5-4B@ollama:", ("Qwen3.5-4B", "ollama", "")),
+             ("qwen2.5:7b@ollama:enabled", ("qwen2.5:7b", "ollama", "enabled"))]
+_az164_bad = [s for s, w in _az164_ok if _az164_parse(s) != w]
+check(RS, "AZ164c `parse_model_spec` 四形态：无 `@` ⇒ 只换 model（V235/V236 逐字节同行为）；\n"
+          "              `@provider` / `@provider:thinking` / `@provider:`（显式空）各归各位 ——\n"
+          "              `None`=不覆盖、空串=显式不发，两者**必须分开**",
+      not _az164_bad,
+      f"不符={_az164_bad}")
+
+# ── AZ164d：非法条目 fail-closed（含「写了 thinking 但 provider 空」）────
+# `X@:disabled` 几乎一定是把 `X@ollama:disabled` 打漏了；静默接受会得到
+# 一个「provider 没换、只关思考」的条目 —— 而兼容层的 thinking 是静默忽略的。
+_az164_illegal = ["", "@ollama", "X@nope", "X@ollama:bogus", "X@:disabled"]
+_az164_leak = []
+for _s in _az164_illegal:
+    try:
+        _az164_parse(_s)
+        _az164_leak.append(_s)
+    except ValueError:
+        pass
+check(RS, "AZ164d 非法条目**全部 fail-closed**（空 / 无模型名 / 拼错 provider /\n"
+          "              拼错 thinking / 写了 thinking 但 provider 空）",
+      not _az164_leak,
+      f"没抛={_az164_leak}")
+
+# ── AZ164e：原生分支的三要素（**行为级**，不是查源码子串）───────────────
+# ⛔ 只查源码会漏「参数名对了但语义不对」：`max_tokens` 直接塞进原生体会被
+#    **静默忽略** ⇒ 预算没设上 ⇒ 截断 ⇒ 又变成「模型不会」。
+# ⛔ 首版这里写成 `A and B and C or D` 的混合式，且含一个**永不存在的字符串**
+#    （`'"max_tokens" not in body_obj' in src`）⇒ 必然是恒真的绿。
+#    「断言恒真」的另一种形态：谓词本身写不出来，但语法上成立。
+from mw.llm import HTTPLLM as _az164_H                    # noqa: E402
+from mw.llm import Message as _az164_M                   # noqa: E402
+
+
+def _az164_body(cfg, n=900):
+    h = _az164_H(cfg)
+    u, b, _hdr = h._ollama_request([_az164_M("user", "hi")],
+                                   max_tokens=n, temperature=0.0, t=900.0)
+    return u, json.loads(b.decode("utf-8")), _hdr
+
+
+_az164_u0, _az164_b0, _az164_hd0 = _az164_body(_az164_mk(provider="ollama"))
+_az164_u1, _az164_b1, _ = _az164_body(_az164_mk(provider="ollama", thinking="disabled"))
+_az164_u2, _az164_b2, _ = _az164_body(_az164_mk(provider="ollama", thinking="enabled"))
+check(RS, "AZ164e `provider=\"ollama\"` 走**原生**：URL 剥 `/v1` 指 `/api/chat`、\n"
+          "              预算走 `options.num_predict`（且**没有** `max_tokens` 键）、\n"
+          "              `think` 是**布尔**（disabled⇒false / enabled⇒true）、\n"
+          "              `thinking=\"\"` ⇒ 请求体里**没有** think 键（与兼容路径同一条规矩）",
+      _az164_u0 == "http://localhost:11434/api/chat"
+      and _az164_u1 == _az164_u0 == _az164_u2
+      and _az164_b0["options"]["num_predict"] == 900
+      and "max_tokens" not in _az164_b0
+      and "think" not in _az164_b0
+      and _az164_b1.get("think") is False
+      and _az164_b2.get("think") is True
+      and _az164_b0["stream"] is False,
+      f"url={_az164_u0} b0={json.dumps(_az164_b0, ensure_ascii=False)[:90]} "
+      f"b1.think={_az164_b1.get('think')!r} b2.think={_az164_b2.get('think')!r}")
+
+# ── AZ164f：原生分支遇到**截断**必须抛，不许静默返回空串 ─────────────────
+# V236 的失败形态就是 `done_reason=length` + `content` 0 字符（思考吃满）。
+# 若返回空串 ⇒ 下游看到「模型给的代码是空的」⇒ 归因成「模型不会」，
+# 而真相是预算口径（纪律 169）。这一条把「装置故障」与「模型不会」分开。
+from mw.llm import LLMError as _az164_E                   # noqa: E402
+_az164_h = _az164_H(_az164_mk(provider="ollama"))
+try:
+    _az164_h._ollama_content({"message": {"content": "", "thinking": "x" * 7},
+                              "done_reason": "length", "eval_count": 900})
+    _az164_tr_raised = False
+except _az164_E as _e:
+    _az164_tr_raised = ("thinking=7" in str(_e))
+check(RS, "AZ164f 原生分支：`done_reason=length` ⇒ 抛 `LLMError`（且报出 thinking 字符数），\n"
+          "              `done_reason=stop` ⇒ 正常返回 —— ⛔ 静默返回空串会把\n"
+          "              「预算不够」记成「模型不会」（V236 三档全灭的归因陷阱）",
+      _az164_tr_raised
+      and _az164_h._ollama_content({"message": {"content": "a"}, "done_reason": "stop"}) == "a",
+      f"raised={_az164_tr_raised}")
+
+# ── AZ164g：换路条目真的把 provider/thinking 带走（不是只解析不覆盖）────
+# ⚠️ 解析对了但 `replace` 只传 model ⇒ 通道没换 ⇒ 4B 仍在兼容层被静默截断。
+#    这是「参数解析成功 ≠ 生效」的经典形态，必须查覆盖点本身。
+check(RS, "AZ164g `run.py` 的换路构造真的 `replace(provider=/thinking=)`：\n"
+          "              只把 model 换掉的话，4B 依旧走兼容层 ⇒ 静默截断，而读数看着正常",
+      '_ov["provider"] = _spec[1]' in _az162_src
+      and '_ov["thinking"] = _spec[2]' in _az162_src
+      and "parse_model_spec(str(m))" in _az162_src,
+      "run.py 覆盖点缺失")
 
 print()
 print("=" * 74)

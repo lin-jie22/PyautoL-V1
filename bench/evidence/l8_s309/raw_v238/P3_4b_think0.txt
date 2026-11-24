@@ -1,0 +1,38 @@
+```python
+def parse_duration(s):
+    if not s:
+        return None
+    
+    total_seconds = 0.0
+    
+    try:
+        # Convert to lowercase for case-insensitivity
+        s_lower = s.lower().strip()
+        if not s_lower:
+            return None
+        
+        # Split by units to handle hours, minutes, seconds in any combination
+        parts = []
+        current_val = 0.0
+        
+        # Remove 's', 'm', 'h' suffixes and split
+        import re
+        matches = re.findall(r'(\d+)(?:s|m|h)?', s_lower)
+        
+        if not matches:
+            return None
+        
+        for value_part, unit in matches:
+            value = int(value_part)
+            if unit == 's':
+                total_seconds += value
+            elif unit == 'm':
+                total_seconds += value * 60
+            elif unit == 'h':
+                total_seconds += value * 3600
+        
+        return int(total_seconds)
+    
+    except Exception:
+        return None
+```

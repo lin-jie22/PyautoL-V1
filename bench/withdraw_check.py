@@ -2468,6 +2468,46 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ163d", "mw/reflect.py",
      '''        parts.append(alt_block(alt_code))''',
      '''        parts.insert(1, alt_block(alt_code))'''),
+    #: ── ★V238（§309）：provider / ollama 原生通道 ──────────────────────
+    #: a：撤掉 fail-closed（`if False`）⇒ 拼错的 provider 不再抛 ⇒ 静默退回兼容端点。
+    #:    这正是 V236 三档全灭的机制：以为关了思考，实际拿到被截断的空正文。
+    ("AZ164a", "mw/config.py",
+     '''        if self.provider not in _PROVIDERS:''',
+     '''        if False:'''),
+    #: b：无条件把 provider 写进签名 ⇒ 默认档（`""`）也多一个键 ⇒
+    #:    历史口径签名逐位变化，所有旧读数**看起来**不可比。
+    ("AZ164b", "mw/config.py",
+     '''        if self.provider:
+            snap["provider"] = self.provider''',
+     '''        snap["provider"] = self.provider'''),
+    #: c：让「没写 thinking」也解析成空串（而不是 `None`）⇒
+    #:    「不覆盖」与「显式设成空」不再可分，`qwen2.5:14b` 会顺手清掉 cfg 的 thinking。
+    ("AZ164c", "mw/config.py",
+     '''        else:
+            provider = rest''',
+     '''        else:
+            provider, thinking = rest, ""'''),
+    #: d：撤掉「写了 thinking 但 provider 空」的拒绝 ⇒ `X@:disabled` 被静默接受，
+    #:    得到一条「provider 没换、只关思考」的条目，而兼容层对 thinking 是静默忽略的。
+    ("AZ164d", "mw/config.py",
+     '''        if provider == "" and thinking is not None:''',
+     '''        if False:'''),
+    #: e：`think` 恒为 True ⇒ `disabled` 也变成开思考 ⇒ 开关反号。
+    ("AZ164e", "mw/llm.py",
+     '''            body_obj["think"] = (self.cfg.thinking == "enabled")''',
+     '''            body_obj["think"] = True'''),
+    #: f：撤掉截断判据 ⇒ `done_reason=length` 时静默返回空串 ⇒
+    #:    「预算不够」被下游记成「模型不会」（V236 的归因陷阱）。
+    ("AZ164f", "mw/llm.py",
+     '''        if done == "length":''',
+     '''        if False:'''),
+    #: g：换路只换 model、不换 provider ⇒ 4B 仍走兼容层 ⇒ 静默截断，
+    #:    而账本上「模型=Qwen3.5-4B」看起来一切正常。
+    ("AZ164g", "run.py",
+     '''        if _spec[1] is not None:
+            _ov["provider"] = _spec[1]''',
+     '''        if _spec[1] is not None:
+            _ov["provider"] = core.s.llm.provider'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2519,6 +2559,10 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   而 AZ163c 的对照臂 `_az163_base` 正是拿默认调用建的 ⇒ 两边一起变。
     #:   实测 `红=['AZ163a','AZ163c']` —— 同一处实现的两个面，解不开。
     "AZ163a": frozenset({"AZ163c"}),
+    #: ★V238（§309）：AZ164b 撤的是「空 provider 不进签名」；TH4 断言的正是
+    #:   **默认档签名逐位还是那 4 个键**。同一件事的两面（一个测「有没有键」，
+    #:   一个测「键序是否漂移」）⇒ 结构性连带，不当作锚定跑偏。
+    "AZ164b": frozenset({"TH4"}),
     "AZ161e": frozenset({"AZ133a"}),
     "AZ161f": frozenset({"AZ134f"}),
     #: ★第 143 轮：AZ129c 撤的是「没有身份证也能过」这条规则；AZ129f 断言的正是

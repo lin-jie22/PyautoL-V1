@@ -1,0 +1,54 @@
+起点 verify=5/6 sha=90579ecebe633352
+A 2307B/1bdea4fc92d67817  Q 1450B/5ff1b23167549896
+  A#00 5/6 sim=0.96 copy=False 19.2s 191tok 10.0t/s
+  Q#00 valid=True len=33 3.3s | 1) parts=['10'] / 2) 分钟数是 parts[0]。
+  S#00 5/6 sim=1.00 copy=True sem=False bug=True 13.1s
+  A#01 5/6 sim=1.00 copy=True 12.5s 191tok 15.2t/s
+  Q#01 valid=True len=38 1.4s | 1) parts=['10',''] /   2) 分钟数是 parts[0]。
+  S#01 5/6 sim=1.00 copy=True sem=False bug=True 13.0s
+  A#02 5/6 sim=0.89 copy=False 12.6s 195tok 15.4t/s
+  Q#02 valid=True len=33 1.2s | 1) parts=['10'] / 2) 分钟数是 parts[0]。
+  S#02 5/6 sim=1.00 copy=True sem=False bug=True 13.0s
+  [速度闸] 中位 15.2 tok/s（门槛 15.0）
+  A#03 5/6 sim=1.00 copy=True 12.5s 191tok 15.3t/s
+  Q#03 valid=True len=38 1.3s | 1) parts=['10',''] /   2) 分钟数是 parts[0]。
+  S#03 5/6 sim=1.00 copy=True sem=False bug=True 13.0s
+  A#04 5/6 sim=1.00 copy=True 12.4s 191tok 15.4t/s
+  Q#04 valid=True len=39 1.4s | 1) parts=['10', ''] /   2) 分钟数是 parts[0]。
+  S#04 5/6 sim=1.00 copy=True sem=False bug=True 13.0s
+  A#05 5/6 sim=0.89 copy=False 12.6s 193tok 15.4t/s
+  Q#05 valid=True len=33 1.2s | 1) parts=['10'] / 2) 分钟数是 parts[0]。
+  S#05 5/6 sim=1.00 copy=True sem=False bug=True 13.0s
+  A#06 5/6 sim=1.00 copy=True 12.5s 191tok 15.3t/s
+  Q#06 valid=True len=35 1.3s | 1) parts=['10'] /   2) 分钟数是 parts[0]。
+  S#06 5/6 sim=1.00 copy=True sem=False bug=True 13.1s
+  A#07 5/6 sim=1.00 copy=True 12.4s 191tok 15.4t/s
+  Q#07 valid=True len=33 1.2s | 1) parts=['10'] / 2) 分钟数是 parts[0]。
+  S#07 5/6 sim=1.00 copy=True sem=False bug=True 13.1s
+  A#08 5/6 sim=0.89 copy=False 12.6s 193tok 15.3t/s
+  Q#08 valid=True len=39 1.5s | 1) parts=['10', ''] /   2) 分钟数是 parts[0]。
+  S#08 5/6 sim=1.00 copy=True sem=False bug=True 13.2s
+  A#09 5/6 sim=0.96 copy=False 12.5s 191tok 15.3t/s
+  Q#09 valid=True len=35 1.3s | 1) parts=['10'] /   2) 分钟数是 parts[0]。
+  S#09 5/6 sim=1.00 copy=True sem=False bug=True 13.3s
+  A#10 5/6 sim=1.00 copy=True 12.6s 191tok 15.1t/s
+  Q#10 valid=True len=37 1.4s | 1) parts=['10', ''] / 2) 分钟数是 parts[0]。
+  S#10 5/6 sim=1.00 copy=True sem=False bug=True 13.1s
+  A#11 5/6 sim=1.00 copy=True 12.7s 191tok 15.1t/s
+  Q#11 valid=True len=35 1.4s | 1) parts=['10'] /   2) 分钟数是 parts[0]。
+  S#11 5/6 sim=1.00 copy=True sem=False bug=True 13.2s
+  A#12 5/6 sim=1.00 copy=True 12.6s 191tok 15.1t/s
+  Q#12 valid=True len=33 1.2s | 1) parts=['10'] / 2) 分钟数是 parts[0]。
+  S#12 5/6 sim=1.00 copy=True sem=False bug=True 13.3s
+  A#13 5/6 sim=1.00 copy=True 12.8s 191tok 15.0t/s
+  Q#13 valid=True len=35 1.3s | 1) parts=['10'] /   2) 分钟数是 parts[0]。
+  S#13 5/6 sim=1.00 copy=True sem=False bug=True 13.4s
+  A#14 5/6 sim=1.00 copy=True 12.8s 191tok 14.9t/s
+  Q#14 valid=True len=33 1.2s | 1) parts=['10'] / 2) 分钟数是 parts[0]。
+  S#14 5/6 sim=1.00 copy=True sem=False bug=True 13.4s
+  A#15 5/6 sim=1.00 copy=True 12.8s 191tok 14.9t/s
+  Q#15 valid=True len=37 1.3s | 1) parts=['10', ''] / 2) 分钟数是 parts[0]。
+  S#15 5/6 sim=1.00 copy=True sem=False bug=True 12.4s
+
+6/6 命中 A=0 S=0/16  失败 {'A': 0, 'Q': 0, 'S': 0}
+读数 → /Users/linshaojie/V1/bench/evidence/l12_s316/readings_v247.jsonl

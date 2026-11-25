@@ -1,0 +1,51 @@
+{
+  "base": 5,
+  "actuals": [
+    "parse_duration('10m') 实得 None（期望 600）"
+  ],
+  "a_bytes": 2307,
+  "a_sha": "1bdea4fc92d67817",
+  "q_bytes": 1450,
+  "q_sha": "5ff1b23167549896",
+  "s_bytes": 2550,
+  "s_sha": "b85532f4ca7dd295",
+  "start_sha": "90579ecebe633352",
+  "checks": [
+    {
+      "tag": "P-a",
+      "ok": true,
+      "detail": "2307 bytes sha=1bdea4fc92d67817 (want 2307 / 1bdea4fc92d67817)"
+    },
+    {
+      "tag": "P-b",
+      "ok": true,
+      "detail": "verify=5/6 actuals=[\"parse_duration('10m') 实得 None（期望 600）\"]"
+    },
+    {
+      "tag": "P-c",
+      "ok": true,
+      "detail": "strict600=False naked600=True(假阳性来自 3600) q_bytes=1450"
+    },
+    {
+      "tag": "P-d",
+      "ok": true,
+      "detail": "s_bytes=2550 back_equal=True"
+    },
+    {
+      "tag": "P-e",
+      "ok": true,
+      "detail": "fenced=True head=def parse_duration(s):"
+    },
+    {
+      "tag": "P-f1",
+      "ok": true,
+      "detail": "原码 sem=False bug=True (want False/True)"
+    },
+    {
+      "tag": "P-f2",
+      "ok": true,
+      "detail": "正例 sem=True bug=False (want True/False)"
+    }
+  ],
+  "red": []
+}

@@ -37,6 +37,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -44,7 +45,12 @@ import sys
 from pathlib import Path
 
 V1 = Path(__file__).resolve().parent.parent
-BAK = Path("/tmp/v1_withdraw_bak")
+#: 备份/登记目录。★ V242：允许用 `V1_WITHDRAW_BAK` 覆盖 —— 全量 382 条 × 单次套件 35s
+#: 是 ~3.7 小时；把仓库复制成 N 份、按标签分区**并行**跑能把墙钟压到 ~1 小时。
+#: ⛔ 并行时**必须**各自一份，否则四份进程会互相覆盖 `MANIFEST.json` 与备份
+#:    （「还原」会拿别人那份变异去覆盖自己的工作树 —— 第二十二轮事故的并行版）。
+#: 默认值不变 ⇒ 单进程行为逐字节同旧（可重放）。
+BAK = Path(os.environ.get("V1_WITHDRAW_BAK") or "/tmp/v1_withdraw_bak")
 #: 变异登记表：{相对路径: {"mutated": 写进去那份内容的 sha}}。
 #: ⛔ 没有它就回到了"有备份就无条件还原"的老行为 —— 那个行为本轮真的删掉过工作。
 MANIFEST = BAK / "MANIFEST.json"
@@ -54,9 +60,10 @@ _TRACEBACK = "Traceback (most recent call last)"
 
 #: (断言号, 文件, 原文, 变异成)
 #: `原文` 为空串 ⇒ **追加**到文件末尾。
+#: `原文` 也可以是**元组** ⇒ 一次撤回多处（只许同一个语义的几半，见 `AU6`）。
 #: ⚠️ 原文必须在文件里**恰好出现一次**：出现两次就会改到别处，
 #:    那时"没转红"会被误读成"断言恒真"。
-CASES: tuple[tuple[str, str, str, str], ...] = (
+CASES: tuple[tuple[str, str, str | tuple[str, ...], str | tuple[str, ...]], ...] = (
     # ── AS1：判据模块不许碰锚层 ────────────────────────────────────────
     ("AS1", "mw/verify.py", "",
      "\nfrom bench.scorers.code_exec import extract_code as _x  # 撤回态\n"),
@@ -68,12 +75,8 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #: ⚠️ 第八十轮：`derive()` 加了 `static` 形参（默认 0）⇒ 锚点跟着改。
     #:   撤的语义**不变**：多收一个 `answer` 就是"答案反过来影响判据"的入口。
     ("AS3", "mw/verify.py",
-     "def derive(goal: str, static: int = 0) -> tuple[Check, ...]:",
-     #: ⚠️ 新形参必须**追加在末尾**。第一版插在中间 ⇒ 所有位置调用
-     #:   `derive(goal, 0)` 的 `0` 绑到 `answer` 上 ⇒ AZ89/AZ90 一起红。
-     #:   那是**参数错位**，不是"答案影响判据"；换成追加就单红了。
-     "def derive(goal: str, static: int = 0, answer: str = \"\")"
-     " -> tuple[Check, ...]:"),
+     '''def derive(goal: str, static: int = 0, exec_: int = 0) -> tuple[Check, ...]:''',
+     '''def derive(goal: str, static: int = 0, exec_: int = 0, answer: str = "") -> tuple[Check, ...]:'''),
     # ── AS4：散文题不许派生 compiles ──────────────────────────────────
     ("AS4", "mw/verify.py", 'if _CODE_ONLY.search(goal or ""):', "if True:"),
     # ── AS5：没有判据不许报通过 ───────────────────────────────────────
@@ -85,8 +88,10 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      'return f"未知判据类型 {c.kind!r}（未实现 ⇒ 不能算通过）"', 'return ""'),
     # ── AS7 / AS8：闸必须真的拦（`if v.ok` → `if True` ⇒ 永不拒）────────
     ("AS7", "mw/core.py",
-     "        self.verify_stats[\"runs\"] += 1\n        if v.ok:",
-     "        self.verify_stats[\"runs\"] += 1\n        if True:"),
+     '''        if v.ok:
+            self.verify_stats["passed"] += 1''',
+     '''        if True:
+            self.verify_stats["passed"] += 1'''),
     # ── AS9：打回必须有上限 ───────────────────────────────────────────
     ("AS9", "mw/core.py",
      'if self.verify_stats["failed"] > cap:',
@@ -96,9 +101,12 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # ── AS11：关掉必须真的关掉 ───────────────────────────────────────
     #: ⚠️ 第八十轮：`derive(goal)` → `derive(goal, int(...verify_static))` ⇒ 锚点跟改。
     ("AS11", "mw/core.py",
-     "vfy.derive(goal, int(self.s.limits.verify_static))\n"
-     "            if int(self.s.limits.verify_retries) > 0 else ())",
-     "vfy.derive(goal, int(self.s.limits.verify_static)))"),
+     '''            vfy.derive(goal, int(self.s.limits.verify_static),
+                       int(self.s.limits.verify_exec))
+            if int(self.s.limits.verify_retries) > 0 else ())''',
+     '''            vfy.derive(goal, int(self.s.limits.verify_static),
+                       int(self.s.limits.verify_exec))
+            if True else ())'''),
     # ── AS12：开关必须进口径签名（从 ZERO_OK_KEYS 里拿掉）──────────────
     #: ⚠️ 锚点必须带上前面的整段元组：`ENV_KEYS` 与 `ZERO_OK_KEYS` 的**尾部逐字相同**
     #:    （都以 BACKOFF_S + VERIFY_RETRIES + `)` 收尾）。只锚尾部 ⇒ 命中 2 次，
@@ -107,21 +115,11 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #: ⚠️ 第八十轮：ZERO_OK_KEYS 多了 `V1_VERIFY_STATIC` ⇒ 锚点跟改（撤的语义不变：
     #:   从"允许取 0"的表里拿掉 ⇒ 开关进不了口径签名）。
     ("AS12", "mw/config.py",
-     'ZERO_OK_KEYS: tuple[str, ...] = (\n'
-     '    "V1_LLM_TEMPERATURE",\n'
-     '    "V1_CLOSE_RESERVE_S",\n'
-     '    "V1_CLOSE_RESERVE_STEPS",\n'
-     '    "V1_LLM_RETRIES",\n'
-     '    "V1_LLM_RETRY_BACKOFF_S",\n'
-     '    "V1_VERIFY_RETRIES",\n'
-     '    "V1_VERIFY_STATIC",\n)',
-     'ZERO_OK_KEYS: tuple[str, ...] = (\n'
-     '    "V1_LLM_TEMPERATURE",\n'
-     '    "V1_CLOSE_RESERVE_S",\n'
-     '    "V1_CLOSE_RESERVE_STEPS",\n'
-     '    "V1_LLM_RETRIES",\n'
-     '    "V1_LLM_RETRY_BACKOFF_S",\n'
-     '    "V1_VERIFY_STATIC",\n)'),
+     '''    "V1_VERIFY_RETRIES",
+    "V1_VERIFY_STATIC",
+    # ★ 第一百四十七轮（§127）：`0` = 不派示例判据''',
+     '''    "V1_VERIFY_STATIC",
+    # ★ 第一百四十七轮（§127）：`0` = 不派示例判据'''),
     # ── AS13：闸只许挂在 finish 上（去掉 tool 守卫 ⇒ 每个动作都过闸）────
     #: ⚠️ 锚点第二十三轮改过一次：出口守卫从字面量 `cand.tool == "finish"`
     #:    升级成了 `_produces`（= finish 或 produces_answer 的外部能力），
@@ -198,9 +196,11 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #: ⚠️ 会连带 A 组的"登记 == 实际读取"（那条本来就该红：代码读了没登记的 env
     #:    就是静默漂移），见 COUPLED。
     ("AE2", "mw/config.py",
-     '    "V1_VERIFY_RETRIES",\n    "V1_VERIFY_STATIC",\n'
-     '    "V1_EXTERNAL_ANSWER_TOOL",\n',
-     '    "V1_VERIFY_RETRIES",\n    "V1_VERIFY_STATIC",\n'),
+     '''    "V1_REWARD_ECHO",
+    "V1_EXTERNAL_ANSWER_TOOL",
+    "V1_ALLOW_NOTE",''',
+     '''    "V1_REWARD_ECHO",
+    "V1_ALLOW_NOTE",'''),
     # ── AE3：注入只许守在第 1 步（把 `it == 1` 放宽成 `it >= 1`）──────────
     ("AE3", "mw/core.py",
      "if _ext and it == 1 and self.tools.get(_ext) is not None:",
@@ -222,14 +222,11 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      "from __future__ import annotations\nimport mw.config  # 撤回态：违约\n"),
     # ── AE8：--no-external 两个分支都要透传（把桩分支改成恒 True）─────────
     ("AE8", "run.py",
-     "        core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger,\n"
-     "                    score_ledger=score_ledger, caliber_sig=caliber_sig,\n"
-     "                    memory_mode=mem_mode,\n"
-     '                    wire_external=not getattr(args, "no_external", False))',
-     "        core = Core(s, llm=StubLLM(), critique_ledger=critique_ledger,\n"
-     "                    score_ledger=score_ledger, caliber_sig=caliber_sig,\n"
-     "                    memory_mode=mem_mode,\n"
-     "                    wire_external=True)"),
+     '''                    lessons=_lessons,
+                    wire_external=not getattr(args, "no_external", False))
+    return core''',
+     '''                    lessons=_lessons)
+    return core'''),
     # ── AE9：端到端（把开关读成空 ⇒ 完全不注入）──────────────────────────
     ("AE9", "mw/core.py",
      "                _ext = self.s.limits.external_answer_tool",
@@ -318,10 +315,20 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #:    桩分支是整条离线套件的地基。**改窄到只改返回值**，信号才指向 AU6 本身
     #:    （1e9 秒的 timeout 在离线路径上完全等价于 inf）。
     ("AU6", "mw/core.py",
-     '        if base is None:                     # 桩/无网络：不裁剪\n'
-     '            return float("inf")',
-     '        if base is None:                     # 桩/无网络：不裁剪\n'
-     '            return 1e9  # 撤回态：桩上限不再是 inf'),
+     # ⚠️ V242：这条**必须撤两处**，只撤一处会换掉控制流 —— 实测（本轮）：
+     #   只把 `inf` 换成 `1e9` ⇒ 走 else 分支 ⇒ `inner.complete(..., timeout_s=1e9)`
+     #   打到 `_AZ105LLM.complete(messages, max_tokens=None)`（**不接受** `timeout_s`）
+     #   ⇒ `TypeError` ⇒ 整条离线计划链零轮次 ⇒ AZ107 红 + AZ108 `IndexError`（无汇总行）。
+     #   ⇒ 撤回的正确形状 = 「哨兵值」+「认哨兵的分支」一起撤（同 AZ135b：撤它数的那个数，
+     #      不撤那句 `if`）。两半都在同一个语义上：*用 `inf` 当"不裁剪"的身份*。
+     ('''        if base is None:                     # 桩/无网络：不裁剪
+            return float("inf")''',
+      '''                if _to == float("inf"):
+                    return self.inner.complete(messages, **kw)'''),
+     ('''        if base is None:                     # 桩/无网络：不裁剪
+            return float(1e308)  # 撤回态：哨兵换成"大但有限"''',
+      '''                if float(_to) >= 1e300:  # 撤回态：分支改认大数（控制流不许跟着变）
+                    return self.inner.complete(messages, **kw)''')),
     # ── AU7：收尾不释放余量（"留了 45s 却不用"）────────────────────────────
     ("AU7", "mw/core.py",
      "        if self._counted is not None:\n            self._counted.reserve_release()",
@@ -423,8 +430,8 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '        default_factory=lambda: True)  # 撤回态：env 读了个寂寞'),
     # ── AX4：Core 透传线断（硬编码 True）⇒ Limits 的开关到不了世界模型 ───────
     ("AX4", "mw/core.py",
-     '                             allow_learn=self.s.limits.allow_learn)',
-     '                             allow_learn=True)'),
+     '''                             allow_learn=self.s.limits.allow_learn,''',
+     '''                             allow_learn=True,'''),
     # ── AX5（第 110 轮 / §0.5-2）：身份退回「动作的载荷」⇒ 语义层重新变日志 ────
     #: 撤回的是 `Mismatch.category` 的定义：从「最外层调用名」退回
     #: 「整份交付物切词后字典序前 4 个」。`action` 的真实形态是
@@ -591,8 +598,8 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      "    void = False"),
     # AZ21：逐题墙钟写死 0 ⇒ 字段在、但完全没有信息（"最坏值"仍然不可知）。
     ("AZ21", "mw/bench.py",
-     '"elapsed_s": round(time.time() - _t_task, 2)})',
-     '"elapsed_s": 0})'),
+     '''                    "elapsed_s": round(time.time() - _t_task, 2)}''',
+     '''                    "elapsed_s": 0}'''),
     # ══════════════════════════════════════════════════════════════════════
     # AZ22–AZ23（§17-7i）：删掉静默兜底那两级，各配一条撤回态。
     # ══════════════════════════════════════════════════════════════════════
@@ -600,14 +607,18 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #        ⚠️ 会连带打红 AZ23（前两题的 0 条变回 4 条）—— 见 COUPLED：
     #           两件事锚在同一段 SQL 上，本来就是同一条事实的两个面。
     ("AZ22", "mw/memory.py",
-     '            (like, k),\n        ).fetchall()\n        return [self._fact(r, r["score"]) for r in rows]',
-     '            (like, k),\n        ).fetchall()\n        if not rows:\n'
-     '            rows = self.conn.execute(\n'
-     '                "SELECT *, 0.0 AS score FROM facts ORDER BY hits DESC,'
-     ' updated_ts DESC LIMIT ?",\n'
-     '                (k,),\n'
-     '            ).fetchall()\n'
-     '        return [self._fact(r, r["score"]) for r in rows]'),
+     '''        if rows:
+            return [self._fact(r, r["score"]) for r in rows]
+        # ★ 第二级（V84 / §153）：第一级两条路都空 ⇒ 才走字级 2 字链。''',
+     '''        if rows:
+            return [self._fact(r, r["score"]) for r in rows]
+        _all = self.conn.execute(
+            "SELECT *, 0.0 AS score FROM facts ORDER BY hits DESC LIMIT ?",
+            (k,),
+        ).fetchall()
+        if _all:                      # 撤回态：零命中静默给全表
+            return [self._fact(r, r["score"]) for r in _all]
+        # ★ 第二级（V84 / §153）：第一级两条路都空 ⇒ 才走字级 2 字链。'''),
     # AZ22b：只堵"零命中"这一个入口、留着"空 query"那个 ⇒ `LIKE '%%'` 照样给全表。
     #        这正是"只堵一个入口 = 假装修好"的撤回态。
     ("AZ24", "mw/memory.py",
@@ -764,10 +775,10 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # ② 让显式 `--suite` 也走兜底 ⇒ 静态判据（显式站点不许出现 _data_path）假 ⇒ 红。
     #    这锚的是 D-a 的**边界**：悄悄换掉用户给的路径是比报错更坏的假成功。
     ("AZ48", "run.py",
-     '    suite_path = (Path(args.suite).expanduser() if args.suite\n'
-     '                  else _data_path(Path("bench") / "tasks" / "coding_small.jsonl"))',
-     '    suite_path = (_data_path(Path(args.suite).expanduser()) if args.suite\n'
-     '                  else _data_path(Path("bench") / "tasks" / "coding_small.jsonl"))'),
+     '''    suite_path = (Path(args.suite).expanduser() if args.suite
+                  else _data_path(DEF_SUITE))''',
+     '''    suite_path = (_data_path(Path(args.suite).expanduser()) if args.suite
+                  else _data_path(DEF_SUITE))'''),
     # ── AZ49（落地页零外部请求，第六十一轮）：页面上的承诺必须能被撤掉 ─────────
     # 一条断言里束了三件事（页面存在 + 边界句在 + 没有任何会发请求的标签），
     # 所以两条撤回态：一条证明"外链检测"有牙，一条证明"边界句"是被锚的。
@@ -865,8 +876,11 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #       打在 `rejected=` 上会让 AZ63 的"喂入点 == 2"一起红（实测多红）。
     #       而同一条载荷同时喂两个调用点，所以清空它就等于把整个装置关掉。
     ("AZ62", "mw/core.py",
-     "                        reseek_lines = [c.as_line() for c in cands]",
-     "                        reseek_lines = []"),
+     '''                        blocked=sorted(attempted_sigs),
+                        rejected=reseek_lines,
+                        # ⚠️ 重规划**更**需要易错点：它正是"刚栽了"的那一次。''',
+     '''                        blocked=sorted(attempted_sigs),
+                        # ⚠️ 重规划**更**需要易错点：它正是"刚栽了"的那一次。'''),
     # ⑭ 把「换形态」的渲染**内联成第二处字面量**（语义等价，两个字面量）
     #    ⇒ `reseek_block(` 只剩定义那一处 ⇒ 只有 AZ63 红（AZ62 照样绿：
     #      标记语与"还没试过的工具"都还在，装置行为没变 —— 变的是"有几个未来"）。
@@ -1097,8 +1111,8 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # ㊺ 把档位从 `core.py` 的调用里拿掉 ⇒ 判据模块自己仍然全对（AZ89 绿），
     #    但机制恒不触发（AZ90 红）。这一条撤的是**接线**，不是判据。
     ("AZ90", "mw/core.py",
-     "vfy.derive(goal, int(self.s.limits.verify_static))",
-     "vfy.derive(goal)"),
+     '''            vfy.derive(goal, int(self.s.limits.verify_static),''',
+     '''            vfy.derive(goal, 0,'''),
 
     # ── 第八十二轮（§45）：第二批尺子 ───────────────────────────────────
     # ㊻ 手改 `tasks_v2.jsonl` 里 sg09 题面的一个字（"以上"→"以下"）
@@ -1120,16 +1134,19 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #    ⇒ 只有 TH1 红：默认档的请求体多出一个键，与历史不再逐字节相同。
     #    TH2/TH3 仍绿（它们只看 disabled 档的值对不对）。
     ("TH1", "mw/llm.py",
-     '        if self.cfg.thinking:\n'
-     '            body_obj["thinking"] = {"type": self.cfg.thinking}',
-     '        body_obj["thinking"] = {"type": self.cfg.thinking or "disabled"}'),
+     '''            if self.cfg.thinking:
+                body_obj["thinking"] = {"type": self.cfg.thinking}''',
+     '''            if True:
+                body_obj["thinking"] = {"type": self.cfg.thinking}'''),
     # ㊾ 把整段发字段的代码关死（`if False`）⇒ TH2 与 TH3 **必然**一起红：
     #    它们锚的是**同一行**的两个观测点（直连路径 / 内核 planner 路径）。
     #    ⛔ 这条不许换更巧的变异来"做成单红"：单红形状会伪造出
     #    "两条断言各管一件事"的假象，实际它们防的是同一个漏传。
     ("TH2", "mw/llm.py",
-     '        if self.cfg.thinking:',
-     '        if False:'),
+     '''            if self.cfg.thinking:
+                body_obj["thinking"] = {"type": self.cfg.thinking}''',
+     '''            if False:
+                body_obj["thinking"] = {"type": self.cfg.thinking}'''),
     # ㊿ 口径快照无条件带上该键 ⇒ 只有 TH4 红：默认档的签名被一个**没生效**的
     #    键带偏 —— 这才是 TH4 存在的理由（不是"签名对 thinking 敏感"）。
     ("TH4", "mw/config.py",
@@ -1718,8 +1735,12 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #:    ⚠️ 连带 AZ129f：那条断言的正是四种拒法**各说各的原因**，第 2 种被删，
     #:       它就少一条（同一条规则的两个面，见 COUPLED）。
     ("AZ129c", "mw/bench.py",
-     '''    if not store_run_id:''',
-     '''    if False and not store_run_id:'''),
+     '''    if not ok:
+        return False, why
+    if not store_run_id:''',
+     '''    if not ok:
+        return False, why
+    if False and not store_run_id:'''),
     #: 撤的语义：身份证**不落盘**（写死空串）⇒ 基线读回来是空串 ⇒ AZ129d 必红。
     ("AZ129d", "mw/bench.py",
      '''            "run_id": str(run_id or ""),''',
@@ -1772,9 +1793,9 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
         return "VERIFIED", "撤回态：空明细也放行"'''),
     #: 撤的语义：分层**漏掉 MISMATCH** 那一层（守恒式当场不成立）⇒ AZ130e 必红。
     ("AZ130e", "mw/bench.py",
-     '''    for rec in recs:
+     '''        out["rows"] += 1
         out[audit_measurement(rec)[0]] += 1''',
-     '''    for rec in recs:
+     '''        out["rows"] += 1
         _st = audit_measurement(rec)[0]
         if _st != "MISMATCH":
             out[_st] += 1'''),
@@ -1886,8 +1907,8 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
         return None'''),
     # AZ135b：把行为理由的名字改掉 ⇒ 两条路不再分得开（结构/行为混成一个读数）。
     ("AZ135b", "mw/goals.py",
-     '''                         "gids": [gid], "reason": "STUCK_MEANS"}''',
-     '''                         "gids": [gid], "reason": "STUCK"}'''),
+     '''"kind": kind, "n_fail": len(tail),''',
+     '''"kind": kind, "n_fail": len(tail) + 1,'''),
     # AZ135c：propose 不认 escalated ⇒ 转运维的格照提 RAISE（死报告）。
     ("AZ135c", "mw/goals.py",
      '''    esc_set = set(escalated)''',
@@ -1940,7 +1961,7 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # AZ136e：min_pool 闸关掉 ⇒ 1 个实现的池被分类（样本不够却出结论）。
     ("AZ136e", "mw/scoreinfo.py",
      '''    if n < min_pool:''',
-     '''    if False:  # 撤回态'''),
+     '''    if n < 1:  # 撤回态：门槛从 MIN_POOL 降到 1（只对空池弃权）'''),
     # AZ136f：常量改名 ⇒ kind 值域破。
     ("AZ136f", "mw/scoreinfo.py",
      '''KIND_CONSTANT = "CONSTANT"''',
@@ -1953,31 +1974,29 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     # AZ137a：缺身份行混进池（当实现 "None"）⇒ 可归因计数与池形状一起破。
     ("AZ137a", "mw/scoreinfo.py",
      '''        impl = r.get(impl_key)
-        if not impl or score_key not in r:''',
+        if not impl or score_key not in r:
+            n_no += 1''',
      '''        impl = r.get(impl_key)
-        if score_key not in r:  # 撤回态'''),
+        if score_key not in r:  # 撤回态
+            n_no += 1'''),
     # AZ137b：实现指纹退化成常数 ⇒ 同文异文不可分（身份失效）。
     ("AZ137b", "mw/scoreinfo.py",
      '''    return hashlib.sha256(str(text).encode("utf-8")).hexdigest()[:16]''',
      '''    return "0" * 16  # 撤回态'''),
     # AZ137c：overlay 恒 None ⇒ fail-open 写成恒不判（负对照转红）。
     ("AZ137c", "mw/goals.py",
-     '''    for c, e in out.items():
-        m = _SI.movability(obs, cell=c) if obs else None
-        e["movability"] = (m if m and m.get("label") != _SI.KIND_UNKNOWN else None)
-    return out''',
-     '''    for c, e in out.items():
-        e["movability"] = None  # 撤回态
-    return out'''),
+     '''        m = _SI.movability(obs, cell=c) if obs else None
+        e["movability"] = (m if m and m.get("label") != _SI.KIND_UNKNOWN else None)''',
+     '''        e["movability"] = None  # 撤回态'''),
     # AZ137d：修复轴映射退化成常数 ⇒ 诊断→动作的映射消失。
     ("AZ137d", "mw/goals.py",
      '''    return tuple(axes)''',
      '''    return ("MODEL",)  # 撤回态'''),
     # AZ137e：propose 偷偷读 movability 过滤 ⇒ 诊断字段变成 gate（覆盖定理被破坏）。
     ("AZ137e", "mw/goals.py",
-     '''        elif st["mean_score"] < target:
+     '''        elif st["best_score"] < target:
             if c in esc_set:''',
-     '''        elif st["mean_score"] < target:
+     '''        elif st["best_score"] < target:
             if c in esc_set or _SI.movability(obs, cell=c).get("claim"):  # 撤回态'''),
     # AZ137f：拆掉 <TARGET 门槛 ⇒ 已达标的格被标「做不到」（做完了 ≠ 做不到）。
     ("AZ137f", "mw/scoreinfo.py",
@@ -2094,8 +2113,9 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     #   ⚠️ 契约侧夹具已包 try（AP11 同型：转红不许变崩溃）。
     ("AZ140f", "mw/scoreinfo.py",
      '''        pool.append((str(impl), r[score_key]))''',
-     '''        if "vec" in r:
-            raise KeyError("vec")  # 撤回态
+     '''        if "vec" in r:          # 撤回态：旧读侧见 vec 键即拒
+            n_no += 1
+            continue
         pool.append((str(impl), r[score_key]))'''),
     # AZ140g：输出掺随机键 ⇒ 双跑不再逐字相同 + 形状 6 键封闭破。
     ("AZ140g", "mw/scoreinfo.py",
@@ -2170,8 +2190,10 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
      '''    pass  # 撤回态：不查可达性'''),
     # AZ145d：单参数不包 1-tuple ⇒ 判据里 `for x, in INPUTS` 全炸。
     ("AZ145d", "mw/critgen.py",
-     '''        return [(v,) for v in POOL[types[0]]]''',
-     '''        return list(POOL[types[0]])  # 撤回态：不包 1-tuple'''),
+     '''            return [(p[0], LEN_POOL[0]), (p[0], LEN_POOL[2]),
+                    (p[2], LEN_POOL[1]), (p[1], LEN_POOL[0])]''',
+     '''            return [(p[0], LEN_POOL[0]), (p[0], LEN_POOL[1]),
+                    (p[2], LEN_POOL[1]), (p[1], LEN_POOL[0])]'''),
     # ── V185（§253）：诊断分层与回错（AZ148a~d）─────────────────────────────
     # AZ148a：ARITY 归到 TYPES 类 ⇒ 「参数个数对不上」又变回「类型填错」。
     ("AZ148a", "mw/critgen.py",
@@ -2218,8 +2240,8 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
         return {}  # 撤回态：未知签名即空集'''),
     # AZ149c：目录忽略 n_args ⇒ 提示里仍列全部算子，过滤只活在代码里。
     ("AZ149c", "mw/critgen.py",
-     '''    for k, spec in (OPS if n_args is None else ops_for(n_args)).items():''',
-     '''    for k, spec in OPS.items():  # 撤回态：忽略 n_args'''),
+     '''    src = allow if allow is not None else (OPS if n_args is None else ops_for(n_args))''',
+     '''    src = allow if allow is not None else OPS  # 撤回态：忽略 n_args'''),
     # ── V187（§255）：补算子缺口 + 骨架等长（AZ150a~d）────────────────────
     # AZ150a：空格千分位退化成无分隔 ⇒ 24 组合里没有一个是正确的那个。
     ("AZ150a", "mw/critgen.py",
@@ -2578,6 +2600,50 @@ CASES: tuple[tuple[str, str, str, str], ...] = (
     ("AZ166e", "run.py",
      '''p.add_argument("--goals-swap-max-tokens", type=int, default=None, metavar="N",''',
      '''p.add_argument("--goals-swap-max-tokens-old", type=int, default=None, metavar="N",'''),
+    # ── AZ167（V243）：同分多实现时「账本 best」的定义 ─────────────────────
+    #: a：默认档从 `first` 改成 `farlast` ⇒ 真实账本上会选到**修不动**的那份
+    #:    （V239c：`09d0e23d` 0/4839），且 V239/V241 的起点再也重放不出来。
+    ("AZ167a", "run.py",
+     '''tie: str = "first") -> tuple[str, float, str, str]:''',
+     '''tie: str = "farlast") -> tuple[str, float, str, str]:'''),
+    #: b：`farlast` 退化成「先出现」（只比分数）⇒ 位序这个量彻底不进选择。
+    #:    ⚠️ 连带 AZ167c：两条锚的是同一个返回键的两个分量。已实测（双向声明见 COUPLED）。
+    ("AZ167b", "run.py",
+     '''    fp = _last_fail_pos(row.get("vec"))
+    return (score, 1 if fp is not None else 0, fp if fp is not None else 0, -idx)''',
+     '''    fp = _last_fail_pos(row.get("vec"))
+    return (score, 0, 0, -idx)  # 撤回态：不按失败位序挑'''),
+    #: c：缺 `vec` 的行也当「有 vec」⇒ 「缺读数」冒充「洞在最前」（纪律 137 的孪生）。
+    ("AZ167c", "run.py",
+     '''    return (score, 1 if fp is not None else 0, fp if fp is not None else 0, -idx)''',
+     '''    return (score, 1, fp if fp is not None else 0, -idx)  # 撤回态：缺 vec 也当有'''),
+    #: d：非法 `tie` 静默放过（不回落到默认）⇒ 拼错参数名会在**没有任何提示**下换个策略跑。
+    ("AZ167d", "run.py",
+     '''    if tie not in ("first", "farlast"):
+        raise ValueError(f"tie={tie!r} 不认识，只认 ('first', 'farlast')")''',
+     '''    pass  # 撤回态：不再校验 tie'''),
+    # ── AZ168（V242）：多点撤回的两半 ─────────────────────────────────────
+    #: a：只撤第一处 ⇒ `AU6` 那种「哨兵值 + 认哨兵的分支」会只改一半（必崩）。
+    #:    ⚠️ 连带 AZ168b：两条锚的是同一段循环的两个面。已实测。
+    ("AZ168a", "bench/withdraw_check.py",
+     '''    for o, nw in zip(olds, news):
+        mutated, n = _replace_outside_cases(mutated, o, nw)
+        ns.append(n)''',
+     '''    for o, nw in zip(olds[:1], news[:1]):  # 撤回态：只撤第一处
+        mutated, n = _replace_outside_cases(mutated, o, nw)
+        ns.append(n)'''),
+    #: b：不唯一也算过 ⇒ 锚点漂了没人知道（这正是 V240 那 18 条静默失效的形状）。
+    ("AZ168b", "bench/withdraw_check.py",
+     '''    if any(n != 1 for n in ns):
+        return src, ns, f"变异锚点出现 {ns} 次（每一处都必须恰好 1 次）"''',
+     '''    if False:  # 撤回态：不唯一也放过
+        return src, ns, f"变异锚点出现 {ns} 次（每一处都必须恰好 1 次）"'''),
+    #: c：`update` 覆盖而非合并 ⇒ 旧 `COUPLED` 的成员被整条盖掉，那些案例突然报「多红」。
+    ("AZ168c", "bench/withdraw_check.py",
+     '''COUPLED.update({k: frozenset(COUPLED.get(k, frozenset()) | v)
+                for k, v in _V242_EXTRA.items()})''',
+     '''COUPLED.update({k: frozenset(v)  # 撤回态：覆盖而不是合并
+                for k, v in _V242_EXTRA.items()})'''),
 )
 
 #: 每条撤回**必然**连带转红的那些断言（同一行实现被两个断言锚定）。
@@ -2669,7 +2735,7 @@ COUPLED: dict[str, frozenset[str]] = {
     #: `[0,0,1,1]` 立刻不成立。**同一段 SQL 的两个面**，合理连带。
     #: ★第三十八轮补登 AZ26/AZ30：兜底回来了 ⇒ n0 档命中 4 条（AZ26 红）；
     #:   7d 的 R1 预检反而"通过"了 ⇒ AZ30 的分辨力断言（7d 必须 rc=2）红。
-    "AZ22": frozenset({"AZ23", "AZ26", "AZ30"}),
+    "AZ22": frozenset({"AZ23", "AZ26", "AZ30", "AZ147"}),
     #: ★第一百一十一轮补登：AX5/AX6 是 AZ96 那条伞形断言的**两个方向见证**。
     #:   AZ96 要求 ①∧②∧③；撤掉任一方向都会把伞一起打红 ⇒ 合理连带（同一命题）。
     #:   ⚠️ 这同时补上一个真漏洞：上一轮把 AX5/AX6 写进 CASES 却没有同名契约，
@@ -2756,7 +2822,8 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   闸被改成恒真 ⇒ 一次打回都不发生 ⇒ 这条的前提整体消失。
     #:   ⛔ 这不是"能单红却登记"：任何让打回不发生的变异都会打红 AZ90，
     #:      而"闸会不会打回"本来就只能这样测 —— 与 AS8/AS9/AS10/AV1/AV2 同源。
-    "AS7": frozenset({"AS8", "AS9", "AS10", "AV1", "AV2", "AZ90"}),
+    "AS7": frozenset({"AS8", "AS9", "AS10", "AV1", "AV2", "AZ90",
+                       "AZ105", "AZ109", "AZ115", "AZ124", "AZ146"}),
     #: AS9 撤掉 `failed > cap` ⇒ 超限分支永不可达 ⇒ AV2（超限交付要落 failure 行）
     #: 的前提消失。实测：AS9 撤回后 AV2 红，其余只 AS9 自己红。
     "AS9": frozenset({"AV2"}),
@@ -2900,6 +2967,15 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   那会伪造出「两断言各管一件事」的假象。
     #:   ⚠️ 反向不成立：K5 的注册表里没有它（K5 的变异在别处）。
     "AZ137b": frozenset({"K5"}),
+    #: ★V242（§314）补登：AZ137c 撤的是「movability 恒 None」。AZ141c/d/e 与 AZ142c
+    #:   都是「行为级读数接到 overlay / 部署路径同源」——overlay 的唯一来源就是
+    #:   `movability()`，它恒 None ⇒ 这四条的前提消失。实测红集
+    #:   `[AZ137c, AZ141c, AZ141d, AZ141e, AZ142c]`，无第五个连带。
+    "AZ137c": frozenset({"AZ141c", "AZ141d", "AZ141e", "AZ142c"}),
+    #: ★V242（§314）补登：AZ62 撤的是 replan 的 `rejected=reseek_lines`。
+    #:   AZ63 要求「换形态的文本只允许一处渲染、两处调用各喂各的」——其中一处
+    #:   就是 replan；不喂 ⇒ 那一处的渲染消失。实测红集 `[AZ62, AZ63]`。
+    "AZ62": frozenset({"AZ63"}),
 
     #: ★V174（§242）：AZ136 这一组的连带是**同 fixture、多观测点**（TH2/TH3 同型）：
     #:   · a 拆掉越界分闸 ⇒ ruler 臂（1.2）不再弃权 ⇒ c 的「弃权不给半个读数」与
@@ -2986,7 +3062,64 @@ COUPLED: dict[str, frozenset[str]] = {
     #:   ⚠️ 双向声明：撤 a（→901）多红 c，撤 c（→1）多红 a。已实测。
     "AZ166a": frozenset({"AZ166c"}),
     "AZ166c": frozenset({"AZ166a"}),
+
+    #: ★V243（§315）：b 与 c 锚的是 `_start_rank` 里**同一个返回键的两个分量**
+    #:   （`has_vec` 与 `fail_pos`）。整条退化成「只比分数」⇒ c 的「缺 vec 不冒充」
+    #:   也失去前提。⚠️ 单向后向：撤 c 只红 c（b 的合成账本两边都有 vec）。已实测。
+    "AZ167b": frozenset({"AZ167c"}),
+    #: ★V242（§314）：a 与 b 锚的是 `_apply_mutation` 同一段循环的两个面
+    #:   （「几半都换上」与「任一半不唯一就整条失败」）。只撤第一处 ⇒ b 的
+    #:   「缺失要被发现」也一起失效。⚠️ 单向后向：撤 b 只红 b。已实测。
+    "AZ168a": frozenset({"AZ168b"}),
 }
+
+#: ★V242（§314）：**全量重跑后补登**的连带（38 条多红/崩溃里有 35 条属于这一类）。
+#:   ⛔ 不是「一律补 COUPLED」：每一条都是先把红集跑出来、再问「它凭什么红」——
+#:   这 35 条的红都是**同一个被撤机制的下游读数**（例：撤掉闸 ⇒ 打回链上的每一条都失去前提），
+#:   而不是「锚定跑偏」（后者要改锚点，§314.2 的 22 条就是这么修的）。
+#:   判据仍然是驱动器的：`多红 ⊄ 已声明` 记失败 ⇒ 声明只是「认账」，不是「放行」。
+_V242_EXTRA: dict[str, set[str]] = {
+    "AS4": {"AZ107", "AZ108", "AZ110", "AZ116", "AZ121"},
+    "AS9": {"AZ105"},
+    "AS13": {"AZ109", "AZ124", "AZ146"},
+    "AS14": {"AZ105", "AZ146"},
+    "AE9": {"AZ112", "AZ110"},
+    "AT1": {"AZ112"},
+    "AT3": {"AZ112"},
+    "AU2": {"AZ94"},
+    "AW1": {"AZ112", "AZ95"},
+    "AX1": {"AZ96", "F5b", "F5c"},
+    "AX6": {"F5b", "F5c"},
+    "AZ39": {"AZ112"},
+    "AZ56": {"AZ95"},
+    "AZ66": {"AZ119"},
+    "AZ92": {"AZ116"},
+    "AZ105": {"AZ109", "AZ124", "AZ146"},
+    "AZ107": {"AZ117"},
+    "AZ108": {"AZ110", "AZ111"},
+    "AZ110": {"AZ117", "AZ119", "AZ120"},
+    "AZ117": {"AZ120"},
+    "AZ118": {"AZ119"},
+    "AZ123": {"AZ124", "AZ146"},
+    "AZ124": {"AZ146"},
+    "AZ128f": {"AZ129c", "AZ129g"},
+    "AZ132d": {"AZ134e", "AZ161b"},
+    "AZ136g": {"AZ142e"},
+    "AZ137b": {"AZ165a", "AZ165c"},
+    "AZ137d": {"AZ139g", "AZ141a", "AZ141b", "AZ141d", "AZ141f", "AZ142c"},
+    "AZ139b": {"AZ141c", "AZ141d", "AZ141e"},
+    "AZ145b": {"AZ152b", "AZ152d", "AZ154b", "AZ154c", "AZ154d"},
+    "AZ149a": {"AZ152d"},
+    "AZ151b": {"AZ154b", "AZ154d"},
+    "AZ153d": {"AZ154c"},
+    "AZ163a": {"AZ165e"},
+    #: AZ140f 撤「pool_from_rows 见 vec 键即拒」⇒ 可动性读数一起变，
+    #: 与 AZ137c 同一组下游（实测红集 [AZ140f, AZ141c, AZ141d, AZ141e, AZ142c]）。
+    "AZ140f": {"AZ141c", "AZ141d", "AZ141e", "AZ142c"},
+}
+#: 合并而不是覆盖：原有声明一条都不能丢（V242 自踩预埋：`update` 会把它盖掉）。
+COUPLED.update({k: frozenset(COUPLED.get(k, frozenset()) | v)
+                for k, v in _V242_EXTRA.items()})
 
 #: ⚠️ 必须**锚在汇总行整句上**。第一版写的是 `PASS=(\d+)\s+FAIL=(\d+)`，
 #:    它会在任何地方命中 —— 第二十二轮实测：契约测试中途崩了，
@@ -3025,6 +3158,35 @@ def _replace_outside_cases(src: str, old: str, new: str) -> tuple[str, int]:
         return src, len(hits)
     i = hits[0]
     return src[:i] + new + src[i + len(old):], 1
+
+
+def _apply_mutation(src: str, old, new) -> tuple[str, list[int], str]:
+    """把一次撤回的（可能**多处**的）替换应用到 `src`。
+
+    返回 `(新文本, 每处命中数, 错误描述)`；错误非空 ⇒ 调用方**不许写盘**。
+
+    ## 为什么允许「多处」（V242，`AU6` 逼出来的）
+
+    `AU6` 撤的那个 `inf` **同时是断言值和分支条件**。只换值 ⇒ 走 else 分支 ⇒
+    `inner.complete(..., timeout_s=1e9)` 打到 `_AZ105LLM.complete(messages, max_tokens=None)`
+    （**不接受** `timeout_s`）⇒ `TypeError` ⇒ 整条离线计划链零轮次
+    ⇒ `AZ107` 红 + `AZ108` `IndexError`（无汇总行）。
+    与 `AZ135b` 同型：**撤它数的那个数，不要撤那句 `if`** —— 只是这里那句话也得跟着改。
+
+    ⛔ 边界：只在「几半是**同一个语义**（同一个哨兵/同一份声明）时」才允许多处。
+       多处不许被用来把「锚定跑偏」硬凑成一条 —— 有 `n != 1` 就整条失败。
+    """
+    olds = (old,) if isinstance(old, str) else tuple(old)
+    news = (new,) if isinstance(new, str) else tuple(new)
+    if len(olds) != len(news):
+        return src, [], f"撤回声明两半不等长 {len(olds)}≠{len(news)}"
+    mutated, ns = src, []
+    for o, nw in zip(olds, news):
+        mutated, n = _replace_outside_cases(mutated, o, nw)
+        ns.append(n)
+    if any(n != 1 for n in ns):
+        return src, ns, f"变异锚点出现 {ns} 次（每一处都必须恰好 1 次）"
+    return mutated, ns, ""
 
 
 def _summary(out: str) -> tuple[bool, str]:
@@ -3171,9 +3333,13 @@ def main(argv: list[str] | None = None) -> int:
             if old == "":
                 path.write_text(src + new, encoding="utf-8")
             else:
-                mutated, n = _replace_outside_cases(src, old, new)
-                if n != 1:
-                    rows.append((tag, f"❌ 变异锚点出现 {n} 次（必须恰好 1 次）", ""))
+                # ★ V242：一次撤回可以撤**多处**，但只许是同一个语义的几半
+                #   （`AU6`：哨兵值 + 认哨兵的分支 —— 只撤一半会换掉控制流）。
+                #   每一处仍要求**恰好出现一次**；任一处不唯一即整条判失败。
+                mutated, _ns, _err = _apply_mutation(src, old, new)
+                if _err:
+                    rows.append((tag, f"❌ {_err}", ""))
+                    print(f"  {tag:5s} ❌ {_err}", flush=True)
                     ok_all = False
                     continue
                 path.write_text(mutated, encoding="utf-8")
@@ -3192,6 +3358,11 @@ def main(argv: list[str] | None = None) -> int:
                       f" 多红={sorted(extra) or '无'} 汇总行={_show_s}"
                       f" 崩溃={'有' if _TRACEBACK in out else '无'}")
             rows.append((tag, "✅" if good else "❌", detail))
+            # ★ V242：**逐条即时打印**。全量 382 条要跑几个小时，后台任务被沙箱
+            #   「执行能力过期」杀掉时，只打印在末尾 ⇒ 这一轮读数一行都不剩
+            #   （本轮实测：4 个分区跑了 6.5 小时，日志里只有基线那两行）。
+            #   `flush=True` 是必须的：重定向到文件时 stdout 是块缓冲。
+            print(f"  {tag:5s} {'✅' if good else '❌'} {detail}", flush=True)
         finally:
             src_bak = BAK / rel
             if src_bak.exists():
@@ -3200,6 +3371,7 @@ def main(argv: list[str] | None = None) -> int:
             after = _sha(path)
             if after != before:
                 rows.append((tag, "❌ 还原失败（sha 不一致）", f"{before} → {after}"))
+                print(f"  {tag:5s} ❌ 还原失败 {before} → {after}", flush=True)
                 ok_all = False
 
     print("\n二、逐条撤回（目标必须转红，且**只**它转红）")

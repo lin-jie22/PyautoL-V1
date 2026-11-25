@@ -3235,8 +3235,54 @@ def _cand_get(cache_dir: Path, sha: str) -> str | None:
         return None
 
 
+def _last_fail_pos(vec) -> int | None:
+    """末位**失败**断言的下标。全过 ⇒ -1；没有 `vec` ⇒ `None`（不可比，⛔ 不是 0）。
+
+    ⚠️ `None` 与 `-1` 必须分开：`-1` = 「一条都没失败」，`None` = 「没有这份读数」。
+    把 `None` 当 0 会让「缺记录」冒充「洞在最前面」（纪律 137 的孪生）。
+    """
+    if not isinstance(vec, (list, tuple)) or not vec:
+        return None
+    pos = [i for i, b in enumerate(vec) if not b]
+    return max(pos) if pos else -1
+
+
+def _start_rank(score: float, row: dict, idx: int, tie: str) -> tuple:
+    """账本 best 的**排序键**（§315）。越大越好。
+
+    | tie | 键 |
+    |---|---|
+    | `first`（**默认** = V239/V241 的行为） | `(score, 0, 0, -idx)` ⇒ 只比分数，同分取先出现 |
+    | `farlast`（实验用） | `(score, has_vec, fail_pos, -idx)` ⇒ 同分取**失败位序最靠后**的 |
+
+    ## 为什么 `farlast` **没有**成为默认（V243 押注失败，§315）
+
+    V239c 实测：同一格 0.8333 的两份实现，`vec=111011`（洞在第 4 条）**单点可修 1/9913**，
+    `vec=011111`（洞在第 1 条）**0/4839** ⇒ 「同分」不等于「同样好」，
+    所以本来押「同分取失败位序最靠后」。**押注被真实账本否掉**，两层：
+
+    1. 真实账本（V239 的 `obs_d`/`obs_d2`）最高分是 **1.0**，不是 0.8333
+       ⇒ 同分规则在那份账本上**根本不触发**，两策略都因取不回实现而 `degraded`。
+    2. 把它裁到 0.8333 子集（V239 真正的处境）后，`farlast` 在 `obs_d` 上选中的是
+       **`09d0e23d`（`011111`，0/4839 修不动）**，`first` 选的是 `90579ece`（可修）。
+       原因：`obs_d` 里 `90579ece` 的 seed 行**缺 `vec`** ⇒ 被 `has_vec` 降级顶掉。
+
+    ⇒ 「缺记录降级」这条（为防纪律 137 写下的）在这里**反向生效**：它把「有记录但更差」
+       的实现顶到「没记录但更好」的实现前面。修它需要第三套规则（缺 `vec` 时回填 /
+       不以 `has_vec` 优先），那是**另一个自变量**，本轮不碰。
+
+    ⛔ 所以：`farlast` 只是**可选**，不是「更好的定义」；**n=1 对**且在本项目真实账本上
+       做出更差的选择。默认必须保持 `first`，否则历史读数再也重放不出来。
+    """
+    if tie == "first":
+        return (score, 0, 0, -idx)
+    fp = _last_fail_pos(row.get("vec"))
+    return (score, 1 if fp is not None else 0, fp if fp is not None else 0, -idx)
+
+
 def _resolve_start(obs, cell: str, fallback_code: str, fallback_score: float,
-                   cache_dir: Path, *, policy: str = "auto") -> tuple[str, float, str, str]:
+                   cache_dir: Path, *, policy: str = "auto",
+                   tie: str = "first") -> tuple[str, float, str, str]:
     """换路起点 = 账本该题**最高分**的那条观测，且必须能取回**它的实现**。
 
     返回 `(code, score, src, note)`，`src ∈ {"act", "cache", "degraded"}`。
@@ -3268,23 +3314,33 @@ def _resolve_start(obs, cell: str, fallback_code: str, fallback_score: float,
     """
     if policy not in ("auto", "ledger"):
         raise ValueError(f"start_from={policy!r} 不认识，只认 ('auto', 'ledger')")
+    if tie not in ("first", "farlast"):
+        raise ValueError(f"tie={tie!r} 不认识，只认 ('first', 'farlast')")
     best = None
-    for o in obs or ():
+    _best_key = None
+    for _idx, o in enumerate(obs or ()):
         if not isinstance(o, dict) or o.get("task_id") != cell:
             continue
         try:
             sc = float(o["score"])
         except (KeyError, TypeError, ValueError):
             continue
-        # 同分时保留**先出现**的那条：账本是 append-only，先出现的更"老"、
-        # 更可能已经进过缓存（`_cand_put` 是幂等的，选谁都不改结果）。
-        if best is None or sc > best[0]:
-            best = (sc, o)
+        # ★ V243（§315）：同分的取舍从「先出现」改成**排序键**（见 `_start_rank`）。
+        #   `tie="first"` 仍然是旧行为，用来复现 V239 / V241 的起点。
+        _key = _start_rank(sc, o, _idx, tie)
+        if _best_key is None or _key > _best_key:
+            _best_key, best = _key, (sc, o)
     if best is None:
         # 空账本 ⇒ 没有历史，不把「没历史」读成「历史更好」
         return fallback_code, float(fallback_score), "act", ""
 
     _bsc, _brow = best
+    # ★ V243（§315）：同分取舍必须**可见**。不可见的策略等于没有策略 ——
+    #   下一次读数出现「起点换了一份同分实现」时，没人能从日志里分辨它是不是这条规矩干的。
+    _ties = sum(1 for o in obs or ()
+                if isinstance(o, dict) and o.get("task_id") == cell
+                and isinstance(o.get("score"), (int, float))
+                and float(o["score"]) == float(_bsc))
     from mw.scoreinfo import exec_sha_of
     _bsha = str(_brow.get("impl_sha") or "")
     if _bsha and _bsha == exec_sha_of(fallback_code):
@@ -3305,7 +3361,11 @@ def _resolve_start(obs, cell: str, fallback_code: str, fallback_score: float,
                 f" ⇒ 用本轮产出 {float(fallback_score):.4f}"
                 f"（why 会如实写成两句，⛔ 不再冒充「最好的一次」）")
         return fallback_code, float(fallback_score), "degraded", note
-    return _code, _bsc, "cache", ""
+    # ★ V243（§315）：同分多实现时，日志必须说「这条是按什么挑的」。
+    _tie_note = ("" if _ties <= 1 or tie == "first"
+                 else f"  ↳ 同分 {_ties} 份，按「失败位序最靠后」取"
+                      f"（fail_pos={_last_fail_pos(_brow.get('vec'))}）")
+    return _code, _bsc, "cache", _tie_note
 
 
 #: ★ V240（§312）：换路单次调用的 token 预算**默认值**。
@@ -3641,9 +3701,10 @@ def _goals_main(args) -> int:
                              and isinstance(o.get("score"), (int, float))),
                             default=None)
                 _pol0 = str(getattr(args, "goals_swap_start_from", "auto") or "auto")
+                _tie0 = str(getattr(args, "goals_swap_tie", "first") or "first")
                 _sc0, _ss0, _src0, _note0 = _resolve_start(
                     obs, g.cell, _act_answer.get(g.cell, ""), float(row["score"]),
-                    _cache_dir, policy=_pol0)
+                    _cache_dir, policy=_pol0, tie=_tie0)
                 # ★ V239：起点必须**每一行都可见** —— P5 要判「换路看到的那份代码
                 #   是不是账本 best 的实现」，而这一点只能靠这一行对上 sha。
                 #   ⛔ 只在出问题时打印 ⇒ 正常路径看不见「起点其实是本轮产出」。
@@ -4048,6 +4109,14 @@ def main() -> int:
                    help="换路起点策略：`auto`=账本分**严格更高**才换（默认，同 V238 可重放）；"
                         "`ledger`=账本分**不低于**本轮就换（把「起点固定为某个已知实现」显式化，"
                         "供实验用）。⛔ 两者都不用比本轮**更差**的账本实现")
+    p.add_argument("--goals-swap-tie", default="first",
+                   choices=("farlast", "first"),
+                   help="同分多实现时账本 best 怎么挑：`first`=取**先出现**的那份"
+                        "（默认，同 V239/V241 可重放）；`farlast`=取**失败位序最靠后**的"
+                        "那份（实验用；V239c 实测同分 0.8333 的两份里位序靠后的单点可修"
+                        "1/9913、靠前的 0/4839，但 V243 实测它在 `obs_d` 上会选中"
+                        "**修不动**的那份——缺 `vec` 的 seed 行被降级顶掉）。"
+                        "⚠️ 没有 `vec` 的行一律排在有 `vec` 的行之后（缺读数不许冒充好读数）")
     p.add_argument("--goals-suite-dir", default="",
                    help="可用题集目录（默认 bench/tasks）—— 这是**环境边界**，不是人的指令")
     p.add_argument("--goals-log", default="",

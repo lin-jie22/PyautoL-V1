@@ -17319,6 +17319,97 @@ check(RS, "AZ166e `--goals-swap-max-tokens` 已注册；非整数字符串 ⇒ �
       _az166_named and _az166_bad.returncode != 0,
       f"named={_az166_named} rc={_az166_bad.returncode}")
 
+#: 复用已有的两个口径（`exec_sha_of` = 判分器执行的那份代码；`withdraw_check` = 驱动器本体）
+_az167_esha = _az165_esha
+_az167_wc = _az44_wc
+
+# ── AZ167（V243）：同分多实现时「账本 best」的定义 ────────────────────────
+#  ⚠️ 这一组的**默认档**必须是 `first`（与 V239/V241 逐字节同起点）：
+#     V243 实测 `farlast` 在真实账本 `obs_d` 上会选中 V239c 证明**修不动**的那份
+#     （`09d0e23d`，单点可修 0/4839），因为真 best `90579ece` 的 seed 行**缺 `vec`**
+#     被 `has_vec` 那一级降级顶掉 —— 为防「缺读数冒充好读数」写的规则**反向生效**。
+_az167_cell = "t01_parse_duration"
+_az167_fb = "# fallback\ndef parse_duration(s):\n    return None\n"
+_az167_cache = _TMP / "az167_cache"
+if not _az167_cache.is_dir():
+    _az167_cache.mkdir(parents=True)
+_az167_A = "# A\ndef parse_duration(s):\n    return 1\n"      # vec 011111
+_az167_B = "# B\ndef parse_duration(s):\n    return 2\n"      # vec 111011
+_az167_sA = _az167_esha(_az167_A)
+_az167_sB = _az167_esha(_az167_B)
+(_az167_cache / f"{_az167_sA}.py").write_text(_az167_A, encoding="utf-8")
+(_az167_cache / f"{_az167_sB}.py").write_text(_az167_B, encoding="utf-8")
+#: 顺序**先 A 后 B**：旧规矩（first）取 A，按位序（farlast）必须取 B。
+_az167_obs = [
+    {"task_id": _az167_cell, "score": 0.8333, "impl_sha": _az167_sA,
+     "vec": [False] + [True] * 5, "source": "t"},
+    {"task_id": _az167_cell, "score": 0.8333, "impl_sha": _az167_sB,
+     "vec": [True] * 3 + [False] + [True] * 2, "source": "t"},
+]
+#: `vec` 缺失的那条**先出现且洞位序更靠前** ⇒ 不许被选中（纪律 137 的孪生）。
+_az167_obs_novec = [
+    {"task_id": _az167_cell, "score": 0.8333, "impl_sha": _az167_sA, "source": "t"},
+    {"task_id": _az167_cell, "score": 0.8333, "impl_sha": _az167_sB,
+     "vec": [False] + [True] * 5, "source": "t"},
+]
+_az167_def = _run._resolve_start(_az167_obs, _az167_cell, _az167_fb, 0.5,
+                                 _az167_cache, policy="ledger")
+_az167_far = _run._resolve_start(_az167_obs, _az167_cell, _az167_fb, 0.5,
+                                 _az167_cache, policy="ledger", tie="farlast")
+_az167_nv = _run._resolve_start(_az167_obs_novec, _az167_cell, _az167_fb, 0.5,
+                                _az167_cache, policy="ledger", tie="farlast")
+
+check(RS, "AZ167a 默认档（不传 tie）仍取**先出现**的那份 ⇒ V239/V241 的起点可逐字节重放\n"
+          "              （⛔ `farlast` 只是可选臂，不许当默认：它在真实账本上会选到修不动的那份）",
+      _az167_def[0] == _az167_A and _az167_def[2] == "cache",
+      f"取到={_az167_esha(_az167_def[0])[:8]} src={_az167_def[2]}")
+check(RS, "AZ167b 显式 `tie=farlast` ⇒ 取**失败位序最靠后**的那份，且日志写明"
+          "「同分几份 / fail_pos」\n"
+          "              （⛔ 只改选择不写日志 = 下一次读到「起点换了」也归不了因）",
+      _az167_far[0] == _az167_B and "同分 2 份" in _az167_far[3]
+      and "fail_pos=3" in _az167_far[3],
+      f"取到={_az167_esha(_az167_far[0])[:8]} note={_az167_far[3][:44]!r}")
+check(RS, "AZ167c 缺 `vec` 的行**不冒充**「洞在最前」（它有 `vec` 的对手先被选中）",
+      _az167_nv[0] == _az167_B,
+      f"取到={_az167_esha(_az167_nv[0])[:8]}")
+_az167_raises = []
+for _bad in ("", "newest", None, 1):
+    try:
+        _run._resolve_start(_az167_obs, _az167_cell, _az167_fb, 0.5,
+                            _az167_cache, tie=_bad)
+        _az167_raises.append(False)
+    except ValueError:
+        _az167_raises.append(True)
+_az167_h = _az166_sp.run([sys.executable, str(V1 / "run.py"), "--help"],
+                         capture_output=True, text=True, cwd=V1)
+_az167_named = "--goals-swap-tie" in (_az167_h.stdout or "")
+check(RS, "AZ167d 非法 tie 值 ⇒ ValueError；`--goals-swap-tie` 已注册（⛔ 不静默回落默认）",
+      all(_az167_raises) and _az167_named,
+      f"抛={_az167_raises} named={_az167_named}")
+
+# ── AZ168（V242）：撤回驱动器允许**一次撤多处**，但每一处仍须唯一 ────────
+#  `AU6` 撤的那个 `inf` 同时是断言值和分支条件：只换值 ⇒ 走 else 分支 ⇒
+#  `inner.complete(..., timeout_s=1e9)` 打到不接受 `timeout_s` 的桩 ⇒ `TypeError`
+#  ⇒ 整条离线计划链零轮次（实测 `AZ107` 红 + `AZ108` IndexError）。
+_az168_src = "aaa OLD1 bbb\nccc OLD2 ddd\n"
+_az168_m, _az168_ns, _az168_err = _az167_wc._apply_mutation(
+    _az168_src, ("OLD1", "OLD2"), ("NEW1", "NEW2"))
+_az168_m2, _az168_ns2, _az168_err2 = _az167_wc._apply_mutation(
+    _az168_src, ("OLD1", "NOPE"), ("NEW1", "X"))
+check(RS, "AZ168a 两处都唯一 ⇒ **两处都换上**（返回 [1,1] 且无错误）",
+      _az168_ns == [1, 1] and not _az168_err
+      and "NEW1" in _az168_m and "NEW2" in _az168_m,
+      f"ns={_az168_ns} err={_az168_err!r}")
+check(RS, "AZ168b 任一处不唯一/缺失 ⇒ **整条失败**且原文本不动（⛔ 不许只换一半就写盘）",
+      _az168_ns2 == [1, 0] and bool(_az168_err2) and _az168_m2 == _az168_src,
+      f"ns={_az168_ns2} err={_az168_err2!r}")
+#: 合并 vs 覆盖：`_V242_EXTRA` 里 15 个键在旧 `COUPLED` 里**已有**成员，
+#: `dict.update` 会把它们整个盖掉 ⇒ 那些案例会突然报「多红」（正是本轮的自踩预埋）。
+check(RS, "AZ168c `_V242_EXTRA` 是**合并**不是覆盖（原声明的 `AT8`/`AZ60` 一条不丢）",
+      {"AT8", "AZ60"} <= set(_az167_wc.COUPLED.get("AE9", ()))
+      and set(_az167_wc._V242_EXTRA["AE9"]) <= set(_az167_wc.COUPLED["AE9"]),
+      f"AE9={sorted(_az167_wc.COUPLED.get('AE9', ()))}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")# ⛔ `finish()` 必须在**打印判据行之前**调：它声明的就是「我已经跑到这里了」。

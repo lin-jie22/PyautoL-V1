@@ -7,12 +7,15 @@
 from __future__ import annotations
 
 import collections
+import difflib
 import json
 import pathlib
 import re
 import statistics
 
 D = pathlib.Path(__file__).resolve().parent
+START = pathlib.Path("/Users/linshaojie/V1/bench/evidence/l9_s310/cand/90579ecebe633352.py")
+start_code = START.read_text(encoding="utf-8") if START.exists() else ""
 rows = [json.loads(x) for x in
         (D / "readings_v247.jsonl").read_text(encoding="utf-8").splitlines() if x.strip()]
 
@@ -87,3 +90,30 @@ cons = [i for i in p2 if i in s_by_i and bool(s_by_i[i].get("sem_in_code")) == p
 print(f"\nself_consistent（sem_in_code == P2判对）= {len(cons)}/{len(p2)}")
 print("  ⚠️ 本读数里 P2 全对、sem 全 False ⇒ self_consistent 全 False，"
       "含义是「说对了、写的时候没用」")
+
+
+# ---- 非照抄产出的行级改动（纪律 227 的补丁：cand 已落盘）----
+def _lines_diff(a: str, b: str, limit: int = 12) -> list[str]:
+    d = difflib.unified_diff((a or "").splitlines(), (b or "").splitlines(),
+                             lineterm="", n=0)
+    return [x for x in d if (x.startswith("+") or x.startswith("-"))
+            and not x.startswith(("+++", "---"))][:limit]
+
+
+print("\n== 非照抄产出的改动（行级，相对起点）==")
+no_cand = 0
+n_diff = 0
+for arm in ("A", "S"):
+    for r in by[arm]:
+        if "err" in r or r.get("same_as_start") is not False:
+            continue
+        c = r.get("cand")
+        if not c:
+            no_cand += 1
+            print(f"  {arm}#{r['i']:02d} ⚠️ cand 缺失（这次跑又没落代码）")
+            continue
+        n_diff += 1
+        print(f"  {arm}#{r['i']:02d} score={r['score']}/6 sim={r['sim']:.2f}")
+        for line in _lines_diff(start_code, c):
+            print(f"      {line}")
+print(f"\n  非照抄条数 = {n_diff}；cand 缺失 = {no_cand}")

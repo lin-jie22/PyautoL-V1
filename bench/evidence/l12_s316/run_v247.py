@@ -8,7 +8,8 @@ RUN 前必读：
 - ⛔ 判分只用 mw.reflect.verify（生产同一函数、同一份 6 条断言）。
 
 用法：python3 run_v247.py [--n 16] [--model qwen2.5:7b]
-落盘：readings_v247.jsonl（A/Q/S 三分支，含 Q 原文）
+落盘：readings_v247.jsonl（A/Q/S 三分支，含 Q 原文 `q_text` 与候选代码 `cand`）
+⛔ **必须落 `cand`**：只落 sha ⇒ 非照抄的产出事后看不到改在哪（§317.6 纪律 227，已踩两次）。
 """
 from __future__ import annotations
 
@@ -151,7 +152,9 @@ def main() -> int:
             row = {"arm": "A", "i": i, "score": got, "fenced": fenced,
                    "sha": _sha(cand) if cand.strip() else None,
                    "same_as_start": bool(cand == code),
-                   "sim": round(_ratio(cand, code), 3), **meta}
+                   "sim": round(_ratio(cand, code), 3),
+                   "parsed": bool(cand.strip()),
+                   "cand": cand or None, **meta}
         except Exception as e:                                   # noqa: BLE001
             row = {"arm": "A", "i": i, "err": f"{type(e).__name__}: {e}"[:160]}
             n_fail["A"] += 1
@@ -199,6 +202,8 @@ def main() -> int:
                    "sha": _sha(cand) if cand.strip() else None,
                    "same_as_start": bool(cand == code),
                    "sim": round(_ratio(cand, code), 3),
+                   "parsed": bool(cand.strip()),
+                   "cand": cand or None,
                    "sem_in_code": bool(SEM.search(cand)),
                    "kept_bug": bool(BUG.search(cand)),
                    "s_bytes": len(s_prompt.encode()), **meta}

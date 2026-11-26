@@ -91,8 +91,12 @@ f"pool={len(_az162_pool)} cnt={_az162_cnt} src_vec={_az162_vec_probe in _az162_s
 
 原始输出：`READINGS_311_before.txt` / `READINGS_311_after.txt` / `READINGS_313_after.txt`。
 
-⛔ **这只证明「本地两个版本绿了」，不证明「CI 绿了」。**
-CI 要等下一次 push 的 run 号；在那之前状态写「已修复，待 CI 验证」。
+**CI 实测（修复提交 `154bed2`）**：run **249** = **success**，三个 job 全绿
+（`py3.11 success / py3.12 success / py3.13 success`，七步验证步均 success）。
+⇒ 红段 `234~248` 在这里收口。⛔ 下一次改动仍要按 run 号查，徽章只反映最近一次。
+
+⛔ **这只证明「本地两个版本绿了」，不证明「CI 绿了」**（还有 checkout / setup-python 等环节）。
+CI 状态要等下一次 push 的 run 号 —— 见本节末尾的「CI 实测」。
 
 ## §7 顺手扫了一遍：还有一个文件在 3.11 上编译不过
 

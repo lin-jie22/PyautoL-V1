@@ -433,10 +433,46 @@ def alt_block(code: str) -> str:
             f"{code}\n")
 
 
+#: 默认尾段（**只在 `trace` 非空时**才出现在 prompt 里）。
+#: 单独抽出来是为了让 `edit=True` 能**整段替换**它，而不是在它后面追加 ——
+#: 追加会得到「要求输出完整函数」＋「只输出两行」两条互相矛盾的指令。
+#: ⚠️ V245 的 C 臂就踩过这个坑：末尾「不要输出任何其他文字」与追加的「先写一行根因」
+#:    直接冲突，实测只有 6/16 真写了根因（§317.6 已登记）。
+_TAIL_PROPOSAL = (
+    "请顺着轨迹找到**第一处**让结果偏离题意的逻辑，"
+    "只改那一处（以及必须连带改的地方），不要整篇重写。\n"
+    "要求：\n"
+    "1) 只输出一个 ```python 代码块，里面是**完整的**函数定义（不要省略任何行）；\n"
+    "2) 保持函数名与签名不变；\n"
+    "3) 不要解释，不要输出任何其他文字。")
+
+#: `edit=True` 的尾段。逐字节等于 `bench/evidence/l13_s318/preflight_v248.py` 里的 `TAIL_E`
+#: —— V248 的 E 臂（6/6 = 10/16）就是用这一段量的，两边必须同字节，否则那条读数不外推。
+#: 最后一句是设计要害：**不是请求它别改，是让它改了也不生效**（surgical patching）。
+_TAIL_EDIT = (
+    "请顺着轨迹找到**第一处**让结果偏离题意的逻辑，只改那一处。\n"
+    "【输出格式】不要输出代码块，不要输出完整函数。**只输出两行**，严格如下（Line 用上面给的行号）：\n"
+    "LINE: <行号，纯数字>\n"
+    "EXPR: <把那一行整行替换成的 Python 语句；不要写行号，不要写缩进>\n"
+    "【硬约束】除这一行外**任何一行都不许改**——脚本只会按你给的 LINE 替换那一行，"
+    "其余字节原样保留。你若想改别处，改了也不会生效。")
+
+
+def numbered_code(code: str) -> str:
+    """带**真实行号**的代码视图：`"{n:3d}| {原文}"`，行号从 1 起。
+
+    为什么要它（§318）：V248 的 E 臂靠这份视图让模型指认「第几行」。
+    行号必须来自**输入**，不能让模型自己数它重排后的行 —— 那样「行号错」
+    会与「重排错」缠在一起，读数不能归因。
+    """
+    return "\n".join(f"{i:3d}| {ln}" for i, ln in enumerate(code.splitlines(), 1))
+
+
 def build_proposal_prompt(goal: str, code: str, why: str,
                           actuals: Sequence[str] = (),
                           trace: Sequence[str] = (),
-                          alt_code: str = "") -> str:
+                          alt_code: str = "",
+                          *, edit: bool = False) -> str:
     """让模型给一份**完整可运行**的候选实现。
 
     ⚠️ 与 `build_prompt` 的差别是刻意的：那一版**禁止**写代码（要的是诊断），
@@ -459,7 +495,30 @@ def build_proposal_prompt(goal: str, code: str, why: str,
     **191 completion tokens**。⇒ 模型只复制 `【当前代码】` 那一份。
     并列框架（去掉权威槽）也只是改成复制**较长**的那份（同上那条 1686 字符产出 =
     B 的结构逐行照抄）。证据：`bench/evidence/l7_s308/RESULTS_v237.md`。
+
+    ## `edit=True`（§319，V249）：把动作空间压到「一行」
+
+    默认 `False` ⇒ **输出与 V233~V248 逐字节相同**（`AZ169a` 钉 `t01` 的
+    `2307` 字节 / `1bdea4fc92d67817`）。`True` 时做两件事，顺序与 V248 的 E 臂同构：
+
+        N = A.replace(code, numbered_code(code), 1)     # 代码槽 → 带行号
+        E = N.replace(_TAIL_PROPOSAL, _TAIL_EDIT, 1)    # 尾段 → 两行格式
+
+    为什么要它：V248 实测同一模型、同一信息、同一温度，只把「输出 26 行函数」
+    换成「输出一行行号 + 一行表达式、由装置替换」⇒ `6/6` 从 `0/16` 到 `10/16`。
+    ⇒ **v245/v247 的「改不动」不是认知问题，是动作空间只有一个出口。**
+
+    ⛔ 三条前置是**抛**不是降级（静默降级会产出一个没有定位依据的「只改一行」提示）：
+    `edit` 必须有 `trace`；不与 `alt_code` 同用（`line` 口径下的第二体未测）；
+    `code` 必须在 prompt 里**恰好出现一次**（否则替换落点不可知）。
     """
+    if edit:
+        if not trace:
+            raise ValueError("edit=True 需要 trace：没有轨迹就无从指认「哪一行」")
+        if alt_code:
+            raise ValueError("edit=True 不与 alt_code 同用（line 口径下的第二体未测）")
+        if not code.strip():
+            raise ValueError("edit=True 需要非空 code（空代码没有可指认的行）")
     parts = [
         "下面这个 Python 函数没有通过全部测试。请给出**修正后的完整函数**。\n",
         f"【题目】\n{goal}\n",
@@ -481,12 +540,26 @@ def build_proposal_prompt(goal: str, code: str, why: str,
         parts.append(
             "请顺着轨迹找到**第一处**让结果偏离题意的逻辑，"
             "只改那一处（以及必须连带改的地方），不要整篇重写。\n")
+    # ⚠️ 这一段**无条件**拼进去，`edit=True` 时由下面的整段替换换成 `_TAIL_EDIT`。
+    #   不许「edit 就不加这一段」——那样 replace 的目标不存在，与 V248 的 E 臂
+    #   构造顺序（先有完整 A，再把尾段整段换掉）不一致。
     parts.append(
         "要求：\n"
         "1) 只输出一个 ```python 代码块，里面是**完整的**函数定义（不要省略任何行）；\n"
         "2) 保持函数名与签名不变；\n"
         "3) 不要解释，不要输出任何其他文字。")
-    return "".join(parts)
+    _out = "".join(parts)
+    if not edit:
+        return _out
+    # ⚠️ 下面两步的**顺序与 V248 的 E 臂完全一致**（先换代码槽、再换尾段）。
+    #   倒过来也能work，但会与 v248 的字节对不上 ⇒ 那条 10/16 就不能当本档的证据。
+    if _out.count(code) != 1:
+        raise ValueError(f"edit=True 要求 code 在 prompt 里恰好出现 1 次，"
+                         f"实际 {_out.count(code)} 次 ⇒ 替换落点不可知")
+    _out = _out.replace(code, numbered_code(code), 1)
+    if _TAIL_PROPOSAL not in _out:
+        raise ValueError("edit=True 找不到默认尾段 ⇒ 尾段替换落空（装置漂移）")
+    return _out.replace(_TAIL_PROPOSAL, _TAIL_EDIT, 1)
 
 
 _FENCE = re.compile(r"```(?:python|py)?\s*\n(.*?)```", re.S)
@@ -507,6 +580,65 @@ def parse_proposal(text: str) -> tuple[str, bool]:
     if re.search(r"^\s*def\s+\w+\s*\(", src, re.M):
         return src, False
     return "", False
+
+
+def apply_edit(code: str, line: int | None, expr: str | None) -> tuple[str, str]:
+    """按「第 `line` 行整行换成 `expr`」产出一份新代码。返回 `(新代码, err)`。
+
+    `err` 非空 ⇒ **不产出**（返回空串）。四条 fail-closed 路径：
+
+    | 情况 | err |
+    |---|---|
+    | 行号解析不出 | `parse_fail` |
+    | 表达式为空 | `empty_expr` |
+    | 行号越界 | `oom` |
+    | 替换后 `ast.parse` 失败 | `syntax_fail: …` |
+
+    ## 缩进由**装置**补，不让模型负责
+
+    `新行 = 原行前导空白 + expr.lstrip()`。理由：模型写错缩进是**格式**问题，
+    与「它认为该改哪一行、改成什么」是两件事。混在一起量，读数就不能归因
+    （纪律 230 的同型：装置做的事不许记成模型的能力）。
+
+    ## ⛔ 失败一律不替换
+
+    宁可这一次换路记「失败」，也不许把一份 `syntax_fail` 的候选喂回打分器 ——
+    那会得到 0 分，而 0 分会被账本当成「这条实现更差」，进而污染起点选择。
+    证据：V248 的 `preflight_v248.py` P7~P11（正例 6/6、`LINE=23` 4/6、`…*60` 5/6）。
+    """
+    if line is None:
+        return "", "parse_fail"
+    if expr is None or not str(expr).strip():
+        return "", "empty_expr"
+    lines = code.splitlines()
+    if not (1 <= int(line) <= len(lines)):
+        return "", "oom"
+    ind = lines[int(line) - 1][: len(lines[int(line) - 1])
+                              - len(lines[int(line) - 1].lstrip())]
+    new = list(lines)
+    new[int(line) - 1] = ind + str(expr).strip().lstrip("|- ").strip()
+    out = "\n".join(new) + "\n"
+    try:
+        ast.parse(out)
+    except SyntaxError as e:
+        return "", f"syntax_fail: {e.msg}"
+    return out, ""
+
+
+_LINE_RE = re.compile(r"^\s*LINE\s*[:：]\s*(\d+)\s*$", re.M)
+_EXPR_RE = re.compile(r"^\s*EXPR\s*[:：]\s*(.+)$", re.M)
+
+
+def parse_edit(text: str) -> tuple[int | None, str | None]:
+    """从 `edit=True` 的产出里取 `(行号, 表达式)`。取不到的部分返回 `None`。
+
+    ⚠️ 只认**独占一行**的 `LINE: <数字>`：模型常在解释里顺嘴写「第 16 行」，
+       用子串匹配会把那句抓进来。`EXPR` 允许中文冒号（实测两种都出现）。
+    """
+    t = text or ""
+    m1, m2 = _LINE_RE.search(t), _EXPR_RE.search(t)
+    return (int(m1.group(1)) if m1 else None,
+            m2.group(1).strip() if m2 else None)
 
 
 def verify(code: str, tests: Sequence[str]) -> int:

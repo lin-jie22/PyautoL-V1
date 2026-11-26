@@ -17410,6 +17410,92 @@ check(RS, "AZ168c `_V242_EXTRA` 是**合并**不是覆盖（原声明的 `AT8`/`
       and set(_az167_wc._V242_EXTRA["AE9"]) <= set(_az167_wc.COUPLED["AE9"]),
       f"AE9={sorted(_az167_wc.COUPLED.get('AE9', ()))}")
 
+# ── AZ169（V249）：`--goals-swap-edit` 两档 ────────────────────────────────
+#  默认档必须**逐字节不变**（V233~V248 的对照臂全靠它可重放）；
+#  `line` 档必须**与 v248 的 E 臂逐字节同**（否则那条 10/16 不能当本档的证据）。
+#  ⛔ 三条前置（无 trace / 带 alt_code / 空 code）必须**抛**，不许静默降级：
+#     降级会产出一个「只改一行」却没有定位依据的提示。
+import hashlib as _az169_hl                                          # noqa: E402
+from mw.reflect import (apply_edit as _az169_ae,                     # noqa: E402
+                        build_proposal_prompt as _az169_bpp,
+                        failed_actuals as _az169_fa,
+                        numbered_code as _az169_nc,
+                        trace_failure as _az169_tf,
+                        verify as _az169_vf)
+_az169_start = (V1 / "bench/evidence/l9_s310/cand/90579ecebe633352.py"
+                ).read_text(encoding="utf-8")
+_az169_tests = list(_az165_t.tests)
+_az169_why = ("通过 %d/%d；失败: assert parse_duration('10m') == 600 ⇒ AssertionError"
+              % (_az169_vf(_az169_start, _az169_tests), len(_az169_tests)))
+_az169_tr = _az169_tf(_az169_start, _az169_tests)
+_az169_acts = _az169_fa(_az169_start, _az169_tests)
+_sh16 = lambda s: _az169_hl.sha256(s.encode()).hexdigest()[:16]      # noqa: E731
+_az169_A = _az169_bpp(_az165_t.prompt, _az169_start, _az169_why,
+                      _az169_acts, trace=_az169_tr)
+_az169_E = _az169_bpp(_az165_t.prompt, _az169_start, _az169_why,
+                      _az169_acts, trace=_az169_tr, edit=True)
+check(RS, "AZ169a `build_proposal_prompt(edit=False)` 对 `t01` 仍产出 `2307` 字节 /\n"
+          "              `1bdea4fc92d67817`（V245/V247/V248 三批同一读数）\n"
+          "              ⇒ 默认档逐字节不变，历史对照臂仍可重放",
+      (len(_az169_A.encode()), _sh16(_az169_A)) == (2307, "1bdea4fc92d67817"),
+      f"{len(_az169_A.encode())}B/{_sh16(_az169_A)}")
+check(RS, "AZ169b `edit=True` 对 `t01` 产出 `2615` 字节 / `60f2cc5e63c54255`\n"
+          "              —— 与 v248 的 E 臂**逐字节同**（那条 10/16 的唯一依据）",
+      (len(_az169_E.encode()), _sh16(_az169_E)) == (2615, "60f2cc5e63c54255"),
+      f"{len(_az169_E.encode())}B/{_sh16(_az169_E)}")
+#: 行号必须是**输入的真实坐标**：第 n 个 `{n:3d}| ` 前缀后面就是 `code.splitlines()[n-1]`。
+_az169_lines = [ln for ln in _az169_E.splitlines() if ln[:3].strip().isdigit() and "| " in ln]
+_az169_pairs = [(int(ln[:3]), ln[5:]) for ln in _az169_lines]
+_az169_src_lines = _az169_start.splitlines()
+_az169_bad = [(n, t) for n, t in _az169_pairs
+              if not (1 <= n <= len(_az169_src_lines) and _az169_src_lines[n - 1] == t)]
+check(RS, "AZ169c `edit=True` 的代码槽是**真实行号视图**：每个 `{n:3d}| ` 前缀后的文本\n"
+          "              必须逐字节等于 `code.splitlines()[n-1]`（⛔ 行号不许是重排后的序号）",
+      len(_az169_pairs) >= 20 and not _az169_bad,
+      f"行数={len(_az169_pairs)} 不符={_az169_bad[:2]}")
+_az169_n16, _az169_e16 = _az169_ae(_az169_start, 16, "minutes = int(parts[0])")
+_az169_n23, _az169_e23 = _az169_ae(_az169_start, 23, "minutes = int(parts[0])")
+check(RS, "AZ169d 装置正例/反例：`LINE=16` ⇒ **6/6**；`LINE=23`（与 16 逐字节同文本、\n"
+          "              但那条是**对的**）⇒ **4/6** ⇒ 「改哪一行」必须单独判",
+      not _az169_e16 and _az169_vf(_az169_n16, _az169_tests) == len(_az169_tests)
+      and not _az169_e23 and _az169_vf(_az169_n23, _az169_tests) == 4,
+      f"L16={_az169_vf(_az169_n16, _az169_tests)} L23={_az169_vf(_az169_n23, _az169_tests)}")
+_az169_errs = {_az169_ae(_az169_start, 99, "x")[1],
+               _az169_ae(_az169_start, None, "x")[1],
+               _az169_ae(_az169_start, 16, "")[1],
+               _az169_ae(_az169_start, 16, "minutes = = 1")[1].split(":")[0]}
+check(RS, "AZ169e 四路 fail-closed 且**都不产出**：`oom` / `parse_fail` / `empty_expr` /\n"
+          "              `syntax_fail`（⛔ 坏代码不许喂回打分器：那份 0 分会进账本、污染起点）",
+      _az169_errs == {"oom", "parse_fail", "empty_expr", "syntax_fail"},
+      str(sorted(_az169_errs)))
+_az169_raises = 0
+for _kw in ({"edit": True},
+            {"edit": True, "trace": _az169_tr, "alt_code": "def f(): pass"},
+            {"edit": True, "trace": _az169_tr, "code": "   "}):
+    try:
+        _kw2 = dict(_kw)
+        _c = _kw2.pop("code", _az169_start)
+        _az169_bpp(_az165_t.prompt, _c, _az169_why, _az169_acts, **_kw2)
+    except ValueError:
+        _az169_raises += 1
+check(RS, "AZ169f 三条前置**都是抛**不是降级：无 `trace` / 与 `alt_code` 同用 / 空 `code`\n"
+          "              （⛔ 静默降级会产出一个没有定位依据的「只改一行」提示）",
+      _az169_raises == 3, f"抛出 {_az169_raises}/3")
+import inspect as _az169_insp                                         # noqa: E402
+_az169_dflt = _az169_insp.signature(
+    _az165_run._swap_candidates).parameters["edit"].default
+_az169_ok = _az166_sp.run([sys.executable, str(V1 / "run.py"),
+                           "--goals-swap-edit", "line", "--help"],
+                          capture_output=True, text=True, cwd=V1)
+_az169_bad2 = _az166_sp.run([sys.executable, str(V1 / "run.py"),
+                             "--goals-swap-edit", "both", "--help"],
+                            capture_output=True, text=True, cwd=V1)
+check(RS, "AZ169g `--goals-swap-edit` 默认 `off`（函数签名级），`line` 合法、`both` 被拒\n"
+          "              （⛔ 不静默回落默认档 —— V240 的同型：以为开了其实没开）",
+      _az169_dflt == "off" and _az169_ok.returncode == 0
+      and _az169_bad2.returncode != 0,
+      f"default={_az169_dflt!r} line→rc={_az169_ok.returncode} both→rc={_az169_bad2.returncode}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")# ⛔ `finish()` 必须在**打印判据行之前**调：它声明的就是「我已经跑到这里了」。

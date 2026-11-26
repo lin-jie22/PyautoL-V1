@@ -3382,7 +3382,8 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
                      k: int, *, max_tokens: int = SWAP_MAX_TOKENS_DEFAULT,
                      models: Sequence[str] = (),
                      start_src: str = "act",
-                     start_hist: float | None = None) -> tuple[str, float, list[dict]]:
+                     start_hist: float | None = None,
+                     edit: str = "off") -> tuple[str, float, list[dict]]:
     """★ V235：对一条 `RAISE` 目标做 k 次**换路**，返回 `(最好代码, 最好分, 逐步读数)`。
 
     ## 为什么必须有它
@@ -3417,8 +3418,17 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
 
     from mw.config import parse_model_spec
     from mw.llm import Message as _Msg, build_llm as _bllm
-    from mw.reflect import (build_proposal_prompt, failed_actuals,
-                            parse_proposal, sha_of)
+    from mw.reflect import (apply_edit, build_proposal_prompt, failed_actuals,
+                            parse_edit, parse_proposal, sha_of, trace_failure)
+
+    # ★ V249（§319）：`--goals-swap-edit` 两档。
+    #   `off`（默认）⇒ 提示、解析、落账与 V235~V248 **逐字节相同**（AZ169a/g 钉住）。
+    #   `line`      ⇒ 提示换成「带行号 + LINE/EXPR 两行」，产出由 `apply_edit` 单行替换。
+    #   为什么接它：V248 实测同一模型/同一信息/同一温度，只换输出形态 ⇒ 6/6 从 0/16 到 10/16。
+    #   ⛔ 这是「装置接通的通道」，不是「模型学会了自己改」——落账要能分开看（`edit_err`）。
+    if edit not in ("off", "line"):
+        raise ValueError(f"edit 必须是 off|line，得到 {edit!r}（⛔ 不静默回落 off）")
+    _line_mode = edit == "line"
 
     # ★ V236（§307）：**MODEL 轴**。`models` 为空 ⇒ 用 `core.s.llm` 的模型，
     #   与 V235 逐字节同行为（默认不动）。非空 ⇒ 第 i 次换路用 `models[i % len]`。
@@ -3464,21 +3474,41 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
         else:
             why = (f"当前最好的一次是 {best_score:.4f}（共 {len(task.tests)} 条断言）。"
                    f"请给出**把剩下的失败断言一起修好**的完整实现。")
+        # ⛔ off 档的**实参**必须与 V235~V248 完全一致（下面 `**_pk` 为空 ⇒ 一个 kwarg 都不传）。
+        #   加 `edit=False` 虽然产出相同，但会让「默认路径没被改过」这件事只能靠读代码相信；
+        #   不传 ⇒ 一句话就能核对。产出由 AZ169a 的 sha 钉住，两条一起才够。
+        _pk: dict = {}
+        if _line_mode:
+            _pk = {"trace": trace_failure(best_code, task.tests), "edit": True}
         try:
             txt = llms[_mi].complete(
                 [_Msg(role="user", content=build_proposal_prompt(
                     task.prompt, best_code, why,
-                    failed_actuals(best_code, task.tests)))],
+                    failed_actuals(best_code, task.tests), **_pk))],
                 max_tokens=max_tokens)
         except Exception as e:                       # noqa: BLE001
             rows.append({"i": i, "model": _models[_mi] if _models else None,
                          "err": str(e)[:120]})
             continue
-        cand, fenced = parse_proposal(txt)
-        if not cand.strip():
-            rows.append({"i": i, "model": _models[_mi] if _models else None,
-                         "err": "empty", "fenced": bool(fenced)})
-            continue
+        _ln = _ex = None
+        if _line_mode:
+            # ★ V249：模型只给「哪一行 + 改成什么」，替换由装置做（surgical patch）。
+            #   任何一路失败 ⇒ 记 `edit:<err>` 并**不产出候选**（⛔ 不喂坏代码给打分器，
+            #   否则那份 0 分会进账本，被当成「这条实现更差」污染起点选择）。
+            _ln, _ex = parse_edit(txt)
+            cand, _ee = apply_edit(best_code, _ln, _ex)
+            fenced = False
+            if _ee:
+                rows.append({"i": i, "model": _models[_mi] if _models else None,
+                             "err": f"edit:{_ee}", "line": _ln, "expr": _ex,
+                             "edit": "line"})
+                continue
+        else:
+            cand, fenced = parse_proposal(txt)
+            if not cand.strip():
+                rows.append({"i": i, "model": _models[_mi] if _models else None,
+                             "err": "empty", "fenced": bool(fenced)})
+                continue
         sc = scorer.score(task.as_dict(), cand)
         got = float(getattr(sc, "score", 0.0))
         # ⛔⛔ V235 的缺陷就修在这里：原来 `getattr(..., "score", 0.0)` 把
@@ -3496,6 +3526,9 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
                      #   写文件会把它变成有副作用的函数（自检要能反复调它）。
                      "code": cand,
                      **({"vec": list(_vec)} if _vec else {}),
+                     # ★ V249：`line` 档带上「它指认的行 / 写的表达式」——
+                     #   只落最终代码会让「定位错」与「表达式错」事后不可分（纪律 220/227）。
+                     **({"edit": "line", "line": _ln, "expr": _ex} if _line_mode else {}),
                      "better": better, "fenced": bool(fenced)})
     return best_code, best_score, rows
 
@@ -3579,11 +3612,18 @@ def _goals_main(args) -> int:
     _mt0 = SWAP_MAX_TOKENS_DEFAULT if _mt_raw is None else int(_mt_raw)
     #: 默认档**不加字段**：日志逐字节不变（否则 V238/V239 的日志对不上）。
     _mt_s = "" if _mt0 == SWAP_MAX_TOKENS_DEFAULT else f"｜预算 {_mt0}"
+    # ★ V249（§319）：动作空间档位。⚠️ 不用 `or "off"` —— 空串也要抛，
+    #   否则「传了个空」会静默变成默认档（V240 的同型：以为开了其实没开）。
+    _edit0 = getattr(args, "goals_swap_edit", "off")
+    if _edit0 not in ("off", "line"):
+        raise SystemExit(f"--goals-swap-edit 必须是 off|line，得到 {_edit0!r}"
+                         f"（⛔ 不静默回落 off）")
     print(f"  换路    --goals-swap={_sw}"
           + ("（旧行为：只重跑同一实现 ⇒ best 不会变）" if _sw <= 0 else
              f"（判 NOT_MET 的 RAISE 再换 {_sw} 条路，真打分器判分）")
           + (f"｜模型轮换 {_swm}" if _swm else "｜模型=当前（V235 行为）")
-          + _mt_s)
+          + _mt_s
+          + ("｜动作空间 line（只给 LINE/EXPR，装置替换）" if _edit0 == "line" else ""))
     if _sw > 0:
         # ★ V239（§310）：起点从哪来，必须在**开跑前**就可见。
         #   ⛔ 只在出问题时打印 = 正常路径看不见「起点其实是本轮产出」。
@@ -3721,7 +3761,8 @@ def _goals_main(args) -> int:
                     models=tuple(_m.strip() for _m in
                                  str(getattr(args, "goals_swap_models", "") or "").split(",")
                                  if _m.strip()),
-                    start_src=_src0, start_hist=_hist)
+                    start_src=_src0, start_hist=_hist,
+                    edit=_edit0)
                 # 换路的产出也落盘：它是「下一代起点」的唯一来源（F3）。
                 # ⛔ 逐条落、不只落最好的那份 —— 「没有变好的候选」也是实现，
                 #    而且它正是「同分不同体」读数的证据（§307 的 000011 三条）。
@@ -3730,7 +3771,14 @@ def _goals_main(args) -> int:
                         _cand_put(_cache_dir, _sr["code"])
                 for _sr in _srows:
                     if "score" not in _sr:
-                        print(f"  ⚠️ 换路 #{_sr['i']} 失败：{_sr.get('err')}")
+                        # ★ V249：`line` 档的失败必须**带它指认的行** ——
+                        #   只打 `edit:oom` 的话，「行号错」与「表达式空」在日志里同形
+                        #   （纪律 220：机制读数必须能指认改在哪一行）。
+                        _el = ""
+                        if _sr.get("edit") == "line":
+                            _el = (f" | LINE={_sr.get('line')}"
+                                   f" EXPR={str(_sr.get('expr'))[:48]!r}")
+                        print(f"  ⚠️ 换路 #{_sr['i']} 失败：{_sr.get('err')}{_el}")
                         continue
                     # ★ V236（§307）：`vec` 与 `impl_sha` 一起落账 ——
                     #   没有它，行为级读数（`behaviors`）看不见这些候选，
@@ -4117,6 +4165,16 @@ def main() -> int:
                         "1/9913、靠前的 0/4839，但 V243 实测它在 `obs_d` 上会选中"
                         "**修不动**的那份——缺 `vec` 的 seed 行被降级顶掉）。"
                         "⚠️ 没有 `vec` 的行一律排在有 `vec` 的行之后（缺读数不许冒充好读数）")
+    p.add_argument("--goals-swap-edit", default="off",
+                   choices=("off", "line"),
+                   help="换路的**动作空间**（V249，§319）：`off`=让模型重写完整函数（默认，"
+                        "与 V235~V248 逐字节同）；`line`=只让它给「哪一行 + 改成什么」"
+                        "（`LINE:`/`EXPR:` 两行），替换由装置做（`apply_edit`，含缩进补全与 "
+                        "fail-closed 四路）。"
+                        "⚠️ V248 实测（单题 `t01`、7B）：同一信息同一温度，只换输出形态 ⇒ "
+                        "6/6 从 0/16 到 10/16 ⇒ 「改不动」的成因是动作空间只有一个出口。"
+                        "⛔ 执行是**装置**做的，不是模型自己改的；且只适用最小修复=一行的 bug。"
+                        "⛔ 与 `--goals-swap-models` 可叠加，但与第二体槽位不同用（未测）")
     p.add_argument("--goals-suite-dir", default="",
                    help="可用题集目录（默认 bench/tasks）—— 这是**环境边界**，不是人的指令")
     p.add_argument("--goals-log", default="",

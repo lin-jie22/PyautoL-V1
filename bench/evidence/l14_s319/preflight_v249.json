@@ -1,0 +1,80 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "id": "E1_default_t01",
+      "ok": true,
+      "detail": "2307B/1bdea4fc92d67817"
+    },
+    {
+      "id": "E2_default_notrace",
+      "ok": true,
+      "detail": "2818c5673cc0884d"
+    },
+    {
+      "id": "E3_arg_registered",
+      "ok": true,
+      "detail": "help 里有没有这个名字"
+    },
+    {
+      "id": "E3b_signature_default_off",
+      "ok": true,
+      "detail": "_swap_candidates(edit=) 默认 'off'"
+    },
+    {
+      "id": "E3c_choices_behavior",
+      "ok": true,
+      "detail": "line→rc=0 both→rc=2（⛔ 不静默回落）"
+    },
+    {
+      "id": "E3d_source_default_off",
+      "ok": true,
+      "detail": "源码声明 default=off"
+    },
+    {
+      "id": "D1_pos_6of6",
+      "ok": true,
+      "detail": "verify=6"
+    },
+    {
+      "id": "D2_failclosed",
+      "ok": true,
+      "detail": "['empty_expr', 'oom', 'parse_fail', 'syntax_fail']"
+    },
+    {
+      "id": "D3_indent_by_device",
+      "ok": true,
+      "detail": "'                minutes = int(parts[0])'"
+    },
+    {
+      "id": "D4_parse_edit",
+      "ok": true,
+      "detail": "独占行才算，正文提到的「第 16 行」不许抓"
+    },
+    {
+      "id": "S1_line_end2end",
+      "ok": true,
+      "detail": "best=1.0 line=16 sha=4cea126d2917c324"
+    },
+    {
+      "id": "S1b_line_prompt_is_edit_form",
+      "ok": true,
+      "detail": "发出去的提示确实是 edit 形态"
+    },
+    {
+      "id": "S2_off_end2end",
+      "ok": true,
+      "detail": "best=1.0 提示含 LINE:=False"
+    },
+    {
+      "id": "S3_bad_value_raises",
+      "ok": true,
+      "detail": "edit 必须是 off|line，得到 'both'（⛔ 不静默回落 off）"
+    },
+    {
+      "id": "S4_line_fail_no_cand",
+      "ok": true,
+      "detail": "err=edit:oom code=无"
+    }
+  ]
+}

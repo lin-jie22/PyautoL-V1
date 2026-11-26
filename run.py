@@ -3418,8 +3418,9 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
 
     from mw.config import parse_model_spec
     from mw.llm import Message as _Msg, build_llm as _bllm
-    from mw.reflect import (apply_edit, build_proposal_prompt, failed_actuals,
-                            parse_edit, parse_proposal, sha_of, trace_failure)
+    from mw.reflect import (apply_edit, bare_code, build_proposal_prompt,
+                            failed_actuals, parse_edit, parse_proposal, sha_of,
+                            trace_failure)
 
     # ★ V249（§319）：`--goals-swap-edit` 两档。
     #   `off`（默认）⇒ 提示、解析、落账与 V235~V248 **逐字节相同**（AZ169a/g 钉住）。
@@ -3457,6 +3458,16 @@ def _swap_candidates(core, scorer, task, start_code: str, start_score: float,
             _ov["thinking"] = _spec[2]
         llms.append(_bllm(_dc_replace(core.s.llm, **_ov)))
     best_code, best_score = str(start_code), float(start_score)
+    # ★ V251（§321）：起点必须是**裸源码**。
+    #   `src=act` 交出来的是模型原文（带 ```python 围栏）⇒ `apply_edit` 按行号替换时
+    #   行号整体偏移 1、围栏还留在文本里 ⇒ 每次换路都 `syntax_fail`（实测 18/18）。
+    #   ⛔ 无围栏时 `bare_code` 逐字节返回，默认档提示不变（AZ169a 仍绿）。
+    #   ⚠️ 去围栏要**可见**：静默改输入 = 事后无法归因。
+    _raw_start = best_code
+    best_code = bare_code(best_code)
+    if best_code != _raw_start:
+        print(f"  ⚠️ 起点带围栏 ⇒ 去围栏 {len(_raw_start)}→{len(best_code)} 字符"
+              "（否则 apply_edit 行号整体偏移 1）")
     rows: list[dict] = []
     for i in range(max(0, int(k))):
         _mi = i % len(llms)
@@ -3783,11 +3794,17 @@ def _goals_main(args) -> int:
                     # ★ V236（§307）：`vec` 与 `impl_sha` 一起落账 ——
                     #   没有它，行为级读数（`behaviors`）看不见这些候选，
                     #   于是「换模型有没有扩候选空间」**结构上测不出来**。
+                    # ★ V251（§321）：`line` 档必须把「改哪一行、改成什么」落账。
+                    #   ⛔ 只打日志不够：日志里 EXPR 被截到 48 字符、成功的一次干脆不打印
+                    #   ⇒ 「定位准不准」事后**不可复核**（本轮第一次跑就是这样，P5 读成 0/4
+                    #   其实是字段缺失，不是模型没指认）。⛔ 不许把缺失读成失败（纪律 69）。
                     _srec = {"task_id": g.cell, "score": _sr["score"],
                              "session": None, "source": "goal_swap",
                              "impl_sha": _sr["sha"],
                              **({"vec": list(_sr["vec"])} if _sr.get("vec") else {}),
-                             **({"model": _sr["model"]} if _sr.get("model") else {})}
+                             **({"model": _sr["model"]} if _sr.get("model") else {}),
+                             **({"line": _sr["line"], "expr": _sr["expr"]}
+                                if _sr.get("edit") == "line" else {})}
                     obs.append({k2: v2 for k2, v2 in _srec.items() if k2 != "model"})
                     with open(obs_path, "a", encoding="utf-8") as f:
                         f.write(json.dumps(_srec, ensure_ascii=False,

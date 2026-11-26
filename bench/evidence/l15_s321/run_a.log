@@ -1,0 +1,139 @@
+==========================================================================
+L5 自主目标 —— 目标来自**自己的账本**，不是 `--goal`
+==========================================================================
+  账本    score_ledger.jsonl 0 行（坏行 0）
+  观测    goal_obs.jsonl 21 行（坏行 0）
+  套件    /tmp/v251_suite_d：1 个共 7 题；账本覆盖 7 题；**零覆盖 0 题**
+  口径      （无观测）
+  已 MET  14 条（不再重复提）
+  换路    --goals-swap=3（判 NOT_MET 的 RAISE 再换 3 条路，真打分器判分）｜模型=当前（V235 行为）
+  起点    账本 best 的实现｜缓存 /private/tmp/v251_a/candidates（取不回 ⇒ 打印降级行，why 改口，⛔ 不静默顶替）
+  提议    6 条：COVER 0｜PROBE 0｜RAISE 6
+  状态    WORK（有 6 条可执行的目标）
+
+  #  类     格子                       判据                 现状                 目标
+  1  RAISE g7e3_dedupe_last         best_score>0.8     n=3 mean=0.8000    把 g7e3_dedupe_last 的最好成绩从 0.8000 提高（3 次均值 0.8000，满分 1）  [NOT_MET]
+  2  RAISE g7d2_dedupe_keep         best_score>0.6     n=3 mean=0.6000    把 g7d2_dedupe_keep 的最好成绩从 0.6000 提高（3 次均值 0.6000，满分 1）  [NOT_MET]
+  3  RAISE g7d4_slugify             best_score>0.6     n=3 mean=0.6000    把 g7d4_slugify 的最好成绩从 0.6000 提高（3 次均值 0.6000，满分 1）  [NOT_MET]
+  4  RAISE g7d3_fmt_amount          best_score>0.2     n=3 mean=0.2000    把 g7d3_fmt_amount 的最好成绩从 0.2000 提高（3 次均值 0.2000，满分 1）  [NOT_MET]
+  5  RAISE g7e1_parse_flag          best_score>0.2     n=3 mean=0.2000    把 g7e1_parse_flag 的最好成绩从 0.2000 提高（3 次均值 0.2000，满分 1）  [NOT_MET]
+  6  RAISE g7e2_truncate_tail       best_score>0.2     n=3 mean=0.2000    把 g7e2_truncate_tail 的最好成绩从 0.2000 提高（3 次均值 0.2000，满分 1）  [NOT_MET]
+
+--- 已转运维 0 格（套件内 0｜套件外 0；⛔ 不是做到了）---
+  （没有：没有任何一格的测量路径被用尽）
+
+--- 执行前 6 条 ---
+02:13:29 ▶ 任务开始: 写一个函数 dedupe_last(xs)：对字符串列表去重。比较之前怎么归一化、重复时保留哪一次出现的原文与位置，按本项目定下的去重惯例处理（惯例不在题面里）。只输出代码，函数名必须是 dedupe_last。
+02:13:29   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/300s | llm_kind=http | 外部能力 0 个
+02:13:44   [1] 通道=深 候选=3 种类=3
+02:13:46       ↳ finish ok=True 直接实现 dedupe_last 函数
+02:13:46   ⏭ 交付成功 ⇒ 本轮剩余 2 个候选未轮到：recall×1、run_shell×1
+02:13:46   ✅ 收尾: ```python
+def dedupe_last(xs):
+    normalized = {}
+    original = {}
+    for i, x in enumerate(xs):
+        nx = x.lower
+02:13:46 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=2） 尾=2 | guard_blocked=0 | 预演=1 检验=1 命中=1 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.796 memory>reason=0.5 reason>act=0.333] 回流=n/a | 语义记忆=2 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 dedupe_last/语言标签/可编译/结构检查)
+  ▶ 起点 start_from=auto src=act sha=da31b4ba score=0.8000 chars=396
+  ⚠️ 起点带围栏 ⇒ 去围栏 396→382 字符（否则 apply_edit 行号整体偏移 1）
+  换路   g7e3_dedupe_last     3 次换路：best 0.8000 → 0.8000 ⇒ **NOT_MET**
+  RAISE g7e3_dedupe_last         测到 0.8000 ⇒ **NOT_MET**（现 n=7 mean=0.8000）
+02:14:03 ▶ 任务开始: 写一个函数 dedupe_keep(xs)：对字符串列表去重，返回列表保持原顺序。比较之前怎么归一化、遇到重复时保留第几次出现的那条原文，按本项目定下的去重惯例处理（惯例不在题面里）。只输出代码，函数名必须是 dedupe_keep。
+02:14:03   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/300s | llm_kind=http | 外部能力 0 个
+02:14:03   🧹 题边界：清掉上一题残留的工作记忆 1 条
+02:14:16   [1] 通道=深 候选=3 种类=3
+02:14:19       ↳ finish ok=True 直接实现 dedupe_keep 函数
+02:14:19   ⏭ 交付成功 ⇒ 本轮剩余 2 个候选未轮到：recall×1、run_shell×1
+02:14:19   ✅ 收尾: ```python
+def dedupe_keep(xs):
+    seen = {}
+    result = []
+    for x in xs:
+        normalized_x = x.lower()  # 归一化处理，
+02:14:19 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=2） 尾=2 | guard_blocked=0 | 预演=2 检验=2 命中=2 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.091 memory>reason=0.5 reason>act=0.333] 回流=n/a | 语义记忆=2 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 dedupe_keep/语言标签/可编译/结构检查)
+  ▶ 起点 start_from=auto src=act sha=dd13d17e score=0.6000 chars=253
+  ⚠️ 起点带围栏 ⇒ 去围栏 253→239 字符（否则 apply_edit 行号整体偏移 1）
+  换路   g7d2_dedupe_keep     3 次换路：best 0.6000 → 1.0000 ⇒ **MET**
+  RAISE g7d2_dedupe_keep         测到 0.6000 ⇒ **MET**（现 n=7 mean=0.7714）
+02:14:37 ▶ 任务开始: 写一个函数 slugify(s)：把标题转成 URL slug。大小写怎么处理、空白变成什么、允许哪些字符、连续分隔符要不要合并、首尾分隔符怎么办，按本项目定下的 slug 惯例处理（惯例不在题面里）。只输出代码，函数名必须是 slugif
+02:14:37   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/300s | llm_kind=http | 外部能力 0 个
+02:14:37   🧹 题边界：清掉上一题残留的工作记忆 1 条
+02:14:51   [1] 通道=深 候选=3 种类=3
+02:14:53       ↳ finish ok=True 实现 slugify 函数
+02:14:53   ⏭ 交付成功 ⇒ 本轮剩余 2 个候选未轮到：recall×1、run_shell×1
+02:14:53   ✅ 收尾: ```python
+def slugify(s):
+    s = s.lower().strip()
+    s = s.replace(" ", "-")
+    s = s.replace("--", "-")
+    s = s.s
+02:14:53 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=2） 尾=2 | guard_blocked=0 | 预演=3 检验=3 命中=3 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.153 memory>reason=0.5 reason>act=0.333] 回流=n/a | 语义记忆=2 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 slugify/语言标签/可编译/结构检查)
+  ▶ 起点 start_from=auto src=act sha=c103965a score=0.6000 chars=146
+  ⚠️ 起点带围栏 ⇒ 去围栏 146→132 字符（否则 apply_edit 行号整体偏移 1）
+  换路   g7d4_slugify         3 次换路：best 0.6000 → 0.8000 ⇒ **MET**
+  RAISE g7d4_slugify             测到 0.6000 ⇒ **MET**（现 n=7 mean=0.6857）
+02:15:08 ▶ 任务开始: 写一个函数 fmt_amount(x)：把数字格式化成金额字符串，输入可能是 int 或 float。千分位用什么符号、保留几位小数、负数怎么写，按本项目定下的金额惯例处理（惯例不在题面里）。只输出代码，函数名必须是 fmt_amount。
+02:15:08   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/300s | llm_kind=http | 外部能力 0 个
+02:15:08   🧹 题边界：清掉上一题残留的工作记忆 1 条
+02:15:23   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: ' "tool": "run_shell", "args": {"cmd": "cat amount_formatting.py"}, "rationale": "检查工作目录中是否有已经存在的金额格式化代码，如果有可以直接使用或参考。"}]'
+02:15:23   [1] 通道=深 候选=1 种类=1
+02:15:28       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:15:43   [2] 通道=深 候选=2 种类=2
+02:15:46       ↳ finish ok=True 直接根据金额惯例写函数
+02:15:46   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：recall×1
+02:15:46   ✅ 收尾: ```python
+def fmt_amount(x):
+    return f"{x:,.2f}"
+```
+02:15:46 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=1 | guard_blocked=0 | 预演=5 检验=5 命中=5 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.517 memory>reason=0.6 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 fmt_amount/语言标签/可编译/结构检查)
+  ▶ 起点 start_from=auto src=act sha=0322783a score=0.2000 chars=55
+  ⚠️ 起点带围栏 ⇒ 去围栏 55→41 字符（否则 apply_edit 行号整体偏移 1）
+  换路   g7d3_fmt_amount      3 次换路：best 0.2000 → 0.4000 ⇒ **MET**
+  RAISE g7d3_fmt_amount          测到 0.2000 ⇒ **MET**（现 n=7 mean=0.2857）
+02:15:59 ▶ 任务开始: 写一个函数 parse_flag(s)：把配置里的开关值转成 True / False / None（无法识别）。哪些写法算真、哪些算假、空串算什么，按本项目定下的开关解析惯例处理（惯例不在题面里）；入参大小写不敏感、首尾空白忽略。只输出代
+02:15:59   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/300s | llm_kind=http | 外部能力 0 个
+02:15:59   🧹 题边界：清掉上一题残留的工作记忆 2 条
+02:16:14   [1] 通道=深 候选=3 种类=3
+02:16:16       ↳ finish ok=True 实现 parse_flag 函数
+02:16:16   ⏭ 交付成功 ⇒ 本轮剩余 2 个候选未轮到：recall×1、run_shell×1
+02:16:16   ✅ 收尾: ```python
+def parse_flag(s):
+    s = s.strip().lower()
+    if s in ('true', '1', 'on'):
+        return True
+    if s in 
+02:16:16 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=2） 尾=2 | guard_blocked=0 | 预演=6 检验=6 命中=6 命中率=1.0 失配=0(成败0/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=1.104 memory>reason=0.5 reason>act=0.333] 回流=n/a | 语义记忆=2 | 题边界清空工作记忆=2条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 parse_flag/语言标签/可编译/结构检查)
+  ▶ 起点 start_from=auto src=act sha=1133f595 score=0.2000 chars=219
+  ⚠️ 起点带围栏 ⇒ 去围栏 219→205 字符（否则 apply_edit 行号整体偏移 1）
+  换路   g7e1_parse_flag      3 次换路：best 0.2000 → 0.2000 ⇒ **NOT_MET**
+  RAISE g7e1_parse_flag          测到 0.2000 ⇒ **NOT_MET**（现 n=7 mean=0.2000）
+02:16:29 ▶ 任务开始: 写一个函数 truncate_tail(s, n)：把过长的字符串截短到最多 n 个字符。超长时保留哪一头、加什么标记，按本项目定下的截断惯例处理（惯例不在题面里）；不超长时原样返回。只输出代码，函数名必须是 truncate_tail。
+02:16:29   budget[1x] steps=0/12 llm=0/24 cand=0(宽3) wall=0.0s/300s | llm_kind=http | 外部能力 0 个
+02:16:29   🧹 题边界：清掉上一题残留的工作记忆 1 条
+02:16:42   ⚠️ 模型输出被**截断**（⇒ 调大 max_tokens，当前 2048）；原文片段: 'tail(s, n): return s[:n] if len(s) <= n else s[:n-3] + "..."\'", "timeout_s": 10}, "rationale": "通过运行示例代码检查函数实现是否符合预期。"}]'
+02:16:42   [1] 通道=深 候选=1 种类=1
+02:16:45       ↳ recall ok=True 先在记忆中查找与目标相关的既有结论
+02:16:58   [2] 通道=深 候选=2 种类=2
+02:17:00       ↳ finish ok=True 直接实现 truncate_tail 函数
+02:17:00   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：recall×1
+02:17:00   ✅ 收尾: ```python
+def truncate_tail(s, n):
+    if len(s) <= n:
+        return s
+    return s[:n] + '...'
+```
+02:17:00 ■ done 验收=ANSWER(无约定产物) | steps=2 执行=2下发/2成/0败（交付=1/步骤=1/未轮到=1） 尾=1 | guard_blocked=0 | 预演=8 检验=8 命中=8 命中率=1.0 失配=0(成败0/文本0) | 价值判定=2 否决=0(-) | 通量[perceive>memory=1.167 memory>reason=0.6 reason>act=0.667] 回流=1.0 | 语义记忆=2 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 truncate_tail/语言标签/可编译/结构检查)
+  ▶ 起点 start_from=auto src=act sha=3b6f5b87 score=0.2000 chars=100
+  ⚠️ 起点带围栏 ⇒ 去围栏 100→86 字符（否则 apply_edit 行号整体偏移 1）
+  换路   g7e2_truncate_tail   3 次换路：best 0.2000 → 0.2000 ⇒ **NOT_MET**
+  RAISE g7e2_truncate_tail       测到 0.2000 ⇒ **NOT_MET**（现 n=7 mean=0.2000）
+
+--- 执行后重新提议（已 MET 的 gid 不该再出现）---
+  RAISE g7d4_slugify             把 g7d4_slugify 的最好成绩从 0.8000 提高（7 次均值 0.6857，满分 1）
+  RAISE g7e3_dedupe_last         把 g7e3_dedupe_last 的最好成绩从 0.8000 提高（7 次均值 0.8000，满分 1）
+  RAISE g7d3_fmt_amount          把 g7d3_fmt_amount 的最好成绩从 0.4000 提高（7 次均值 0.2857，满分 1）
+  RAISE g7e1_parse_flag          把 g7e1_parse_flag 的最好成绩从 0.2000 提高（7 次均值 0.2000，满分 1）
+  RAISE g7e2_truncate_tail       把 g7e2_truncate_tail 的最好成绩从 0.2000 提高（7 次均值 0.2000，满分 1）
+
+  判据行  提议=6 执行=6 MET=3 NOT_MET=3 转运维=0 状态=WORK

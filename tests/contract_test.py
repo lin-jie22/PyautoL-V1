@@ -17501,6 +17501,90 @@ check(RS, "AZ169g `--goals-swap-edit` 默认 `off`（函数签名级），`line`
       and _az169_bad2.returncode != 0,
       f"default={_az169_dflt!r} line→rc={_az169_ok.returncode} both→rc={_az169_bad2.returncode}")
 
+# ── AZ170（V251）：换路起点必须**去围栏** ───────────────────────────────────
+#  生产链路 `--goals-swap-start-from auto` 在 `src=act` 时交出的是**模型原文**
+#  （带 ```python 围栏）。`apply_edit` 按行号替换 ⇒ 围栏占第 1 行 ⇒ 行号整体偏移 1、
+#  围栏还留在文本里 ⇒ 每次换路都 `syntax_fail`。
+#  实测（V251 生产链路）：`g7d` 六格 **18/18 全 syntax_fail**，A/B 的 B 臂等于没跑。
+#  ⛔ v249 只做了「接口 + 桩」，一次模型没跑 ⇒ 这个坑没被发现（纪律 235）。
+from mw.reflect import bare_code as _az170_bc                      # noqa: E402
+import types as _az170_types                                       # noqa: E402
+from mw import llm as _az170_llm                                    # noqa: E402
+_az170_fenced = "```python\n" + _az169_start.rstrip("\n") + "\n```"
+check(RS, "AZ170a `bare_code`：有围栏 ⇒ 取围栏内；**无围栏 ⇒ 逐字节返回原文**\n"
+          "              （⛔ 不许顺手 strip/format —— 默认档提示字节由 AZ169a 钉着）",
+      _az170_bc(_az170_fenced) == _az169_start.rstrip("\n")
+      and _az170_bc(_az169_start) == _az169_start
+      and _az170_bc("no fence here") == "no fence here"
+      and _az170_bc("") == "",
+      f"fenced->{len(_az170_bc(_az170_fenced))}B "
+      f"bare_identical={_az170_bc(_az169_start) == _az169_start}")
+_az170_n_ok, _az170_e_ok = _az169_ae(_az170_bc(_az170_fenced), 16,
+                                     "minutes = int(parts[0])")
+_az170_n_bad, _az170_e_bad = _az169_ae(_az170_fenced, 16, "minutes = int(parts[0])")
+check(RS, "AZ170b 缺陷有牙：**原样**把带围栏的起点交给 `apply_edit` ⇒ `syntax_fail`；\n"
+          "              先 `bare_code` 再交 ⇒ 6/6 ⇒ 这两条一起才证明「去围栏」不是可有可无",
+      _az170_e_bad.startswith("syntax_fail") and not _az170_e_ok
+      and _az169_vf(_az170_n_ok, _az169_tests) == len(_az169_tests),
+      f"fenced_err={_az170_e_bad.split(':')[0]} "
+      f"去围栏后={_az169_vf(_az170_n_ok, _az169_tests)}/6")
+_az170_task = _az170_types.SimpleNamespace(
+    prompt=_az165_t.prompt, tests=list(_az169_tests),
+    as_dict=lambda: {"prompt": _az165_t.prompt, "tests": list(_az169_tests)})
+
+
+class _Az170Scored:
+    def __init__(self, v, vec):
+        self.score, self.vec = v, vec
+
+
+class _Az170Scorer:
+    def score(self, task_dict, cand):
+        v = _az169_vf(cand, _az169_tests)
+        return _Az170Scored(v / len(_az169_tests),
+                            [bool(x) for x in [1] * v + [0] * (len(_az169_tests) - v)])
+
+
+class _Az170Stub:
+    def __init__(self, reply):
+        self.reply, self.seen = reply, None
+
+    def complete(self, messages, max_tokens=None):
+        self.seen = messages[0].content
+        return self.reply
+
+
+_az170_orig = _az170_llm.build_llm
+try:
+    _az170_stub = _Az170Stub("LINE: 16\nEXPR: minutes = int(parts[0])")
+    _az170_llm.build_llm = lambda spec: _az170_stub
+    _az170_core = _az170_types.SimpleNamespace(s=_az170_types.SimpleNamespace(llm=object()))
+    _az170_bc_res = _az165_run._swap_candidates(
+        _az170_core, _Az170Scorer(), _az170_task, _az170_fenced,
+        5 / len(_az169_tests), 1, edit="line")
+finally:
+    _az170_llm.build_llm = _az170_orig
+_az170_best, _az170_rows = _az170_bc_res[1], _az170_bc_res[2]
+check(RS, "AZ170c 端到端：起点**带围栏**时 `_swap_candidates(edit='line')` 仍能产出候选\n"
+          "              （`LINE=16` ⇒ 1.0）—— 这条锚点若早存在，V251 的 18/18 就不会发生",
+      abs(_az170_best - 1.0) < 1e-9 and _az170_rows[0].get("line") == 16
+      and _az170_rows[0].get("score") is not None,
+      f"best={_az170_best} line={_az170_rows[0].get('line')} "
+      f"err={_az170_rows[0].get('err')}")
+_az170_stub2 = _Az170Stub("```python\n" + _az169_start + "```")
+try:
+    _az170_llm.build_llm = lambda spec: _az170_stub2
+    _az165_run._swap_candidates(_az170_core, _Az170Scorer(), _az170_task,
+                                _az169_start, 5 / len(_az169_tests), 1, edit="off")
+finally:
+    _az170_llm.build_llm = _az170_orig
+check(RS, "AZ170d `off` 档对**裸**起点逐字节不改输入：代码槽里没有围栏包裹、\n"
+          "              且 `bare_code` 是恒等（默认路径未被去围栏改动）\n"
+          "              ⚠️ 判据只查**代码槽**：模板自己的「只输出 ```python 代码块」里就有 ```",
+      _az169_start in (_az170_stub2.seen or "")
+      and ("```python\n" + _az169_start[:30]) not in (_az170_stub2.seen or ""),
+      f"代码槽被围栏包裹={'```python' + chr(10) + _az169_start[:12] in (_az170_stub2.seen or '')}")
+
 print()
 print("=" * 74)
 print(f"V1 契约测试汇总  {RS.summary_line()}")# ⛔ `finish()` 必须在**打印判据行之前**调：它声明的就是「我已经跑到这里了」。

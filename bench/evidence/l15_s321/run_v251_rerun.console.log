@@ -1,0 +1,10 @@
+  speed#1 18.85 tok/s
+  speed#2 18.83 tok/s
+  speed#3 18.85 tok/s
+  median=18.85 gate(>=15)=True
+GATE_EXIT=0
+=== arm a (off) start 02:02:52 ===
+arm a rc=0 end 02:06:09
+=== arm b (line) start 02:06:09 ===
+arm b rc=0 end 02:09:07
+DONE 02:09:07

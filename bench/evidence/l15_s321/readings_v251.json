@@ -1,0 +1,196 @@
+{
+  "pair_ok": 6,
+  "n_cells": 6,
+  "raised": {
+    "A_off": 3,
+    "B_line": 0
+  },
+  "p1_diff": -3,
+  "p1": "不成立（负向 ⇒ 立案）",
+  "p5": "1/4",
+  "acts": {
+    "A_off": {
+      "g7e3_dedupe_last": [
+        "RAISE",
+        0.8,
+        "NOT_MET"
+      ],
+      "g7d2_dedupe_keep": [
+        "RAISE",
+        0.6,
+        "MET"
+      ],
+      "g7d4_slugify": [
+        "RAISE",
+        0.6,
+        "MET"
+      ],
+      "g7d3_fmt_amount": [
+        "RAISE",
+        0.2,
+        "MET"
+      ],
+      "g7e1_parse_flag": [
+        "RAISE",
+        0.2,
+        "NOT_MET"
+      ],
+      "g7e2_truncate_tail": [
+        "RAISE",
+        0.2,
+        "NOT_MET"
+      ]
+    },
+    "B_line": {
+      "g7e3_dedupe_last": [
+        "RAISE",
+        0.8,
+        "NOT_MET"
+      ],
+      "g7d2_dedupe_keep": [
+        "RAISE",
+        0.6,
+        "NOT_MET"
+      ],
+      "g7d4_slugify": [
+        "RAISE",
+        0.6,
+        "NOT_MET"
+      ],
+      "g7d3_fmt_amount": [
+        "RAISE",
+        0.2,
+        "NOT_MET"
+      ],
+      "g7e1_parse_flag": [
+        "RAISE",
+        0.2,
+        "NOT_MET"
+      ],
+      "g7e2_truncate_tail": [
+        "RAISE",
+        0.2,
+        "NOT_MET"
+      ]
+    }
+  },
+  "swaps": {
+    "A_off": {
+      "g7e3_dedupe_last": [
+        3,
+        0.8,
+        0.8,
+        "NOT_MET"
+      ],
+      "g7d2_dedupe_keep": [
+        3,
+        0.6,
+        1.0,
+        "MET"
+      ],
+      "g7d4_slugify": [
+        3,
+        0.6,
+        0.8,
+        "MET"
+      ],
+      "g7d3_fmt_amount": [
+        3,
+        0.2,
+        0.4,
+        "MET"
+      ],
+      "g7e1_parse_flag": [
+        3,
+        0.2,
+        0.2,
+        "NOT_MET"
+      ],
+      "g7e2_truncate_tail": [
+        3,
+        0.2,
+        0.2,
+        "NOT_MET"
+      ]
+    },
+    "B_line": {
+      "g7e3_dedupe_last": [
+        3,
+        0.8,
+        0.8,
+        "NOT_MET"
+      ],
+      "g7d2_dedupe_keep": [
+        3,
+        0.6,
+        0.6,
+        "NOT_MET"
+      ],
+      "g7d4_slugify": [
+        3,
+        0.6,
+        0.6,
+        "NOT_MET"
+      ],
+      "g7d3_fmt_amount": [
+        3,
+        0.2,
+        0.2,
+        "NOT_MET"
+      ],
+      "g7e1_parse_flag": [
+        3,
+        0.2,
+        0.2,
+        "NOT_MET"
+      ],
+      "g7e2_truncate_tail": [
+        3,
+        0.2,
+        0.2,
+        "NOT_MET"
+      ]
+    }
+  },
+  "fails": {
+    "A_off": [],
+    "B_line": [
+      {
+        "i": 0,
+        "err": "edit:syntax_fail:",
+        "line": null,
+        "expr": ""
+      },
+      {
+        "i": 1,
+        "err": "edit:syntax_fail:",
+        "line": null,
+        "expr": ""
+      },
+      {
+        "i": 2,
+        "err": "edit:syntax_fail:",
+        "line": null,
+        "expr": ""
+      },
+      {
+        "i": 0,
+        "err": "edit:syntax_fail:",
+        "line": null,
+        "expr": ""
+      },
+      {
+        "i": 1,
+        "err": "edit:syntax_fail:",
+        "line": null,
+        "expr": ""
+      },
+      {
+        "i": 2,
+        "err": "edit:syntax_fail:",
+        "line": null,
+        "expr": ""
+      }
+    ]
+  }
+}

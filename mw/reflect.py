@@ -565,6 +565,30 @@ def build_proposal_prompt(goal: str, code: str, why: str,
 _FENCE = re.compile(r"```(?:python|py)?\s*\n(.*?)```", re.S)
 
 
+def bare_code(text: str) -> str:
+    """把「模型原文」变成**可直接按行号编辑**的裸源码。
+
+    ## 为什么必须有它（V251 / §321）
+
+    `--goals-swap-start-from auto` 在 `src=act` 时交出来的是**模型原文**，
+    而原文通常带 ```python 围栏。`apply_edit` 是**按行号替换**的：
+
+    - 围栏占掉第 1 行 ⇒ 行号整体**偏移 1**（它说改第 4 行，实际改第 3 行）；
+    - 围栏本身留在文本里 ⇒ 拼出来仍然不是合法 Python。
+
+    ⇒ 实测 `g7d` 六格 **18/18 全部 `syntax_fail`**，一格没改成；而离线把同一份
+    裸代码喂给 `apply_edit` 是成功的（`chars=219` = 裸 205 + 围栏 14，是唯一的
+    差别）。v249 只做过「接口 + 桩」，**一次模型没跑**，所以这个坑没被发现。
+
+    ## ⛔ 无围栏时**逐字节**返回原文
+
+    不许顺手 `strip()`/`format`：默认档的提示字节由 `AZ169a` 钉着，动它就是把
+    「跨轮可比性」悄悄改掉（§319 的代价已经付过一次）。
+    """
+    m = _FENCE.search(text or "")
+    return m.group(1).strip() if m else (text or "")
+
+
 def parse_proposal(text: str) -> tuple[str, bool]:
     """从模型输出里抽出候选函数源码。返回 `(code, fenced)`。
 

@@ -1,0 +1,70 @@
+{
+  "checks": [
+    {
+      "tag": "P1_same_start",
+      "ok": true,
+      "detail": "obs=85578c39adec2bfd ledger=23fdace45b08bd3c cand=12"
+    },
+    {
+      "tag": "P2_six_raise",
+      "ok": true,
+      "detail": "kinds={'COVER': 0, 'PROBE': 0, 'RAISE': 6} bases=[0.2, 0.2, 0.2, 0.6, 0.6, 0.8] expected=[0.2, 0.2, 0.2, 0.6, 0.6, 0.8]"
+    },
+    {
+      "tag": "P3_two_subs",
+      "ok": true,
+      "detail": "head_identity=True off=2944B line=3167B tail_differs=True"
+    },
+    {
+      "tag": "P4_line_ref",
+      "ok": true,
+      "detail": "n=6 refs={'g7d2_dedupe_keep': 9, 'g7d3_fmt_amount': 2, 'g7d4_slugify': 6, 'g7e1_parse_flag': 4, 'g7e2_truncate_tail': 3, 'g7e3_dedupe_last': 14} unparsed=[]"
+    },
+    {
+      "tag": "P5_apply_positive",
+      "ok": true,
+      "detail": "t01 base=5/6 -> 6 err="
+    },
+    {
+      "tag": "P6_fail_closed",
+      "ok": true,
+      "detail": "errs=['parse_fail', 'oom', 'oom', 'empty_expr'] all_empty_code=True"
+    },
+    {
+      "tag": "P7_speed",
+      "ok": false,
+      "detail": "tok/s=14.87 eval_count=220 eval_s=14.8 wall=14.9s"
+    },
+    {
+      "tag": "P8_start_impl",
+      "ok": true,
+      "detail": "missing=[]"
+    }
+  ],
+  "line_ref": {
+    "g7d2_dedupe_keep": 9,
+    "g7d3_fmt_amount": 2,
+    "g7d4_slugify": 6,
+    "g7e1_parse_flag": 4,
+    "g7e2_truncate_tail": 3,
+    "g7e3_dedupe_last": 14
+  },
+  "best": {
+    "g7d1_parse_date_flex": 1.0,
+    "g7d2_dedupe_keep": 0.6,
+    "g7d3_fmt_amount": 0.2,
+    "g7d4_slugify": 0.6,
+    "g7e1_parse_flag": 0.2,
+    "g7e2_truncate_tail": 0.2,
+    "g7e3_dedupe_last": 0.8
+  },
+  "impl": {
+    "g7d2_dedupe_keep": "bffc26cf6711e638",
+    "g7d3_fmt_amount": "0322783a99a47b09",
+    "g7d4_slugify": "c103965abfca78ce",
+    "g7e1_parse_flag": "1133f595d52b31b4",
+    "g7e2_truncate_tail": "41cbac422c84d94d",
+    "g7e3_dedupe_last": "da31b4ba7abe9761",
+    "g7d1_parse_date_flex": "40b8ecc6a6dedcec"
+  }
+}

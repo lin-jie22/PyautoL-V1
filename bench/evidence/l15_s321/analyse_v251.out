@@ -1,0 +1,63 @@
+==============================================================================
+V251  生产链路 A/B：同一账本起点，只差动作空间
+==============================================================================
+
+[P3 配对] 两臂 goals-act 分数逐格比对（换路只在 act 判 NOT_MET 后触发）
+  g7d2_dedupe_keep         A=0.6     B=0.2     ★不同
+  g7d3_fmt_amount          A=0.2     B=0.2     同
+  g7d4_slugify             A=0.6     B=0.6     同
+  g7e1_parse_flag          A=0.2     B=0.2     同
+  g7e2_truncate_tail       A=0.2     B=0.2     同
+  g7e3_dedupe_last         A=0.8     B=0.8     同
+  只进 A 的格：无｜只进 B 的格：无
+  P3 = 不成立 (5/6)
+
+[主读数] base -> after（装置打印）
+
+  A_off
+    g7d2_dedupe_keep         K=3 0.6000 -> 1.0000 MET      ↑抬高
+    g7d3_fmt_amount          K=3 0.2000 -> 0.4000 MET      ↑抬高
+    g7d4_slugify             K=3 0.6000 -> 0.8000 MET      ↑抬高
+    g7e1_parse_flag          K=3 0.2000 -> 0.2000 NOT_MET  —
+    g7e2_truncate_tail       K=3 0.2000 -> 0.2000 NOT_MET  —
+    g7e3_dedupe_last         K=3 0.8000 -> 0.8000 NOT_MET  —
+
+  B_line
+    g7d2_dedupe_keep         K=3 0.6000 -> 0.6000 NOT_MET  —
+    g7d3_fmt_amount          K=3 0.2000 -> 0.2000 NOT_MET  —
+    g7d4_slugify             K=3 0.6000 -> 0.6000 NOT_MET  —
+    g7e1_parse_flag          K=3 0.2000 -> 0.2000 NOT_MET  —
+    g7e2_truncate_tail       K=3 0.2000 -> 0.2000 NOT_MET  —
+    g7e3_dedupe_last         K=3 0.8000 -> 0.8000 NOT_MET  —
+
+  抬高格数：A_off=3  B_line=0 | 差 = -3
+  P1（B-A >= 2）：不成立（负向 ⇒ 立案）（差 -3）
+
+[P4 fail-closed]
+  A_off: n_fail=0 kinds=无
+  B_line: n_fail=6 kinds={'syntax_fail': 6}
+
+[P5 定位] B 臂 LINE 与 trace 指认的失效行
+  g7d3_fmt_amount          LINE=[2, 2, 2] ref=2 命中
+  g7d4_slugify             LINE=[5] ref=6 未命中
+  g7e1_parse_flag          LINE=[3, 3, 3] ref=4 未命中
+  g7e2_truncate_tail       LINE=[3, 3, 3] ref=3 命中
+  g7e3_dedupe_last         LINE=[13, 13] ref=14 未命中
+  P5 = 2/5
+
+[候选] 每格 swap 候选分数（来自 goal_obs）
+  A_off
+    g7d2_dedupe_keep         [1.0, 1.0, 1.0] best=1.0 (base 0.6)
+    g7d3_fmt_amount          [0.4, 0.4, 0.4] best=0.4 (base 0.2)
+    g7d4_slugify             [0.8, 0.8, 0.8] best=0.8 (base 0.6)
+    g7e1_parse_flag          [0.2, 0.2, 0.2] best=0.2 (base 0.2)
+    g7e2_truncate_tail       [0.2, 0.2, 0.2] best=0.2 (base 0.2)
+    g7e3_dedupe_last         [0.8, 0.8, 0.8] best=0.8 (base 0.8)
+  B_line
+    g7d3_fmt_amount          [0.0, 0.0, 0.0] best=0.0 (base 0.2)
+    g7d4_slugify             [0.6] best=0.6 (base 0.6)
+    g7e1_parse_flag          [0.2, 0.2, 0.2] best=0.2 (base 0.2)
+    g7e2_truncate_tail       [0.2, 0.2, 0.2] best=0.2 (base 0.2)
+    g7e3_dedupe_last         [0.8, 0.8] best=0.8 (base 0.8)
+
+落盘 readings_v251.json

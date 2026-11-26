@@ -16832,6 +16832,11 @@ _az162_writer_rows = [
 ]
 _az162_pool, _az162_cnt = _beh_pool(_az162_writer_rows, cell="c")
 _az162_src = (V1 / "run.py").read_text(encoding="utf-8")
+# ⚠️ **PEP 701 之前 f-string 表达式里不许有反斜杠**：这行字面量必须先在 f-string
+#    外面算好。写进 f-string 里在 3.12+ 合法、3.11 直接 SyntaxError ⇒ 整个契约文件
+#    连编译都过不去（CI 的 py3.11 档从 run 234 红到 run 248，README 却一直写着「全绿」）。
+#    证据：`bench/evidence/ci_s320/`、DESIGN §320。
+_az162_vec_probe = 'vec": list(_sr'
 # ⚠️ 首版只查离线造的池 ⇒ **撤回态判它恒真**（撤 run.py 写点仍然绿，实测 `红=无`）。
 #    「自造数据自证」是断言恒真的经典形态（纪律 5）：它证明的是「beh_pool 能读带 vec
 #    的行」，没证明「run.py 真的写了 vec」。两半都要，缺一半就退化成同义反复。
@@ -16841,7 +16846,7 @@ check(RS, "AZ162c 两个写点（`goals-act` / `goal_swap`）的词都带 `vec` 
           "              ⛔ 撤回语义：删掉换路行写点的 vec ⇒ 本条必须红",
       len(_az162_pool) == 2 and _az162_cnt["n_no_vec"] == 0
       and '**({"vec": list(_sr["vec"])} if _sr.get("vec") else {})' in _az162_src,
-      f"pool={len(_az162_pool)} cnt={_az162_cnt} src_vec={'vec\": list(_sr' in _az162_src}")
+      f"pool={len(_az162_pool)} cnt={_az162_cnt} src_vec={_az162_vec_probe in _az162_src}")
 
 # ── AZ162d：`_swap_candidates` 的 models 参数默认空 ⇒ 部署行为逐字节不变 ──
 import inspect as _inspect                                         # noqa: E402

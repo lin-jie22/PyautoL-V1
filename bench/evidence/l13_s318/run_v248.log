@@ -1,0 +1,57 @@
+起点 verify=5/6 sha=90579ecebe633352
+  A 2307B/1bdea4fc92d67817  pin=2307/1bdea4fc92d67817
+  N 2437B/8dc7c93d24b6d955  pin=2437/8dc7c93d24b6d955
+  E 2615B/60f2cc5e63c54255  pin=2615/60f2cc5e63c54255
+  A#00 5/6 sim=0.89 copy=False 19.1s 199tok 10.4t/s
+  N#00 5/6 sim=1.00 copy=True 15.5s 191tok 12.4t/s
+  E#00 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.0s 22tok
+  A#01 5/6 sim=1.00 copy=True 11.8s 191tok 16.1t/s
+  N#01 5/6 sim=1.00 copy=True 12.0s 191tok 15.9t/s
+  E#01 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 1.9s 22tok
+  A#02 5/6 sim=1.00 copy=True 12.2s 191tok 15.7t/s
+  N#02 5/6 sim=1.00 copy=True 12.7s 191tok 15.0t/s
+  E#02 5/6 LINE=16 err=None EXPR="minutes = int(parts[1].split('m')[0]) if 'm' in part" 2.7s 34tok
+  A#03 5/6 sim=1.00 copy=True 12.5s 191tok 15.2t/s
+  N#03 5/6 sim=1.00 copy=True 13.1s 191tok 14.6t/s
+  E#03 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.1s 22tok
+  A#04 5/6 sim=1.00 copy=True 13.9s 191tok 13.7t/s
+  N#04 5/6 sim=1.00 copy=True 14.9s 191tok 12.8t/s
+  E#04 4/6 LINE=14 err=None EXPR="return int(parts[0]) * 60 + int(parts[1].split('m')[" 3.6s 35tok
+  A#05 5/6 sim=1.00 copy=True 12.4s 191tok 15.4t/s
+  N#05 5/6 sim=1.00 copy=True 12.8s 191tok 15.0t/s
+  E#05 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.6s 22tok
+  A#06 5/6 sim=1.00 copy=True 14.0s 191tok 13.6t/s
+  N#06 5/6 sim=1.00 copy=True 15.0s 191tok 12.7t/s
+  E#06 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.5s 22tok
+  A#07 5/6 sim=1.00 copy=True 14.6s 191tok 13.1t/s
+  N#07 5/6 sim=1.00 copy=True 15.2s 191tok 12.6t/s
+  E#07 5/6 LINE=16 err=None EXPR="minutes = int(parts[1].split('m')[0]) if 'm' in part" 3.2s 34tok
+  A#08 5/6 sim=1.00 copy=True 14.0s 191tok 13.7t/s
+  N#08 5/6 sim=1.00 copy=True 14.8s 191tok 12.9t/s
+  E#08 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.5s 22tok
+  A#09 5/6 sim=1.00 copy=True 14.5s 191tok 13.2t/s
+  N#09 5/6 sim=1.00 copy=True 15.0s 191tok 12.8t/s
+  E#09 4/6 LINE=14 err=None EXPR="return int(parts[0]) * 60 + int(parts[1].split('m')[" 3.4s 35tok
+  A#10 5/6 sim=1.00 copy=True 14.4s 191tok 13.2t/s
+  N#10 5/6 sim=1.00 copy=True 15.3s 191tok 12.5t/s
+  E#10 4/6 LINE=14 err=None EXPR="return int(parts[0]) * 3600 + int(parts[1].split('h'" 3.8s 39tok
+  A#11 5/6 sim=1.00 copy=True 14.5s 191tok 13.2t/s
+  N#11 5/6 sim=1.00 copy=True 15.3s 191tok 12.5t/s
+  E#11 5/6 LINE=16 err=None EXPR="minutes = int(parts[1].split('m')[0]) if 'm' in part" 3.3s 34tok
+  A#12 5/6 sim=1.00 copy=True 13.5s 191tok 14.2t/s
+  N#12 5/6 sim=1.00 copy=True 13.9s 191tok 13.7t/s
+  E#12 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.4s 22tok
+  A#13 5/6 sim=1.00 copy=True 12.7s 191tok 15.1t/s
+  N#13 5/6 sim=1.00 copy=True 13.3s 191tok 14.4t/s
+  E#13 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.4s 22tok
+  A#14 5/6 sim=0.89 copy=False 13.2s 192tok 14.5t/s
+  N#14 5/6 sim=1.00 copy=True 13.9s 191tok 13.7t/s
+  E#14 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.4s 22tok
+  A#15 5/6 sim=0.96 copy=False 13.6s 191tok 14.1t/s
+  N#15 5/6 sim=1.00 copy=True 14.1s 191tok 13.5t/s
+  E#15 6/6 LINE=16 err=None EXPR="minutes = int(parts[0].split('m')[0])" 2.4s 22tok
+
+完成 n=16 失败={'A': 0, 'N': 0, 'E': 0} 命中6/6={'A': 0, 'N': 0, 'E': 10}
+速度：样本 48 中位 12.850000000000001 tok/s （闸 15.0）
+⚠️ 速度中位低于闸 15.0 ⇒ 读数降级为「压线」（纪律 116）
+E 的 LINE 分布：{14: 3, 16: 13}

@@ -1,0 +1,85 @@
+{
+  "ok": true,
+  "prompts": {
+    "A": {
+      "bytes": 2307,
+      "sha": "1bdea4fc92d67817"
+    },
+    "N": {
+      "bytes": 2437,
+      "sha": "8dc7c93d24b6d955"
+    },
+    "E": {
+      "bytes": 2615,
+      "sha": "60f2cc5e63c54255"
+    }
+  },
+  "checks": [
+    {
+      "id": "P1_A_bytes_sha",
+      "ok": true,
+      "detail": "2307B / 1bdea4fc92d67817（期望 2307 / 1bdea4fc92d67817）"
+    },
+    {
+      "id": "P2_code_once",
+      "ok": true,
+      "detail": "count=1"
+    },
+    {
+      "id": "P3_N_diff_only_code",
+      "ok": true,
+      "detail": "N=2437B / 8dc7c93d24b6d955"
+    },
+    {
+      "id": "P4_E_diff_only_tail",
+      "ok": true,
+      "detail": "E=2615B / 60f2cc5e63c54255"
+    },
+    {
+      "id": "P5_no_leak_at_line16",
+      "ok": true,
+      "detail": "leak=[]"
+    },
+    {
+      "id": "P6_no_new_answer_info",
+      "ok": true,
+      "detail": "E=3 N=3 次独立 600（必须相等）"
+    },
+    {
+      "id": "P7_pos_L16_parts0",
+      "ok": true,
+      "detail": "err='' verify=6"
+    },
+    {
+      "id": "P8_neg_L23",
+      "ok": true,
+      "detail": "verify=4（把正确行改坏）"
+    },
+    {
+      "id": "P9_neg_double60",
+      "ok": true,
+      "detail": "verify=5（与第 17 行重复乘 60）"
+    },
+    {
+      "id": "P10_failclosed",
+      "ok": true,
+      "detail": "oom / parse_fail / empty_expr / syntax_fail 四路都拒"
+    },
+    {
+      "id": "P11_indent_from_device",
+      "ok": true,
+      "detail": "'                minutes = int(parts[0])'"
+    },
+    {
+      "id": "P12_parse_edit",
+      "ok": true,
+      "detail": "16 'minutes = int(parts[0])'"
+    }
+  ],
+  "base_verify": 5,
+  "device": {
+    "pos_L16": 6,
+    "neg_L23": 4,
+    "neg_double60": 5
+  }
+}

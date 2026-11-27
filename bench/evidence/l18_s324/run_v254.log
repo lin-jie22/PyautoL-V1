@@ -1,0 +1,57 @@
+cells=13 answers=39
+P1 剂量断言：OK 13/13
+cell                           A     B     C  first_failure
+g7s1_flatten_nested          772   851   851  assert flatten_nested({'a': [None, 5]}) == {'a[1]': 5} ⇒ AssertionErro
+g7s2_parse_headers           607   690   690  assert parse_headers('a: "x;y"') == {'a': 'x;y'} ⇒ AssertionError
+g7t1_split_top_level         893   976   976  assert split_top_level('a,[1,2],b') == ['a', '[1,2]', 'b'] ⇒ Assertion
+g7t2_parse_pairs            1008  1125  1125  assert parse_pairs('a=1;b=2') == {'a': '1', 'b': '2'} ⇒ AssertionError
+g7t4_quote_join              363   496   496  assert quote_join(['a', 'b']) == 'a, b' ⇒ SyntaxError: unexpected char
+m02_vfs                     3626  3759  3759  import sys, os
+for _fn, _src in FILES.items():
+    open(_fn, 'w').writ
+m03_tiered                  1800  1923  1923  import sys, os
+for _fn, _src in FILES.items():
+    open(_fn, 'w').writ
+s02_limiter                 1103  1198  1198  L = Limiter(3, 10)
+assert L.hit('a', 0) is True
+assert L.hit('a', 1) i
+t01_parse_duration           542   670   670  assert parse_duration('1h30m') == 5400 ⇒ AssertionError
+t04_merge_ranges             598   726   726  assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)] ⇒ TypeErro
+y02_is_valid_brackets        489   555   555  assert is_valid_brackets('a(b)c') is True ⇒ AssertionError
+y03_base_convert             597   734   734  assert base_convert('0', 10, 16) == '0' ⇒ AssertionError
+z02_to_csv                   707   844   844  assert to_csv([{'a': 1, 'b': 2}], ['a', 'b']) == 'a,b\n1,2' ⇒ SyntaxEr
+尺子校准：OK 13/13
+  speed 17.06 tok/s
+  speed 16.43 tok/s
+  speed 16.55 tok/s
+  median=16.55 gate(>=15)=True
+[1/13] g7s1_flatten_nested      A score=0.8000   8.8s chars=504
+[1/13] g7s1_flatten_nested      B score=0.8000   7.5s chars=504
+[2/13] g7s2_parse_headers       A score=0.4000   7.7s chars=466
+[2/13] g7s2_parse_headers       B score=0.4000   6.7s chars=466
+[3/13] g7t1_split_top_level     A score=0.6000   9.7s chars=689
+[3/13] g7t1_split_top_level     B score=0.6000   9.2s chars=709
+[4/13] g7t2_parse_pairs         A score=0.0000  12.4s chars=783
+[4/13] g7t2_parse_pairs         B score=0.0000  11.2s chars=783
+[5/13] g7t4_quote_join          A score=0.0000   4.8s chars=269
+[5/13] g7t4_quote_join          B score=0.0000   3.3s chars=186
+[6/13] m02_vfs                  A score=0.0000  45.7s chars=3120
+[6/13] m02_vfs                  B score=0.0000  40.9s chars=3120
+[7/13] m03_tiered               A score=0.0000  25.2s chars=1309
+[7/13] m03_tiered               B score=0.0000  22.1s chars=1330
+[8/13] s02_limiter              A score=0.0000  13.6s chars=774
+[8/13] s02_limiter              B score=0.0000  11.1s chars=722
+[9/13] t01_parse_duration       A score=0.8333  11.7s chars=580
+[9/13] t01_parse_duration       B score=0.8333   9.4s chars=401
+[10/13] t04_merge_ranges         A score=0.3333   7.5s chars=396
+[10/13] t04_merge_ranges         B score=1.0000   6.8s chars=416
+[11/13] y02_is_valid_brackets    A score=1.0000   5.8s chars=313
+[11/13] y02_is_valid_brackets    B score=1.0000   5.7s chars=367
+[12/13] y03_base_convert         A score=0.6667   9.9s chars=426
+[12/13] y03_base_convert         B score=0.6667   9.0s chars=427
+[13/13] z02_to_csv               A score=0.0000  11.0s chars=532
+[13/13] z02_to_csv               B score=0.0000   9.4s chars=513
+总耗时 330.6s
+Δ = 1：['t04_merge_ranges']
+  C t04_merge_ranges         score=0.3333
+⇒ 写 /Users/linshaojie/V1/bench/evidence/l18_s324/readings_v254.json

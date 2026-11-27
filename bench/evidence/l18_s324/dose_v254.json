@@ -1,0 +1,865 @@
+{
+  "min_sim": 0.3,
+  "cells": {
+    "t01_parse_duration": {
+      "score": 0.8333,
+      "class": "AssertionError",
+      "raw_error": "AssertionError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "in_str",
+        "level0",
+        "n_tests_ge5",
+        "op_parse",
+        "out_int",
+        "out_none",
+        "out_str"
+      ]
+    },
+    "t04_merge_ranges": {
+      "score": 0.3333,
+      "class": "TypeError",
+      "raw_error": "TypeError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "in_seq",
+        "level1",
+        "n_tests_ge5",
+        "op_merge",
+        "op_sort",
+        "out_seq"
+      ]
+    },
+    "g7t1_split_top_level": {
+      "score": 0.6,
+      "class": "AssertionError",
+      "raw_error": "AssertionError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "in_str",
+        "level1",
+        "n_tests_ge5",
+        "op_nest",
+        "out_str"
+      ]
+    },
+    "g7t2_parse_pairs": {
+      "score": 0.0,
+      "class": "AssertionError",
+      "raw_error": "AssertionError",
+      "has_template": true,
+      "rkey": [
+        "in_str",
+        "level2",
+        "n_tests_ge5",
+        "op_cond",
+        "op_parse"
+      ]
+    },
+    "g7t4_quote_join": {
+      "score": 0.0,
+      "class": "其他",
+      "raw_error": "SyntaxError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "in_seq",
+        "level1",
+        "n_tests_ge5",
+        "out_seq",
+        "out_str"
+      ]
+    },
+    "g7s1_flatten_nested": {
+      "score": 0.8,
+      "class": "AssertionError",
+      "raw_error": "AssertionError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "in_dict",
+        "level2",
+        "n_tests_ge5",
+        "op_nest",
+        "out_dict",
+        "out_none"
+      ]
+    },
+    "g7s2_parse_headers": {
+      "score": 0.4,
+      "class": "AssertionError",
+      "raw_error": "AssertionError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "in_str",
+        "level2",
+        "n_tests_ge5",
+        "op_cond",
+        "op_parse",
+        "out_str"
+      ]
+    },
+    "y02_is_valid_brackets": {
+      "score": 0.8333,
+      "class": "AssertionError",
+      "raw_error": "AssertionError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "in_str",
+        "level1",
+        "n_tests_ge5",
+        "op_nest",
+        "out_bool",
+        "out_str"
+      ]
+    },
+    "y03_base_convert": {
+      "score": 0.6667,
+      "class": "AssertionError",
+      "raw_error": "AssertionError",
+      "has_template": true,
+      "rkey": [
+        "in_num",
+        "in_str",
+        "level1",
+        "n_tests_ge5",
+        "op_convert",
+        "out_str"
+      ]
+    },
+    "z02_to_csv": {
+      "score": 0.0,
+      "class": "其他",
+      "raw_error": "SyntaxError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "in_seq",
+        "level2",
+        "n_tests_ge5",
+        "op_cond",
+        "out_dict",
+        "out_none",
+        "out_seq",
+        "out_str"
+      ]
+    },
+    "s02_limiter": {
+      "score": 0.0,
+      "class": "AssertionError",
+      "raw_error": "AssertionError",
+      "has_template": true,
+      "rkey": [
+        "level1",
+        "op_cond",
+        "op_count",
+        "out_bool",
+        "out_int"
+      ]
+    },
+    "m02_vfs": {
+      "score": 0.0,
+      "class": "AttributeError",
+      "raw_error": "AttributeError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "level2",
+        "n_tests_ge5",
+        "op_nest",
+        "op_sort",
+        "out_dict",
+        "out_seq",
+        "out_str"
+      ]
+    },
+    "m03_tiered": {
+      "score": 0.0,
+      "class": "其他",
+      "raw_error": "ModuleNotFoundError",
+      "has_template": true,
+      "rkey": [
+        "edge_empty",
+        "level2",
+        "n_tests_ge5",
+        "out_dict",
+        "out_none",
+        "out_seq",
+        "out_str"
+      ]
+    }
+  },
+  "pairs": [
+    {
+      "src": "y02_is_valid_brackets",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.8571,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "y02_is_valid_brackets",
+      "jaccard": 0.8571,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "z02_to_csv",
+      "dst": "m03_tiered",
+      "jaccard": 0.7778,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m03_tiered",
+      "dst": "z02_to_csv",
+      "jaccard": 0.7778,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t2_parse_pairs",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.7143,
+      "src_score": 0.0,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "g7t2_parse_pairs",
+      "jaccard": 0.7143,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m03_tiered",
+      "dst": "m02_vfs",
+      "jaccard": 0.6667,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m02_vfs",
+      "dst": "m03_tiered",
+      "jaccard": 0.6667,
+      "src_score": 0.0,
+      "src_class": "AttributeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+    },
+    {
+      "src": "t04_merge_ranges",
+      "dst": "g7t4_quote_join",
+      "jaccard": 0.625,
+      "src_score": 0.3333,
+      "src_class": "TypeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致"
+    },
+    {
+      "src": "g7t4_quote_join",
+      "dst": "t04_merge_ranges",
+      "jaccard": 0.625,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m03_tiered",
+      "dst": "g7s1_flatten_nested",
+      "jaccard": 0.5556,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s1_flatten_nested",
+      "dst": "m03_tiered",
+      "jaccard": 0.5556,
+      "src_score": 0.8,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.80） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "z02_to_csv",
+      "dst": "m02_vfs",
+      "jaccard": 0.5455,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m02_vfs",
+      "dst": "z02_to_csv",
+      "jaccard": 0.5455,
+      "src_score": 0.0,
+      "src_class": "AttributeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+    },
+    {
+      "src": "m02_vfs",
+      "dst": "g7s1_flatten_nested",
+      "jaccard": 0.5,
+      "src_score": 0.0,
+      "src_class": "AttributeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+    },
+    {
+      "src": "t01_parse_duration",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.5,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t4_quote_join",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.5,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "y03_base_convert",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.5,
+      "src_score": 0.6667,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "g7t4_quote_join",
+      "jaccard": 0.5,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "z02_to_csv",
+      "dst": "g7t4_quote_join",
+      "jaccard": 0.5,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s1_flatten_nested",
+      "dst": "m02_vfs",
+      "jaccard": 0.5,
+      "src_score": 0.8,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.80） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "t01_parse_duration",
+      "jaccard": 0.5,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "y03_base_convert",
+      "jaccard": 0.5,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t4_quote_join",
+      "dst": "z02_to_csv",
+      "jaccard": 0.5,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "z02_to_csv",
+      "dst": "g7s1_flatten_nested",
+      "jaccard": 0.4545,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "z02_to_csv",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.4545,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s1_flatten_nested",
+      "dst": "z02_to_csv",
+      "jaccard": 0.4545,
+      "src_score": 0.8,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.80） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "z02_to_csv",
+      "jaccard": 0.4545,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.4444,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.4444,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m03_tiered",
+      "dst": "g7t4_quote_join",
+      "jaccard": 0.4444,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "y02_is_valid_brackets",
+      "dst": "g7t4_quote_join",
+      "jaccard": 0.4444,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t4_quote_join",
+      "dst": "m03_tiered",
+      "jaccard": 0.4444,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t4_quote_join",
+      "dst": "y02_is_valid_brackets",
+      "jaccard": 0.4444,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "y03_base_convert",
+      "dst": "y02_is_valid_brackets",
+      "jaccard": 0.4444,
+      "src_score": 0.6667,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "y02_is_valid_brackets",
+      "dst": "y03_base_convert",
+      "jaccard": 0.4444,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m03_tiered",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.4,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "y02_is_valid_brackets",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.4,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m02_vfs",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.4,
+      "src_score": 0.0,
+      "src_class": "AttributeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+    },
+    {
+      "src": "t01_parse_duration",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.4,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m02_vfs",
+      "dst": "g7t4_quote_join",
+      "jaccard": 0.4,
+      "src_score": 0.0,
+      "src_class": "AttributeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "m02_vfs",
+      "jaccard": 0.4,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t4_quote_join",
+      "dst": "m02_vfs",
+      "jaccard": 0.4,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "m03_tiered",
+      "jaccard": 0.4,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "t01_parse_duration",
+      "jaccard": 0.4,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "y02_is_valid_brackets",
+      "jaccard": 0.4,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m02_vfs",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.3636,
+      "src_score": 0.0,
+      "src_class": "AttributeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "m02_vfs",
+      "jaccard": 0.3636,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "t04_merge_ranges",
+      "dst": "m02_vfs",
+      "jaccard": 0.3636,
+      "src_score": 0.3333,
+      "src_class": "TypeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致"
+    },
+    {
+      "src": "y02_is_valid_brackets",
+      "dst": "m02_vfs",
+      "jaccard": 0.3636,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "t01_parse_duration",
+      "dst": "m03_tiered",
+      "jaccard": 0.3636,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m03_tiered",
+      "dst": "t01_parse_duration",
+      "jaccard": 0.3636,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "y02_is_valid_brackets",
+      "dst": "t01_parse_duration",
+      "jaccard": 0.3636,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m02_vfs",
+      "dst": "t04_merge_ranges",
+      "jaccard": 0.3636,
+      "src_score": 0.0,
+      "src_class": "AttributeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+    },
+    {
+      "src": "m02_vfs",
+      "dst": "y02_is_valid_brackets",
+      "jaccard": 0.3636,
+      "src_score": 0.0,
+      "src_class": "AttributeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+    },
+    {
+      "src": "t01_parse_duration",
+      "dst": "y02_is_valid_brackets",
+      "jaccard": 0.3636,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "y03_base_convert",
+      "dst": "g7t4_quote_join",
+      "jaccard": 0.3333,
+      "src_score": 0.6667,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "z02_to_csv",
+      "dst": "t04_merge_ranges",
+      "jaccard": 0.3333,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t4_quote_join",
+      "dst": "y03_base_convert",
+      "jaccard": 0.3333,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "t04_merge_ranges",
+      "dst": "z02_to_csv",
+      "jaccard": 0.3333,
+      "src_score": 0.3333,
+      "src_class": "TypeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致"
+    },
+    {
+      "src": "z02_to_csv",
+      "dst": "t01_parse_duration",
+      "jaccard": 0.3077,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "t01_parse_duration",
+      "dst": "z02_to_csv",
+      "jaccard": 0.3077,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "g7s1_flatten_nested",
+      "jaccard": 0.3,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t4_quote_join",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.3,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "y03_base_convert",
+      "dst": "g7s2_parse_headers",
+      "jaccard": 0.3,
+      "src_score": 0.6667,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s1_flatten_nested",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.3,
+      "src_score": 0.8,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.80） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "m03_tiered",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.3,
+      "src_score": 0.0,
+      "src_class": "其他",
+      "src_has_template": true,
+      "line": "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "t04_merge_ranges",
+      "dst": "g7t1_split_top_level",
+      "jaccard": 0.3,
+      "src_score": 0.3333,
+      "src_class": "TypeError",
+      "src_has_template": true,
+      "line": "- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致"
+    },
+    {
+      "src": "t01_parse_duration",
+      "dst": "g7t2_parse_pairs",
+      "jaccard": 0.3,
+      "src_score": 0.8333,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "g7t4_quote_join",
+      "jaccard": 0.3,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "m03_tiered",
+      "jaccard": 0.3,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t2_parse_pairs",
+      "dst": "t01_parse_duration",
+      "jaccard": 0.3,
+      "src_score": 0.0,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7t1_split_top_level",
+      "dst": "t04_merge_ranges",
+      "jaccard": 0.3,
+      "src_score": 0.6,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    },
+    {
+      "src": "g7s2_parse_headers",
+      "dst": "y03_base_convert",
+      "jaccard": 0.3,
+      "src_score": 0.4,
+      "src_class": "AssertionError",
+      "src_has_template": true,
+      "line": "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+    }
+  ]
+}

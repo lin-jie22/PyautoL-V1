@@ -1,0 +1,679 @@
+{
+  "cells": {
+    "t01_parse_duration": {
+      "id": "t01_parse_duration",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 parse_duration",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "t02_dedupe": {
+      "id": "t02_dedupe",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 dedupe",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "t03_commas": {
+      "id": "t03_commas",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 6,
+      "items": [
+        "非空",
+        "函数名 commas",
+        "语言标签",
+        "可编译",
+        "结构检查",
+        "示例可跑×3"
+      ],
+      "has_example": true
+    },
+    "t04_merge_ranges": {
+      "id": "t04_merge_ranges",
+      "verdict": "stalled",
+      "checks": 2,
+      "ok": 0,
+      "bounced": 2,
+      "gaveup": 0,
+      "n_items": 6,
+      "items": [
+        "非空",
+        "函数名 merge_ranges",
+        "语言标签",
+        "可编译",
+        "结构检查",
+        "示例可跑×1"
+      ],
+      "has_example": true
+    },
+    "t05_top_k": {
+      "id": "t05_top_k",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 6,
+      "items": [
+        "非空",
+        "函数名 top_k",
+        "语言标签",
+        "可编译",
+        "结构检查",
+        "示例可跑×1"
+      ],
+      "has_example": true
+    },
+    "t06_rle": {
+      "id": "t06_rle",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 6,
+      "items": [
+        "非空",
+        "函数名 rle",
+        "语言标签",
+        "可编译",
+        "结构检查",
+        "示例可跑×2"
+      ],
+      "has_example": true
+    },
+    "g7t1_split_top_level": {
+      "id": "g7t1_split_top_level",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 split_top_level",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7t2_parse_pairs": {
+      "id": "g7t2_parse_pairs",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 parse_pairs",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7t3_encode_attrs": {
+      "id": "g7t3_encode_attrs",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 encode_attrs",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7t4_quote_join": {
+      "id": "g7t4_quote_join",
+      "verdict": "stalled",
+      "checks": 2,
+      "ok": 0,
+      "bounced": 2,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 quote_join",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7n1_split_amount": {
+      "id": "g7n1_split_amount",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 split_amount",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7n2_next_permutation": {
+      "id": "g7n2_next_permutation",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 next_permutation",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7n3_spiral_order": {
+      "id": "g7n3_spiral_order",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 spiral_order",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7n4_min_meeting_rooms": {
+      "id": "g7n4_min_meeting_rooms",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 min_meeting_rooms",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7s1_flatten_nested": {
+      "id": "g7s1_flatten_nested",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 flatten_nested",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7s2_parse_headers": {
+      "id": "g7s2_parse_headers",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 parse_headers",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7s3_csv_row": {
+      "id": "g7s3_csv_row",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 csv_row",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "g7s4_xml_escape_attrs": {
+      "id": "g7s4_xml_escape_attrs",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 xml_escape_attrs",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "y01_roman_to_int": {
+      "id": "y01_roman_to_int",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 roman_to_int",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "y02_is_valid_brackets": {
+      "id": "y02_is_valid_brackets",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 is_valid_brackets",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "y03_base_convert": {
+      "id": "y03_base_convert",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 base_convert",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "y04_gcd_lcm": {
+      "id": "y04_gcd_lcm",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 gcd_lcm",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "y05_median": {
+      "id": "y05_median",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 median",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "z01_flatten": {
+      "id": "z01_flatten",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 flatten",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "z02_to_csv": {
+      "id": "z02_to_csv",
+      "verdict": "done_unverified",
+      "checks": 3,
+      "ok": 0,
+      "bounced": 3,
+      "gaveup": 1,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 to_csv",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "z03_parse_query": {
+      "id": "z03_parse_query",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 parse_query",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "z04_deep_get": {
+      "id": "z04_deep_get",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 deep_get",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "z05_group_by": {
+      "id": "z05_group_by",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 group_by",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "s02_limiter": {
+      "id": "s02_limiter",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 3,
+      "items": [
+        "非空",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "s03_tx_journal": {
+      "id": "s03_tx_journal",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 3,
+      "items": [
+        "非空",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "m01_records": {
+      "id": "m01_records",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 1,
+      "items": [
+        "非空"
+      ],
+      "has_example": false
+    },
+    "m02_vfs": {
+      "id": "m02_vfs",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 1,
+      "items": [
+        "非空"
+      ],
+      "has_example": false
+    },
+    "m03_tiered": {
+      "id": "m03_tiered",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 1,
+      "items": [
+        "非空"
+      ],
+      "has_example": false
+    },
+    "x01_slugify": {
+      "id": "x01_slugify",
+      "verdict": "done",
+      "checks": 2,
+      "ok": 1,
+      "bounced": 1,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 slugify",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "x02_mask_email": {
+      "id": "x02_mask_email",
+      "verdict": "done",
+      "checks": 2,
+      "ok": 1,
+      "bounced": 1,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 mask_email",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "x03_word_freq": {
+      "id": "x03_word_freq",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 word_freq",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "x04_truncate": {
+      "id": "x04_truncate",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 truncate",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    },
+    "x05_normalize_ws": {
+      "id": "x05_normalize_ws",
+      "verdict": "done",
+      "checks": 1,
+      "ok": 1,
+      "bounced": 0,
+      "gaveup": 0,
+      "n_items": 5,
+      "items": [
+        "非空",
+        "函数名 normalize_ws",
+        "语言标签",
+        "可编译",
+        "结构检查"
+      ],
+      "has_example": false
+    }
+  },
+  "scores": {
+    "t01_parse_duration": 0.8333,
+    "t02_dedupe": 1.0,
+    "t03_commas": 1.0,
+    "t04_merge_ranges": 0.3333,
+    "t05_top_k": 1.0,
+    "t06_rle": 1.0,
+    "g7t1_split_top_level": 0.6,
+    "g7t2_parse_pairs": 0.0,
+    "g7t3_encode_attrs": 1.0,
+    "g7t4_quote_join": 0.0,
+    "g7n1_split_amount": 1.0,
+    "g7n2_next_permutation": 1.0,
+    "g7n3_spiral_order": 1.0,
+    "g7n4_min_meeting_rooms": 1.0,
+    "g7s1_flatten_nested": 0.8,
+    "g7s2_parse_headers": 0.4,
+    "g7s3_csv_row": 1.0,
+    "g7s4_xml_escape_attrs": 1.0,
+    "y01_roman_to_int": 1.0,
+    "y02_is_valid_brackets": 0.8333,
+    "y03_base_convert": 0.6667,
+    "y04_gcd_lcm": 1.0,
+    "y05_median": 1.0,
+    "z01_flatten": 1.0,
+    "z02_to_csv": 0.0,
+    "z03_parse_query": 1.0,
+    "z04_deep_get": 1.0,
+    "z05_group_by": 1.0,
+    "s01_kv_expiry": 1.0,
+    "s02_limiter": 0.0,
+    "s03_tx_journal": 1.0,
+    "m01_records": 1.0,
+    "m02_vfs": 0.0,
+    "m03_tiered": 0.0,
+    "x01_slugify": 1.0,
+    "x02_mask_email": 1.0,
+    "x03_word_freq": 1.0,
+    "x04_truncate": 1.0,
+    "x05_normalize_ws": 1.0
+  }
+}

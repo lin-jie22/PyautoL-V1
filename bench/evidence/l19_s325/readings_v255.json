@@ -1,0 +1,234 @@
+{
+ "model": "qwen2.5:7b",
+ "temperature": 0.0,
+ "d1": [
+  "g7s1_flatten_nested",
+  "g7s2_parse_headers",
+  "g7t1_split_top_level",
+  "g7t2_parse_pairs",
+  "s02_limiter",
+  "t01_parse_duration",
+  "y02_is_valid_brackets",
+  "y03_base_convert"
+ ],
+ "prompt_system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+ "prompt_user_tmpl": "题面：\n{spec}\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。",
+ "rows": [
+  {
+   "cell": "g7s1_flatten_nested",
+   "secs": 22.4,
+   "chars": 744,
+   "truncated": false,
+   "sha": "cf32c7e3d8ad",
+   "has_check": true,
+   "test_raw": "```python\ndef check():\n    from sol import flatten_nested\n\n    assert flatten_nested({'a': {'b': 1}}) == {'a.b': 1}\n    assert flatten_nested({'a': [10, 20]}) == {'a[0]': 10, 'a[1]': 20}\n    assert flatten_nested({'a': {'b': [1]}}) == {'a.b[0]': 1}\n    assert flatten_nested({'a': {'b': 1}, 'c': 2}) == {'a.b': 1, 'c': 2}\n    assert flatten_nested({'a': {'b': 1}, 'c': [10, 20]}) == {'a.b': 1, 'c[0]': 10, 'c[1]': 20}\n    assert flatten_nested({'a': {'b': 1}, 'c': [10, 20], 'd': {'e': {'f': [3, 4]}}}) == {'a.b': 1, 'c[0]': 10, 'c[1]': 20, 'd.e.f[0]': 3, 'd.e.f[1]': 4}\n    assert flatten_nested({'a': None, 'b': {'c': 1}}) == {'b.c': 1}\n    assert flatten_nested({'a': [None, 10, 20], 'b': {'c': 1}}) == {'b.c': 1, 'a[1]': 10, 'a[2]': 20}\n```",
+   "test_src": "def check():\n    from sol import flatten_nested\n\n    assert flatten_nested({'a': {'b': 1}}) == {'a.b': 1}\n    assert flatten_nested({'a': [10, 20]}) == {'a[0]': 10, 'a[1]': 20}\n    assert flatten_nested({'a': {'b': [1]}}) == {'a.b[0]': 1}\n    assert flatten_nested({'a': {'b': 1}, 'c': 2}) == {'a.b': 1, 'c': 2}\n    assert flatten_nested({'a': {'b': 1}, 'c': [10, 20]}) == {'a.b': 1, 'c[0]': 10, 'c[1]': 20}\n    assert flatten_nested({'a': {'b': 1}, 'c': [10, 20], 'd': {'e': {'f': [3, 4]}}}) == {'a.b': 1, 'c[0]': 10, 'c[1]': 20, 'd.e.f[0]': 3, 'd.e.f[1]': 4}\n    assert flatten_nested({'a': None, 'b': {'c': 1}}) == {'b.c': 1}\n    assert flatten_nested({'a': [None, 10, 20], 'b': {'c': 1}}) == {'b.c': 1, 'a[1]': 10, 'a[2]': 20}",
+   "verdicts": {
+    "answer": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "oracle": {
+     "rc": 0,
+     "verdict": "pass",
+     "err": "",
+     "err_kind": "",
+     "out": ""
+    },
+    "partial": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    }
+   }
+  },
+  {
+   "cell": "g7s2_parse_headers",
+   "secs": 342.7,
+   "truncated": true,
+   "err": "LLMError: 响应被截断（done_reason=length）：thinking=0字符 content=3298字符 eval=2048 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）",
+   "has_check": false,
+   "verdicts": {},
+   "test_raw": ""
+  },
+  {
+   "cell": "g7t1_split_top_level",
+   "secs": 353.6,
+   "truncated": true,
+   "err": "LLMError: 响应被截断（done_reason=length）：thinking=0字符 content=3509字符 eval=2048 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）",
+   "has_check": false,
+   "verdicts": {},
+   "test_raw": ""
+  },
+  {
+   "cell": "g7t2_parse_pairs",
+   "secs": 45.2,
+   "chars": 1089,
+   "truncated": false,
+   "sha": "34b2a4f0c0ef",
+   "has_check": true,
+   "test_raw": "```python\ndef check():\n    from sol import parse_pairs\n\n    assert parse_pairs(\"a=b;c=d\") == {\"a\": \"b\", \"c\": \"d\"}\n    assert parse_pairs(\"a='b=c';d=e\") == {\"a\": \"b=c\", \"d\": \"e\"}\n    assert parse_pairs(\"a='b=c'; d='e=f';g=h\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i';j=k\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i'; j='k=l';m=n\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k=l\", \"m\": \"n\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i'; j='k=l'; m='n;o';p=q\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k=l\", \"m\": \"n;o\", \"p\": \"q\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i'; j='k=l'; m='n;o'; p='q=r';s=t\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k=l\", \"m\": \"n;o\", \"p\": \"q=r\", \"s\": \"t\"}\n    assert parse_pairs(\"\") == {}\n    assert parse_pairs(\"a='b=c';\") == {\"a\": \"b=c\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i'; j='k=l'; m='n;o'; p='q=r';s='t=u';v=w\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k=l\", \"m\": \"n;o\", \"p\": \"q=r\", \"s\": \"t=u\", \"v\": \"w\"}\n```",
+   "test_src": "def check():\n    from sol import parse_pairs\n\n    assert parse_pairs(\"a=b;c=d\") == {\"a\": \"b\", \"c\": \"d\"}\n    assert parse_pairs(\"a='b=c';d=e\") == {\"a\": \"b=c\", \"d\": \"e\"}\n    assert parse_pairs(\"a='b=c'; d='e=f';g=h\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i';j=k\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i'; j='k=l';m=n\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k=l\", \"m\": \"n\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i'; j='k=l'; m='n;o';p=q\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k=l\", \"m\": \"n;o\", \"p\": \"q\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i'; j='k=l'; m='n;o'; p='q=r';s=t\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k=l\", \"m\": \"n;o\", \"p\": \"q=r\", \"s\": \"t\"}\n    assert parse_pairs(\"\") == {}\n    assert parse_pairs(\"a='b=c';\") == {\"a\": \"b=c\"}\n    assert parse_pairs(\"a='b=c'; d='e=f'; g='h=i'; j='k=l'; m='n;o'; p='q=r';s='t=u';v=w\") == {\"a\": \"b=c\", \"d\": \"e=f\", \"g\": \"h=i\", \"j\": \"k=l\", \"m\": \"n;o\", \"p\": \"q=r\", \"s\": \"t=u\", \"v\": \"w\"}",
+   "verdicts": {
+    "answer": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "oracle": {
+     "rc": 0,
+     "verdict": "pass",
+     "err": "",
+     "err_kind": "",
+     "out": ""
+    },
+    "partial": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    }
+   }
+  },
+  {
+   "cell": "s02_limiter",
+   "secs": 38.1,
+   "chars": 1126,
+   "truncated": false,
+   "sha": "dd4dfef2360d",
+   "has_check": true,
+   "test_raw": "```python\nfrom sol import Limiter\n\ndef check():\n    # 测试构造函数\n    limiter = Limiter(3, 5)\n    \n    # 测试 hit 和 count\n    assert limiter.hit('key1', 0) == True\n    assert limiter.hit('key1', 1) == True\n    assert limiter.hit('key1', 2) == True\n    assert limiter.hit('key1', 3) == False\n    assert limiter.count('key1', 4) == 3\n    \n    # 测试不同 key\n    limiter2 = Limiter(2, 5)\n    assert limiter2.hit('key2', 0) == True\n    assert limiter2.hit('key2', 1) == True\n    assert limiter2.hit('key2', 2) == False\n    assert limiter2.count('key2', 3) == 2\n    \n    # 测试窗口边界\n    limiter3 = Limiter(2, 5)\n    assert limiter3.hit('key3', 0) == True\n    assert limiter3.hit('key3', 4) == True\n    assert limiter3.hit('key3', 5) == False\n    assert limiter3.count('key3', 6) == 2\n    \n    # 测试多个 key\n    limiter4 = Limiter(2, 5)\n    assert limiter4.hit('key4', 0) == True\n    assert limiter4.hit('key4', 1) == True\n    assert limiter4.hit('key5', 2) == True\n    assert limiter4.hit('key5', 3) == True\n    assert limiter4.hit('key4', 4) == False\n    assert limiter4.count('key4', 5) == 2\n    assert limiter4.count('key5', 5) == 2\n\ncheck()\n```",
+   "test_src": "from sol import Limiter\n\ndef check():\n    # 测试构造函数\n    limiter = Limiter(3, 5)\n    \n    # 测试 hit 和 count\n    assert limiter.hit('key1', 0) == True\n    assert limiter.hit('key1', 1) == True\n    assert limiter.hit('key1', 2) == True\n    assert limiter.hit('key1', 3) == False\n    assert limiter.count('key1', 4) == 3\n    \n    # 测试不同 key\n    limiter2 = Limiter(2, 5)\n    assert limiter2.hit('key2', 0) == True\n    assert limiter2.hit('key2', 1) == True\n    assert limiter2.hit('key2', 2) == False\n    assert limiter2.count('key2', 3) == 2\n    \n    # 测试窗口边界\n    limiter3 = Limiter(2, 5)\n    assert limiter3.hit('key3', 0) == True\n    assert limiter3.hit('key3', 4) == True\n    assert limiter3.hit('key3', 5) == False\n    assert limiter3.count('key3', 6) == 2\n    \n    # 测试多个 key\n    limiter4 = Limiter(2, 5)\n    assert limiter4.hit('key4', 0) == True\n    assert limiter4.hit('key4', 1) == True\n    assert limiter4.hit('key5', 2) == True\n    assert limiter4.hit('key5', 3) == True\n    assert limiter4.hit('key4', 4) == False\n    assert limiter4.count('key4', 5) == 2\n    assert limiter4.count('key5', 5) == 2\n\ncheck()",
+   "verdicts": {
+    "answer": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "oracle": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "partial": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    }
+   }
+  },
+  {
+   "cell": "t01_parse_duration",
+   "secs": 38.9,
+   "chars": 1185,
+   "truncated": false,
+   "sha": "3f2014ff37c0",
+   "has_check": true,
+   "test_raw": "```python\ndef check():\n    from sol import parse_duration\n\n    assert parse_duration('1h30m') == 9000\n    assert parse_duration('45s') == 45\n    assert parse_duration('2h') == 7200\n    assert parse_duration('10m') == 600\n    assert parse_duration('') is None\n    assert parse_duration('1h23m45s') is None\n    assert parse_duration('1h23m45') is None\n    assert parse_duration('1h23m45x') is None\n    assert parse_duration('1h23m45s ') is None\n    assert parse_duration(' 1h23m45s') is None\n    assert parse_duration('1h23m 45s') is None\n    assert parse_duration('1h23m45s  ') is None\n    assert parse_duration('1h23m45s123') is None\n    assert parse_duration('1h23m45s123s') is None\n    assert parse_duration('1h23m45s123m') is None\n    assert parse_duration('1h23m45s123h') is None\n    assert parse_duration('1h23m45s123') is None\n    assert parse_duration('1h23m45s123s') is None\n    assert parse_duration('1h23m45s123m') is None\n    assert parse_duration('1h23m45s123h') is None\n    assert parse_duration('1h23m45s123') is None\n    assert parse_duration('1h23m45s123s') is None\n    assert parse_duration('1h23m45s123m') is None\n    assert parse_duration('1h23m45s123h') is None\n```",
+   "test_src": "def check():\n    from sol import parse_duration\n\n    assert parse_duration('1h30m') == 9000\n    assert parse_duration('45s') == 45\n    assert parse_duration('2h') == 7200\n    assert parse_duration('10m') == 600\n    assert parse_duration('') is None\n    assert parse_duration('1h23m45s') is None\n    assert parse_duration('1h23m45') is None\n    assert parse_duration('1h23m45x') is None\n    assert parse_duration('1h23m45s ') is None\n    assert parse_duration(' 1h23m45s') is None\n    assert parse_duration('1h23m 45s') is None\n    assert parse_duration('1h23m45s  ') is None\n    assert parse_duration('1h23m45s123') is None\n    assert parse_duration('1h23m45s123s') is None\n    assert parse_duration('1h23m45s123m') is None\n    assert parse_duration('1h23m45s123h') is None\n    assert parse_duration('1h23m45s123') is None\n    assert parse_duration('1h23m45s123s') is None\n    assert parse_duration('1h23m45s123m') is None\n    assert parse_duration('1h23m45s123h') is None\n    assert parse_duration('1h23m45s123') is None\n    assert parse_duration('1h23m45s123s') is None\n    assert parse_duration('1h23m45s123m') is None\n    assert parse_duration('1h23m45s123h') is None",
+   "verdicts": {
+    "answer": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "oracle": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "partial": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    }
+   }
+  },
+  {
+   "cell": "y02_is_valid_brackets",
+   "secs": 18.5,
+   "chars": 787,
+   "truncated": false,
+   "sha": "5f2f612275f5",
+   "has_check": true,
+   "test_raw": "```python\ndef check():\n    from sol import is_valid_brackets\n\n    assert is_valid_brackets(\"()\") == True\n    assert is_valid_brackets(\"([]{})\") == True\n    assert is_valid_brackets(\"({[)]}\") == False\n    assert is_valid_brackets(\"({[]})\") == True\n    assert is_valid_brackets(\"({[}\") == False\n    assert is_valid_brackets(\"({[}])\") == False\n    assert is_valid_brackets(\"a(b)c{d}e[f]g\") == True\n    assert is_valid_brackets(\"\") == True\n    assert is_valid_brackets(\"([)]\") == False\n    assert is_valid_brackets(\"((()))\") == True\n    assert is_valid_brackets(\"((())\") == False\n    assert is_valid_brackets(\"(()\") == False\n    assert is_valid_brackets(\"(()))\") == False\n    assert is_valid_brackets(\"({[({[({}])})]})\") == True\n    assert is_valid_brackets(\"({[({[({}])})]}){\") == False\n```",
+   "test_src": "def check():\n    from sol import is_valid_brackets\n\n    assert is_valid_brackets(\"()\") == True\n    assert is_valid_brackets(\"([]{})\") == True\n    assert is_valid_brackets(\"({[)]}\") == False\n    assert is_valid_brackets(\"({[]})\") == True\n    assert is_valid_brackets(\"({[}\") == False\n    assert is_valid_brackets(\"({[}])\") == False\n    assert is_valid_brackets(\"a(b)c{d}e[f]g\") == True\n    assert is_valid_brackets(\"\") == True\n    assert is_valid_brackets(\"([)]\") == False\n    assert is_valid_brackets(\"((()))\") == True\n    assert is_valid_brackets(\"((())\") == False\n    assert is_valid_brackets(\"(()\") == False\n    assert is_valid_brackets(\"(()))\") == False\n    assert is_valid_brackets(\"({[({[({}])})]})\") == True\n    assert is_valid_brackets(\"({[({[({}])})]}){\") == False",
+   "verdicts": {
+    "answer": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "oracle": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "partial": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    }
+   }
+  },
+  {
+   "cell": "y03_base_convert",
+   "secs": 21.0,
+   "chars": 655,
+   "truncated": false,
+   "sha": "d7ab7440efe1",
+   "has_check": true,
+   "test_raw": "```python\ndef check():\n    from sol import base_convert\n\n    assert base_convert(\"\", 10, 10) == \"\"\n    assert base_convert(\"0\", 10, 10) == \"0\"\n    assert base_convert(\"-10\", 10, 2) == \"-1010\"\n    assert base_convert(\"FF\", 16, 10) == \"255\"\n    assert base_convert(\"1010\", 2, 16) == \"A\"\n    assert base_convert(\"Z\", 36, 10) == \"35\"\n    assert base_convert(\"-10\", 10, 36) == \"-K\"\n    assert base_convert(\"10\", 10, 36) == \"A\"\n    assert base_convert(\"10\", 2, 10) == \"2\"\n    assert base_convert(\"10\", 8, 16) == \"08\"\n    assert base_convert(\"10\", 16, 8) == \"12\"\n    assert base_convert(\"10\", 36, 2) == \"101000\"\n    assert base_convert(\"-10\", 36, 16) == \"-A\"\n```",
+   "test_src": "def check():\n    from sol import base_convert\n\n    assert base_convert(\"\", 10, 10) == \"\"\n    assert base_convert(\"0\", 10, 10) == \"0\"\n    assert base_convert(\"-10\", 10, 2) == \"-1010\"\n    assert base_convert(\"FF\", 16, 10) == \"255\"\n    assert base_convert(\"1010\", 2, 16) == \"A\"\n    assert base_convert(\"Z\", 36, 10) == \"35\"\n    assert base_convert(\"-10\", 10, 36) == \"-K\"\n    assert base_convert(\"10\", 10, 36) == \"A\"\n    assert base_convert(\"10\", 2, 10) == \"2\"\n    assert base_convert(\"10\", 8, 16) == \"08\"\n    assert base_convert(\"10\", 16, 8) == \"12\"\n    assert base_convert(\"10\", 36, 2) == \"101000\"\n    assert base_convert(\"-10\", 36, 16) == \"-A\"",
+   "verdicts": {
+    "answer": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "oracle": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    },
+    "partial": {
+     "rc": 1,
+     "verdict": "caught",
+     "err": "AssertionError",
+     "err_kind": "AssertionError",
+     "out": ""
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+D1 = 8 格：['g7s1_flatten_nested', 'g7s2_parse_headers', 'g7t1_split_top_level', 'g7t2_parse_pairs', 's02_limiter', 't01_parse_duration', 'y02_is_valid_brackets', 'y03_base_convert']
+  g7s1_flatten_nested      prompt_sha=d973a6b350cb7cff chars=485
+  g7s2_parse_headers       prompt_sha=eca377c52634509b chars=430
+  g7t1_split_top_level     prompt_sha=528cba6537914225 chars=401
+  g7t2_parse_pairs         prompt_sha=e6703ab4b446df39 chars=420
+  s02_limiter              prompt_sha=e2232564fb73519b chars=598
+  t01_parse_duration       prompt_sha=6830e6d15d5e2ae2 chars=359
+  y02_is_valid_brackets    prompt_sha=d3e15777c13f9499 chars=364
+  y03_base_convert         prompt_sha=0a765b04403df8f5 chars=388
+  speed#1 17.93 tok/s
+  speed#2 17.78 tok/s
+  speed#3 17.77 tok/s
+  中位 17.78（门槛 15）
+[1/8] g7s1_flatten_nested       22.4s chars= 744 check=Y answer=caught  oracle=pass    partial=caught
+  ⚠️ g7s2_parse_headers 第 1 次截断，重试
+  ⚠️ g7s2_parse_headers 第 2 次截断，重试
+[2/8] g7s2_parse_headers       342.7s TRUNCATED LLMError: 响应被截断（done_reason=length）：thinking=0字符 content=3298字符 eval=2048 —— 这是预
+  ⚠️ g7t1_split_top_level 第 1 次截断，重试
+  ⚠️ g7t1_split_top_level 第 2 次截断，重试
+[3/8] g7t1_split_top_level     353.6s TRUNCATED LLMError: 响应被截断（done_reason=length）：thinking=0字符 content=3509字符 eval=2048 —— 这是预
+[4/8] g7t2_parse_pairs          45.2s chars=1089 check=Y answer=caught  oracle=pass    partial=caught
+[5/8] s02_limiter               38.1s chars=1126 check=Y answer=caught  oracle=caught  partial=caught
+[6/8] t01_parse_duration        38.9s chars=1185 check=Y answer=caught  oracle=caught  partial=caught
+[7/8] y02_is_valid_brackets     18.5s chars= 787 check=Y answer=caught  oracle=caught  partial=caught
+[8/8] y03_base_convert          21.0s chars= 655 check=Y answer=caught  oracle=caught  partial=caught
+总耗时 881.4s
+⇒ 写 /Users/linshaojie/V1/bench/evidence/l19_s325/readings_v255.json

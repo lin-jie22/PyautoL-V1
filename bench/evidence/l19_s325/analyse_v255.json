@@ -1,0 +1,44 @@
+{
+ "valid": [
+  "g7s1_flatten_nested",
+  "g7t2_parse_pairs"
+ ],
+ "caught": [
+  "g7s1_flatten_nested",
+  "g7t2_parse_pairs"
+ ],
+ "false_catch": [
+  "s02_limiter",
+  "t01_parse_duration",
+  "y02_is_valid_brackets",
+  "y03_base_convert"
+ ],
+ "buckets": {
+  "A_test_broken": [
+   "s02_limiter",
+   "t01_parse_duration",
+   "y02_is_valid_brackets",
+   "y03_base_convert"
+  ],
+  "B_test_weak": [],
+  "C_shared_blind": [],
+  "D_caught": [
+   "g7s1_flatten_nested",
+   "g7t2_parse_pairs"
+  ],
+  "gen_fail": [
+   "g7s2_parse_headers",
+   "g7t1_split_top_level"
+  ]
+ },
+ "m1": {
+  "bet": 3,
+  "got": 2,
+  "denom": 2
+ },
+ "m2": {
+  "bet": 7,
+  "got": 2,
+  "denom": 8
+ }
+}

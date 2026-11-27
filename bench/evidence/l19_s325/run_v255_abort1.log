@@ -1,0 +1,29 @@
+D1 = 8 格：['g7s1_flatten_nested', 'g7s2_parse_headers', 'g7t1_split_top_level', 'g7t2_parse_pairs', 's02_limiter', 't01_parse_duration', 'y02_is_valid_brackets', 'y03_base_convert']
+  g7s1_flatten_nested      prompt_sha=1a7730f5e660a538 chars=451
+  g7s2_parse_headers       prompt_sha=124914e4ef43d2df chars=396
+  g7t1_split_top_level     prompt_sha=c4d5ab224cd7626e chars=367
+  g7t2_parse_pairs         prompt_sha=2de20f69c2ec1a50 chars=386
+  s02_limiter              prompt_sha=6fd6d2041cc61ce3 chars=564
+  t01_parse_duration       prompt_sha=3a4fad3c27f69994 chars=325
+  y02_is_valid_brackets    prompt_sha=1a3e5d480b61d9bf chars=330
+  y03_base_convert         prompt_sha=735b3cff9e753b13 chars=354
+  speed#1 16.34 tok/s
+  speed#2 16.56 tok/s
+  speed#3 16.36 tok/s
+  中位 16.36（门槛 15）
+[1/8] g7s1_flatten_nested       30.2s chars= 938 check=Y answer=pass    oracle=pass    partial=caught
+Traceback (most recent call last):
+  File "/Users/linshaojie/V1/bench/evidence/l19_s325/run_v255.py", line 164, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/linshaojie/V1/bench/evidence/l19_s325/run_v255.py", line 129, in main
+    txt = llm.complete([Message("system", SYS), Message("user", plan[c])],
+                       max_tokens=int(s.limits.llm_max_tokens), temperature=0.0)
+  File "/Users/linshaojie/V1/mw/llm.py", line 138, in complete
+    return self._ollama_content(payload)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/linshaojie/V1/mw/llm.py", line 211, in _ollama_content
+    raise LLMError(
+    ...<3 lines>...
+        "—— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）")
+mw.llm.LLMError: 响应被截断（done_reason=length）：thinking=0字符 content=3421字符 eval=2048 —— 这是预算/思考税，不是模型不会（V236 §307 / 纪律 169）

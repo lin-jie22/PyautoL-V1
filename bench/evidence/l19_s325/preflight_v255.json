@@ -1,0 +1,383 @@
+{
+ "d1": [
+  "g7s1_flatten_nested",
+  "g7s2_parse_headers",
+  "g7t1_split_top_level",
+  "g7t2_parse_pairs",
+  "s02_limiter",
+  "t01_parse_duration",
+  "y02_is_valid_brackets",
+  "y03_base_convert"
+ ],
+ "excluded": [
+  {
+   "cell": "g7t4_quote_join",
+   "why": [
+    "答案不编译"
+   ]
+  },
+  {
+   "cell": "m02_vfs",
+   "why": [
+    "多文件交付"
+   ]
+  },
+  {
+   "cell": "m03_tiered",
+   "why": [
+    "多文件交付"
+   ]
+  },
+  {
+   "cell": "t04_merge_ranges",
+   "why": [
+    "闸能判对错"
+   ]
+  },
+  {
+   "cell": "z02_to_csv",
+   "why": [
+    "答案不编译"
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "cell": "g7s1_flatten_nested",
+   "in_d1": true,
+   "excluded_because": [],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.6,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 490
+  },
+  {
+   "cell": "g7s2_parse_headers",
+   "in_d1": true,
+   "excluded_because": [],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.8,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 380
+  },
+  {
+   "cell": "g7t1_split_top_level",
+   "in_d1": true,
+   "excluded_because": [],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.6,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 695
+  },
+  {
+   "cell": "g7t2_parse_pairs",
+   "in_d1": true,
+   "excluded_because": [],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.6,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 791
+  },
+  {
+   "cell": "g7t4_quote_join",
+   "in_d1": false,
+   "excluded_because": [
+    "答案不编译"
+   ],
+   "blind": true,
+   "compiles": false,
+   "compile_err": "SyntaxError: unexpected character after line continuation character",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.8,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 172
+  },
+  {
+   "cell": "m02_vfs",
+   "in_d1": false,
+   "excluded_because": [
+    "多文件交付"
+   ],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": true,
+   "checks": [
+    "nonempty"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.8,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 3049
+  },
+  {
+   "cell": "m03_tiered",
+   "in_d1": false,
+   "excluded_because": [
+    "多文件交付"
+   ],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": true,
+   "checks": [
+    "nonempty"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.4,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 1282
+  },
+  {
+   "cell": "s02_limiter",
+   "in_d1": true,
+   "excluded_because": [],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.75,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 708
+  },
+  {
+   "cell": "t01_parse_duration",
+   "in_d1": true,
+   "excluded_because": [],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.8333,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 386
+  },
+  {
+   "cell": "t04_merge_ranges",
+   "in_d1": false,
+   "excluded_because": [
+    "闸能判对错"
+   ],
+   "blind": false,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles",
+    "example"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.8333,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 382
+  },
+  {
+   "cell": "y02_is_valid_brackets",
+   "in_d1": true,
+   "excluded_because": [],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.6667,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 328
+  },
+  {
+   "cell": "y03_base_convert",
+   "in_d1": true,
+   "excluded_because": [],
+   "blind": true,
+   "compiles": true,
+   "compile_err": "",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.8333,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 412
+  },
+  {
+   "cell": "z02_to_csv",
+   "in_d1": false,
+   "excluded_because": [
+    "答案不编译"
+   ],
+   "blind": true,
+   "compiles": false,
+   "compile_err": "SyntaxError: unexpected character after line continuation character",
+   "wants_files": false,
+   "checks": [
+    "nonempty",
+    "defines",
+    "fence_lang",
+    "compiles"
+   ],
+   "calib": {
+    "oracle": 1.0,
+    "partial": 0.8,
+    "null": 0.0
+   },
+   "calib_ok": true,
+   "ans_chars": 499
+  }
+ ],
+ "prompts": {
+  "g7s1_flatten_nested": {
+   "system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+   "user": "题面：\n写一个函数 flatten_nested(d)：把嵌套结构展平成单层 dict。嵌套 dict 用 '.' 连接键（如 {'a':{'b':1}} → {'a.b':1}）；嵌套 list 用 '[i]' 下标（如 {'a':[10,20]} → {'a[0]':10,'a[1]':20}）；值为 None 的条目整个跳过（不出现任何键）；可以混合嵌套（{'a':{'b':[1]}} → {'a.b[0]':1}）。只输出代码，函数名必须是 flatten_nested。\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。"
+  },
+  "g7s2_parse_headers": {
+   "system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+   "user": "题面：\n写一个函数 parse_headers(s)，解析 'k1: v1; k2: v2' 形式的头字符串。规则：条目用 ';' 分隔；键值用第一个 ':' 分隔；键和未加引号的值都要去掉首尾空白；值若用**双引号包住**，则引号内的 ';' 与 ':' 不算分隔符、值取引号内原文（不去空白、不再去引号）；空键跳过。只输出代码，函数名必须是 parse_headers。\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。"
+  },
+  "g7t1_split_top_level": {
+   "system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+   "user": "题面：\n写一个函数 split_top_level(s)：按**顶层**逗号切分字符串，圆括号 () 与方括号 [] 内部的逗号**不算**分隔符（括号可嵌套）；每段去掉首尾空白；空段丢弃。例：'a,[1,2],b' → ['a','[1,2]','b']。只输出代码，函数名必须是 split_top_level。\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。"
+  },
+  "g7t2_parse_pairs": {
+   "system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+   "user": "题面：\n写一个函数 parse_pairs(s)，解析 'k1=v1; k2=v2' 形式的串。规则：条目用 ';' 分隔；键值用第一个 '=' 分隔；键与未加引号的值去掉首尾空白；值若被**单引号**包住，则单引号内的 ';' 与 '=' 不算分隔符、值取引号内原文（不去空白、不保留引号）；空段跳过。只输出代码，函数名必须是 parse_pairs。\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。"
+  },
+  "s02_limiter": {
+   "system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+   "user": "题面：\n实现滑动窗口限流器类 Limiter。构造 `Limiter(limit, window)`：每个 key 在任意长度为 window 的时间窗内最多放行 limit 次。方法：\n① `hit(key, now)`：统计 key 在半开区间 `(now-window, now]` 内**已记录**的命中次数；不足 limit 则记录本次命中（时刻 now）并返回 True，否则不记录并返回 False。\n② `count(key, now)`：返回 `(now-window, now]` 内已记录的命中数（不记录本次）。\n边界语义是精确的：时刻恰为 now-window 的旧命中**已滑出**窗口（不计入）。\n不同 key 相互独立。只输出代码。时间一律由参数传入，⛔ 不许用 time 模块。\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。"
+  },
+  "t01_parse_duration": {
+   "system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+   "user": "题面：\n写一个函数 parse_duration(s)，把 '1h30m'、'45s'、'2h'、'10m' 这类字符串解析为总秒数（int）。空串或无法解析时返回 None。只输出代码，函数名必须是 parse_duration。\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。"
+  },
+  "y02_is_valid_brackets": {
+   "system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+   "user": "题面：\n写一个函数 is_valid_brackets(s)，判断字符串中的三种括号 () [] {} 是否**类型正确且嵌套合法**（其它字符忽略）。返回 True/False。只输出代码，函数名必须是 is_valid_brackets。\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。"
+  },
+  "y03_base_convert": {
+   "system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+   "user": "题面：\n写一个函数 base_convert(s, from_base, to_base)，把字符串 s（按 from_base 进制解释，可能带前导 '-'）转成 to_base 进制的字符串，用大写字母表示 10~35。空串返回空串。只输出代码，函数名必须是 base_convert。\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。"
+  }
+ },
+ "prompt_sha": {
+  "g7s1_flatten_nested": "d973a6b350cb7cff",
+  "g7s2_parse_headers": "eca377c52634509b",
+  "g7t1_split_top_level": "528cba6537914225",
+  "g7t2_parse_pairs": "e6703ab4b446df39",
+  "s02_limiter": "e2232564fb73519b",
+  "t01_parse_duration": "6830e6d15d5e2ae2",
+  "y02_is_valid_brackets": "d3e15777c13f9499",
+  "y03_base_convert": "0a765b04403df8f5"
+ },
+ "prompt_system": "你是测试工程师。只输出一个 python 代码块，不要任何解释。",
+ "prompt_user_tmpl": "题面：\n{spec}\n\n请只根据上面的题面，写一份自测脚本，用来检验一份实现是否满足题面要求。\n\n格式要求：\n- 输出一个 Python 模块，定义 `def check():`；函数体里用 assert 检查题面明确规定的行为与边界。\n- 被测实现已保存在同目录的 `sol.py` 中，直接 `from sol import <题面要求的名字>`。\n- 不读文件、不联网、不用 time / random。\n- 测试脚本总行数不超过 60 行；挑最有代表性的用例，不要穷举。\n- 只输出代码，不要解释。",
+ "calib_fail": [],
+ "scorer_sha": "6062bd622cc52edb0d5a1eb496ea7b3532a1bbd886b8cf6fef26c1bfbe368035"
+}

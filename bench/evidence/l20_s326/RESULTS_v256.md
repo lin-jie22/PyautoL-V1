@@ -44,11 +44,12 @@ run.py:2865   if getattr(args, "use_reward", False) and ...:            # 全仓
 **⇒ V253 的 13 个空洞格，是「奖励回灌完全未接线」的读数。**
 「跨题奖励回灌有没有牙」在 39 题同口径下**从未测过**——不是测了没效果，是通道没通电。
 
-⚠️ **证据标注缺陷（本轮新发现，须登记）**：`bench/evidence/l17_s323/answers_a.jsonl`
-的 header 自述 `"solver": "内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）"`，
-而实际命令行是 `--no-external --no-ledger` 且**无** `--use-reward`。
-⇒ **header 自述口径 ≠ 实际口径**。与纪律 253（`run_id` 空的行不是读数）同族：
-口径必须按**命令行**核，不能按文件自述核。
+⚠️ **证据标注问题（V257 已把 V256 的原话更正）**：`bench/evidence/l17_s323/answers_a.jsonl`
+的 header label 是 `"内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）"`，
+来自 `run.py:2569`，条件是**非 `--fresh`**（`--fresh` 那条在 `run.py:2524`）。
+它说的是「同一 `Core` + 同一 `MemoryStore` 连跑多题」——**属实**（语义记忆确实跨题）。
+但它 **⛔ 不表示奖励回灌通电**（那要 `--use-reward` 写）。
+⇒ **标签不是读数**（纪律 6 的新形态）；不是 label 写错了。
 
 ---
 

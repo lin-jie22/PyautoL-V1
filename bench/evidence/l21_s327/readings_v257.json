@@ -1,0 +1,395 @@
+{
+ "prereg": "bench/evidence/l21_s327/PREREG_v257.md",
+ "order": [
+  "t01_parse_duration",
+  "t04_merge_ranges",
+  "g7t1_split_top_level",
+  "g7t2_parse_pairs",
+  "g7t4_quote_join",
+  "g7s1_flatten_nested",
+  "g7s2_parse_headers",
+  "y02_is_valid_brackets",
+  "y03_base_convert",
+  "z02_to_csv",
+  "s02_limiter",
+  "m02_vfs",
+  "m03_tiered"
+ ],
+ "v253": {
+  "t01_parse_duration": 0.8333,
+  "t04_merge_ranges": 0.3333,
+  "g7t1_split_top_level": 0.6,
+  "g7t2_parse_pairs": 0.0,
+  "g7t4_quote_join": 0.0,
+  "g7s1_flatten_nested": 0.8,
+  "g7s2_parse_headers": 0.4,
+  "y02_is_valid_brackets": 0.8333,
+  "y03_base_convert": 0.6667,
+  "z02_to_csv": 0.0,
+  "s02_limiter": 0.0,
+  "m02_vfs": 0.0,
+  "m03_tiered": 0.0
+ },
+ "arm_a": {
+  "t01_parse_duration": 0.8333,
+  "t04_merge_ranges": 0.3333,
+  "g7t1_split_top_level": 0.6,
+  "g7t2_parse_pairs": 0.0,
+  "g7t4_quote_join": 0.0,
+  "g7s1_flatten_nested": 0.8,
+  "g7s2_parse_headers": 0.4,
+  "y02_is_valid_brackets": 0.8333,
+  "y03_base_convert": 0.6667,
+  "z02_to_csv": 0.0,
+  "s02_limiter": 0.0,
+  "m02_vfs": 0.0,
+  "m03_tiered": 0.0
+ },
+ "arm_b": {
+  "t01_parse_duration": 0.8333,
+  "t04_merge_ranges": 1.0,
+  "g7t1_split_top_level": 0.6,
+  "g7t2_parse_pairs": 0.0,
+  "g7t4_quote_join": 0.0,
+  "g7s1_flatten_nested": 0.8,
+  "g7s2_parse_headers": 0.4,
+  "y02_is_valid_brackets": 0.8333,
+  "y03_base_convert": 0.6667,
+  "z02_to_csv": 0.0,
+  "s02_limiter": 0.0,
+  "m02_vfs": 0.0,
+  "m03_tiered": 0.0
+ },
+ "blocks_a": {
+  "t01_parse_duration": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "t04_merge_ranges": {
+   "rejects": 1,
+   "via_answer": 0,
+   "max_stall": 2,
+   "status": "stalled",
+   "verify": [
+    2,
+    0,
+    2,
+    0
+   ]
+  },
+  "g7t1_split_top_level": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "g7t2_parse_pairs": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "g7t4_quote_join": {
+   "rejects": 1,
+   "via_answer": 0,
+   "max_stall": 2,
+   "status": "stalled",
+   "verify": [
+    2,
+    0,
+    2,
+    0
+   ]
+  },
+  "g7s1_flatten_nested": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "g7s2_parse_headers": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "y02_is_valid_brackets": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "y03_base_convert": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "z02_to_csv": {
+   "rejects": 2,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    3,
+    0,
+    3,
+    1
+   ]
+  },
+  "s02_limiter": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "m02_vfs": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "m03_tiered": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  }
+ },
+ "blocks_b": {
+  "t01_parse_duration": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "t04_merge_ranges": {
+   "rejects": 1,
+   "via_answer": 1,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    2,
+    1,
+    1,
+    0
+   ]
+  },
+  "g7t1_split_top_level": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "g7t2_parse_pairs": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "g7t4_quote_join": {
+   "rejects": 1,
+   "via_answer": 0,
+   "max_stall": 2,
+   "status": "stalled",
+   "verify": [
+    2,
+    0,
+    2,
+    0
+   ]
+  },
+  "g7s1_flatten_nested": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "g7s2_parse_headers": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "y02_is_valid_brackets": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "y03_base_convert": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "z02_to_csv": {
+   "rejects": 2,
+   "via_answer": 1,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    3,
+    0,
+    3,
+    1
+   ]
+  },
+  "s02_limiter": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "m02_vfs": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  },
+  "m03_tiered": {
+   "rejects": 0,
+   "via_answer": 0,
+   "max_stall": 0,
+   "status": "done",
+   "verify": [
+    1,
+    1,
+    0,
+    0
+   ]
+  }
+ },
+ "verdict": {
+  "P1_same_ge_10": true,
+  "P1_same_n": 13,
+  "P2_t04_up": true,
+  "P3_syntax_up": false,
+  "P3_detail": [],
+  "P4_rest_all_zero": true,
+  "P4_moved": [],
+  "P4_prem_zero_reject": 10,
+  "P5_via_ok": false
+ },
+ "means": {
+  "v253": 0.3435846153846154,
+  "a": 0.3435846153846154,
+  "b": 0.3948692307692308
+ }
+}

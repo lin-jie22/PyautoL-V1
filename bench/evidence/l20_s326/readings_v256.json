@@ -1,0 +1,871 @@
+{
+ "prereg": "bench/evidence/l20_s326/PREREG_v256.md",
+ "model_calls": 0,
+ "suite": "/Users/linshaojie/V1/bench/evidence/l17_s323/suite_all39.jsonl",
+ "runs_source": "/tmp/v253_a/bench/runs.jsonl",
+ "n_tasks": 39,
+ "low_ids": [
+  "g7s1_flatten_nested",
+  "g7s2_parse_headers",
+  "g7t1_split_top_level",
+  "g7t2_parse_pairs",
+  "g7t4_quote_join",
+  "m02_vfs",
+  "m03_tiered",
+  "s02_limiter",
+  "t01_parse_duration",
+  "t04_merge_ranges",
+  "y02_is_valid_brackets",
+  "y03_base_convert",
+  "z02_to_csv"
+ ],
+ "high_ids": [
+  "g7n1_split_amount",
+  "g7n2_next_permutation",
+  "g7n3_spiral_order",
+  "g7n4_min_meeting_rooms",
+  "g7s3_csv_row",
+  "g7s4_xml_escape_attrs",
+  "g7t3_encode_attrs",
+  "m01_records",
+  "s01_kv_expiry",
+  "s03_tx_journal",
+  "t02_dedupe",
+  "t03_commas",
+  "t05_top_k",
+  "t06_rle",
+  "x01_slugify",
+  "x02_mask_email",
+  "x03_word_freq",
+  "x04_truncate",
+  "x05_normalize_ws",
+  "y01_roman_to_int",
+  "y04_gcd_lcm",
+  "y05_median",
+  "z01_flatten",
+  "z03_parse_query",
+  "z04_deep_get",
+  "z05_group_by"
+ ],
+ "class_of_low": {
+  "g7s1_flatten_nested": "AssertionError",
+  "g7s2_parse_headers": "AssertionError",
+  "g7t1_split_top_level": "AssertionError",
+  "g7t2_parse_pairs": "AssertionError",
+  "g7t4_quote_join": "其他",
+  "m02_vfs": "AttributeError",
+  "m03_tiered": "其他",
+  "s02_limiter": "AssertionError",
+  "t01_parse_duration": "AssertionError",
+  "t04_merge_ranges": "TypeError",
+  "y02_is_valid_brackets": "AssertionError",
+  "y03_base_convert": "AssertionError",
+  "z02_to_csv": "其他"
+ },
+ "class_dist": {
+  "AssertionError": 8,
+  "其他": 3,
+  "AttributeError": 1,
+  "TypeError": 1
+ },
+ "is_passed_1_0": true,
+ "is_passed_09999": false,
+ "phase0": {
+  "empty": 39,
+  "n": 39,
+  "rows": [
+   {
+    "task_id": "t01_parse_duration",
+    "rkey": "edge_empty,in_str,level0,n_tests_ge5,op_parse,out_int,out_none,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "t02_dedupe",
+    "rkey": "edge_empty,in_seq,level0,n_tests_ge5,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "t03_commas",
+    "rkey": "in_num,level0,n_tests_ge5,op_convert,out_int,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "t04_merge_ranges",
+    "rkey": "edge_empty,in_seq,level1,n_tests_ge5,op_merge,op_sort,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "t05_top_k",
+    "rkey": "edge_empty,in_num,in_seq,level1,op_count,op_sort,out_int,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "t06_rle",
+    "rkey": "in_str,level0,n_tests_ge5,op_convert,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7t1_split_top_level",
+    "rkey": "edge_empty,in_str,level1,n_tests_ge5,op_nest,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7t2_parse_pairs",
+    "rkey": "in_str,level2,n_tests_ge5,op_cond,op_parse",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7t3_encode_attrs",
+    "rkey": "edge_empty,in_dict,level1,n_tests_ge5,op_convert,out_dict,out_none",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7t4_quote_join",
+    "rkey": "edge_empty,in_seq,level1,n_tests_ge5,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7n1_split_amount",
+    "rkey": "in_num,level0,n_tests_ge5,out_int",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7n2_next_permutation",
+    "rkey": "in_seq,level2,n_tests_ge5,op_cond,op_sort,out_dict,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7n3_spiral_order",
+    "rkey": "edge_empty,level2,n_tests_ge5",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7n4_min_meeting_rooms",
+    "rkey": "edge_empty,in_seq,level1,n_tests_ge5,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7s1_flatten_nested",
+    "rkey": "edge_empty,in_dict,level2,n_tests_ge5,op_nest,out_dict,out_none",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7s2_parse_headers",
+    "rkey": "edge_empty,in_str,level2,n_tests_ge5,op_cond,op_parse,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7s3_csv_row",
+    "rkey": "edge_empty,level1,n_tests_ge5,op_cond,op_convert,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "g7s4_xml_escape_attrs",
+    "rkey": "edge_empty,in_dict,level1,n_tests_ge5,op_cond,op_convert,out_dict,out_none",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "y01_roman_to_int",
+    "rkey": "in_str,level1,n_tests_ge5,op_convert,out_int,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "y02_is_valid_brackets",
+    "rkey": "edge_empty,in_str,level1,n_tests_ge5,op_nest,out_bool,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "y03_base_convert",
+    "rkey": "in_num,in_str,level1,n_tests_ge5,op_convert,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "y04_gcd_lcm",
+    "rkey": "in_num,level0,n_tests_ge5,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "y05_median",
+    "rkey": "edge_empty,in_seq,level0,n_tests_ge5,out_int,out_none,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "z01_flatten",
+    "rkey": "in_dict,level1,n_tests_ge5,op_nest,out_dict,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "z02_to_csv",
+    "rkey": "edge_empty,in_seq,level2,n_tests_ge5,op_cond,out_dict,out_none,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "z03_parse_query",
+    "rkey": "in_str,level1,n_tests_ge5,op_parse,op_regex,out_dict",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "z04_deep_get",
+    "rkey": "edge_empty,in_dict,level1,n_tests_ge5,op_nest,out_none",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "z05_group_by",
+    "rkey": "edge_empty,in_seq,level0,n_tests_ge5,out_dict,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "s01_kv_expiry",
+    "rkey": "edge_empty,level1,op_sort,out_none,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "s02_limiter",
+    "rkey": "level1,op_cond,op_count,out_bool,out_int",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "s03_tx_journal",
+    "rkey": "edge_empty,level2,n_tests_ge5,op_sort,out_none,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "m01_records",
+    "rkey": "edge_empty,level1,out_dict,out_none,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "m02_vfs",
+    "rkey": "edge_empty,level2,n_tests_ge5,op_nest,op_sort,out_dict,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "m03_tiered",
+    "rkey": "edge_empty,level2,n_tests_ge5,out_dict,out_none,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "x01_slugify",
+    "rkey": "in_str,level0,n_tests_ge5,op_convert",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "x02_mask_email",
+    "rkey": "in_str,level0,n_tests_ge5,op_cond,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "x03_word_freq",
+    "rkey": "edge_empty,in_num,in_str,level1,n_tests_ge5,op_count,op_regex,op_sort,out_dict,out_int,out_seq,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "x04_truncate",
+    "rkey": "in_num,in_str,level0,n_tests_ge5,op_cond,out_str",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "x05_normalize_ws",
+    "rkey": "in_str,level1,n_tests_ge5,op_merge",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 0,
+    "skipped_success": 0
+   }
+  ],
+  "db_reward_episodes": 0
+ },
+ "phase1": {
+  "written": 39,
+  "rejected_source": 0,
+  "rejected_missing": 0,
+  "db_reward_episodes": 39,
+  "n_unique_texts": 34,
+  "unique_texts": [
+   "",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.62） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.75） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.61） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.68） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.69） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.70） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.74） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.74） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.74） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.46） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.62） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.62） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.62） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.66） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.66） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.73） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.50） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.59） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.71） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 6 次（历史得分均值 0.56） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.80） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.72） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在"
+  ],
+  "M": 1,
+  "M_skeleton": 12,
+  "skeleton_unique": 12,
+  "rows": [
+   {
+    "task_id": "t01_parse_duration",
+    "rkey": "edge_empty,in_str,level0,n_tests_ge5,op_parse,out_int,out_none,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.46） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 11
+   },
+   {
+    "task_id": "t02_dedupe",
+    "rkey": "edge_empty,in_seq,level0,n_tests_ge5,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 9,
+    "skipped_self": 1,
+    "skipped_success": 13
+   },
+   {
+    "task_id": "t03_commas",
+    "rkey": "in_num,level0,n_tests_ge5,op_convert,out_int,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.75） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 2,
+    "skipped_self": 1,
+    "skipped_success": 11
+   },
+   {
+    "task_id": "t04_merge_ranges",
+    "rkey": "edge_empty,in_seq,level1,n_tests_ge5,op_merge,op_sort,out_seq",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 4,
+    "skipped_self": 1,
+    "skipped_success": 14
+   },
+   {
+    "task_id": "t05_top_k",
+    "rkey": "edge_empty,in_num,in_seq,level1,op_count,op_sort,out_int,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 3,
+    "skipped_self": 1,
+    "skipped_success": 8
+   },
+   {
+    "task_id": "t06_rle",
+    "rkey": "in_str,level0,n_tests_ge5,op_convert,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 5,
+    "skipped_self": 1,
+    "skipped_success": 8
+   },
+   {
+    "task_id": "g7t1_split_top_level",
+    "rkey": "edge_empty,in_str,level1,n_tests_ge5,op_nest,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.71） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 9,
+    "skipped_self": 1,
+    "skipped_success": 15
+   },
+   {
+    "task_id": "g7t2_parse_pairs",
+    "rkey": "in_str,level2,n_tests_ge5,op_cond,op_parse",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.62） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 2,
+    "skipped_self": 1,
+    "skipped_success": 5
+   },
+   {
+    "task_id": "g7t3_encode_attrs",
+    "rkey": "edge_empty,in_dict,level1,n_tests_ge5,op_convert,out_dict,out_none",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.69） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 10
+   },
+   {
+    "task_id": "g7t4_quote_join",
+    "rkey": "edge_empty,in_seq,level1,n_tests_ge5,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.62） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 8,
+    "skipped_self": 1,
+    "skipped_success": 15
+   },
+   {
+    "task_id": "g7n1_split_amount",
+    "rkey": "in_num,level0,n_tests_ge5,out_int",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 1,
+    "skipped_self": 1,
+    "skipped_success": 5
+   },
+   {
+    "task_id": "g7n2_next_permutation",
+    "rkey": "in_seq,level2,n_tests_ge5,op_cond,op_sort,out_dict,out_seq",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 5
+   },
+   {
+    "task_id": "g7n3_spiral_order",
+    "rkey": "edge_empty,level2,n_tests_ge5",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.40） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 2
+   },
+   {
+    "task_id": "g7n4_min_meeting_rooms",
+    "rkey": "edge_empty,in_seq,level1,n_tests_ge5,out_seq",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.72） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 7,
+    "skipped_self": 1,
+    "skipped_success": 15
+   },
+   {
+    "task_id": "g7s1_flatten_nested",
+    "rkey": "edge_empty,in_dict,level2,n_tests_ge5,op_nest,out_dict,out_none",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 4,
+    "skipped_self": 1,
+    "skipped_success": 7
+   },
+   {
+    "task_id": "g7s2_parse_headers",
+    "rkey": "edge_empty,in_str,level2,n_tests_ge5,op_cond,op_parse,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.59） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 9,
+    "skipped_self": 1,
+    "skipped_success": 9
+   },
+   {
+    "task_id": "g7s3_csv_row",
+    "rkey": "edge_empty,level1,n_tests_ge5,op_cond,op_convert,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.62） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 9,
+    "skipped_self": 1,
+    "skipped_success": 17
+   },
+   {
+    "task_id": "g7s4_xml_escape_attrs",
+    "rkey": "edge_empty,in_dict,level1,n_tests_ge5,op_cond,op_convert,out_dict,out_none",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.80） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 3,
+    "skipped_self": 1,
+    "skipped_success": 7
+   },
+   {
+    "task_id": "y01_roman_to_int",
+    "rkey": "in_str,level1,n_tests_ge5,op_convert,out_int,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.67） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 10
+   },
+   {
+    "task_id": "y02_is_valid_brackets",
+    "rkey": "edge_empty,in_str,level1,n_tests_ge5,op_nest,out_bool,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.62） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 13
+   },
+   {
+    "task_id": "y03_base_convert",
+    "rkey": "in_num,in_str,level1,n_tests_ge5,op_convert,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.61） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 4,
+    "skipped_self": 1,
+    "skipped_success": 11
+   },
+   {
+    "task_id": "y04_gcd_lcm",
+    "rkey": "in_num,level0,n_tests_ge5,out_seq",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 1,
+    "skipped_success": 7
+   },
+   {
+    "task_id": "y05_median",
+    "rkey": "edge_empty,in_seq,level0,n_tests_ge5,out_int,out_none,out_seq",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.83） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+    "seen": 5,
+    "skipped_self": 1,
+    "skipped_success": 11
+   },
+   {
+    "task_id": "z01_flatten",
+    "rkey": "in_dict,level1,n_tests_ge5,op_nest,out_dict,out_seq",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.74） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 7,
+    "skipped_self": 1,
+    "skipped_success": 9
+   },
+   {
+    "task_id": "z02_to_csv",
+    "rkey": "edge_empty,in_seq,level2,n_tests_ge5,op_cond,out_dict,out_none,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.68） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 7,
+    "skipped_self": 1,
+    "skipped_success": 12
+   },
+   {
+    "task_id": "z03_parse_query",
+    "rkey": "in_str,level1,n_tests_ge5,op_parse,op_regex,out_dict",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 5 次（历史得分均值 0.50） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 5,
+    "skipped_self": 1,
+    "skipped_success": 5
+   },
+   {
+    "task_id": "z04_deep_get",
+    "rkey": "edge_empty,in_dict,level1,n_tests_ge5,op_nest,out_none",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.74） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 9
+   },
+   {
+    "task_id": "z05_group_by",
+    "rkey": "edge_empty,in_seq,level0,n_tests_ge5,out_dict,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.72） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 7,
+    "skipped_self": 1,
+    "skipped_success": 15
+   },
+   {
+    "task_id": "s01_kv_expiry",
+    "rkey": "edge_empty,level1,op_sort,out_none,out_seq",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+    "seen": 4,
+    "skipped_self": 1,
+    "skipped_success": 10
+   },
+   {
+    "task_id": "s02_limiter",
+    "rkey": "level1,op_cond,op_count,out_bool,out_int",
+    "text": "",
+    "seen": 0,
+    "skipped_self": 1,
+    "skipped_success": 0
+   },
+   {
+    "task_id": "s03_tx_journal",
+    "rkey": "edge_empty,level2,n_tests_ge5,op_sort,out_none,out_seq",
+    "text": "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.60） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 7,
+    "skipped_self": 1,
+    "skipped_success": 11
+   },
+   {
+    "task_id": "m01_records",
+    "rkey": "edge_empty,level1,out_dict,out_none,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.74） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 8,
+    "skipped_self": 1,
+    "skipped_success": 13
+   },
+   {
+    "task_id": "m02_vfs",
+    "rkey": "edge_empty,level2,n_tests_ge5,op_nest,op_sort,out_dict,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.66） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+    "seen": 8,
+    "skipped_self": 1,
+    "skipped_success": 12
+   },
+   {
+    "task_id": "m03_tiered",
+    "rkey": "edge_empty,level2,n_tests_ge5,out_dict,out_none,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.66） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 7,
+    "skipped_self": 1,
+    "skipped_success": 15
+   },
+   {
+    "task_id": "x01_slugify",
+    "rkey": "in_str,level0,n_tests_ge5,op_convert",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 2 次（历史得分均值 0.75） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 2,
+    "skipped_self": 1,
+    "skipped_success": 8
+   },
+   {
+    "task_id": "x02_mask_email",
+    "rkey": "in_str,level0,n_tests_ge5,op_cond,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 6 次（历史得分均值 0.56） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 8
+   },
+   {
+    "task_id": "x03_word_freq",
+    "rkey": "edge_empty,in_num,in_str,level1,n_tests_ge5,op_count,op_regex,op_sort,out_dict,out_int,out_seq,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 4 次（历史得分均值 0.73） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+    "seen": 9,
+    "skipped_self": 1,
+    "skipped_success": 8
+   },
+   {
+    "task_id": "x04_truncate",
+    "rkey": "in_num,in_str,level0,n_tests_ge5,op_cond,out_str",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 6 次（历史得分均值 0.56） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+    "seen": 6,
+    "skipped_self": 1,
+    "skipped_success": 10
+   },
+   {
+    "task_id": "x05_normalize_ws",
+    "rkey": "in_str,level1,n_tests_ge5,op_merge",
+    "text": "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 3 次（历史得分均值 0.70） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.33） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+    "seen": 4,
+    "skipped_self": 1,
+    "skipped_success": 3
+   }
+  ]
+ },
+ "phase2": {
+  "hist_written": 13,
+  "mapping": [
+   {
+    "written_as": "NameError",
+    "normalized": "NameError",
+    "sentence": "代码里用到的每个名字，是否都已定义或 import"
+   },
+   {
+    "written_as": "AttributeError",
+    "normalized": "AttributeError",
+    "sentence": "对容器/对象调用的方法，在它的类型上是否真的存在"
+   },
+   {
+    "written_as": "TypeError",
+    "normalized": "TypeError",
+    "sentence": "传入的参数个数与类型，是否与函数签名一致"
+   },
+   {
+    "written_as": "IndexError",
+    "normalized": "IndexError",
+    "sentence": "下标/切片是否可能越界（尤其是空输入）"
+   },
+   {
+    "written_as": "KeyError",
+    "normalized": "KeyError",
+    "sentence": "取键之前是否确认它存在"
+   },
+   {
+    "written_as": "AssertionError",
+    "normalized": "AssertionError",
+    "sentence": "用题目给出的示例输入，把当前实现手算一遍"
+   },
+   {
+    "written_as": "其他",
+    "normalized": "其他",
+    "sentence": "用题目给出的示例输入，把当前实现手算一遍"
+   },
+   {
+    "written_as": "SyntaxError",
+    "normalized": "其他",
+    "sentence": "用题目给出的示例输入，把当前实现手算一遍"
+   },
+   {
+    "written_as": "ModuleNotFoundError",
+    "normalized": "其他",
+    "sentence": "用题目给出的示例输入，把当前实现手算一遍"
+   },
+   {
+    "written_as": "ValueError",
+    "normalized": "其他",
+    "sentence": "用题目给出的示例输入，把当前实现手算一遍"
+   },
+   {
+    "written_as": "ZeroDivisionError",
+    "normalized": "其他",
+    "sentence": "用题目给出的示例输入，把当前实现手算一遍"
+   },
+   {
+    "written_as": "RecursionError",
+    "normalized": "其他",
+    "sentence": "用题目给出的示例输入，把当前实现手算一遍"
+   },
+   {
+    "written_as": "UnboundLocalError",
+    "normalized": "其他",
+    "sentence": "用题目给出的示例输入，把当前实现手算一遍"
+   }
+  ],
+  "S_lines": 11,
+  "lines": [
+   "- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）",
+   "- 同类题里 `KeyError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：取键之前是否确认它存在",
+   "- 同类题里 `NameError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：代码里用到的每个名字，是否都已定义或 import",
+   "- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+   "- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "- 同类题里 `其他` 出现过 4 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "- 同类题里 `其他` 出现过 5 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍"
+  ],
+  "unique_texts": [
+   "",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `NameError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：代码里用到的每个名字，是否都已定义或 import",
+   "历史同类题的外部得分：\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `NameError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：代码里用到的每个名字，是否都已定义或 import\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+   "历史同类题的外部得分：\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）\n- 同类题里 `KeyError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：取键之前是否确认它存在",
+   "历史同类题的外部得分：\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `NameError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：代码里用到的每个名字，是否都已定义或 import\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 2 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）\n- 同类题里 `KeyError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：取键之前是否确认它存在",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `NameError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：代码里用到的每个名字，是否都已定义或 import",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `TypeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：传入的参数个数与类型，是否与函数签名一致",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 3 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `NameError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：代码里用到的每个名字，是否都已定义或 import",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 4 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AssertionError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 4 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 4 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 5 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `IndexError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：下标/切片是否可能越界（尤其是空输入）",
+   "历史同类题的外部得分：\n- 同类题里 `其他` 出现过 5 次（历史得分均值 0.00） ⇒ 先检查：用题目给出的示例输入，把当前实现手算一遍\n- 同类题里 `AttributeError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：对容器/对象调用的方法，在它的类型上是否真的存在\n- 同类题里 `NameError` 出现过 1 次（历史得分均值 0.00） ⇒ 先检查：代码里用到的每个名字，是否都已定义或 import"
+  ],
+  "M": 8
+ },
+ "verdict": {
+  "P1_written39": true,
+  "P2_empty_39of39": true,
+  "P3_N_le_8": false,
+  "P4_M_eq_13": false,
+  "P4_Mskel_eq_13": false,
+  "P5_S_le_6": false
+ }
+}

@@ -1,0 +1,321 @@
+{
+  "n": 39,
+  "cal_ok": true,
+  "reason": "全部 39 条两极可分，其中 39 条中段有序；margin +1.0000 > +0.0000",
+  "bad": [],
+  "rows": [
+    {
+      "id": "t01_parse_duration",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8333,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "t02_dedupe",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "t03_commas",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "t04_merge_ranges",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8333,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "t05_top_k",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.25,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "t06_rle",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7t1_split_top_level",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7t2_parse_pairs",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7t3_encode_attrs",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7t4_quote_join",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7n1_split_amount",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.4,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7n2_next_permutation",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.4,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7n3_spiral_order",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7n4_min_meeting_rooms",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7s1_flatten_nested",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7s2_parse_headers",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7s3_csv_row",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "g7s4_xml_escape_attrs",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.4,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "y01_roman_to_int",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.4,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "y02_is_valid_brackets",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6667,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "y03_base_convert",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8333,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "y04_gcd_lcm",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "y05_median",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "z01_flatten",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "z02_to_csv",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "z03_parse_query",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "z04_deep_get",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "z05_group_by",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "s01_kv_expiry",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.25,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "s02_limiter",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.75,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "s03_tx_journal",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "m01_records",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.75,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "m02_vfs",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "m03_tiered",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.4,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "x01_slugify",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6667,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "x02_mask_email",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "x03_word_freq",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.8,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "x04_truncate",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    },
+    {
+      "id": "x05_normalize_ws",
+      "oracle": 1.0,
+      "null": 0.0,
+      "partial": 0.6,
+      "margin": 1.0,
+      "mid_strict": true
+    }
+  ],
+  "suite_file": "/tmp/v253_suite/all39.jsonl"
+}

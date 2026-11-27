@@ -1,0 +1,555 @@
+{
+  "provenance": {
+    "A": {
+      "model": "qwen2.5:7b",
+      "temperature": 0.0,
+      "llm_kind": "http",
+      "budget": "1x",
+      "attempted": 39,
+      "recorded": 39,
+      "skipped": 0,
+      "failed": 0
+    },
+    "A2r1": {
+      "model": "qwen2.5:7b",
+      "temperature": 0.0,
+      "llm_kind": "http",
+      "budget": "1x",
+      "attempted": 13,
+      "recorded": 13,
+      "skipped": 0,
+      "failed": 0
+    },
+    "A2r2": {
+      "model": "qwen2.5:7b",
+      "temperature": 0.0,
+      "llm_kind": "http",
+      "budget": "1x",
+      "attempted": 13,
+      "recorded": 13,
+      "skipped": 0,
+      "failed": 0
+    }
+  },
+  "per_cell": {
+    "t01_parse_duration": {
+      "A": {
+        "score": 0.8333,
+        "why": "通过 5/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError",
+        "sha": "0fa18652a0a5",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.8333,
+        "why": "通过 5/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError",
+        "sha": "0fa18652a0a5",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.8333,
+        "why": "通过 5/6；失败: assert parse_duration('1h30m') == 5400 ⇒ AssertionError",
+        "sha": "0fa18652a0a5",
+        "trunc": false
+      }
+    },
+    "t02_dedupe": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "fe9361bebab8",
+        "trunc": false
+      }
+    },
+    "t03_commas": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "d697bdc9596e",
+        "trunc": false
+      }
+    },
+    "t04_merge_ranges": {
+      "A": {
+        "score": 0.3333,
+        "why": "通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)] ⇒ TypeError: 'tuple' object does not support item assignment | assert merge_ranges([(1,2),(3,4)]) == [(1,2),(3,4)] ⇒ AssertionErr",
+        "sha": "60dc1bbdb95e",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.3333,
+        "why": "通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)] ⇒ TypeError: 'tuple' object does not support item assignment | assert merge_ranges([(1,2),(3,4)]) == [(1,2),(3,4)] ⇒ AssertionErr",
+        "sha": "60dc1bbdb95e",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.3333,
+        "why": "通过 2/6；失败: assert merge_ranges([(1,3),(2,6),(8,10)]) == [(1,6),(8,10)] ⇒ TypeError: 'tuple' object does not support item assignment | assert merge_ranges([(1,2),(3,4)]) == [(1,2),(3,4)] ⇒ AssertionErr",
+        "sha": "60dc1bbdb95e",
+        "trunc": false
+      }
+    },
+    "t05_top_k": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 4/4",
+        "sha": "7f32863d032f",
+        "trunc": false
+      }
+    },
+    "t06_rle": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "390b533b1366",
+        "trunc": false
+      }
+    },
+    "g7t1_split_top_level": {
+      "A": {
+        "score": 0.6,
+        "why": "通过 3/5；失败: assert split_top_level('a,[1,2],b') == ['a', '[1,2]', 'b'] ⇒ AssertionError | assert split_top_level('a,(x,(y,z)),b') == ['a', '(x,(y,z))', 'b'] ⇒ AssertionError",
+        "sha": "c82c5ad50115",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.6,
+        "why": "通过 3/5；失败: assert split_top_level('a,[1,2],b') == ['a', '[1,2]', 'b'] ⇒ AssertionError | assert split_top_level('a,(x,(y,z)),b') == ['a', '(x,(y,z))', 'b'] ⇒ AssertionError",
+        "sha": "c82c5ad50115",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.6,
+        "why": "通过 3/5；失败: assert split_top_level('a,[1,2],b') == ['a', '[1,2]', 'b'] ⇒ AssertionError | assert split_top_level('a,(x,(y,z)),b') == ['a', '(x,(y,z))', 'b'] ⇒ AssertionError",
+        "sha": "c82c5ad50115",
+        "trunc": false
+      }
+    },
+    "g7t2_parse_pairs": {
+      "A": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert parse_pairs('a=1;b=2') == {'a': '1', 'b': '2'} ⇒ AssertionError | assert parse_pairs(\"a=1;b='x;y'\") == {'a': '1', 'b': 'x;y'} ⇒ AssertionError | assert parse_pairs(\"a=' q = z '\") == ",
+        "sha": "21a998d52865",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert parse_pairs('a=1;b=2') == {'a': '1', 'b': '2'} ⇒ AssertionError | assert parse_pairs(\"a=1;b='x;y'\") == {'a': '1', 'b': 'x;y'} ⇒ AssertionError | assert parse_pairs(\"a=' q = z '\") == ",
+        "sha": "21a998d52865",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert parse_pairs('a=1;b=2') == {'a': '1', 'b': '2'} ⇒ AssertionError | assert parse_pairs(\"a=1;b='x;y'\") == {'a': '1', 'b': 'x;y'} ⇒ AssertionError | assert parse_pairs(\"a=' q = z '\") == ",
+        "sha": "21a998d52865",
+        "trunc": false
+      }
+    },
+    "g7t3_encode_attrs": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "e4b848cff202",
+        "trunc": false
+      }
+    },
+    "g7t4_quote_join": {
+      "A": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert quote_join(['a', 'b']) == 'a, b' ⇒ SyntaxError: unexpected character after line continuation character | assert quote_join(['a,b']) == '\"a,b\"' ⇒ SyntaxError: unexpected character aft",
+        "sha": "b5cd5788dbcb",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert quote_join(['a', 'b']) == 'a, b' ⇒ SyntaxError: unexpected character after line continuation character | assert quote_join(['a,b']) == '\"a,b\"' ⇒ SyntaxError: unexpected character aft",
+        "sha": "b5cd5788dbcb",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert quote_join(['a', 'b']) == 'a, b' ⇒ SyntaxError: unexpected character after line continuation character | assert quote_join(['a,b']) == '\"a,b\"' ⇒ SyntaxError: unexpected character aft",
+        "sha": "b5cd5788dbcb",
+        "trunc": false
+      }
+    },
+    "g7n1_split_amount": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "e8c7bb6ffa6c",
+        "trunc": false
+      }
+    },
+    "g7n2_next_permutation": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "13111e04edc6",
+        "trunc": false
+      }
+    },
+    "g7n3_spiral_order": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "2e48a4f60b36",
+        "trunc": false
+      }
+    },
+    "g7n4_min_meeting_rooms": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "95b2910fd381",
+        "trunc": false
+      }
+    },
+    "g7s1_flatten_nested": {
+      "A": {
+        "score": 0.8,
+        "why": "通过 4/5；失败: assert flatten_nested({'a': [None, 5]}) == {'a[1]': 5} ⇒ AssertionError",
+        "sha": "b9628757b28d",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.8,
+        "why": "通过 4/5；失败: assert flatten_nested({'a': [None, 5]}) == {'a[1]': 5} ⇒ AssertionError",
+        "sha": "b9628757b28d",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.8,
+        "why": "通过 4/5；失败: assert flatten_nested({'a': [None, 5]}) == {'a[1]': 5} ⇒ AssertionError",
+        "sha": "b9628757b28d",
+        "trunc": false
+      }
+    },
+    "g7s2_parse_headers": {
+      "A": {
+        "score": 0.4,
+        "why": "通过 2/5；失败: assert parse_headers('a: \"x;y\"') == {'a': 'x;y'} ⇒ AssertionError | assert parse_headers('a: \"q:z\"; b: 3') == {'a': 'q:z', 'b': '3'} ⇒ AssertionError | assert parse_headers('a: \"\"') == {'a'",
+        "sha": "5f2b8e2d58d6",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.4,
+        "why": "通过 2/5；失败: assert parse_headers('a: \"x;y\"') == {'a': 'x;y'} ⇒ AssertionError | assert parse_headers('a: \"q:z\"; b: 3') == {'a': 'q:z', 'b': '3'} ⇒ AssertionError | assert parse_headers('a: \"\"') == {'a'",
+        "sha": "5f2b8e2d58d6",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.4,
+        "why": "通过 2/5；失败: assert parse_headers('a: \"x;y\"') == {'a': 'x;y'} ⇒ AssertionError | assert parse_headers('a: \"q:z\"; b: 3') == {'a': 'q:z', 'b': '3'} ⇒ AssertionError | assert parse_headers('a: \"\"') == {'a'",
+        "sha": "5f2b8e2d58d6",
+        "trunc": false
+      }
+    },
+    "g7s3_csv_row": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "d1ee8b7a7926",
+        "trunc": false
+      }
+    },
+    "g7s4_xml_escape_attrs": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "c9114daa4a85",
+        "trunc": false
+      }
+    },
+    "y01_roman_to_int": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "853523ce1d78",
+        "trunc": false
+      }
+    },
+    "y02_is_valid_brackets": {
+      "A": {
+        "score": 0.8333,
+        "why": "通过 5/6；失败: assert is_valid_brackets('a(b)c') is True ⇒ AssertionError",
+        "sha": "493c01da0337",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.8333,
+        "why": "通过 5/6；失败: assert is_valid_brackets('a(b)c') is True ⇒ AssertionError",
+        "sha": "493c01da0337",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.8333,
+        "why": "通过 5/6；失败: assert is_valid_brackets('a(b)c') is True ⇒ AssertionError",
+        "sha": "493c01da0337",
+        "trunc": false
+      }
+    },
+    "y03_base_convert": {
+      "A": {
+        "score": 0.6667,
+        "why": "通过 4/6；失败: assert base_convert('0', 10, 16) == '0' ⇒ AssertionError | assert base_convert('-FF', 16, 10) == '-255' ⇒ AssertionError",
+        "sha": "2616ca69a0e3",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.6667,
+        "why": "通过 4/6；失败: assert base_convert('0', 10, 16) == '0' ⇒ AssertionError | assert base_convert('-FF', 16, 10) == '-255' ⇒ AssertionError",
+        "sha": "2616ca69a0e3",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.6667,
+        "why": "通过 4/6；失败: assert base_convert('0', 10, 16) == '0' ⇒ AssertionError | assert base_convert('-FF', 16, 10) == '-255' ⇒ AssertionError",
+        "sha": "2616ca69a0e3",
+        "trunc": false
+      }
+    },
+    "y04_gcd_lcm": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "78a5e4d8f3c8",
+        "trunc": false
+      }
+    },
+    "y05_median": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "1645535af8a6",
+        "trunc": false
+      }
+    },
+    "z01_flatten": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "3181aeb0436d",
+        "trunc": false
+      }
+    },
+    "z02_to_csv": {
+      "A": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert to_csv([{'a': 1, 'b': 2}], ['a', 'b']) == 'a,b\\n1,2' ⇒ SyntaxError: unexpected character after line continuation character | assert to_csv([], ['a']) == 'a' ⇒ SyntaxError: unexpected",
+        "sha": "372f8bcb8e95",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert to_csv([{'a': 1, 'b': 2}], ['a', 'b']) == 'a,b\\n1,2' ⇒ SyntaxError: unexpected character after line continuation character | assert to_csv([], ['a']) == 'a' ⇒ SyntaxError: unexpected",
+        "sha": "372f8bcb8e95",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: assert to_csv([{'a': 1, 'b': 2}], ['a', 'b']) == 'a,b\\n1,2' ⇒ SyntaxError: unexpected character after line continuation character | assert to_csv([], ['a']) == 'a' ⇒ SyntaxError: unexpected",
+        "sha": "372f8bcb8e95",
+        "trunc": false
+      }
+    },
+    "z03_parse_query": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "3fa218e04bd3",
+        "trunc": false
+      }
+    },
+    "z04_deep_get": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "dafc0b3bd50d",
+        "trunc": false
+      }
+    },
+    "z05_group_by": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "9a487faffaba",
+        "trunc": false
+      }
+    },
+    "s01_kv_expiry": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 4/4",
+        "sha": "8d71c8415ebd",
+        "trunc": false
+      }
+    },
+    "s02_limiter": {
+      "A": {
+        "score": 0.0,
+        "why": "通过 0/4；失败: L = Limiter(3, 10)\nassert L.hit('a', 0) is True\nassert L.hit('a', 1) i ⇒ AssertionError | L = Limiter(2, 10)\nassert L.hit('a', 0) is True\nassert L.hit('a', 5) i ⇒ AssertionError | L = Limit",
+        "sha": "cd102ed06428",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.0,
+        "why": "通过 0/4；失败: L = Limiter(3, 10)\nassert L.hit('a', 0) is True\nassert L.hit('a', 1) i ⇒ AssertionError | L = Limiter(2, 10)\nassert L.hit('a', 0) is True\nassert L.hit('a', 5) i ⇒ AssertionError | L = Limit",
+        "sha": "cd102ed06428",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.0,
+        "why": "通过 0/4；失败: L = Limiter(3, 10)\nassert L.hit('a', 0) is True\nassert L.hit('a', 1) i ⇒ AssertionError | L = Limiter(2, 10)\nassert L.hit('a', 0) is True\nassert L.hit('a', 5) i ⇒ AssertionError | L = Limit",
+        "sha": "cd102ed06428",
+        "trunc": false
+      }
+    },
+    "s03_tx_journal": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "3cabd2df7e6c",
+        "trunc": false
+      }
+    },
+    "m01_records": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 4/4",
+        "sha": "252cf1d184a3",
+        "trunc": false
+      }
+    },
+    "m02_vfs": {
+      "A": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ⇒ AttributeError: 'VFS' object has no attribute 'root' | import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, ",
+        "sha": "00f564fbcb8e",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ⇒ AttributeError: 'VFS' object has no attribute 'root' | import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, ",
+        "sha": "00f564fbcb8e",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ⇒ AttributeError: 'VFS' object has no attribute 'root' | import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, ",
+        "sha": "00f564fbcb8e",
+        "trunc": false
+      }
+    },
+    "m03_tiered": {
+      "A": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ⇒ ModuleNotFoundError: No module named 'lru' | import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ",
+        "sha": "05c9737f25c3",
+        "trunc": false
+      },
+      "A2r1": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ⇒ ModuleNotFoundError: No module named 'lru' | import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ",
+        "sha": "05c9737f25c3",
+        "trunc": false
+      },
+      "A2r2": {
+        "score": 0.0,
+        "why": "通过 0/5；失败: import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ⇒ ModuleNotFoundError: No module named 'lru' | import sys, os\nfor _fn, _src in FILES.items():\n    open(_fn, 'w').writ ",
+        "sha": "05c9737f25c3",
+        "trunc": false
+      }
+    },
+    "x01_slugify": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 6/6",
+        "sha": "62e69f5d250c",
+        "trunc": false
+      }
+    },
+    "x02_mask_email": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "5814916b7e9f",
+        "trunc": false
+      }
+    },
+    "x03_word_freq": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "8d0cd965e185",
+        "trunc": false
+      }
+    },
+    "x04_truncate": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "497984b6b395",
+        "trunc": false
+      }
+    },
+    "x05_normalize_ws": {
+      "A": {
+        "score": 1.0,
+        "why": "通过 5/5",
+        "sha": "e96b0bbd6098",
+        "trunc": false
+      }
+    }
+  },
+  "low": [
+    "g7s1_flatten_nested",
+    "g7s2_parse_headers",
+    "g7t1_split_top_level",
+    "g7t2_parse_pairs",
+    "g7t4_quote_join",
+    "m02_vfs",
+    "m03_tiered",
+    "s02_limiter",
+    "t01_parse_duration",
+    "t04_merge_ranges",
+    "y02_is_valid_brackets",
+    "y03_base_convert",
+    "z02_to_csv"
+  ],
+  "full": [
+    "t02_dedupe",
+    "t03_commas",
+    "t05_top_k",
+    "t06_rle",
+    "g7t3_encode_attrs",
+    "g7n1_split_amount",
+    "g7n2_next_permutation",
+    "g7n3_spiral_order",
+    "g7n4_min_meeting_rooms",
+    "g7s3_csv_row",
+    "g7s4_xml_escape_attrs",
+    "y01_roman_to_int",
+    "y04_gcd_lcm",
+    "y05_median",
+    "z01_flatten",
+    "z03_parse_query",
+    "z04_deep_get",
+    "z05_group_by",
+    "s01_kv_expiry",
+    "s03_tx_journal",
+    "m01_records",
+    "x01_slugify",
+    "x02_mask_email",
+    "x03_word_freq",
+    "x04_truncate",
+    "x05_normalize_ws"
+  ],
+  "p1": "成立",
+  "p2": "成立",
+  "p3": "三次同 sha 的格 13/13",
+  "p4": {
+    "ok": 39,
+    "mismatch": [],
+    "no_answer": []
+  }
+}

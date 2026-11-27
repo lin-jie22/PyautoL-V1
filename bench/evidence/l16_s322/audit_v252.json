@@ -1,0 +1,464 @@
+{
+  "cells": {
+    "g7d1_parse_date_flex": {
+      "act_shas": [
+        "1e8e14189895d9d6",
+        "40b8ecc6a6dedcec",
+        "f8936466bfe058dd"
+      ],
+      "cands": [
+        {
+          "divergence": "L2: cand=\"    if '/' in s:\" | oracle=\"    p = s.split('/')\"",
+          "err": "",
+          "n_rows": 1,
+          "oracle_score": 1.0,
+          "replay": 0.2,
+          "row_score": 0.2,
+          "sha": "1e8e14189895d9d6",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand=\"    if s.count('/') == 2:\" | oracle=\"    p = s.split('/')\"",
+          "err": "",
+          "n_rows": 1,
+          "oracle_score": 1.0,
+          "replay": 0.2,
+          "row_score": 0.2,
+          "sha": "f8936466bfe058dd",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand=\"    if s.count('/') != 2 or len(s) != 10:\" | oracle=\"    p = s.split('/')\"",
+          "err": "",
+          "n_rows": 1,
+          "oracle_score": 1.0,
+          "replay": 1.0,
+          "row_score": 1.0,
+          "sha": "40b8ecc6a6dedcec",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "vec_match": true
+        }
+      ],
+      "max_score": 1.0,
+      "n_unique": 3,
+      "oracle_score": 1.0,
+      "swap_shas": []
+    },
+    "g7d2_dedupe_keep": {
+      "act_shas": [
+        "acb637fecdd65853",
+        "bffc26cf6711e638",
+        "dd13d17e1ea02e42"
+      ],
+      "cands": [
+        {
+          "divergence": "L2: cand='    seen = {}' | oracle='    seen, out = set(), []'",
+          "err": "",
+          "n_rows": 2,
+          "oracle_score": 1.0,
+          "replay": 0.6,
+          "row_score": 0.6,
+          "sha": "dd13d17e1ea02e42",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            true,
+            false,
+            false,
+            true,
+            true
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand='    seen = {}' | oracle='    seen, out = set(), []'",
+          "err": "",
+          "n_rows": 1,
+          "oracle_score": 1.0,
+          "replay": 0.6,
+          "row_score": 0.6,
+          "sha": "acb637fecdd65853",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            true,
+            false,
+            false,
+            true,
+            true
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand='    seen = {}' | oracle='    seen, out = set(), []'",
+          "err": "",
+          "n_rows": 1,
+          "oracle_score": 1.0,
+          "replay": 0.6,
+          "row_score": 0.6,
+          "sha": "bffc26cf6711e638",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            true,
+            false,
+            false,
+            true,
+            true
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand='    seen = {}' | oracle='    seen, out = set(), []'",
+          "err": "",
+          "n_rows": 1,
+          "oracle_score": 1.0,
+          "replay": 1.0,
+          "row_score": 1.0,
+          "sha": "5463ea66e60f52e9",
+          "sources": [
+            "goal_swap"
+          ],
+          "vec": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand='    seen = {}' | oracle='    seen, out = set(), []'",
+          "err": "",
+          "n_rows": 2,
+          "oracle_score": 1.0,
+          "replay": 1.0,
+          "row_score": 1.0,
+          "sha": "6d907949f69ecdff",
+          "sources": [
+            "goal_swap"
+          ],
+          "vec": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "vec_match": true
+        }
+      ],
+      "max_score": 1.0,
+      "n_unique": 5,
+      "oracle_score": 1.0,
+      "swap_shas": [
+        "5463ea66e60f52e9",
+        "6d907949f69ecdff"
+      ]
+    },
+    "g7d3_fmt_amount": {
+      "act_shas": [
+        "0322783a99a47b09"
+      ],
+      "cands": [
+        {
+          "divergence": "L2: cand='    return f\"{x:,.2f}\"' | oracle='    neg = float(x) < 0'",
+          "err": "",
+          "n_rows": 4,
+          "oracle_score": 1.0,
+          "replay": 0.2,
+          "row_score": 0.2,
+          "sha": "0322783a99a47b09",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand='    if x < 0:' | oracle='    neg = float(x) < 0'",
+          "err": "",
+          "n_rows": 3,
+          "oracle_score": 1.0,
+          "replay": 0.4,
+          "row_score": 0.4,
+          "sha": "ec6e0bba952dd709",
+          "sources": [
+            "goal_swap"
+          ],
+          "vec": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "vec_match": true
+        }
+      ],
+      "max_score": 0.4,
+      "n_unique": 2,
+      "oracle_score": 1.0,
+      "swap_shas": [
+        "ec6e0bba952dd709"
+      ]
+    },
+    "g7d4_slugify": {
+      "act_shas": [
+        "c103965abfca78ce"
+      ],
+      "cands": [
+        {
+          "divergence": "L2: cand='    s = s.lower().strip()' | oracle=\"    t = ''\"",
+          "err": "",
+          "n_rows": 4,
+          "oracle_score": 1.0,
+          "replay": 0.6,
+          "row_score": 0.6,
+          "sha": "c103965abfca78ce",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            true,
+            true,
+            false,
+            false,
+            true
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand='    s = s.lower().strip()' | oracle=\"    t = ''\"",
+          "err": "",
+          "n_rows": 3,
+          "oracle_score": 1.0,
+          "replay": 0.8,
+          "row_score": 0.8,
+          "sha": "131147295f3dc373",
+          "sources": [
+            "goal_swap"
+          ],
+          "vec": [
+            true,
+            true,
+            true,
+            false,
+            true
+          ],
+          "vec_match": true
+        }
+      ],
+      "max_score": 0.8,
+      "n_unique": 2,
+      "oracle_score": 1.0,
+      "swap_shas": [
+        "131147295f3dc373"
+      ]
+    },
+    "g7e1_parse_flag": {
+      "act_shas": [
+        "1133f595d52b31b4",
+        "de3588b2fa0dcb35"
+      ],
+      "cands": [
+        {
+          "divergence": "L2: cand='    s = s.strip().lower()' | oracle='    t = str(s).strip().lower()'",
+          "err": "",
+          "n_rows": 6,
+          "oracle_score": 1.0,
+          "replay": 0.2,
+          "row_score": 0.2,
+          "sha": "1133f595d52b31b4",
+          "sources": [
+            "goal_swap",
+            "goals-act"
+          ],
+          "vec": [
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L2: cand='    s = s.strip().lower()' | oracle='    t = str(s).strip().lower()'",
+          "err": "",
+          "n_rows": 1,
+          "oracle_score": 1.0,
+          "replay": 0.2,
+          "row_score": 0.2,
+          "sha": "de3588b2fa0dcb35",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          "vec_match": true
+        }
+      ],
+      "max_score": 0.2,
+      "n_unique": 2,
+      "oracle_score": 1.0,
+      "swap_shas": [
+        "1133f595d52b31b4"
+      ]
+    },
+    "g7e2_truncate_tail": {
+      "act_shas": [
+        "3b6f5b87c2f40436",
+        "41cbac422c84d94d"
+      ],
+      "cands": [
+        {
+          "divergence": "L2: cand='    if len(s) > n:' | oracle='    if len(s) <= n:'",
+          "err": "",
+          "n_rows": 3,
+          "oracle_score": 1.0,
+          "replay": 0.2,
+          "row_score": 0.2,
+          "sha": "41cbac422c84d94d",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            true,
+            false,
+            false,
+            false,
+            false
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L4: cand=\"    return s[:n] + '...'\" | oracle=\"    return '…' + s[-n:]\"",
+          "err": "",
+          "n_rows": 1,
+          "oracle_score": 1.0,
+          "replay": 0.2,
+          "row_score": 0.2,
+          "sha": "3b6f5b87c2f40436",
+          "sources": [
+            "goals-act"
+          ],
+          "vec": [
+            true,
+            false,
+            false,
+            false,
+            false
+          ],
+          "vec_match": true
+        },
+        {
+          "divergence": "L4: cand=\"    return '...' + s[-n:]\" | oracle=\"    return '…' + s[-n:]\"",
+          "err": "",
+          "n_rows": 3,
+          "oracle_score": 1.0,
+          "replay": 0.2,
+          "row_score": 0.2,
+          "sha": "43edc0297effd306",
+          "sources": [
+            "goal_swap"
+          ],
+          "vec": [
+            true,
+            false,
+            false,
+            false,
+            false
+          ],
+          "vec_match": true
+        }
+      ],
+      "max_score": 0.2,
+      "n_unique": 3,
+      "oracle_score": 1.0,
+      "swap_shas": [
+        "43edc0297effd306"
+      ]
+    },
+    "g7e3_dedupe_last": {
+      "act_shas": [
+        "da31b4ba7abe9761"
+      ],
+      "cands": [
+        {
+          "divergence": "L2: cand='    normalized = {}' | oracle='    last = {}'",
+          "err": "",
+          "n_rows": 7,
+          "oracle_score": 1.0,
+          "replay": 0.8,
+          "row_score": 0.8,
+          "sha": "da31b4ba7abe9761",
+          "sources": [
+            "goal_swap",
+            "goals-act"
+          ],
+          "vec": [
+            true,
+            false,
+            true,
+            true,
+            true
+          ],
+          "vec_match": true
+        }
+      ],
+      "max_score": 0.8,
+      "n_unique": 1,
+      "oracle_score": 1.0,
+      "swap_shas": [
+        "da31b4ba7abe9761"
+      ]
+    }
+  },
+  "mismatch": [],
+  "n_cand": 18
+}

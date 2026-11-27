@@ -13816,6 +13816,119 @@ check(RS, "AZ146 ★★打回后的重写改走**交付协议**（`V1_REJECT_CAR
       + f" ｜ E回退={len(_AZ146_E_FALLBACK)}")
 
 # ══════════════════════════════════════════════════════════════════════════
+# AZ171（V258，§328）：`=6` = 5 档 + **「没有候选可让位」那条路**
+# ══════════════════════════════════════════════════════════════════════════
+#  ⛔ 为什么必须存在（V257 量到的缺口，`bench/evidence/l21_s327/`）：
+#     `=5` 住在 `elif _carry:`（`core.py:1401`），而打回时 `_gate_finish` 返回
+#     `ToolResult(False, error=_err)`（`core.py:2265`）⇒ 主循环把它计成**连续失败**
+#     ⇒ 打回后的**第一次**重规划走 `if consecutive_failures and last_error:`
+#     （`core.py:1301`）。于是在「候选只有 1 个 / 让位失败」的格上 5 档
+#     **一次都到不了**：`g7t4` 打回 2 次、`via_answer=0`、停滞 2/2、交付 0.0。
+#  ⚠️ 本条钉的是四件**结构**事实，⛔ 不是「修好了」，也⛔ 不是「模型学会改错」：
+#     ① 6 档在无让位路径上真的触发（`via_answer_early`）；
+#     ② 5 档在**同一个** fixture 上一次都不触发（两跑只差一个 env）；
+#     ③ 6 档走的是 `_ANSWER_SYS_CLEAN`（交付协议），不是 `replan()`；
+#     ④ 一次性：交空之后不再进早分支（`via_answer_early` 不涨到 2）。
+#  ⛔ 5 档的语义一个字不动 —— AZ146 的七条仍在跑，那才是「没改坏」的证明。
+_AZ171_KEYS = ("V1_LLM_OFFLINE", "V1_STATE_DIR", "V1_MAX_WALL_S", "V1_MAX_STEPS",
+               "V1_VERIFY_EXEC", "V1_REJECT_CARRY", "V1_MAX_CANDIDATES",
+               "V1_CAND_FAILOVER", "V1_VERIFY_RETRIES")
+
+
+def _az171_run(*, carry: int, ans: str):
+    """同一个装置，**只差一个 env**：`V1_MAX_CANDIDATES=1`（没有候选可让位）。
+
+    ⛔ 与 `_az146_run` 的差别只有这一处。于是「5 档到得了 / 到不了」不是脚本差异，
+       而是**分支可达性** —— 这正是 V257 P5 不成立时暴露的那件事。
+    """
+    prompts: list[str] = []
+    logs: list[str] = []
+
+    class _Tap(StubLLM):
+        def complete(self, messages, **kw):                 # noqa: ANN001, ANN003
+            prompts.append("\n".join(m.content for m in messages))
+            return super().complete(messages, **kw)
+
+    old = {k: os.environ.get(k) for k in _AZ171_KEYS}
+    os.environ["V1_LLM_OFFLINE"] = "1"
+    os.environ["V1_STATE_DIR"] = str(Path(tempfile.mkdtemp(prefix="v1_az171_")) / "s")
+    os.environ["V1_MAX_WALL_S"] = "120"
+    os.environ["V1_MAX_STEPS"] = "8"
+    os.environ["V1_VERIFY_EXEC"] = "1"
+    os.environ["V1_REJECT_CARRY"] = str(carry)
+    os.environ["V1_MAX_CANDIDATES"] = "1"     # ★ 本条唯一的装置差别
+    os.environ["V1_CAND_FAILOVER"] = "1"      # 与 AZ146 同值：能"让位"，只是没得让
+    os.environ["V1_VERIFY_RETRIES"] = "2"
+    try:
+        _c = Core(cfg.Settings(), llm=_Tap(scripts=[("请直接给出最终答案", ans)],
+                                          default=_AZ124_STEP1),
+                  tools=ToolRegistry(), wire_external=False,
+                  log=lambda m: logs.append(str(m)))
+        return _c.run(_AZ124_GOAL), prompts, logs
+    finally:
+        for k, v in old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+_AZ171_6_OUT, _AZ171_6_P, _AZ171_6_LOG = _az171_run(carry=6, ans=_AZ146_ANS)
+_AZ171_5_OUT, _AZ171_5_P, _AZ171_5_LOG = _az171_run(carry=5, ans=_AZ146_ANS)
+_AZ171_E_OUT, _AZ171_E_P, _AZ171_E_LOG = _az171_run(carry=6, ans="")
+
+_AZ171_RW = {k: (getattr(v, "stats", None) or {}).get("rework") or {}
+             for k, v in (("6", _AZ171_6_OUT), ("5", _AZ171_5_OUT),
+                          ("e", _AZ171_E_OUT))}
+#: 6 档跑里**答案通道**的请求（按 `_ANSWER_SYS_CLEAN` 认）。
+_AZ171_6_ANS_P = [x for x in _AZ171_6_P if _AZ146_SYS_CLEAN in x]
+#: 6 档跑里第一条 `replan()` 请求的下标（-1 = 没有）。
+_AZ171_6_MARK_AT = next((i for i, x in enumerate(_AZ171_6_P) if _AZ146_MARK in x), -1)
+#: 答案通道那条请求的下标（-1 = 没有）。
+_AZ171_6_ANS_AT = next((i for i, x in enumerate(_AZ171_6_P)
+                        if _AZ146_SYS_CLEAN in x), -1)
+
+_AZ171_OK = {
+    "① 6 档在无让位路径上触发（`via_answer_early=1`）": (
+        _AZ171_RW["6"].get("via_answer_early") == 1),
+    "② 同 fixture 上 5 档一次都到不了（`via_answer=0` 且 `early=0`）": (
+        _AZ171_RW["5"].get("via_answer") == 0
+        and _AZ171_RW["5"].get("via_answer_early") == 0),
+    "③ 6 档走交付协议：答案请求 1 条、且**早于**任何 replan 请求": (
+        len(_AZ171_6_ANS_P) == 1 and _AZ171_6_ANS_AT >= 0
+        and (_AZ171_6_MARK_AT < 0 or _AZ171_6_ANS_AT < _AZ171_6_MARK_AT)),
+    "④ 交付的是 `answer()` 原文（逐字）": (
+        (getattr(_AZ171_6_OUT, "answer", "") or "").strip()
+        == _AZ146_ANS.strip() and _AZ146_ANS.strip() != ""),
+    "⑤ 一次性：交空之后不再进早分支（`early` 仍为 1，不是 2）": (
+        _AZ171_RW["e"].get("via_answer_early") == 1
+        and any("交付协议**交空**" in x for x in _AZ171_E_LOG)),
+    "⑥ 5 档在无让位路径上不许用 clean 协议（一次都没有）": (
+        not any(_AZ146_SYS_CLEAN in x for x in _AZ171_5_P)),
+}
+check(RS, "AZ171 ★★`=6` 把「打回后换交付协议」接到**无让位**那条路上（V258）\n"
+          "          ① 6 档 `via_answer_early=1`（分支真的被走到）；\n"
+          "          ② 同 fixture 上 5 档 `via_answer=0 / early=0`（差一个 env）；\n"
+          "          ③ 6 档走 `_ANSWER_SYS_CLEAN`，且早于任何 `replan()` 请求；\n"
+          "          ④ 交付正文逐字等于 `answer()` 返回值；\n"
+          "          ⑤ 一次性：交空后不再进早分支（`early` 不涨到 2）；\n"
+          "          ⑥ 5 档在这条路上一次都不用 clean 协议。\n"
+          "          ⚠️ 本条**不主张**『模型学会改错』：`clean=True` 的提示词里没有 `error`。\n"
+          "          撤回语义：把早分支删掉 ⇒ ①必红；把 `_rc == 6` 放宽成 `>= 5` ⇒ ②必红\n"
+          "                    （5 档会在无让位路径上也触发）；不清 `_reject_carry` ⇒ ⑤必红。",
+      all(_AZ171_OK.values()),
+      " ｜ ".join(f"{k}={v}" for k, v in _AZ171_OK.items())
+      + " ｜ 6=" + str({k: _AZ171_RW["6"].get(k) for k in
+                        ("via_answer", "via_answer_early", "carried",
+                         "redelivered", "same", "diff", "passed_after")})
+      + " ｜ 5=" + str({k: _AZ171_RW["5"].get(k) for k in
+                        ("via_answer", "via_answer_early", "carried",
+                         "redelivered", "same", "diff", "passed_after")})
+      + f" ｜ 6答案请求={len(_AZ171_6_ANS_P)} 答案下标={_AZ171_6_ANS_AT}"
+      + f" 首replan下标={_AZ171_6_MARK_AT}")
+
+
+# ══════════════════════════════════════════════════════════════════════════
 # AZ147（V84，§153）：语义记忆的**第二级** —— 字级 2 字链只在第一级零命中后通电
 # ══════════════════════════════════════════════════════════════════════════
 #  ⛔ 为什么必须存在：V83 量到「人写的完美经验写进 `facts` 后 `recall(goal)` 一题也取不回」

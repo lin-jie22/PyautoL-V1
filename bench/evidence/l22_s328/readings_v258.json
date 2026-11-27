@@ -1,0 +1,554 @@
+{
+  "rows": [
+    {
+      "cell": "t01_parse_duration",
+      "a5": 0.8333,
+      "b6": 0.8333,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "t04_merge_ranges",
+      "a5": 1.0,
+      "b6": 1.0,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 1,
+        "early": 0,
+        "via": 1,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          2,
+          1,
+          1,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 1,
+        "early": 0,
+        "via": 1,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          2,
+          1,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "g7t1_split_top_level",
+      "a5": 0.6,
+      "b6": 0.6,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "g7t2_parse_pairs",
+      "a5": 0.0,
+      "b6": 0.0,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "g7t4_quote_join",
+      "a5": 0.0,
+      "b6": 1.0,
+      "delta": 1.0,
+      "a5_stats": {
+        "rejects": 1,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 2,
+        "status": "stalled",
+        "verify": [
+          2,
+          0,
+          2,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 1,
+        "early": 1,
+        "via": 1,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          2,
+          1,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "g7s1_flatten_nested",
+      "a5": 0.8,
+      "b6": 0.8,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "g7s2_parse_headers",
+      "a5": 0.4,
+      "b6": 0.4,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "y02_is_valid_brackets",
+      "a5": 0.8333,
+      "b6": 0.8333,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "y03_base_convert",
+      "a5": 0.6667,
+      "b6": 0.6667,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "z02_to_csv",
+      "a5": 0.0,
+      "b6": 0.6,
+      "delta": 0.6,
+      "a5_stats": {
+        "rejects": 2,
+        "early": 0,
+        "via": 1,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          3,
+          0,
+          3,
+          1
+        ]
+      },
+      "b6_stats": {
+        "rejects": 2,
+        "early": 1,
+        "via": 2,
+        "via_empty": 0,
+        "max_stall": 1,
+        "status": "done",
+        "verify": [
+          3,
+          1,
+          2,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "s02_limiter",
+      "a5": 0.0,
+      "b6": 0.0,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "m02_vfs",
+      "a5": 0.0,
+      "b6": 0.0,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "cell": "m03_tiered",
+      "a5": 0.0,
+      "b6": 0.0,
+      "delta": 0.0,
+      "a5_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      },
+      "b6_stats": {
+        "rejects": 0,
+        "early": 0,
+        "via": 0,
+        "via_empty": 0,
+        "max_stall": 0,
+        "status": "done",
+        "verify": [
+          1,
+          1,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "mean": {
+    "a5": 0.3948692307692308,
+    "b6": 0.5179461538461538
+  },
+  "pass13": {
+    "a5": 1,
+    "b6": 2
+  },
+  "checks": {
+    "P1 臂a == V257臂B（13/13）": true,
+    "P2 g7t4 early>=1": true,
+    "P3 g7t4 仍 0.0（我押的；反了就登记）": false,
+    "P4 t04 仍 1.0": true,
+    "P5 其余 11 格 Δ=0": false,
+    "P6 均值持平（Δ=0）": false
+  },
+  "early_cells": [
+    "g7t4_quote_join",
+    "z02_to_csv"
+  ],
+  "scores": {
+    "a5": {
+      "t01_parse_duration": 0.8333,
+      "t04_merge_ranges": 1.0,
+      "g7t1_split_top_level": 0.6,
+      "g7t2_parse_pairs": 0.0,
+      "g7t4_quote_join": 0.0,
+      "g7s1_flatten_nested": 0.8,
+      "g7s2_parse_headers": 0.4,
+      "y02_is_valid_brackets": 0.8333,
+      "y03_base_convert": 0.6667,
+      "z02_to_csv": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "b6": {
+      "t01_parse_duration": 0.8333,
+      "t04_merge_ranges": 1.0,
+      "g7t1_split_top_level": 0.6,
+      "g7t2_parse_pairs": 0.0,
+      "g7t4_quote_join": 1.0,
+      "g7s1_flatten_nested": 0.8,
+      "g7s2_parse_headers": 0.4,
+      "y02_is_valid_brackets": 0.8333,
+      "y03_base_convert": 0.6667,
+      "z02_to_csv": 0.6,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "v257b5": {
+      "t01_parse_duration": 0.8333,
+      "t04_merge_ranges": 1.0,
+      "g7t1_split_top_level": 0.6,
+      "g7t2_parse_pairs": 0.0,
+      "g7t4_quote_join": 0.0,
+      "g7s1_flatten_nested": 0.8,
+      "g7s2_parse_headers": 0.4,
+      "y02_is_valid_brackets": 0.8333,
+      "y03_base_convert": 0.6667,
+      "z02_to_csv": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "v253a1": {
+      "t01_parse_duration": 0.8333,
+      "t02_dedupe": 1.0,
+      "t03_commas": 1.0,
+      "t04_merge_ranges": 0.3333,
+      "t05_top_k": 1.0,
+      "t06_rle": 1.0,
+      "g7t1_split_top_level": 0.6,
+      "g7t2_parse_pairs": 0.0,
+      "g7t3_encode_attrs": 1.0,
+      "g7t4_quote_join": 0.0,
+      "g7n1_split_amount": 1.0,
+      "g7n2_next_permutation": 1.0,
+      "g7n3_spiral_order": 1.0,
+      "g7n4_min_meeting_rooms": 1.0,
+      "g7s1_flatten_nested": 0.8,
+      "g7s2_parse_headers": 0.4,
+      "g7s3_csv_row": 1.0,
+      "g7s4_xml_escape_attrs": 1.0,
+      "y01_roman_to_int": 1.0,
+      "y02_is_valid_brackets": 0.8333,
+      "y03_base_convert": 0.6667,
+      "y04_gcd_lcm": 1.0,
+      "y05_median": 1.0,
+      "z01_flatten": 1.0,
+      "z02_to_csv": 0.0,
+      "z03_parse_query": 1.0,
+      "z04_deep_get": 1.0,
+      "z05_group_by": 1.0,
+      "s01_kv_expiry": 1.0,
+      "s02_limiter": 0.0,
+      "s03_tx_journal": 1.0,
+      "m01_records": 1.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0,
+      "x01_slugify": 1.0,
+      "x02_mask_email": 1.0,
+      "x03_word_freq": 1.0,
+      "x04_truncate": 1.0,
+      "x05_normalize_ws": 1.0
+    }
+  }
+}

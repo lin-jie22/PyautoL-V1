@@ -1298,7 +1298,32 @@ class Core:
                 _carry = ""
                 if int(self.s.limits.reject_carry) and self._reject_carry:
                     _carry = self._reject_carry
-                if consecutive_failures and last_error:
+                # ── V258（§328）：`=6` = 5 档 + **「没有候选可让位」那条路** ──────
+                # ⛔ 缺口是 V257 量出来的：`=5` 住在下面的 `elif _carry:` 里
+                #   （`core.py:1401`），而 `_gate_finish` 打回时返回
+                #   `ToolResult(False, error=_err)` ⇒ 主循环把它计成**连续失败**
+                #   ⇒ 打回后的**第一次**重规划走的是 `if consecutive_failures …`。
+                #   于是在「候选只有 1 个 / 让位失败」的格上，5 档**一次都到不了**：
+                #   `g7t4` 打回 2 次、`via_answer=0`、停滞 2/2、交付 0.0。
+                # ⭐ 为什么不是原地改 5 档：V77/V257 的全部读数与契约 `AZ146` 的七条
+                #   断言都钉在「5 档走让位那条路」上 ⇒ 原地改会让旧记录作废，也失去对照。
+                # ⚠️ 只认「当前这次失败**就是**那次打回」（`_carry == last_error`，
+                #   逐字相等）。V62（§128）定过优先级：本轮若还有**更新的**失败，
+                #   必须先用它、`_carry` 留着；无条件消费会把那段更新的错误永久丢掉。
+                #   `g7t4` 第 2 轮起 `last_error` 被「全部候选均被 guard 拦截」覆盖
+                #   ⇒ 早分支只在**第 1 轮**有机会触发，这是设计，不是漏。
+                _early_v6 = (int(self.s.limits.reject_carry) == 6
+                             and bool(_carry) and _carry == last_error)
+                if _early_v6:
+                    # ⚠️ 这行是**读数**，不是行为：`stats["rework"]["via_answer_early"]`
+                    #   进不了 `runs.jsonl`（`per_task` 只带 `id/score/vec/why/rep`）
+                    #   ⇒ 没有它，事后只能从「REJECT_CARRY=6 的交付协议行」去猜
+                    #   走的是早分支还是让位分支。⛔ 不许删（V258 的读数靠它对格）。
+                    self.log("  ⇢ 无候选可让位 ⇒ 早分支（REJECT_CARRY=6）")
+                    self._reject_carry = ""   # 一次性：消费即清空（与 5 档同语义）
+                    self.rework_stats["via_answer_early"] += 1
+                    plan = self._rewrite_via_answer(goal, "6")
+                elif consecutive_failures and last_error:
                     # ★ V52（§118）：这一行是**读数**，不是行为。
                     #
                     # `replan` 内部就是 `propose(history=history + [失败行])` ⇒ 两者在
@@ -1398,23 +1423,13 @@ class Core:
                     #    `propose()` —— 那两个变量对它没有消费者。
                     #    （V77 跑批第一版在这里写了两行重置，跑完后删掉：
                     #     ⛔ 不许把开关写在没人走的分支上，见 `v6_s166/RESULTS.md` §6-3。）
-                    if _rc == 5:
+                    if _rc in (5, 6):
                         # ⛔ 不走 `propose()` ⇒ AZ63 那条「所有进规划器的路都喂
                         #    同一份 `reseek_lines`」的接线**没被碰过**（不是放宽）。
-                        _rewrite = self.planner.answer(goal, clean=True)
-                        self.rework_stats["via_answer"] += 1
-                        if not _rewrite:
-                            # ⛔ 不许静默回退到 `replan`：那会让「协议换过了」这个
-                            #    事实消失，读数看起来像「=4 那一臂」。空答案照样
-                            #    交出去，让闸自己拒它（失败要留痕）。
-                            self.log("  ↻ 打回重写：交付协议**交空**"
-                                     "（REJECT_CARRY=5，⛔ 不回退到规划通道）")
-                        else:
-                            self.log("  ↻ 打回重写：走**交付协议**（REJECT_CARRY=5，"
-                                     f"answer(clean) 产出 {len(_rewrite)} 字符）")
-                        plan = Plan([Step("打回后按交付协议重写", "finish",
-                                          {"answer": _rewrite})],
-                                    note="打回后按交付协议重写（REJECT_CARRY=5）")
+                        # ★ V258（§328）：`6` 档**继承** 5 档的这条路（让位成功后
+                        #    仍然换协议重问），增量只加在「无让位」那条路上 ——
+                        #    否则 `t04` 会从 1.0 掉回 0.333（它靠的就是这一支）。
+                        plan = self._rewrite_via_answer(goal, str(_rc))
                     else:
                         plan = self.planner.replan(
                             goal=goal, failed=Step("(上一次交付)", "finish", {}),
@@ -2170,6 +2185,29 @@ class Core:
         if vfy.EXEC_FAULT in (v.report or ""):
             st["exec_err"] += 1
 
+    def _rewrite_via_answer(self, goal: str, level: str) -> "Plan":
+        """打回后用**交付协议**重问一次（`REJECT_CARRY=5/6` 共用；V77 §146 / V258 §328）。
+
+        ⛔ 它**不是**「按报错改写」：`answer(goal, clean=True)` 的提示词里
+          **没有 `error`**（`planner.py:789`），语义上是「换个协议重问一次」。
+          ⇒ 即便兑现率上升，结论只能写「换协议有效」，「系统学会改错了」不许写
+          （`v6_s166/PREREG.md` §6-1 已预注册这一句）。
+        ⛔ 交空**不回退**到 `replan()`：那会让「协议换过了」这个事实消失，
+          读数看起来像另一档。空答案照样交出去，让闸自己拒它（失败要留痕）。
+        ⚠️ 日志文案对 5 档**逐字不变**：`AZ146`-⑦ 钉着「交付协议**交空**」这个子串，
+          V257 的读数也按这几行认格。改文案 = 改锚。
+        """
+        _rewrite = self.planner.answer(goal, clean=True)
+        self.rework_stats["via_answer"] += 1
+        if not _rewrite:
+            self.log("  ↻ 打回重写：交付协议**交空**"
+                     f"（REJECT_CARRY={level}，⛔ 不回退到规划通道）")
+        else:
+            self.log("  ↻ 打回重写：走**交付协议**"
+                     f"（REJECT_CARRY={level}，answer(clean) 产出 {len(_rewrite)} 字符）")
+        return Plan([Step("打回后按交付协议重写", "finish", {"answer": _rewrite})],
+                    note=f"打回后按交付协议重写（REJECT_CARRY={level}）")
+
     def _gate_finish(self, result: ToolResult) -> ToolResult:
         """`finish` 之后、交付之前的那道闸。通过 ⇒ 原样返回；不过 ⇒ 变成一次失败。
 
@@ -2556,6 +2594,12 @@ class Core:
             #: ⛔ 不许把它并进 `redelivered`：分母是「重交了几次」，本键是
             #: 「其中有几次走了交付协议」，合成一个就再也分不开（V61 的老坑）。
             "via_answer": 0,
+            #: ★ V258（§328）：上面那格在 **`=6` 档的「无让位」早分支**里触发了几次。
+            #: 为什么必须单列（纪律 269：「机制存在」的第三形态是分支不可达）：
+            #:   `via_answer` 一个数会把「5 档在让位路径上触发」与「6 档在无让位路径上
+            #:   触发」混成一格，于是 V257 那句「`g7t4` 零次」在新档下**无法复核**
+            #:   —— 只能靠日志。⛔ 判「新分支接通了吗」看这个键，不看分数。
+            "via_answer_early": 0,
         }
         #: 交付时的自检说明。非空 ⇒ 这次交付**没有通过自检**，状态要如实标出来。
         #: ★第九十一轮起语义收紧：它描述的是**交出去的那一份**，不是"本轮发生过什么"

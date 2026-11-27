@@ -44,11 +44,13 @@
 
 | 类别 | 格数 | 格 |
 |---|---|---|
-| `AssertionError` | 9 | `t01`(0.83) `y02`(0.83) `g7s1`(0.8) `y03`(0.67) `g7t1`(0.6) `g7s2`(0.4) `g7t2`(0) `s02`(0) ＋ `t04` 的另一半 |
+| `AssertionError`（首个失败类别） | 8 | `t01`(0.83) `y02`(0.83) `g7s1`(0.8) `y03`(0.67) `g7t1`(0.6) `g7s2`(0.4) `g7t2`(0) `s02`(0) |
 | `SyntaxError` | 2 | `g7t4`(0) `z02`(0) ← 同一个写法 |
-| `TypeError` | 1 | `t04`(0.33) `'tuple' object does not support item assignment` |
+| `TypeError` | 1 | `t04`(0.33) `'tuple' object does not support item assignment`（它的第二条失败是 `AssertionError`） |
 | `AttributeError` | 1 | `m02`(0) `'VFS' object has no attribute 'root'` |
 | `ModuleNotFoundError` | 1 | `m03`(0) `No module named 'lru'` |
+
+合计 8+2+1+1+1 = **13**，与 `L` 一致（分母对得上）。
 
 ---
 
@@ -152,3 +154,11 @@
 - 1.0 的格退出分母；`m02/m03` 是否进分母，先判「多文件交付」是不是可学类。
 
 ⛔ 仍然不说的三句话：「自省补上了」「累积有牙」「题集饱和」。
+
+---
+
+## 9. 门禁与 CI
+
+- 本地：`run_tests.sh` **EXIT=0**（本轮 0 行生产代码改动，`harness_sha` 未变）。
+- CI：**run 254 三档全绿**（py3.11 / 3.12 / 3.13 逐 job `success`，commit `799d384`）。
+  ⛔ 不按徽章猜，按 run 号查（纪律 238）。

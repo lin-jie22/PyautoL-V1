@@ -35,7 +35,7 @@ python3 run.py --goals               # L5 入口：它从**自己的账本**里�
 | 要件 | 状态 | 说明 |
 |---|---|---|
 | `LICENSE` | ✅ MIT | 与 `pyproject.toml` 的 `license` 同一份 |
-| `.github/workflows/ci.yml` | ✅ **run 251 三档全绿**（V251 提交 `6960019`） | py3.11 / 3.12 / 3.13 全部 success。**它刚从一次 15 连红里修出来**（run 234~248）：`tests/contract_test.py` 里一行**只用于打印**的 f-string 含反斜杠（PEP 701 才允许），3.12+ 能编译、**3.11 直接 SyntaxError** ⇒ 整个契约文件跑不起来，且**连汇总行都没有**。由 V236（`6d30ec1`）引入，红了 15 次没人发现，而本文件当时正写着「当前全绿」。已修并连续两轮验证（run 249 / 251）；⛔ **绿勾不算读数，任何时刻都按 run 号查**（`bench/evidence/ci_s320/`、DESIGN §320） |
+| `.github/workflows/ci.yml` | ✅ **run 254 三档全绿**（V253 提交 `799d384`） | py3.11 / 3.12 / 3.13 逐 job `success`。**它曾连红 15 次**（run 234~248）：`tests/contract_test.py` 里一行**只用于打印**的 f-string 含反斜杠（PEP 701 才允许），3.12+ 能编译、**3.11 直接 SyntaxError** ⇒ 整个契约文件跑不起来，且**连汇总行都没有**。由 V236（`6d30ec1`）引入，红了 15 次没人发现，而本文件当时正写着「当前全绿」。已修并连续三轮验证（run 249 / 251 / 254）；⛔ **绿勾不算读数，任何时刻都按 run 号查**（`bench/evidence/ci_s320/`、DESIGN §320） |
 | 发布 tag | ✅ `v1.0.0` | 打在 CI 首次全绿的提交，与 `pyproject.toml` 的 `version` 对应 |
 | CI 覆盖到哪 | ⚠️ **只到离线部分** | 七步全离线、零密钥；**bench 不跑**（需要本机 Ollama + `qwen2.5:7b`）。分数证据以 `bench/evidence/*/` 入库，带 PREREG、读数与自踩 |
 

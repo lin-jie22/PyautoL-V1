@@ -1,0 +1,138 @@
+{
+  "l1_code_identity": {
+    "g7t2_parse_pairs": {
+      "sha_a": "ae46374737c9",
+      "sha_b": "ae46374737c9",
+      "sha_fresh": "21a998d52865",
+      "chars_a": 769,
+      "chars_b": 769,
+      "chars_fresh": 791,
+      "B_eq_A": true,
+      "B_eq_fresh": false,
+      "diff_lines_B_vs_A": 0,
+      "diff_lines_B_vs_fresh": 2
+    },
+    "s02_limiter": {
+      "sha_a": "87bbe8c3654b",
+      "sha_b": "cd102ed06428",
+      "sha_fresh": "cd102ed06428",
+      "chars_a": 760,
+      "chars_b": 708,
+      "chars_fresh": 708,
+      "B_eq_A": false,
+      "B_eq_fresh": true,
+      "diff_lines_B_vs_A": 11,
+      "diff_lines_B_vs_fresh": 0
+    },
+    "m02_vfs": {
+      "sha_a": "47f4778c862e",
+      "sha_b": "47f4778c862e",
+      "sha_fresh": "00f564fbcb8e",
+      "chars_a": 3106,
+      "chars_b": 3106,
+      "chars_fresh": 3049,
+      "B_eq_A": true,
+      "B_eq_fresh": false,
+      "diff_lines_B_vs_A": 0,
+      "diff_lines_B_vs_fresh": 5
+    },
+    "m03_tiered": {
+      "sha_a": "2d4f6d900ab2",
+      "sha_b": "403f58c79f68",
+      "sha_fresh": "05c9737f25c3",
+      "chars_a": 1295,
+      "chars_b": 1316,
+      "chars_fresh": 1282,
+      "B_eq_A": false,
+      "B_eq_fresh": false,
+      "diff_lines_B_vs_A": 19,
+      "diff_lines_B_vs_fresh": 13
+    }
+  },
+  "l2_gate": {
+    "g7t2_parse_pairs": {
+      "checks": [
+        "非空<nonempty>",
+        "函数名 parse_pairs<defines>",
+        "语言标签<fence_lang>",
+        "可编译<compiles>",
+        "未定义名<undefined>"
+      ],
+      "n_example_asserts": 0,
+      "example_asserts": [],
+      "prompt_has_eq": false
+    },
+    "s02_limiter": {
+      "checks": [
+        "非空<nonempty>",
+        "可编译<compiles>",
+        "未定义名<undefined>"
+      ],
+      "n_example_asserts": 0,
+      "example_asserts": [],
+      "prompt_has_eq": false
+    },
+    "m02_vfs": {
+      "checks": [
+        "非空<nonempty>"
+      ],
+      "n_example_asserts": 0,
+      "example_asserts": [],
+      "prompt_has_eq": true
+    },
+    "m03_tiered": {
+      "checks": [
+        "非空<nonempty>"
+      ],
+      "n_example_asserts": 0,
+      "example_asserts": [],
+      "prompt_has_eq": false
+    }
+  },
+  "l3_divergence": {
+    "g7t2_parse_pairs": [
+      {
+        "label": "parse_pairs('a=1;b=2')",
+        "got": {
+          "ok": true,
+          "v": "{}"
+        },
+        "want": "{'a': '1', 'b': '2'}"
+      },
+      {
+        "label": "parse_pairs(\"a=1;b='x;y'\")",
+        "got": {
+          "ok": true,
+          "v": "{}"
+        },
+        "want": "{'a': '1', 'b': 'x;y'}"
+      },
+      {
+        "label": "parse_pairs('a=')",
+        "got": {
+          "ok": true,
+          "v": "{}"
+        },
+        "want": "{'a': ''}"
+      }
+    ],
+    "s02_limiter": [
+      {
+        "label": "hits",
+        "got": {
+          "ok": true,
+          "v": "[True, True, True, True]"
+        },
+        "want": "[True, True, True, False]"
+      },
+      {
+        "label": "count_at_3",
+        "got": {
+          "ok": true,
+          "v": "0"
+        },
+        "want": "3"
+      }
+    ]
+  }
+}

@@ -1,0 +1,117 @@
+==========================================================================
+V1 外部锚层 —— 先证明尺子能分辨，再用它量
+==========================================================================
+  任务集  suite4  n=4  suite_sha=4001ea1b3abb5bf57608280d8b21ba18
+  打分器  code_exec  scorer_sha=6062bd622cc52edb0d5a1eb496ea7b35
+
+--- 第 1 步  校准：尺子自证有分辨力（最常缺的就是这道闸）---
+校准通过 margin=+1.0000 中段检查=4/4
+  g7t2_parse_pairs: oracle=1.0000 partial=0.6000 null=0.0000 ✅
+  s02_limiter: oracle=1.0000 partial=0.7500 null=0.0000 ✅
+  m02_vfs: oracle=1.0000 partial=0.8000 null=0.0000 ✅
+  m03_tiered: oracle=1.0000 partial=0.4000 null=0.0000 ✅
+  理由: 全部 4 条两极可分，其中 4 条中段有序；margin +1.0000 > +0.0000
+
+evidence_id=12e59dffc9d03297
+  [观察]
+    - g7t2_parse_pairs: oracle=1.0000 partial=0.6000 null=0.0000
+    - s02_limiter: oracle=1.0000 partial=0.7500 null=0.0000
+    - m02_vfs: oracle=1.0000 partial=0.8000 null=0.0000
+    - m03_tiered: oracle=1.0000 partial=0.4000 null=0.0000
+  [推断]
+    - 尺子 code_exec 在 4 条任务上两极可分
+    - 中段有序检查 4 条，全部通过
+    - 分辨力 margin=+1.0000（门槛 +0.0000）
+  [未知]
+    - 未测：两个**都接近满分**的答案（如 0.9 与 0.95）是否可分 —— 校准用的是间距很大的档位
+    - 未测：真实候选的得分分布（校准用人工构造的三档，不代表模型实际分布）
+  [局限]
+    - 校准覆盖 好/中/坏 三档 ⇒ 保证'能分出对错'与'中段有序'，但不保证任意两个相近分数可分
+    - 尺子身份 scorer_sha=6062bd622cc5、suite_sha=4001ea1b3abb；换任一者本校准即失效，必须重做
+  外部交付  handoff=off（off=只交题面原文 / blocks=题面后追加累积块，评审+语义记忆）  外部能力=关
+  评审混编  mix=with-others（with-others=本题1条+别题尾2条 / self-only=只放本题）
+  评审投喂  carry-code=off（on=评审行后附 `[上版代码]` 原文 / off=只给 score+why）
+  评审写端  freeze-pass=off（on=满分不覆盖、保留产生满分的输入 / off=按键覆盖）
+  评审写端  freeze-best=off（on=新分不高于旧分就不覆盖、账本单调不降 / off=按键覆盖）
+  评审自省  reflect=off（on=`[上版代码]` 后附 `[自我修订]`：Reflector 写的根因+动作 / off=只有代码与 why）
+  提议采纳  promote=off（on=候选实现离线判分、严格更好才写进账本 / off=不提议）
+  提议采样  k=1（promote=on 时每题提议几次，取同一判分器下的最优；1=V233 行为）
+  执行轨迹  trace=off（on=提议的入参多一段「走过哪几行+当时变量」/ off=只有 why 与实测值）
+
+--- 第 2 步  跑任务集  solver=内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）  预算档=1x  repeat=1 ---
+15:31:32 ▶ 任务开始: 写一个函数 parse_pairs(s)，解析 'k1=v1; k2=v2' 形式的串。规则：条目用 ';' 分隔；键值用第一个 '=' 分隔；键与未加引号的值去掉首尾空白；值若被**单引号**包住，则单引号内的 ';' 与 '=' 不算分
+15:31:32   budget[1x] steps=0/12 llm=0/200 cand=0(宽3) wall=0.0s/3600s | llm_kind=http | 外部能力 0 个
+15:31:49   [1] 通道=深 候选=1 种类=1
+15:31:53       ↳ finish ok=True 直接实现所需功能
+15:31:53       🔁 失配[outcome] finish({'answer': '```python\ndef parse_pairs(s):\n    pairs 预演=失败 实际=成功 ⇒ 已沉淀为启发式
+15:31:53       📎 回看 b#1 因由=mismatch 窗=whole 614/767 字
+15:31:53   ✅ 收尾: ```python
+def parse_pairs(s):
+    pairs = {}
+    key = ''
+    value = ''
+    in_quotes = False
+    quote_char = ''
+    f
+15:31:53 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=0） 尾=0 | guard_blocked=0 | 预演=1 检验=1 命中=0 命中率=0.0 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.422 memory>reason=n/a reason>act=1.0] 回流=n/a | 语义记忆=1 | 回看=1次/614字(失配1/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=5项(非空/函数名 parse_pairs/语言标签/可编译/结构检查)
+15:31:53 ▶ 任务开始: 实现滑动窗口限流器类 Limiter。构造 `Limiter(limit, window)`：每个 key 在任意长度为 window 的时间窗内最多放行 limit 次。方法：
+① `hit(key, now)`：统计 key 在半开区间
+15:31:53   budget[1x] steps=0/12 llm=0/200 cand=0(宽3) wall=0.0s/3600s | llm_kind=http | 外部能力 0 个
+15:31:53   🧹 题边界：清掉上一题残留的工作记忆 1 条
+15:32:30   [1] 通道=深 候选=1 种类=1
+15:32:36       ↳ finish ok=True 定义滑动窗口限流器类 Limiter 的结构和主要方法
+15:32:36   ✅ 收尾: ```python
+class Limiter:
+    def __init__(self, limit, window):
+        self.limit = limit
+        self.window = window
+
+15:32:36 ■ done 验收=ANSWER(无约定产物) | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=0） 尾=0 | guard_blocked=0 | 预演=2 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.391 memory>reason=0.0 reason>act=1.0] 回流=n/a | 语义记忆=1 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=3项(非空/可编译/结构检查)
+15:32:36 ▶ 任务开始: 实现一个内存文件系统小系统，**用 `FILES` 字典交付**两个文件（键 'node.py'、'vfs.py'，值是文件源码字符串）：
+① node.py：类 `File(name, content="")` 与 `Dir(name)`
+15:32:36   budget[1x] steps=0/12 llm=0/200 cand=0(宽3) wall=0.0s/3600s | llm_kind=http | 外部能力 0 个
+15:32:36   🧹 题边界：清掉上一题残留的工作记忆 1 条
+15:33:43   [1] 通道=深 候选=1 种类=1
+15:34:01       🔮 预演置信度 0.00 过低 ⇒ 不进决策链
+15:34:01       ↳ finish ok=True 编写 node.py 文件
+15:34:01   ✅ 收尾: ```python
+FILES = {
+    'node.py': '''\
+class File:
+    def __init__(self, name, content=""):
+        self.name = name
+ 
+15:34:01 ■ done 验收=ANSWER(无约定产物) ⚠️题面点的输入不存在:node.py,vfs.py | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=0） 尾=0 | guard_blocked=0 | 预演=3 检验=2 命中=1 命中率=0.5 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.116 memory>reason=0.0 reason>act=1.0] 回流=n/a | 语义记忆=1 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=1项(非空)
+15:34:02 ▶ 任务开始: 实现一个两级缓存小系统，**用 `FILES` 字典交付**两个文件（键 'lru.py'、'tiered.py'，值是文件源码字符串）：
+① lru.py：类 `LRU(capacity)` —— 方法 `get(k)`（命中则把 k 刷
+15:34:02   budget[1x] steps=0/12 llm=0/200 cand=0(宽3) wall=0.0s/3600s | llm_kind=http | 外部能力 0 个
+15:34:02   🧹 题边界：清掉上一题残留的工作记忆 1 条
+15:34:44   [1] 通道=深 候选=2 种类=2
+15:34:49       ↳ finish ok=True 实现LRU缓存类
+15:34:49   ⏭ 交付成功 ⇒ 本轮剩余 1 个候选未轮到：note×1
+15:34:49   ✅ 收尾: ```python
+FILES = {
+    'lru.py': '''class LRU:
+    def __init__(self, capacity):
+        self.capacity = capacity
+     
+15:34:49 ■ done 验收=ANSWER(无约定产物) ⚠️题面点的输入不存在:lru.py,tiered.py | steps=1 执行=1下发/1成/0败（交付=1/步骤=0/未轮到=1） 尾=1 | guard_blocked=0 | 预演=4 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) | 价值判定=1 否决=0(-) | 通量[perceive>memory=0.283 memory>reason=0.0 reason>act=0.5] 回流=n/a | 语义记忆=1 | 题边界清空工作记忆=1条 | 回看=0次/0字(失配0/报错0) 跳过=0(超限)0(模式) 错误=0 | 校验=1跑/1过/0打回/0放弃 判据=1项(非空)
+  内核/http qwen2.5:7b（复用同一内核，记忆跨题累积）@1x n=1 mean=0.4500 std=0.0000 [0.4500,0.4500] 极差=0.0000
+  attempted=4 recorded=4 skipped_no_answer=0 failed_scorer=0 对账=✅ 可信=✅
+  评审     落盘=4 条  投喂=0（0 次筛选）  拒绝={'self': 0, 'cross_scorer': 0, 'cross_suite': 0}
+  血缘      llm_of_record=http 外部能力=0 个
+  世界模型  预演=4 检验=3 命中=2 命中率=0.667 失配=1(成败1/文本0) 混淆={'ok_ok': 2, 'ok_fail': 0, 'fail_ok': 1, 'fail_fail': 0}
+  规划器    调用=4 失败=0（json=0 截断响应=0 无工具=0 空计划=0） 率=0.0 重问=0 补救=4/0 修复=0/0（补完=0）
+  候选宽度  收=5 条 截断=0 条 进执行器=5 条（截断率=0.0 轮数=4 不适配=0）
+  候选让位  开关=1 用=0 救回=答案0/步骤0（finish=0 外部=0） 答案率=n/a ｜代价：额外失败=0 无弹药=0
+
+--- 第 3 步  口径闸（尺子不能随退化下移）---
+  本次口径  sig=4eec60204184ae61 scorer=6062bd622cc5 suite=4001ea1b3abb repeat=1 budget=1x temperature=0.8 fresh=False memory_scope=shared_db memory_seed=(0, 0) limits=d0160f762c llm_cond=dfd788fefb max_tokens=2048 tool_catalog_sha=8decb60895d4
+  读数已落盘 /private/tmp/v259e_s1/bench/runs.jsonl
+  答案已落盘 /private/tmp/v259e_s1/bench/answers.jsonl  4 条  共 5495 字符  最长 2782 字符  截断 0 条答案
+  判据      分母=1 道闸（读数可否用于判定）  可信=True
+::VERDICT:: GREEN  PASS=1  FAIL=0
+  读数复核  VERIFIED  — 重算 0.45 == 写下的值（4 条明细 / 1 轮 / 分母 4）
+──────────────────────────────────────────────────────────────────────────
+  判据读回  GREEN  — 全部 1 条断言通过，退出码 0；账本已钉 GREEN
+  运行日志  /private/tmp/v259e_s1/bench/last_run.log  （判据行唯一；同目录 `runs.jsonl` 是账本）

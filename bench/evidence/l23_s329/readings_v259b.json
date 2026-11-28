@@ -1,0 +1,144 @@
+{
+  "cells": {
+    "g7t2_parse_pairs": {
+      "distinct_sha": [
+        "21a998d52865"
+      ],
+      "max_score": 0.0,
+      "scores": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "causes": {
+        "AssertionError": 8
+      },
+      "dominant_cause": "AssertionError",
+      "dominant_n": 8
+    },
+    "s02_limiter": {
+      "distinct_sha": [
+        "cd102ed06428"
+      ],
+      "max_score": 0.0,
+      "scores": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "causes": {
+        "AssertionError": 8
+      },
+      "dominant_cause": "AssertionError",
+      "dominant_n": 8
+    },
+    "m02_vfs": {
+      "distinct_sha": [
+        "00f564fbcb8e"
+      ],
+      "max_score": 0.0,
+      "scores": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "causes": {
+        "AttributeError:'VFS' object has no attribute 'root'": 8
+      },
+      "dominant_cause": "AttributeError:'VFS' object has no attribute 'root'",
+      "dominant_n": 8
+    },
+    "m03_tiered": {
+      "distinct_sha": [
+        "05c9737f25c3"
+      ],
+      "max_score": 0.0,
+      "scores": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "causes": {
+        "ModuleNotFound:lru": 8
+      },
+      "dominant_cause": "ModuleNotFound:lru",
+      "dominant_n": 8
+    }
+  },
+  "k": 8,
+  "per_run": {
+    "1": {
+      "g7t2_parse_pairs": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "2": {
+      "g7t2_parse_pairs": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "3": {
+      "g7t2_parse_pairs": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "4": {
+      "g7t2_parse_pairs": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "5": {
+      "g7t2_parse_pairs": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "6": {
+      "g7t2_parse_pairs": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "7": {
+      "g7t2_parse_pairs": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    },
+    "8": {
+      "g7t2_parse_pairs": 0.0,
+      "s02_limiter": 0.0,
+      "m02_vfs": 0.0,
+      "m03_tiered": 0.0
+    }
+  },
+  "P1_cells_ge3": 0,
+  "P1_holds": false,
+  "P2_S": 0,
+  "P2_holds": false,
+  "P3_cells_ge06": 0
+}

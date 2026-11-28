@@ -1,0 +1,8 @@
+k=1 rc=0 secs=158
+k=2 rc=0 secs=144
+k=3 rc=0 secs=173
+k=4 rc=0 secs=185
+k=5 rc=0 secs=164
+k=6 rc=0 secs=160
+k=7 rc=0 secs=168
+k=8 rc=0 secs=171
